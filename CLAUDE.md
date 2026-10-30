@@ -28,8 +28,26 @@ work, never a roadmap and never "should work".
 ## Start of every session
 
 1. `./setup.sh` (idempotent; ends with `kerf doctor` → must print `ALL OK`; fix anything it reports first).
-2. Read STATUS.md and PLAN.md, then `git log --oneline -15`. Continue from the first unchecked PLAN item.
-3. Run `.venv/bin/kerf verify --fast` to see the current state before changing anything.
+2. Read STATUS.md and PLAN.md, then `git log --oneline -15`.
+3. Several sessions may work on this repo at once. Claim your work before starting it:
+   `.venv/bin/python tools/claims.py next` claims the first open PLAN item nobody is working on (or `take "<item text>"`
+   for a specific one) and pushes the claim. Work only on what you claimed. See "Parallel sessions" below.
+4. Run `.venv/bin/kerf verify --fast` to see the current state before changing anything.
+
+## Parallel sessions
+
+Other Claude sessions may be working in this repo at the same time. To never break, undo or duplicate their work:
+- **Claim before you work** (`tools/claims.py next` / `take`); `tools/claims.py list` shows who holds what. A claim is
+  stale after 90 minutes without a heartbeat and may then be taken over.
+- **Pull before you push, never force:** `git pull --rebase` then `git push`. Never `push --force`, `reset --hard` to
+  origin, revert or rewrite someone else's commit, or delete files you didn't create in this session. If a rebase
+  conflicts, keep both sides' intent and re-run the checks.
+- **Stay in your lane:** edit the files your item needs. Shared files (kerf/*.py, PLAN.md, STATUS.md, CLAUDE.md, docs/)
+  get small, targeted edits — never rewrites — so concurrent changes merge cleanly. New engine features go in new
+  functions or new modules where possible. STATUS.md: append your own dated entry; don't edit others' entries.
+- **Heartbeat:** run `tools/claims.py beat` before each commit so your claim stays fresh.
+- **Finishing an item:** check it off in PLAN.md, `tools/claims.py release`, push, then `tools/claims.py next`.
+  When every open item is claimed by other active sessions and your work is pushed, the Stop hook lets you stop.
 
 ## Commands (always use the venv: `.venv/bin/kerf`, `.venv/bin/python`, `.venv/bin/pytest`)
 

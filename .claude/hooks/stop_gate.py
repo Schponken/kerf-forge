@@ -46,7 +46,22 @@ if r.returncode != 0:
         if fails and all("PLAN.md" in l for l in fails):
             print(json.dumps({"systemMessage": f"Stop allowed on a recorded external blocker: {note}"}))
             sys.exit(0)
-    block("kerf verify is not passing, so the work is not finished. Fix these and keep going "
+    # Parallel sessions: if this session holds no claim, its work is committed and pushed, and every open PLAN item
+    # is being worked on by another active session (tools/claims.py), this session may stop; the others finish.
+    if not git("status", "--porcelain").stdout.strip():
+        git("fetch", "-q")
+        ahead = git("rev-list", "--count", "@{u}..HEAD").stdout.strip()
+        cl = subprocess.run([sys.executable, os.path.join(root, "tools/claims.py"), "others-cover"], cwd=root,
+                            capture_output=True, text=True)
+        mine = subprocess.run([sys.executable, os.path.join(root, "tools/claims.py"), "mine"], cwd=root,
+                              capture_output=True, text=True).stdout.strip()
+        if ahead in ("", "0") and cl.returncode == 0 and not mine:
+            print(json.dumps({"systemMessage": "Stop allowed: everything this session did is pushed, and every open "
+                                               "PLAN item is claimed by another active session."}))
+            sys.exit(0)
+    block("kerf verify is not passing, so the work is not finished. If your claimed item is done, check it off in "
+          "PLAN.md, run `python3 tools/claims.py release`, then `python3 tools/claims.py next` to take the next free "
+          "item. Fix these and keep going "
           "(update STATUS.md, commit and push as you go):\n" + out)
 st = git("status", "--porcelain").stdout.strip()
 if st:

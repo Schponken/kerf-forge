@@ -10,3 +10,4 @@ evals/*/out/
 VERIFY.json
 kerf.egg-info/
 .claude/state/YIELD
+.claude/state/session_id
