@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}} · Kerf viewer</title>
+<style>
+:root{--bg:#f3f4f2;--panel:#ffffff;--ink:#1b1f22;--mute:#5d666c;--line:#dfe2df;--soft:#eef0ed;--accent:#2f6fb0;
+  --good:#1f7a45;--goodbg:#e2f3e8;--bad:#b3261e;--badbg:#fbe4e2;--warn:#8a5a00;--warnbg:#fff1d6;--scene:#eceeeb;--grid1:#c4c9c5;--grid2:#dde0dd;--edge:#1a1e21}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--panel:#1d2124;--ink:#e7eaec;--mute:#9aa4aa;--line:#30363a;--soft:#262b2e;--accent:#6aa7e8;
+  --good:#6fd59a;--goodbg:#173323;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f0c46a;--warnbg:#3a2f14;--scene:#1a1e21;--grid1:#3b4246;--grid2:#2a3033;--edge:#0b0d0e}}
+:root[data-theme="dark"]{--bg:#15181a;--panel:#1d2124;--ink:#e7eaec;--mute:#9aa4aa;--line:#30363a;--soft:#262b2e;--accent:#6aa7e8;
+  --good:#6fd59a;--goodbg:#173323;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f0c46a;--warnbg:#3a2f14;--scene:#1a1e21;--grid1:#3b4246;--grid2:#2a3033;--edge:#0b0d0e}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em}
+.pill{font-size:12px;font-weight:650;padding:2px 9px;border-radius:999px}
+.pill.ok{color:var(--good);background:var(--goodbg)}.pill.bad{color:var(--bad);background:var(--badbg)}
+.meta{color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
+header .sp{flex:1}
+button,select{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:4px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+body{display:flex;flex-direction:column}main{display:grid;grid-template-columns:1fr 380px;flex:1;min-height:0}
+#stage{position:relative;min-height:320px;background:var(--scene)}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.views{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.views button{background:var(--panel)}.views button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+#tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;display:none;white-space:nowrap}
+.legend{position:absolute;left:12px;bottom:10px;color:var(--mute);font-size:12px}
+aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;border-radius:0;background:none;padding:10px 12px;color:var(--mute);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent);background:none}
+.pane{padding:14px 16px;overflow:auto;flex:1;display:none}.pane.on{display:block}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:16px 0 8px;font-weight:650}
+h2:first-child{margin-top:0}
+.ctl{margin:0 0 14px}
+.ctl .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl .name{font-weight:600}.ctl .val{font-variant-numeric:tabular-nums;color:var(--mute)}
+.ctl input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0 2px}
+.ctl .sub{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;color:var(--mute);font-size:12px;gap:6px 8px}.ctl .sub span:last-child{display:flex;gap:6px;margin-left:auto}
+.ctl .sub button{padding:1px 8px;font-size:12px}
+.part{display:grid;grid-template-columns:18px 14px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--soft);cursor:pointer}
+.part:hover .pn{color:var(--accent)}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
+.pn{font-weight:600}.pd{color:var(--mute);font-size:12px}
+.tag{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--soft);vertical-align:top}
+th{color:var(--mute);font-weight:600;font-size:12px}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chk{display:grid;grid-template-columns:20px 1fr;gap:6px;padding:6px 0;border-bottom:1px solid var(--soft)}
+.chk .i{display:flex;padding-top:2px}.chk .i.ok{color:var(--good)}.chk .i.bad{color:var(--bad)}
+.chk .d{color:var(--mute);font-size:12px}
+.note{padding:8px 10px;border-radius:7px;margin:0 0 8px;font-size:13px}
+.note.bad{background:var(--badbg);color:var(--bad)}.note.warn{background:var(--warnbg);color:var(--warn)}
+.empty{color:var(--mute)}
+@media (max-width:760px){body{display:block}main{grid-template-columns:1fr;grid-template-rows:56vh auto;height:auto}
+  aside{border-left:0;border-top:1px solid var(--line)}header{padding:10px 16px}.views{left:16px}.legend{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1><span id="status" class="pill"></span>
+  <span class="meta" id="meta"></span><span class="sp"></span>
+  <button id="theme" title="Switch light/dark">Theme</button>
+</header>
+<main>
+  <div id="stage">
+    <div class="views">
+      <button data-view="iso">Iso</button><button data-view="front">Front</button><button data-view="right">Right</button>
+      <button data-view="top">Top</button><button data-view="fit">Fit</button>
+      <button id="edges" class="on" title="Outline edges">Edges</button>
+      <button id="keep" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button>
+    </div>
+    <div id="tip"></div>
+    <div class="legend">Drag to orbit, right-drag to pan, scroll to zoom, click a part to select</div>
+  </div>
+  <aside>
+    <nav class="tabs">
+      <button data-tab="motion" class="on">Motion</button><button data-tab="parts">Parts</button>
+      <button data-tab="bom">Parts list</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button>
+    </nav>
+    <section class="pane on" id="motion"></section>
+    <section class="pane" id="parts"></section>
+    <section class="pane" id="bom"></section>
+    <section class="pane" id="print"></section>
+    <section class="pane" id="checks"></section>
+  </aside>
+</main>
+<script>/*KV3*/</script>
+<script type="application/json" id="kerf-data">/*DATA*/</script>
+<script>
+(() => {
+const T = window.KV3, D = JSON.parse(document.getElementById('kerf-data').textContent);
+const R = D.report, $ = id => document.getElementById(id), esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const ICON = {
+  ok: '<svg viewBox="0 0 16 16" width="14" height="14" aria-label="pass"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  bad: '<svg viewBox="0 0 16 16" width="14" height="14" aria-label="fail"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  plate: '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="5" y="5" width="3" height="3" fill="currentColor"/><rect x="9" y="8" width="3" height="3" fill="currentColor"/></svg>' };
+const fmt = (x, d = 1) => (x == null || isNaN(x)) ? '–' : Number(x).toFixed(d).replace(/\.0+$/, '');
+
+// ---------- header ----------
+$('title').textContent = R.project || 'Assembly';
+$('status').textContent = R.ok ? 'PASS' : `FAIL · ${(R.problems || []).length} problem${(R.problems || []).length === 1 ? '' : 's'}`;
+$('status').className = 'pill ' + (R.ok ? 'ok' : 'bad');
+const printed = D.items.filter(i => i.role === 'printed'), bought = D.items.filter(i => i.role === 'purchased');
+const massP = printed.reduce((s, i) => s + ((R.parts || {})[i.id]?.mass_est_g || 0), 0);
+const massB = Object.values(R.purchased || {}).reduce((s, p) => s + (p.mass_g || 0) * (p.qty || 1), 0);
+$('meta').textContent = `${printed.length} printed · ${bought.length} purchased · ~${fmt(massP + massB, 0)} g · ${R.printer || ''} · ${R.fingerprint || ''}`;
+let theme = null;
+$('theme').onclick = () => { theme = (document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; restyle(); };
+
+// ---------- scene ----------
+const stage = $('stage');
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputColorSpace = T.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new T.Scene();
+scene.add(new T.HemisphereLight(0xffffff, 0x6f7377, 1.9));
+const sun = new T.DirectionalLight(0xffffff, 1.7); sun.position.set(1, -1.5, 2.2); scene.add(sun);
+const fill = new T.DirectionalLight(0xffffff, 0.55); fill.position.set(-1.4, 1.1, 0.4); scene.add(fill);
+const cam = new T.PerspectiveCamera(32, 1, 0.1, 1e6); cam.up.set(0, 0, 1);
+const ctl = new T.OrbitControls(cam, renderer.domElement); ctl.enableDamping = true; ctl.dampingFactor = 0.12;
+const lo = new T.Vector3(...D.bounds[0]), hi = new T.Vector3(...D.bounds[1]);
+const center = lo.clone().add(hi).multiplyScalar(0.5), radius = Math.max(hi.clone().sub(lo).length() / 2, 10);
+let grid = null, dirty = true;
+const redraw = () => { dirty = true; };
+function restyle() {
+  scene.background = new T.Color(css('--scene'));
+  if (grid) scene.remove(grid);
+  const size = Math.ceil(radius * 3 / 10) * 10;
+  grid = new T.GridHelper(size, Math.max(4, Math.round(size / 10)), new T.Color(css('--grid1')), new T.Color(css('--grid2')));
+  grid.rotation.x = Math.PI / 2; grid.position.set(center.x, center.y, lo.z - 0.01); scene.add(grid);
+  for (const g of groups.values()) g.userData.edges.material.color.set(css('--edge'));
+  redraw();
+}
+
+const b64 = (s, Type) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Type(u.buffer); };
+const groups = new Map(), pickables = [];
+for (const it of D.items) {
+  const geo = new T.BufferGeometry();
+  geo.setAttribute('position', new T.BufferAttribute(b64(it.verts, Float32Array), 3));
+  geo.setIndex(new T.BufferAttribute(b64(it.tris, Uint32Array), 1));
+  geo.computeVertexNormals();
+  const keep = it.role === 'keepout';
+  const mat = new T.MeshStandardMaterial({ color: it.color, roughness: it.role === 'purchased' ? 0.55 : 0.78, metalness: it.role === 'purchased' ? 0.15 : 0.02,
+    side: T.DoubleSide, transparent: keep, opacity: keep ? 0.18 : 1, depthWrite: !keep, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+  const mesh = new T.Mesh(geo, mat); mesh.userData.id = it.id;
+  const edges = new T.LineSegments(new T.EdgesGeometry(geo, 28), new T.LineBasicMaterial({ color: 0x1a1e21, transparent: true, opacity: 0.55 }));
+  const g = new T.Group(); g.matrixAutoUpdate = false; g.add(mesh); g.add(edges);
+  g.userData = { it, mesh, edges, base: new T.Color(it.color) };
+  geo.computeBoundingBox(); g.userData.box = geo.boundingBox;
+  g.visible = !keep; scene.add(g); groups.set(it.id, g);
+  if (!keep) pickables.push(mesh);
+}
+
+// ---------- kinematics: compose ancestor joint motions about their home axes, then explode ----------
+const J = new Map(D.joints.map(j => [j.name, j]));
+const val = new Map(D.joints.map(j => [j.name, j.home]));
+let explode = 0;
+const tmp = new T.Matrix4(), tr = new T.Matrix4(), q = new T.Quaternion();
+function jointMatrix(j, v) {
+  const d = v - j.home, m = new T.Matrix4();
+  if (j.kind === 'revolute') {
+    const p = new T.Vector3(...j.point);
+    q.setFromAxisAngle(new T.Vector3(...j.axis), d * Math.PI / 180);
+    m.makeTranslation(p.x, p.y, p.z).multiply(tmp.makeRotationFromQuaternion(q)).multiply(tr.makeTranslation(-p.x, -p.y, -p.z));
+  } else {
+    const a = new T.Vector3(...j.axis).multiplyScalar(d * (j.scale || 1)); m.makeTranslation(a.x, a.y, a.z);
+  }
+  return m;
+}
+function pose() {
+  const jm = new Map(D.joints.map(j => [j.name, jointMatrix(j, val.get(j.name))]));
+  for (const g of groups.values()) {
+    const it = g.userData.it, m = new T.Matrix4();
+    for (const n of it.joints) m.multiply(jm.get(n));
+    const e = it.explode;
+    g.matrix.copy(new T.Matrix4().makeTranslation(e[0] * explode, e[1] * explode, e[2] * explode).multiply(m));
+    g.matrixWorldNeedsUpdate = true;
+  }
+  if (grid) { let z = Infinity; for (const g of groups.values()) if (g.userData.it.role !== 'keepout') z = Math.min(z, g.userData.box.min.z + g.userData.it.explode[2] * explode); grid.position.z = Math.min(z, lo.z) - 0.01; }
+  redraw();
+}
+
+// ---------- camera ----------
+const VIEWS = { iso: [1, -1.25, 0.9], front: [0, -1, 0.0001], right: [1, 0, 0.0001], top: [0.0001, -0.0001, 1] };
+function view(v) {
+  const r = radius * (1 + explode / 60);
+  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.08, dir = new T.Vector3(...(VIEWS[v] || VIEWS.iso)).normalize();
+  ctl.target.copy(center); cam.position.copy(center).add(dir.multiplyScalar(d)); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix(); ctl.update(); redraw();
+}
+function fit() {
+  const box = new T.Box3();
+  for (const g of groups.values()) if (g.visible) { g.updateMatrixWorld(true); box.expandByObject(g.userData.mesh); }
+  if (box.isEmpty()) return;
+  const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 5);
+  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.08, dir = cam.position.clone().sub(ctl.target).normalize();
+  ctl.target.copy(c); cam.position.copy(c).add(dir.multiplyScalar(d)); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix(); ctl.update(); redraw();
+}
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { if (b.dataset.view !== 'fit') view(b.dataset.view); fit(); });
+$('edges').onclick = e => { e.target.classList.toggle('on'); for (const g of groups.values()) g.userData.edges.visible = e.target.classList.contains('on'); redraw(); };
+$('keep').onclick = e => { e.target.classList.toggle('on'); const on = e.target.classList.contains('on'); for (const g of groups.values()) if (g.userData.it.role === 'keepout') g.visible = on && !hidden.has(g.userData.it.id); renderParts(); redraw(); };
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(h, 1); cam.updateProjectionMatrix(); redraw(); }
+new ResizeObserver(resize).observe(stage);
+
+// ---------- selection + hover ----------
+const ray = new T.Raycaster(), ptr = new T.Vector2();
+let selected = null, downAt = null;
+function pick(ev) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, cam);
+  const hit = ray.intersectObjects(pickables.filter(m => m.parent.visible), false)[0];
+  return hit ? hit.object.userData.id : null;
+}
+function select(id) {
+  selected = selected === id ? null : id;
+  for (const [k, g] of groups) {
+    const m = g.userData.mesh.material;
+    m.emissive.set(k === selected ? 0x2f6fb0 : 0x000000); m.emissiveIntensity = k === selected ? 0.35 : 0;
+  }
+  renderParts(); redraw();
+}
+renderer.domElement.addEventListener('pointerdown', e => downAt = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', e => { if (downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) < 4) select(pick(e)); downAt = null; });
+renderer.domElement.addEventListener('pointermove', e => {
+  const id = e.buttons ? null : pick(e), tip = $('tip');
+  if (!id) { tip.style.display = 'none'; return; }
+  const it = groups.get(id).userData.it, pr = (R.parts || {})[id];
+  tip.innerHTML = `<b>${esc(id)}</b> · ${esc(it.role)}${pr ? ` · ${fmt(pr.mass_est_g)} g ${esc(pr.material || '')}` : it.catalog ? ` · ${esc(it.catalog)}` : ''}`;
+  const r = stage.getBoundingClientRect(); tip.style.left = (e.clientX - r.left + 14) + 'px'; tip.style.top = (e.clientY - r.top + 12) + 'px'; tip.style.display = 'block';
+});
+
+// ---------- panels ----------
+document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === b.dataset.tab));
+});
+const anim = new Map();
+function renderMotion() {
+  const unit = j => j.kind === 'revolute' ? '°' : ' mm';
+  let h = `<h2>Explode</h2><div class="ctl"><div class="row"><span class="name">Spread parts apart</span><span class="val" id="exv">${fmt(explode, 0)} mm</span></div>
+    <input type="range" id="ex" min="0" max="80" step="1" value="${explode}"></div><h2>Moving joints</h2>`;
+  if (!D.joints.length) h += '<p class="empty">This assembly has no moving joints.</p>';
+  for (const j of D.joints) {
+    const sw = (R.assembly?.sweeps || []).find(s => s.joint === j.name);
+    h += `<div class="ctl"><div class="row"><span class="name">${esc(j.name)}</span><span class="val" id="v_${esc(j.name)}">${fmt(val.get(j.name))}${unit(j)}</span></div>
+      <input type="range" data-j="${esc(j.name)}" min="${j.range[0]}" max="${j.range[1]}" step="${(j.range[1] - j.range[0]) / 360}" value="${val.get(j.name)}">
+      <div class="sub"><span>${fmt(j.range[0])} to ${fmt(j.range[1])}${unit(j)} · ${esc(j.kind)} · moves ${j.moves.length} item${j.moves.length > 1 ? 's' : ''}${sw ? ` · sweep ${sw.clear ? 'clear' : 'COLLIDES'}` : ''}</span>
+      <span><button data-home="${esc(j.name)}">Home</button> <button data-play="${esc(j.name)}">Sweep</button></span></div></div>`;
+  }
+  $('motion').innerHTML = h;
+  $('ex').oninput = e => { explode = +e.target.value; $('exv').textContent = `${explode} mm`; pose(); };
+  $('ex').onchange = () => fit();
+  $('motion').querySelectorAll('[data-j]').forEach(s => s.oninput = e => { setJ(e.target.dataset.j, +e.target.value); });
+  $('motion').querySelectorAll('[data-home]').forEach(b => b.onclick = () => { anim.delete(b.dataset.home); setJ(b.dataset.home, J.get(b.dataset.home).home); });
+  $('motion').querySelectorAll('[data-play]').forEach(b => b.onclick = () => { const n = b.dataset.play; if (anim.has(n)) anim.delete(n); else anim.set(n, performance.now()); });
+}
+function setJ(n, v) {
+  const j = J.get(n); v = Math.min(j.range[1], Math.max(j.range[0], v)); val.set(n, v);
+  const s = document.querySelector(`[data-j="${CSS.escape(n)}"]`); if (s && +s.value !== v) s.value = v;
+  const o = $('v_' + n); if (o) o.textContent = fmt(v) + (j.kind === 'revolute' ? '°' : ' mm');
+  pose();
+}
+const hidden = new Set();
+function renderParts() {
+  const keepOn = $('keep').classList.contains('on');
+  const row = it => {
+    const pr = (R.parts || {})[it.id], pu = (R.purchased || {})[it.id];
+    const d = pr ? `${fmt(pr.mass_est_g)} g · ${esc(pr.material || '')} · ${pr.size_mm ? pr.size_mm.map(x => fmt(x)).join(' × ') + ' mm' : ''}`
+      : pu ? `${esc(pu.catalog || '')} · ${fmt(pu.mass_g)} g${pu.qty > 1 ? ` × ${pu.qty}` : ''}` : esc(it.catalog || 'clearance volume, not a part');
+    const vis = it.role === 'keepout' ? keepOn && !hidden.has(it.id) : !hidden.has(it.id);
+    return `<div class="part" data-sel="${esc(it.id)}"><input type="checkbox" data-vis="${esc(it.id)}" ${vis ? 'checked' : ''} title="Show/hide">
+      <span class="sw" style="background:${esc(it.color)}${it.role === 'keepout' ? ';opacity:.4' : ''}"></span>
+      <span><span class="pn" style="${selected === it.id ? 'color:var(--accent)' : ''}">${esc(it.id)}</span><br><span class="pd">${d}</span></span>
+      <span class="tag">${esc(it.role)}</span></div>`;
+  };
+  let h = '<h2>Printed</h2>' + (printed.map(row).join('') || '<p class="empty">None.</p>') + '<h2>Purchased</h2>' + (bought.map(row).join('') || '<p class="empty">None.</p>');
+  const ko = D.items.filter(i => i.role === 'keepout');
+  if (ko.length) h += '<h2>Keep-out volumes</h2>' + ko.map(row).join('');
+  h += `<p style="margin-top:12px"><button id="showall">Show all</button> <button id="isolate" ${selected ? '' : 'disabled'}>Isolate selected</button></p>`;
+  $('parts').innerHTML = h;
+  $('parts').querySelectorAll('[data-vis]').forEach(c => c.onclick = e => { e.stopPropagation(); const id = c.dataset.vis; c.checked ? hidden.delete(id) : hidden.add(id); applyVis(); });
+  $('parts').querySelectorAll('[data-sel]').forEach(r => r.onclick = () => select(r.dataset.sel));
+  $('showall').onclick = () => { hidden.clear(); applyVis(); renderParts(); };
+  $('isolate').onclick = () => { for (const it of D.items) if (it.id !== selected && it.role !== 'keepout') hidden.add(it.id); hidden.delete(selected); applyVis(); renderParts(); };
+}
+function applyVis() { const keepOn = $('keep').classList.contains('on'); for (const [k, g] of groups) g.visible = !hidden.has(k) && (g.userData.it.role !== 'keepout' || keepOn); redraw(); }
+function renderBom() {
+  const b = R.bom || [];
+  if (!b.length) { $('bom').innerHTML = '<p class="empty">No parts list in this build.</p>'; return; }
+  const types = [...new Set(b.map(x => x.type))];
+  $('bom').innerHTML = types.map(t => `<h2>${esc(t)}</h2><table><tr><th>Item</th><th>Spec</th><th class="n">Qty</th></tr>${b.filter(x => x.type === t).map(x =>
+    `<tr><td>${esc(x.item)}${x.note ? `<div class="pd">${esc(x.note)}</div>` : ''}</td><td>${esc(x.spec)}</td><td class="n">${esc(x.qty)}</td></tr>`).join('')}</table>`).join('');
+}
+function renderPrint() {
+  const P = R.parts || {}, ids = Object.keys(P);
+  let h = `<p class="pd">Printer: ${esc(R.printer || '')}. Sizes are in print orientation.</p>`;
+  for (const id of ids) {
+    const p = P[id];
+    h += `<h2>${esc(id)}</h2><table>
+      <tr><td>Material</td><td class="n">${esc(p.material)} · ${fmt((p.infill || 0) * 100, 0)}% infill</td></tr>
+      <tr><td>Size</td><td class="n">${(p.size_mm || []).map(x => fmt(x)).join(' × ')} mm</td></tr>
+      <tr><td>Fits the printer</td><td class="n">${p.fits ? 'yes' : 'NO'}</td></tr>
+      <tr><td>Estimated mass</td><td class="n">${fmt(p.mass_est_g)} g</td></tr>
+      <tr><td>Overhang area</td><td class="n">${fmt(p.overhang_pct, 2)}%</td></tr>
+      <tr><td>Thinnest wall (2nd pct.)</td><td class="n">${fmt(p.wall_p02_mm, 2)} mm</td></tr>
+      <tr><td>One solid, watertight</td><td class="n">${p.solids === 1 && p.watertight ? 'yes' : 'NO'}</td></tr></table>`;
+    for (const w of p.problems || []) h += `<div class="note bad">${esc(w)}</div>`;
+    for (const w of p.warnings || []) h += `<div class="note warn">${esc(w)}</div>`;
+  }
+  const pl = (R.files || {}).plates || [];
+  if (pl.length) h += `<h2>Build plates</h2>` + pl.map(x => `<div class="chk"><span class="i ok">${ICON.plate}</span><span>${esc(x.file)}<div class="d">${esc((x.parts || []).join(', '))}</div></span></div>`).join('');
+  $('print').innerHTML = h || '<p class="empty">No printed parts.</p>';
+}
+function renderChecks() {
+  let h = '';
+  for (const p of R.problems || []) h += `<div class="note bad">${esc(p)}</div>`;
+  for (const w of R.warnings || []) h += `<div class="note warn">${esc(w)}</div>`;
+  const a = R.assembly || {}, line = (ok, t, d) => `<div class="chk"><span class="i ${ok ? 'ok' : 'bad'}">${ok ? ICON.ok : ICON.bad}</span><span>${t}${d ? `<div class="d">${d}</div>` : ''}</span></div>`;
+  h += '<h2>Assembly</h2>';
+  h += line(!(a.interference || []).length, 'No parts overlap', (a.interference || []).map(i => `${esc(i.a)} / ${esc(i.b)}: ${fmt(i.volume_mm3)} mm³`).join('<br>'));
+  h += line(true, `${(a.fasteners || []).length} screws line up through both parts`, [...new Set((a.fasteners || []).map(f => `${f.screw}×${f.length_mm} (${f.group})`))].map(esc).join(' · '));
+  for (const s of a.sweeps || []) h += line(s.clear, `Joint ${esc(s.joint)} moves ${fmt(s.range[0])} to ${fmt(s.range[1])} without hitting anything`, s.clear ? `${s.samples} poses checked` : esc(JSON.stringify(s.collisions[0])));
+  h += '<h2>Engineering requirements</h2>';
+  for (const r of R.requirements || []) h += line(r.ok, r.value == null ? `${esc(r.id)}: did not run` : `${esc(r.id)}: ${fmt(r.value, 2)} (limit ${fmt(r.limit, 2)})`, esc(r.value == null ? r.detail : (r.why || r.detail)));
+  if (!(R.requirements || []).length) h += '<p class="empty">None declared.</p>';
+  $('checks').innerHTML = h;
+}
+
+// ---------- go ----------
+restyle(); renderMotion(); renderParts(); renderBom(); renderPrint(); renderChecks(); pose(); resize(); view('iso'); fit();
+// Draw only when something changed (camera, pose, selection, visibility, theme, size): idle pages cost nothing.
+ctl.addEventListener('change', redraw);
+(function loop(t) {
+  for (const [n, t0] of anim) { const j = J.get(n), ph = ((t - t0) / 4000) % 1, s = 0.5 - 0.5 * Math.cos(ph * 2 * Math.PI); setJ(n, j.range[0] + s * (j.range[1] - j.range[0])); }
+  ctl.update();
+  if (dirty) { renderer.render(scene, cam); dirty = false; }
+  requestAnimationFrame(loop);
+})(performance.now());
+window.__kerf = { D, setJ, pose, groups, view, fit, set explode(v) { explode = v; pose(); } };
+})();
+</script>
+</body>
+</html>

@@ -1,2 +1,1 @@
-{ "name": "kerf-render", "private": true, "type": "module",
-  "dependencies": { "three": "0.186.1", "playwright": "1.63.0" } }
+{"name":"kerf-render","private":true,"type":"module","dependencies":{"esbuild":"0.25.11","playwright":"1.63.0","three":"0.186.1"}}

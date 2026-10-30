@@ -2,6 +2,6 @@
  "item": "Assembly viewer: `kerf build` also writes `projects/<p>/out/viewer.html` \u2014 a self-contained page (no network) showing the assembly with part list, explode slider, a slider per moving joint (uses joint axes from the report), part visibility toggles, BOM table and per-part print info",
  "session": "2c0e7041a2",
  "since": 1793400133.876936,
- "heartbeat": 1793400133.876936,
+ "heartbeat": 1793401593.6736164,
  "since_utc": "2026-10-30 22:42"
 }

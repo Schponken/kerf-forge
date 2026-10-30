@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import assembly as A, checks, export, pins, project as P, requirements
+from . import assembly as A, checks, export, pins, project as P, requirements, viewer
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -94,6 +94,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 rep["files"] = {"parts": export.part_files(proj, out / "parts"),
                                 "plates": export.plates(proj, out / "plates", printer)}
                 rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj)
+                try:  # self-contained assembly viewer (kerf/viewer.py); a failure here is a build problem, not silent
+                    rep["files"]["viewer"] = "viewer.html"
+                    viewer.write(proj, asm, rep, out / "viewer.html")
+                except Exception as e:  # noqa: BLE001
+                    rep["problems"].append(f"viewer.html could not be written: {type(e).__name__}: {e}")
             if do_render:
                 out = proj.out("renders")
                 out.mkdir(exist_ok=True)
