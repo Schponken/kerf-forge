@@ -1,0 +1,50 @@
+"""Base: desk plate, bearing tower for the turntable spindle (two 6001 bearings, 25 mm apart, so the arm's tipping
+moment never reaches the servo), and the pocket the yaw servo (MG996R) hangs in, output up, 45 mm behind the yaw axis.
+Origin: yaw axis on the desk (underside of the plate); z up; the arm points +X at home.
+Printed upright; the servo shelf and the bearing-bore ceiling need supports (supports: allowed)."""
+from build123d import *
+from kerf import iface
+
+YAW = "servos.MG996R"
+BRG = "bearings.6001"
+
+
+def build(ctx):
+    p = ctx.p
+    d = iface.servo_dims(YAW)
+    xc = -p.yaw_c - p.yaw_out_x                    # yaw servo body centre (output end toward the tower)
+    shelf_t = 8.0
+    r_tower = p.brg_D / 2 + 6.0
+    body = Pos(-29, 0, 0) * Box(138, 100, p.base_floor, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body = fillet(body.edges().filter_by(Axis.Z), 8.0)
+    body += Cylinder(r_tower, p.z_tt, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # servo housing: walls round the hanging body, a shelf the tabs rest on, room for the cable boss at the output end
+    boss_x1 = xc + d["L"] / 2 + 6.6 + 0.6
+    hx0, hx1 = xc - d["span"] / 2 - 4.0, max(boss_x1 + 4.0, xc + d["span"] / 2 + 4.0)
+    hw = d["W"] / 2 + 0.5 + 4.0
+    body += Pos((hx0 + hx1) / 2, 0, 0) * Box(hx1 - hx0, 2 * hw, p.z_shelf, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    cav_x0, cav_x1 = xc - d["L"] / 2 - 0.5, boss_x1
+    body -= Pos((cav_x0 + cav_x1) / 2, 0, p.base_floor) * Box(cav_x1 - cav_x0, d["W"] + 1.0, p.z_shelf - shelf_t - p.base_floor,
+                                                             align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= iface.servo_mount(ctx, YAW, Location((xc, 0, p.z_shelf)), group="yaw_servo", plate_t=shelf_t, kind="tap")
+    # slot so the cable boss (low on the output-end face) passes the shelf when the servo drops in
+    body -= Pos((xc + d["L"] / 2 - 1.0 + boss_x1) / 2, 0, p.z_shelf - shelf_t - 1) * Box(boss_x1 - xc - d["L"] / 2 + 1.0, 9.0, shelf_t + 2,
+                                                                                         align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # cable exit through the housing's front wall, at floor level
+    body -= Pos(boss_x1 + 2.0, 0, p.base_floor) * Box(8.0, 10.0, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # bearing seats: lower 6001 pushed up from below to a shoulder, upper 6001 dropped in from the top
+    body -= iface.bearing_seat(ctx, BRG, Location((0, 0, 0), (180, 0, 0)), fit="press", depth=p.z_blo + p.brg_B,
+                               through=p.z_bhi - p.z_blo - p.brg_B)
+    body -= iface.bearing_seat(ctx, BRG, Location((0, 0, p.z_tt)), fit="press", depth=p.brg_B, through=1.0)
+    body = chamfer(body.edges().filter_by(GeomType.CIRCLE).filter_by(lambda e: abs(e.center().Z - p.z_tt) < 0.01
+                                                                          and e.radius > p.brg_D / 2 + 1), 1.0)
+    # desk mounting: 4 x M4 through-holes (bolt or wood-screw down) at the corners; the rear 20 mm is a clamp pad
+    for x in (-88.0, 30.0):
+        for y in (-40.0, 40.0):
+            c, *_ = iface.hole("M4", "clearance", p.base_floor)
+            body -= Pos(x, y, p.base_floor) * c
+    ctx.revolute("yaw", Axis((0, 0, 0), (0, 0, 1)), range=(-90, 90))
+    ctx.rigid("brg_lo", Location((0, 0, p.z_blo)))
+    ctx.rigid("brg_hi", Location((0, 0, p.z_bhi)))
+    ctx.rigid("yaw_servo_seat", Location((xc, 0, p.z_shelf)))
+    return ctx.finish(body)

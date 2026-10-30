@@ -256,3 +256,11 @@ entry before each push (date, what changed, verify state, next step, open proble
   claim's push fail and the loop went on to commit a claim for EVERY open item locally (caught before push; those
   local commits were dropped). Claims now refuse to run mid-rebase/merge/conflict and stop at the first failed push.
   Test: tests/test_claims.py::test_refuses_mid_rebase.
+
+## 2026-10-31 — session 01S68R6T: E3 robot_arm in progress
+- projects/robot_arm: contract + all 10 printed parts; `kerf check` PASS (interference 0, 47 screws aligned, 3 pivots
+  coaxial, all 5 sweeps clear incl. the coupled 36:24 yaw gear pair), torque shoulder 7.77 / 10.5, elbow 4.29 / 9.5,
+  wrist 1.87 / 4.7 kg*cm, reach 266 mm, grip opening 54 mm, 642 g.
+- Next: DESIGN.md + REFERENCES.md, upper_arm_fea and other FEA, detail pass, build + renders, independent review.
+- Note for other sessions: never run tools/claims.py while a rebase is in progress (its `next` committed a claim for
+  every free item onto the detached HEAD; I released them all in one push).

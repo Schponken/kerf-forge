@@ -1,0 +1,91 @@
+name: Desk robot arm
+description: >
+  A 4-axis desktop arm (base yaw, shoulder, elbow, wrist pitch) on hobby servos with a two-finger gripper on a fifth
+  servo. ~260 mm reach, lifts 150 g at full reach with every servo at or under half its stall torque. The turntable
+  runs on two 6001 bearings on a 12 mm spindle and is driven through a 36:24 printed gear pair; every arm joint is a
+  fork with the servo on one side and an M3 shoulder-screw pivot on the other. Bolts (4x M4) or clamps to a desk.
+printer: Bambu Lab A2L
+supports: allowed
+params:
+  plate_t: {value: 7, min: 7, max: 8, step: 0.5, label: Side-plate thickness}
+  side_gap: {value: 0.5, min: 0.3, max: 1.0, step: 0.1, label: Axial gap between a fork and the link inside it}
+  grip_w: {value: 35, min: 34, max: 40, step: 1, label: Gripper body width (across the fork)}
+  base_floor: {value: 6, min: 5, max: 8, step: 0.5, label: Base plate thickness}
+  gear_w: {value: 8, min: 6, max: 12, step: 1, label: Yaw gear face width}
+  gear_m: {value: 1.5, min: 1.5, max: 2.0, step: 0.25, label: Yaw gear module}
+  gear_z_tt: {value: 24, min: 20, max: 30, step: 1, label: Turntable gear teeth}
+  gear_z_yaw: {value: 36, min: 30, max: 45, step: 1, label: Yaw servo gear teeth}
+  brg_lo_z: {value: 20, min: 16, max: 26, step: 1, label: Lower yaw bearing height (bottom face)}
+  plat_t: {value: 8, min: 8, max: 10, step: 0.5, label: Turntable platform thickness}
+  x_sh: {value: 25, min: 15, max: 35, step: 1, label: Shoulder axis ahead of the yaw axis}
+  z_sh: {value: 100, min: 95, max: 120, step: 1, label: Shoulder axis height above the desk}
+  L1: {value: 85, min: 80, max: 110, step: 1, label: Shoulder to elbow}
+  L2: {value: 80, min: 70, max: 100, step: 1, label: Elbow to wrist}
+  link_h: {value: 34, min: 30, max: 40, step: 1, label: Link plate height}
+  finger_len: {value: 50, min: 45, max: 60, step: 1, label: Finger length (pivot to tip)}
+layout: parts/layout.py
+parts:
+  base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
+  turntable: {file: parts/turntable.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4}
+  retainer: {file: parts/retainer.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0}
+  yaw_gear: {file: parts/yaw_gear.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5}
+  yoke_r: {file: parts/yoke_r.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4}
+  yoke_l: {file: parts/yoke_l.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4}
+  upper_arm: {file: parts/upper_arm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
+  forearm: {file: parts/forearm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
+  gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
+  finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}
+purchased:
+  brg_lo: {catalog: bearings.6001, proxy: bearing}
+  brg_hi: {catalog: bearings.6001, proxy: bearing}
+  yaw_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: yaw_servo}, range: [-61, 61]}
+  yaw_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: yaw_horn}}
+  sh_servo: {catalog: servos.DS3225, proxy: servo, groups: {tabs: sh_servo}, tab_screws_from: bottom, range: [-60, 60]}
+  sh_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: sh_horn}}
+  el_servo: {catalog: servos.DS3218, proxy: servo, groups: {tabs: el_servo}, tab_screws_from: bottom, range: [-60, 60]}
+  el_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: el_horn}}
+  wr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: wr_servo}, tab_screws_from: bottom, range: [-75, 75]}
+  wr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: wr_horn}}
+  gr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: gr_servo}, tab_screws_from: bottom, range: [0, 55]}
+  gr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: gr_horn}}
+assembly:
+  root: base
+  joints:
+    - {parent: base.brg_lo, child: brg_lo.face}
+    - {parent: base.brg_hi, child: brg_hi.face}
+    - {parent: base.yaw_servo_seat, child: yaw_servo.tabs}
+    - {parent: yaw_servo.output, child: yaw_horn.spline, name: yaw_drive, range: [-61, 61]}
+    - {parent: yaw_horn.face, child: yaw_gear.mount}
+    - {parent: base.yaw, child: turntable.origin, name: base_yaw, range: [-90, 90]}
+    - {parent: turntable.retainer_seat, child: retainer.origin}
+    - {parent: turntable.yoke_r_seat, child: yoke_r.origin}
+    - {parent: turntable.yoke_l_seat, child: yoke_l.origin}
+    - {parent: yoke_r.servo_seat, child: sh_servo.tabs}
+    - {parent: sh_servo.output, child: sh_horn.spline, name: shoulder, range: [-60, 60]}
+    - {parent: sh_horn.face, child: upper_arm.horn_mount}
+    - {parent: upper_arm.servo_seat, child: el_servo.tabs}
+    - {parent: el_servo.output, child: el_horn.spline, name: elbow, range: [-60, 60]}
+    - {parent: el_horn.face, child: forearm.horn_mount}
+    - {parent: forearm.servo_seat, child: wr_servo.tabs}
+    - {parent: wr_servo.output, child: wr_horn.spline, name: wrist, range: [-75, 75]}
+    - {parent: wr_horn.face, child: gripper.horn_mount}
+    - {parent: gripper.servo_seat, child: gr_servo.tabs}
+    - {parent: gr_servo.output, child: gr_horn.spline, name: grip, range: [0, 55], home: 0}
+    - {parent: gr_horn.face, child: finger.horn_mount}
+  sweeps:
+    - {joint: yaw_drive, follows: base_yaw, ratio: -0.66666}
+requirements:
+  - {id: torque_shoulder, check: static_torque, joint: shoulder, actuator: sh_servo, payload_g: 150, payload_at: gripper.tcp,
+     max_fraction: 0.5, poses: [{}, {shoulder: -60}, {shoulder: -30}, {shoulder: 30}, {shoulder: 60}, {elbow: 60}, {elbow: -60}],
+     why: "hold 150 g at the tcp with the arm stretched out horizontally (pose {}) using at most half the DS3225's stall torque"}
+  - {id: torque_elbow, check: static_torque, joint: elbow, actuator: el_servo, payload_g: 150, payload_at: gripper.tcp,
+     max_fraction: 0.5, poses: [{}, {elbow: -60}, {elbow: 60}, {shoulder: 60, elbow: -60}, {wrist: 75}, {wrist: -75}],
+     why: "same for the elbow (DS3218), forearm horizontal included"}
+  - {id: torque_wrist, check: static_torque, joint: wrist, actuator: wr_servo, payload_g: 150, payload_at: gripper.tcp,
+     max_fraction: 0.5, poses: [{}, {wrist: -75}, {wrist: 75}, {grip: 55}],
+     why: "same for the wrist (MG996R), gripper horizontal included"}
+  - {id: reach, check: distance, a: upper_arm.shoulder_ref, b: gripper.tcp, min_mm: 230, max_mm: 300, pose: {},
+     why: "about 250 mm reach, measured square to the shoulder axis with the arm stretched out"}
+  - {id: grip_open, check: distance, a: finger.tip, b: gripper.fixed_tip, min_mm: 40, pose: {grip: 55},
+     why: "the open gripper takes a 40 mm object"}
+  - {id: arm_mass, check: mass_max, max_g: 900, why: "a desk arm two hobby-servo supplies can move around; also the torque budget"}
