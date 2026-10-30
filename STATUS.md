@@ -222,3 +222,13 @@ entry before each push (date, what changed, verify state, next step, open proble
 - `tests/test_docs.py` fails when a new module, requirement check, CLI command or project.yaml key is not
   documented — sessions adding engine features (access checks, perf caching) must add their docs line.
 - pytest: 258 passed.
+
+## 2026-10-31 00:05 UTC — servo window lead-in + fresh servo_link review (planning chat, second session)
+- Done: PLAN "servo_mount lead-in chamfer". `iface.servo_mount(lead_in=0.5)` adds a 45-degree chamfer on the window's
+  entry face (both mounting styles); `iface.servo_lead_in()` shrinks it so the wall to every tab screw hole keeps
+  MIN_WALL_AROUND_HOLE (2.4 mm, or the catalog insert wall), 0 if < 0.2 mm would remain. servo_link gets 0.4 mm.
+- servo_link: design-reviewer PASS for fingerprint ed0039103648c353 (wall measured 2.400 mm at the entry/bed face).
+  Open minors: (1) the PLAN item "Assembly-access checks" (ball-end screws, insertion paths) is still needed;
+  (2) MG996R tab pattern / tab thickness / cable boss are UNVERIFIED in the catalog until Spencer calipers a servo.
+- Note for every session: any change to the catalog or a part file changes a project's fingerprint and makes its
+  review stale; `kerf verify` then needs a fresh design-reviewer pass for that project.

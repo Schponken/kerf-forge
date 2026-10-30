@@ -21,11 +21,12 @@ upright wall, arm swinging in a vertical plane — real gravity torque, real bra
 
 ## Sizing
 - Worst static torque at ±90°: 0.050 kg × 10.0 cm + arm 7.7 g × ~5 cm ≈ 0.54 kg·cm → 11% of the 4.7 kg·cm allowed.
-- Servo tabs: thread-forming M3 screws into 2.72 mm pilot holes (7.2 mm deep in the 8 mm wall). Heat-set inserts
+- Servo tabs: thread-forming M3 screws into 2.60 mm pilot holes (the catalog's PETG size; 7.2 mm deep in the 8 mm wall). Heat-set inserts
   were rejected: their 4.0 mm holes would leave only 2.1 mm of wall to the servo window (rule: >= 2.4 mm) and melting
   them could bulge the wall into a window that has 0.3 mm clearance per side. Window corners get 1 mm dog-bone reliefs.
-- Servo window: 0.5 mm × 45° lead-in chamfer on its entry face (`iface.servo_mount(lead_in=0.5)`), so the case
-  slides in square and elephant's foot on that face can't pinch it; the window itself keeps 0.3 mm clearance per side.
+- Servo window: 45° lead-in chamfer on its entry face (the back face, which prints on the bed), so the case slides in
+  square and elephant's foot on that face can't pinch it; the window itself keeps 0.3 mm clearance per side. Asked
+  for 0.5 mm; `iface.servo_lead_in` limits it to 0.4 mm so the wall to the pilot holes stays 2.4 mm at that face.
 - Test mass: a 50 g calibration weight or fishing sinker on a wire loop / S-hook through the 3.5 mm tip hole
   (a washer stack on an M3 screw is too long to reach 50 g).
 - Servo mounting direction: the MG996R has a cable strain-relief boss low on its output-end face (~6.6 mm proud,

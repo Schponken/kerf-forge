@@ -40,7 +40,7 @@ tested before handoff.
   driver); (b) insertion paths — parts declared with `insert: {direction: [x, y, z], distance: mm}` in project.yaml
   are swept along that path into their seat and must not collide (catches e.g. a servo body/cable boss that cannot
   pass its window)
-- [ ] `servo_mount`: 0.5 mm lead-in chamfer on the window's entry face (elephant-foot allowance on bed-side faces);
+- [x] `servo_mount`: 0.5 mm lead-in chamfer on the window's entry face (elephant-foot allowance on bed-side faces);
   then rebuild `servo_link`, fix arm.py's stale test-mass comment (wire loop / S-hook), and get a fresh PASS review
 
 ## Phase 2 — design from a description
