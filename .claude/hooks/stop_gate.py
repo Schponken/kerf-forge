@@ -26,6 +26,13 @@ def block(reason):
 def git(*a):
     return subprocess.run(["git", *a], cwd=root, capture_output=True, text=True)
 
+# A scheduled run that found another session actively working yields without touching anything.
+yield_f = os.path.join(state, "YIELD")
+if os.path.exists(yield_f) and not git("status", "--porcelain").stdout.strip():
+    os.remove(yield_f)
+    print(json.dumps({"systemMessage": "Stop allowed: yielded to another active session (no local changes)."}))
+    sys.exit(0)
+
 kerf = os.path.join(root, ".venv/bin/kerf")
 if not os.path.exists(kerf):
     block("The environment is not set up (.venv/bin/kerf missing). Run ./setup.sh and continue the work in PLAN.md.")

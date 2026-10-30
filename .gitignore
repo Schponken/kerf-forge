@@ -9,3 +9,4 @@ evals/*/out/
 .claude/state/DONE
 VERIFY.json
 kerf.egg-info/
+.claude/state/YIELD
