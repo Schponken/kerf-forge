@@ -15,17 +15,7 @@ def entries(cat):
 
 
 def test_every_entry_is_sourced():
-    missing = []
-
-    def walk(node, path):
-        if isinstance(node, dict):
-            leafish = any(isinstance(v, (int, float)) for v in node.values())
-            if leafish and "source" not in node:
-                missing.append(path)
-            for k, v in node.items():
-                if not k.startswith("_") and isinstance(v, dict):
-                    walk(v, f"{path}.{k}" if path else k)
-    walk(CAT, "")
+    missing = catalog.unsourced()
     assert not missing, f"entries without a source: {missing[:10]}"
 
 

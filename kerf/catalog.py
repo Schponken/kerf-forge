@@ -55,7 +55,9 @@ def unsourced(node=None, path="") -> list[str]:
     node = load() if node is None else node
     out = []
     if isinstance(node, dict):
-        if path and any(isinstance(v, (int, float)) for v in node.values()) and "source" not in node:
+        if "source" in node:
+            return out  # an entry; nested dicts inside it (e.g. mount_pattern) are covered by its source
+        if path and any(isinstance(v, (int, float)) for v in node.values()):
             out.append(path)
         for k, v in node.items():
             if not k.startswith("_") and isinstance(v, dict):

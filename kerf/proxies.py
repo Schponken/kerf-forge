@@ -153,17 +153,10 @@ def motor(ctx, spec):
     shaft_d = catalog.num(e, "shaft_d", "shaft_diameter", default=5.0)
     shaft_h = catalog.num(e, "shaft_h", "shaft_length", default=12.0)
     s = _cyl(bell_d / 2, body_h) + _cyl(shaft_d / 2, shaft_h, z0=body_h)
-    pat = e.get("mount_pattern") or e.get("bolt_pattern")
-    if isinstance(pat, dict):
-        sx, sy = catalog.num(pat, "x", "spacing_x", "a"), catalog.num(pat, "y", "spacing_y", "b")
-    elif isinstance(pat, (list, tuple)):
-        sx, sy = pat[0], pat[1]
-    else:
-        sx = sy = catalog.num(e, "mount_spacing", "pattern_mm", "bolt_spacing")
-    screw = str(e.get("mount_screw", e.get("screw", "M3")))
+    pts, screw = iface.motor_holes(spec["catalog"])
     depth = catalog.num(e, "max_screw_depth", "thread_depth", default=4.0)
     sp = iface.screw_spec(screw)
-    for (x, y) in iface.rect(sx, sy):
+    for (x, y) in pts:
         s -= Pos(x, y, 0) * Cylinder(sp["tap"] / 2, depth, align=(Align.CENTER, Align.CENTER, Align.MIN))
         if _g(spec, "mount"):
             ctx.site(Site(_g(spec, "mount"), "female", screw, "threaded", Location((x, y, 0)) * Rot(180, 0, 0),

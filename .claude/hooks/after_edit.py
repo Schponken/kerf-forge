@@ -16,7 +16,9 @@ if rel == os.path.join("catalog", "hardware.json"):
     def walk(node, path=""):
         out = []
         if isinstance(node, dict):
-            if path and any(isinstance(v, (int, float)) for v in node.values()) and "source" not in node:
+            if "source" in node:
+                return out
+            if path and any(isinstance(v, (int, float)) for v in node.values()):
                 out.append(path)
             for k, v in node.items():
                 if not k.startswith("_") and isinstance(v, dict):

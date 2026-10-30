@@ -229,10 +229,16 @@ def bearing_seat(ctx, bearing: str, loc: Location, fit: str = "press", depth: fl
     return cut
 
 
-def motor_mount(ctx, motor: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", center_hole: float | None = None):
-    """Holes for a brushless motor's base pattern. loc: on the plate face OPPOSITE the motor (screw-head side), +Z
-    away from the motor, origin on the motor axis."""
+def motor_holes(motor: str):
+    """Mount-hole centres of a brushless motor, from the catalog. Hobby '16x16' / '19x19' / '9x9' patterns are four
+    holes on a bolt CIRCLE of that diameter (90 deg apart), not a square; use bolt_circle_d when the catalog has it."""
     e = catalog.get(motor)
+    screw = str(e.get("mount_screw", e.get("screw", "M3")))
+    if "bolt_circle_d" in e:
+        bcd = catalog.num(e, "bolt_circle_d")
+        start = catalog.num(e, "hole_start_deg", default=45.0)
+        n = int(catalog.num(e, "hole_count", default=4))
+        return circle(n, bcd, start), screw
     pat = e.get("mount_pattern") or e.get("bolt_pattern")
     if isinstance(pat, dict):
         sx, sy = _first(pat, "x", "spacing_x", "a"), _first(pat, "y", "spacing_y", "b")
@@ -240,8 +246,15 @@ def motor_mount(ctx, motor: str, loc: Location, group: str, plate_t: float, kind
         sx, sy = pat[0], pat[1]
     else:
         sx = sy = _first(e, "mount_spacing", "pattern_mm", "bolt_spacing")
-    screw = str(e.get("mount_screw", e.get("screw", "M3")))
-    cut = bolt_pattern(ctx, group, screw, rect(sx, sy), loc, kind, plate_t)
+    return rect(sx, sy), screw
+
+
+def motor_mount(ctx, motor: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", center_hole: float | None = None):
+    """Holes for a brushless motor's base pattern. loc: on the plate face OPPOSITE the motor (screw-head side), +Z
+    away from the motor, origin on the motor axis. The hole angle matches the motor proxy (same catalog data)."""
+    e = catalog.get(motor)
+    pts, screw = motor_holes(motor)
+    cut = bolt_pattern(ctx, group, screw, pts, loc, kind, plate_t)
     ch = center_hole if center_hole is not None else _first(e, "center_clearance_d", "shaft_clearance_d", default=8.0)
     cut += loc * _cyl(ch / 2, -plate_t - EXTRA, EXTRA)
     return cut
