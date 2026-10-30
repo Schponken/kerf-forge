@@ -203,7 +203,8 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
       The servo proxy's 'tabs' joint (tab underside) sits at loc * Location((0, 0, -tab_t)). Set the servo's
       `tab_screws_from: bottom` in project.yaml so its screws come from behind the tabs.
     lead_in: 45-degree chamfer (mm) around the window on its ENTRY face (z = 0 in both modes): guides the body in and
-      absorbs elephant's foot when that face prints on the bed. 0 disables it."""
+      absorbs elephant's foot when that face prints on the bed. 0 disables it. It is reduced (see servo_lead_in) so the
+      wall between the widened window and every tab screw hole keeps docs/ENGINEERING.md section 5's minimum."""
     d = servo_dims(servo)
     wx, wy = d["L"] + clearance, d["W"] + clearance
     z0 = -plate_t - EXTRA if not top_through else -EXTRA
@@ -212,6 +213,8 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
     for sx in (-1, 1):
         for sy in (-1, 1):
             pocket += Pos(sx * (wx / 2 - 0.35), sy * (wy / 2 - 0.35), 0) * _cyl(1.0, z0, z0 + plate_t + 2 * EXTRA)
+    mat = (getattr(ctx, "meta", None) or {}).get("spec", {}).get("material") if ctx is not None else None
+    lead_in = servo_lead_in(servo, kind, plate_t, lead_in, clearance, mat)
     if lead_in > 0:
         from build123d import Rectangle, extrude
         # frustum: (window + 2*lead_in) at the entry face, shrinking at 45 deg to the window lead_in deep into material
@@ -225,6 +228,38 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
         # female holes face the servo tabs (-Z of loc); flip the frame and mirror Y so the holes land in place
         cut += bolt_pattern(ctx, group, d["screw"], [(x, -y) for (x, y) in d["holes"]], loc * Rot(180, 0, 0), kind, plate_t)
     return cut
+
+
+MIN_WALL_AROUND_HOLE = 2.4  # docs/ENGINEERING.md section 5: around heat-set inserts and screw bosses
+
+
+def servo_lead_in(servo: str, kind: str, plate_t: float, lead_in: float, clearance: float = 0.6,
+                  material: str | None = None) -> float:
+    """Largest lead-in chamfer <= lead_in that keeps MIN_WALL_AROUND_HOLE (or the catalog's heat-set min wall, if
+    larger) between the widened window and every tab screw hole, measured with that hole's real cutter size.
+    Returns 0 when less than 0.2 mm would remain (a chamfer that small does nothing useful)."""
+    if lead_in <= 0:
+        return 0.0
+    d = servo_dims(servo)
+    a, b = (d["L"] + clearance) / 2, (d["W"] + clearance) / 2
+    bb = hole(d["screw"], kind, plate_t, material=material)[0].bounding_box()
+    r = max(bb.size.X, bb.size.Y) / 2
+    need = MIN_WALL_AROUND_HOLE
+    if kind == "heatset":
+        need = max(need, float(screw_spec(d["screw"], material).get("insert_wall") or 0.0))
+
+    def wall(c):
+        return min(math.hypot(max(abs(x) - a - c, 0.0), max(abs(y) - b - c, 0.0)) - r for x, y in d["holes"])
+
+    if wall(lead_in) >= need:
+        return lead_in
+    lo, hi = 0.0, lead_in
+    if wall(0.0) < need:
+        return 0.0
+    for _ in range(40):
+        m = (lo + hi) / 2
+        lo, hi = (m, hi) if wall(m) >= need else (lo, m)
+    return round(lo, 3) if lo >= 0.2 else 0.0
 
 
 def horn_dims(path: str) -> dict:

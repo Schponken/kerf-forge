@@ -254,11 +254,14 @@ def test_part_notes_reach_the_report(tmp_path):
 
 @pytest.mark.parametrize("top_through", [False, True])
 def test_servo_window_lead_in(top_through):
-    """The window is lead_in wider per side at its entry face (z = 0), 45 degrees, and nominal past the chamfer."""
+    """The window is c wider per side at its entry face (z = 0), tapers at 45 degrees, is nominal past the chamfer,
+    and c is the largest value <= 0.5 that leaves the minimum wall to every tab screw hole on the entry face."""
     from build123d import Box as _Box, Pos
     from kerf.ctx import Ctx
     d = iface.servo_dims("servos.MG996R")
     wx, wy = d["L"] + 0.6, d["W"] + 0.6
+    c0 = iface.servo_lead_in("servos.MG996R", "tap", 8, 0.5)
+    assert 0.2 <= c0 <= 0.5
     cut = iface.servo_mount(Ctx("t", {}), "servos.MG996R", Location((0, 0, 0)), group="s", plate_t=8, kind="tap",
                             top_through=top_through, lead_in=0.5)
     sgn = 1 if top_through else -1   # material side of the mount face
@@ -271,12 +274,19 @@ def test_servo_window_lead_in(top_through):
         wyz = max(b.bounding_box().size.Y for b in sy if abs(b.bounding_box().center().Y) < 1)
         return wxz, wyz
 
-    for z in (0.01, 0.25, 0.45, 2.0, 7.5):
-        c = max(0.0, 0.5 - (z - 0.001))   # the slab's face-side edge sets the measured width
+    for z in (0.01, c0 / 2, c0 - 0.05, 2.0, 7.5):
+        c = max(0.0, c0 - (z - 0.001))   # the slab's face-side edge sets the measured width
         x, y = widths(sgn * z)
         assert x == pytest.approx(wx + 2 * c, abs=0.01), (z, x)
         assert y == pytest.approx(wy + 2 * c, abs=0.01), (z, y)
-    # lead_in=0 gives the plain window
+    # the wall between the window and each screw hole, measured on the entry face itself, meets the rule
+    face = (cut & (Pos(0, 0, sgn * 0.001) * _Box(200, 200, 0.002))).solids()
+    window = max(face, key=lambda s_: s_.volume)
+    holes = [s_ for s_ in face if s_ is not window and abs(s_.bounding_box().center().X) > wx / 2]
+    assert len(holes) == len(d["holes"])
+    assert min(window.distance_to(h) for h in holes) >= iface.MIN_WALL_AROUND_HOLE - 0.01
+    # lead_in=0 gives the plain window; a hole too big for any chamfer drops it
     plain = iface.servo_mount(Ctx("t", {}), "servos.MG996R", Location((0, 0, 0)), group="s", plate_t=8, kind="tap",
                               top_through=top_through, lead_in=0)
     assert plain.volume < cut.volume
+    assert iface.servo_lead_in("servos.MG996R", "clearance", 8, 0.5) == 0.0
