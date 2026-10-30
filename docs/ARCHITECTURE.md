@@ -11,11 +11,12 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | Module | Job |
 |---|---|
 | `kerf/ctx.py` | What a part's `build(ctx)` gets: `ctx.p` params, `ctx.cat` catalog, joint + fastener-site declarations, `ctx.finish()` |
-| `kerf/iface.py` | Mating-feature generators (bolt patterns, inserts, nut traps, bearing seats, servo/horn/motor/stack mounts). Each returns a cutter solid and registers fastener sites |
+| `kerf/iface.py` | Mating-feature generators (bolt patterns, inserts, nut traps, bearing seats, servo/horn/motor/stack mounts, `pin_hole` for pinned hinges). Each returns a cutter solid and registers fastener (or pin) sites |
 | `kerf/proxies.py` | Purchased parts and keep-outs built from the catalog, with their joints and fastener sites |
 | `kerf/catalog.py` | Loads `catalog/hardware.json` (every entry has a `source`) |
 | `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item |
 | `kerf/assembly.py` | Joint tree, solve poses, interference, motion sweeps, coupled poses, fastener alignment + screw lengths |
+| `kerf/pins.py` | Pinned hinges: every `pin_hole` of a group coaxial (0.05 mm), pin held (press/heatset/tap) on one side of each moving joint and free on the other, the joint turning about the pin axis, and a stocked pin/screw length that reaches every hole |
 | `kerf/checks.py` | Per-part print checks in print orientation (solids, validity, bed fit, watertight, overhang, wall thickness, mass) |
 | `kerf/requirements.py` | Engineering checks named in project.yaml (`@check("name")` registry), incl. `fea_static` |
 | `kerf/fea.py` | Linear static FEA of one part (gmsh quadratic tets + scikit-fem); validated in tests/test_fea.py |
@@ -103,7 +104,7 @@ standard screw that reaches the minimum engagement without bottoming out. Unpair
 
 ## report.json (out/report.json, written by check/build)
 `ok`, `problems[]`, `warnings[]`, `fingerprint`, `parts{id: print checks}`, `purchased{}`,
-`assembly{interference[], fasteners[], sweeps[], joints[], positions{}, joint_origins{}}`, `requirements[]`,
+`assembly{interference[], fasteners[], pins[], sweeps[], joints[], positions{}, joint_origins{}}`, `requirements[]`,
 `files{parts, plates}`, `bom[]`. Evals read this file; reviews are tied to `fingerprint`.
 
 ## Definition of done (`kerf verify`)

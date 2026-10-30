@@ -16,7 +16,7 @@ class CatalogError(KeyError):
 
 @lru_cache(maxsize=1)
 def load() -> dict:
-    return json.loads(CATALOG.read_text())
+    return json.loads(CATALOG.read_text(encoding="utf-8"))
 
 
 def get(path: str) -> dict:

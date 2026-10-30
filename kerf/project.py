@@ -95,7 +95,7 @@ _MATH.update(min=min, max=max, abs=abs, round=round)
 
 def load(name_or_path: str, overrides: dict | None = None) -> Project:
     d = resolve_dir(name_or_path)
-    data = yaml.safe_load((d / "project.yaml").read_text()) or {}
+    data = yaml.safe_load((d / "project.yaml").read_text(encoding="utf-8")) or {}
     for key in ("name", "parts", "assembly"):
         if key not in data:
             raise ProjectError(f"{d.name}/project.yaml is missing '{key}'")

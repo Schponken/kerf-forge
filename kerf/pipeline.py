@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import assembly as A, checks, export, project as P, requirements
+from . import assembly as A, checks, export, pins, project as P, requirements
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -57,6 +57,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             fj, fprob = A.fasteners(asm)
             rep["assembly"]["fasteners"] = fj
             rep["problems"] += fprob
+            pinj, pprob, pwarn = pins.check(asm)
+            rep["assembly"]["pins"] = pinj
+            rep["problems"] += pprob
+            rep["warnings"] += pwarn
             if sweeps:
                 sw = A.sweeps(asm, samples=sweep_samples)
                 rep["assembly"]["sweeps"] = sw
@@ -89,7 +93,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 export.glb(proj, out / "assembly_keepouts.glb", include_keepouts=True)
                 rep["files"] = {"parts": export.part_files(proj, out / "parts"),
                                 "plates": export.plates(proj, out / "plates", printer)}
-                rep["bom"] = export.bom(proj, fj, rep["parts"], out)
+                rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj)
             if do_render:
                 out = proj.out("renders")
                 out.mkdir(exist_ok=True)
@@ -132,6 +136,8 @@ def summary(rep: dict) -> str:
         L.append(f"  interference: {len(a['interference'])} overlapping pairs")
     if "fasteners" in a:
         L.append(f"  fasteners: {len(a['fasteners'])} screws aligned")
+    if a.get("pins"):
+        L.append(f"  pins: {len(a['pins'])} pinned joints coaxial")
     for s in a.get("sweeps", []):
         L.append(f"  sweep {s['joint']:14s} {'clear' if s['clear'] else 'COLLIDES'} over {s.get('range', '')} ({s['samples']} samples)")
     for r in rep.get("requirements", []):

@@ -241,9 +241,22 @@
   },
   "pin_3mm": {
    "d": 3.0,
-   "source": "https://eshop.wuerth.ee/Cylindrical-pin-hardened-ISO-8734-steel-plain-type-A-hardened-tolerance-class-m6-PIN-CYL-ISO8734-A-M6-3X24/5094503024.sku/en/US/EUR",
+   "source": "https://eshop.wuerth.ee/Cylindrical-pin-hardened-ISO-8734-steel-plain-type-A-hardened-tolerance-class-m6-PIN-CYL-ISO8734-A-M6-3X24/5094503024.sku/en/US/EUR ; https://us.store.bambulab.com/en/products/d3-stainless-steel-dowel-pin",
    "confidence": "standard",
-   "note": "ISO 8734 / DIN 6325 hardened dowel, tolerance m6. ISO 286 m6 for d<=3 mm = +0.002/+0.008 -> 3.002-3.008 (oversize). Printed press-fit hole ~2.9-3.0, slip hole ~3.1-3.2 (typical, test per printer)."
+   "note": "ISO 8734 / DIN 6325 hardened dowel, tolerance m6. ISO 286 m6 for d<=3 mm = +0.002/+0.008 -> 3.002-3.008 (oversize). Printed press-fit hole ~2.9-3.0, slip hole ~3.1-3.2 (typical, test per printer). lengths = Bambu Lab D3 stainless dowel pin range (6-50 mm); printed hole sizes come from fdm_fits.pin.",
+   "lengths": [
+    6,
+    8,
+    10,
+    12,
+    16,
+    20,
+    25,
+    30,
+    35,
+    40,
+    50
+   ]
   }
  },
  "materials": {
@@ -1044,6 +1057,15 @@
    "source_weight": "https://raspberrypi.dk/en/product/raspberry-pi-zero-2-w/?clang=en",
    "confidence": "datasheet",
    "note": "Official drawing: 65 x 30, holes 3.5 mm in from every edge (58 x 23 pattern). Connector positions from the left edge: mini-HDMI centre 12.4, micro-USB data 41.4, micro-USB power 54 (all on the -y long edge); GPIO header along +y edge. hole_d 2.75 is APPROXIMATE (not on this drawing; standard M2.5 clearance for the Zero family). corner_radius 3.0 assumed same as other Pis. thickness 1.0 and component_height 3.8 are APPROXIMATE (vendor overall height 65x30x5 incl. PCB, botland.store); measure before tight fits. Weight 10 g (raspberrypi.dk; botland lists 15 g likely incl. packaging). Unpopulated GPIO header; add ~8.5 mm if a header is soldered."
+  }
+ },
+ "fdm_fits": {
+  "pin": {
+   "press_allowance_d": 0.05,
+   "free_allowance_d": 0.35,
+   "source": "https://wiki.cci.arts.ac.uk/books/digital-fabrication-lab/page/design-the-clearance-and-tolerance ; https://www.sovol3d.com/blogs/news/fdm-3d-printing-tolerances-clearances-how-to-design-parts-that-fit",
+   "confidence": "typical",
+   "note": "Hole diameter = pin d + allowance, for a tuned Bambu printer. press: CCI (Bambu H2D) press/interference 0-0.05 mm per side -> +0.05 on diameter; a steel ISO 8734 m6 pin is +0.002..+0.008 oversize so this grips; CCI warns 0 can still be too tight. free (rotating hinge knuckle): CCI hinges 0.15-0.2 per side on Bambu, Sovol PLA slip 0.15-0.25 per side -> +0.35 on diameter. Print a test coupon on the real printer/material before the final print; looser printers (Ultimaker class) need ~+0.4 press / +0.7 free."
   }
  }
 }

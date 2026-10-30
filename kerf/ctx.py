@@ -40,6 +40,18 @@ class Site:
 
 
 @dataclass
+class PinSite:
+    """One hole of a pin (hinge pin, dowel, or screw used as a pivot). Local frame: origin on the hole's entry surface,
+    +Z along the pin axis pointing out of the material; the hole runs `depth` mm into -Z."""
+    group: str
+    pin: str           # catalog path ("motion.pin_3mm") or screw size ("M3") for a screw used as a pivot
+    fit: str           # free (pin turns in it) | press (dowel held by interference) | heatset | tap (screw pivot thread)
+    loc: Location
+    depth: float
+    d: float           # pin / screw nominal diameter (mm)
+
+
+@dataclass
 class JointSpec:
     kind: str
     label: str
@@ -62,6 +74,7 @@ class Ctx:
         self.sites: list[Site] = []
         self.joints: list[JointSpec] = []
         self.notes: list[str] = []
+        self.pins: list[PinSite] = []
 
     # ---- joints (declare in the part's own frame) ----
     def rigid(self, label: str, loc: Location):
@@ -75,6 +88,9 @@ class Ctx:
 
     def site(self, s: Site):
         self.sites.append(s)
+
+    def pin_site(self, s: PinSite):
+        self.pins.append(s)
 
     def finish(self, shape, color=None):
         """Attach label, joints and sites to the final solid and return it."""
@@ -97,4 +113,5 @@ class Ctx:
         shape.kerf_sites = list(self.sites)
         shape.kerf_joints = list(self.joints)
         shape.kerf_notes = list(self.notes)
+        shape.kerf_pins = list(self.pins)
         return shape

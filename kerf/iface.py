@@ -14,7 +14,7 @@ import math
 from build123d import Align, Box, Cylinder, Location, Part, Pos, RegularPolygon, Rot, extrude, Plane
 
 from . import catalog
-from .ctx import Site
+from .ctx import PinSite, Site
 
 EXTRA = 1.0  # cutters overshoot the surface by this much so faces never coincide
 
@@ -325,3 +325,48 @@ def stack_mount(ctx, stack: str, loc: Location, group: str, depth: float, kind: 
     s = _first(e, "spacing", "hole_spacing", "pattern")
     screw = str(e.get("screw", "M3"))
     return bolt_pattern(ctx, group, screw, square(s), loc, kind, depth)
+
+
+# ---------------------------------------------------------------- pins (printed hinges, dowels, screw pivots)
+PIN_FITS = ("free", "press", "heatset", "tap")
+
+
+def pin_dims(pin: str) -> dict:
+    """Pin geometry: a catalog dowel ("motion.pin_3mm") or a screw size used as a pivot ("M3")."""
+    if pin in catalog.load()["screws"]:
+        sp = screw_spec(pin)
+        from .assembly import STANDARD_SCREW_LENGTHS
+        return {"d": sp["d"], "screw": True, "lengths": list(STANDARD_SCREW_LENGTHS)}
+    e = catalog.get(pin)
+    return {"d": _first(e, "d", "diameter", "od"), "screw": False, "lengths": [float(x) for x in e.get("lengths", [])]}
+
+
+def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = "free", through: bool = True,
+             teardrop: float | None = None):
+    """Cutter for one knuckle/boss of a pinned hinge. Every part the pin passes through calls this with the same group.
+
+    loc: on the face the hole enters from, origin on the pin axis, +Z along the axis OUT of the material; the hole runs
+      `depth` mm into -Z (the knuckle or boss length along the pin). through=True overshoots the far face as well.
+    fit: free  - the pin turns in this hole (moving knuckle), d + fdm_fits.pin.free_allowance_d
+         press - a steel dowel is pressed in and held here, d + fdm_fits.pin.press_allowance_d
+         heatset / tap - a screw used as the pivot threads in here (pin = "M3" etc.; blind, from iface.hole)
+    teardrop: for horizontal holes, the direction (deg in loc's XY plane) that is UP on the printer.
+    The assembled check (kerf/pins.py) proves all holes of a group are coaxial, that the pin is held on one side and
+    free on the other side of every moving joint, that the joint turns about the pin axis, and picks the pin length."""
+    if fit not in PIN_FITS:
+        raise ValueError(f"unknown pin fit '{fit}' (use {PIN_FITS})")
+    pd = pin_dims(pin)
+    if fit in ("heatset", "tap"):
+        if not pd["screw"]:
+            raise ValueError(f"fit '{fit}' needs a screw pivot (pin='M3'), not dowel '{pin}'")
+        c, _, engage, _ = hole(pin, fit, depth, teardrop=teardrop)
+        ctx.pin_site(PinSite(group, pin, fit, loc, engage, pd["d"]))  # deepest the tip may go
+        return loc * c
+    if fit == "press" and pd["screw"]:
+        raise ValueError("a screw cannot be pressed in; use fit='heatset' or 'tap' for a screw pivot")
+    f = catalog.get("fdm_fits.pin")
+    r = (pd["d"] + _first(f, f"{fit}_allowance_d")) / 2
+    z1 = -depth - (EXTRA if through else 0.0)
+    c = _teardrop(r, z1, EXTRA, teardrop) if teardrop is not None else _cyl(r, z1, EXTRA)
+    ctx.pin_site(PinSite(group, pin, fit, loc, depth, pd["d"]))
+    return loc * c

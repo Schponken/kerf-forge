@@ -98,7 +98,7 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
     return out
 
 
-def bom(proj, fastener_joints, part_reports, outdir):
+def bom(proj, fastener_joints, part_reports, outdir, pins=None):
     rows = []
     for iid, it in proj.printed.items():
         r = part_reports.get(iid, {})
@@ -114,6 +114,15 @@ def bom(proj, fastener_joints, part_reports, outdir):
     recv = Counter((j["screw"], j["receiver"]) for j in fastener_joints if j["receiver"] in ("heatset", "nut_trap"))
     for (size, kind), n in sorted(recv.items()):
         rows.append({"type": "fastener", "item": f"{size} {'heat-set insert' if kind == 'heatset' else 'hex nut'}", "qty": n, "spec": "", "note": ""})
+    for pj in pins or []:
+        if pj["screw_pivot"]:
+            rows.append({"type": "fastener", "item": f"{pj['pin']} x {pj['length_mm']:g} mm socket head screw (pivot)", "qty": 1,
+                         "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; medium threadlocker"})
+            if "heatset" in pj["fixed_fit"]:
+                rows.append({"type": "fastener", "item": f"{pj['pin']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
+        else:
+            rows.append({"type": "pin", "item": f"{pj['d_mm']:g} x {pj['length_mm']:g} mm steel dowel pin", "qty": 1,
+                         "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})
     for x in proj.data.get("bom_extra") or []:
         rows.append({"type": x.get("type", "extra"), "item": x["item"], "qty": x.get("qty", 1), "spec": x.get("spec", ""),
                      "note": x.get("note", "")})
@@ -123,5 +132,5 @@ def bom(proj, fastener_joints, part_reports, outdir):
         w.writerows(rows)
     md = ["| Type | Item | Qty | Spec | Note |", "|---|---|---|---|---|"]
     md += [f"| {r['type']} | {r['item']} | {r['qty']} | {r['spec']} | {r['note']} |" for r in rows]
-    (outdir / "bom.md").write_text("\n".join(md) + "\n")
+    (outdir / "bom.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     return rows

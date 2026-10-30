@@ -92,7 +92,7 @@ def review_status(name) -> dict:
     fp = proj.fingerprint()
     if not f.exists():
         return {"ok": False, "why": f"no review.json (fingerprint {fp})", "fingerprint": fp}
-    r = json.loads(f.read_text())
+    r = json.loads(f.read_text(encoding="utf-8"))
     if r.get("fingerprint") != fp:
         return {"ok": False, "why": f"review is for fingerprint {r.get('fingerprint')}, geometry is now {fp}; review again", "fingerprint": fp}
     if r.get("verdict") != "PASS":
@@ -125,12 +125,12 @@ def verify(fast=False) -> int:
     for e in ev:
         if not e["ok"]:
             fails.append(f"eval {e['id']}: {e['failures'][:3]}")
-    plan = (ROOT / "PLAN.md").read_text()
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
     open_items = [l.strip() for l in plan.splitlines() if l.strip().startswith("- [ ]")]
     if open_items:
         fails.append(f"PLAN.md has {len(open_items)} unchecked items, first: {open_items[0]}")
     out = {"ok": not fails, "fails": fails, "results": results, "seconds": round(time.time() - t0, 1)}
-    (ROOT / "VERIFY.json").write_text(json.dumps(out, indent=1, default=str))
+    (ROOT / "VERIFY.json").write_text(json.dumps(out, indent=1, default=str), encoding="utf-8")
     for f in fails:
         _p(f"FAIL {f}")
     _p(("VERIFY PASSED" if not fails else f"VERIFY FAILED ({len(fails)})") + f" in {out['seconds']} s")
@@ -138,7 +138,7 @@ def verify(fast=False) -> int:
 
 
 def status() -> int:
-    plan = (ROOT / "PLAN.md").read_text().splitlines()
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8").splitlines()
     done = sum(l.strip().startswith("- [x]") for l in plan)
     todo = [l.strip()[6:] for l in plan if l.strip().startswith("- [ ]")]
     _p(f"PLAN: {done} done, {len(todo)} open" + (f"; next: {todo[0][:110]}" if todo else ""))
@@ -146,7 +146,7 @@ def status() -> int:
     ev = {e["id"]: e for e in run_evals.run_all()}
     for name in projects():
         rp = ROOT / "projects" / name / "out" / "report.json"
-        rep = json.loads(rp.read_text()) if rp.exists() else None
+        rep = json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else None
         rs = review_status(name)
         state = "no build yet" if rep is None else ("PASS" if rep["ok"] else f"FAIL ({len(rep['problems'])} problems)")
         fresh = "" if rep is None or rep.get("fingerprint") == rs["fingerprint"] else " (stale: geometry changed since)"

@@ -40,12 +40,12 @@ def session_id() -> str:
     p.parent.mkdir(parents=True, exist_ok=True)
     if not p.exists():
         p.write_text(os.environ.get("KERF_SESSION_ID") or uuid.uuid4().hex[:10])
-    return p.read_text().strip()
+    return p.read_text(encoding="utf-8").strip()
 
 
 def open_items() -> list[str]:
     """Unchecked PLAN.md items, in order. A parent item whose sub-items are listed counts through its sub-items."""
-    lines = (ROOT / "PLAN.md").read_text().splitlines()
+    lines = (ROOT / "PLAN.md").read_text(encoding="utf-8").splitlines()
     items = []
     for i, l in enumerate(lines):
         m = re.match(r"^(\s*)- \[ \] (.+)$", l)
@@ -67,7 +67,7 @@ def load() -> dict[str, dict]:
     out = {}
     for f in sorted(DIR.glob("*.json")):
         try:
-            out[f.stem] = json.loads(f.read_text())
+            out[f.stem] = json.loads(f.read_text(encoding="utf-8"))
         except Exception:  # noqa: BLE001 - a broken claim file is treated as no claim
             pass
     return out
@@ -150,7 +150,7 @@ def cmd_beat():
     now = time.time()
     for k in mine():
         p = DIR / f"{k}.json"
-        c = json.loads(p.read_text()); c["heartbeat"] = now
+        c = json.loads(p.read_text(encoding="utf-8")); c["heartbeat"] = now
         p.write_text(json.dumps(c, indent=1) + "\n")
     return 0
 

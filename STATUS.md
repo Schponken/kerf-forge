@@ -52,3 +52,18 @@ entry before each push (date, what changed, verify state, next step, open proble
   length that ends inside the insert; use nut traps / longer standoffs for tall stacks (relevant for E2 fpv_5in).
 - verify --fast: pytest 169 passed; remaining failures are the not-yet-built eval projects + unchecked PLAN items.
 - Next: next unclaimed PLAN item.
+
+## 2026-10-30 — session 1c-pins (Pin / shaft joints)
+- Done: printed-hinge pins. `iface.pin_hole(ctx, pin, loc, group, depth, fit)` cuts each knuckle (fits `free` / `press`
+  for a catalog dowel, `heatset` / `tap` for a screw used as a pivot, optional teardrop). New `kerf/pins.py` check runs
+  in every `kerf check`: all holes of a group coaxial within 0.05 mm / 0.5 deg, the pin held in some part, every moving
+  joint that splits the group turns about the pin axis (or slides along it) with the pin fixed on one side only, and a
+  stocked length that reaches every hole by min(hole, 1.5 d). Screw pivots get a threadlocker warning. Pins and
+  pivot screws/inserts go in the BOM. 8 tests in tests/test_pins.py (93+8 pass).
+- Catalog: new `fdm_fits.pin` (press +0.05, free +0.35 on diameter; CCI Bambu tolerance guide + Sovol, typical) and
+  `motion.pin_3mm.lengths` (Bambu D3 dowel range). The catalog fingerprint changed, so servo_link's review is stale:
+  it gets its fresh review in the open `servo_mount` lead-in item (no value servo_link uses changed).
+- Fixed: `kerf verify` crashed under the Stop hook's C locale (UTF-8 project.yaml read as ASCII); text reads/writes
+  in kerf/ and tools/claims.py now say encoding="utf-8".
+- Verify (fast): fails only on the expected open items (stale servo_link review, eval projects not built, PLAN open).
+- Next: next free PLAN item.

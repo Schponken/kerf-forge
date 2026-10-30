@@ -39,6 +39,9 @@ interfaces line up before detailed geometry.
 Launch one `part-designer` subagent per independent printed part in a single message, each with its contract:
 envelope, interfaces (exact iface call + group + location), loads, print orientation. Parts that depend on each
 other's geometry go to the same subagent.
+Printed hinges: `iface.pin_hole(ctx, "motion.pin_3mm", loc, group, depth, fit=...)` on every knuckle — `press`
+(or `heatset`/`tap` for a screw pivot, pin="M3") on the side that holds the pin, `free` on the side that turns. The
+revolute joint axis must be the pin axis, and the knuckle span should equal a stocked pin length (catalog `lengths`).
 
 ## 4. Integrate
 `kerf check <name>` until PASS. Fix every problem at the part that owns it. Never widen an allowed overlap or a
