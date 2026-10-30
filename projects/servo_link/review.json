@@ -1,39 +1,27 @@
 {
   "verdict": "PASS",
-  "fingerprint": "a9b581f37fd9cf80",
+  "fingerprint": "d38a4988bf376d66",
   "reviewer": "design-reviewer",
   "date": "2026-10-30",
-  "summary": "The earlier blocker is fixed. The servo now goes into the wall from behind, top-first. I rebuilt the assembly and probed it: the only part of the servo ahead of the back face is the 40.7 x 20 mm case top, which runs from y -23 to -15.5 and fits the 41.3 x 20.6 window. The tabs bear on the back face, and the cable boss (now in the catalog and the proxy) sits 22-26 mm behind the wall. All 12 M3 fasteners line up, the +/-90 deg sweep is clear, both FEA cases pass, and so do the torque and mass checks. I confirmed every earlier minor fix in the code, the report and the renders. What remains is minor: the two cable-end tab screws are awkward to reach with a straight hex key because they sit 1 mm from the cable boss, plus a few small engine and documentation gaps.",
+  "summary": "The new lead-in chamfer is on the correct face. I sliced the built bracket: the window is 42.28 x 21.79 mm at the back face (y = 0), narrows at 45 degrees to the nominal 41.3 x 20.6 mm by y = 0.5, and stays nominal through to the front face. The back face is both the entry face for the top-first servo and the face that sits on the bed (print_rot [90,0,0] puts the 7198 mm^2 back face on the bed), so the chamfer guides the case in and absorbs elephant's foot where it occurs. The rebuild is clean: no interference, all 12 M3 fasteners aligned, the +/-90 deg sweep is clear, and arm_torque, both FEA cases and rig_mass pass. The renders show nothing wrong. Four of the five earlier findings are resolved; what remains is minor (engine access checks still missing, and the chamfer thins the pilot-hole wall at the bed face).",
   "findings": [
     {
       "severity": "minor",
-      "part": "bracket",
-      "issue": "Hex-key access to the two tab screws on the cable end (x = +24.75, z = 78 and 88). These screws are now driven from behind, the side where the cable boss sits. The boss covers z 79-87, between the two holes and only about 1 mm from each screw axis, 16 mm behind the screw heads. A straight 2.5 mm key on the screw axis (radius 1.5) grazes the boss: I measured 3.1 mm^3 of overlap per key path against the servo proxy. The two screws at the far end are clear. A standard L-key's 18 mm short leg puts its bend inside the boss's depth band, so the key can only turn through the lower half-circle. ENGINEERING section 7 says every screw must be reachable by a hex key, and the boss size is scaled from a low-resolution drawing (+/-1 mm). The screws can be reached, but awkwardly, and DESIGN.md does not mention it.",
-      "fix": "Add to DESIGN.md assembly step 3: drive the two cable-end tab screws with a 2.5 mm ball-end hex driver (or a straight driver tilted a few degrees), before routing the lead. Engine: add a tool-access check that sweeps a hex-key cylinder, about 1.5 mm radius and 60 mm long, back along each male fastener axis and flags hits on other items. Add a test for it."
-    },
-    {
-      "severity": "minor",
-      "part": "bracket",
-      "issue": "The servo window has only 0.3 mm clearance per side, and the servo enters it from the back face, which is the first-layer face on the printer (print_rot [90,0,0]). First-layer squish (elephant foot) shrinks exactly that edge. The window also has no lead-in, so a slightly oversize servo case or a seam bulge will catch on the sharp bed-side edge.",
-      "fix": "Cut a 0.5 mm x 45 deg chamfer around the window's back-face edge (inside the servo_mount cutter when top_through=True, so every project gets it). That gives a lead-in and absorbs elephant foot. Keep slicer elephant-foot compensation on."
-    },
-    {
-      "severity": "minor",
       "part": "engine",
-      "issue": "Three engine changes from this round have no test in tests/, which CLAUDE.md requires: (1) screw_spec(material=...) choosing self_tap_pilot_petg (I confirmed the bracket pilot is 2.60 mm and 7.2 mm deep with a 0.8 mm floor, but no test pins this); (2) servo_mount(top_through=True) with its mirrored, flipped bolt pattern, which only this project exercises; (3) pipeline copying kerf_notes into report warnings. The engine also still cannot see the original blocker class. The boss is now in the proxy, but interference is only checked in the final pose, so a bottom-first mount through a tight window would still pass kerf check on the next project.",
-      "fix": "Add tests: screw_spec('M3', 'PETG')['tap'] == 2.6 and the PLA default stays 2.72; a top_through servo plate plus MG996R proxy with 4 aligned fasteners and no interference; a part that appends a note, with the note appearing in report warnings. Also add an insertion-path check for servo_mount: sweep the servo proxy along the window axis from its insertion side to its seat and report hits. Test it with a bottom-first MG996R mount, which must fail."
+      "issue": "Still open from the last review (engine half): nothing in the engine checks assembly access. I re-probed the current assembly. A straight 3 mm hex key on the two cable-end tab screw axes (x = +24.75, z = 78 and 88) still overlaps the servo's cable boss by 3.1 mm^3 each; the far-end screws are clear. DESIGN.md step 3 now says to use a ball-end driver there, so this project is covered. But kerf check would not catch the same problem, or a bottom-first servo that cannot pass its window, on the next project. The pilot-material, top_through and part-notes tests from the earlier finding are now in tests/test_iface.py (resolved).",
+      "fix": "Finish the open PLAN item 'Assembly-access checks': (a) sweep a hex-key cylinder along each male fastener axis from the head side and report screws that need a ball-end driver; (b) sweep parts that declare an `insert:` path into their seat and report collisions. Test both: this rig's cable-end screws must be flagged as ball-end, and a bottom-first MG996R through a tight window must fail."
     },
     {
       "severity": "minor",
       "part": "bracket",
-      "issue": "Carried over: the tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog, and so is the cable-boss geometry, which is scaled from the drawing. The tool-access margin in the first finding depends on both. DESIGN.md's 'check before printing' note covers the tab holes only.",
-      "fix": "Extend the DESIGN.md caliper note to cover the boss position and size as well. When a servo is in hand, record the measured values in catalog/hardware.json, noting the measurement as the source."
+      "issue": "New: the lead-in chamfer thins the wall between the window and the tab pilot holes at the back face. The pilot holes are 2.60 mm at x = +/-24.75, so their inner edges are at |x| = 23.45. Deeper than 0.5 mm the window edge is at 20.65 and leaves a 2.8 mm wall; at the back face the chamfer moves the window edge to 21.1, leaving 2.35 mm. That is just under the 2.4 mm boss-wall guideline (ENGINEERING section 5), over only the first ~0.5 mm (2-3 layers) of the bed face, which is exactly where the thread-forming screw starts and pushes plastic outward. The risk is low: the tab clamps that zone, and the 7.2 mm of thread behind it is unchanged. But the engine applied the chamfer without checking the wall it leaves.",
+      "fix": "In iface.servo_mount, limit lead_in to keep at least 2.4 mm between the chamfered window edge and the female hole edges (here at most 0.45 mm per side on the ends), or leave the chamfer off the two short ends next to the tab holes and keep it on the long sides. Add a test that checks the remaining wall."
     },
     {
       "severity": "minor",
-      "part": "arm",
-      "issue": "The comment in arm.py still says 'an M3 screw carries the 50 g weight', but DESIGN.md and the BOM now hang a calibration weight or sinker on a wire loop or S-hook. The 3.5 mm tip hole works for both.",
-      "fix": "Update the comment to say the test mass hangs on a wire loop or S-hook through the tip hole (see DESIGN.md)."
+      "part": "bracket",
+      "issue": "Still open, carried over: the catalog still marks the tab-hole pattern (49.5 x 10 mm, 4.2 mm holes) and the cable-boss geometry UNVERIFIED for this servo. The ball-end driver note and the boss clearance depend on them. DESIGN.md's caliper note now covers both the tab holes and the boss (the documentation half of the earlier finding is resolved).",
+      "fix": "When a real MG996R is in hand, measure the tab-hole pattern and the boss, record them in catalog/hardware.json with the measurement as the source, and rebuild."
     }
   ]
 }
