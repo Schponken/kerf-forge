@@ -252,3 +252,7 @@ entry before each push (date, what changed, verify state, next step, open proble
   hits the servo body/boss). Real, and worth a build note in that project.
 - tests/test_access.py: 7 tests (catalog key sizes, reach limit 52.4 mm, ball-end geometry (78.4-28.49)/cos25 > 52.4,
   covered screws fail, pocket insert clear, lip blocks for 6..16 mm before seat, sideways insert hits the wall).
+- Fixed tools/claims.py: running `claims.py next` while a `git pull --rebase` was stuck on a conflict made every
+  claim's push fail and the loop went on to commit a claim for EVERY open item locally (caught before push; those
+  local commits were dropped). Claims now refuse to run mid-rebase/merge/conflict and stop at the first failed push.
+  Test: tests/test_claims.py::test_refuses_mid_rebase.

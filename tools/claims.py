@@ -77,7 +77,21 @@ def fresh(c: dict) -> bool:
     return time.time() - float(c.get("heartbeat", 0)) < STALE_MIN * 60
 
 
+class GitBusy(SystemExit):
+    pass
+
+
+def ensure_clean_git():
+    """Claims commit and push; doing that mid-rebase/merge would stack claim commits on a broken tree."""
+    gd = Path(git("rev-parse", "--git-dir").stdout.strip() or ".git")
+    gd = gd if gd.is_absolute() else ROOT / gd
+    busy = [n for n in ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD") if (gd / n).exists()]
+    if busy or git("diff", "--name-only", "--diff-filter=U").stdout.strip():
+        raise GitBusy(f"claims: git is mid-{busy[0] if busy else 'conflict'}; finish or abort it first (nothing claimed)")
+
+
 def sync():
+    ensure_clean_git()
     git("pull", "-q", "--rebase", "--autostash")
 
 
@@ -89,7 +103,9 @@ def push(msg: str) -> bool:
         if git("push", "-q").returncode == 0:
             return True
         git("pull", "-q", "--rebase", "--autostash")
-    return False
+        ensure_clean_git()
+    # never leave a local claim commit behind: the next call would otherwise build on an unpushed claim
+    raise GitBusy(f"claims: could not push '{msg}' after 4 tries; check `git status` (nothing else claimed)")
 
 
 def _claim(item: str) -> bool:

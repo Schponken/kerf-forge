@@ -43,3 +43,22 @@ def test_two_sessions(tmp_path):
     assert claims(a, "release").returncode == 0
     assert "Item one" in [l[7:] for l in claims(b, "list").stdout.splitlines() if l.startswith("[FREE]")]
     assert claims(b, "take", "Item one").returncode == 0
+
+
+def test_refuses_mid_rebase(tmp_path):
+    """A claim during a conflicted rebase must not stack claim commits for every open item."""
+    sh(tmp_path, "git", "init", "-q", "-b", "main", "--bare", "r.git")
+    a = tmp_path / "a"
+    sh(tmp_path, "git", "clone", "-q", "r.git", "a")
+    (a / "tools").mkdir()
+    shutil.copy(TOOL, a / "tools/claims.py")
+    (a / "PLAN.md").write_text(PLAN)
+    (a / ".gitignore").write_text(".claude/state/\n")
+    sh(a, "git", "config", "user.email", "a@b"); sh(a, "git", "config", "user.name", "t")
+    for c in (["add", "-A"], ["commit", "-qm", "init"], ["push", "-q", "-u", "origin", "main"]):
+        assert sh(a, "git", *c).returncode == 0
+    head = sh(a, "git", "rev-parse", "HEAD").stdout
+    (Path(sh(a, "git", "rev-parse", "--absolute-git-dir").stdout.strip()) / "rebase-merge").mkdir()
+    r = claims(a, "next")
+    assert r.returncode != 0 and "mid-rebase-merge" in r.stderr
+    assert sh(a, "git", "rev-parse", "HEAD").stdout == head and not (a / "claims").exists()
