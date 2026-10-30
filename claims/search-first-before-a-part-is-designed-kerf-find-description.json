@@ -1,0 +1,7 @@
+{
+ "item": "Search-first: before a part is designed, `kerf find \"<description>\"` searches Printables, Thingiverse, GrabCAD, MakerWorld and vendor STEP files (McMaster etc.) and writes candidates (link, license, key dimensions) into the project's REFERENCES.md; the `kerf` skill reuses or adapts a fitting part instead of generating one, and records why when it doesn't. Sources by access: Thingiverse (official API), Printables (public GraphQL), MakerWorld/GrabCAD (web search + page fetch); McMaster blocks automated downloads, so list the part number + link and ask Spencer to drop the STEP into catalog/models/",
+ "session": "1c937e70ac",
+ "since": 1793403588.1387868,
+ "heartbeat": 1793403588.1387868,
+ "since_utc": "2026-10-30 23:39"
+}
