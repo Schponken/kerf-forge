@@ -161,3 +161,14 @@ entry before each push (date, what changed, verify state, next step, open proble
 - tests/test_vendor.py (9): real Pico matches (52.3 x 21 x 3.73, sites identical to the board proxy); 1 mm shift,
   floating, upside-down, USB end reversed, inch-scaled and hole-less models are all refused; Pico on a tray with
   heat-set standoffs passes the fastener + interference checks.
+
+## 2026-10-30 23:25 UTC — viewer click-to-edit (planning chat, second session)
+- Done: PLAN "Click-to-edit in the viewer". Clicking a face opens an Inspect tab: `projects/<p>/parts/<part>.py:<line>`,
+  the code on that line, every project param that moves or resizes the face (value, label, allowed range, a number box),
+  "Copy edit request" (e.g. `projects/servo_link/project.yaml: arm_len 100 -> 130 (...)`) and a free-text request.
+  Purchased parts show their catalog entry and source URL.
+- kerf/attribution.py: line = first part-file line after which the face's SURFACE existed (line tracer, surface
+  identity survives later trims; helper calls credit the calling line); params = one-step rebuilds per project param.
+  Adds ~9 s to `kerf build` only (not `kerf check`). tests/test_attribution.py has hand answers.
+- 232 tests pass; servo_link build PASS; tools/viewer/smoke.mjs clicks a face on every printed part.
+
