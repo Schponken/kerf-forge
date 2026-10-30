@@ -48,7 +48,7 @@ tested before handoff.
 - [ ] E6 `pan_tilt` — BLIND test of the tool: a fresh general-purpose subagent with no prior context is given only evals/pan_tilt/brief.md and told to use the `kerf` skill; it must reach PASS on its own. Record its transcript summary and anything it got stuck on in evals/pan_tilt/BLIND_RUN.md, then fix the skill/engine for every stumble (and re-run blind if fixes were needed)
 
 ## Phase 4 — Spencer can see and use it
-- [ ] Assembly viewer: `kerf build` also writes `projects/<p>/out/viewer.html` — a self-contained page (no network) showing the assembly with part list, explode slider, a slider per moving joint (uses joint axes from the report), part visibility toggles, BOM table and per-part print info
+- [x] Assembly viewer: `kerf build` also writes `projects/<p>/out/viewer.html` — a self-contained page (no network) showing the assembly with part list, explode slider, a slider per moving joint (uses joint axes from the report), part visibility toggles, BOM table and per-part print info
 - [ ] Publish one combined Kerf Forge gallery page as a claude.ai artifact (Artifact tool) with every eval project's viewer, renders and BOM; put the link in README.md
 - [ ] README.md: what it is, setup, how to ask for a design (`/kerf ...` in Claude Code), what it can and can't do, results table for every eval (pass/fail, parts, mass, print plates), links to renders
 

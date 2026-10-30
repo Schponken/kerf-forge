@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+:root{--bg:#f3f4f2;--panel:#ffffff;--ink:#1a1e21;--mute:#626b66;--line:#dfe3e0;--acc:#2f6fdb;--ok:#2e7d4f;--bad:#c2412d;--warn:#a86b00;--view:#eef0ef;--grid1:#b7bdb9;--grid2:#d6dad7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--panel:#1d2124;--ink:#e6e9e7;--mute:#98a29d;--line:#2e3438;--acc:#6ea0ff;--ok:#5cc28a;--bad:#ff7a63;--warn:#e0a640;--view:#202427;--grid1:#4a5250;--grid2:#33393b}}
+:root[data-theme="dark"]{--bg:#15181a;--panel:#1d2124;--ink:#e6e9e7;--mute:#98a29d;--line:#2e3438;--acc:#6ea0ff;--ok:#5cc28a;--bad:#ff7a63;--warn:#e0a640;--view:#202427;--grid1:#4a5250;--grid2:#33393b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header h1{font-size:16px;margin:0;font-weight:650}
+.badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;color:#fff}
+.badge.ok{background:var(--ok)}.badge.bad{background:var(--bad)}
+.meta{color:var(--mute);font-size:12px}
+header .sp{flex:1}
+button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
+button:hover{border-color:var(--acc)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 360px;height:calc(100vh - 53px)}
+#view{position:relative;background:var(--view);min-height:320px}
+#view canvas{display:block;width:100%;height:100%;touch-action:none}
+#hint{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--mute);pointer-events:none}
+aside{background:var(--panel);border-left:1px solid var(--line);overflow:auto}
+nav{display:flex;position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--line);z-index:1}
+nav button{flex:1;border:0;border-radius:0;padding:10px 4px;border-bottom:2px solid transparent;color:var(--mute)}
+nav button.on{color:var(--ink);border-bottom-color:var(--acc);font-weight:600}
+section{padding:14px 16px;display:none}
+section.on{display:block}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:14px 0 8px;font-weight:650}
+h2:first-child{margin-top:0}
+.slider{margin:0 0 14px}
+.slider label{display:flex;justify-content:space-between;font-size:13px}
+.slider label b{font-weight:600}.slider output{font-variant-numeric:tabular-nums;color:var(--mute)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.part{display:grid;grid-template-columns:18px 12px 1fr auto;gap:8px;align-items:center;padding:6px 4px;border-radius:6px;cursor:pointer}
+.part:hover,.part.sel{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.sw{width:12px;height:12px;border-radius:3px}
+.part small{color:var(--mute)}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:10px 0;font-size:13px}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:6px 0 0}
+.card dt{color:var(--mute)}.card dd{margin:0;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.okc{color:var(--ok);font-weight:600}.badc{color:var(--bad);font-weight:600}.warnc{color:var(--warn)}
+ul.msgs{padding-left:18px;margin:4px 0}
+.empty{color:var(--mute);font-size:13px}
+@media (max-width:820px){#hint{display:none}main{grid-template-columns:1fr;height:auto}#view{height:62vh}aside{border-left:0;border-top:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1><span id="badge" class="badge"></span><span class="meta" id="meta"></span>
+  <span class="sp"></span>
+  <button id="reset" title="Joints home, no explode, default camera">Reset view</button>
+  <button id="theme" title="Toggle light/dark">Theme</button>
+</header>
+<main>
+  <div id="view"><div id="hint">Drag to orbit · right-drag to pan · scroll to zoom · click a part to inspect it</div></div>
+  <aside>
+    <nav><button data-t="pose" class="on">Pose</button><button data-t="parts">Parts</button><button data-t="checks">Checks</button><button data-t="bom">BOM</button></nav>
+    <section id="pose" class="on"></section>
+    <section id="parts"></section>
+    <section id="checks"></section>
+    <section id="bom"></section>
+  </aside>
+</main>
+<script>/*__LIB__*/</script>
+<script>
+(function () {
+const D = "__DATA__";
+const { THREE, OrbitControls } = KV;
+const $ = s => document.querySelector(s), el = (t, a = {}, ...kids) => { const e = document.createElement(t); for (const [k, v] of Object.entries(a)) k === 'class' ? e.className = v : k.startsWith('on') ? e.addEventListener(k.slice(2), v) : e.setAttribute(k, v); for (const c of kids) e.append(c); return e; };
+const fmt = (x, d = 1) => x == null ? '–' : (typeof x === 'number' ? +x.toFixed(d) : String(x));
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------- scene ----------
+const view = $('#view');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+view.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 1.8));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(1, -1.5, 2.2); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(-1.4, 1.1, 0.5); scene.add(fill);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 1e6); cam.up.set(0, 0, 1);
+const controls = new OrbitControls(cam, renderer.domElement); controls.enableDamping = true;
+
+const b64 = (s, T) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new T(u.buffer); };
+const objs = {};
+for (const it of D.items) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(b64(it.pos, Float32Array), 3));
+  g.setIndex(new THREE.BufferAttribute(b64(it.idx, Uint32Array), 1));
+  g.computeVertexNormals(); g.computeBoundingBox();
+  const keep = it.role === 'keepout';
+  const mat = new THREE.MeshStandardMaterial({ color: it.color, roughness: it.role === 'purchased' ? 0.45 : 0.62, metalness: it.role === 'purchased' ? 0.25 : 0.02,
+    transparent: keep, opacity: keep ? 0.22 : 1, depthWrite: !keep, side: THREE.DoubleSide });
+  const m = new THREE.Mesh(g, mat); m.matrixAutoUpdate = false; m.userData.id = it.id;
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(g, 25), new THREE.LineBasicMaterial({ color: 0x1a1e21, transparent: true, opacity: keep ? 0.15 : 0.55 }));
+  m.add(edges);
+  m.visible = !keep;
+  scene.add(m); objs[it.id] = m;
+}
+
+// ---------- kinematics (same maths as kerf/viewer.py fk) ----------
+const state = { joints: Object.fromEntries(D.joints.filter(j => j.kind !== 'rigid').map(j => [j.name, j.home])), explode: 0, sel: null };
+const M = rows => new THREE.Matrix4().set(...rows.flat());
+const rel = D.joints.map(j => M(j.rel_home));
+function motion(j, dv) {
+  const m = new THREE.Matrix4();
+  if (j.kind === 'revolute') {
+    const p = new THREE.Vector3(...j.point);
+    m.makeTranslation(p.x, p.y, p.z).multiply(new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(...j.axis), THREE.MathUtils.degToRad(dv)))
+     .multiply(new THREE.Matrix4().makeTranslation(-p.x, -p.y, -p.z));
+  } else if (j.kind === 'linear') m.makeTranslation(j.axis[0] * dv, j.axis[1] * dv, j.axis[2] * dv);
+  return m;
+}
+const lo = new THREE.Vector3(...D.bbox[0]), hi = new THREE.Vector3(...D.bbox[1]), diag = lo.distanceTo(hi);
+function pose() {
+  const W = { [D.root]: new THREE.Matrix4() };
+  D.joints.forEach((j, k) => { const v = j.kind === 'rigid' ? 0 : state.joints[j.name] - j.home; W[j.child] = W[j.parent].clone().multiply(motion(j, v)).multiply(rel[k]); });
+  // explode: push each item away from the assembly centre (same rule as the exploded export), scaled by the slider
+  const centers = {}, all = new THREE.Box3();
+  for (const it of D.items) { const b = objs[it.id].geometry.boundingBox.clone().applyMatrix4(W[it.id]); centers[it.id] = b.getCenter(new THREE.Vector3()); if (it.role !== 'keepout') all.union(b); }
+  // offset grows with each part's distance from the centre, so the layout stays readable at any assembly size
+  const c = all.getCenter(new THREE.Vector3()), E = state.explode * 0.25 * diag;
+  let zmin = Infinity;
+  for (const it of D.items) {
+    const d = centers[it.id].clone().sub(c), n = d.length() || 1;
+    const off = d.multiplyScalar(E * (0.5 + n / diag) / n);
+    if (it.role !== 'keepout') zmin = Math.min(zmin, objs[it.id].geometry.boundingBox.clone().applyMatrix4(W[it.id]).min.z + off.z);
+    objs[it.id].matrix.copy(new THREE.Matrix4().makeTranslation(off.x, off.y, off.z).multiply(W[it.id]));
+    objs[it.id].matrixWorldNeedsUpdate = true;
+  }
+  if (grid && isFinite(zmin)) grid.position.z = zmin - 0.01;   // keep the floor under whatever is lowest right now
+  return W;
+}
+
+// ---------- camera / grid ----------
+let grid;
+function setGrid() {
+  if (grid) scene.remove(grid);
+  const r = diag / 2, size = Math.ceil(r * 3 / 10) * 10;
+  grid = new THREE.GridHelper(size, Math.max(4, size / 10), new THREE.Color(css('--grid1')), new THREE.Color(css('--grid2')));
+  grid.rotation.x = Math.PI / 2; const c = lo.clone().add(hi).multiplyScalar(0.5); grid.position.set(c.x, c.y, lo.z - 0.01); scene.add(grid);
+  scene.background = new THREE.Color(css('--view'));
+}
+function home() {
+  const c = lo.clone().add(hi).multiplyScalar(0.5), d = new THREE.Vector3(1, -1.25, 0.9).normalize();
+  const dist = diag / 2 / Math.sin(THREE.MathUtils.degToRad(15)) * 1.1;
+  cam.position.copy(c).addScaledVector(d, dist); cam.near = dist / 200; cam.far = dist * 20; cam.updateProjectionMatrix();
+  controls.target.copy(c); controls.update();
+}
+function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(view);
+
+// ---------- picking ----------
+const ray = new THREE.Raycaster(); let down = null;
+renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), cam);
+  const hit = ray.intersectObjects(Object.values(objs).filter(o => o.visible), false).find(h => h.object.userData.id && D.items.find(i => i.id === h.object.userData.id).role !== 'keepout');
+  select(hit ? hit.object.userData.id : null, true);
+});
+function select(id, fromView) {
+  state.sel = id;
+  for (const it of D.items) objs[it.id].material.emissive?.setHex(it.id === id ? 0x2f6fdb : 0x000000), objs[it.id].material.emissiveIntensity = 0.35;
+  document.querySelectorAll('.part').forEach(r => r.classList.toggle('sel', r.dataset.id === id));
+  renderDetail();
+  if (fromView && id) tab('parts');
+}
+
+// ---------- panels ----------
+function tab(t) { document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); document.querySelectorAll('aside section').forEach(s => s.classList.toggle('on', s.id === t)); }
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
+
+$('#title').textContent = D.name;
+$('#badge').textContent = D.ok ? 'PASS' : 'FAIL'; $('#badge').className = 'badge ' + (D.ok ? 'ok' : 'bad');
+$('#meta').textContent = `${D.printer || ''} · geometry ${D.fingerprint || ''}`;
+
+const sliders = {};
+function slider(label, min, max, step, val, unit, on) {
+  const out = el('output', {}, fmt(val, 1) + unit), inp = el('input', { type: 'range', min, max, step, value: val });
+  inp.addEventListener('input', () => { on(+inp.value); out.textContent = fmt(+inp.value, 1) + unit; });
+  return { box: el('div', { class: 'slider' }, el('label', {}, el('b', {}, label), out), inp), inp, out };
+}
+function buildPose() {
+  const s = $('#pose'); s.innerHTML = '';
+  s.append(el('h2', {}, 'Explode'));
+  sliders.__explode = slider('Spread parts apart', 0, 1, 0.01, 0, '', v => { state.explode = v; });
+  sliders.__explode.out.textContent = '0%'; sliders.__explode.inp.addEventListener('input', () => sliders.__explode.out.textContent = Math.round(state.explode * 100) + '%');
+  s.append(sliders.__explode.box);
+  const mov = D.joints.filter(j => j.kind !== 'rigid');
+  s.append(el('h2', {}, `Moving joints (${mov.length})`));
+  if (!mov.length) s.append(el('p', { class: 'empty' }, 'This assembly has no moving joints.'));
+  for (const j of mov) {
+    const unit = j.kind === 'revolute' ? '°' : ' mm', step = (j.range[1] - j.range[0]) / 200;
+    const sl = slider(j.name, j.range[0], j.range[1], step, j.home, unit, v => { state.joints[j.name] = v; });
+    sl.box.append(el('small', { class: 'meta' }, `${j.kind} · ${j.parent} → ${j.child} · range ${j.range[0]} to ${j.range[1]}${unit.trim()}`));
+    sliders[j.name] = sl; s.append(sl.box);
+  }
+  if (D.plates.length) {
+    s.append(el('h2', {}, `Print plates (${D.printer})`));
+    const t = el('table', {}, el('tr', {}, el('th', {}, 'File'), el('th', {}, 'Parts')));
+    for (const p of D.plates) t.append(el('tr', {}, el('td', {}, p.file), el('td', {}, p.parts.join(', '))));
+    s.append(t);
+  }
+}
+function buildParts() {
+  const s = $('#parts'); s.innerHTML = '';
+  const groups = [['printed', 'Printed parts'], ['purchased', 'Purchased parts'], ['keepout', 'Keep-out zones']];
+  for (const [role, title] of groups) {
+    const its = D.items.filter(i => i.role === role); if (!its.length) continue;
+    s.append(el('h2', {}, `${title} (${its.length})`));
+    for (const it of its) {
+      const cb = el('input', { type: 'checkbox', 'aria-label': 'show ' + it.id }); cb.checked = objs[it.id].visible;
+      cb.addEventListener('click', e => e.stopPropagation()); cb.addEventListener('change', () => objs[it.id].visible = cb.checked);
+      const right = role === 'printed' ? `${fmt(it.print?.mass_est_g)} g` : role === 'purchased' ? (it.mass_g != null ? `${fmt(it.mass_g)} g` : '') : '';
+      const row = el('div', { class: 'part', 'data-id': it.id, onclick: () => role !== 'keepout' && select(state.sel === it.id ? null : it.id) },
+        cb, el('span', { class: 'sw', style: `background:${it.color}` }), el('span', {}, it.id + (it.qty > 1 ? ` ×${it.qty}` : ''), ' ', el('small', {}, it.catalog || it.print?.material || '')), el('small', {}, right));
+      s.append(row);
+    }
+  }
+  s.append(el('div', { id: 'detail' }));
+}
+function renderDetail() {
+  const d = $('#detail'); if (!d) return; d.innerHTML = '';
+  const it = D.items.find(i => i.id === state.sel); if (!it) { d.append(el('p', { class: 'empty' }, 'Click a part (here or in the 3D view) for its print details.')); return; }
+  const dl = el('dl');
+  const add = (k, v) => dl.append(el('dt', {}, k), el('dd', {}, v));
+  if (it.role === 'printed') {
+    const p = it.print || {};
+    add('Status', p.ok ? '✓ prints OK' : '✗ has problems'); add('Material', `${p.material || '–'}, ${Math.round((p.infill ?? 0) * 100)}% infill`);
+    add('Size', (p.size_mm || []).map(x => fmt(x)).join(' × ') + ' mm'); add('Mass (est.)', `${fmt(p.mass_est_g)} g`);
+    add('Print rotation', (p.print_rot || []).join(', ') + '°'); add('Overhang', `${fmt(p.overhang_pct)} %`);
+    add('Thin walls (2nd pct.)', `${fmt(p.wall_p02_mm, 2)} mm`); add('Watertight', p.watertight ? 'yes' : 'no');
+    add('Files', (it.files || []).join(', ') || '–');
+  } else { add('Catalog', it.catalog || '–'); add('Mass', it.mass_g != null ? `${fmt(it.mass_g)} g` : '–'); add('Qty', it.qty); }
+  const card = el('div', { class: 'card' }, el('b', {}, it.id), dl);
+  for (const [k, c] of [['problems', 'badc'], ['warnings', 'warnc']]) { const xs = it.print?.[k] || []; if (xs.length) card.append(el('ul', { class: 'msgs ' + c }, ...xs.map(x => el('li', {}, x)))); }
+  d.append(card);
+}
+function buildChecks() {
+  const s = $('#checks'); s.innerHTML = '';
+  s.append(el('h2', {}, 'Engineering requirements'));
+  if (!D.requirements.length) s.append(el('p', { class: 'empty' }, 'No requirements declared.'));
+  else { const t = el('table', {}, el('tr', {}, el('th', {}, ''), el('th', {}, 'Check'), el('th', {}, 'Value'), el('th', {}, 'Limit')));
+    for (const r of D.requirements) t.append(el('tr', { title: r.detail || '' }, el('td', { class: r.ok ? 'okc' : 'badc' }, r.ok ? '✓' : '✗'), el('td', {}, r.id, el('br'), el('small', { class: 'meta' }, r.detail || r.check || '')), el('td', { class: 'n' }, fmt(r.value, 2)), el('td', { class: 'n' }, fmt(r.limit, 2))));
+    s.append(t); }
+  s.append(el('h2', {}, `Problems (${D.problems.length})`));
+  s.append(D.problems.length ? el('ul', { class: 'msgs badc' }, ...D.problems.map(p => el('li', {}, p))) : el('p', { class: 'okc' }, 'None — every check passes.'));
+  if (D.warnings.length) { s.append(el('h2', {}, `Warnings (${D.warnings.length})`)); s.append(el('ul', { class: 'msgs warnc' }, ...D.warnings.map(p => el('li', {}, p)))); }
+}
+function buildBom() {
+  const s = $('#bom'); s.innerHTML = '';
+  if (!D.bom.length) { s.append(el('p', { class: 'empty' }, 'No BOM (run kerf build).')); return; }
+  for (const type of [...new Set(D.bom.map(r => r.type))]) {
+    s.append(el('h2', {}, type));
+    const t = el('table', {}, el('tr', {}, el('th', {}, 'Item'), el('th', {}, 'Qty'), el('th', {}, 'Spec / note')));
+    for (const r of D.bom.filter(r => r.type === type)) t.append(el('tr', {}, el('td', {}, r.item), el('td', { class: 'n' }, String(r.qty)), el('td', {}, [r.spec, r.note].filter(Boolean).join(' — '))));
+    s.append(t);
+  }
+}
+
+function reset() {
+  for (const j of D.joints) if (j.kind !== 'rigid') { state.joints[j.name] = j.home; const sl = sliders[j.name]; sl.inp.value = j.home; sl.out.textContent = fmt(j.home, 1) + (j.kind === 'revolute' ? '°' : ' mm'); }
+  state.explode = 0; sliders.__explode.inp.value = 0; sliders.__explode.out.textContent = '0%'; home();
+}
+$('#reset').onclick = reset;
+$('#theme').onclick = () => { const r = document.documentElement, dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const cur = r.dataset.theme || (dark ? 'dark' : 'light'); r.dataset.theme = cur === 'dark' ? 'light' : 'dark'; setGrid(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setGrid);
+
+buildPose(); buildParts(); buildChecks(); buildBom(); renderDetail();
+setGrid(); resize(); home();
+(function loop() { pose(); controls.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+
+// test hook: lets the build check drive the page headlessly
+window.kerfViewer = {
+  data: D,
+  setJoint(n, v) { state.joints[n] = v; const s = sliders[n]; if (s) { s.inp.value = v; s.out.textContent = fmt(v, 1) + (s.inp.step && D.joints.find(j => j.name === n).kind === 'revolute' ? '°' : ' mm'); } },
+  setExplode(v) { state.explode = v; sliders.__explode.inp.value = v; sliders.__explode.out.textContent = Math.round(v * 100) + '%'; },
+  world() { pose(); const o = {}; for (const id in objs) o[id] = objs[id].matrix.toArray(); return o; },
+  render() { pose(); renderer.render(scene, cam); return renderer.domElement.toDataURL('image/png'); },
+  select, ready: true,
+};
+})();
+</script>
+</body>
+</html>

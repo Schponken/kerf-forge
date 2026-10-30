@@ -26,3 +26,20 @@ entry before each push (date, what changed, verify state, next step, open proble
 - Hooks tested: the edit hook catches a broken part edit (exit 2 with the problem list); the Stop gate blocks on
   failing verify, uncommitted files and unpushed commits, and allows a stop only when all three are clean.
 - Next: PLAN.md Phase 1, first unchecked item.
+
+## 2026-10-30 — assembly viewer (parallel session, PLAN Phase 4 item 1)
+- `kerf build` now writes `projects/<p>/out/viewer.html` (new `kerf/viewer.py`, `tools/render/viewer_template.html`):
+  one self-contained ~1.2 MB page, no network. Orbit/pan/zoom, explode slider, one slider per moving joint, part list
+  with visibility toggles and click-to-inspect print info (material, size, mass, print rotation, overhang, walls,
+  files), requirements/problems tab, BOM tab, print plates, light/dark, phone layout.
+- Joint motion is not re-derived from build123d's joint maths: `viewer._measure` reads it off the real solver
+  (`assembly.solve`) as a rigid motion in the parent frame and refuses to write the page if that model is off by
+  more than 1 µm anywhere in the joint's range. `viewer.fk` is the same maths in Python.
+- three.js + OrbitControls are bundled/minified once with esbuild (new pinned devDependency in tools/render; the
+  bundle is cached in gitignored `tools/render/.cache/`). `tools/render/viewer_check.mjs` drives a built page headlessly.
+- Tests (`tests/test_viewer.py`): linear + tilted-axis revolute chain with non-zero homes; FK matches the solver
+  (<1e-6 mm) at 5 poses; meshes complete; the real page in Chromium poses every part like the solver (<1e-3 mm,
+  float32), no JS errors, no network requests, dark + explode + phone screenshots. A flipped joint axis fails the test.
+- Verify state: `pytest` 86 passed; `kerf build servo_link` PASS (viewer.html written, checked visually).
+- Open: none for this item. The gallery item (Phase 4 #2) can reuse `viewer.model()` per project with one shared
+  copy of `viewer.lib()`.
