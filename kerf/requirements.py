@@ -291,6 +291,53 @@ def cantilever_stress(proj, asm, part, section, loads, sf=2.0, direction="auto",
                       f"torsion {M @ n:.0f} N*mm (not included), area {sec['area']:.1f} mm2"}
 
 
+def _support_polygon(shapes, tol):
+    """Ground contact: mesh vertices within `tol` of the lowest point; returns (ground z, convex hull XY Nx2 CCW)."""
+    from scipy.spatial import ConvexHull
+    V = np.vstack([geom.mesh(s, tol=0.1, ang=0.3)[0] for s in shapes])
+    z0 = float(V[:, 2].min())
+    P = V[V[:, 2] <= z0 + tol][:, :2]
+    try:
+        h = ConvexHull(P)
+    except Exception:  # noqa: BLE001  (fewer than 3 non-collinear contacts: a point or a line can't stand)
+        return z0, None
+    return z0, P[h.vertices]
+
+
+@check("tip_over")
+def tip_over(proj, asm, min_deg, support=None, poses=None, payload_g=0.0, payload_at=None, tol=0.5):
+    """Static tip-over angle on a flat floor: the smallest tilt (deg) about any edge of the support polygon that
+    brings the assembled CG over that edge, atan(distance CG-to-edge / CG height). Worst over `poses`.
+    support: item ids that touch the floor (default: whatever is lowest). payload_g at a joint adds to the CG.
+    Negative = the CG is already outside the footprint (falls over by itself)."""
+    ids = [i for i, it in proj.items.items() if it.role != "keepout" and it.shape is not None]
+    worst, worst_pose, worst_h = np.inf, None, None
+    for pose in poses or [{}]:
+        A.solve(asm, pose)
+        m = np.array([item_mass_g(proj.items[i]) for i in ids])
+        c = np.array([_com(proj.items[i]) for i in ids])
+        if payload_g and payload_at:
+            m = np.append(m, payload_g)
+            c = np.vstack([c, _joint_world(proj, payload_at)[0]])
+        cg = (m[:, None] * c).sum(0) / m.sum()
+        z0, hull = _support_polygon([proj.items[i].shape for i in (support or ids)], tol)
+        h = cg[2] - z0
+        if hull is None:
+            ang = -90.0
+        else:
+            d = np.inf
+            for a, b in zip(hull, np.roll(hull, -1, axis=0)):   # CCW hull: inside is left of each edge
+                e = b - a
+                d = min(d, float((e[0] * (cg[1] - a[1]) - e[1] * (cg[0] - a[0])) / np.linalg.norm(e)))
+            ang = float(np.degrees(np.arctan2(d, h)))
+        if ang < worst:
+            worst, worst_pose, worst_h = ang, pose, h
+    A.solve(asm)
+    return {"ok": worst >= min_deg, "value": round(worst, 1), "limit": min_deg,
+            "detail": f"static tip-over angle (deg) at pose {worst_pose}: CG {worst_h:.1f} mm above the floor"
+                      + (f", incl. {payload_g} g at {payload_at}" if payload_g else "")}
+
+
 SLOW = {"fea_static"}
 
 

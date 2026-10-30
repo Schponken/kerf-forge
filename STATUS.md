@@ -92,3 +92,10 @@ entry before each push (date, what changed, verify state, next step, open proble
   moving 0.6 mm closer interferes; coupled sweep clear vs. uncoupled jams; belt keep-out catches a post in the belt path.
 - pytest: 180 passed. Docs: ARCHITECTURE (module, proxies, `follows`), ENGINEERING section 8 (gear + belt rules).
 - Next: next unclaimed PLAN item.
+
+## 2026-10-30 — session fc7cb2cb: `tip_over` requirement check
+- New `tip_over` check: floor contact = mesh points within 0.5 mm of the lowest point (or of listed `support` items),
+  convex hull, assembled CG (all items incl. purchased, plus optional payload at a joint), worst
+  atan(edge distance / CG height) over `poses`. Negative = falls over by itself.
+- tests/test_tip_over.py: 5 hand-calc tests (block, offset mast, legs footprint, payload outside footprint, worst pose).
+  Documented in docs/ARCHITECTURE.md.

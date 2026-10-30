@@ -26,7 +26,7 @@ tested before handoff.
 - [ ] New requirement checks, each with a test that has a known hand-calculated answer:
   - [x] `cantilever_stress`: bending stress at a named section of an arm/beam under a named load case vs. material strength (layer-direction aware) with safety factor
   - [ ] `cg`: assembled center of gravity (all items incl. purchased) relative to a reference joint or axis, with lateral/vertical limits
-  - [ ] `tip_over`: static tip-over angle from CG height and support polygon (legs, base) — minimum angle
+  - [x] `tip_over`: static tip-over angle from CG height and support polygon (legs, base) — minimum angle
   - [ ] `channel_clear`: a declared internal channel (tendon, wire) is open end to end for a given diameter
   - [ ] `prop_clearance`: minimum distance between prop discs and between each prop disc and any other item, at home and over sweeps
 - [ ] Layer-direction check: parts may declare a `load_axis`; warn when the main load runs across layers in the print orientation

@@ -76,6 +76,9 @@ requirements:
 ```
 `cantilever_stress` cuts the part with the section plane, takes the section's area and second-moment tensor, and
 reports kt x max |N/A + unsymmetric bending stress| over the outline. Torsion is reported, not included.
+`tip_over` (`min_deg`, optional `support: [items]`, `poses: [{joint: deg}]`, `payload_g` + `payload_at: item.joint`)
+finds the floor contacts (mesh points within `tol` 0.5 mm of the lowest point), takes their convex hull and reports the
+smallest atan(CG-to-edge distance / CG height) in degrees over the poses; negative means it falls over by itself.
 Numbers inside requirement regions and forces may be expressions over params/layout values.
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs
