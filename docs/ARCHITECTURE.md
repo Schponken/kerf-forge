@@ -108,6 +108,7 @@ Numbers inside requirement regions and forces may be expressions over params/lay
 | rod | rods.* + `length` | end_a, end_b, mid | – |
 | board | boards.* | bottom | holes: male screws through the board |
 | box | `size` or catalog L/W/H | bottom, top, + `joints:` | – |
+| step | any catalog entry + `base:` proxy kind + `model:` file in catalog/models (`model_rot`, `model_pos` into the base frame) | the base proxy's | the base proxy's; refused unless the STEP bbox is within 0.5 mm of the base proxy's and every site has a real hole (kerf/vendor.py) |
 | pulley | motion.GT2_*_pulley (envelope: flange OD x length) | bore, top | – |
 | belt | `center`, `teeth: [z1, z2]`, `width` (keep-out; `owner:` pulley 1, allow_overlap pulley 2) | axis1 | – |
 

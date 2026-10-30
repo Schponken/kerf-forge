@@ -82,7 +82,8 @@ def test_rod_proxy(key):
 def test_board_proxy(key):
     e = catalog.get(f"boards.{key}")
     s = proxies.build(Ctx(key, {}), {"catalog": f"boards.{key}", "proxy": "board", "groups": {"holes": "g"}})
-    assert s.bounding_box().size.X == pytest.approx(catalog.num(e, "length"), abs=0.01)
+    # envelope = PCB length plus any catalogued connector overhang on the +X edge
+    assert s.bounding_box().size.X == pytest.approx(catalog.num(e, "length") + catalog.num(e, "usb_overhang", default=0), abs=0.01)
     for (x, y) in e.get("holes") or []:
         assert abs(x) < catalog.num(e, "length") / 2 and abs(y) < catalog.num(e, "width") / 2
 

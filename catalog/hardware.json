@@ -914,7 +914,9 @@
    "length": 51.0,
    "width": 21.0,
    "thickness": 1.0,
-   "component_height": 3.2,
+   "component_height": 2.73,
+   "usb_overhang": 1.3,
+   "usb_w": 8.0,
    "holes": [
     [
      -23.5,
@@ -939,7 +941,7 @@
    "source": "https://pip-assets.raspberrypi.com/categories/610-raspberry-pi-pico/documents/RP-008307-DS-2-pico-datasheet.pdf",
    "source_weight": "https://www.tme.eu/en/details/sc0915/raspberry-pi-embedded/raspberry-pi/raspberry-pi-pico/",
    "confidence": "datasheet",
-   "note": "Datasheet sec. 2 Fig. 3: 51x21x1 mm PCB, 4x 2.1 mm (+/-0.05) holes 2 mm from each short edge and 11.4 mm apart across the width (4.8 mm from the long edges). Micro-USB overhangs the +x short edge slightly. component_height 3.2 is APPROXIMATE (micro-USB / BOOTSEL button, not given in the datasheet). Weight 4.1 g is TME gross weight (includes packaging), conservative. Header pins, if soldered, extend ~8.5 mm below the PCB."
+   "note": "Datasheet sec. 2 Fig. 3: 51x21x1 mm PCB, 4x 2.1 mm (+/-0.05) holes 2 mm from each short edge and 11.4 mm apart across the width (4.8 mm from the long edges). Micro-USB overhangs the +x short edge by 1.3 mm (typ), connector 8 mm wide (Fig. 3: usb_overhang, usb_w). component_height 2.73 = top of the micro-USB above the PCB top face in Raspberry Pi's official STEP (https://datasheets.raspberrypi.com/pico/Pico-R3-step.zip, opened 2026-10-30; copy in catalog/models/rpi_pico.step); previously an approximate 3.2. Weight 4.1 g is TME gross weight (includes packaging), conservative. Header pins, if soldered, extend ~8.5 mm below the PCB."
   },
   "arduino_nano": {
    "name": "Arduino Nano (A000005, ATmega328)",

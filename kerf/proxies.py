@@ -222,6 +222,9 @@ def board(ctx, spec):
     s = _box(L, W, t)
     if comp > 0:
         s += _box(L * 0.9, W * 0.9, comp, z0=t)
+    if "usb_overhang" in e:  # connector overhanging the +X short edge (e.g. Pico micro-USB), top at component height
+        ov, uw = catalog.num(e, "usb_overhang"), catalog.num(e, "usb_w")
+        s += Pos(L / 2 + ov / 2 - L * 0.05 / 2, 0, t) * Box(ov + L * 0.05, uw, max(comp, 0.1), align=(Align.CENTER, Align.CENTER, Align.MIN))
     holes = e.get("holes")
     screw = str(e.get("hole_screw", "M2.5"))
     if holes and _g(spec, "holes"):
@@ -275,3 +278,6 @@ def belt(ctx, spec):
     s = drives.belt_keepout(float(spec["center"]), z1, z2, w)
     ctx.rigid("axis1", Location((0, 0, 0)))
     return ctx.finish(s)
+
+
+from . import vendor  # noqa: E402,F401  (registers proxy: step)

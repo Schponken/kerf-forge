@@ -149,3 +149,15 @@ entry before each push (date, what changed, verify state, next step, open proble
   (= drives.spur_pair), `snap_hook` and `living_hinge` with Bayer-manual strain limits (raise with the fix), `label`,
   `pockets` (min web), `safe_fillet` (groups, then edge by edge, failures reported). ENGINEERING.md section 5 updated.
 - Finding: by that strain rule a 0.5 mm PETG living hinge only bends ~19 deg; 90 deg hinges need TPU.
+
+## 2026-10-30 — session 01S68R6T: vendor CAD proxies (done)
+- `proxy: step` (new kerf/vendor.py): builds the catalog `base` proxy first and keeps its joints + fastener sites,
+  places the vendor STEP (`model_rot`, `model_pos`, transform baked into the geometry) and refuses it unless every
+  bounding-box face is within 0.5 mm of the base proxy's and a real hole exists at every fastener site.
+- First vendor model: Raspberry Pi's official Pico STEP in catalog/models/rpi_pico.step; catalog/models/SOURCES.md
+  has URL, licence quote (ISC-style "permission to use, copy, modify, distribute"), sha256 and placement.
+- Catalog boards.rpi_pico: usb_overhang 1.3 / usb_w 8 (datasheet Fig. 3, rendered and read); component_height 3.2
+  (approximate) -> 2.73 from the official STEP. The `board` proxy now models a catalogued USB overhang.
+- tests/test_vendor.py (9): real Pico matches (52.3 x 21 x 3.73, sites identical to the board proxy); 1 mm shift,
+  floating, upside-down, USB end reversed, inch-scaled and hole-less models are all refused; Pico on a tray with
+  heat-set standoffs passes the fastener + interference checks.
