@@ -59,6 +59,14 @@ tested before handoff.
 - [ ] Publish one combined Kerf Forge gallery page as a claude.ai artifact (Artifact tool) with every eval project's viewer, renders and BOM; put the link in README.md
 - [ ] README.md: what it is, setup, how to ask for a design (`/kerf ...` in Claude Code), what it can and can't do, results table for every eval (pass/fail, parts, mass, print plates), links to renders
 
+## Phase 4b — features from the competitor study (Zoo, AdamCAD, Leo AI, MakerWorld, Fusion; see docs/COMPETITORS.md)
+- [ ] Search-first: before a part is designed, `kerf find "<description>"` searches Printables, Thingiverse, GrabCAD, MakerWorld and vendor STEP files (McMaster etc.) and writes candidates (link, license, key dimensions) into the project's REFERENCES.md; the `kerf` skill reuses or adapts a fitting part instead of generating one, and records why when it doesn't
+- [ ] Creative mode via Meshy: parts declared `source: meshy` with a prompt are generated through the Meshy MCP tools for organic/cosmetic shells, repaired for printability, scaled to declared bounds, and booleaned with the parametric mounting features (holes, bosses, keep-outs) so the result is still one valid solid; test with a cached mesh so CI needs no Meshy call
+- [ ] Self-correcting errors: every build/check failure raised from part code names the part, the feature and the fix hint (e.g. "fillet on edge group 'top' failed: radius 3 > wall 2.4; use <= 1.1"), and the part-designer loop feeds it back and retries automatically; test with deliberately broken parts
+- [ ] Click-to-edit in the viewer: clicking a face in `viewer.html` shows which part file, feature and parameter produced it, and lets Spencer copy a ready-made edit request ("arm.py: arm_length 120 -> 130") for Claude Code
+- [ ] Bambu A2L handoff: `kerf print <project>` auto-orients each part (min supports, load_axis aware), slices with the A2L profile (Bambu Studio / OrcaSlicer CLI), sends via the Bambu integration, and polls status; dry-run mode tested in CI, one real print verified with Spencer
+- [ ] Ship package: BOM gains buy links and unit/total cost for every purchased item (catalog sources), and `kerf build` writes `out/ASSEMBLY.md` — step-by-step assembly order with an exploded render per step and the screw/insert list for each step
+
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [ ] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
