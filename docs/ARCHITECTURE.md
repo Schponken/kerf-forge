@@ -62,7 +62,18 @@ requirements:
     max_disp_mm: 0.3
     fixed: {box: [[-200, -1, -1], [200, 200, 0.01]]}             # or {sites: group, radius: r} / {near_joint: label, radius: r}
     loads: [{box: [[1, wall_t - 0.01, pivot_h - 12], [40, wall_t + 0.01, pivot_h + 12]], force_n: [0, 0, 18.6]}]
+  - id: arm_root                  # beam-theory sizing check at one cross-section (fast; FEA stays the proof)
+    check: cantilever_stress
+    part: arm
+    section: {name: root, at: [12, 0, 0], normal: [1, 0, 0]}   # part frame; normal points toward the loads
+    loads: [{at: tip, force_n: [0, 9.2, 0]}]                    # joint label or [x, y, z]; any number of loads
+    load_case: stall into obstacle
+    sf: 2.0
+    kt: 1.0                       # stress concentration (holes/notches at the section)
+    direction: auto               # auto = from print_rot (stress along build Z uses Z strength); or xy / z
 ```
+`cantilever_stress` cuts the part with the section plane, takes the section's area and second-moment tensor, and
+reports kt x max |N/A + unsymmetric bending stress| over the outline. Torsion is reported, not included.
 Numbers inside requirement regions and forces may be expressions over params/layout values.
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs

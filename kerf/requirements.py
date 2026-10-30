@@ -200,6 +200,97 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
                       + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f", {res['elements']} elements"}
 
 
+def section_props(shape, origin, normal):
+    """Cut `shape` with the plane (origin, normal). Returns area (mm2), centroid, unit normal n, two in-plane unit
+    axes e1, e2, the 2x2 second-moment tensor S about the centroid in (e1, e2) (mm4), and boundary sample points."""
+    from build123d import Compound, Plane
+    from OCP.BRepGProp import BRepGProp
+    from OCP.GProp import GProp_GProps
+    n = np.asarray(normal, float)
+    n /= np.linalg.norm(n)
+    faces = shape.intersect(Plane(origin=tuple(origin), z_dir=tuple(n)))
+    faces = [f for f in (faces.faces() if faces is not None else []) if f.area > 1e-9]
+    if not faces:
+        raise ValueError(f"section plane at {list(origin)} normal {n.tolist()} does not cut the part")
+    c = Compound(faces)
+    g = GProp_GProps()
+    BRepGProp.SurfaceProperties_s(c.wrapped, g)
+    area = g.Mass()
+    cg = g.CentreOfMass()
+    cen = np.array([cg.X(), cg.Y(), cg.Z()])
+    mi = g.MatrixOfInertia()      # J = integral(|r|^2 I - r r^T) dA about the centroid
+    J = np.array([[mi.Value(i, j) for j in (1, 2, 3)] for i in (1, 2, 3)])
+    S3 = np.trace(J) / 2 * np.eye(3) - J   # integral(r r^T) dA
+    e1 = np.cross(n, [1.0, 0, 0] if abs(n[0]) < 0.9 else [0, 1.0, 0])
+    e1 /= np.linalg.norm(e1)
+    e2 = np.cross(n, e1)
+    E = np.stack([e1, e2])
+    pts = np.array([[p.X, p.Y, p.Z] for e in c.edges() for p in (e.position_at(t) for t in np.linspace(0, 1, 17))])
+    return {"area": area, "centroid": cen, "n": n, "e1": e1, "e2": e2, "S": E @ S3 @ E.T, "pts": pts,
+            "faces": len(faces)}
+
+
+def _point(item, at, params):
+    """A load point in the part frame: a joint label on the part or an [x, y, z] list (expressions allowed)."""
+    if isinstance(at, str):
+        j = next((j for j in item.shape.kerf_joints if j.label == at), None)
+        if j is None:
+            raise ValueError(f"{item.id} has no joint '{at}'")
+        loc = j.loc if j.loc is not None else __import__("build123d").Location(j.axis.position)
+        return geom.world_point(loc, (0, 0, 0))
+    return np.array([_ev(v, params) for v in at])
+
+
+def _layer_strength(item, normal, direction):
+    """Strength for normal stress along `normal` (part frame). direction 'xy'/'z' forces one; 'auto' uses the part's
+    print_rot: stress along build Z is across layers. In between, blend by cos^2 of the angle to build Z."""
+    mat = item.spec.get("material", "PETG")
+    if direction in ("xy", "z"):
+        return _strength(mat, direction), direction
+    from build123d import Rot
+    nz = abs(float(geom.world_dir(Rot(*item.spec.get("print_rot", [0, 0, 0])), normal)[2]))
+    xy, z = _strength(mat, "xy"), _strength(mat, "z")
+    return xy - (xy - z) * nz ** 2, f"auto ({nz ** 2 * 100:.0f}% across layers)"
+
+
+@check("cantilever_stress")
+def cantilever_stress(proj, asm, part, section, loads, sf=2.0, direction="auto", kt=1.0, load_case=""):
+    """Hand-calc (beam theory) bending + axial stress at one cross-section of a printed part.
+    section: {name, at: [x,y,z], normal: [nx,ny,nz]} in the part frame, normal pointing toward the loaded (free) end.
+    loads: [{at: joint label | [x,y,z], force_n: [fx,fy,fz]}] on the free side. Stress = kt * max |N/A + bending|
+    over the section outline (unsymmetric bending formula, so any section shape works). Torsion and shear are
+    reported, not included: this is for sizing; fea_static is the proof (docs/ENGINEERING.md section 3)."""
+    it = proj.items[part]
+    p = proj.params
+    shape = it.shape.located(__import__("build123d").Location())
+    sec = section_props(shape, [_ev(v, p) for v in section["at"]], [_ev(v, p) for v in section["normal"]])
+    c, n = sec["centroid"], sec["n"]
+    F, M = np.zeros(3), np.zeros(3)
+    for ld in loads:
+        q = _point(it, ld["at"], p)
+        f = np.array([_ev(v, p) for v in ld["force_n"]])
+        if np.dot(q - c, n) <= 0:
+            raise ValueError(f"load at {np.round(q, 1).tolist()} is not on the free side of section "
+                             f"'{section.get('name', '')}' (normal must point toward the loads)")
+        F += f
+        M += np.cross(q - c, f)
+    m1, m2 = float(M @ sec["e1"]), float(M @ sec["e2"])
+    # stress sigma = k1*a + k2*b over in-plane coords (a, b); its moment about the centroid must equal M.
+    (Saa, Sab), (_, Sbb) = sec["S"]
+    k1, k2 = np.linalg.solve([[Sab, Sbb], [-Saa, -Sab]], [m1, m2])
+    r = sec["pts"] - c
+    sig = float(F @ n) / sec["area"] + k1 * (r @ sec["e1"]) + k2 * (r @ sec["e2"])
+    smax = kt * float(np.max(np.abs(sig)))
+    strength, how = _layer_strength(it, n, direction)
+    allow = strength / sf
+    name = section.get("name", "section")
+    return {"ok": smax <= allow, "value": round(smax, 2), "limit": round(allow, 2),
+            "detail": f"beam theory at {part} '{name}'{' / ' + load_case if load_case else ''}: max normal stress "
+                      f"(MPa) vs {it.spec.get('material', 'PETG')} {how} strength {strength:.1f} / SF {sf}"
+                      f"{f' x Kt {kt}' if kt != 1 else ''}; bending {np.hypot(m1, m2):.0f} N*mm, axial {F @ n:.1f} N, "
+                      f"torsion {M @ n:.0f} N*mm (not included), area {sec['area']:.1f} mm2"}
+
+
 SLOW = {"fea_static"}
 
 

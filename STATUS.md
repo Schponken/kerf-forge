@@ -67,3 +67,14 @@ entry before each push (date, what changed, verify state, next step, open proble
   in kerf/ and tools/claims.py now say encoding="utf-8".
 - Verify (fast): fails only on the expected open items (stale servo_link review, eval projects not built, PLAN open).
 - Next: next free PLAN item.
+
+## 2026-10-30 23:xx — session fc7cb2cb: `cantilever_stress` requirement check
+- New `cantilever_stress` check (kerf/requirements.py): cuts the part at a declared section plane, gets area +
+  second-moment tensor from OCC, sums the declared loads' force/moment about the section centroid, and reports
+  Kt x max |N/A + unsymmetric bending| over the section outline vs. material strength / SF. Layer direction:
+  `direction: auto` (default) uses print_rot (stress along build Z -> Z strength, blended by cos^2), or force xy/z.
+  Torsion is reported, not included. Loads on the wrong side of the section are rejected.
+- tests/test_cantilever.py: 6 hand-calc tests (strong/weak axis, oblique, axial+bending, tube with Kt, print_rot
+  layer awareness, wrong-side load). pytest 175 passed. Documented in docs/ARCHITECTURE.md.
+- verify --fast: only the expected failures (eval projects not built yet, open PLAN items).
+- Next: `cg` / `tip_over` / `channel_clear` checks are free for the next session.

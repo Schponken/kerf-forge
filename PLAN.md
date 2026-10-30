@@ -24,7 +24,7 @@ tested before handoff.
 - [x] Pin / shaft joints for printed hinges (pin through clearance hole on one side, press or heat-set on the other), with a fastener-style alignment check
 - [ ] Belt/gear helpers using py_gearworks (spur gear pair at correct center distance; GT2 pulley + belt length) with tests
 - [ ] New requirement checks, each with a test that has a known hand-calculated answer:
-  - [ ] `cantilever_stress`: bending stress at a named section of an arm/beam under a named load case vs. material strength (layer-direction aware) with safety factor
+  - [x] `cantilever_stress`: bending stress at a named section of an arm/beam under a named load case vs. material strength (layer-direction aware) with safety factor
   - [ ] `cg`: assembled center of gravity (all items incl. purchased) relative to a reference joint or axis, with lateral/vertical limits
   - [ ] `tip_over`: static tip-over angle from CG height and support polygon (legs, base) — minimum angle
   - [ ] `channel_clear`: a declared internal channel (tendon, wire) is open end to end for a given diameter
