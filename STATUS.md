@@ -106,3 +106,9 @@ entry before each push (date, what changed, verify state, next step, open proble
   `axis`; limits `max_lateral_mm`, `min_along_mm`/`max_along_mm`; worst over home + `poses`. 4 hand-calculated tests
   (16:1 blocks -> x = 15/17, z = 95/17; payload; reference axis; poses). Documented in ARCHITECTURE/ENGINEERING.
 - Next: next free PLAN item (`tip_over` can reuse `req_balance.assembly_cg`).
+
+## 2026-10-30 — session 1c-pins: layer-direction check
+- Done: parts may declare `load_axis` (x / -y / [x, y, z] / a list) in project.yaml; `checks.layer_direction` (run by
+  every part check) warns when an axis is > 30 deg out of the bed plane in `print_rot`, with the cos^2-blended
+  strength (same rule as cantilever_stress), and fails on a malformed axis. 6 tests. ENGINEERING.md section 4 now asks
+  for `load_axis` on every structural part.

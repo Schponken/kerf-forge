@@ -71,6 +71,9 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
         problems.append(f"{item.id}: walls as thin as {p02:.2f} mm (2nd percentile); minimum is {MIN_WALL_FAIL} mm, aim for {MIN_WALL_WARN}+")
     elif p02 is not None and p02 < MIN_WALL_WARN:
         warnings.append(f"{item.id}: some walls are {p02:.2f} mm thick; {MIN_WALL_WARN} mm or more prints more reliably")
+    lp, lw = layer_direction(item)
+    problems += lp
+    warnings += lw
     vol = geom.volume(s)
     mat = spec.get("material", "PETG")
     rho = density(mat)
@@ -85,6 +88,58 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
         "overhang_pct": round(oh_frac * 100, 2), "wall_p02_mm": None if p02 is None else round(p02, 2),
         "watertight": ms["watertight"], "solids": len(sol), "faces": len(s.faces()), "build_ms": item.build_ms,
     }
+
+
+LAYER_WARN_NZ2 = 0.25  # warn when more than 25% of the load direction runs across layers (> 30 deg out of the bed plane)
+
+
+def _axis_vec(a) -> np.ndarray:
+    if isinstance(a, str):
+        sgn = -1.0 if a.startswith("-") else 1.0
+        k = a.lstrip("+-").lower()
+        if k not in ("x", "y", "z"):
+            raise ValueError(f"load_axis '{a}' must be x, y, z (optionally signed) or [x, y, z]")
+        v = np.zeros(3)
+        v["xyz".index(k)] = sgn
+        return v
+    v = np.array(a, dtype=float)
+    if v.shape != (3,) or not np.linalg.norm(v):
+        raise ValueError(f"load_axis {a} must be a non-zero [x, y, z]")
+    return v / np.linalg.norm(v)
+
+
+def layer_direction(item) -> tuple[list, list]:
+    """Parts may declare `load_axis` in project.yaml: the direction (part frame) the main stress runs, e.g. the length
+    of an arm in bending or the pull of a hook; a list of such directions is allowed. In the print orientation, layers
+    lie in the bed plane, so stress along build Z pulls layers apart (ENGINEERING.md section 4). Warns when a load axis
+    is more than 30 deg out of the bed plane and reports the blended strength (cos^2 rule, as cantilever_stress)."""
+    la = item.spec.get("load_axis")
+    if la is None:
+        return [], []
+    axes = [la] if isinstance(la, str) or (isinstance(la, (list, tuple)) and la and isinstance(la[0], (int, float))) else la
+    rot = Rot(*item.spec.get("print_rot", [0, 0, 0]))
+    problems, warnings = [], []
+    mat = item.spec.get("material", "PETG")
+    try:
+        m = catalog.get(f"materials.{mat}")
+        xy = catalog.num(m, "tensile_strength_xy_mpa", "tensile_strength_mpa", "tensile_strength_xy", "tensile_strength")
+        z = catalog.num(m, "tensile_strength_z_mpa", "tensile_strength_z", default=xy * 0.5)
+    except Exception:
+        xy = z = None
+    for a in axes:
+        try:
+            v = _axis_vec(a)
+        except ValueError as e:
+            problems.append(f"{item.id}: {e}")
+            continue
+        nz2 = float(geom.world_dir(rot, tuple(v))[2]) ** 2
+        if nz2 > LAYER_WARN_NZ2:
+            ang = float(np.degrees(np.arcsin(min(1.0, nz2 ** 0.5))))
+            eff = "" if not xy else f"; {mat} strength along it ~{xy - (xy - z) * nz2:.0f} of {xy:.0f} MPa"
+            warnings.append(f"{item.id}: main load axis {a} runs {ang:.0f} deg out of the layer plane in print orientation "
+                            f"{list(item.spec.get('print_rot', [0, 0, 0]))} (across layers{eff}); reorient so it lies "
+                            f"along the bed, or prove it with fea_static/cantilever_stress using direction z")
+    return problems, warnings
 
 
 def item_mass_g(item) -> float:

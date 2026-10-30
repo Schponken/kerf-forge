@@ -37,6 +37,8 @@ DESIGN.md says why.
 ## 4. Print orientation and layers
 - Choose `print_rot` so the largest flat face is on the bed and the main bending load runs along layers, not across them.
   Arms and beams lie flat. Hooks and brackets are oriented so the bend is in the XY plane.
+- Declare `load_axis` (part frame: `x`, `-y`, `[1, 0, 1]` or a list) on every structural part; `kerf check` warns when
+  it runs more than 30° out of the bed plane in the print orientation and gives the cos² blended strength.
 - Overhangs over 45° need support (check warns over 3% of the surface). Prefer 45° chamfers, teardrop horizontal holes,
   and bridges under 15 mm. Projects can set `supports: avoid` to make any overhang a failure (check).
 - Horizontal holes (axis parallel to the bed) print oval: use teardrop or add +0.2 mm, or orient holes vertically.

@@ -37,7 +37,7 @@ derived:                        # python expressions over params (math functions
 layout: parts/layout.py         # optional: def layout(p, cat) -> dict of shared values computed from params + catalog
                                 # (hole positions, seat heights) that several parts must agree on; added to ctx.p
 parts:                          # printed parts
-  bracket: {file: parts/bracket.py, material: PETG, qty: 1, print_rot: [0, 0, 0], infill: 0.3, load_axis: X}
+  bracket: {file: parts/bracket.py, material: PETG, qty: 1, print_rot: [0, 0, 0], infill: 0.3, load_axis: X}   # load_axis: main stress direction (part frame); warned if > 30 deg across layers
 purchased:                      # catalog-backed proxies (real mass + geometry for collisions)
   servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}}
   horn:  {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}

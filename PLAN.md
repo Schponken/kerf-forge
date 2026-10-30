@@ -29,7 +29,7 @@ tested before handoff.
   - [x] `tip_over`: static tip-over angle from CG height and support polygon (legs, base) — minimum angle
   - [ ] `channel_clear`: a declared internal channel (tendon, wire) is open end to end for a given diameter
   - [ ] `prop_clearance`: minimum distance between prop discs and between each prop disc and any other item, at home and over sweeps
-- [ ] Layer-direction check: parts may declare a `load_axis`; warn when the main load runs across layers in the print orientation
+- [x] Layer-direction check: parts may declare a `load_axis`; warn when the main load runs across layers in the print orientation
 - [ ] Detailed-modeling helpers in `kerf/features.py`, each with a test that builds it and checks size/validity: swept channels along a 3D path (tendons, wires), shell with uniform wall, ribs/gussets between two faces, teardrop horizontal holes, threads (bd_warehouse) incl. printed coarse threads, gear pairs at the right centre distance (py_gearworks), snap-fit cantilever hooks with a strain check, living hinges, embossed/debossed text labels, lightening pockets that keep a minimum web, and a safe fillet/chamfer helper that applies edge groups one by one and reports any that failed instead of crashing
 - [ ] Vendor CAD proxies: `proxy: step` loads a STEP file from `catalog/models/` (sources + licenses in `catalog/models/SOURCES.md`), fails if its bounding box differs from the catalog entry by more than 0.5 mm, and keeps catalog-driven joints and fastener sites
 - [ ] FEA load-case helpers and output: bearing-seat radial loads, torque about a joint, pressure on a face; a von Mises colour render per FEA check saved to `out/renders/fea_<id>.png` for the reviewer
