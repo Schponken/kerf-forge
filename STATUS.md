@@ -185,3 +185,12 @@ entry before each push (date, what changed, verify state, next step, open proble
 - tests/test_fea_loads.py: pressure bar (500 N, 5 MPa, 0.2 mm), torsion rod (sqrt3*Tr/J and twist within 3 %),
   bearing seat resultants through the bore centre, yaml end-to-end + PNG. servo_link check still PASS (review was
   already stale from the pins catalog change; it is re-reviewed in the open servo_mount item).
+
+## 2026-10-30 23:45 UTC — planning chat: feasibility tests for the risky Phase 4b items
+- Meshy + exact features: proven. Mesh-space booleans with manifold3d give one watertight body with exact M3 holes in
+  0.2-1.6 s for 80k-330k triangle meshes; per-piece repair + union handles broken meshes. The B-rep route also works
+  but is too slow (34 s at 20k triangles). Prototype: docs/prototypes/mesh_merge.py. PLAN item rewritten with the method.
+- Click-to-edit: already done by another session (kerf/attribution.py); no compromise needed.
+- Bambu: official LAN/developer mode exists for third-party send + status; fallback is open-in-Bambu-Studio. Search-first:
+  Thingiverse API + Printables GraphQL automated, McMaster manual. PLAN items updated.
+- New PLAN item: print-truth calibration loop (per-printer fit offsets from Spencer's real coupon prints).
