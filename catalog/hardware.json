@@ -214,17 +214,22 @@
   "GT2_belt": {
    "pitch": 2.0,
    "width_6mm": 6.0,
-   "source": "https://www.adafruit.com/products/1184",
+   "height": 1.52,
+   "tooth_h": 0.76,
+   "source": "https://www.adafruit.com/products/1184 ; https://vxb.com/ja/products/endless-gt2-timing-belt-260mm-length-130-teeth-2mm",
    "confidence": "multiple-vendors",
-   "note": "Belt thickness/tooth height not published on page (commonly ~1.38 total / 0.75 tooth - unverified, do not use)."
+   "note": "Adafruit gives pitch and width only. height (total belt thickness) 1.52 and tooth_h 0.76 from the VXB 130T GT2 listing (opened 2026-10-30), which also confirms 130 teeth x 2 mm = 260 mm pitch length."
   },
   "GT2_20T_pulley": {
    "pitch_d": 12.73,
    "bore": 5.0,
    "teeth": 20,
+   "tip_od": 12.2,
+   "flange_od": 16.0,
+   "length": 16.0,
    "source": "https://shop.sdp-si.com/a-6a50m020gt10.html ; https://thepihut.com/products/aluminum-gt2-timing-pulley-6mm-belt-20-tooth-5mm-bore",
    "confidence": "multiple-vendors",
-   "note": "pitch_d = 20 x 2 / pi = 12.73 (SDP-SI lists 12.7); tooth-tip OD 12.2 (SDP-SI and PiHut agree); flange OD 16, overall length 16 (PiHut). Bore 5 is the common NEMA17 variant; 4/6.35/8 mm bores also sold."
+   "note": "pitch_d = 20 x 2 / pi = 12.73 (SDP-SI lists 12.7); tooth-tip OD 12.2 (SDP-SI and PiHut agree); flange OD 16, overall length 16 (PiHut: outer edge 16 mm, 16 mm long; re-opened 2026-10-30; hub/flange axial positions not published). Bore 5 is the common NEMA17 variant; 4/6.35/8 mm bores also sold."
   },
   "rod_8mm_smooth": {
    "d": 8.0,

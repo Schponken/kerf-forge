@@ -69,6 +69,13 @@ Clearances between moving printed parts: >= 0.5 mm everywhere over the full moti
 - Servo output carries torque only: support side loads with a bearing or a second pivot on the opposite side
   (a "dual-support" bracket) whenever the link is longer than ~60 mm or carries more than ~100 g.
 - Leave 0.5 mm axial clearance (washers or printed spacers) between rotating faces.
+- Printed gears: `kerf.drives.spur_pair`; module >= 1.5 (>= 1.0 only on a tuned printer), >= 10 teeth, 0.3 mm total
+  backlash at the standard centre distance (Sovol FDM gear guide: 0.2-0.4 mm). Couple the two joints in `sweeps:`
+  (`follows`/`ratio`) so the sweep turns them together.
+- GT2 belts: size the centre distance for a stock closed belt with `drives.center_for_belt`; keep >= 6 teeth in mesh
+  on the small pulley (`drives.teeth_in_mesh`) and provide centre-distance adjustment (slotted mount or tensioner) for
+  fitting the belt without forcing it over a flange (SDP-SI belt design guide,
+  https://sdp-si.com/resources/beltdesignsuggestions.php). Tension snug, not preloaded.
 
 ## 9. Drones specifics
 - Prop discs are keep-outs at the prop plane: >= 4 mm between neighbouring discs, >= 3 mm to any frame part, camera,

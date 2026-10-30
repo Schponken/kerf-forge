@@ -78,3 +78,17 @@ entry before each push (date, what changed, verify state, next step, open proble
   layer awareness, wrong-side load). pytest 175 passed. Documented in docs/ARCHITECTURE.md.
 - verify --fast: only the expected failures (eval projects not built yet, open PLAN items).
 - Next: `cg` / `tip_over` / `channel_clear` checks are free for the next session.
+
+## 2026-10-30 — session 01S68R6T: belt/gear helpers (PLAN Phase 1, done)
+- New `kerf/drives.py`: `spur_pair` (py_gearworks involute gears, standard centre distance m(z1+z2)/2, 0.3 mm total
+  backlash per the Sovol FDM gear guide, refuses module < 1 / < 10 teeth / bores that leave < 2 mm under the roots;
+  gear 2 comes pre-rotated into mesh phase). GT2: `belt_length`, `belt_teeth`, `center_for_belt` (exact centre for a
+  stock belt), `wrap_deg`, `teeth_in_mesh` (>= 6, SDP-SI), `belt_keepout` solid. Proxies `pulley` (published
+  envelope) and `belt` (keep-out). Catalog: GT2 belt height 1.52 / tooth 0.76 (VXB listing), 20T pulley tip_od /
+  flange_od / length as numbers (PiHut, already the cited source).
+- Engine: coupled sweeps `{joint: j2, follows: j1, ratio: r}` in assembly.sweeps so geared/belted joints turn together.
+- tests/test_drives.py (11): hand-calculated centre distance, tip diameters, belt lengths (240 / 260.405 mm, 130T),
+  wrap 172.70 deg; the pair meshes collision-free through a full turn; measured backlash at the pitch circle ~0.3 mm;
+  moving 0.6 mm closer interferes; coupled sweep clear vs. uncoupled jams; belt keep-out catches a post in the belt path.
+- pytest: 180 passed. Docs: ARCHITECTURE (module, proxies, `follows`), ENGINEERING section 8 (gear + belt rules).
+- Next: next unclaimed PLAN item.

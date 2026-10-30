@@ -249,3 +249,29 @@ def stack(ctx, spec):
     ctx.rigid("bottom", Location((0, 0, 0)))
     ctx.rigid("top", Location((0, 0, h)))
     return ctx.finish(body, color="#1e3b6b")
+
+
+@proxy("pulley")
+def pulley(ctx, spec):
+    """GT2 timing pulley, modelled as its published envelope (flange OD x overall length) because the hub/flange
+    positions are not published; the running belt keep-out overlaps it by design (allow it in project.yaml).
+    Frame: origin on the axis at the motor-side face, +Z away from the motor. Joints: bore (origin), top."""
+    e = catalog.get(spec["catalog"])
+    od, L = catalog.num(e, "flange_od"), catalog.num(e, "length")
+    s = _cyl(od / 2, L) - Pos(0, 0, -1) * Cylinder(catalog.num(e, "bore") / 2, L + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    ctx.rigid("bore", Location((0, 0, 0)))
+    ctx.rigid("top", Location((0, 0, L)))
+    return ctx.finish(s, color="#c0c4c8")
+
+
+@proxy("belt")
+def belt(ctx, spec):
+    """Keep-out: the GT2 belt running between two pulleys (kerf.drives.belt_keepout). spec: center (mm, along +X),
+    teeth: [z1, z2], width (default the belt's width_6mm). Frame: pulley-1 axis at the origin, belt from z=0 to z=width.
+    Joint: axis1 (origin). Give it owner: <pulley 1> and allow_overlap with pulley 2."""
+    from . import drives
+    z1, z2 = (int(t) for t in spec["teeth"])
+    w = float(spec.get("width", catalog.num(catalog.get(spec.get("catalog", "motion.GT2_belt")), "width_6mm")))
+    s = drives.belt_keepout(float(spec["center"]), z1, z2, w)
+    ctx.rigid("axis1", Location((0, 0, 0)))
+    return ctx.finish(s)

@@ -12,6 +12,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 |---|---|
 | `kerf/ctx.py` | What a part's `build(ctx)` gets: `ctx.p` params, `ctx.cat` catalog, joint + fastener-site declarations, `ctx.finish()` |
 | `kerf/iface.py` | Mating-feature generators (bolt patterns, inserts, nut traps, bearing seats, servo/horn/motor/stack mounts, `pin_hole` for pinned hinges). Each returns a cutter solid and registers fastener (or pin) sites |
+| `kerf/drives.py` | Printed spur-gear pairs (py_gearworks, FDM backlash, standard centre distance) and GT2 belt maths (length, tooth count, centre for a stock belt, wrap) + belt keep-out solid |
 | `kerf/proxies.py` | Purchased parts and keep-outs built from the catalog, with their joints and fastener sites |
 | `kerf/catalog.py` | Loads `catalog/hardware.json` (every entry has a `source`) |
 | `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item |
@@ -52,6 +53,7 @@ assembly:
   sweeps:
     - {joint: swing, samples: 13}             # finer sweep for one joint
     - {name: curl, poses: [{mcp: 30, pip: 30}, {mcp: 80, pip: 80}]}   # coupled poses
+    - {joint: driven, follows: drive, ratio: -0.5}   # geared/belted: `driven` turns ratio x `drive`, never alone
 requirements:
   - {id: arm_torque, check: static_torque, joint: swing, actuator: servo, payload_g: 50, payload_at: arm.tip, max_fraction: 0.5}
   - id: bracket_fea               # finite-element strength check of one printed part (part frame, mm, N)
@@ -88,6 +90,8 @@ Numbers inside requirement regions and forces may be expressions over params/lay
 | rod | rods.* + `length` | end_a, end_b, mid | – |
 | board | boards.* | bottom | holes: male screws through the board |
 | box | `size` or catalog L/W/H | bottom, top, + `joints:` | – |
+| pulley | motion.GT2_*_pulley (envelope: flange OD x length) | bore, top | – |
+| belt | `center`, `teeth: [z1, z2]`, `width` (keep-out; `owner:` pulley 1, allow_overlap pulley 2) | axis1 | – |
 
 ## Part module contract
 ```python

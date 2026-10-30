@@ -162,13 +162,23 @@ def sweeps(asm: Assembly, samples: int = 9) -> list:
     results = []
     ids = [i for i, it in asm.proj.items.items() if it.shape is not None]
     custom = {s["joint"]: s for s in (asm.proj.data["assembly"].get("sweeps") or []) if "joint" in s}
+    # geared/belted joints: {joint: j2, follows: j1, ratio: r} turns j2 = r * j1 whenever j1 is swept, never alone
+    follow = {j: (s["follows"], float(s.get("ratio", 1.0))) for j, s in custom.items() if "follows" in s}
+    edge_by_name = {e.name: e for e in asm.movable}
+    for j, (lead, _) in follow.items():
+        if j not in edge_by_name or lead not in edge_by_name:
+            raise ProjectError(f"sweep coupling {j} follows {lead}: both must be moving joints")
     for e in asm.movable:
+        if e.name in follow:
+            continue
         n = int(custom.get(e.name, {}).get("samples", samples))
-        moving = asm.subtree(e.child)
-        pairs = [(a, b) for a in ids for b in ids if a < b and ((a in moving) != (b in moving))]
+        followers = [(edge_by_name[j], r) for j, (lead, r) in follow.items() if lead == e.name]
+        groups = [asm.subtree(e.child)] + [asm.subtree(f.child) for f, _ in followers]
+        key = lambda i: tuple(i in g for g in groups)  # noqa: E731
+        pairs = [(a, b) for a in ids for b in ids if a < b and key(a) != key(b)]
         worst, collisions = 0.0, []
         for v in np.linspace(e.range[0], e.range[1], n):
-            solve(asm, {e.name: float(v)})
+            solve(asm, {e.name: float(v), **{f.name: r * float(v) for f, r in followers}})
             hits = interference(asm, pairs)
             for h in hits:
                 worst = max(worst, h["volume_mm3"])
