@@ -250,3 +250,33 @@ def test_part_notes_reach_the_report(tmp_path):
     rep = pipeline.run(str(d), sweeps=False)
     assert rep["parts"]["a"]["notes"] == ["fillet skipped"]
     assert any("fillet skipped" in w for w in rep["warnings"])
+
+
+@pytest.mark.parametrize("top_through", [False, True])
+def test_servo_window_lead_in(top_through):
+    """The window is lead_in wider per side at its entry face (z = 0), 45 degrees, and nominal past the chamfer."""
+    from build123d import Box as _Box, Pos
+    from kerf.ctx import Ctx
+    d = iface.servo_dims("servos.MG996R")
+    wx, wy = d["L"] + 0.6, d["W"] + 0.6
+    cut = iface.servo_mount(Ctx("t", {}), "servos.MG996R", Location((0, 0, 0)), group="s", plate_t=8, kind="tap",
+                            top_through=top_through, lead_in=0.5)
+    sgn = 1 if top_through else -1   # material side of the mount face
+
+    def widths(z):
+        """Window width along X (strip at y=0) and along Y (strip at x=0): clear of the corner dog-bones."""
+        sx = (cut & (Pos(0, 0, z) * _Box(200, 0.2, 0.002))).solids()
+        sy = (cut & (Pos(0, 0, z) * _Box(0.2, 200, 0.002))).solids()
+        wxz = max(b.bounding_box().size.X for b in sx if abs(b.bounding_box().center().X) < 1)
+        wyz = max(b.bounding_box().size.Y for b in sy if abs(b.bounding_box().center().Y) < 1)
+        return wxz, wyz
+
+    for z in (0.01, 0.25, 0.45, 2.0, 7.5):
+        c = max(0.0, 0.5 - (z - 0.001))   # the slab's face-side edge sets the measured width
+        x, y = widths(sgn * z)
+        assert x == pytest.approx(wx + 2 * c, abs=0.01), (z, x)
+        assert y == pytest.approx(wy + 2 * c, abs=0.01), (z, y)
+    # lead_in=0 gives the plain window
+    plain = iface.servo_mount(Ctx("t", {}), "servos.MG996R", Location((0, 0, 0)), group="s", plate_t=8, kind="tap",
+                              top_through=top_through, lead_in=0)
+    assert plain.volume < cut.volume

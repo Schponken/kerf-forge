@@ -24,6 +24,8 @@ upright wall, arm swinging in a vertical plane — real gravity torque, real bra
 - Servo tabs: thread-forming M3 screws into 2.72 mm pilot holes (7.2 mm deep in the 8 mm wall). Heat-set inserts
   were rejected: their 4.0 mm holes would leave only 2.1 mm of wall to the servo window (rule: >= 2.4 mm) and melting
   them could bulge the wall into a window that has 0.3 mm clearance per side. Window corners get 1 mm dog-bone reliefs.
+- Servo window: 0.5 mm × 45° lead-in chamfer on its entry face (`iface.servo_mount(lead_in=0.5)`), so the case
+  slides in square and elephant's foot on that face can't pinch it; the window itself keeps 0.3 mm clearance per side.
 - Test mass: a 50 g calibration weight or fishing sinker on a wire loop / S-hook through the 3.5 mm tip hole
   (a washer stack on an M3 screw is too long to reach 50 g).
 - Servo mounting direction: the MG996R has a cable strain-relief boss low on its output-end face (~6.6 mm proud,
@@ -47,7 +49,7 @@ upright wall, arm swinging in a vertical plane — real gravity torque, real bra
 |---|---|---|---|
 | base | bench plate, 4× M3 inserts for the bracket, 4× M4 counterbored bench holes | PETG | flat |
 | bracket | upright wall; the servo mounts from behind (window + 4 M3 pilot holes from the back face), foot with teardrop screw holes, two gussets with 1.5 mm root fillets, 4 mm fillet at the wall/foot corner, cable-tie slots under the window | PETG | on its back face: the window needs no bridge; the foot's horizontal holes are teardrops |
-| arm | flat link bolted to the aluminium 25T horn; access hole for the horn's centre screw; M3 hole at the tip for the test mass | PETG | flat |
+| arm | flat link bolted to the aluminium 25T horn; access hole for the horn's centre screw; 3.5 mm hole at the tip for the test-mass hanger | PETG | flat |
 
 ## Interfaces
 | A | B | Type | Group | Hardware |

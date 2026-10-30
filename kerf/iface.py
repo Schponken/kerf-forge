@@ -191,7 +191,7 @@ def servo_dims(path: str) -> dict:
 
 
 def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind: str = "heatset",
-                clearance: float = 0.6, top_through: bool = False):
+                clearance: float = 0.6, top_through: bool = False, lead_in: float = 0.5):
     """Cutter for a plate a servo's mounting tabs bolt to: a window plus the four tab screw holes.
 
     Default (top_through=False): the body drops through the window from the TOP and the tabs rest ON the plate.
@@ -201,7 +201,9 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
       the tab tops press against the plate. Use this when the body has bumps low down (MG996R cable boss).
       loc: on the face the tab TOPS press against, +Z toward the servo top; material above loc (0 < z < plate_t).
       The servo proxy's 'tabs' joint (tab underside) sits at loc * Location((0, 0, -tab_t)). Set the servo's
-      `tab_screws_from: bottom` in project.yaml so its screws come from behind the tabs."""
+      `tab_screws_from: bottom` in project.yaml so its screws come from behind the tabs.
+    lead_in: 45-degree chamfer (mm) around the window on its ENTRY face (z = 0 in both modes): guides the body in and
+      absorbs elephant's foot when that face prints on the bed. 0 disables it."""
     d = servo_dims(servo)
     wx, wy = d["L"] + clearance, d["W"] + clearance
     z0 = -plate_t - EXTRA if not top_through else -EXTRA
@@ -210,6 +212,12 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
     for sx in (-1, 1):
         for sy in (-1, 1):
             pocket += Pos(sx * (wx / 2 - 0.35), sy * (wy / 2 - 0.35), 0) * _cyl(1.0, z0, z0 + plate_t + 2 * EXTRA)
+    if lead_in > 0:
+        from build123d import Rectangle, extrude
+        # frustum: (window + 2*lead_in) at the entry face, shrinking at 45 deg to the window lead_in deep into material
+        g = lead_in + EXTRA
+        cone = Pos(0, 0, -EXTRA) * extrude(Rectangle(wx + 2 * g, wy + 2 * g), amount=g, taper=45)
+        pocket += cone if top_through else Rot(180, 0, 0) * cone
     cut = loc * pocket
     if not top_through:
         cut += bolt_pattern(ctx, group, d["screw"], d["holes"], loc, kind, plate_t)
