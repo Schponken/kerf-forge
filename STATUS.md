@@ -99,3 +99,10 @@ entry before each push (date, what changed, verify state, next step, open proble
   atan(edge distance / CG height) over `poses`. Negative = falls over by itself.
 - tests/test_tip_over.py: 5 hand-calc tests (block, offset mast, legs footprint, payload outside footprint, worst pose).
   Documented in docs/ARCHITECTURE.md.
+
+## 2026-10-30 — session 1c-pins: `cg` requirement
+- Done: `check: cg` (new module kerf/req_balance.py, registered from requirements.py): mass-weighted CG of every
+  non-keepout item (or `include`) plus an optional payload at a joint, against a line through `ref`/`point` along
+  `axis`; limits `max_lateral_mm`, `min_along_mm`/`max_along_mm`; worst over home + `poses`. 4 hand-calculated tests
+  (16:1 blocks -> x = 15/17, z = 95/17; payload; reference axis; poses). Documented in ARCHITECTURE/ENGINEERING.
+- Next: next free PLAN item (`tip_over` can reuse `req_balance.assembly_cg`).

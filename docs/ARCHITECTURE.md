@@ -56,6 +56,8 @@ assembly:
     - {joint: driven, follows: drive, ratio: -0.5}   # geared/belted: `driven` turns ratio x `drive`, never alone
 requirements:
   - {id: arm_torque, check: static_torque, joint: swing, actuator: servo, payload_g: 50, payload_at: arm.tip, max_fraction: 0.5}
+  - {id: base_cg, check: cg, ref: base.yaw, max_lateral_mm: 20, max_along_mm: 40, payload_g: 50, payload_at: arm.tip, poses: [{shoulder: 90}]}
+                                # CG vs the line through ref (or point) along axis (default vertical); worst over home + poses
   - id: bracket_fea               # finite-element strength check of one printed part (part frame, mm, N)
     check: fea_static
     part: bracket

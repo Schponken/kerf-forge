@@ -25,7 +25,7 @@ tested before handoff.
 - [x] Belt/gear helpers using py_gearworks (spur gear pair at correct center distance; GT2 pulley + belt length) with tests
 - [ ] New requirement checks, each with a test that has a known hand-calculated answer:
   - [x] `cantilever_stress`: bending stress at a named section of an arm/beam under a named load case vs. material strength (layer-direction aware) with safety factor
-  - [ ] `cg`: assembled center of gravity (all items incl. purchased) relative to a reference joint or axis, with lateral/vertical limits
+  - [x] `cg`: assembled center of gravity (all items incl. purchased) relative to a reference joint or axis, with lateral/vertical limits
   - [x] `tip_over`: static tip-over angle from CG height and support polygon (legs, base) — minimum angle
   - [ ] `channel_clear`: a declared internal channel (tendon, wire) is open end to end for a given diameter
   - [ ] `prop_clearance`: minimum distance between prop discs and between each prop disc and any other item, at home and over sweeps

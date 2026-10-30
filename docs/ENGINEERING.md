@@ -30,6 +30,9 @@ DESIGN.md says why.
   loaded layer direction. Deflection limits where stiffness matters (arms: tip deflection < 1% of length).
 - Quick hand checks (`cantilever_stress`, beam formulas in DESIGN.md) are for sizing; FEA is the proof.
 - If FEA fails, fix geometry (section depth, ribs, fillets, orientation) before reaching for a stronger material.
+- Balance: `cg` gives the assembled CG (every item incl. purchased, plus a payload) against a reference line. Use it
+  for a multirotor (CG within a few mm of the thrust centre, lateral) and for anything standing on a base (CG height
+  `along`, worst over the arm's extreme poses). Printed parts act at their solid centroid, so keep ~1 mm margin.
 
 ## 4. Print orientation and layers
 - Choose `print_rot` so the largest flat face is on the bed and the main bending load runs along layers, not across them.

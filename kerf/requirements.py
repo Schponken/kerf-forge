@@ -359,3 +359,6 @@ def run_all(proj, asm, quick: bool = False) -> list:
             r = {"ok": False, "value": None, "limit": None, "detail": f"check failed to run: {type(e).__name__}: {e}"}
         out.append({"id": rid, "check": name, "why": req.get("why", ""), **r})
     return out
+
+
+from . import req_balance  # noqa: E402,F401  (registers the balance checks: cg)
