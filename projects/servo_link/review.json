@@ -1,0 +1,75 @@
+{
+  "verdict": "FAIL",
+  "fingerprint": "133a41c07c0095c0",
+  "reviewer": "design-reviewer",
+  "date": "2026-10-30",
+  "summary": "The rig meets the brief's geometry: MG996R on an 8 mm insert-threaded wall printed on its back (the stall-torque moment stays in the layer plane), 100 mm arm swinging +/-90 deg with no collisions, 12 aligned M3 joints, 0.53 kg*cm load against a 4.7 kg*cm limit, and every screw reachable with a straight hex key. It fails on one functional gap. The design's purpose is to hold a 50 g test weight at 100 mm, but the arm has no feature for attaching that weight, so the tested load point is undefined. The remaining findings are cheap fixes to make before printing.",
+  "findings": [
+    {
+      "severity": "major",
+      "part": "arm",
+      "issue": "No way to attach the payload at the tip. DESIGN.md and requirement arm_torque are built around a 50 g test weight at arm.tip (100 mm from the pivot), but arm.py ends in a solid rounded tip with no hole or hook. The user would have to tape the weight on somewhere near the end, so the lever arm (and the torque being tested) is not repeatable.",
+      "fix": "In arm.py cut a vertical clearance hole on the arm.tip axis at (0, -arm_len): M3 clearance (3.5 mm, leaving about 5.2 mm of wall each side in the 14 mm arm) or M4 (4.5 mm). An M3 bolt with stacked nuts or washers, or a hanging hook, then puts the 50 g exactly at 100 mm. Add a line to the DESIGN.md assembly order saying how the test mass is made and hung."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The servo tab hole pattern (49.5 x 10 mm, 4.2 mm holes) is marked UNVERIFIED in the catalog and REFERENCES.md (it is copied from a DS3218 drawing), yet it is locked into heat-set inserts. An M3 screw in a 4.2 mm tab hole can only shift about 0.6 mm, so if the real servo uses the 48 mm Futaba-style spacing the screws will not start.",
+      "fix": "Before printing the bracket, caliper-measure the actual MG996R's tab hole centres and record the verified value with a source in catalog/hardware.json. Or first print a 2 mm-thick test plate with just the window and the 4 holes (about 10 minutes) and test-fit the servo."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The tab screws are sized for bare tabs: tab_t 2.5 mm plus M3x8 gives 5.5 mm of thread in the insert. The MG996R ships with rubber grommets and brass eyelets, which the catalog's 4.2 mm hole note anticipates. With those fitted, the tab stack is roughly twice as thick and the screw grips only a couple of threads. Without grommets, a 5.5 mm socket head rests on just a 0.65 mm ring of plastic tab around the 4.2 mm hole.",
+      "fix": "In DESIGN.md assembly step 3, state 'leave the rubber grommets out; fit an M3 washer under each screw head' and add 4x M3 washers to the BOM. Alternatively, size the screws for the grommet stack and declare that grip."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "Only 2.1 mm of plastic separates each tab-screw insert hole from the servo window: the hole edge is at x = 22.75 mm and the window edge at x = 20.65 mm. That meets the catalog minimum (1.6 mm) but not the 2.4 mm in ENGINEERING section 5. Melting an insert this close to a free edge in PETG tends to bulge the thin web into a window that has only 0.3 mm of clearance per side, which can stop the servo body from passing.",
+      "fix": "Cut the window to the body width only between the tab hole rows. Or reduce the window's length clearance to 0.4 mm and add 0.5 mm local relief behind each insert, giving at least 2.4 mm of web. At minimum, melt the inserts with the servo out and check the window afterwards."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "When printed on its back, the foot stands vertical, so the 4 M3 clearance holes in the foot print as horizontal holes. Their tops will sag, contrary to ENGINEERING section 4.",
+      "fix": "Make these foot holes teardrop-shaped, with the point toward the print +Z, or open them to 3.7 mm."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "Inside corners on the load path have no fillets, contrary to ENGINEERING section 5: where the gussets meet the wall and the foot, and the four corners of the servo window, which carry the tab-screw couple.",
+      "fix": "Add r>=1 mm fillets at the gusset roots. For the window, use r=1 mm corner fillets (the servo case corners are radiused) or dog-bone reliefs."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The bracket_fea load case understates the load and uses a lower safety factor than the rules require. Each +/-18.6 N load is spread over a box from x=1 to x=30.75 mm, so its centroid is about 15.9 mm from the axis rather than at the 24.75 mm screw position. The applied moment is about 590 N*mm, roughly 64% of the 922 N*mm stall moment. The case also uses SF 2.0 against layer-direction strength, while ENGINEERING section 3 asks for SF 3.0 across layers. The current margin is about 30x, so the verdict does not change, but the check would under-report on larger parameter values.",
+      "fix": "Apply each force on a small box (about 3 mm) centred on the tab-screw insert positions (x = +/-servo_hx/2, z = pivot_h +/- 5), and set sf: 3.0."
+    },
+    {
+      "severity": "minor",
+      "part": "arm",
+      "issue": "ENGINEERING section 8 calls for a second support for the servo output when the link is longer than about 60 mm, and this arm is 100 mm. DESIGN.md does not explain why the rule is not followed here. In practice it is fine: about 0.6 N static radial load on the MG996R's ball-bearing output. But the rules require a written justification.",
+      "fix": "Add a sizing line to DESIGN.md giving the radial load and overturning moment on the output (static and at full slew) and why the servo's own bearings carry them without a second support."
+    },
+    {
+      "severity": "minor",
+      "part": "horn",
+      "issue": "The arm screws (M3x8 through the 6 mm arm) engage only the 2 mm aluminium horn disc, about 4 threads. A socket screw tightened to its full rated torque will strip the thread.",
+      "fix": "Note in the DESIGN.md assembly order: 'snug only, about 0.5 N*m, use threadlocker'. Do not lengthen the screws, because the tips would reach toward the servo case top."
+    },
+    {
+      "severity": "minor",
+      "part": "base",
+      "issue": "The rig must be screwed down. Unclamped, it resists tipping about a base edge with only about 0.12 N*m (185 g x 63.8 mm), well below the MG996R's 0.92 N*m stall torque, so a fast slew with the 50 g weight will make it hop. DESIGN.md mentions the M4 bench holes but never says they are required.",
+      "fix": "State in DESIGN.md that the base must be screwed or clamped to the bench (or have rubber feet plus a clamp) before powering the servo."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "Nothing is provided for the servo cable. Its exit position on the case is not in the catalog, so it is unverified whether the cable exit or strain relief clears the window (0.3 mm clearance per side) when the body is pushed through bottom-first. There is also no cable anchor behind the wall.",
+      "fix": "Check the exit position on the real servo. If it lies within the 8 mm wall, add a roughly 4 mm cable notch at that end of the window, centred between the two insert holes. Add a cable-tie slot on the back face of the wall."
+    }
+  ]
+}

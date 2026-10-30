@@ -114,6 +114,9 @@ def bom(proj, fastener_joints, part_reports, outdir):
     recv = Counter((j["screw"], j["receiver"]) for j in fastener_joints if j["receiver"] in ("heatset", "nut_trap"))
     for (size, kind), n in sorted(recv.items()):
         rows.append({"type": "fastener", "item": f"{size} {'heat-set insert' if kind == 'heatset' else 'hex nut'}", "qty": n, "spec": "", "note": ""})
+    for x in proj.data.get("bom_extra") or []:
+        rows.append({"type": x.get("type", "extra"), "item": x["item"], "qty": x.get("qty", 1), "spec": x.get("spec", ""),
+                     "note": x.get("note", "")})
     with open(outdir / "bom.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["type", "item", "qty", "spec", "note"])
         w.writeheader()

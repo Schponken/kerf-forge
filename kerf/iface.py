@@ -89,10 +89,22 @@ KINDS_MALE = ("clearance", "counterbore", "countersink")
 KINDS_FEMALE = ("heatset", "tap", "nut_trap")
 
 
-def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = None):
-    """Cutter for one hole at the origin, axis Z, surface at z=0, material at z<0. Returns (solid, grip, engage, min_engage)."""
+def _teardrop(r, z0, z1, up_deg):
+    """Horizontal-hole shape for FDM: a circle with a 45-degree pointed roof toward `up_deg` (direction that is UP
+    on the printer, measured in the hole's XY plane). Prints without sagging or supports."""
+    from build123d import Polygon
+    a = r / math.sqrt(2)
+    roof = Pos(0, 0, z0) * extrude(Polygon((-a, a), (a, a), (0, r * math.sqrt(2)), align=None), z1 - z0)
+    return Rot(0, 0, up_deg - 90) * roof + _cyl(r, z0, z1)
+
+
+def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = None, teardrop: float | None = None):
+    """Cutter for one hole at the origin, axis Z, surface at z=0, material at z<0. Returns (solid, grip, engage, min_engage).
+    teardrop: for holes that print horizontally, the direction (deg, in the hole's XY plane) that is UP on the printer."""
     sp = screw_spec(screw)
     if kind == "clearance":
+        if teardrop is not None:
+            return _teardrop(sp["clearance"] / 2, -depth - EXTRA, EXTRA, teardrop), depth, 0.0, 0.0
         return _cyl(sp["clearance"] / 2, -depth - EXTRA, EXTRA), depth, 0.0, 0.0
     if kind == "counterbore":
         cb = counterbore_depth if counterbore_depth is not None else sp["head_h"] + 0.3
@@ -132,13 +144,13 @@ def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = 
 
 
 def bolt_pattern(ctx, group: str, screw: str, points, loc: Location, kind: str, depth: float,
-                 counterbore_depth: float | None = None):
+                 counterbore_depth: float | None = None, teardrop: float | None = None):
     """Holes at `points` (in loc's XY plane) through/into `depth` mm of material below loc.
     Registers one site per hole: male for clearance/counterbore/countersink, female for heatset/tap/nut_trap."""
     role = "male" if kind in KINDS_MALE else "female"
     cut = None
     for (x, y) in points:
-        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth)
+        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth, teardrop)
         hl = loc * Location((x, y, 0))
         placed = hl * c
         cut = placed if cut is None else cut + placed
@@ -175,8 +187,12 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
     loc: on the plate face the tabs rest on, +Z toward the servo top, X along the servo's length, origin under the
     centre of the tab underside (same as the servo proxy's 'tabs' joint)."""
     d = servo_dims(servo)
-    pocket = Pos(0, 0, -plate_t - EXTRA) * Box(d["L"] + clearance, d["W"] + clearance, plate_t + 2 * EXTRA,
-                                               align=(Align.CENTER, Align.CENTER, Align.MIN))
+    wx, wy = d["L"] + clearance, d["W"] + clearance
+    pocket = Pos(0, 0, -plate_t - EXTRA) * Box(wx, wy, plate_t + 2 * EXTRA, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # corner reliefs ("dog-bones"): remove the sharp inside corners without rounding into the square servo body
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            pocket += Pos(sx * (wx / 2 - 0.35), sy * (wy / 2 - 0.35), 0) * _cyl(1.0, -plate_t - EXTRA, EXTRA)
     cut = loc * pocket
     cut += bolt_pattern(ctx, group, d["screw"], d["holes"], loc, kind, plate_t)
     return cut

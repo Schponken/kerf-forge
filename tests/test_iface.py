@@ -185,3 +185,12 @@ def test_motor_and_stack_mounts_align(tmp_path):
             assert j["length_mm"] - j["grip_mm"] <= depth + 1e-6
     hits = A.interference(asm)
     assert hits == [], hits
+
+
+def test_teardrop_hole_points_up():
+    c, *_ = iface.hole("M3", "clearance", 5, teardrop=90)       # roof toward +Y
+    bb = c.bounding_box()
+    r = iface.screw_spec("M3")["clearance"] / 2
+    assert bb.max.Y == pytest.approx(r * 2 ** 0.5, abs=1e-3) and bb.min.Y == pytest.approx(-r, abs=1e-3)
+    c, *_ = iface.hole("M3", "clearance", 5, teardrop=0)        # roof toward +X
+    assert c.bounding_box().max.X == pytest.approx(r * 2 ** 0.5, abs=1e-3)

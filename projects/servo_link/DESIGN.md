@@ -10,7 +10,7 @@ Forge mechanism (catalog-backed mounts on both sides, joint tree, sweep, fastene
 |---|---|---|
 | Arm swing | ±90° from vertical, collision-free | sweep `swing` |
 | Holding torque | arm + 50 g at 100 mm, <= 50% of MG996R stall (9.4 kg·cm at 4.8 V) | `arm_torque` |
-| Bracket strength | full stall-torque reaction, SF 2 on layer-direction strength, deflection <= 0.3 mm | `bracket_fea` |
+| Bracket strength | full stall-torque reaction at the four tab screws, SF 3 on layer-direction strength, deflection <= 0.3 mm | `bracket_fea` |
 | Mass | <= 250 g assembled | `rig_mass` |
 | Printability | every part fits the A2L, no supports needed | print checks |
 
@@ -20,21 +20,27 @@ upright wall, arm swinging in a vertical plane — real gravity torque, real bra
 
 ## Sizing
 - Worst static torque at ±90°: 0.050 kg × 10.0 cm + arm 7.7 g × ~5 cm ≈ 0.54 kg·cm → 11% of the 4.7 kg·cm allowed.
-- Wall: 8 mm PETG holds M3 heat-set inserts (6.7 mm deep holes + 0.8 mm floor; CNC Kitchen M3 × 5.7).
+- Servo tabs: thread-forming M3 screws into 2.72 mm pilot holes (7.2 mm deep in the 8 mm wall). Heat-set inserts
+  were rejected: their 4.0 mm holes would leave only 2.1 mm of wall to the servo window (rule: >= 2.4 mm) and melting
+  them could bulge the wall into a window that has 0.3 mm clearance per side. Window corners get 1 mm dog-bone reliefs.
+- Test mass: a 50 g stack of M8 washers on an M3 × 20 screw + nut, through the 3.5 mm hole at the arm tip.
+- Single-sided support: the rule asks for a second pivot on links over ~60 mm or ~100 g. Here the arm + mass load the
+  servo output with about 0.6 N radially at ~10 mm from the bearing, far inside what the MG996R's own two output
+  bearings carry, so the extra pivot (and the friction it adds) is not worth it for a test rig.
 - Stall reaction 9.4 kg·cm = 922 N·mm, carried as a ±18.6 N couple across the 49.5 mm tab-hole spacing.
 
 ## Parts
 | Part | Job | Material | Print orientation |
 |---|---|---|---|
 | base | bench plate, 4× M3 inserts for the bracket, 4× M4 counterbored bench holes | PETG | flat |
-| bracket | upright wall with servo window + 4 M3 inserts, foot, two gussets, 4 mm fillet at the wall/foot corner | PETG | on its back face: the window needs no bridge, inserts face up for installation |
-| arm | flat link bolted to the aluminium 25T horn; access hole for the horn's centre screw | PETG | flat |
+| bracket | upright wall with servo window + 4 M3 pilot holes, foot with teardrop screw holes, two gussets with 1.5 mm root fillets, 4 mm fillet at the wall/foot corner, cable-tie slots under the window | PETG | on its back face: the window needs no bridge; the foot's horizontal holes are teardrops |
+| arm | flat link bolted to the aluminium 25T horn; access hole for the horn's centre screw; M3 hole at the tip for the test mass | PETG | flat |
 
 ## Interfaces
 | A | B | Type | Group | Hardware |
 |---|---|---|---|---|
 | bracket foot | base | clearance → heat-set | base_bracket | 4× M3 (auto-sized 10 mm) + 4 inserts |
-| servo tabs | bracket wall | clearance → heat-set | bracket_servo | 4× M3 (8 mm) + 4 inserts |
+| servo tabs | bracket wall | clearance → pilot hole (thread-forming) | bracket_servo | 4× M3 × 8 + 4 washers |
 | arm | horn | clearance → threaded horn | horn_arm | 4× M3 (8 mm) |
 | horn | servo | 25T spline + centre screw | — | supplied with the horn |
 
@@ -44,8 +50,20 @@ Foot screws sit outside the servo tab span so a hex key reaches them from above 
 base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swing`, revolute ±90°) → arm (rigid).
 
 ## Assembly order
-1. Melt 4 inserts into the base and 4 into the bracket wall (print orientation leaves them facing up).
-2. Screw the bracket foot to the base (4× M3×10).
-3. Drop the servo body through the window from the front, tabs on the wall; 4× M3×8 into the inserts.
-4. Centre the servo electrically, press the horn on the spline pointing up, fit its centre screw.
-5. Bolt the arm to the horn through the access hole layout (4× M3×8).
+1. Melt the 4 M3 inserts into the base.
+2. Screw the bracket foot to the base (4× M3 × 10).
+3. Remove the servo's rubber grommets (the screws are sized for bare tabs). Drop the servo body through the window
+   from the front, tabs on the wall; 4× M3 × 8 with washers into the pilot holes (they form their own threads; don't
+   over-tighten).
+4. Route the servo lead down the back of the wall and tie it through the two slots under the window.
+5. Centre the servo electrically, press the horn on the spline pointing up, fit its centre screw.
+6. Bolt the arm to the horn (4× M3 × 8). The horn disc is only 2 mm thick: snug them (about 0.5 N·m) with medium
+   threadlocker rather than torquing them down.
+7. Hang the 50 g test mass from the tip hole.
+
+## Use
+- Screw the base to the bench (4× M4 counterbored holes) or clamp it. Unclamped it only resists ~0.12 N·m of tipping
+  against up to 0.92 N·m of servo stall torque, so fast moves would make it hop.
+- Before printing the final bracket, check the MG996R's tab-hole pattern with calipers (catalog: 49.5 × 10 mm,
+  4.2 mm holes, partly unverified for this exact servo). If it differs, correct `catalog/hardware.json` with the
+  measured value and a note, and rebuild — every dependent hole moves with it.

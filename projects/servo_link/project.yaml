@@ -23,6 +23,10 @@ parts:
 purchased:
   servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}, range: [-90, 90]}
   horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}
+bom_extra:
+  - {type: fastener, item: M3 flat washer (DIN 125), qty: 4, spec: "under the servo tab screws (the tab holes are 4.2 mm)"}
+  - {type: hardware, item: 50 g test mass (e.g. a stack of M8 washers) on an M3 x 20 screw + nut, qty: 1, spec: "hangs from the arm tip hole"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 1, spec: "servo lead strain relief"}
 assembly:
   root: base
   joints:
@@ -38,12 +42,12 @@ requirements:
   - id: bracket_fea
     check: fea_static
     part: bracket
-    why: "the wall must take the servo's full stall-torque reaction (a couple through the tab screws) without yielding"
-    direction: z            # printed on its back: conservative, judge against layer-direction strength
-    sf: 2.0
+    why: "the wall must take the servo's full stall-torque reaction (a couple through the four tab screws) without yielding"
+    direction: z            # judge against layer-direction strength (conservative; the wall prints on its back)
+    sf: 3.0                 # docs/ENGINEERING.md: static load across layers
     max_disp_mm: 0.3
     fixed: {box: [[-200, -1, -1], [200, 200, 0.01]]}          # foot underside, clamped to the base
-    loads:                                                    # stall torque about the output axis, as a +/- Z couple
-      - {box: [[1, wall_t - 0.01, pivot_h - 12], [servo_hx / 2 + 6, wall_t + 0.01, pivot_h + 12]], force_n: [0, 0, "servo_stall_nmm / servo_hx"]}
-      - {box: [[-servo_hx / 2 - 6, wall_t - 0.01, pivot_h - 12], [-1, wall_t + 0.01, pivot_h + 12]], force_n: [0, 0, "-servo_stall_nmm / servo_hx"]}
+    loads:                                                    # stall torque about the output axis = +/- Z couple at the tab screws
+      - {box: [[servo_hx / 2 - 3, wall_t - 8, pivot_h - 8], [servo_hx / 2 + 3, wall_t + 0.01, pivot_h + 8]], force_n: [0, 0, "servo_stall_nmm / servo_hx"]}
+      - {box: [[-servo_hx / 2 - 3, wall_t - 8, pivot_h - 8], [-servo_hx / 2 + 3, wall_t + 0.01, pivot_h + 8]], force_n: [0, 0, "-servo_stall_nmm / servo_hx"]}
   - {id: rig_mass, check: mass_max, max_g: 250, why: "bench rig; keep it light enough to move around"}
