@@ -1,0 +1,91 @@
+"""FEA load cases (pressure, torque about an axis, bearing seat) against hand calculations, and the stress render."""
+import json
+import math
+
+import numpy as np
+import pytest
+from build123d import Align, Box, Cylinder, Pos, Rot
+
+from kerf import fea, fea_render, pipeline
+from test_engine import _write_project
+
+E, NU = 2000.0, 0.3
+
+
+def test_pressure_on_a_face():
+    bar = Box(10, 10, 80, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    r = fea.static(bar, E, NU, fixed=lambda x, y, z: z < 0.01,
+                   loads=[{"pred": lambda x, y, z: z > 79.99, "pressure": 5.0}])
+    assert r["applied_force_n"] == pytest.approx([0, 0, -500.0], abs=1e-3)   # p x A, pushing into the face
+    assert r["median_vm_mpa"] == pytest.approx(5.0, rel=0.01)
+    assert r["max_disp_mm"] == pytest.approx(5.0 * 80 / E, rel=0.02)          # 0.2 mm
+
+
+def test_torque_about_an_axis():
+    rod = Cylinder(5, 80, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    T = 1000.0
+    r = fea.static(rod, E, NU, fixed=lambda x, y, z: z < 0.01,
+                   loads=[{"pred": lambda x, y, z: z > 79.99, "torque": T, "axis_at": [0, 0, 0], "axis_dir": [0, 0, 1]}])
+    J, G = math.pi * 5 ** 4 / 2, E / (2 * (1 + NU))
+    assert r["applied_moment_nmm"] == pytest.approx([0, 0, T], abs=0.5)
+    assert np.abs(r["applied_force_n"]).max() < 1e-3                       # a pure couple
+    assert r["max_vm_mpa"] == pytest.approx(math.sqrt(3) * T * 5 / J, rel=0.03)   # sqrt(3) x tau_max = 8.82 MPa
+    assert r["max_disp_mm"] == pytest.approx(T * 80 / (G * J) * 5, rel=0.03)      # twist angle x radius
+
+
+def test_bearing_seat_radial_load():
+    blk = Box(30, 20, 30, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(0, 0, 20) * Rot(90, 0, 0) * Cylinder(4, 40)
+    bore = lambda x, y, z: np.hypot(x, z - 20) < 4.2  # noqa: E731
+    down = fea.static(blk, E, NU, fixed=lambda x, y, z: z < 0.01, loads=[{"pred": bore, "bearing": (0, 0, -100.0)}])
+    assert down["applied_force_n"] == pytest.approx([0, 0, -100.0], abs=0.5)   # resultant = the shaft force
+    side = fea.static(blk, E, NU, fixed=lambda x, y, z: z < 0.01, loads=[{"pred": bore, "bearing": (100.0, 0, 0)}])
+    assert side["applied_force_n"] == pytest.approx([100.0, 0, 0], abs=0.5)
+    # a radial pressure acts through the bore centre (0, 0, 20): no moment about it
+    for r, F in ((down, (0, 0, -100.0)), (side, (100.0, 0, 0))):
+        Fa, M = np.array(r["applied_force_n"]), np.array(r["applied_moment_nmm"])
+        assert M - np.cross([0, 0, 20.0], Fa) == pytest.approx([0, 0, 0], abs=0.5)
+
+
+BLOCK = """
+from build123d import *
+def build(ctx):
+    s = Box(30, 20, 30, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(0, 0, 20) * Rot(90, 0, 0) * Cylinder(4, 40)
+    ctx.revolute("shaft", Axis((0, 0, 20), (0, 1, 0)))
+    return ctx.finish(s)
+"""
+YAML = """
+name: FEA loads
+params: {F: 100}
+parts:
+  block: {file: parts/block.py, material: PETG}
+assembly: {root: block, joints: []}
+requirements:
+  - id: seat
+    check: fea_static
+    part: block
+    sf: 2
+    fixed: {box: [[-100, -100, -1], [100, 100, 0.01]]}
+    loads:
+      - {cylinder: {at: shaft, r: 4}, bearing_n: [0, 0, -F]}
+      - {cylinder: {at: shaft, r: 4}, torque_nmm: 200, axis: {at: shaft}}
+      - {box: [[-100, -100, 29.99], [100, 100, 31]], pressure_mpa: 0.1}
+"""
+
+
+def test_yaml_load_cases_and_render(tmp_path):
+    d = _write_project(tmp_path / "fl", YAML, {"block": BLOCK})
+    rep = pipeline.run(str(d), sweeps=True)
+    r = rep["requirements"][0]
+    assert r["ok"], r
+    # bearing 100 N down + pressure 0.1 MPa x 30 x 20 mm top = 160 N down; torque 200 N*mm about the shaft (+Y)
+    assert r["applied_force_n"] == pytest.approx([0, 0, -160.0], abs=0.6)
+    Fa, M = np.array(r["applied_force_n"]), np.array(r["applied_moment_nmm"])
+    assert (M - np.cross([0, 0, 20.0], Fa))[1] == pytest.approx(200.0, abs=1.0)   # about the shaft centre
+    assert "_viz" not in r and "_viz" not in (d / "out" / "report.json").read_text()
+    # the reviewer's picture, from the same solve
+    from kerf import assembly as A, project as P, requirements
+    proj = P.build(P.load(str(d)))
+    res = requirements.run_all(proj, A.plan(proj))[0]
+    png = fea_render.render(res["_viz"], tmp_path / "fea_seat.png", res["_viz"]["title"])
+    assert (tmp_path / "fea_seat.png").stat().st_size > 20000 and png.endswith(".png")
+    json.dumps({k: v for k, v in res.items() if k != "_viz"})

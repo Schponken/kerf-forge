@@ -172,3 +172,16 @@ entry before each push (date, what changed, verify state, next step, open proble
   Adds ~9 s to `kerf build` only (not `kerf check`). tests/test_attribution.py has hand answers.
 - 232 tests pass; servo_link build PASS; tools/viewer/smoke.mjs clicks a face on every printed part.
 
+## 2026-10-30 — session fc7cb2cb: FEA load cases + stress renders
+- kerf/fea.py: loads may be dicts with `pressure` (into the face), `torque` about an axis (tangential traction
+  proportional to radius) or `bearing` (cosine pressure on the half of a bore facing the load, resultant = the force),
+  besides the old total `force`. Results now carry `applied_force_n` / `applied_moment_nmm` (exact resultants of the
+  load vector) so every load case can be audited, and surface triangles + von Mises for rendering.
+- requirements: yaml `pressure_mpa`, `torque_nmm` + `axis: {at: joint | xyz, dir}`, `bearing_n`; new `cylinder` region
+  (bore/shaft seat selection by radius about an axis). `tip_over` now reuses req_balance.assembly_cg.
+- kerf/fea_render.py + pipeline: `kerf build` writes `out/renders/fea_<id>.png` (two shaded views, magenta = over the
+  limit); meshes stay out of report.json. design-reviewer is told to read them; ENGINEERING.md section 3 says which load
+  to use when.
+- tests/test_fea_loads.py: pressure bar (500 N, 5 MPa, 0.2 mm), torsion rod (sqrt3*Tr/J and twist within 3 %),
+  bearing seat resultants through the bore centre, yaml end-to-end + PNG. servo_link check still PASS (review was
+  already stale from the pins catalog change; it is re-reviewed in the open servo_mount item).

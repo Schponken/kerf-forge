@@ -21,7 +21,8 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/pins.py` | Pinned hinges: every `pin_hole` of a group coaxial (0.05 mm), pin held (press/heatset/tap) on one side of each moving joint and free on the other, the joint turning about the pin axis, and a stocked pin/screw length that reaches every hole |
 | `kerf/checks.py` | Per-part print checks in print orientation (solids, validity, bed fit, watertight, overhang, wall thickness, mass) |
 | `kerf/requirements.py` | Engineering checks named in project.yaml (`@check("name")` registry), incl. `fea_static` |
-| `kerf/fea.py` | Linear static FEA of one part (gmsh quadratic tets + scikit-fem); validated in tests/test_fea.py |
+| `kerf/fea.py` | Linear static FEA of one part (gmsh quadratic tets + scikit-fem); force, pressure, torque and bearing loads; validated in tests/test_fea.py, tests/test_fea_loads.py |
+| `kerf/fea_render.py` | Von Mises colour picture per FEA check (`out/renders/fea_<id>.png`) |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` |
 | `kerf/cli.py` | `kerf doctor | check | build | verify | review-status | new` |
@@ -94,6 +95,11 @@ smallest atan(CG-to-edge distance / CG height) in degrees over the poses; negati
 `prop_clearance` (`min_mm`, optional `min_between_mm` tip-to-tip, `props`, `ignore`, `joints` to sweep (default all),
 `samples`, `poses`) measures every prop disc (keep-out, `proxy: prop_disc`) to every other disc and to every non-keep-out
 item except its `owner` and allow_overlap partners, at home and over the sweeps, and reports the tightest gap.
+FEA loads: region keys (`box`, `sites`, `near_joint`, or `cylinder: {at: [x,y,z] | joint, dir, r, tol: 0.3, span}`
+for a bore) plus one of `force_n: [fx,fy,fz]` (total, spread evenly), `pressure_mpa: p` (into the surface),
+`torque_nmm: T` with `axis: {at, dir}` (tangential, proportional to radius) or `bearing_n: [fx,fy,fz]` (cosine pressure
+on the half of a bore facing the load). Each FEA result reports `applied_force_n` / `applied_moment_nmm` (part origin),
+and `kerf build` writes `out/renders/fea_<id>.png` (kerf/fea_render.py: von Mises, magenta above the limit).
 Numbers inside requirement regions and forces may be expressions over params/layout values.
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs

@@ -80,6 +80,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                                                 for iid, it in proj.items.items() if it.shape is not None
                                                 for lab, j in it.shape.joints.items()}
             rq = requirements.run_all(proj, asm, quick=not sweeps)
+            fea_viz = {r["id"]: r.pop("_viz") for r in rq if "_viz" in r}   # meshes stay out of report.json
             rep["requirements"] = rq
             for r in rq:
                 if not r["ok"]:
@@ -105,6 +106,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 render_glb(proj.out("assembly.glb"), out / "assembly", sheet=True)
                 render_glb(proj.out("exploded.glb"), out / "exploded", views="iso,iso2,front,top", sheet=True)
                 render_glb(proj.out("assembly_keepouts.glb"), out / "keepouts", views="iso,top", sheet=False)
+                from . import fea_render
+                for rid, viz in fea_viz.items():
+                    r = next(r for r in rq if r["id"] == rid)
+                    r["render"] = f"renders/fea_{rid}.png"
+                    fea_render.render(viz, out / f"fea_{rid}.png", viz.get("title", rid))
                 for e in asm.movable:
                     for tag, v in (("min", e.range[0]), ("max", e.range[1])):
                         A.solve(asm, {e.name: v})

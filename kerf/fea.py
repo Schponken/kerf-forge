@@ -5,6 +5,14 @@
                      loads=[(lambda x, y, z: x > 99.99, (0, 0, -10.0))])  # total force (N) spread over those faces
     -> {"max_vm_mpa": 99.9th percentile von Mises, "max_vm_peak_mpa", "max_disp_mm", "nodes", "elements"}
 
+Each load is either (predicate, force) — a total force spread evenly over the selected faces — or a dict with "pred"
+and one of: "force" (same), "pressure" (MPa, pushes into the surface along -normal), "torque" (N*mm about the axis
+"axis_at" + "axis_dir", tangential traction proportional to the distance from the axis, the exact torsion
+distribution for a round section) or "bearing" (force vector a shaft puts on a bore: cosine-distributed pressure on the
+half of the selected faces facing the load, scaled so the resultant equals the force).
+The result also has "applied_force_n" / "applied_moment_nmm" (about the part origin) so a load can be audited, and
+"_viz" (surface triangles + von Mises per triangle) for kerf/fea_render.py.
+
 Predicates get numpy arrays of facet-centre coordinates and must be vectorised (use comparisons, & and |).
 Units: mm, N, MPa. Validated against beam theory in tests/test_fea.py. The percentile stress ignores single-point singularities at sharp re-entrant corners and load
 edges; judge against allowable stress = strength / safety factor (docs/ENGINEERING.md). Printed parts are not
@@ -73,19 +81,14 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
     lam, mu = lame_parameters(E_mpa, nu)
     K = asm(linear_elasticity(lam, mu), basis)
     f = np.zeros(K.shape[0])
-    for pred, force in loads:
+    for ld in loads:
+        ld = ld if isinstance(ld, dict) else {"pred": ld[0], "force": ld[1]}
+        pred = ld["pred"]
         facets = mesh.facets_satisfying(lambda x: pred(x[0], x[1], x[2]), boundaries_only=True)
         if len(facets) == 0:
             raise ValueError("a load region selects no boundary faces")
         fb = FacetBasis(mesh, elem, facets=facets, intorder=4)
-        area = asm(Functional(lambda w: 1.0 + 0.0 * w.x[0]), fb)
-        t = np.asarray(force, dtype=float) / area
-
-        @LinearForm
-        def traction(v, w, t=t):
-            return t[0] * v[0] + t[1] * v[1] + t[2] * v[2]
-
-        f += asm(traction, fb)
+        f += asm(_traction(ld, fb), fb)
     fixed_facets = mesh.facets_satisfying(lambda x: fixed(x[0], x[1], x[2]), boundaries_only=True)
     if len(fixed_facets) == 0:
         raise ValueError("the fixed region selects no boundary faces")
@@ -117,6 +120,48 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
     vm = np.sqrt(0.5 * ((s[0, 0] - s[1, 1]) ** 2 + (s[1, 1] - s[2, 2]) ** 2 + (s[2, 2] - s[0, 0]) ** 2)
                  + 3 * (s[0, 1] ** 2 + s[1, 2] ** 2 + s[2, 0] ** 2))
     disp = np.vstack([u[basis.nodal_dofs[i]] for i in range(3)]).T
-    return {"max_vm_mpa": float(np.percentile(vm, 99.9)), "max_vm_peak_mpa": float(vm.max()), "median_vm_mpa": float(np.median(vm)),
+    # applied loads: the P2 basis reproduces linear fields, so sum(f) and sum(x cross f) are the exact resultants
+    fx, fy, fz = (np.where(comp == c, f, 0.0) for c in range(3))
+    Fapp = np.array([fx.sum(), fy.sum(), fz.sum()])
+    Mapp = np.array([(y_ * fz - z_ * fy).sum(), (z_ * fx - x_ * fz).sum(), (x_ * fy - y_ * fx).sum()])
+    bf = mesh.boundary_facets()
+    vm_el = vm.mean(axis=1)
+    viz = {"tris": mesh.p[:, mesh.facets[:, bf]].transpose(2, 1, 0), "vm": vm_el[mesh.f2t[0, bf]]}
+    return {"applied_force_n": Fapp.round(4).tolist(), "applied_moment_nmm": Mapp.round(3).tolist(), "_viz": viz,
+            "max_vm_mpa": float(np.percentile(vm, 99.9)), "max_vm_peak_mpa": float(vm.max()), "median_vm_mpa": float(np.median(vm)),
             "max_disp_mm": float(np.linalg.norm(disp, axis=1).max()),
             "nodes": int(mesh.p.shape[1]), "elements": int(mesh.t.shape[1])}
+
+
+def _traction(ld, fb):
+    """LinearForm for one load dict on its facet basis (see module docstring)."""
+    from skfem import Functional, LinearForm, asm
+
+    if "force" in ld:
+        area = asm(Functional(lambda w: 1.0 + 0.0 * w.x[0]), fb)
+        t = np.asarray(ld["force"], dtype=float) / area
+        return LinearForm(lambda v, w: t[0] * v[0] + t[1] * v[1] + t[2] * v[2])
+    if "pressure" in ld:
+        p = float(ld["pressure"])
+        return LinearForm(lambda v, w: -p * (w.n[0] * v[0] + w.n[1] * v[1] + w.n[2] * v[2]))
+    if "torque" in ld:
+        o = np.asarray(ld["axis_at"], float)
+        d = np.asarray(ld["axis_dir"], float)
+        d = d / np.linalg.norm(d)
+
+        def tang(x):  # d x (x - o): tangential, magnitude = distance from the axis
+            r = [x[i] - o[i] for i in range(3)]
+            return [d[1] * r[2] - d[2] * r[1], d[2] * r[0] - d[0] * r[2], d[0] * r[1] - d[1] * r[0]]
+        polar = asm(Functional(lambda w: sum(c ** 2 for c in tang(w.x))), fb)   # integral of r_perp^2 dA
+        k = float(ld["torque"]) / polar
+        return LinearForm(lambda v, w: k * sum(c * v[i] for i, c in enumerate(tang(w.x))))
+    if "bearing" in ld:
+        F = np.asarray(ld["bearing"], float)
+        Fm = float(np.linalg.norm(F))
+        e = F / Fm
+
+        def cos_pos(w):  # how squarely each face point faces the load; the outward normal of a bore points inward
+            return np.maximum(0.0, -(w.n[0] * e[0] + w.n[1] * e[1] + w.n[2] * e[2]))
+        q = Fm / asm(Functional(lambda w: cos_pos(w) ** 2), fb)
+        return LinearForm(lambda v, w: -q * cos_pos(w) * (w.n[0] * v[0] + w.n[1] * v[1] + w.n[2] * v[2]))
+    raise ValueError(f"load needs force, pressure, torque or bearing: {sorted(ld)}")

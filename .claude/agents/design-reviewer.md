@@ -11,6 +11,8 @@ Inputs (read all of them):
 - `projects/<p>/project.yaml` and every `projects/<p>/parts/*.py`
 - `projects/<p>/out/report.json` (checks, sweeps, fasteners, requirements, masses)
 - Every image in `projects/<p>/out/renders/` — assembly sheet, exploded sheet, keep-outs, each joint pose, each part sheet.
+  Including `fea_<id>.png` (von Mises per FEA check): is the hot spot where the load path says it should be, and is
+  the load applied where the real load enters (applied force/moment are in report.json next to each FEA result)?
   Open them with Read and actually look.
 - `docs/ENGINEERING.md` (the rules) and `catalog/hardware.json` (the real hardware)
 

@@ -140,8 +140,22 @@ def _ev(v, params):
 
 def _region(item, spec, params=None):
     """Vectorised predicate (x, y, z arrays in the part frame) for a yaml region:
-    {box: [[x0,y0,z0],[x1,y1,z1]]} | {sites: group, radius: r} | {near_joint: label, radius: r}."""
+    {box: [[x0,y0,z0],[x1,y1,z1]]} | {sites: group, radius: r} | {near_joint: label, radius: r} |
+    {cylinder: {at: [x,y,z] | joint label, dir: [dx,dy,dz], r: radius, tol: 0.3, span: [s0, s1]}} (faces whose
+    distance from the axis is r +/- tol, e.g. a bore or a shaft seat; span limits the axial extent from `at`)."""
     shape = item.shape
+    if "cylinder" in spec:
+        c = spec["cylinder"]
+        o, d = _axis(item, c, params or {})
+        rr, tol = _ev(c["r"], params or {}), _ev(c.get("tol", 0.3), params or {})
+        s0, s1 = [_ev(v, params or {}) for v in c.get("span", [-1e9, 1e9])]
+
+        def cyl(x, y, z):
+            r = np.stack([x - o[0], y - o[1], z - o[2]], axis=-1)
+            a = r @ d
+            rad = np.linalg.norm(r - a[..., None] * d, axis=-1)
+            return (np.abs(rad - rr) <= tol) & (a >= s0) & (a <= s1)
+        return cyl
     if "box" in spec:
         (x0, y0, z0), (x1, y1, z1) = [[_ev(v, params or {}) for v in c] for c in spec["box"]]
         return lambda x, y, z: (x >= x0) & (x <= x1) & (y >= y0) & (y <= y1) & (z >= z0) & (z <= z1)
@@ -164,6 +178,48 @@ def _region(item, spec, params=None):
         d = np.min(np.linalg.norm(np.stack([x, y, z], axis=-1)[..., None, :] - P, axis=-1), axis=-1)
         return d <= r
     return pred
+
+
+def _axis(item, spec, params):
+    """(origin, unit dir) in the part frame from {at: [x,y,z] | joint label, dir: [..]}; a joint label without `dir`
+    uses that joint's axis (revolute) or its local Z."""
+    at = spec["at"]
+    if isinstance(at, str):
+        j = next((j for j in item.shape.kerf_joints if j.label == at), None)
+        if j is None:
+            raise ValueError(f"{item.id} has no joint '{at}'")
+        if j.loc is not None:
+            o, d = geom.world_point(j.loc, (0, 0, 0)), geom.world_dir(j.loc, (0, 0, 1))
+        else:
+            p, q = j.axis.position, j.axis.direction
+            o, d = np.array([p.X, p.Y, p.Z]), np.array([q.X, q.Y, q.Z])
+    else:
+        o, d = np.array([_ev(v, params) for v in at]), None
+    if "dir" in spec:
+        d = np.array([_ev(v, params) for v in spec["dir"]])
+    if d is None:
+        raise ValueError(f"axis {spec} needs dir")
+    return o, d / np.linalg.norm(d)
+
+
+def _fea_load(item, spec, params):
+    """One yaml load -> fea load dict: region keys plus force_n | pressure_mpa | torque_nmm + axis | bearing_n."""
+    ld = {"pred": _region(item, spec, params)}
+    vec = lambda k: tuple(_ev(v, params) for v in spec[k])  # noqa: E731
+    if "force_n" in spec:
+        ld["force"] = vec("force_n")
+    elif "pressure_mpa" in spec:
+        ld["pressure"] = _ev(spec["pressure_mpa"], params)
+    elif "torque_nmm" in spec:
+        if "axis" not in spec:
+            raise ValueError("a torque_nmm load needs axis: {at: [x,y,z] | joint label, dir: [..]}")
+        o, d = _axis(item, spec["axis"], params)
+        ld.update(torque=_ev(spec["torque_nmm"], params), axis_at=o, axis_dir=d)
+    elif "bearing_n" in spec:
+        ld["bearing"] = vec("bearing_n")
+    else:
+        raise ValueError(f"load needs force_n, pressure_mpa, torque_nmm or bearing_n: {spec}")
+    return ld
 
 
 def _strength(material, direction):
@@ -190,11 +246,12 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
     nu = catalog.num(m, "poisson", "poissons_ratio", default=0.38)
     shape = it.shape.located(__import__("build123d").Location())
     res = fea.static(shape, E, nu, _region(it, fixed, proj.params),
-                     [(_region(it, l, proj.params), tuple(_ev(v, proj.params) for v in l["force_n"])) for l in loads],
-                     size=mesh_size)
+                     [_fea_load(it, l, proj.params) for l in loads], size=mesh_size)
     allow = _strength(mat, direction) / sf
     ok = res["max_vm_mpa"] <= allow and (max_disp_mm is None or res["max_disp_mm"] <= max_disp_mm)
     return {"ok": ok, "value": round(res["max_vm_mpa"], 2), "limit": round(allow, 2),
+            "applied_force_n": res["applied_force_n"], "applied_moment_nmm": res["applied_moment_nmm"],
+            "_viz": {**res["_viz"], "allow": allow, "title": f"{part}: von Mises (MPa), limit {allow:.1f}"},
             "detail": f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
                       f"peak {res['max_vm_peak_mpa']:.2f} MPa, deflection {res['max_disp_mm']:.3f} mm"
                       + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f", {res['elements']} elements"}
@@ -314,12 +371,7 @@ def tip_over(proj, asm, min_deg, support=None, poses=None, payload_g=0.0, payloa
     worst, worst_pose, worst_h = np.inf, None, None
     for pose in poses or [{}]:
         A.solve(asm, pose)
-        m = np.array([item_mass_g(proj.items[i]) for i in ids])
-        c = np.array([_com(proj.items[i]) for i in ids])
-        if payload_g and payload_at:
-            m = np.append(m, payload_g)
-            c = np.vstack([c, _joint_world(proj, payload_at)[0]])
-        cg = (m[:, None] * c).sum(0) / m.sum()
+        cg, _ = req_balance.assembly_cg(proj, payload_g=payload_g, payload_at=payload_at)
         z0, hull = _support_polygon([proj.items[i].shape for i in (support or ids)], tol)
         h = cg[2] - z0
         if hull is None:

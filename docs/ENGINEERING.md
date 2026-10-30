@@ -28,6 +28,10 @@ DESIGN.md says why.
 - Every structural part gets an `fea_static` requirement: fixed where it is bolted (fastener group region), loaded
   where the load enters (joint/seat region), the realistic worst case x the factor in section 3, strength in the
   loaded layer direction. Deflection limits where stiffness matters (arms: tip deflection < 1% of length).
+- Load the way the real part is loaded: `bearing_n` (cosine pressure on the half of a bore facing the load) for shaft
+  and bearing seats, `torque_nmm` + `axis` for a servo/motor torque reaction, `pressure_mpa` for clamping or fluid
+  pressure, `force_n` otherwise. Check `applied_force_n` / `applied_moment_nmm` in the report and look at
+  `out/renders/fea_<id>.png`: the hot spot must sit where the load path says it should.
 - Quick hand checks (`cantilever_stress`, beam formulas in DESIGN.md) are for sizing; FEA is the proof.
 - If FEA fails, fix geometry (section depth, ribs, fillets, orientation) before reaching for a stronger material.
 - Balance: `cg` gives the assembled CG (every item incl. purchased, plus a payload) against a reference line. Use it
