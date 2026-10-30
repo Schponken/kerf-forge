@@ -45,7 +45,7 @@ tested before handoff.
 
 ## Phase 2 — design from a description
 - [x] `kerf` skill (`.claude/skills/kerf/SKILL.md`) drives the full workflow from a one-paragraph description: design-researcher (REFERENCES.md) → DESIGN.md with spec-driven sizing and trade-offs → project.yaml → parallel part-designer subagents → integrate → FEA on structural parts → detail pass → build → design-reviewer → summary for Spencer
-- [ ] docs/ARCHITECTURE.md and docs/ENGINEERING.md complete and accurate for everything the engine now does
+- [x] docs/ARCHITECTURE.md and docs/ENGINEERING.md complete and accurate for everything the engine now does
 
 ## Phase 3 — the eval projects (each: REFERENCES.md from the design-researcher, `kerf build` PASS, design-reviewer PASS, `evals/<id>/acceptance.py` PASS)
 - [ ] E2 `fpv_5in` — 5" freestyle FPV quad frame (evals/fpv_5in/brief.md)

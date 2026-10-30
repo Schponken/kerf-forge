@@ -80,6 +80,9 @@ Clearances between moving printed parts: >= 0.5 mm everywhere over the full moti
 ## 8. Moving joints
 - Every joint declares its range; the sweep must be collision-free over the full range (check).
 - Revolute joints carrying load use a bearing or a metal pin/screw shaft, not plastic-on-plastic with a printed pin.
+  Pinned hinges use `iface.pin_hole` on every knuckle (`press` on the holding side, +0.05 mm; `free` on the turning
+  side, +0.35 mm, catalog `fdm_fits.pin`); `kerf check` proves the holes coaxial, the pin axis = the joint axis, and
+  picks a stocked pin length — make the knuckle span equal one (check).
 - Servo output carries torque only: support side loads with a bearing or a second pivot on the opposite side
   (a "dual-support" bracket) whenever the link is longer than ~60 mm or carries more than ~100 g.
 - Leave 0.5 mm axial clearance (washers or printed spacers) between rotating faces.
@@ -98,11 +101,14 @@ Clearances between moving printed parts: >= 0.5 mm everywhere over the full moti
   max screw depth if listed).
 - Stack mounted on soft-mount grommets when the catalog lists them; electronics boxed away from the prop wash debris.
 - Arms: check root bending stress under max thrust x 2 (crash/aggressive) with SF from section 3.
-- Battery: strap slots for a 20 mm strap, non-slip pad area, CG within 5 mm of the thrust center (X/Y).
+- Battery: strap slots for a 20 mm strap, non-slip pad area, CG within 5 mm of the thrust center (X/Y) (`cg` check,
+  `max_lateral_mm: 5` about the vertical line through the frame centre).
 
 ## 10. Robot arm specifics
 - Static torque at every joint, worst pose (arm horizontal, full reach, payload), <= 50% of stall (check).
 - Base yaw carries the arm's weight and moment on a bearing or turntable, never on the servo spline alone.
+- Anything that stands on its own (arm base, landing legs) gets a `tip_over` requirement at its worst pose
+  (arm stretched out with payload): >= 15 deg unless the brief says otherwise, or clamp/bolt it down.
 - Cable path from base to wrist that survives the full motion range.
 - Gripper: opening and grip force stated in DESIGN.md.
 

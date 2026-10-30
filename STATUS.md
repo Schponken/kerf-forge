@@ -213,3 +213,12 @@ entry before each push (date, what changed, verify state, next step, open proble
   from `references/INDEX.md`, with a toolbox of every requirement check, always-on check, iface/drives/features helper.
   `tests/test_kerf_skill.py` keeps it true to the engine (every REGISTRY check listed, every named helper/command/file
   exists, stages in order). The end-to-end proof is E6 (blind pan_tilt run).
+
+## 2026-10-30 — session 1c-pins: docs complete
+- Done: ARCHITECTURE.md now has every module in the package map (geom, req_balance, vendor, viewer, attribution),
+  `kerf status`, an "Item keys" section (every printed/purchased/keep-out/project key the engine reads), a
+  requirement-check table (all 12 checks with arguments), and "Pin sites". ENGINEERING.md names the checks that
+  enforce its rules (pin_hole fits, cg for drone balance, tip_over for anything standing).
+- `tests/test_docs.py` fails when a new module, requirement check, CLI command or project.yaml key is not
+  documented — sessions adding engine features (access checks, perf caching) must add their docs line.
+- pytest: 258 passed.

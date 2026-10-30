@@ -19,13 +19,18 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/assembly.py` | Joint tree, solve poses, interference, motion sweeps, coupled poses, fastener alignment + screw lengths |
 | `kerf/features.py` | Detailed-modeling helpers: swept channels, uniform shell, gussets, teardrop holes, printed ISO threads (bd_warehouse, phase-matched rod/hole), gear pairs (= drives.spur_pair), snap hooks + living hinges with a strain check, text labels, lightening pockets with a minimum web, `safe_fillet` (applies edge groups one by one, reports failures) |
 | `kerf/pins.py` | Pinned hinges: every `pin_hole` of a group coaxial (0.05 mm), pin held (press/heatset/tap) on one side of each moving joint and free on the other, the joint turning about the pin axis, and a stocked pin/screw length that reaches every hole |
-| `kerf/checks.py` | Per-part print checks in print orientation (solids, validity, bed fit, watertight, overhang, wall thickness, mass) |
+| `kerf/checks.py` | Per-part print checks in print orientation (solids, validity, bed fit, watertight, overhang, wall thickness, `load_axis` across layers, mass) |
 | `kerf/requirements.py` | Engineering checks named in project.yaml (`@check("name")` registry), incl. `fea_static` |
 | `kerf/fea.py` | Linear static FEA of one part (gmsh quadratic tets + scikit-fem); force, pressure, torque and bearing loads; validated in tests/test_fea.py, tests/test_fea_loads.py |
 | `kerf/fea_render.py` | Von Mises colour picture per FEA check (`out/renders/fea_<id>.png`) |
+| `kerf/geom.py` | Geometry helpers: volumes, exact overlaps, meshes, mesh-based overhang / wall-thickness analysis, world points/directions of a Location |
+| `kerf/req_balance.py` | Balance requirement `cg` (assembled centre of gravity incl. purchased parts and payload, vs a reference line, over poses) |
+| `kerf/vendor.py` | `proxy: step` vendor CAD models: loads catalog/models STEP, keeps the base proxy's joints and sites, refuses a model whose bbox or holes disagree with the catalog |
+| `kerf/viewer.py` | Writes the self-contained `out/viewer.html` (meshes, joint sliders from the engine's own kinematics, explode, BOM, print info) |
+| `kerf/attribution.py` | Face → part-file line and project param that produced it (viewer click-to-edit) |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` |
-| `kerf/cli.py` | `kerf doctor | check | build | verify | review-status | new` |
+| `kerf/cli.py` | `kerf doctor | check | build | verify | review-status | new | status` |
 
 ## project.yaml
 ```yaml
@@ -84,6 +89,22 @@ requirements:
     poses: [{mcp: 80, pip: 80}]   # checked besides home; the path follows the parts
     ignore: [tendon]              # items allowed inside the channel
 ```
+Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each function's docstring):
+| check | arguments (main) | value |
+|---|---|---|
+| `mass_max` | `max_g`, `include` | estimated mass (g) |
+| `size_max` | `max_mm` [x, y, z] | assembled bounding box at home |
+| `distance` | `a`, `b` (item.joint), `min_mm`/`max_mm`, `pose` | joint-origin distance (mm) |
+| `clearance_min` | `a`, `b`, `min_mm`, `joints`, `samples` | smallest gap over the sweeps |
+| `static_torque` | `joint`, `actuator` or `stall_kgcm`, `max_fraction`, `payload_g`, `payload_at`, `poses` | worst gravity torque (kg·cm) |
+| `thrust_to_weight` | `thrust_g_total`, `min_ratio` | thrust / all-up mass |
+| `fea_static` | `part`, `fixed`, `loads`, `sf`, `direction`, `max_disp_mm` | stress / deflection (FEA) |
+| `cantilever_stress` | `part`, `section`, `loads`, `sf`, `kt`, `direction` | beam-theory stress at a section |
+| `cg` | `ref` or `point`, `axis`, `max_lateral_mm`, `min_along_mm`/`max_along_mm`, `include`, `payload_g`, `payload_at`, `poses` | CG offset from the line |
+| `tip_over` | `min_deg`, `support`, `poses`, `payload_g`, `payload_at` | smallest tip-over angle (deg) |
+| `channel_clear` | `path`, `diameter`, `poses`, `ignore` | largest diameter that passes (mm) |
+| `prop_clearance` | `min_mm`, `min_between_mm`, `props`, `ignore`, `joints`, `poses` | tightest prop-disc gap (mm) |
+
 `cantilever_stress` cuts the part with the section plane, takes the section's area and second-moment tensor, and
 reports kt x max |N/A + unsymmetric bending stress| over the outline. Torsion is reported, not included.
 `tip_over` (`min_deg`, optional `support: [items]`, `poses: [{joint: deg}]`, `payload_g` + `payload_at: item.joint`)
@@ -101,6 +122,20 @@ for a bore) plus one of `force_n: [fx,fy,fz]` (total, spread evenly), `pressure_
 on the half of a bore facing the load). Each FEA result reports `applied_force_n` / `applied_moment_nmm` (part origin),
 and `kerf build` writes `out/renders/fea_<id>.png` (kerf/fea_render.py: von Mises, magenta above the limit).
 Numbers inside requirement regions and forces may be expressions over params/layout values.
+
+## Item keys
+- Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),
+  `load_axis` (x / -y / [x, y, z] / list: main stress direction in the part frame; warned if > 30 deg across layers),
+  `supports` (per-part override), `params` (per-part param overrides), `note` (shown in the BOM).
+- Purchased items: `catalog`, `proxy`, `groups` (proxy site key -> fastener group), `qty`, `mass_g` (overrides the
+  catalog mass), `note`, `color`, `tab_screws_from: bottom` (servo screws from behind the tabs, with
+  `servo_mount(top_through=True)`), proxy-specific sizes (`length` rod, `size` box, `h` prop-disc thickness,
+  `diameter` prop disc, `hole_start_deg` horn holes, `component_height` board, `model`/`model_rot`/`model_pos`/
+  `models_dir`/`base` vendor STEP, `center`/`teeth`/`width` belt).
+- Keep-outs: as purchased, plus `owner` (the item the volume belongs to; never an interference with it).
+- Project level: `name`, `printer`, `supports`, `params` (`value`, `min`, `max`, `step`, `label`), `derived`, `layout`,
+  `parts`, `purchased`, `keepouts`, `assembly`, `requirements`, `bom_extra` ([{item, qty, type, spec, note}] extra BOM
+  rows such as straps, wire, glue).
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs
 | proxy | from catalog | joints | fastener sites (`groups:` key) |
@@ -141,6 +176,15 @@ through) or toward the mating part (female side: insert, tapped hole, nut trap, 
 connection register sites with the same `group`. After assembly the checker pairs every male site with a female
 site on the same axis (within 0.15 mm, 1°), measures the grip, flags gaps (parts not clamped) and picks the shortest
 standard screw that reaches the minimum engagement without bottoming out. Unpaired sites are failures.
+
+## Pin sites (how pinned hinges are proven)
+`iface.pin_hole(ctx, pin, loc, group, depth, fit)` cuts one knuckle and registers a pin site (origin on the entry
+face, +Z along the pin out of the material). `pin` is a catalog dowel (`motion.pin_3mm`, sizes and stocked `lengths`
+from the catalog) or a screw size (`M3`) used as a pivot; `fit` is `free` (turns), `press` (dowel held,
+`fdm_fits.pin` allowances) or `heatset`/`tap` (screw pivot thread). kerf/pins.py proves per group: every hole coaxial
+(0.05 mm, 0.5 deg), the pin held by some part, each moving joint that splits the group turns about the pin axis (or
+slides along it) with the pin held on one side only, and a stocked length that reaches every hole by min(hole,
+1.5 d). Screw pivots get a threadlocker warning; pins, pivot screws and inserts go into the BOM.
 
 ## report.json (out/report.json, written by check/build)
 `ok`, `problems[]`, `warnings[]`, `fingerprint`, `parts{id: print checks}`, `purchased{}`,
