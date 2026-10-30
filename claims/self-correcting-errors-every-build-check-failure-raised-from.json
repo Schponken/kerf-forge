@@ -1,7 +1,0 @@
-{
- "item": "Self-correcting errors: every build/check failure raised from part code names the part, the feature and the fix hint (e.g. \"fillet on edge group 'top' failed: radius 3 > wall 2.4; use <= 1.1\"), and the part-designer loop feeds it back and retries automatically; test with deliberately broken parts",
- "session": "1c937e70ac",
- "since": 1793403588.3694727,
- "heartbeat": 1793403588.3694727,
- "since_utc": "2026-10-30 23:39"
-}
