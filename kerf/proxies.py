@@ -58,9 +58,16 @@ def servo(ctx, spec):
     for (x, y) in d["holes"]:
         tabs -= Pos(x, y, -1) * Cylinder(d["hole_d"] / 2, d["tab_t"] + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     s = body + tabs + shaft
+    e = catalog.get(spec["catalog"])
+    if "cable_boss_protrusion" in e:  # cable strain-relief boss on an end face, near the bottom
+        bp, bh, bz, bw = (catalog.num(e, k) for k in ("cable_boss_protrusion", "cable_boss_h", "cable_boss_z0", "cable_boss_w"))
+        sx = 1 if e.get("cable_boss_end", "output") == "output" else -1
+        s += Pos(sx * (d["L"] / 2 + bp / 2 - 0.01), 0, -d["tab_z"] + bz) * Box(bp + 0.02, bw, bh, align=(Align.CENTER, Align.CENTER, Align.MIN))
     if _g(spec, "tabs"):
+        from_bottom = spec.get("tab_screws_from", "top") == "bottom"
         for (x, y) in d["holes"]:
-            ctx.site(Site(_g(spec, "tabs"), "male", d["screw"], "clearance", Location((x, y, d["tab_t"])), grip=d["tab_t"]))
+            loc = Location((x, y, 0)) * Rot(180, 0, 0) if from_bottom else Location((x, y, d["tab_t"]))
+            ctx.site(Site(_g(spec, "tabs"), "male", d["screw"], "clearance", loc, grip=d["tab_t"]))
     ctx.rigid("tabs", Location((0, 0, 0)))
     top = d["top"] + d["shaft_h"]
     rng = tuple(spec.get("range", (-90, 90)))

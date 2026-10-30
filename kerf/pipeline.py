@@ -37,6 +37,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         if it.shape is None:
             continue
         r = checks.part_checks(it, printer, supports=it.spec.get("supports", supports))
+        r["notes"] = list(getattr(it.shape, "kerf_notes", []))
+        r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]
         rep["parts"][iid] = r
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]
@@ -73,7 +75,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                                                                  round(j.location.position.Z, 3)]
                                                 for iid, it in proj.items.items() if it.shape is not None
                                                 for lab, j in it.shape.joints.items()}
-            rq = requirements.run_all(proj, asm)
+            rq = requirements.run_all(proj, asm, quick=not sweeps)
             rep["requirements"] = rq
             for r in rq:
                 if not r["ok"]:
@@ -133,7 +135,7 @@ def summary(rep: dict) -> str:
     for s in a.get("sweeps", []):
         L.append(f"  sweep {s['joint']:14s} {'clear' if s['clear'] else 'COLLIDES'} over {s.get('range', '')} ({s['samples']} samples)")
     for r in rep.get("requirements", []):
-        L.append(f"  req {r['id']:20s} {'ok ' if r['ok'] else 'BAD'} {r['value']} (limit {r['limit']})")
+        L.append(f"  req {r['id']:20s} " + ("skipped (--quick)" if r.get("skipped") else f"{'ok ' if r['ok'] else 'BAD'} {r['value']} (limit {r['limit']})"))
     for p in rep["problems"]:
         L.append(f"  PROBLEM: {p}")
     for w in rep["warnings"]:

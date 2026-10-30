@@ -109,7 +109,8 @@
    "heatset_min_wall": 1.6,
    "source": "https://www.3djake.ch/en-CH/cnc-kitchen/threaded-inserts-m3-standard?sai=15445 ; https://forum.bambulab.com/t/how-to-design-screw-holes-for-3d-printing/217352 ; https://www.hubs.com/knowledge-base/how-assemble-3d-printed-parts-threaded-fasteners/ ; https://www.spirol.com/resources/white-papers/how-to-design-the-proper-hole-for-heat-ultrasonic-inserts/",
    "confidence": "multiple-vendors",
-   "note": "Insert: CNC Kitchen M3 standard 5.7 mm (D1 4.6, centre tip 3.9, hole 4.0, wall 1.6; opened on its own product page). Alternatives: M3 short L 3.0 same hole; M3 Voron L 4.0, D1 5.0, hole 4.4, wall 1.3. Pilot: Bambu PLA vertical 2.72 (horizontal 2.90; PETG HF vertical 2.60). clearance 3.4+0.1 typical; nut pocket 5.5+0.2."
+   "note": "Insert: CNC Kitchen M3 standard 5.7 mm (D1 4.6, centre tip 3.9, hole 4.0, wall 1.6; opened on its own product page). Alternatives: M3 short L 3.0 same hole; M3 Voron L 4.0, D1 5.0, hole 4.4, wall 1.3. Pilot: Bambu PLA vertical 2.72 (horizontal 2.90; PETG HF vertical 2.60). clearance 3.4+0.1 typical; nut pocket 5.5+0.2. self_tap_pilot is the Bambu PLA vertical value; self_tap_pilot_petg is the PETG HF vertical value from the same Bambu forum table.",
+   "self_tap_pilot_petg": 2.6
   },
   "M4": {
    "clearance_hole": 4.6,
@@ -448,7 +449,13 @@
    "weight_g": 55,
    "source": "https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf",
    "confidence": "multiple-vendors",
-   "note": "TowerPro drawing: body 40.3 (drawing) vs 40.7 (spec text), width 20 (drawing) vs 19.7 (text), case top 36.6, tab underside 26.6, tab span 53.6, 47.6 to horn top; spec text height 42.9 taken as spline top -> shaft_h 6.3 (includes raised output boss). Waveshare (https://www.waveshare.com/mg996r-servo.htm) 40.7 x 19.7 x 42.9, 9 kg*cm @4.8 V; Kitronik clone (https://kitronik.co.uk/products/2575-large-180-servo) 40 x 19 x 43, claims 13 kg*cm. Larger of each body value used for pocket sizing. UNVERIFIED (not on any MG996R drawing found; taken from the same-class DSSERVO DS3218 drawing / typical standard-servo layout): hole_spacing_l 49.5, hole_spacing_w 10, hole_d 4.2 (fits supplied rubber grommet + brass eyelet, M3 bolt), tab_t 2.5, shaft_offset 10. Spline 25T, Pololu standard 25T spline = 5.8 mm (https://core-electronics.com.au/pololu-wheel-for-standard-servo-splines-25t-5-8mm-90-10mm-red-2-pack.html.plain.md). 11 kg*cm @6 V, 0.14 s/60 @6 V. SPREAD: torque 9-13 kg*cm across listings; speed 0.17-0.19."
+   "note": "TowerPro drawing: body 40.3 (drawing) vs 40.7 (spec text), width 20 (drawing) vs 19.7 (text), case top 36.6, tab underside 26.6, tab span 53.6, 47.6 to horn top; spec text height 42.9 taken as spline top -> shaft_h 6.3 (includes raised output boss). Waveshare (https://www.waveshare.com/mg996r-servo.htm) 40.7 x 19.7 x 42.9, 9 kg*cm @4.8 V; Kitronik clone (https://kitronik.co.uk/products/2575-large-180-servo) 40 x 19 x 43, claims 13 kg*cm. Larger of each body value used for pocket sizing. UNVERIFIED (not on any MG996R drawing found; taken from the same-class DSSERVO DS3218 drawing / typical standard-servo layout): hole_spacing_l 49.5, hole_spacing_w 10, hole_d 4.2 (fits supplied rubber grommet + brass eyelet, M3 bolt), tab_t 2.5, shaft_offset 10. Spline 25T, Pololu standard 25T spline = 5.8 mm (https://core-electronics.com.au/pololu-wheel-for-standard-servo-splines-25t-5-8mm-90-10mm-red-2-pack.html.plain.md). 11 kg*cm @6 V, 0.14 s/60 @6 V. SPREAD: torque 9-13 kg*cm across listings; speed 0.17-0.19. Cable strain-relief boss on the OUTPUT-end face near the bottom: protrudes ~6.6 mm, ~4.0 mm tall, ~3-7 mm above the case bottom, scaled from the side view of the cited TowerPro drawing (width 8 mm is typical, not on the drawing). Travel ~120 deg at standard 1000-2000 us pulses; ~180 deg needs ~500-2500 us.",
+   "cable_boss_protrusion": 6.6,
+   "cable_boss_h": 4.0,
+   "cable_boss_z0": 3.0,
+   "cable_boss_w": 8.0,
+   "cable_boss_end": "output",
+   "travel_deg_standard": 120
   },
   "DS3218": {
    "body_l": 40.0,

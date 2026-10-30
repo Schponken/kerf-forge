@@ -200,12 +200,19 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
                       + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f", {res['elements']} elements"}
 
 
-def run_all(proj, asm) -> list:
+SLOW = {"fea_static"}
+
+
+def run_all(proj, asm, quick: bool = False) -> list:
     out = []
     for req in proj.data.get("requirements") or []:
         kw = {k: v for k, v in req.items() if k not in ("check", "why", "id")}
         name = req["check"]
         rid = req.get("id", name)
+        if quick and name in SLOW:
+            out.append({"id": rid, "check": name, "why": req.get("why", ""), "ok": True, "skipped": True,
+                        "value": None, "limit": None, "detail": "skipped in --quick (runs in full check/build/verify)"})
+            continue
         try:
             if name not in REGISTRY:
                 raise ValueError(f"unknown check '{name}' (have {sorted(REGISTRY)})")

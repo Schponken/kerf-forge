@@ -22,7 +22,7 @@ import numpy as np
 logging.getLogger("skfem").setLevel(logging.ERROR)
 
 
-MAX_TETS = 60000  # ~2-3 GB peak with P2 elements and the direct solver
+MAX_TETS = 80000  # quadratic tets with the AMG solver stay well under ~2 GB
 
 
 def _mesh(shape, size: float):
@@ -90,7 +90,28 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
     if len(fixed_facets) == 0:
         raise ValueError("the fixed region selects no boundary faces")
     D = basis.get_dofs(fixed_facets).all()
-    u = solve(*condense(K, f, D=D))
+    # Iterative solve (algebraic multigrid + CG): a direct solver on quadratic tets needs GBs of RAM.
+    import pyamg
+    A, b, x0, I = condense(K, f, D=D)
+    # rigid-body modes (3 translations, 3 rotations) as the near-null space: what makes AMG converge for elasticity
+    N = K.shape[0]
+    comp = np.zeros(N, dtype=int)
+    for name in ("nodal_dofs", "edge_dofs", "facet_dofs", "interior_dofs"):
+        arr = getattr(basis, name, None)
+        if arr is not None and getattr(arr, "size", 0):
+            for c in range(3):
+                comp[arr[c]] = c
+    X = basis.doflocs
+    x_, y_, z_ = X[0], X[1], X[2]
+    e0, e1, e2 = (comp == 0) * 1.0, (comp == 1) * 1.0, (comp == 2) * 1.0
+    B = np.stack([e0, e1, e2, -z_ * e1 + y_ * e2, z_ * e0 - x_ * e2, -y_ * e0 + x_ * e1], axis=1)[I]
+    ml = pyamg.smoothed_aggregation_solver(A.tocsr(), B=B, smooth="energy")
+    res_hist = []
+    xI = ml.solve(b, tol=1e-9, accel="cg", maxiter=600, residuals=res_hist)
+    if res_hist and res_hist[-1] > 1e-6 * max(res_hist[0], 1e-30):
+        raise RuntimeError(f"FEA solver did not converge (residual ratio {res_hist[-1] / res_hist[0]:.1e})")
+    u = x0.copy()
+    u[I] = xI
     eps = sym_grad(basis.interpolate(u))
     s = 2 * mu * eps + lam * eye(trace(eps), 3)
     vm = np.sqrt(0.5 * ((s[0, 0] - s[1, 1]) ** 2 + (s[1, 1] - s[2, 2]) ** 2 + (s[2, 2] - s[0, 0]) ** 2)

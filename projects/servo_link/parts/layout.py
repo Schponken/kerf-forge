@@ -12,6 +12,6 @@ def layout(p, cat):
     return {
         "foot_hx": hx, "foot_y1": p.wall_t + 9.0, "foot_y2": p.wall_t + p.foot_d - 9.0,
         "gusset_x": g_x, "wall_w": wall_w, "wall_h": wall_h, "bracket_y0": y0,
-        "servo_tab_z": s["tab_z"], "servo_W": s["W"], "servo_out_x": s["out_x"],
+        "servo_tab_z": s["tab_z"], "servo_tab_t": s["tab_t"], "servo_W": s["W"], "servo_out_x": s["out_x"],
         "servo_hx": s["hx"], "servo_stall_nmm": cat.num(cat.get("servos.MG996R"), "stall_torque_kgcm", "stall_torque_kg_cm") * 98.0665,
     }

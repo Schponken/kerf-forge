@@ -13,6 +13,7 @@ dependencies = [
   "scipy>=1.11",
   "gmsh>=4.13",
   "scikit-fem>=10",
+  "pyamg>=5",
   "numpy>=1.26",
   "pyyaml>=6",
   "pytest>=8",

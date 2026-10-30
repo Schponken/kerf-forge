@@ -5,7 +5,7 @@ from kerf import iface
 
 def build(ctx):
     p = ctx.p
-    y_back = p.bracket_y0 - p.servo_tab_z - 12        # room behind the wall for the servo body
+    y_back = p.bracket_y0 - p.servo_tab_t - p.servo_tab_z - 12   # room behind the wall for the servo body
     y_front = p.bracket_y0 + p.wall_t + p.foot_d + 14
     L = p.wall_w + 40
     W = y_front - y_back

@@ -24,8 +24,9 @@ def _first(entry, *keys, default=None):
     return catalog.num(entry, *keys, default=default)
 
 
-def screw_spec(size: str) -> dict:
-    """Everything needed to cut and size holes for a metric screw, from catalog screws + fdm_holes."""
+def screw_spec(size: str, material: str | None = None) -> dict:
+    """Everything needed to cut and size holes for a metric screw, from catalog screws + fdm_holes.
+    material picks a material-specific printed pilot size when the catalog has one (e.g. self_tap_pilot_petg)."""
     s = catalog.get(f"screws.{size}")
     d = float(size.lstrip("M"))
     try:
@@ -43,6 +44,12 @@ def screw_spec(size: str) -> dict:
         "nut_h": _first(s, "nut_thickness", "hex_nut_thickness", "nut_h"),
         "min_engage": 1.5 * d,
     }
+    if f and material:
+        m = material.lower().replace("-", "_")
+        for key in (f"self_tap_pilot_{m}", "self_tap_pilot_petg" if "petg" in m else None):
+            if key and key in f:
+                out["tap"] = float(f[key])
+                break
     if f:
         out["nut_pocket_af"] = _first(f, "nut_pocket_af", "nut_trap_af", "captive_nut_af", default=out["nut_af"] + 0.3)
         out["insert_hole"] = _first(f, "heatset_hole_d", "insert_hole_d", "heat_set_hole_d", default=0) or None
@@ -98,10 +105,11 @@ def _teardrop(r, z0, z1, up_deg):
     return Rot(0, 0, up_deg - 90) * roof + _cyl(r, z0, z1)
 
 
-def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = None, teardrop: float | None = None):
+def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = None, teardrop: float | None = None,
+         material: str | None = None):
     """Cutter for one hole at the origin, axis Z, surface at z=0, material at z<0. Returns (solid, grip, engage, min_engage).
     teardrop: for holes that print horizontally, the direction (deg, in the hole's XY plane) that is UP on the printer."""
-    sp = screw_spec(screw)
+    sp = screw_spec(screw, material)
     if kind == "clearance":
         if teardrop is not None:
             return _teardrop(sp["clearance"] / 2, -depth - EXTRA, EXTRA, teardrop), depth, 0.0, 0.0
@@ -150,7 +158,8 @@ def bolt_pattern(ctx, group: str, screw: str, points, loc: Location, kind: str, 
     role = "male" if kind in KINDS_MALE else "female"
     cut = None
     for (x, y) in points:
-        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth, teardrop)
+        mat = (getattr(ctx, "meta", None) or {}).get("spec", {}).get("material") if ctx is not None else None
+        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth, teardrop, mat)
         hl = loc * Location((x, y, 0))
         placed = hl * c
         cut = placed if cut is None else cut + placed
@@ -182,19 +191,31 @@ def servo_dims(path: str) -> dict:
 
 
 def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind: str = "heatset",
-                clearance: float = 0.6):
-    """Cutter for a plate the servo's tabs sit on: a pocket the body drops through plus the tab screw holes.
-    loc: on the plate face the tabs rest on, +Z toward the servo top, X along the servo's length, origin under the
-    centre of the tab underside (same as the servo proxy's 'tabs' joint)."""
+                clearance: float = 0.6, top_through: bool = False):
+    """Cutter for a plate a servo's mounting tabs bolt to: a window plus the four tab screw holes.
+
+    Default (top_through=False): the body drops through the window from the TOP and the tabs rest ON the plate.
+      loc: on the face the tab undersides rest on, +Z toward the servo top; material below loc (z < 0).
+      Matches the servo proxy's 'tabs' joint directly.
+    top_through=True: the servo goes in top-first from BEHIND; only the case top (above the tabs) passes the window and
+      the tab tops press against the plate. Use this when the body has bumps low down (MG996R cable boss).
+      loc: on the face the tab TOPS press against, +Z toward the servo top; material above loc (0 < z < plate_t).
+      The servo proxy's 'tabs' joint (tab underside) sits at loc * Location((0, 0, -tab_t)). Set the servo's
+      `tab_screws_from: bottom` in project.yaml so its screws come from behind the tabs."""
     d = servo_dims(servo)
     wx, wy = d["L"] + clearance, d["W"] + clearance
-    pocket = Pos(0, 0, -plate_t - EXTRA) * Box(wx, wy, plate_t + 2 * EXTRA, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    z0 = -plate_t - EXTRA if not top_through else -EXTRA
+    pocket = Pos(0, 0, z0) * Box(wx, wy, plate_t + 2 * EXTRA, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # corner reliefs ("dog-bones"): remove the sharp inside corners without rounding into the square servo body
     for sx in (-1, 1):
         for sy in (-1, 1):
-            pocket += Pos(sx * (wx / 2 - 0.35), sy * (wy / 2 - 0.35), 0) * _cyl(1.0, -plate_t - EXTRA, EXTRA)
+            pocket += Pos(sx * (wx / 2 - 0.35), sy * (wy / 2 - 0.35), 0) * _cyl(1.0, z0, z0 + plate_t + 2 * EXTRA)
     cut = loc * pocket
-    cut += bolt_pattern(ctx, group, d["screw"], d["holes"], loc, kind, plate_t)
+    if not top_through:
+        cut += bolt_pattern(ctx, group, d["screw"], d["holes"], loc, kind, plate_t)
+    else:
+        # female holes face the servo tabs (-Z of loc); flip the frame and mirror Y so the holes land in place
+        cut += bolt_pattern(ctx, group, d["screw"], [(x, -y) for (x, y) in d["holes"]], loc * Rot(180, 0, 0), kind, plate_t)
     return cut
 
 

@@ -1,6 +1,8 @@
-"""Servo bracket: an upright wall the MG996R's tabs bolt to (M3 heat-set inserts), a foot screwed to the base,
-two gussets. Origin: bottom of the wall's back face, centred; wall from y=0 (back) to y=wall_t (front, servo side).
-Printed lying on its back face so the servo window needs no bridge and the inserts face up for installation."""
+"""Servo bracket: an upright wall the MG996R bolts to from BEHIND (top-first through the window, tab tops against the
+back face, four thread-forming M3 screws into pilot holes), a foot screwed to the base, two gussets.
+Mounting from behind keeps the servo's cable boss (low on the output end) out of the window.
+Origin: bottom of the wall's back face, centred; wall from y=0 (back) to y=wall_t (front, arm side).
+Printed lying on its back face: the window needs no bridge and every hole except the foot's is vertical."""
 from build123d import *
 from kerf import iface
 
@@ -27,10 +29,12 @@ def build(ctx):
     except Exception:  # noqa: BLE001 - keep the part buildable; reviewer sees the corners in the renders
         ctx.notes.append("gusset root fillets could not be applied")
     body = chamfer(body.edges().filter_by(Axis.Y).group_by(Axis.Z)[-1], 1.0)
-    seat = Location((0, p.wall_t, p.pivot_h), (-90, 0, 0))   # servo +Z (output side) points out of the wall front
+    back = Location((0, 0, p.pivot_h), (-90, 0, 0))          # on the back face; +Z points through the wall toward the arm
+    seat = back * Location((0, 0, -p.servo_tab_t))            # servo frame origin (tab underside) sits behind the tabs
     # Servo tabs: thread-forming M3 into pilot holes (how servos are normally mounted). Heat-set inserts would leave
     # only 2.1 mm of wall between the insert and the servo window (rule: 2.4 mm) and could bulge into it when melted.
-    body -= iface.servo_mount(ctx, "servos.MG996R", seat, group="bracket_servo", plate_t=p.wall_t, kind="tap")
+    body -= iface.servo_mount(ctx, "servos.MG996R", back, group="bracket_servo", plate_t=p.wall_t, kind="tap",
+                              top_through=True)
     # Foot holes print horizontally (part +Y is up on the printer), so they are teardrops pointing +Y.
     pts = [(sx * p.foot_hx, y) for sx in (-1, 1) for y in (p.foot_y1, p.foot_y2)]
     body -= iface.bolt_pattern(ctx, "base_bracket", "M3", pts, Location((0, 0, p.foot_t)), kind="clearance",
