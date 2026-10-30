@@ -1,0 +1,1042 @@
+{
+ "_meta": {
+  "units": "mm, g, kg*cm, N, MPa",
+  "notes": [
+   {
+    "b_actuators.json": {
+     "units": "mm, g, kg*cm, N*cm",
+     "conventions": "body_h = bottom face to top of the main rectangular housing (excludes spline; any raised output boss is INCLUDED in shaft_h, which is spline top above that face). tab_z = tab UNDERSIDE above body bottom. shaft_offset = output axis to the NEARER body end (not tab end). Stall torque is the LOWEST-voltage datasheet figure (conservative); higher-voltage figure is in note.",
+     "warning": "Hobby-servo clones vary by 0.3-1 mm between batches. Model tab holes as slots and body pockets with clearance; measure one physical unit before a final print, especially fields flagged UNVERIFIED in note."
+    }
+   }
+  ],
+  "policy": "Every entry has a source URL that was opened and a confidence (datasheet|standard|multiple-vendors|typical). Values marked UNVERIFIED or typical in a note should be measured on the real part before printing a final version."
+ },
+ "screws": {
+  "M2": {
+   "clearance_hole": 2.4,
+   "tap_drill": 1.6,
+   "shcs_head_d": 3.8,
+   "shcs_head_h": 2.0,
+   "countersunk_head_d": 3.8,
+   "nut_across_flats": 4.0,
+   "nut_thickness": 1.6,
+   "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://engineersedge.com/iso_socket_head_screw.htm ; https://torqbolt.com/iso-4032-hexagon-nuts-dimensions-standards-specifications ; https://fasten.it/Norms/Norm/DIN_EN_ISO_7046_1",
+   "confidence": "standard",
+   "note": "Clearance = ISO 273 medium(normal) series (Optimas 'Medium fit'). Head/nut = max values. ISO 10642 does not cover M2; countersunk_head_d is ISO 7046-1/ISO 14581 dk max (90 deg, k=1.2), cross-checked at https://fasten.it/en/norms/norm/din_en_iso_14581. Nut s 3.82-4.0, m 1.35-1.6."
+  },
+  "M2.5": {
+   "clearance_hole": 2.9,
+   "tap_drill": 2.05,
+   "shcs_head_d": 4.5,
+   "shcs_head_h": 2.5,
+   "countersunk_head_d": 4.7,
+   "nut_across_flats": 5.0,
+   "nut_thickness": 2.0,
+   "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://engineersedge.com/iso_socket_head_screw.htm ; https://torqbolt.com/iso-4032-hexagon-nuts-dimensions-standards-specifications ; https://fasten.it/Norms/Norm/DIN_EN_ISO_7046_1",
+   "confidence": "standard",
+   "note": "ISO 10642 does not cover M2.5; countersunk_head_d is ISO 7046-1/ISO 14581 dk max (k=1.5). Nut s 4.82-5.0, m 1.75-2.0."
+  },
+  "M3": {
+   "clearance_hole": 3.4,
+   "tap_drill": 2.5,
+   "shcs_head_d": 5.5,
+   "shcs_head_h": 3.0,
+   "countersunk_head_d": 6.72,
+   "nut_across_flats": 5.5,
+   "nut_thickness": 2.4,
+   "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://engineersedge.com/iso_socket_head_screw.htm ; https://engineersedge.com/hardware/bs_en_iso_10642_14583.htm ; https://torqbolt.com/iso-4032-hexagon-nuts-dimensions-standards-specifications",
+   "confidence": "standard",
+   "note": "countersunk_head_d = ISO 10642 dk theoretical max (sharp-edge cone diameter, use for the 90 deg countersink cut); actual head min 5.54; k max 1.86. Nut s 5.32-5.5, m 2.15-2.4. tspi.at also confirms SHCS/nut values."
+  },
+  "M4": {
+   "clearance_hole": 4.5,
+   "tap_drill": 3.3,
+   "shcs_head_d": 7.0,
+   "shcs_head_h": 4.0,
+   "countersunk_head_d": 8.96,
+   "nut_across_flats": 7.0,
+   "nut_thickness": 3.2,
+   "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://engineersedge.com/iso_socket_head_screw.htm ; https://engineersedge.com/hardware/bs_en_iso_10642_14583.htm ; https://torqbolt.com/iso-4032-hexagon-nuts-dimensions-standards-specifications",
+   "confidence": "standard",
+   "note": "ISO 10642 dk theoretical max 8.96, actual min 7.53, k max 2.48. Nut s 6.78-7.0, m 2.9-3.2."
+  },
+  "M5": {
+   "clearance_hole": 5.5,
+   "tap_drill": 4.2,
+   "shcs_head_d": 8.5,
+   "shcs_head_h": 5.0,
+   "countersunk_head_d": 11.2,
+   "nut_across_flats": 8.0,
+   "nut_thickness": 4.7,
+   "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://engineersedge.com/iso_socket_head_screw.htm ; https://engineersedge.com/hardware/bs_en_iso_10642_14583.htm ; https://torqbolt.com/iso-4032-hexagon-nuts-dimensions-standards-specifications",
+   "confidence": "standard",
+   "note": "ISO 10642 dk theoretical max 11.2, actual min 9.43, k max 3.10. Nut thickness 4.7 is ISO 4032 (m 4.5-4.7); older DIN 934 M5 nut is 4.0 thick (https://www.tspi.at/diy/screwnuts.html) - spread 0.7 mm, size pockets for 4.7."
+  }
+ },
+ "fdm_holes": {
+  "M2": {
+   "clearance_hole": 2.5,
+   "self_tap_pilot": 1.84,
+   "nut_pocket_af": 4.2,
+   "heatset_hole_d": 3.2,
+   "heatset_length": 3.0,
+   "heatset_min_depth": 3.8,
+   "heatset_min_wall": 1.3,
+   "source": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m2-standard?sai=15443 ; https://forum.bambulab.com/t/how-to-design-screw-holes-for-3d-printing/217352 ; https://www.hubs.com/knowledge-base/how-assemble-3d-printed-parts-threaded-fasteners/ ; https://www.spirol.com/resources/white-papers/how-to-design-the-proper-hole-for-heat-ultrasonic-inserts/",
+   "confidence": "multiple-vendors",
+   "note": "Insert: CNC Kitchen M2 standard (D1 3.6, L 3.0, hole 3.2, wall 1.3). heatset_min_depth = L + 2 pitches (SPIROL rule). self_tap_pilot = Bambu Lab PLA table, M2 machine screw cut into a vertical (Z-axis) printed hole; horizontal hole 2.10; PETG HF vertical 1.70. clearance_hole = ISO 273 normal 2.4 + 0.1 (typical). nut_pocket_af = ISO 4032 s 4.0 + 0.2 (Hubs: +0.2 mm, 0.1 per side, iterate per printer)."
+  },
+  "M2.5": {
+   "clearance_hole": 3.0,
+   "self_tap_pilot": 2.3,
+   "nut_pocket_af": 5.2,
+   "heatset_hole_d": 4.0,
+   "heatset_length": 4.0,
+   "heatset_min_depth": 4.9,
+   "heatset_min_wall": 1.6,
+   "source": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m2-standard?sai=15443 ; https://forum.bambulab.com/t/how-to-design-screw-holes-for-3d-printing/217352 ; https://www.hubs.com/knowledge-base/how-assemble-3d-printed-parts-threaded-fasteners/ ; https://www.spirol.com/resources/white-papers/how-to-design-the-proper-hole-for-heat-ultrasonic-inserts/",
+   "confidence": "multiple-vendors",
+   "note": "Insert: CNC Kitchen M2.5 standard (D1 4.6, L 4.0, hole 4.0, wall 1.6). Pilot: Bambu PLA vertical 2.30 (horizontal 2.50; PETG HF vertical 2.15). clearance 2.9+0.1 typical; nut pocket 5.0+0.2."
+  },
+  "M3": {
+   "clearance_hole": 3.5,
+   "self_tap_pilot": 2.72,
+   "nut_pocket_af": 5.7,
+   "heatset_hole_d": 4.0,
+   "heatset_length": 5.7,
+   "heatset_min_depth": 6.7,
+   "heatset_min_wall": 1.6,
+   "source": "https://www.3djake.ch/en-CH/cnc-kitchen/threaded-inserts-m3-standard?sai=15445 ; https://forum.bambulab.com/t/how-to-design-screw-holes-for-3d-printing/217352 ; https://www.hubs.com/knowledge-base/how-assemble-3d-printed-parts-threaded-fasteners/ ; https://www.spirol.com/resources/white-papers/how-to-design-the-proper-hole-for-heat-ultrasonic-inserts/",
+   "confidence": "multiple-vendors",
+   "note": "Insert: CNC Kitchen M3 standard 5.7 mm (D1 4.6, centre tip 3.9, hole 4.0, wall 1.6; opened on its own product page). Alternatives: M3 short L 3.0 same hole; M3 Voron L 4.0, D1 5.0, hole 4.4, wall 1.3. Pilot: Bambu PLA vertical 2.72 (horizontal 2.90; PETG HF vertical 2.60). clearance 3.4+0.1 typical; nut pocket 5.5+0.2."
+  },
+  "M4": {
+   "clearance_hole": 4.6,
+   "self_tap_pilot": 3.55,
+   "nut_pocket_af": 7.2,
+   "heatset_hole_d": 5.6,
+   "heatset_length": 8.1,
+   "heatset_min_depth": 9.5,
+   "heatset_min_wall": 2.1,
+   "source": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m2-standard?sai=15443 ; https://forum.bambulab.com/t/how-to-design-screw-holes-for-3d-printing/217352 ; https://www.hubs.com/knowledge-base/how-assemble-3d-printed-parts-threaded-fasteners/ ; https://www.spirol.com/resources/white-papers/how-to-design-the-proper-hole-for-heat-ultrasonic-inserts/",
+   "confidence": "multiple-vendors",
+   "note": "Insert: CNC Kitchen M4 standard (D1 6.3, L 8.1, hole 5.6, wall 2.1); M4 short L 4.0 same hole. Pilot: Bambu PLA vertical 3.55 (horizontal 3.75; PETG HF vertical 3.40). clearance 4.5+0.1 typical; nut pocket 7.0+0.2."
+  },
+  "M5": {
+   "clearance_hole": 5.6,
+   "self_tap_pilot": 4.45,
+   "nut_pocket_af": 8.2,
+   "heatset_hole_d": 6.4,
+   "heatset_length": 9.5,
+   "heatset_min_depth": 11.1,
+   "heatset_min_wall": 2.6,
+   "source": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m2-standard?sai=15443 ; https://forum.bambulab.com/t/how-to-design-screw-holes-for-3d-printing/217352 ; https://www.hubs.com/knowledge-base/how-assemble-3d-printed-parts-threaded-fasteners/ ; https://www.spirol.com/resources/white-papers/how-to-design-the-proper-hole-for-heat-ultrasonic-inserts/",
+   "confidence": "typical",
+   "note": "Insert: CNC Kitchen M5 standard (D1 7.1, L 9.5, hole 6.4, wall 2.6) - datasheet grade; M5 short L 5.8 same hole. self_tap_pilot 4.45 is EXTRAPOLATED (Bambu table stops at M4; M3/M4 vertical PLA = 0.89-0.91 x d) - print a test coupon. clearance 5.5+0.1 typical; nut pocket 8.0+0.2."
+  }
+ },
+ "bearings": {
+  "608": {
+   "bore": 8,
+   "outer_d": 22,
+   "width": 7,
+   "weight_g": 12,
+   "source": "https://www.simplybearings.co.uk/products/608-2z-skf",
+   "confidence": "datasheet",
+   "note": "SKF 608-2Z."
+  },
+  "623": {
+   "bore": 3,
+   "outer_d": 10,
+   "width": 4,
+   "weight_g": 1.5,
+   "source": "https://www.simplybearings.co.uk/products/623-skf",
+   "confidence": "datasheet",
+   "note": "SKF 623."
+  },
+  "625": {
+   "bore": 5,
+   "outer_d": 16,
+   "width": 5,
+   "weight_g": 5,
+   "source": "https://www.im-tek.com/skf-625-z",
+   "confidence": "datasheet",
+   "note": "SKF 625-Z."
+  },
+  "688": {
+   "bore": 8,
+   "outer_d": 16,
+   "width": 5,
+   "source": "https://www.simplybearings.co.uk/products/688-zz-eu",
+   "confidence": "multiple-vendors",
+   "note": "688ZZ/2RS shielded = 8x16x5. OPEN 688 (SKF 618/8) is only 4 mm wide, 3.1 g (https://im-tek.com/skf-w-618-8-2z lists W 618/8-2Z as 8x16x4) - 1 mm width spread by variant; confirm which one is bought. No weight published for 688ZZ."
+  },
+  "6800": {
+   "bore": 10,
+   "outer_d": 19,
+   "width": 5,
+   "weight_g": 5.3,
+   "source": "https://baoanjsc.com.vn/products/single-row-deep-groove-ball-bearings-d10mm-61800_829037_en.aspx",
+   "confidence": "datasheet",
+   "note": "SKF designation 61800 (= 6800)."
+  },
+  "6001": {
+   "bore": 12,
+   "outer_d": 28,
+   "width": 8,
+   "weight_g": 20,
+   "source": "https://uk.rs-online.com/web/p/ball-bearings/2080442",
+   "confidence": "datasheet",
+   "note": "SKF W 6001-2Z (stainless); chrome-steel 6001 essentially same mass."
+  },
+  "MR105": {
+   "bore": 5,
+   "outer_d": 10,
+   "width": 4,
+   "weight_g": 1.5,
+   "source": "https://grobotronics.com/mr105zz-5mm-bore-10mm-od.html?sl=en",
+   "confidence": "multiple-vendors",
+   "note": "MR105ZZ/2RS = 5x10x4 (also https://minibearings.com.au/products/5x10x4-bearings-mr105azzmc3, width tol +0/-0.125). OPEN MR105 is 5x10x3 (https://www.simplybearings.co.uk/products/mr105) - 1 mm width spread by variant."
+  },
+  "LM8UU": {
+   "bore": 8,
+   "outer_d": 15,
+   "width": 24,
+   "weight_g": 16,
+   "source": "https://123bearing.co.uk/bearing-housing/linear-transmission/linear-bearing/lm8-uu-zen",
+   "confidence": "multiple-vendors",
+   "note": "width = length. 8x15x24 also confirmed at https://www.prusa3d.com/pl/produkt/linear-bearing-lm8uu/. Retaining-ring groove positions not captured."
+  }
+ },
+ "motion": {
+  "GT2_belt": {
+   "pitch": 2.0,
+   "width_6mm": 6.0,
+   "source": "https://www.adafruit.com/products/1184",
+   "confidence": "multiple-vendors",
+   "note": "Belt thickness/tooth height not published on page (commonly ~1.38 total / 0.75 tooth - unverified, do not use)."
+  },
+  "GT2_20T_pulley": {
+   "pitch_d": 12.73,
+   "bore": 5.0,
+   "teeth": 20,
+   "source": "https://shop.sdp-si.com/a-6a50m020gt10.html ; https://thepihut.com/products/aluminum-gt2-timing-pulley-6mm-belt-20-tooth-5mm-bore",
+   "confidence": "multiple-vendors",
+   "note": "pitch_d = 20 x 2 / pi = 12.73 (SDP-SI lists 12.7); tooth-tip OD 12.2 (SDP-SI and PiHut agree); flange OD 16, overall length 16 (PiHut). Bore 5 is the common NEMA17 variant; 4/6.35/8 mm bores also sold."
+  },
+  "rod_8mm_smooth": {
+   "d": 8.0,
+   "source": "https://ph.rs-online.com/web/p/linear-shafts/3411532",
+   "confidence": "datasheet",
+   "note": "Ewellix hardened shaft, h6, 64 HRC. ISO 286 h6 for 6-10 mm = 0/-0.009 -> 7.991-8.000."
+  },
+  "D_shaft_5mm": {
+   "d": 5.0,
+   "flat_depth": 0.5,
+   "source": "https://static.maritex.eu/file/display/5sXxpHH1SP-JwnhJEZ0lhfX-xdYKZRi3/17HS19-2004S1_Full_Datasheet.pdf",
+   "confidence": "datasheet",
+   "note": "StepperOnline 17HS19-2004S1 drawing: shaft 5 (0/-0.012), across-flat 4.5 +/-0.1, flat length 15, shaft length 24."
+  },
+  "pin_3mm": {
+   "d": 3.0,
+   "source": "https://eshop.wuerth.ee/Cylindrical-pin-hardened-ISO-8734-steel-plain-type-A-hardened-tolerance-class-m6-PIN-CYL-ISO8734-A-M6-3X24/5094503024.sku/en/US/EUR",
+   "confidence": "standard",
+   "note": "ISO 8734 / DIN 6325 hardened dowel, tolerance m6. ISO 286 m6 for d<=3 mm = +0.002/+0.008 -> 3.002-3.008 (oversize). Printed press-fit hole ~2.9-3.0, slip hole ~3.1-3.2 (typical, test per printer)."
+  }
+ },
+ "materials": {
+  "PLA": {
+   "density": 1.24,
+   "tensile_strength_xy_mpa": 39,
+   "tensile_strength_z_mpa": 35,
+   "youngs_modulus_mpa": 2680,
+   "poisson": 0.35,
+   "source": "https://www.additive-x.com/shop/mpattachments/file/viewonline/id/494/product_id/2236",
+   "confidence": "datasheet",
+   "note": "Bambu PLA Basic TDS V2.0. Z modulus 2160. Poisson from measured FDM PLA at 100% infill (0.35; lit. 0.33-0.35): https://pmc.ncbi.nlm.nih.gov/articles/PMC10096656"
+  },
+  "PETG": {
+   "density": 1.25,
+   "tensile_strength_xy_mpa": 48,
+   "tensile_strength_z_mpa": 39,
+   "youngs_modulus_mpa": 1460,
+   "poisson": 0.38,
+   "source": "https://www.additive-x.com/shop/mpattachments/file/viewonline/id/580/product_id/2330",
+   "confidence": "datasheet",
+   "note": "Bambu PETG Basic TDS V2.0 (PETG HF TDS not opened). Z modulus 1120. Bambu PETG Translucent TDS gives only 33 MPa XY. Poisson 0.38 = typical (not from TDS)."
+  },
+  "CF-PETG": {
+   "density": 1.25,
+   "tensile_strength_xy_mpa": 35,
+   "tensile_strength_z_mpa": 29,
+   "youngs_modulus_mpa": 2460,
+   "poisson": 0.38,
+   "source": "https://polyalkemi.no/wp-content/uploads/2023/08/Bambu_PETG-CF_Technical_Data_Sheet_V2.pdf",
+   "confidence": "datasheet",
+   "note": "Bambu PETG-CF TDS (V3.0 content). Z modulus 1340. Poisson typical."
+  },
+  "PA6-CF": {
+   "density": 1.09,
+   "tensile_strength_xy_mpa": 102,
+   "tensile_strength_z_mpa": 48,
+   "youngs_modulus_mpa": 4430,
+   "poisson": 0.38,
+   "source": "https://polyalkemi.no/wp-content/uploads/2024/01/Bambu_PA6-CF_Technical_Data_Sheet-v2.pdf",
+   "confidence": "datasheet",
+   "note": "Bambu PA6-CF TDS v2; specimens annealed and dried 80C/12h (DRY values; moisture lowers strength/stiffness substantially). Z modulus 2170. Density 1.09 confirmed by https://filament2print.com/en/filaments/3669-pa6-cf-bambu-lab.html though low for CF-nylon (Sunlu PA6-CF lists 1.2). Poisson typical."
+  },
+  "ABS": {
+   "density": 1.05,
+   "tensile_strength_xy_mpa": 41,
+   "tensile_strength_z_mpa": 32,
+   "youngs_modulus_mpa": 3800,
+   "poisson": 0.37,
+   "source": "https://www.additive-x.com/shop/mpattachments/file/viewonline/id/566/product_id/2315",
+   "confidence": "datasheet",
+   "note": "Bambu ABS TDS V2.0, re-opened and quoted verbatim: Young's XY 3800 +/-190, Z 2960. SUSPICIOUS: same sheet gives bending modulus XY 1880, Z 1590, and ABS is usually ~2000-2400 MPa; for FEA stiffness use ~1900-2000 (conservative). Poisson typical."
+  },
+  "ASA": {
+   "density": 1.05,
+   "tensile_strength_xy_mpa": 52,
+   "tensile_strength_z_mpa": 35,
+   "youngs_modulus_mpa": 2450,
+   "poisson": 0.37,
+   "source": "https://www.additive-x.com/shop/mpattachments/file/viewonline/id/612/product_id/2399",
+   "confidence": "datasheet",
+   "note": "Bambu ASA TDS V2.0. Older Bambu ASA TDS (https://polyalkemi.no/wp-content/uploads/2024/01/Bambu_ASA_Technical_Data_Sheet.pdf) gives XY 37 / Z 31 MPa, same modulus 2450 (Z 2120); use 37 XY if conservative. Poisson typical."
+  },
+  "TPU": {
+   "density": 1.2,
+   "tensile_strength_xy_mpa": 29.6,
+   "tensile_strength_z_mpa": 23.2,
+   "youngs_modulus_mpa": 9.2,
+   "poisson": 0.45,
+   "source": "https://polyalkemi.no/wp-content/uploads/2023/06/Bambu_TPU_95A_Technical_Data_Sheet.pdf",
+   "confidence": "datasheet",
+   "note": "Bambu TPU 95A TDS (not the newer 95A HF). Shore 95A. Z modulus 7.8. Elastomer: Poisson ~0.45-0.49 is typical (not from TDS); linear FEA is not valid for large strain."
+  }
+ },
+ "rods": {
+  "cf_tube_4x2": {
+   "od": 4,
+   "id": 2,
+   "density": 1.5,
+   "source": "https://st.robu.in/?p=679165",
+   "confidence": "multiple-vendors",
+   "note": "Pultruded. Density 1.5 also at https://www.rockwestcomposites.com/47310-2.html (62% fibre); R&G lists ~1.78 for its pultruded rods (https://r-g.de/en/art/700006). Tolerance typically +/-0.1 OD (Easy Composites)."
+  },
+  "cf_tube_5x3": {
+   "od": 5,
+   "id": 3,
+   "density": 1.5,
+   "source": "https://st.robu.in/?p=679167",
+   "confidence": "multiple-vendors",
+   "note": "Pultruded; density spread 1.5-1.78 as above."
+  },
+  "cf_tube_6x4": {
+   "od": 6,
+   "id": 4,
+   "density": 1.5,
+   "source": "https://stgaws.robu.in/?p=679169",
+   "confidence": "multiple-vendors",
+   "note": "Pultruded; density spread 1.5-1.78 as above."
+  },
+  "cf_tube_8x6": {
+   "od": 8,
+   "id": 6,
+   "density": 1.5,
+   "source": "https://stgaws.robu.in/?p=653504",
+   "confidence": "multiple-vendors",
+   "note": "Pultruded; density spread 1.5-1.78 as above."
+  },
+  "cf_rod_3": {
+   "od": 3,
+   "id": 0,
+   "density": 1.5,
+   "source": "https://r-g.de/en/art/700006",
+   "confidence": "multiple-vendors",
+   "note": "R&G lists 3.0 mm (DPP grade tol mostly -0.03/-0.1, i.e. undersize) and density ~1.78; Rock West pultruded rod 1.5 g/cm3. Consensus 1.5 used; spread 0.28 g/cm3."
+  },
+  "cf_rod_4": {
+   "od": 4,
+   "id": 0,
+   "density": 1.5,
+   "source": "https://r-g.de/en/art/700006",
+   "confidence": "multiple-vendors",
+   "note": "As cf_rod_3."
+  },
+  "cf_rod_5": {
+   "od": 5,
+   "id": 0,
+   "density": 1.5,
+   "source": "https://r-g.de/en/art/700006",
+   "confidence": "multiple-vendors",
+   "note": "As cf_rod_3."
+  }
+ },
+ "tripod_nut_1_4_20": {
+  "thread": "1/4-20 UNC",
+  "across_flats": 11.13,
+  "thickness": 5.74,
+  "source": "https://amesweb.info/Fasteners/Nut/Hex-Nut-Sizes-Dimensions-Table.aspx",
+  "confidence": "standard",
+  "note": "ASME B18.2.2 hex nut 1/4: F 0.428-0.438 in (10.87-11.13 mm, basic 7/16 = 11.11), H 0.212-0.226 in (5.38-5.74 mm, basic 7/32 = 5.56). Max values given for pocket sizing. Heat-set alternative: CNC Kitchen 1/4-20 insert L 12.7, D1 8.7, hole 8.0, wall 3.3 (https://www.3djake.com/cnc-kitchen/threaded-inserts-m2-standard?sai=15443)."
+ },
+ "servos": {
+  "SG90": {
+   "body_l": 22.6,
+   "body_w": 12.2,
+   "body_h": 22.1,
+   "tab_span": 32.2,
+   "hole_spacing_l": 27.85,
+   "hole_spacing_w": 0,
+   "hole_d": 2.2,
+   "tab_t": 2.4,
+   "tab_z": 15.6,
+   "shaft_offset": 6.0,
+   "shaft_h": 7.6,
+   "spline_d": 4.8,
+   "spline_teeth": 21,
+   "stall_torque_kgcm": 1.8,
+   "stall_voltage": 4.8,
+   "speed_s_per_60": 0.1,
+   "weight_g": 9,
+   "source": "https://docs.baud-dance.com/assets/files/%E8%88%B5%E6%9C%BASG90%E8%A7%84%E6%A0%BC%E4%B9%A6-a814e35ca5db3b0d4da2ff7ae3dc3d01.pdf",
+   "confidence": "multiple-vendors",
+   "note": "Geometry from the baud-dance SG90 CAD drawing (p.2): body 22.5 (top view) / 22.61 (side view), width 12.2, hole spacing 27.85, tab underside 15.6, tab 2.4 thick, rectangular case top 22.1, round gear boss top 26.5 (boss is ~14 mm lobed shape over the output end, so keep clearance above the top face there). shaft_h 7.6 = boss 4.4 + spline 3.2 (spline length 3.1 scaled from CAD, 3.2 per Tinytronics https://www.tinytronics.nl/en/mechanics-and-actuators/motors/servomotors/sg90-mini-servo). shaft_offset 6.0 and hole_d 2.2 SCALED from the CAD top view (not dimensioned); hole is open slot to tab end, for M2 self-tappers. Cross-check TowerPro drawings (https://www.electronicoscaldas.com/datasheet/SG90_Tower-Pro.pdf and https://static.rapidonline.com/pdf/37-1330t.pdf): body 22.2 x 11.8, tab span 32.2, 16 to tab, 31 to horn top. SPREAD: body_l 22.2-22.61 (vendor overall L up to 23), body_w 11.8-12.2, torque 1.2-1.8 kg*cm (baud-dance clone 1.3), speed 0.09-0.12. Spline: 21T per Tinytronics; Pololu 21T micro spline = 4.8 mm (https://pololu.com/product/4909/specs); baud-dance clone states 20T, 4.9 mm."
+  },
+  "MG90S": {
+   "body_l": 22.8,
+   "body_w": 12.4,
+   "body_h": 28.4,
+   "tab_span": 32.5,
+   "hole_spacing_l": 27.85,
+   "hole_spacing_w": 0,
+   "hole_d": 2.2,
+   "tab_t": 2.4,
+   "tab_z": 18.5,
+   "shaft_offset": 6.0,
+   "shaft_h": 3.7,
+   "spline_d": 4.8,
+   "spline_teeth": 21,
+   "stall_torque_kgcm": 1.8,
+   "stall_voltage": 4.8,
+   "speed_s_per_60": 0.1,
+   "weight_g": 13.4,
+   "source": "https://www.towerpro.com.tw/product/mg90s-3/",
+   "confidence": "typical",
+   "note": "TowerPro page table: A 32.5 (tab span), B 22.8 (body L), C 28.4 (height), D 12.4 (width), E 32.1 (height incl. spline -> shaft_h 3.7), F 18.5 (taken as tab underside, same convention as the SG90 drawings where '16' matches the CAD 15.6 underside). Letters are not labelled on the page, so the mapping is inferred. Here body_h 28.4 is housing incl. boss (MG90S boss not separately dimensioned). Electronicoscaldas TowerPro-derived drawing (https://www.electronicoscaldas.com/datasheet/MG90S_Tower-Pro.pdf): body 22.5, width 12 (11 in another view), tab span 32.5, 21 to tab, 35.5 to horn top. Waveshare (https://www.waveshare.com/MG90S-Servo.htm): 22.8 x 12.2 x 28.5, 2.0 kg*cm @4.8 V, 2.8 @6 V. SPREAD: tab_z 18.5 vs 21 (2.5 mm!), width 11-12.4. UNVERIFIED (copied from SG90 CAD, same TowerPro micro tab layout): hole_spacing_l, hole_d, tab_t, shaft_offset (~6.3 scaled from electronicoscaldas drawing), spline 21T/4.8. MEASURE tab height before printing. 2.2 kg*cm @6 V."
+  },
+  "MG996R": {
+   "body_l": 40.7,
+   "body_w": 20.0,
+   "body_h": 36.6,
+   "tab_span": 53.6,
+   "hole_spacing_l": 49.5,
+   "hole_spacing_w": 10.0,
+   "hole_d": 4.2,
+   "tab_t": 2.5,
+   "tab_z": 26.6,
+   "shaft_offset": 10.0,
+   "shaft_h": 6.3,
+   "spline_d": 5.8,
+   "spline_teeth": 25,
+   "stall_torque_kgcm": 9.4,
+   "stall_voltage": 4.8,
+   "speed_s_per_60": 0.17,
+   "weight_g": 55,
+   "source": "https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf",
+   "confidence": "multiple-vendors",
+   "note": "TowerPro drawing: body 40.3 (drawing) vs 40.7 (spec text), width 20 (drawing) vs 19.7 (text), case top 36.6, tab underside 26.6, tab span 53.6, 47.6 to horn top; spec text height 42.9 taken as spline top -> shaft_h 6.3 (includes raised output boss). Waveshare (https://www.waveshare.com/mg996r-servo.htm) 40.7 x 19.7 x 42.9, 9 kg*cm @4.8 V; Kitronik clone (https://kitronik.co.uk/products/2575-large-180-servo) 40 x 19 x 43, claims 13 kg*cm. Larger of each body value used for pocket sizing. UNVERIFIED (not on any MG996R drawing found; taken from the same-class DSSERVO DS3218 drawing / typical standard-servo layout): hole_spacing_l 49.5, hole_spacing_w 10, hole_d 4.2 (fits supplied rubber grommet + brass eyelet, M3 bolt), tab_t 2.5, shaft_offset 10. Spline 25T, Pololu standard 25T spline = 5.8 mm (https://core-electronics.com.au/pololu-wheel-for-standard-servo-splines-25t-5-8mm-90-10mm-red-2-pack.html.plain.md). 11 kg*cm @6 V, 0.14 s/60 @6 V. SPREAD: torque 9-13 kg*cm across listings; speed 0.17-0.19."
+  },
+  "DS3218": {
+   "body_l": 40.0,
+   "body_w": 20.0,
+   "body_h": 40.5,
+   "tab_span": 54.5,
+   "hole_spacing_l": 49.5,
+   "hole_spacing_w": 10.0,
+   "hole_d": 4.2,
+   "tab_t": 3.1,
+   "tab_z": 27.7,
+   "shaft_offset": 10.0,
+   "shaft_h": 5.0,
+   "spline_d": 5.8,
+   "spline_teeth": 25,
+   "stall_torque_kgcm": 19.0,
+   "stall_voltage": 5.0,
+   "speed_s_per_60": 0.16,
+   "weight_g": 60,
+   "source": "https://rcdrone.top/products/dsservo-ds3218-digital-servo-de",
+   "confidence": "multiple-vendors",
+   "note": "Two DSSERVO drawings: dimensioned photo on the DS3218 page (54.5 tab span, 49.5 x 10 holes, 40 body, 10 axis-to-end, 20 wide, 40.5 body, 45.5 spline top, 27.8 to tab, 3.1 tab callout) and line drawing on https://rcdrone.top/products/dsservo-waterproof-servo-ds3218-20kg-ds3225-25kg-ds3235-35kg (54.5, 49.5, 10, 40, 20, 40.4 body, 27.7 to tab underside). hole_d 4.2 SCALED from line drawing (3.6-4.4 range, open slot). tab_t 3.1 from photo callout (line drawing tab incl. raised lip scales ~4.8). Spec: 19 kg*cm @5 V, 21.5 @6.8 V; 0.16 s/60 @5 V, 0.14 @6.8 V; 60 g; size 40 x 20 x 40.5. 25T spline (supplied horn stamped 25T); spline_d from Pololu 25T standard 5.8 mm. SPREAD: body_h 40.4-40.5, tab_z 27.7-27.8 (small). Both sources are the same reseller (DSSERVO images); no independent drawing found."
+  },
+  "DS3225": {
+   "body_l": 40.0,
+   "body_w": 20.0,
+   "body_h": 40.5,
+   "tab_span": 54.5,
+   "hole_spacing_l": 49.5,
+   "hole_spacing_w": 10.0,
+   "hole_d": 4.2,
+   "tab_t": 3.1,
+   "tab_z": 27.7,
+   "shaft_offset": 10.0,
+   "shaft_h": 5.0,
+   "spline_d": 5.8,
+   "spline_teeth": 25,
+   "stall_torque_kgcm": 21.0,
+   "stall_voltage": 5.0,
+   "speed_s_per_60": 0.15,
+   "weight_g": 60,
+   "source": "https://rcdrone.top/products/dsservo-waterproof-servo-ds3218-20kg-ds3225-25kg-ds3235-35kg",
+   "confidence": "multiple-vendors",
+   "note": "DSSERVO spec table on this page lists DS3218MG/DS3218 pro/DS3225MG/DS3235SG with one shared size 40.5 x 40 x 20 and 60 g, and one shared line drawing (54.5, 49.5 x 10, 40, 20, 40.4, 27.7 to tab), so geometry is identical to DS3218. Torque 21 kg*cm @5 V, 24.5 @6.8 V; speed 0.15 s/60 @5 V, 0.13 @6.8 V (marketed as '25 kg'). WebFetch noted the page's DS3225 5 V torque may be copied from the DS3218 pro row; the in-image spec table gives the same 21/24.5. Same UNVERIFIED items as DS3218 (hole_d scaled, tab_t from callout)."
+  }
+ },
+ "servo_horns": {
+  "aluminum_25T": {
+   "outer_d": 20.0,
+   "thickness": 2.0,
+   "hub_height": 4.5,
+   "hub_d": 9.0,
+   "bolt_circle_d": 14.0,
+   "hole_count": 4,
+   "hole_thread": "M3",
+   "center_screw": "M3",
+   "weight_g": 3,
+   "source": "https://probots.co.in/25t-circular-metal-servo-horn-mg996r-mg995.html",
+   "confidence": "multiple-vendors",
+   "note": "Probots: 20 mm OD, 2 mm disc, 4.5 mm total (boss bottom to disc top), 4x tapped M3, opposite holes 14 mm apart (= bolt circle), reuse the servo's centre screw. Thingbits (https://thingbits.in/products/25t-standard-servo-horn-aluminium-disc): 20 mm, 4x M3, 14 mm spacing. Makers Electronics (https://makerselectronics.com/product/metal-servo-horn-round/): 20 mm, 4x M3, 14 mm, but thickness 5.5 (likely total height) -> SPREAD hub_height 4.5-5.5. UNVERIFIED ESTIMATES (not published by any source): hub_d 9.0, weight 3 g, centre screw M3 (standard for 25T MG996R/DS3218 class). Larger 24-25 mm 25T discs also exist; this entry is the 20 mm one."
+  }
+ },
+ "steppers": {
+  "NEMA17": {
+   "face": 42.3,
+   "hole_spacing": 31.0,
+   "thread": "M3",
+   "boss_d": 22.0,
+   "boss_h": 2.0,
+   "shaft_d": 5.0,
+   "shaft_length": 24.0,
+   "body_length": 40.0,
+   "weight_g": 230,
+   "holding_torque_ncm": 42,
+   "source": "https://people.ece.cornell.edu/land/courses/ece4760/FinalProjects/f2017/kmv48_rp625/kmv48_rp625/kmv48_rp625/NEMA17steppermotor.pdf",
+   "confidence": "datasheet",
+   "note": "Schneider Electric / IMS M-1715 (double stack, L = 40): face 42.3, bolt square 30.99, 4x M3x0.5 4.5 deep min, pilot 22.0 (-0.052) x 2.03, shaft 5.0 (-0.012) x 23.88 with 14 mm flat. 42 N*cm, 230 g. Cross-check Pololu #2267 (https://www.pololu.com/product/2267): 42.3 square x 38, 5 mm D-shaft, 285 g, 3.7 kg*cm (36 N*cm). Generic 42x40 motors vary 220-300 g and 40-50 N*cm."
+  },
+  "NEMA14": {
+   "face": 35.3,
+   "hole_spacing": 26.0,
+   "thread": "M3",
+   "boss_d": 22.0,
+   "boss_h": 2.0,
+   "shaft_d": 5.0,
+   "shaft_length": 24.0,
+   "body_length": 26.0,
+   "weight_g": 120,
+   "holding_torque_ncm": 7,
+   "source": "https://novanta.com/robotics-automation/wp-content/uploads/sites/3/2026/01/Nema14_motors_2022.pdf",
+   "confidence": "datasheet",
+   "note": "Novanta IMS M-1410-0.75: face 35.3, bolt square 26.0, 4x M3 3.5 deep min, pilot 22.0 (-0.052) x 2.0, shaft 5.0 x 24.0 (15 mm flat), L = 26 single stack, 7 N*cm, 120 g. Cross-check Pololu #1209 (https://www.pololu.com/product/1209): 35 square x 36 long, 5 mm shaft x 21 mm, 180 g, 1.4 kg*cm (13.7 N*cm). SPREAD: body length 26-36 and torque 7-14 N*cm depending on stack length; pick the specific motor for torque-critical joints."
+  }
+ },
+ "drone": {
+  "_meta": {
+   "units": "mm, g",
+   "retrieved": "2026-10-30",
+   "mount_pattern_convention": "FPV motor 'NxN' patterns (16x16, 19x19, 9x9) are holes on a bolt circle of diameter N at 90 deg spacing (opposite holes N apart), NOT an NxN square. Adjacent-hole spacing = N/sqrt(2). Verified on iFlight drawings (XING2 2207 'O16 4-M3', XING 2806.5 'O19' at 45 deg, XING2 1404 'O9 4-M2'). Use bolt_circle_d for geometry; mount_pattern.x/y keep the trade designation.",
+   "body_h_definition": "motor mounting face to top of bell, excluding shaft"
+  },
+  "motors": {
+   "2207_1855kv_6s": {
+    "model": "iFlight XING2 2207 1855KV (6S)",
+    "mount_pattern": {
+     "x": 16,
+     "y": 16
+    },
+    "bolt_circle_d": 16,
+    "adjacent_hole_spacing": 11.31,
+    "mount_screw": "M3",
+    "max_screw_depth": 3.0,
+    "max_screw_depth_confidence": "typical",
+    "max_screw_depth_note": "Not published. Base flange is 2.5 mm thick on the drawing; iFlight ships M3x8 screws, which on a 5-6 mm arm gives ~2-3 mm engagement. Keep protrusion into the base <= 3 mm to avoid the stator windings.",
+    "bell_d": 29.08,
+    "body_h": 19.1,
+    "shaft_d": 5,
+    "shaft_thread": "M5",
+    "shaft_h": 13.5,
+    "overall_h": 32.6,
+    "weight_g": 31.6,
+    "thrust_g_max": 1685,
+    "note": "Max thrust 1685 g with Gemfan 51466 at 24.0 V, 100% throttle, 35.08 A (iFlight test report). With 5140 prop: 1436 g. Weight includes wire. Bearings 9x4x4 NSK. Drawing dims: body 19.1+/-0.2, shaft protrusion 13.5.",
+    "source": "https://shop.iflight.com/xing2-2207-4s-6s-fpv-motor-unibell-pro1464",
+    "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING2-2207-1855KV.png",
+    "confidence": "datasheet"
+   },
+   "2306_1755kv_6s": {
+    "model": "iFlight XING2 2306 1755KV (6S)",
+    "mount_pattern": {
+     "x": 16,
+     "y": 16
+    },
+    "bolt_circle_d": 16,
+    "adjacent_hole_spacing": 11.31,
+    "mount_screw": "M3",
+    "max_screw_depth": 3.0,
+    "max_screw_depth_confidence": "typical",
+    "max_screw_depth_note": "Not published; same base family as XING2 2207 (ships M3x8). Keep protrusion <= 3 mm.",
+    "bell_d": 30,
+    "body_h": 18.7,
+    "shaft_d": 5,
+    "shaft_thread": "M5",
+    "shaft_h": 13.5,
+    "overall_h": 32.2,
+    "weight_g": 32.5,
+    "thrust_g_max": null,
+    "thrust_g_max_note": "iFlight page publishes no thrust table for the 2306 (only Max Watt 869 W at 24 V, peak 36.21 A). Not filled rather than guessed; for sizing use the 2207 1855KV figure (1685 g on 51466 @ 24 V) as the nearest published reference.",
+    "note": "Page dimension 'phi30*32.2mm' is overall incl. shaft; body_h = 32.2 - 13.5 shaft = 18.7, which matches the retailer listing '30*18.7mm' (progressiverc.com). Weight includes short wire.",
+    "source": "https://shop.iflight.com/xing2-2306-4s-6s-fpv-motor-unibell-pro1465",
+    "confidence": "datasheet"
+   },
+   "1404_3800kv_3in": {
+    "model": "iFlight XING2 1404 3800KV (3-4S)",
+    "mount_pattern": {
+     "x": 9,
+     "y": 9
+    },
+    "bolt_circle_d": 9,
+    "adjacent_hole_spacing": 6.36,
+    "mount_screw": "M2",
+    "max_screw_depth": 2.0,
+    "max_screw_depth_confidence": "typical",
+    "max_screw_depth_note": "Not published; iFlight ships M2x5 and M2x7 screws (for thin vs thick arms). Keep protrusion into the base <= 2 mm.",
+    "bell_d": 19.9,
+    "body_h": 13.5,
+    "shaft_d": 1.5,
+    "shaft_h": 4,
+    "overall_h": 18.4,
+    "prop_mount": "1.5 mm plain shaft (press-fit props); also has 4-M2 holes on the bell top for screw-on/T-mount style props",
+    "weight_g": 9.1,
+    "thrust_g_max": 512,
+    "note": "Max thrust 512 g with 4030 prop at 16 V (4S), 100% throttle, 15.84 A (iFlight test report). Drawing: 13.5 mount face to bell top, 4 mm shaft above bell, 18.4 overall. Bearings 5x2x2.",
+    "source": "https://shop.iflight.com/xing2-1404-toothpick-ultralight-build-unibell-pro1482",
+    "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING2-1404-3800KV.png",
+    "confidence": "datasheet"
+   },
+   "2806_5_1300kv_7in": {
+    "model": "iFlight XING 2806.5 1300KV (6S, 7in)",
+    "mount_pattern": {
+     "x": 19,
+     "y": 19
+    },
+    "bolt_circle_d": 19,
+    "adjacent_hole_spacing": 13.43,
+    "mount_screw": "M3",
+    "max_screw_depth": 3.0,
+    "max_screw_depth_confidence": "typical",
+    "max_screw_depth_note": "Not published; ships M3x8 screws. Keep protrusion <= 3 mm.",
+    "bell_d": 35.06,
+    "body_h": 21.3,
+    "shaft_d": 5,
+    "shaft_thread": "M5",
+    "shaft_h": 15.5,
+    "overall_h": 36.8,
+    "weight_g": 54.3,
+    "thrust_g_max": 2319,
+    "note": "Max thrust 2319 g with HQ 7x4x3 at 23.42 V, 100% throttle, 42.33 A; with HQ 8x4x3: 2510 g; with Gemfan 7040: 2058 g (iFlight test report). Holes at 45 deg on O19 per drawing. Weight includes 265 mm 18AWG leads. Bearings 11x5x5.",
+    "source": "https://shop.iflight.com/xing-x2806-5-fpv-nextgen-motor-pro1001",
+    "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING-2806.5-1300KV.png",
+    "confidence": "datasheet"
+   }
+  },
+  "props": {
+   "3in": {
+    "model": "Gemfan Hurricane 3016 tri-blade (1.5 mm hole)",
+    "diameter_mm": 76.49,
+    "hub_thickness": 5.5,
+    "mount": "1.5mm shaft (press-fit)",
+    "max_blade_width": 8.84,
+    "weight_g": 1.18,
+    "note": "Gemfan spec reproduced on retailer page; also sold with 2 mm hole.",
+    "source": "https://www.racedayquads.com/products/gemfan-hurricane-3016-durable-tri-blade-3-prop-4-pack-1-5mm-choose-your-color",
+    "confidence": "datasheet"
+   },
+   "5_1in": {
+    "model": "Gemfan Hurricane 51466 V2 (MCK) tri-blade",
+    "diameter_mm": 131.8,
+    "hub_thickness": 6.8,
+    "mount": "5mm shaft",
+    "pitch_in": 3.6,
+    "weight_g": 4.2,
+    "note": "Same prop used in the XING2 2207 thrust table. Fits 2207-2306 and larger (M5 hub).",
+    "source": "https://www.gemfanhobby.com/hurricane-51466-v2-pc-3-blade.html",
+    "confidence": "datasheet"
+   },
+   "7in": {
+    "model": "Gemfan Flash 7040 tri-blade",
+    "diameter_mm": 178.43,
+    "hub_thickness": 7.5,
+    "mount": "5mm shaft",
+    "weight_g": 7.9,
+    "note": "Gemfan spec reproduced on retailer page; 5 mm hole is PoPo (quick-swap) compatible.",
+    "source": "https://www.thingbits.in/products/gemfan-flash-7040-3-7-inch-tri-blade-propellers",
+    "confidence": "datasheet"
+   }
+  },
+  "stacks": {
+   "fc_30_5": {
+    "model": "SpeedyBee F405 V4 + BLS 55A 30x30 stack",
+    "spacing": 30.5,
+    "screw": "M3",
+    "hole_d": 4.0,
+    "board_size": {
+     "fc": [
+      41.6,
+      39.4,
+      7.8
+     ],
+     "esc": [
+      45.6,
+      44.0,
+      8.0
+     ]
+    },
+    "height": 22,
+    "height_confidence": "typical",
+    "height_note": "Not published as an assembled height. FC 7.8 + ESC 8.0 (each incl. components) + ~5-6 mm gap on M3 grommets/standoffs = ~21-22 mm. Allow 22 mm plus stack screw head.",
+    "weight_g": 34.0,
+    "weight_note": "FC 10.5 g + ESC 23.5 g.",
+    "note": "4 mm holes take silicone grommets for M3 screws.",
+    "source": "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/",
+    "confidence": "datasheet"
+   },
+   "fc_20": {
+    "model": "SpeedyBee F405 Mini + BLS 35A Mini V2 20x20 stack",
+    "spacing": 20,
+    "screw": "M2",
+    "hole_d": 3.5,
+    "board_size": {
+     "fc": [
+      30,
+      32,
+      7.8
+     ],
+     "esc": [
+      35,
+      35,
+      5.5
+     ],
+     "stack_overall": [
+      32,
+      35,
+      14.2
+     ]
+    },
+    "height": 14.2,
+    "weight_g": 16.8,
+    "weight_note": "FC 9.6 g + ESC 7.2 g. SpeedyBee's stack summary lists 13.5 g, which is lower than the sum of its own per-board figures; use 16.8 g as the conservative value.",
+    "note": "3.5 mm holes accept M2 or M3 screws / silicone grommets; M2 with grommets is the usual choice. Stack height 14.2 mm from SpeedyBee's assembled-stack dimension.",
+    "source": "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/",
+    "confidence": "datasheet"
+   },
+   "aio_25_5": {
+    "model": "TuneRC Poly F405 20A 2-4S AIO v1.3",
+    "spacing": 25.5,
+    "screw": "M2",
+    "board_size": [
+     33,
+     33
+    ],
+    "height": 5,
+    "height_confidence": "typical",
+    "height_note": "Not published. A single AIO board with components is ~4-5 mm; leave >= 3 mm under it for grommets.",
+    "weight_g": 6.1,
+    "note": "Holes are sized for M3.5 grommets used with M2 screws. Supports up to 1404 motors.",
+    "source": "https://pyrodrone.com/collections/whoop-style-aio-flight-controllers/products/tunerc-poly-f405-20a-2s-4s-aio-v1-2-flight-controller-25-5x25-5mm",
+    "confidence": "datasheet"
+   }
+  },
+  "cameras": {
+   "micro_19mm": {
+    "model": "RunCam Phoenix 2 (micro, 19 mm)",
+    "width": 19,
+    "height": 19,
+    "depth": 19,
+    "depth_note": "19 mm is back face to lens front (7 mm rear body + 12 mm front/lens) per RunCam drawing; the rear connector tab adds ~1.5 mm.",
+    "mount_screw": "M2",
+    "mount_hole_from_front": 13.9,
+    "mount_hole_from_front_confidence": "typical",
+    "mount_hole_from_front_note": "Not dimensioned; scaled from the RunCam side-view drawing: side M2 hole centre ~5.1 mm forward of the back face, i.e. ~13.9 mm behind the lens front (+/-0.5 mm). Measure before tight fits.",
+    "lens": "2.1 mm M12, FOV 155 deg (4:3)",
+    "weight_g": 9,
+    "source": "https://shop.runcam.com/runcam-phoenix-2/",
+    "source_detail": "https://store-m8o52p.mybigcommerce.com/product_images/img_phoenix2/PHOENIX2_6.jpg",
+    "confidence": "datasheet"
+   }
+  },
+  "batteries": {
+   "6S_1100": {
+    "model": "CNHL Black Series V2.0 1100mAh 6S 130C",
+    "length": 78,
+    "width": 38,
+    "height": 31,
+    "weight_g": 197.5,
+    "connector": "XT60",
+    "note": "Manufacturer says approx. weight; 'manual measurement may result in slight size differences'.",
+    "source": "https://chinahobbyline.com/products/cnhl-black-series-1100mah-22-2v-6s-130c-lipo-battery-with-xt60-plug",
+    "confidence": "datasheet"
+   },
+   "6S_1300": {
+    "model": "CNHL Black Series V2.0 1300mAh 6S 130C",
+    "length": 82,
+    "width": 40,
+    "height": 36,
+    "weight_g": 215,
+    "connector": "XT60",
+    "note": "Approx. weight per pack (manufacturer).",
+    "source": "https://chinahobbyline.com/products/2-packs-cnhl-black-series-v2-0-1300mah-22-2v-6s-130c-lipo-battery-with-xt60-plug",
+    "confidence": "datasheet"
+   },
+   "4S_1500": {
+    "model": "CNHL Black Series V2.0 1500mAh 4S 130C",
+    "length": 80,
+    "width": 39,
+    "height": 28,
+    "weight_g": 164,
+    "connector": "XT60",
+    "note": "Manufacturer lists 'Size (1-5mm difference): 39x28x80mm', weight +/-5 g.",
+    "source": "https://chinahobbyline.com/products/2-packs-cnhl-black-series-v2-0-1500mah-14-8v-4s-130c-lipo-battery-with-xt60-plug",
+    "confidence": "datasheet"
+   }
+  },
+  "connectors": {
+   "XT60": {
+    "model": "Amass XT60 male (solder cup)",
+    "length": 21.3,
+    "width": 8.1,
+    "height": 16.0,
+    "note": "Length includes solder cups. Matching female: 20.5 x 8.1 x 16.0. Dimensions read from the Amass drawing published on the vendor page. XT60H (with rear housing) is longer; check before a tight pocket.",
+    "source": "https://www.thingbits.in/products/amass-xt60-male-female-connector",
+    "source_detail": "https://images.thingbits.net/eyJidWNrZXQiOiJ0aGluZ2JpdHMtbmV0Iiwia2V5IjoiZGVzY3JpcHRpb24vYW1hc3MteHQ2MC1jb25uZWN0b3JfZHJhd2luZ180eC5qcGcifQo=",
+    "confidence": "datasheet"
+   }
+  },
+  "frames_reference": {
+   "5in_freestyle_motor_to_motor": {
+    "typical_range": [
+     220,
+     226
+    ],
+    "examples": [
+     {
+      "name": "iFlight Nazgul Evoque F5 V2",
+      "wheelbase": 225,
+      "note": "225 mm squashed-X / 223 mm DeadCat; arms 6 mm, bottom plate 3 mm, top plate 2 mm, body height 36 mm.",
+      "source": "https://shop.iflight.com/Evoque-F5-V2-Frame-Kit-Pro1887",
+      "confidence": "datasheet"
+     },
+     {
+      "name": "TBS Source One V5",
+      "wheelbase": 226,
+      "note": "Props up to 5.2 in; frame weight 118 g (128 g with battery pad).",
+      "source": "https://oscarliang.com/source-one-v5",
+      "confidence": "multiple-vendors"
+     }
+    ],
+    "confidence": "multiple-vendors"
+   }
+  }
+ },
+ "boards": {
+  "rpi4": {
+   "name": "Raspberry Pi 4 Model B",
+   "length": 85.0,
+   "width": 56.0,
+   "thickness": 1.4,
+   "component_height": 16.0,
+   "holes": [
+    [
+     -39.0,
+     -24.5
+    ],
+    [
+     19.0,
+     -24.5
+    ],
+    [
+     -39.0,
+     24.5
+    ],
+    [
+     19.0,
+     24.5
+    ]
+   ],
+   "hole_d": 2.7,
+   "hole_screw": "M2.5",
+   "weight_g": 45,
+   "corner_radius": 3.0,
+   "source": "https://pip-assets.raspberrypi.com/categories/545-raspberry-pi-4-model-b/documents/RP-008343-DS-1-raspberry-pi-4-mechanical-drawing.pdf",
+   "source_weight": "https://eu.robotshop.com/products/raspberry-pi-4-b-4g-computer-board",
+   "confidence": "datasheet",
+   "note": "Official drawing: 85x56, R3 corners, holes 3.5 mm from the left/bottom edges on a 58 x 49 pattern (x=3.5/61.5, y=3.5/52.5 from the lower-left corner), hole 2.7, pad 6. Tallest parts: USB-A stacks Z=16.0, Ethernet Z=13.5, GPIO header Z=8.5; USB and Ethernet overhang the right edge by ~2 mm. Origin of x is board centre with the USB/Ethernet edge at +x. PCB thickness (1.4) is NOT in the drawing: typical value, measure before tight fits. Weight 45 g from one vendor listing (multiple-vendors grade)."
+  },
+  "rpi_pico": {
+   "name": "Raspberry Pi Pico (RP2040)",
+   "length": 51.0,
+   "width": 21.0,
+   "thickness": 1.0,
+   "component_height": 3.2,
+   "holes": [
+    [
+     -23.5,
+     -5.7
+    ],
+    [
+     23.5,
+     -5.7
+    ],
+    [
+     -23.5,
+     5.7
+    ],
+    [
+     23.5,
+     5.7
+    ]
+   ],
+   "hole_d": 2.1,
+   "hole_screw": "M2",
+   "weight_g": 4.1,
+   "source": "https://pip-assets.raspberrypi.com/categories/610-raspberry-pi-pico/documents/RP-008307-DS-2-pico-datasheet.pdf",
+   "source_weight": "https://www.tme.eu/en/details/sc0915/raspberry-pi-embedded/raspberry-pi/raspberry-pi-pico/",
+   "confidence": "datasheet",
+   "note": "Datasheet sec. 2 Fig. 3: 51x21x1 mm PCB, 4x 2.1 mm (+/-0.05) holes 2 mm from each short edge and 11.4 mm apart across the width (4.8 mm from the long edges). Micro-USB overhangs the +x short edge slightly. component_height 3.2 is APPROXIMATE (micro-USB / BOOTSEL button, not given in the datasheet). Weight 4.1 g is TME gross weight (includes packaging), conservative. Header pins, if soldered, extend ~8.5 mm below the PCB."
+  },
+  "arduino_nano": {
+   "name": "Arduino Nano (A000005, ATmega328)",
+   "length": 43.2,
+   "width": 18.0,
+   "thickness": 1.6,
+   "component_height": 4.0,
+   "holes": [
+    [
+     -20.32,
+     -7.62
+    ],
+    [
+     20.32,
+     -7.62
+    ],
+    [
+     -20.32,
+     7.62
+    ],
+    [
+     20.32,
+     7.62
+    ]
+   ],
+   "hole_d": 1.8,
+   "hole_screw": "M1.6",
+   "weight_g": 7,
+   "source": "https://docs.arduino.cc/resources/datasheets/A000005-datasheet.pdf",
+   "source_cad": "https://docs.arduino.cc/static/e3c4fe1f9bee7ec63df398422b3257f4/A000005-cad-files.zip",
+   "source_weight": "https://docs.arduino.cc/hardware/nano/",
+   "confidence": "datasheet",
+   "note": "Datasheet sec. 6: 43.2 x 18 board, 1.6 PCB, 4x d1.8 holes on a 40.64 x 15.24 pattern (official Eagle .brd: outline 43.18 x 17.78, holes 1.27 mm in from each corner, drill 1.651). Holes are too small for M2: use M1.6 screws or 1.6-1.7 mm pins, or press-fit posts. Arduino docs quote 45 x 18 including the mini-USB overhang at +x. component_height 4.0 is APPROXIMATE (mini-USB, not dimensioned); with headers + ICSP header the side view gives 18.6 overall, pins 2.5 mm pitch below. Weight 7 g from Arduino docs page."
+  },
+  "esp32_devkitc_v4": {
+   "name": "Espressif ESP32-DevKitC V4 (ESP32-WROOM-32 module)",
+   "length": 48.26,
+   "width": 27.94,
+   "thickness": 1.6,
+   "component_height": 3.5,
+   "overall_length": 54.3,
+   "antenna_overhang": 6.04,
+   "holes": [],
+   "hole_d": null,
+   "hole_screw": null,
+   "weight_g": 10,
+   "source": "https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf",
+   "source_doc": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp32-devkitc/user_guide.html",
+   "source_weight": "https://www.tme.eu/en/details/esp32-devkitc-vib/development-kits-for-data-transmission/espressif/",
+   "confidence": "datasheet",
+   "note": "Official dimension drawing: PCB 48.26 x 27.94, two 20-pin rows at 2.54 pitch, rows 25.40 apart (centre to centre), module 18.00 wide overhanging the +x end by 6.04 (overall ~54.3; TME lists 54.4 x 27.9). No mounting holes: hold by edges/clips or plug into female headers. Keep plastic out of the antenna overhang zone. PCB thickness 1.6 and component_height 3.5 (WROOM-32 can ~3.1, micro-USB, buttons) are APPROXIMATE/typical, not on the drawing. Weight 10 g APPROXIMATE (TME gross 10.9 g for the DevKitC-VIB variant)."
+  },
+  "rpi_camera_module_3": {
+   "name": "Raspberry Pi Camera Module 3 (standard lens)",
+   "length": 25.0,
+   "width": 23.862,
+   "thickness": 1.12,
+   "component_height": 6.98,
+   "holes": [
+    [
+     -10.5,
+     -9.931
+    ],
+    [
+     10.5,
+     -9.931
+    ],
+    [
+     -10.5,
+     2.569
+    ],
+    [
+     10.5,
+     2.569
+    ]
+   ],
+   "hole_d": 2.2,
+   "hole_screw": "M2",
+   "lens_offset": {
+    "x": 0.0,
+    "y": 2.469
+   },
+   "lens_d": 5.75,
+   "lens_housing_square": 10.8,
+   "weight_g": 4,
+   "source": "https://pip-assets.raspberrypi.com/categories/786-raspberry-pi-camera-module-3/documents/RP-008151-DS-1-camera-module-3-product-brief.pdf",
+   "source_weight": "https://core-electronics.com.au/raspberry-pi-camera-3.html.plain.md",
+   "confidence": "datasheet",
+   "note": "Product brief p.4 drawing (tolerance 0.2): board 25 x 23.862, x along the 25 mm side, +y toward the edge away from the FPC connector (connector edge is -y). Holes d2.2 (pads d4.75) 2.0 mm in from left/right edges, at 2.0 and 14.5 mm above the connector edge (21 x 12.5 pattern, same as Camera Module 2). Lens centre on the vertical centreline, 14.4 mm above the connector edge; lens barrel d5.75 on a 10.8 mm square housing. Side view: 11.3 overall depth; my reading is lens tip 6.98 above the PCB front face and ~3.2 mm of rear parts (FPC connector) behind the 1.12 PCB, so component_height and rear clearance are APPROXIMATE interpretation of the drawing. Spec table: 25 x 24 x 11.5 mm (12.4 for Wide). Weight 4 g from vendor listing."
+  },
+  "rpi_zero_2w": {
+   "name": "Raspberry Pi Zero 2 W",
+   "length": 65.0,
+   "width": 30.0,
+   "thickness": 1.0,
+   "component_height": 3.8,
+   "holes": [
+    [
+     -29.0,
+     -11.5
+    ],
+    [
+     29.0,
+     -11.5
+    ],
+    [
+     -29.0,
+     11.5
+    ],
+    [
+     29.0,
+     11.5
+    ]
+   ],
+   "hole_d": 2.75,
+   "hole_screw": "M2.5",
+   "weight_g": 10,
+   "corner_radius": 3.0,
+   "source": "https://pip-assets.raspberrypi.com/categories/584-raspberry-pi-zero-2-w/documents/RP-008358-DS-1-raspberry-pi-zero-2-w-mechanical-drawing.pdf",
+   "source_weight": "https://raspberrypi.dk/en/product/raspberry-pi-zero-2-w/?clang=en",
+   "confidence": "datasheet",
+   "note": "Official drawing: 65 x 30, holes 3.5 mm in from every edge (58 x 23 pattern). Connector positions from the left edge: mini-HDMI centre 12.4, micro-USB data 41.4, micro-USB power 54 (all on the -y long edge); GPIO header along +y edge. hole_d 2.75 is APPROXIMATE (not on this drawing; standard M2.5 clearance for the Zero family). corner_radius 3.0 assumed same as other Pis. thickness 1.0 and component_height 3.8 are APPROXIMATE (vendor overall height 65x30x5 incl. PCB, botland.store); measure before tight fits. Weight 10 g (raspberrypi.dk; botland lists 15 g likely incl. packaging). Unpopulated GPIO header; add ~8.5 mm if a header is soldered."
+  }
+ }
+}

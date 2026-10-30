@@ -104,7 +104,7 @@ def test_materials_have_mechanics(key):
     m = catalog.get(f"materials.{key}")
     assert 0.9 < catalog.num(m, "density") < 1.6
     assert catalog.num(m, "tensile_strength_xy_mpa") > 5
-    assert catalog.num(m, "youngs_modulus_mpa") > 10
+    assert catalog.num(m, "youngs_modulus_mpa") > 5   # TPU 95A is genuinely ~10 MPa
 
 
 @pytest.mark.parametrize("key", list((CAT.get("drone", {}).get("stacks") or {}).keys()))

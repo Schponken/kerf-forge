@@ -137,3 +137,51 @@ def test_bearing_seat_press_fit():
     b = iface.bearing_dims("bearings.608")
     cut = iface.bearing_seat(None, "bearings.608", Location((0, 0, 0)), fit="press")
     assert cut.bounding_box().size.X == pytest.approx(b["D"] + iface.FIT["press"], abs=1e-6)
+
+
+MOTOR_YAML = """
+name: t
+parts:
+  arm: {file: parts/arm.py}
+purchased:
+  motor: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: m}}
+  stack: {catalog: drone.stacks.fc_30_5, proxy: stack, groups: {holes: s}}
+keepouts:
+  prop: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor}
+assembly:
+  root: arm
+  joints:
+    - {parent: arm.motor_seat, child: motor.base}
+    - {parent: arm.stack_seat, child: stack.bottom}
+    - {parent: motor.prop, child: prop.hub}
+"""
+MOTOR_ARM = """
+from build123d import *
+from kerf import iface
+M = "drone.motors.2207_1855kv_6s"
+def build(ctx):
+    t = 5
+    s = Box(140, 40, t, align=(Align.MIN, Align.CENTER, Align.MIN))
+    # screws come up from underneath: loc on the bottom face, +Z pointing down (toward the screw heads)
+    s -= iface.motor_mount(ctx, M, Location((120, 0, 0), (180, 0, 0)), group="m", plate_t=t)
+    s -= iface.stack_mount(ctx, "drone.stacks.fc_30_5", Location((25, 0, t)), group="s", depth=t, kind="nut_trap")
+    ctx.rigid("motor_seat", Location((120, 0, t)))
+    ctx.rigid("stack_seat", Location((25, 0, t)))
+    return ctx.finish(s)
+"""
+
+
+def test_motor_and_stack_mounts_align(tmp_path):
+    proj, asm = _proj(tmp_path, MOTOR_YAML, {"arm": MOTOR_ARM})
+    joints, problems = A.fasteners(asm)
+    assert problems == [], problems
+    assert len([j for j in joints if j["group"] == "m"]) == 4
+    assert len([j for j in joints if j["group"] == "s"]) == 4
+    # motor screws must not reach deeper than the catalog's max_screw_depth into the motor base
+    from kerf import catalog
+    depth = catalog.num(catalog.get("drone.motors.2207_1855kv_6s"), "max_screw_depth")
+    for j in joints:
+        if j["group"] == "m":
+            assert j["length_mm"] - j["grip_mm"] <= depth + 1e-6
+    hits = A.interference(asm)
+    assert hits == [], hits

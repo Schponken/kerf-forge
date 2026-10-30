@@ -20,14 +20,20 @@ def load() -> dict:
 
 
 def get(path: str) -> dict:
-    """get("servos.MG996R") -> the entry dict. Raises CatalogError with suggestions if missing."""
-    node = load()
-    parts = path.split(".")
-    for i, key in enumerate(parts):
-        if not isinstance(node, dict) or key not in node:
-            options = sorted(k for k in node.keys() if not k.startswith("_")) if isinstance(node, dict) else []
+    """get("servos.MG996R") -> the entry dict. Keys may contain dots ("screws.M2.5"): the longest matching key wins.
+    Raises CatalogError with the options available at the failing level."""
+    node, parts, i = load(), path.split("."), 0
+    while i < len(parts):
+        if not isinstance(node, dict):
+            raise CatalogError(f"catalog '{'.'.join(parts[:i])}' is a value, not a section")
+        for j in range(len(parts), i, -1):
+            key = ".".join(parts[i:j])
+            if key in node:
+                node, i = node[key], j
+                break
+        else:
+            options = sorted(k for k in node.keys() if not k.startswith("_"))
             raise CatalogError(f"catalog has no '{'.'.join(parts[:i + 1])}'. Options here: {options}")
-        node = node[key]
     return node
 
 

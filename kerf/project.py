@@ -49,10 +49,11 @@ class Project:
         return d.joinpath(*p)
 
     def fingerprint(self) -> str:
-        """Hash of everything that defines the geometry: yaml, part sources, catalog, kerf engine source."""
+        """Hash of the project's own design inputs: project.yaml, part sources and the catalog.
+        (Engine code is excluded so engine improvements don't invalidate every review; `kerf verify` rebuilds and
+        re-checks every project from scratch, so an engine change that breaks a design still fails verify.)"""
         h = hashlib.sha256()
-        files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")),
-                 catalog.CATALOG, *sorted((ROOT / "kerf").glob("*.py"))]
+        files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")), catalog.CATALOG]
         for f in files:
             if f.exists():
                 h.update(f.name.encode())

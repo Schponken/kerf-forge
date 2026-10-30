@@ -229,7 +229,7 @@ def fasteners(asm: Assembly) -> tuple[list, list]:
             spec = screw_spec(ms.screw)
             need_min = along + (fs.min_engage or min(fs.engage, spec["min_engage"]))
             need_max = along + fs.engage
-            length = next((L for L in STANDARD_SCREW_LENGTHS if need_min <= L <= need_max), None)
+            length = next((L for L in STANDARD_SCREW_LENGTHS if need_min - 1e-3 <= L <= need_max + 1e-3), None)
             j = {"group": g, "screw": ms.screw, "male": mi, "female": fi, "head": ms.kind, "receiver": fs.kind,
                  "grip_mm": round(along, 2), "gap_mm": round(gap, 2), "length_mm": length}
             if abs(gap) > 0.3:
