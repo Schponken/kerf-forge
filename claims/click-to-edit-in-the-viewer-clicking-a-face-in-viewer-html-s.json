@@ -1,0 +1,7 @@
+{
+ "item": "Click-to-edit in the viewer: clicking a face in `viewer.html` shows which part file, feature and parameter produced it, and lets Spencer copy a ready-made edit request (\"arm.py: arm_length 120 -> 130\") for Claude Code",
+ "session": "2c0e7041a2",
+ "since": 1793401885.1128504,
+ "heartbeat": 1793401885.1128504,
+ "since_utc": "2026-10-30 23:11"
+}
