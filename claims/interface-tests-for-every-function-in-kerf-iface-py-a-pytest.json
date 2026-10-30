@@ -1,0 +1,7 @@
+{
+ "item": "Interface tests: for EVERY function in `kerf/iface.py`, a pytest that builds both sides, assembles them, and proves alignment + correct fit clearance from the catalog",
+ "session": "1c937e70ac",
+ "since": 1793400180.4676285,
+ "heartbeat": 1793400180.4676285,
+ "since_utc": "2026-10-30 22:43"
+}
