@@ -119,3 +119,18 @@ entry before each push (date, what changed, verify state, next step, open proble
   and which items block it, at which pose; `ignore` for items allowed inside. tests/test_channel.py: drilled 2 mm bore
   measures 2.00; 2.2 mm is blocked by the hand-calculated ring volume pi(1.1^2-1^2)(30-2.4); a sliding gate is caught
   only at the pose where it crosses the bore; runs from project.yaml. Docs: ARCHITECTURE example, ENGINEERING s11.
+
+## 2026-10-30 23:30 UTC — assembly viewer (planning chat, second session)
+- Done: PLAN Phase 4 "Assembly viewer". `kerf build` writes `projects/<p>/out/viewer.html`: one offline file
+  (three.js r186 subset in kerf/assets/viewer3d.js, regenerate with `node tools/viewer/build.mjs`), explode slider,
+  a slider + sweep animation per moving joint, part show/hide/isolate, parts list, print info, checks; light/dark;
+  phone layout; draws only when something changes.
+- Joint axes are measured from `assembly.solve()` (kerf/viewer.py joint_motion), not re-derived: tests/test_viewer.py
+  proves page kinematics match the engine to 1e-3 mm for a slide + hinge chain with a non-zero home.
+- Browser check: `node tools/viewer/smoke.mjs <viewer.html> <out_prefix>` (no errors, no network requests, each joint
+  moves exactly its subtree, screenshots). Headless note: avoid continuous rendering; it stalls software GL.
+- Tooling: added parallel-session claims (tools/claims.py, CLAUDE.md "Parallel sessions"). Lesson: commit before
+  `git pull --rebase`; `--autostash` with uncommitted edits to a shared file produced conflict markers twice.
+- servo_link: build PASS with the merged engine (196 tests pass). Its geometry fingerprint is now 79fbc6e03da773f2
+  (the review is for a9b581f37fd9cf80), so `kerf verify` will ask for a fresh design-reviewer pass.
+
