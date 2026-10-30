@@ -18,6 +18,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item |
 | `kerf/assembly.py` | Joint tree, solve poses, interference, motion sweeps, coupled poses, fastener alignment + screw lengths |
 | `kerf/features.py` | Detailed-modeling helpers: swept channels, uniform shell, gussets, teardrop holes, printed ISO threads (bd_warehouse, phase-matched rod/hole), gear pairs (= drives.spur_pair), snap hooks + living hinges with a strain check, text labels, lightening pockets with a minimum web, `safe_fillet` (applies edge groups one by one, reports failures) |
+| `kerf/access.py` | Assembly access, run by every check: hex-key reach for every male screw site (straight, else 25 deg ball-end = warning, else problem; catalog `tools.hex_key`) and insertion paths for items with `insert: {direction, distance}` |
 | `kerf/pins.py` | Pinned hinges: every `pin_hole` of a group coaxial (0.05 mm), pin held (press/heatset/tap) on one side of each moving joint and free on the other, the joint turning about the pin axis, and a stocked pin/screw length that reaches every hole |
 | `kerf/checks.py` | Per-part print checks in print orientation (solids, validity, bed fit, watertight, overhang, wall thickness, `load_axis` across layers, mass) |
 | `kerf/requirements.py` | Engineering checks named in project.yaml (`@check("name")` registry), incl. `fea_static` |
@@ -45,6 +46,8 @@ layout: parts/layout.py         # optional: def layout(p, cat) -> dict of shared
                                 # (hole positions, seat heights) that several parts must agree on; added to ctx.p
 parts:                          # printed parts
   bracket: {file: parts/bracket.py, material: PETG, qty: 1, print_rot: [0, 0, 0], infill: 0.3, load_axis: X}   # load_axis: main stress direction (part frame); warned if > 30 deg across layers
+  # any part or purchased item may add  insert: {direction: [0, 0, -1], distance: 30}  (own frame, the way it moves
+  # going IN): kerf check slides it (and what is mounted on it) in from that far and reports collisions on the way
 purchased:                      # catalog-backed proxies (real mass + geometry for collisions)
   servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}}
   horn:  {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}

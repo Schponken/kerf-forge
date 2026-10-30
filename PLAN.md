@@ -35,7 +35,7 @@ tested before handoff.
 - [x] FEA load-case helpers and output: bearing-seat radial loads, torque about a joint, pressure on a face; a von Mises colour render per FEA check saved to `out/renders/fea_<id>.png` for the reviewer
 - [x] Reference library `references/INDEX.md`: every open design studied (link, license, measured key dimensions, lessons) so later projects reuse the research
 - [x] `kerf check` total time for `servo_link` under 60 s; profile and cache tessellation/overlaps if slower
-- [ ] Assembly-access checks, each with a test: (a) hex-key reach — a straight key of the screw's size along each screw
+- [x] Assembly-access checks, each with a test: (a) hex-key reach — a straight key of the screw's size along each screw
   axis from the head side must clear every other item for its working length (report screws that need a ball-end
   driver); (b) insertion paths — parts declared with `insert: {direction: [x, y, z], distance: mm}` in project.yaml
   are swept along that path into their seat and must not collide (catches e.g. a servo body/cable boss that cannot

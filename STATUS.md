@@ -240,3 +240,15 @@ entry before each push (date, what changed, verify state, next step, open proble
   memory; same matrix as skfem (test_fast_stiffness_equals_skfem). Round-off entries < 1e-10 x max are dropped:
   leaving them in changed pyamg's aggregation pattern and made the arm solve diverge. Results unchanged
   (bracket 0.59, arm 4.58), solver tolerance unchanged.
+
+## 2026-10-30 — session fc7cb2cb: assembly-access checks
+- New kerf/access.py, run by every `kerf check`: (a) hex-key reach from every male screw site: straight key
+  (across-corners envelope, ISO 2936 L-key long-arm reach) along the axis from the head top; blocked but a 25 deg
+  ball-end path clear = warning, nothing clear = problem. (b) `insert: {direction, distance}` on any item: it and its
+  subtree slide in from that far in 1 mm steps; collisions (minus allow_overlap allowances) are problems.
+- Catalog: `tools.hex_key` (ISO 4762 / ISO 10642 socket sizes from fasten.it, McMaster ISO 2936 L-key arm lengths,
+  Bondhus 25 deg ball end). Catalog fingerprint changed -> every project review is stale until re-reviewed.
+- servo_link now reports 2 warnings: the two tab screws on the MG996R cable-boss end need a ball-end key (straight key
+  hits the servo body/boss). Real, and worth a build note in that project.
+- tests/test_access.py: 7 tests (catalog key sizes, reach limit 52.4 mm, ball-end geometry (78.4-28.49)/cos25 > 52.4,
+  covered screws fail, pocket insert clear, lip blocks for 6..16 mm before seat, sideways insert hits the wall).

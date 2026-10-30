@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import assembly as A, checks, export, pins, project as P, requirements, viewer
+from . import access, assembly as A, checks, export, pins, project as P, requirements, viewer
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -61,6 +61,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep["assembly"]["pins"] = pinj
             rep["problems"] += pprob
             rep["warnings"] += pwarn
+            keys, kprob, kwarn = access.hex_key_reach(asm)          # can every screw be driven?
+            ins, iprob = access.insertion_paths(asm)                # can declared parts slide into their seats?
+            rep["assembly"]["hex_keys"], rep["assembly"]["insertion"] = keys, ins
+            rep["problems"] += kprob + iprob
+            rep["warnings"] += kwarn
             if sweeps:
                 sw = A.sweeps(asm, samples=sweep_samples)
                 rep["assembly"]["sweeps"] = sw

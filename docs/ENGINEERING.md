@@ -75,6 +75,10 @@ Clearances between moving printed parts: >= 0.5 mm everywhere over the full moti
   holes only for light, rarely-removed parts. Nut traps where inserts don't fit.
 - Edge distance: hole center >= 1.5 x screw diameter + wall from any edge. Boss outer diameter >= 2.2 x screw size.
 - Every screw must be reachable by a hex key in the assembled order. Counterbore heads that would interfere.
+  `kerf check` proves it (kerf/access.py): a straight hex key (ISO 2936 L-key reach, across-corners envelope) along
+  each screw axis from the head must clear every item; a 25 deg ball-end path is a warning (put "ball-end key" in the
+  build notes), no path at all is a failure. Parts that must slide into a pocket or window declare
+  `insert: {direction, distance}` and the slide-in path is swept for collisions.
 - Use the same group name on both sides; `kerf check` proves alignment and picks a standard length.
 
 ## 8. Moving joints
