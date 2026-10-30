@@ -1,5 +1,6 @@
 {
   "verdict": "PASS",
+<<<<<<< Updated upstream
   "fingerprint": "a9b581f37fd9cf80",
   "reviewer": "design-reviewer",
   "date": "2026-10-30",
@@ -28,12 +29,60 @@
       "part": "bracket",
       "issue": "Carried over: the tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog, and so is the cable-boss geometry, which is scaled from the drawing. The tool-access margin in the first finding depends on both. DESIGN.md's 'check before printing' note covers the tab holes only.",
       "fix": "Extend the DESIGN.md caliper note to cover the boss position and size as well. When a servo is in hand, record the measured values in catalog/hardware.json, noting the measurement as the source."
+=======
+  "fingerprint": "a4014bf2f8acbb43",
+  "reviewer": "design-reviewer",
+  "date": "2026-10-30",
+  "summary": "All 11 findings from the previous review are fixed in the geometry or in DESIGN.md/BOM, and I checked each one against the code, a fresh build of the parts and the renders. Specifically: the tip hole is 3.5 mm on the arm.tip axis; the tab pilot holes leave a 2.7 mm web to the window; the foot teardrops print at exactly 45 deg; the r1.5 gusset fillets and r1 window dog-bones are present; and the FEA now applies the full 922 N*mm stall couple at the tab holes with SF 3, giving 0.6 MPa against a 13 MPa limit. Nothing blocks printing. Five minor items remain: the pilot-hole size uses the PLA value, there is no strength check on the arm, the single-support note leaves out dynamic loads, the tab pattern is still unmeasured, and a fillet failure would be silent.",
+  "findings": [
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The servo-tab pilot holes are 2.72 mm, which is the catalog's Bambu PLA vertical value. The bracket is PETG, and catalog fdm_holes.M3 gives 2.60 mm for PETG. iface.screw_spec ignores material, so a thread-forming M3 cuts only about 50% thread depth instead of about 75%, in the one joint that carries the stall couple. The fastener check also sizes M3x8 for a 2.5 mm grip and ignores the DIN 125 washer DESIGN.md now requires. With the washer, engagement is 5.0 mm against a 4.5 mm minimum.",
+      "fix": "Use the material-specific pilot size: add a fdm_holes.M3 PETG pilot key (2.60, already cited in the catalog note) and have screw_spec/hole() pick it by part material. Also give hole(kind='tap') or servo_mount a washer-thickness grip allowance so the screw length accounts for it. Or switch to M3x10."
+>>>>>>> Stashed changes
     },
     {
       "severity": "minor",
       "part": "arm",
+<<<<<<< Updated upstream
       "issue": "The comment in arm.py still says 'an M3 screw carries the 50 g weight', but DESIGN.md and the BOM now hang a calibration weight or sinker on a wire loop or S-hook. The 3.5 mm tip hole works for both.",
       "fix": "Update the comment to say the test mass hangs on a wire loop or S-hook through the tip hole (see DESIGN.md)."
+=======
+      "issue": "The arm has no fea_static requirement, which ENGINEERING 3b says every structural part needs. The arm's real worst case is not gravity (0.06 N*m). It is the servo stalling with the arm blocked, or slamming the 50 g tip mass, which puts up to the full 922 N*mm through the hub and root. A hand check gives about 4.7 MPa at the 14 x 6 mm root (bending in the layer plane), well under the limit, so this is a documentation/check gap, not a failure.",
+      "fix": "Add a bracket_fea-style requirement for the arm: fix the horn_arm sites (sites: horn_arm, radius 3), apply 922/100 = 9.2 N tangential at the tip (near_joint: tip), direction xy, sf 2.0, and max_disp_mm 1.0 (1% of length)."
+    },
+    {
+      "severity": "minor",
+      "part": "servo",
+      "issue": "This finding was carried over and is now partly fixed. DESIGN.md now justifies single-sided support with the static case only: about 0.6 N radial load at about 10 mm. The previous fix also asked for the full-slew case. When the servo accelerates or stops the tip mass at stall torque, the output shaft carries about T/r = 9.2 N transverse, roughly 15 times the static figure, at about 15 mm from the case top (arm plane at y = +8.8, output base at -5). That is still within what the MG996R's two output bearings handle, so the conclusion holds, but the number is missing.",
+      "fix": "Add one line to the DESIGN.md single-sided support bullet giving the transient radial load (~9 N, ~140 N*mm overturning) and why it is acceptable."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The tab-hole pattern (49.5 x 10 mm, 4.2 mm holes) is still UNVERIFIED in catalog servos.MG996R; it was copied from a DS3218 drawing. DESIGN.md now says to measure the servo before printing the final bracket, which is the right procedure. But bracket.3mf and plate_1.3mf are already exported and ready to print, so the risk stays open until someone actually measures. M3 in a 4.2 mm tab hole tolerates only about 0.6 mm of error.",
+      "fix": "Caliper the real servo and record the measured value with its source in catalog/hardware.json, removing the UNVERIFIED tag. If that cannot be done yet, put the 'measure first' warning in the BOM/plate notes where the person printing will see it."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "bracket.py wraps the gusset-root fillet in try/except and appends to ctx.notes on failure, but kerf never surfaces kerf_notes in report.json or check output. If a parameter change (gusset_t, foot_d) makes the fillet fail, the part still builds and checks PASS with sharp roots and no sign of it. I rebuilt the bracket to confirm the fillets apply today: there are 8 r1.5 faces at the gusset roots and the notes list is empty.",
+      "fix": "Remove the try/except so a failed fillet is a build error, or have pipeline.run copy each part's kerf_notes into report.json warnings (with a test), so a silent fallback can never pass unseen."
+>>>>>>> Stashed changes
     }
+  ],
+  "previous_findings": [
+    {"was": "major", "part": "arm", "topic": "no payload attachment", "status": "resolved", "evidence": "arm.py:27 cuts a 3.5 mm through hole at (0, -arm_len); confirmed in build (r1.75 face at y=-100) and part_arm_sheet top view; 5.25 mm wall each side; BOM line for the 50 g washer stack on an M3x20 screw; DESIGN step 7"},
+    {"was": "minor", "part": "bracket", "topic": "unverified tab pattern", "status": "procedure added, data still unverified (carried as minor)", "evidence": "DESIGN.md Use section; catalog note still UNVERIFIED"},
+    {"was": "minor", "part": "bracket", "topic": "grommets / bare tab under screw head", "status": "resolved", "evidence": "DESIGN step 3 says remove grommets; BOM has 4x DIN 125 M3 washers"},
+    {"was": "minor", "part": "bracket", "topic": "2.1 mm insert web", "status": "resolved", "evidence": "servo_mount kind='tap'; 2.72 mm pilot edge at x=23.39 vs window edge 20.65 = 2.74 mm web; dog-bones 4.3 mm away"},
+    {"was": "minor", "part": "bracket", "topic": "horizontal foot holes", "status": "resolved", "evidence": "teardrop=90 maps to print +Z under print_rot [90,0,0]; roof faces measured at exactly 45 deg; visible in part_bracket_sheet"},
+    {"was": "minor", "part": "bracket", "topic": "inside-corner fillets", "status": "resolved", "evidence": "r1.5 gusset-root faces at x=+/-38.4 (wall and foot), r1.0 window dog-bones at x=+/-21, z=64.3/85.7, r4 wall/foot fillet"},
+    {"was": "minor", "part": "bracket", "topic": "FEA load placement and SF", "status": "resolved", "evidence": "6 mm load boxes centred at x=+/-24.75 spanning both tab holes (z 70/80), force 922/49.5 = 18.6 N, sf 3.0, direction z; result 0.6 MPa vs 13 MPa, 0.008 mm deflection"},
+    {"was": "minor", "part": "arm", "topic": "single-sided support justification", "status": "partially resolved (static only; carried as minor)", "evidence": "DESIGN.md Sizing bullet"},
+    {"was": "minor", "part": "horn", "topic": "horn screw torque", "status": "resolved", "evidence": "DESIGN step 6: snug about 0.5 N*m with medium threadlocker"},
+    {"was": "minor", "part": "base", "topic": "bench mounting", "status": "resolved", "evidence": "DESIGN Use section: screw down or clamp, 0.12 vs 0.92 N*m"},
+    {"was": "minor", "part": "bracket", "topic": "cable routing", "status": "resolved", "evidence": "two 3.2 x 1.8 mm through-slots at x=+/-5, z=58 (5.8 mm below window), cable tie in BOM, DESIGN step 4; the MG996R lead exits low on the case, well behind the 8 mm wall, so it does not have to pass the window web"}
   ]
 }
