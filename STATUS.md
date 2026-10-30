@@ -232,3 +232,11 @@ entry before each push (date, what changed, verify state, next step, open proble
   (2) MG996R tab pattern / tab thickness / cable boss are UNVERIFIED in the catalog until Spencer calipers a servo.
 - Note for every session: any change to the catalog or a part file changes a project's fingerprint and makes its
   review stale; `kerf verify` then needs a fresh design-reviewer pass for that project.
+
+
+## 2026-10-30 — session 01S68R6T: `kerf check servo_link` under 60 s (done: 86 s -> 43.5 s)
+- Profile: ~95% of the time was the two FEA runs, half of it skfem's generic stiffness assembly. New
+  `fea.stiffness()`: vectorised einsum assembly at quadrature order 2 (exact for P2 on straight tets), chunked to bound
+  memory; same matrix as skfem (test_fast_stiffness_equals_skfem). Round-off entries < 1e-10 x max are dropped:
+  leaving them in changed pyamg's aggregation pattern and made the arm solve diverge. Results unchanged
+  (bracket 0.59, arm 4.58), solver tolerance unchanged.

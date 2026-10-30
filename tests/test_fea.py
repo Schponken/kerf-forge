@@ -26,3 +26,18 @@ def test_axial_square_bar_exact():
     r = fea.static(bar, 2000, 0.3, fixed=lambda x, y, z: z < 0.01, loads=[(lambda x, y, z: z > 79.99, (0, 0, 500.0))])
     assert r["median_vm_mpa"] == pytest.approx(5.0, rel=0.01)
     assert r["max_disp_mm"] == pytest.approx(500 * 80 / (2000 * 100), rel=0.02)
+
+
+def test_fast_stiffness_equals_skfem():
+    """kerf.fea.stiffness (vectorised, order-2 quadrature) builds the same matrix as skfem's generic assembly."""
+    import numpy as np
+    from build123d import Box
+    from skfem import Basis, ElementTetP2, ElementVector, MeshTet, asm
+    from skfem.models.elasticity import lame_parameters, linear_elasticity
+    pts, tets = fea._mesh(Box(30, 8, 6), 2.5)
+    mesh, elem = MeshTet(pts.T, tets.T), ElementVector(ElementTetP2())
+    lam, mu = lame_parameters(2000, 0.38)
+    ref = asm(linear_elasticity(lam, mu), Basis(mesh, elem, intorder=4))
+    fast = fea.stiffness(Basis(mesh, elem, intorder=2), lam, mu, chunk=97)   # small chunks exercise the chunking
+    assert abs(fast - ref).max() <= 1e-10 * abs(ref).max()     # round-off below 1e-10 x max is dropped on purpose
+    assert np.allclose(fast.diagonal(), ref.diagonal())

@@ -64,10 +64,38 @@ def _mesh(shape, size: float):
     return pts[used], remap[tets]
 
 
+def stiffness(basis, lam: float, mu: float, chunk: int = 8000):
+    """Isotropic linear-elastic stiffness matrix, vectorised over elements (same matrix as skfem's
+    asm(linear_elasticity(lam, mu), basis), ~8x faster; tests/test_fea.py compares them). Chunked to bound memory."""
+    from scipy.sparse import coo_matrix
+    nd, nel = basis.Nbfun, basis.element_dofs.shape[1]
+    rows, cols, vals = [], [], []
+    for e0 in range(0, nel, chunk):
+        sl = slice(e0, min(e0 + chunk, nel))
+        G = np.stack([basis.basis[i][0].grad[:, :, sl] for i in range(nd)])   # (dof, comp, dir, elem, qp)
+        dx = basis.dx[sl]
+        eps = 0.5 * (G + G.transpose(0, 2, 1, 3, 4))
+        div = np.einsum("iaaeq->ieq", G)
+        Ke = (2 * mu * np.einsum("iabeq,jabeq,eq->ije", eps, eps, dx, optimize=True)
+              + lam * np.einsum("ieq,jeq,eq->ije", div, div, dx, optimize=True))
+        ed = basis.element_dofs[:, sl]
+        rows.append(np.broadcast_to(ed[:, None, :], Ke.shape).ravel())
+        cols.append(np.broadcast_to(ed[None, :, :], Ke.shape).ravel())
+        vals.append(Ke.ravel())
+    K = coo_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))), shape=(basis.N, basis.N)).tocsr()
+    K.sum_duplicates()
+    # couplings that cancel exactly in exact arithmetic come out as +-1e-13 round-off here; leaving them in changes the
+    # sparsity pattern pyamg aggregates on (and broke convergence on servo_link's arm), so drop them
+    K.data[np.abs(K.data) < 1e-10 * np.abs(K.data).max()] = 0.0
+    K.eliminate_zeros()
+    K.sort_indices()
+    return K
+
+
 def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = None) -> dict:
     from skfem import Basis, ElementTetP2, ElementVector, FacetBasis, Functional, LinearForm, MeshTet, asm, condense, solve
     from skfem.helpers import eye, sym_grad, trace
-    from skfem.models.elasticity import lame_parameters, linear_elasticity
+    from skfem.models.elasticity import lame_parameters
 
     bb = shape.bounding_box()
     size = size or max(min(bb.size.X, bb.size.Y, bb.size.Z) / 4.0, 0.6)  # coarser meshes under-represent curved sections
@@ -77,9 +105,10 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
         pts, tets = _mesh(shape, size)
     mesh = MeshTet(pts.T, tets.T)
     elem = ElementVector(ElementTetP2())
-    basis = Basis(mesh, elem, intorder=4)
+    basis = Basis(mesh, elem, intorder=4)          # stresses are sampled at these points
     lam, mu = lame_parameters(E_mpa, nu)
-    K = asm(linear_elasticity(lam, mu), basis)
+    # P2 gradients are linear on a straight-sided tet, so the stiffness integrand is quadratic: order 2 is exact.
+    K = stiffness(Basis(mesh, elem, intorder=2), lam, mu)
     f = np.zeros(K.shape[0])
     for ld in loads:
         ld = ld if isinstance(ld, dict) else {"pred": ld[0], "force": ld[1]}
