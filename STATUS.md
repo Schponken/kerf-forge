@@ -134,3 +134,9 @@ entry before each push (date, what changed, verify state, next step, open proble
 - servo_link: build PASS with the merged engine (196 tests pass). Its geometry fingerprint is now 79fbc6e03da773f2
   (the review is for a9b581f37fd9cf80), so `kerf verify` will ask for a fresh design-reviewer pass.
 
+## 2026-10-30 — session fc7cb2cb: `prop_clearance` requirement check
+- New `prop_clearance` check: exact B-rep distance from each prop disc to every other disc (own `min_between_mm`) and
+  to every non-keep-out item (owner motor, allow_overlap partners and `ignore` items skipped), at home, over each
+  moving joint's range and any coupled `poses`; reports the tightest pair and pose.
+- tests/test_prop_clearance.py: 3 hand-calc tests (disc-disc 20 mm and disc-frame 10 mm, post between discs 8 mm +
+  ignore, prop on a swinging arm: 18.38 mm at +/-20 deg). Documented in docs/ARCHITECTURE.md.

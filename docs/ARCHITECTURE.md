@@ -89,6 +89,10 @@ finds the floor contacts (mesh points within `tol` 0.5 mm of the lowest point), 
 smallest atan(CG-to-edge distance / CG height) in degrees over the poses; negative means it falls over by itself.
 
 `channel_clear` sweeps a ball along the polyline at every pose and reports the largest diameter that passes (0.01 mm).
+
+`prop_clearance` (`min_mm`, optional `min_between_mm` tip-to-tip, `props`, `ignore`, `joints` to sweep (default all),
+`samples`, `poses`) measures every prop disc (keep-out, `proxy: prop_disc`) to every other disc and to every non-keep-out
+item except its `owner` and allow_overlap partners, at home and over the sweeps, and reports the tightest gap.
 Numbers inside requirement regions and forces may be expressions over params/layout values.
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs

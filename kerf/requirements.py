@@ -407,6 +407,44 @@ def channel_clear(proj, asm, path, diameter, poses=None, ignore=None, tol_frac=1
             "detail": f"largest diameter open along the {len(path)}-point channel over {1 + len(poses or [])} pose(s) (mm){where}"}
 
 
+@check("prop_clearance")
+def prop_clearance(proj, asm, min_mm, min_between_mm=None, props=None, ignore=None, joints=None, samples=9,
+                   poses=None):
+    """Smallest gap from each prop disc (keep-out, proxy prop_disc) to every other prop disc (tip to tip) and to
+    every other item, at home, while each moving joint sweeps its range (default: all of them) and at any extra
+    coupled `poses`. Skipped: the disc's owner (its motor), allow_overlap partners and `ignore` items."""
+    items = proj.items
+    props = props or [i for i, it in items.items() if it.role == "keepout" and it.spec.get("proxy") == "prop_disc"]
+    if not props:
+        raise ValueError("no prop discs (keepouts with proxy: prop_disc) in the project")
+    allowed = A._allowed(asm)
+    skip = set(ignore or [])
+    others = [i for i, it in items.items() if it.shape is not None and it.role != "keepout" and i not in skip]
+    pairs = []
+    for k, p in enumerate(props):
+        pairs += [(p, q, min_between_mm if min_between_mm is not None else min_mm) for q in props[k + 1:]]
+        pairs += [(p, o, min_mm) for o in others
+                  if o != items[p].spec.get("owner") and frozenset((p, o)) not in allowed]
+    all_pose = [{}] + list(poses or [])
+    for e in asm.movable:
+        if joints is None or e.name in joints:
+            all_pose += [{e.name: float(v)} for v in np.linspace(e.range[0], e.range[1], samples)]
+    worst = None  # (margin, gap, a, b, pose)
+    for pose in all_pose:
+        A.solve(asm, pose)
+        for a, b, lim in pairs:
+            g = float(items[a].shape.distance_to(items[b].shape))
+            if worst is None or g - lim < worst[0]:
+                worst = (g - lim, g, a, b, pose, lim)
+    A.solve(asm)
+    if worst is None:
+        return {"ok": True, "value": None, "limit": min_mm, "detail": "nothing to check against"}
+    _, g, a, b, pose, lim = worst
+    return {"ok": worst[0] >= 0, "value": round(g, 2), "limit": lim,
+            "detail": f"tightest prop gap (mm): {a} to {b} at pose {pose or 'home'} "
+                      f"({len(props)} discs, {len(all_pose)} poses)"}
+
+
 SLOW = {"fea_static"}
 
 
