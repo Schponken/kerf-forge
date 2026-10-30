@@ -1,0 +1,7 @@
+{
+ "item": "Detailed-modeling helpers in `kerf/features.py`, each with a test that builds it and checks size/validity: swept channels along a 3D path (tendons, wires), shell with uniform wall, ribs/gussets between two faces, teardrop horizontal holes, threads (bd_warehouse) incl. printed coarse threads, gear pairs at the right centre distance (py_gearworks), snap-fit cantilever hooks with a strain check, living hinges, embossed/debossed text labels, lightening pockets that keep a minimum web, and a safe fillet/chamfer helper that applies edge groups one by one and reports any that failed instead of crashing",
+ "session": "d403fa96a1",
+ "since": 1793401699.8076758,
+ "heartbeat": 1793401699.8076758,
+ "since_utc": "2026-10-30 23:08"
+}
