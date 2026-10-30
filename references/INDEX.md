@@ -47,6 +47,7 @@ copy geometry. Research date for the first batch: 2026-10-30.
 |---|---|---|---|---|---|
 | Buryanov & Kotiuk 2010, "Proportions of Hand Segments" (via Table 2.1 of arXiv 2003.11598) | https://arxiv.org/pdf/2003.11598 | arXiv (paper) | Adult index bone lengths: proximal 39.78 ± 4.94, middle 22.38 ± 2.51, distal 15.82 ± 2.26 mm (66 adults, X-ray; read from the secondary source, units assumed mm) | Segment lengths ≈ joint-centre spacing; Aero (43/22/26.8) matches | bionic_finger |
 | Becker et al. index joint active range (same thesis, Table 2.3) | https://arxiv.org/pdf/2003.11598 | arXiv (paper) | MCP 70.8 ± 11.1°, PIP 103.9 ± 7.8°, DIP 61.2 ± 12.7° | Spec 0-80/0-80/0-70 is within human range except PIP (below) | bionic_finger |
+| Univ. of Southampton 2016 (eprints.soton.ac.uk/401416), "An Empirical Study of Overlapping Rotor Interference for a Small Unmanned Aircraft Propulsion System", Aerospace 3(4):32 | https://www2.mdpi.com/2226-4310/3/4/32 | CC BY 4.0 | Read (conclusions): torque-balanced coaxial rotors 22% less efficient than two isolated rotors of equal combined solidity; momentum theory predicts +26% induced power; worst 26% loss at z/D = 0.05; spacing z/D > 0.25 has no further effect (tested 0.05-0.85) | Coax pair derate: thrust ~0.78 × (2 × single rotor); keep prop planes >= 0.25 D apart | tvc_drone |
 
 ## Cross-cutting lessons
 
@@ -72,7 +73,8 @@ Multirotors and TVC
 - Model prop discs from the real catalog prop; 5" frames at 220-240 mm diagonal leave ~25-30 mm between 5.1" tips.
 - TVC: working coax drones clamp the gimbal at ~±8.5° (fd.iwth, Mistral), rocket gimbals ±5°, vanes ±15°. MG90S
   metal-gear servos are the proven choice; nested gimbal outer gear changes the effective ratio. Keep the pivot well
-  below the CG and mass at the ends (battery high, motors low). Coax T/W in flown builds ~1.3-2.
+  below the CG and mass at the ends (battery high, motors low). Coax T/W in flown builds ~1.3-2. A coax pair is ~22% less efficient than two isolated rotors; prop-plane spacing
+  beyond 0.25 D gains nothing (MDPI Aerospace 3(4):32).
 - Carbon-rod masts: 3 mm rods flex at ~0.5 m (use 5 mm); rod fit needs ~0.5 mm total clearance plus a mechanical lock
   (screw into a notch, bolt), not a press fit (Starkit, fd.iwth). Printed pivot pins beat metal screws for gimbal
   friction (arXiv 2509.00061).

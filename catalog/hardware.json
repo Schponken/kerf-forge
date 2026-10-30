@@ -534,6 +534,22 @@
    "source": "https://probots.co.in/25t-circular-metal-servo-horn-mg996r-mg995.html",
    "confidence": "multiple-vendors",
    "note": "Probots: 20 mm OD, 2 mm disc, 4.5 mm total (boss bottom to disc top), 4x tapped M3, opposite holes 14 mm apart (= bolt circle), reuse the servo's centre screw. Thingbits (https://thingbits.in/products/25t-standard-servo-horn-aluminium-disc): 20 mm, 4x M3, 14 mm spacing. Makers Electronics (https://makerselectronics.com/product/metal-servo-horn-round/): 20 mm, 4x M3, 14 mm, but thickness 5.5 (likely total height) -> SPREAD hub_height 4.5-5.5. UNVERIFIED ESTIMATES (not published by any source): hub_d 9.0, weight 3 g, centre screw M3 (standard for 25T MG996R/DS3218 class). Larger 24-25 mm 25T discs also exist; this entry is the 20 mm one."
+  },
+  "aluminum_micro_21T": {
+   "outer_d": 20.0,
+   "thickness": 2.0,
+   "hub_height": 4.0,
+   "hub_d": 7.0,
+   "bolt_circle_d": 12.0,
+   "hole_count": 4,
+   "hole_thread": "M2",
+   "center_screw": "M2",
+   "spline_teeth": 21,
+   "spline_d": 4.8,
+   "weight_g": 2,
+   "source": "https://www.ebay.de/itm/125626159464",
+   "confidence": "estimate",
+   "note": "CNC aluminium 21T horn for 9-18 g metal-gear micro servos (MG90S class, 21T per servos.MG90S). Published (eBay listing opened 2026-10-30, model TL2366): 21 teeth, CNC aluminium, 'suitable for 12G-18G metal gear servo', weight 2 g; it does not say disc vs arm and has no drawing. Spline 21T also per M5Stack SG90 page (https://docs.m5stack.com/en/accessory/SG90_Servo, 'Spline: 21T'); 4.8 mm per Pololu 21T micro spline (see servos.SG90). A search result title (Amazon RampCrab 21T 7075 horn, https://www.amazon.com/RampCrab-Diameter-Aluminium-Upgrade-Accessory/dp/B0D6GDBYGS, not opened) says 21T / 4.9 mm / thread M2 for micro aluminium horns. UNVERIFIED ESTIMATES (no vendor drawing of a 21T micro metal DISC horn found; searched Pololu, Adafruit, DFRobot, Feetech/Botland, TowerPro, M5Stack, RobotShop, Makerstore; Botland and Pololu pages were blocked): outer_d 20, thickness 2.0, hub_height 4.0 (boss bottom to disc top), hub_d 7.0, bolt_circle_d 12.0, hole_count 4, hole_thread M2, centre screw M2 - scaled from the sourced 20 mm 25T disc (servo_horns.aluminum_25T: 20 OD, 2 thick, 4.5 total, 14 bolt circle) to the smaller micro spline. BUY THE HORN AND MEASURE outer_d, bolt circle, hole thread and total height before printing the mating gimbal part. The MG90S stock plastic arms are not a substitute (TowerPro: 'servo arms & screws included', no disc listed)."
   }
  },
  "steppers": {
