@@ -329,12 +329,15 @@ def motor_holes(motor: str):
     return rect(sx, sy), screw
 
 
-def motor_mount(ctx, motor: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", center_hole: float | None = None):
+def motor_mount(ctx, motor: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", center_hole: float | None = None,
+                counterbore_depth: float | None = None):
     """Holes for a brushless motor's base pattern. loc: on the plate face OPPOSITE the motor (screw-head side), +Z
-    away from the motor, origin on the motor axis. The hole angle matches the motor proxy (same catalog data)."""
+    away from the motor, origin on the motor axis. The hole angle matches the motor proxy (same catalog data).
+    counterbore_depth (kind='counterbore'): sink the heads so the grip suits a stock screw length; motor threads are
+    shallow (catalog max_screw_depth), so grip + thread depth must land on a standard length."""
     ch = motor_center_hole(motor, center_hole)
     pts, screw = motor_holes(motor)
-    cut = bolt_pattern(ctx, group, screw, pts, loc, kind, plate_t)
+    cut = bolt_pattern(ctx, group, screw, pts, loc, kind, plate_t, counterbore_depth=counterbore_depth)
     cut += loc * _cyl(ch / 2, -plate_t - EXTRA, EXTRA)
     return cut
 

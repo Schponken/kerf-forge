@@ -241,7 +241,9 @@ def stack(ctx, spec):
     (grip = stack height), into the frame's inserts/nuts. Catalog: drone.stacks.* {spacing, screw, board_size, height}."""
     e = catalog.get(spec["catalog"])
     s_ = catalog.num(e, "spacing")
-    size = catalog.num(e, "board_size", default=s_ + 6.0)
+    bs = e.get("board_size")  # number, [x, y(, z)] or {board: [x, y, z]}: the proxy takes the largest board
+    dims = [v for v in (bs.values() if isinstance(bs, dict) else [bs]) if v is not None]
+    size = max([float(v) if isinstance(v, (int, float)) else max(float(v[0]), float(v[1])) for v in dims] or [s_ + 6.0])
     h = float(spec.get("height", catalog.num(e, "height", default=15.0)))
     screw = str(e.get("screw", "M3"))
     body = _box(size, size, h)

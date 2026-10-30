@@ -1,0 +1,89 @@
+name: 5in freestyle FPV frame
+description: >
+  A printed 5-inch freestyle quad: a CF-PETG body plate with integrated camera cheeks, four bolt-on CF-PETG arms
+  (replaceable after a crash), a top plate on four printed posts that carries the 6S battery and the XT60. iFlight
+  XING2 2207 motors, Gemfan 51466 props, 30.5 mm SpeedyBee stack, 19 mm micro camera with 0-40 deg tilt.
+printer: Bambu Lab A2L
+supports: allowed
+params:
+  motor_r: {value: 113, min: 100, max: 120, step: 0.5, label: Motor radius from centre (diagonal / 2)}
+  arm_w: {value: 20, min: 14, max: 24, step: 0.5, label: Arm width}
+  arm_t: {value: 11, min: 8, max: 12, step: 0.5, label: Arm thickness}
+  arm_r0: {value: 31, min: 28, max: 36, step: 0.5, label: Arm root end radius}
+  arm_hole_1: {value: 38, min: 36, max: 44, step: 0.5, label: Inner arm screw radius}
+  arm_hole_2: {value: 52, min: 46, max: 58, step: 0.5, label: Outer arm screw radius}
+  body_t: {value: 5, min: 5, max: 6, step: 0.5, label: Body plate thickness}
+  body_half: {value: 43, min: 40, max: 48, step: 0.5, label: Body plate half-width}
+  post_h: {value: 27, min: 26, max: 34, step: 0.5, label: Top-plate post height above the body}
+  top_t: {value: 3, min: 2.5, max: 4, step: 0.5, label: Top plate thickness}
+  cam_x: {value: 48, min: 46, max: 52, step: 0.5, label: Camera pivot x}
+  cam_z: {value: 17, min: 16.5, max: 20, step: 0.5, label: Camera pivot height}
+derived:
+  diag: 2 * motor_r
+parts:
+  body: {file: parts/body.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: [[1, 1, 0], [1, -1, 0]]}
+  arm_1: {file: parts/arm.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
+  arm_2: {file: parts/arm.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
+  arm_3: {file: parts/arm.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
+  arm_4: {file: parts/arm.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
+  top_plate: {file: parts/top_plate.py, material: CF-PETG, print_rot: [180, 0, 0], infill: 0.3}
+purchased:
+  motor_1: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_1}}
+  motor_2: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_2}}
+  motor_3: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_3}}
+  motor_4: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_4}}
+  stack: {catalog: drone.stacks.fc_30_5, proxy: stack, groups: {holes: stack}}
+  camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], joints: {pivot: [0, -4.4, 9.5]},
+           note: "RunCam Phoenix 2; frame: local Z = tilt axis, local +Y = lens; side M2 holes 5.1 mm from the back face"}
+  battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400"}
+  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000"}
+keepouts:
+  prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1, h: 7}
+  prop_2: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_2, h: 7}
+  prop_3: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_3, h: 7}
+  prop_4: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_4, h: 7}
+bom_extra:
+  - {type: fastener, item: M2 x 5 mm button head screw, qty: 2, spec: ISO 7380, note: "camera side pivots; the camera's own threads"}
+  - {type: hardware, item: 20 mm battery strap (250 mm), qty: 1, spec: "through the two top-plate slots"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 9, spec: "2 per arm for motor wires, 1 for the XT60 in its cradle"}
+  - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount"}
+assembly:
+  root: body
+  joints:
+    - {parent: body.arm_1, child: arm_1.root}
+    - {parent: body.arm_2, child: arm_2.root}
+    - {parent: body.arm_3, child: arm_3.root}
+    - {parent: body.arm_4, child: arm_4.root}
+    - {parent: arm_1.motor, child: motor_1.base}
+    - {parent: arm_2.motor, child: motor_2.base}
+    - {parent: arm_3.motor, child: motor_3.base}
+    - {parent: arm_4.motor, child: motor_4.base}
+    - {parent: motor_1.prop, child: prop_1.hub}
+    - {parent: motor_2.prop, child: prop_2.hub}
+    - {parent: motor_3.prop, child: prop_3.hub}
+    - {parent: motor_4.prop, child: prop_4.hub}
+    - {parent: body.stack, child: stack.bottom}
+    - {parent: body.top, child: top_plate.base}
+    - {parent: top_plate.battery, child: battery.bottom}
+    - {parent: top_plate.xt60, child: xt60.bottom}
+    - {parent: body.cam_tilt, child: camera.pivot, name: cam_tilt, range: [0, 40], home: 25}
+  sweeps:
+    - {joint: cam_tilt, samples: 9}
+requirements:
+  - {id: prop_gap, check: prop_clearance, min_mm: 3, min_between_mm: 4, joints: [cam_tilt],
+     why: "spinning props must clear each other by 4 mm and everything else by 3 mm, also while the camera tilts"}
+  - {id: twr, check: thrust_to_weight, thrust_g_total: 6740, min_ratio: 6,
+     why: "freestyle needs >= 6:1; catalog XING2 2207 max thrust 1685 g x 4 motors = 6740 g"}
+  - {id: frame_mass, check: mass_max, max_g: 250, include: [body, arm_1, arm_2, arm_3, arm_4, top_plate],
+     why: "printed frame no heavier than 250 g"}
+  - {id: cg_center, check: cg, point: [0, 0, 0], max_lateral_mm: 5,
+     why: "ENGINEERING.md section 9: CG within 5 mm of the thrust centre so the quad hovers without trim"}
+  - id: arm_strength
+    check: fea_static
+    part: arm_1
+    why: "crash / aggressive case: 2 x one motor's max thrust (2 x 1685 g = 33.1 N) pulling the motor screws up, arm held at its two frame bolts"
+    direction: xy            # arm prints flat; bending stress runs along the arm, in the layer plane
+    sf: 3.0                  # ENGINEERING.md section 3: crash-exposed drone arm
+    max_disp_mm: 1.5
+    fixed: {sites: arm_1, radius: 3.5}
+    loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, 33.06]}]
