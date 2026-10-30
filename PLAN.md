@@ -20,7 +20,7 @@ tested before handoff.
 - [x] Stop gate, edit hook, design-reviewer, part-designer and design-researcher subagents, `kerf` skill, Ponytail skill
 
 ## Phase 1 — engine depth (make every eval possible)
-- [ ] Interface tests: for EVERY function in `kerf/iface.py`, a pytest that builds both sides, assembles them, and proves alignment + correct fit clearance from the catalog
+- [x] Interface tests: for EVERY function in `kerf/iface.py`, a pytest that builds both sides, assembles them, and proves alignment + correct fit clearance from the catalog
 - [ ] Pin / shaft joints for printed hinges (pin through clearance hole on one side, press or heat-set on the other), with a fastener-style alignment check
 - [ ] Belt/gear helpers using py_gearworks (spur gear pair at correct center distance; GT2 pulley + belt length) with tests
 - [ ] New requirement checks, each with a test that has a known hand-calculated answer:

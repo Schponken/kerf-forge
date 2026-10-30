@@ -289,12 +289,33 @@ def motor_holes(motor: str):
 def motor_mount(ctx, motor: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", center_hole: float | None = None):
     """Holes for a brushless motor's base pattern. loc: on the plate face OPPOSITE the motor (screw-head side), +Z
     away from the motor, origin on the motor axis. The hole angle matches the motor proxy (same catalog data)."""
-    e = catalog.get(motor)
+    ch = motor_center_hole(motor, center_hole)
     pts, screw = motor_holes(motor)
     cut = bolt_pattern(ctx, group, screw, pts, loc, kind, plate_t)
-    ch = center_hole if center_hole is not None else _first(e, "center_clearance_d", "shaft_clearance_d", default=8.0)
     cut += loc * _cyl(ch / 2, -plate_t - EXTRA, EXTRA)
     return cut
+
+
+CENTER_WALL = 1.2  # mm of plate left between the motor's centre hole and each mount hole (ENGINEERING.md walls)
+
+
+def motor_center_hole(motor: str, center_hole: float | None = None) -> float:
+    """Diameter of the hole under a motor for the shaft end / circlip. Catalog value if given, else 8 mm shrunk so a
+    1.2 mm wall stays between it and the mount-hole clearance holes (small motors: 9 mm bolt circle). Raises if an
+    explicit or catalog size would cut into the mount holes or not clear the shaft."""
+    e = catalog.get(motor)
+    pts, screw = motor_holes(motor)
+    r_pat = min(math.hypot(x, y) for x, y in pts)
+    limit = 2 * (r_pat - screw_spec(screw)["clearance"] / 2 - CENTER_WALL)
+    ch = center_hole if center_hole is not None else (_first(e, "center_clearance_d", "shaft_clearance_d", default=0) or None)
+    if ch is None:
+        ch = min(8.0, limit)
+    shaft = _first(e, "shaft_d", "shaft_diameter", default=5.0)
+    if ch > limit + 1e-9:
+        raise ValueError(f"{motor}: a {ch:.1f} mm centre hole leaves less than {CENTER_WALL} mm to the mount holes (max {limit:.1f} mm)")
+    if ch < shaft + 1.0:
+        raise ValueError(f"{motor}: centre hole {ch:.1f} mm does not clear the {shaft} mm shaft with 0.5 mm per side")
+    return ch
 
 
 def stack_mount(ctx, stack: str, loc: Location, group: str, depth: float, kind: str = "heatset"):

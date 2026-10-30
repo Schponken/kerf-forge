@@ -35,3 +35,20 @@ entry before each push (date, what changed, verify state, next step, open proble
 - Reviewer's remaining minor findings went into PLAN.md Phase 1 (hex-key reach + insertion-path checks; window lead-in
   chamfer + re-review). DESIGN.md now notes the ball-end driver and says to measure the cable boss.
 - Next: PLAN.md Phase 1, first unclaimed item.
+
+## 2026-10-30 — session 01S68R6T: interface tests (PLAN Phase 1 item 1, done)
+- New `tests/test_iface_fit.py` (84 tests, ~25 s): every iface function is exercised with both sides built and
+  assembled. The CUT HOLES themselves are probed (a probe 0.02 mm under the catalog size must miss the part, 0.02 mm
+  over must hit), so each hole is proven to be exactly the catalog size and on the fastener-site axis: clearance,
+  counterbore (+head pocket), countersink (+rim), heat-set (+floor), tap pilot (+floor), nut trap (+hex pocket), for
+  M2/M2.5/M3; servo windows (clearance/2 per side) + tab holes for all 5 catalog servos, both mounting directions;
+  horn bolt circle + centre-screw access; bearing pockets for every catalog bearing x every fit (allowances checked
+  against ENGINEERING.md section 6); motor + stack mounts for all 4 motors and 3 stacks. Mutation-checked: a 0.05 mm
+  oversize hole or 0.03 mm oversize bearing pocket makes the tests fail.
+- Bug found and fixed: `motor_mount`'s default 8 mm centre hole cut straight into the mount holes of the 1404 motor
+  (9 mm bolt circle). New `iface.motor_center_hole()`: 8 mm, shrunk to keep a 1.2 mm wall to the mount holes, and
+  raises if an explicit size cuts into them or does not clear the shaft.
+- Learned (fastener check working as intended): with heat-set inserts, a 14-22 mm FC stack has no standard screw
+  length that ends inside the insert; use nut traps / longer standoffs for tall stacks (relevant for E2 fpv_5in).
+- verify --fast: pytest 169 passed; remaining failures are the not-yet-built eval projects + unchecked PLAN items.
+- Next: next unclaimed PLAN item.
