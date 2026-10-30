@@ -1,0 +1,7 @@
+{
+ "item": "Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) \u2014 both PASS",
+ "session": "1c937e70ac",
+ "since": 1793403588.8217256,
+ "heartbeat": 1793403588.8217256,
+ "since_utc": "2026-10-30 23:39"
+}
