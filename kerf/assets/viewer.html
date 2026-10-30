@@ -21,7 +21,7 @@ header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em}
 header .sp{flex:1}
 button,select{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:4px 10px;cursor:pointer}
 button:hover{border-color:var(--accent)}button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-body{display:flex;flex-direction:column}main{display:grid;grid-template-columns:1fr 380px;flex:1;min-height:0}
+body{display:flex;flex-direction:column}main{display:grid;grid-template-columns:1fr 400px;flex:1;min-height:0}
 #stage{position:relative;min-height:320px;background:var(--scene)}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 .views{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}
@@ -30,7 +30,7 @@ body{display:flex;flex-direction:column}main{display:grid;grid-template-columns:
 .legend{position:absolute;left:12px;bottom:10px;color:var(--mute);font-size:12px}
 aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
 .tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
-.tabs button{border:0;border-radius:0;background:none;padding:10px 12px;color:var(--mute);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button{border:0;border-radius:0;background:none;padding:10px 9px;font-size:13px;color:var(--mute);border-bottom:2px solid transparent;white-space:nowrap}
 .tabs button.on{color:var(--ink);border-bottom-color:var(--accent);background:none}
 .pane{padding:14px 16px;overflow:auto;flex:1;display:none}.pane.on{display:block}
 h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:16px 0 8px;font-weight:650}
@@ -56,6 +56,20 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .note{padding:8px 10px;border-radius:7px;margin:0 0 8px;font-size:13px}
 .note.bad{background:var(--badbg);color:var(--bad)}.note.warn{background:var(--warnbg);color:var(--warn)}
 .empty{color:var(--mute)}
+#insp{font-size:13px}
+.tabs button[hidden]{display:none}
+#insp .hd{display:flex;align-items:center;gap:8px;margin-bottom:6px}#insp .hd b{font-size:14px}#insp .hd .sp{flex:1}
+#insp .x{border:0;background:none;font-size:18px;line-height:1;padding:0 4px;color:var(--mute)}
+#insp code,#insp pre{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+#insp pre{background:var(--soft);border-radius:6px;padding:7px 9px;margin:6px 0 10px;white-space:pre-wrap;word-break:break-word}
+#insp .loc{display:flex;gap:8px;align-items:center;justify-content:space-between}
+#insp .prm{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;padding:7px 0;border-top:1px solid var(--soft)}
+#insp .prm .k{font-weight:600}#insp .prm .l{color:var(--mute);font-size:12px;grid-column:1/-1}
+#insp input[type=number]{width:90px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+#insp textarea{width:100%;min-height:52px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;resize:vertical}
+#insp .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#insp .ok{color:var(--good);font-size:12px}
+#insp a{color:var(--accent)}
 @media (max-width:760px){body{display:block}main{grid-template-columns:1fr;grid-template-rows:56vh auto;height:auto}
   aside{border-left:0;border-top:1px solid var(--line)}header{padding:10px 16px}.views{left:16px}.legend{display:none}}
 </style>
@@ -75,18 +89,19 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
       <button id="keep" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button>
     </div>
     <div id="tip"></div>
-    <div class="legend">Drag to orbit, right-drag to pan, scroll to zoom, click a part to select</div>
+    <div class="legend">Drag to orbit, right-drag to pan, scroll to zoom, click a face to inspect it</div>
   </div>
   <aside>
     <nav class="tabs">
       <button data-tab="motion" class="on">Motion</button><button data-tab="parts">Parts</button>
-      <button data-tab="bom">Parts list</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button>
+      <button data-tab="bom">Parts list</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button><button data-tab="insp" id="tabInsp" hidden>Inspect</button>
     </nav>
     <section class="pane on" id="motion"></section>
     <section class="pane" id="parts"></section>
     <section class="pane" id="bom"></section>
     <section class="pane" id="print"></section>
     <section class="pane" id="checks"></section>
+    <section class="pane" id="insp"><p class="empty">Click a part in the 3D view to see which file, line and parameters made that face.</p></section>
   </aside>
 </main>
 <script>/*KV3*/</script>
@@ -214,8 +229,7 @@ function pick(ev) {
   const r = renderer.domElement.getBoundingClientRect();
   ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ptr, cam);
-  const hit = ray.intersectObjects(pickables.filter(m => m.parent.visible), false)[0];
-  return hit ? hit.object.userData.id : null;
+  return ray.intersectObjects(pickables.filter(m => m.parent.visible), false)[0] || null;
 }
 function select(id) {
   selected = selected === id ? null : id;
@@ -226,14 +240,87 @@ function select(id) {
   renderParts(); redraw();
 }
 renderer.domElement.addEventListener('pointerdown', e => downAt = [e.clientX, e.clientY]);
-renderer.domElement.addEventListener('pointerup', e => { if (downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) < 4) select(pick(e)); downAt = null; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) < 4) { const h = pick(e); if (h) { if (selected !== h.object.userData.id) select(h.object.userData.id); inspect(h.object.userData.id, h.faceIndex); } else { if (selected) select(selected); inspect(null); } }
+  downAt = null;
+});
 renderer.domElement.addEventListener('pointermove', e => {
-  const id = e.buttons ? null : pick(e), tip = $('tip');
+  const h = e.buttons ? null : pick(e), id = h && h.object.userData.id, tip = $('tip');
   if (!id) { tip.style.display = 'none'; return; }
   const it = groups.get(id).userData.it, pr = (R.parts || {})[id];
   tip.innerHTML = `<b>${esc(id)}</b> · ${esc(it.role)}${pr ? ` · ${fmt(pr.mass_est_g)} g ${esc(pr.material || '')}` : it.catalog ? ` · ${esc(it.catalog)}` : ''}`;
   const r = stage.getBoundingClientRect(); tip.style.left = (e.clientX - r.left + 14) + 'px'; tip.style.top = (e.clientY - r.top + 12) + 'px'; tip.style.display = 'block';
 });
+
+// ---------- click-to-edit inspector ----------
+const P = D.params || {};
+let hl = null;
+function faceOf(it, tri) {
+  const fs = it._fs || (it._fs = b64(it.faceStart, Uint32Array));
+  let lo = 0, hi = fs.length - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (fs[m] <= tri) lo = m; else hi = m - 1; }
+  return lo;
+}
+function highlight(id, f) {
+  if (hl) { hl.parent.remove(hl); hl.geometry.dispose(); hl = null; }
+  if (id == null || f == null) return redraw();
+  const g = groups.get(id), it = g.userData.it, fs = it._fs, geo = g.userData.mesh.geometry, idx = geo.index.array;
+  const a = fs[f] * 3, b = (f + 1 < fs.length ? fs[f + 1] : idx.length / 3) * 3;
+  const hg = new T.BufferGeometry(); hg.setAttribute('position', geo.getAttribute('position')); hg.setAttribute('normal', geo.getAttribute('normal'));
+  hg.setIndex(new T.BufferAttribute(idx.slice(a, b), 1));
+  hl = new T.Mesh(hg, new T.MeshStandardMaterial({ color: css('--accent'), emissive: css('--accent'), emissiveIntensity: 0.45, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+  g.add(hl); redraw();
+}
+async function copy(text, btn) {
+  try { await navigator.clipboard.writeText(text); }
+  catch { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  if (btn) { const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = o, 1400); }
+}
+function inspect(id, tri) {
+  const box = $('insp');
+  if (id == null) { highlight(null); box.innerHTML = '<p class="empty">Click a part in the 3D view to see which file, line and parameters made that face.</p>'; return; }
+  $('tabInsp').hidden = false; $('tabInsp').click();
+  const it = groups.get(id).userData.it, A = it.attr, proj = D.project_dir || 'the project';
+  let h = `<div class="hd"><span class="sw" style="background:${esc(it.color)}"></span><b>${esc(id)}</b><span class="tag">${esc(it.role)}</span><span class="sp"></span><button class="x" id="ix" title="Close">&times;</button></div>`;
+  if (it.role !== 'printed') {
+    const cs = it.catalog_source;
+    h += `<p>Bought part, modelled from the catalog entry <code>${esc(it.catalog || '')}</code>${cs && cs.confidence ? ` (${esc(cs.confidence)})` : ''}.</p>`;
+    if (cs && cs.source) h += `<p>Dimensions from: <a href="${esc(cs.source)}" target="_blank" rel="noopener">${esc(cs.source)}</a></p>`;
+    if (cs && cs.note) h += `<p class="pd">${esc(cs.note)}</p>`;
+    h += `<p class="pd">To use a different part, change it in <code>${esc(proj)}/project.yaml</code> (purchased:) to another catalog entry.</p>`;
+    box.innerHTML = h; highlight(null); $('ix').onclick = () => inspect(null); return;
+  }
+  if (!A) {
+    h += `<p class="pd">No face-level information for this part${D.attr_error ? ` (${esc(D.attr_error)})` : ''}. Its source is <code>${esc(proj)}/${esc(it.src || '')}</code>.</p>`;
+    box.innerHTML = h; highlight(null); $('ix').onclick = () => inspect(null); return;
+  }
+  const f = faceOf(it, tri), [line, moves, resizes] = A.faces[f] || [null, [], []];
+  const where = `${proj}/${A.file}${line ? ':' + line : ''}`, code = line ? (A.lines[line] || '') : '';
+  h += `<div class="loc"><code>${esc(where)}</code><button id="cpw">Copy location</button></div>`;
+  if (code) h += `<pre>${esc(code)}</pre>`; else h += '<p class="pd">This face could not be traced to one line of the part file.</p>';
+  const drive = [...moves.map(n => [n, 'moves']), ...resizes.filter(n => !moves.includes(n)).map(n => [n, 'resizes'])];
+  h += `<div class="pd" style="margin-bottom:2px">${drive.length ? 'Parameters that change this face (project.yaml):' : 'No project parameter changes this face directly.'}</div>`;
+  for (const [n, how] of drive) {
+    const p = P[n] || {}, u = p.unit || 'mm';
+    h += `<div class="prm"><span><span class="k">${esc(n)}</span> = ${fmt(p.value, 2)} ${esc(u)}</span>
+      <span class="row"><input type="number" data-p="${esc(n)}" value="${p.value}" ${p.min != null ? `min="${p.min}"` : ''} ${p.max != null ? `max="${p.max}"` : ''} step="${p.step || 'any'}"><button data-cp="${esc(n)}">Copy edit request</button></span>
+      <span class="l">${esc(p.label || '')}${p.min != null ? ` · allowed ${fmt(p.min, 2)} to ${fmt(p.max, 2)} ${esc(u)}` : ''} · ${how} this face</span></div>`;
+  }
+  if (A.whole && A.whole.length) h += `<p class="pd">Moves the whole part: ${A.whole.map(esc).join(', ')}</p>`;
+  h += `<div class="pd" style="margin:10px 0 4px">Or describe a change to this feature:</div><textarea id="free" placeholder="e.g. make this hole a counterbore for an M3 socket head"></textarea>
+    <div class="row" style="margin-top:6px"><button id="cpf">Copy request</button><span class="pd">Paste into Claude Code in the kerf-forge repo.</span></div>`;
+  box.innerHTML = h; highlight(id, f);
+  $('ix').onclick = () => inspect(null);
+  $('cpw').onclick = e => copy(where, e.target);
+  const ctx = `the ${id} face made at ${where}${code ? ` (\`${code}\`)` : ''}`;
+  box.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => {
+    const n = b.dataset.cp, p = P[n] || {}, inp = box.querySelector(`[data-p="${CSS.escape(n)}"]`);
+    let v = +inp.value; if (p.min != null) v = Math.max(p.min, v); if (p.max != null) v = Math.min(p.max, v); inp.value = v;
+    if (v === p.value) { inp.focus(); return; }
+    copy(`${proj}/project.yaml: ${n} ${p.value} -> ${v}${p.unit ? ' ' + p.unit : ''} (${p.label || n}; changes ${ctx}). Then run \`.venv/bin/kerf build ${proj.split('/').pop()}\` and get a design-reviewer pass.`, b);
+  });
+  $('cpf').onclick = e => { const t = $('free').value.trim(); if (!t) return $('free').focus(); copy(`${where}: ${t}\nContext: ${ctx}. Keep every check passing; rebuild and get a design-reviewer pass.`, e.target); };
+}
 
 // ---------- panels ----------
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
@@ -342,7 +429,7 @@ ctl.addEventListener('change', redraw);
   if (dirty) { renderer.render(scene, cam); dirty = false; }
   requestAnimationFrame(loop);
 })(performance.now());
-window.__kerf = { D, setJ, pose, groups, view, fit, set explode(v) { explode = v; pose(); } };
+window.__kerf = { D, setJ, pose, groups, view, fit, inspect, faceOf, camera: cam, set explode(v) { explode = v; pose(); } };
 })();
 </script>
 </body>

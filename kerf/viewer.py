@@ -17,6 +17,7 @@ from pathlib import Path
 import numpy as np
 
 from . import assembly as A
+from . import attribution
 from . import geom
 
 ASSETS = Path(__file__).resolve().parent / "assets"
@@ -39,20 +40,25 @@ def _b64(a: np.ndarray) -> str:
     return base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 
 
-def mesh(shape, tol=0.05, ang=0.25) -> tuple[np.ndarray, np.ndarray]:
-    """World-space triangle mesh of a placed shape: (N x 3 float32 vertices, M x 3 uint32 triangles)."""
-    vs, ts = [], []
-    off = 0
+def mesh(shape, tol=0.05, ang=0.25, face_starts=False):
+    """World-space triangle mesh of a placed shape: (N x 3 float32 vertices, M x 3 uint32 triangles).
+    face_starts=True also returns, for every face in shape.faces() order, the index of its first triangle."""
+    vs, ts, starts = [], [], []
+    off = ntri = 0
     for f in shape.faces():
+        starts.append(ntri)
         v, t = f.tessellate(tol, ang)
         if not t:
             continue
+        ntri += len(t)
         vs.append(np.array([[p.X, p.Y, p.Z] for p in v], dtype=np.float32))
         ts.append(np.array(t, dtype=np.uint32) + off)
         off += len(v)
     if not vs:
-        return np.zeros((0, 3), np.float32), np.zeros((0, 3), np.uint32)
-    return np.concatenate(vs), np.concatenate(ts)
+        v, t = np.zeros((0, 3), np.float32), np.zeros((0, 3), np.uint32)
+    else:
+        v, t = np.concatenate(vs), np.concatenate(ts)
+    return (v, t, np.array(starts, dtype=np.uint32)) if face_starts else (v, t)
 
 
 def joint_motion(asm, e) -> dict:
@@ -102,11 +108,16 @@ def data(proj, asm, rep: dict) -> dict:
                 js.append(e.name)
             n = e.parent
         chain[iid] = list(reversed(js))  # root-most joint first
+    try:  # click-to-edit: which line and params made each face (kerf/attribution.py)
+        attr, attr_error = attribution.compute(proj), None
+    except Exception as e:  # noqa: BLE001 - the viewer still works without it; the page says why
+        attr, attr_error = {}, f"{type(e).__name__}: {e}"
+    A.solve(asm)
     out_items = []
     for k, (iid, it) in enumerate(items.items()):
         if it.shape is None:
             continue
-        v, t = mesh(it.shape)
+        v, t, fs = mesh(it.shape, face_starts=True)
         b0, b1 = geom.bbox(it.shape)
         c = (np.asarray(b0) + np.asarray(b1)) / 2
         dvec = c - center
@@ -118,6 +129,8 @@ def data(proj, asm, rep: dict) -> dict:
             "catalog": it.spec.get("catalog"), "material": it.spec.get("material"),
             "explode": [round(float(x), 4) for x in dvec / n * (1 + n / 100)],  # same rule as export.glb(explode=)
             "joints": chain[iid], "verts": _b64(v), "tris": _b64(t), "nv": int(len(v)), "nt": int(len(t)),
+            "faceStart": _b64(fs), "src": it.spec.get("file"), "attr": _attr_compact(attr.get(iid), len(fs)),
+            "catalog_source": _cat_source(it.spec.get("catalog")),
         })
     keep = ("project", "dir", "fingerprint", "printer", "params", "parts", "purchased", "requirements", "problems",
             "warnings", "bom", "files", "seconds")
@@ -125,8 +138,32 @@ def data(proj, asm, rep: dict) -> dict:
     a = rep.get("assembly") or {}
     rp["assembly"] = {k: a.get(k) for k in ("interference", "fasteners", "sweeps")}
     rp["ok"] = not rep.get("problems")
-    return {"items": out_items, "joints": joints, "report": rp,
+    params = {}
+    for name, spec in (proj.data.get("params") or {}).items():
+        sp = spec if isinstance(spec, dict) else {"value": spec}
+        params[name] = {k: sp.get(k) for k in ("value", "min", "max", "step", "label", "unit")}
+    return {"items": out_items, "joints": joints, "report": rp, "params": params, "attr_error": attr_error,
+            "project_dir": f"projects/{proj.dir.name}",
             "bounds": [[round(float(x), 3) for x in lo], [round(float(x), 3) for x in hi]]}
+
+
+def _cat_source(path):
+    if not path:
+        return None
+    try:
+        from . import catalog
+        e = catalog.get(path)
+        return {"source": e.get("source"), "confidence": e.get("confidence"), "note": e.get("note")}
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _attr_compact(a, nfaces):
+    """Per-face [line, moves, resizes] for the page; None when the part has no attribution or faces don't line up."""
+    if not a or len(a["faces"]) != nfaces:
+        return None
+    return {"file": a["file"], "lines": a["lines"], "whole": a["whole"],
+            "faces": [[f["line"], f["moves"], f["resizes"]] for f in a["faces"]]}
 
 
 def html(d: dict) -> str:

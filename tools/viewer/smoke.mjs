@@ -39,6 +39,41 @@ for (const [name, opts] of [['desktop', { viewport: { width: 1280, height: 800 }
     const c = await page.locator('canvas').boundingBox();
     await page.mouse.move(c.x + c.width / 2, c.y + c.height / 2); await page.waitForTimeout(150);
     out.tooltip = await page.$eval('#tip', e => e.style.display === 'block' ? e.textContent : null);
+    // click-to-edit: click the middle of each printed part's largest face, check the card, copy an edit request
+    await ctx.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.evaluate(() => { window.__kerf.explode = 0; window.__kerf.view('iso'); window.__kerf.fit(); });
+    out.inspect = [];
+    for (const it of out.info.items) {
+      const pt = await page.evaluate(id => {
+        const K = window.__kerf, T = window.KV3, g = K.groups.get(id), item = g.userData.it;
+        if (item.role !== 'printed') return null;
+        g.updateMatrixWorld(true);
+        const geo = g.userData.mesh.geometry, pos = geo.getAttribute('position'), idx = geo.index.array, cv = document.querySelector('canvas');
+        const cam = [...document.querySelectorAll('canvas')].length && window.__kerfCam;
+        // pick a triangle whose centre is visible: test candidates with a raycast from the camera
+        const r = cv.getBoundingClientRect(), ray = new T.Raycaster(), cands = [];
+        for (let t = 0; t < idx.length / 3; t += Math.max(1, Math.floor(idx.length / 3 / 400))) {
+          const c = new T.Vector3(); for (let k = 0; k < 3; k++) c.add(new T.Vector3().fromBufferAttribute(pos, idx[3 * t + k])); c.divideScalar(3).applyMatrix4(g.matrixWorld);
+          const s = c.clone().project(K.camera); if (Math.abs(s.x) > 0.95 || Math.abs(s.y) > 0.95) continue;
+          ray.setFromCamera(new T.Vector2(s.x, s.y), K.camera);
+          const hit = ray.intersectObjects([...K.groups.values()].filter(x => x.visible).map(x => x.userData.mesh), false)[0];
+          if (hit && hit.object === g.userData.mesh && hit.faceIndex === t) return { x: r.left + (s.x + 1) / 2 * r.width, y: r.top + (1 - s.y) / 2 * r.height, tri: t, face: K.faceOf(item, t) };
+        }
+        return null;
+      }, it);
+      if (!pt) continue;
+      await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(150);
+      const card = await page.evaluate(() => { const b = document.getElementById('insp'); return !b.classList.contains('on') || !b.querySelector('.hd') ? null : { text: b.innerText.slice(0, 400), params: [...b.querySelectorAll('[data-p]')].map(i => i.dataset.p), hasCode: !!b.querySelector('pre') }; });
+      const rec = { item: it, face: pt.face, card };
+      if (card && card.params.length) {
+        const n = card.params[0];
+        await page.evaluate(n => { const i = document.querySelector(`#insp [data-p="${CSS.escape(n)}"]`); i.value = String(+i.value + 2 * (+i.step || 1)); }, n);
+        await page.click(`#insp [data-cp="${n}"]`); await page.waitForTimeout(150);
+        rec.clipboard = await page.evaluate(() => navigator.clipboard.readText());
+      }
+      out.inspect.push(rec);
+      if (out.inspect.length === 1) await page.screenshot({ path: `${prefix}-inspect.png` });
+    }
     out.blank = await page.evaluate(() => { const cv = document.querySelector('canvas'), g = cv.getContext('webgl2') || cv.getContext('webgl'); const px = new Uint8Array(4 * 64); g.readPixels(Math.floor(cv.width / 2) - 32, Math.floor(cv.height / 2), 64, 1, g.RGBA, g.UNSIGNED_BYTE, px); return new Set(Array.from(px)).size < 4; });
   } else await page.screenshot({ path: `${prefix}-${name}.png`, fullPage: name === 'phone' });
   await ctx.close();
