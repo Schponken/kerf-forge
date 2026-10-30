@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_start.py\"", "timeout": 900 } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Write|Edit|MultiEdit",
+        "hooks": [ { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/after_edit.py\"", "timeout": 900 } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_gate.py\"", "timeout": 3600 } ] }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(./setup.sh)", "Bash(.venv/bin/kerf:*)", "Bash(.venv/bin/python:*)", "Bash(.venv/bin/pytest:*)",
+      "Bash(git:*)", "Bash(node:*)", "Bash(npm:*)", "Bash(uv:*)", "Bash(python3:*)",
+      "Read", "Write", "Edit", "Glob", "Grep", "WebSearch", "WebFetch"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+name: Servo test rig
+description: >
+  An MG996R servo on a printed bracket swings a 100 mm arm through ±90° under gravity. The seed project:
+  it exercises catalog-backed mounts on both sides, the joint tree, the motion sweep, fastener alignment,
+  the static-torque check and every export.
+printer: Bambu Lab A2L
+supports: allowed
+params:
+  arm_len: {value: 100, min: 60, max: 140, step: 1, label: Arm length (pivot to tip)}
+  arm_w: {value: 14, min: 10, max: 20, step: 0.5, label: Arm width}
+  arm_t: {value: 6, min: 5, max: 9, step: 0.5, label: Arm thickness}
+  pivot_h: {value: 75, min: 60, max: 120, step: 1, label: Pivot height above the base top}
+  wall_t: {value: 8, min: 8, max: 12, step: 0.5, label: Bracket wall thickness}
+  base_t: {value: 8, min: 8, max: 12, step: 0.5, label: Base plate thickness}
+  foot_d: {value: 38, min: 30, max: 50, step: 1, label: Bracket foot depth}
+  foot_t: {value: 6, min: 5, max: 10, step: 0.5, label: Bracket foot thickness}
+  gusset_t: {value: 5, min: 4, max: 8, step: 0.5, label: Gusset thickness}
+layout: parts/layout.py     # shared geometry both base and bracket use (screw positions, seat heights)
+parts:
+  base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
+  bracket: {file: parts/bracket.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
+  arm: {file: parts/arm.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
+purchased:
+  servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}, range: [-90, 90]}
+  horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}
+assembly:
+  root: base
+  joints:
+    - {parent: base.bracket_seat, child: bracket.origin}
+    - {parent: bracket.servo_seat, child: servo.tabs}
+    - {parent: servo.output, child: horn.spline, name: swing, range: [-90, 90], home: 0}
+    - {parent: horn.face, child: arm.horn_mount}
+  sweeps:
+    - {joint: swing, samples: 13}
+requirements:
+  - {id: arm_torque, check: static_torque, joint: swing, actuator: servo, payload_g: 50, payload_at: arm.tip, max_fraction: 0.5,
+     why: "the servo must hold the arm and a 50 g weight anywhere in its range using at most half its stall torque"}
+  - id: bracket_fea
+    check: fea_static
+    part: bracket
+    why: "the wall must take the servo's full stall-torque reaction (a couple through the tab screws) without yielding"
+    direction: z            # printed on its back: conservative, judge against layer-direction strength
+    sf: 2.0
+    max_disp_mm: 0.3
+    fixed: {box: [[-200, -1, -1], [200, 200, 0.01]]}          # foot underside, clamped to the base
+    loads:                                                    # stall torque about the output axis, as a +/- Z couple
+      - {box: [[1, wall_t - 0.01, pivot_h - 12], [servo_hx / 2 + 6, wall_t + 0.01, pivot_h + 12]], force_n: [0, 0, "servo_stall_nmm / servo_hx"]}
+      - {box: [[-servo_hx / 2 - 6, wall_t - 0.01, pivot_h - 12], [-1, wall_t + 0.01, pivot_h + 12]], force_n: [0, 0, "-servo_stall_nmm / servo_hx"]}
+  - {id: rig_mass, check: mass_max, max_g: 250, why: "bench rig; keep it light enough to move around"}

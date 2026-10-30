@@ -1,0 +1,11 @@
+.venv/
+tools/render/node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+projects/*/out/
+evals/*/out/
+.claude/state/stop_blocks
+.claude/state/DONE
+VERIFY.json
+kerf.egg-info/
