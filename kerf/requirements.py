@@ -338,6 +338,75 @@ def tip_over(proj, asm, min_deg, support=None, poses=None, payload_g=0.0, payloa
                       + (f", incl. {payload_g} g at {payload_at}" if payload_g else "")}
 
 
+def _tube(points, d):
+    """Solid swept by a ball of diameter d along a polyline (cylinders per segment + balls at the corners)."""
+    from build123d import Plane, Solid, Vector
+    r = d / 2
+    out = None
+    for i, (a, b) in enumerate(zip(points[:-1], points[1:])):
+        v = b - a
+        L = float(np.linalg.norm(v))
+        if L < 1e-9:
+            continue
+        seg = Solid.make_cylinder(r, L, Plane(origin=Vector(*a), z_dir=Vector(*(v / L))))
+        out = seg if out is None else out + seg
+        if 0 < i:
+            out += Solid.make_sphere(r).moved(__import__("build123d").Location(Vector(*a)))
+    if out is None:
+        raise ValueError("channel path needs at least two distinct points")
+    return out
+
+
+@check("channel_clear")
+def channel_clear(proj, asm, path, diameter, poses=None, ignore=None, tol_frac=1e-5):
+    """A declared internal channel (tendon, wire, air) is open end to end for `diameter` mm.
+    path: waypoints, each {item: id, at: [x, y, z] | joint_label} in that item's frame, so the path follows the parts
+    as joints move. poses: list of {joint: value} to check besides home. ignore: items the channel may pass through
+    (e.g. the tendon proxy itself). value = the largest diameter that passes at every pose (bisection to 0.01 mm,
+    searched up to 2 x diameter, reported to 0.01 mm); the check fails when that is below `diameter`."""
+    params = proj.params
+    skip = set(ignore or [])
+    ids = [i for i, it in proj.items.items() if it.shape is not None and it.role != "keepout" and i not in skip]
+
+    def world_path():
+        pts = []
+        for w in path:
+            it = proj.items[w["item"]]
+            p = _point(it, w["at"], params)
+            pts.append(geom.world_point(it.shape.location, p))
+        return pts
+
+    def blocked(pts, d):
+        tube = _tube(pts, d)
+        tol = max(1e-7, tol_frac * tube.volume)   # relative, so a thin probe still counts a real obstruction
+        hits = {}
+        for i in ids:
+            v = geom.overlap(proj.items[i].shape, tube)
+            if v > tol:
+                hits[i] = round(v, 3)
+        return hits
+
+    worst_d, worst_hits, worst_pose = 2 * float(diameter), {}, None
+    for pose in [{}] + list(poses or []):
+        A.solve(asm, pose)
+        pts = world_path()
+        hits = blocked(pts, diameter)
+        if hits and not worst_hits:
+            worst_hits, worst_pose = hits, pose
+        lo, hi = 0.0, worst_d
+        if not blocked(pts, hi):
+            continue
+        while hi - lo > 0.002:
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if not blocked(pts, mid) else (lo, mid)
+        worst_d = min(worst_d, lo)
+    A.solve(asm)
+    ok = worst_d >= float(diameter) - 0.002
+    where = f"; blocked by {worst_hits} (mm3) at pose {worst_pose or 'home'}" if worst_hits else ""
+    return {"ok": ok, "value": round(worst_d, 2), "limit": float(diameter),
+            "detail": f"largest diameter open along the {len(path)}-point channel over {1 + len(poses or [])} pose(s) (mm){where}"}
+
+
 SLOW = {"fea_static"}
 
 

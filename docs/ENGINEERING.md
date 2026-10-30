@@ -98,6 +98,8 @@ Clearances between moving printed parts: >= 0.5 mm everywhere over the full moti
 - Gripper: opening and grip force stated in DESIGN.md.
 
 ## 11. Assembly sanity
+- Tendon / wire channels are declared with `channel_clear` at the diameter of the tendon or wire plus clearance
+  (bare wire or PTFE-sleeved tendon: add at least the free-running fit of section 6), at home and at the extreme poses.
 - An assembly order exists and is written in DESIGN.md (step list). Nothing must be inserted through a closed part.
 - Every printed part fits the A2L bed in its print orientation (check) and the plate file packs them.
 - Mass budget in DESIGN.md matches report.json within 10%.

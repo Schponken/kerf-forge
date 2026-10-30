@@ -27,7 +27,7 @@ tested before handoff.
   - [x] `cantilever_stress`: bending stress at a named section of an arm/beam under a named load case vs. material strength (layer-direction aware) with safety factor
   - [x] `cg`: assembled center of gravity (all items incl. purchased) relative to a reference joint or axis, with lateral/vertical limits
   - [x] `tip_over`: static tip-over angle from CG height and support polygon (legs, base) — minimum angle
-  - [ ] `channel_clear`: a declared internal channel (tendon, wire) is open end to end for a given diameter
+  - [x] `channel_clear`: a declared internal channel (tendon, wire) is open end to end for a given diameter
   - [ ] `prop_clearance`: minimum distance between prop discs and between each prop disc and any other item, at home and over sweeps
 - [x] Layer-direction check: parts may declare a `load_axis`; warn when the main load runs across layers in the print orientation
 - [ ] Detailed-modeling helpers in `kerf/features.py`, each with a test that builds it and checks size/validity: swept channels along a 3D path (tendons, wires), shell with uniform wall, ribs/gussets between two faces, teardrop horizontal holes, threads (bd_warehouse) incl. printed coarse threads, gear pairs at the right centre distance (py_gearworks), snap-fit cantilever hooks with a strain check, living hinges, embossed/debossed text labels, lightening pockets that keep a minimum web, and a safe fillet/chamfer helper that applies edge groups one by one and reports any that failed instead of crashing

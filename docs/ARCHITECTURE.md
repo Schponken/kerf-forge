@@ -75,12 +75,20 @@ requirements:
     sf: 2.0
     kt: 1.0                       # stress concentration (holes/notches at the section)
     direction: auto               # auto = from print_rot (stress along build Z uses Z strength); or xy / z
+  - id: tendon                    # internal channel open end to end (tendon, wire, air)
+    check: channel_clear
+    path: [{item: base, at: [0, 0, 5]}, {item: base, at: tendon_exit}, {item: tip, at: [20, 0, 4]}]  # [x,y,z] or joint label, item frame
+    diameter: 1.5                 # tendon/wire diameter PLUS the running clearance you want
+    poses: [{mcp: 80, pip: 80}]   # checked besides home; the path follows the parts
+    ignore: [tendon]              # items allowed inside the channel
 ```
 `cantilever_stress` cuts the part with the section plane, takes the section's area and second-moment tensor, and
 reports kt x max |N/A + unsymmetric bending stress| over the outline. Torsion is reported, not included.
 `tip_over` (`min_deg`, optional `support: [items]`, `poses: [{joint: deg}]`, `payload_g` + `payload_at: item.joint`)
 finds the floor contacts (mesh points within `tol` 0.5 mm of the lowest point), takes their convex hull and reports the
 smallest atan(CG-to-edge distance / CG height) in degrees over the poses; negative means it falls over by itself.
+
+`channel_clear` sweeps a ball along the polyline at every pose and reports the largest diameter that passes (0.01 mm).
 Numbers inside requirement regions and forces may be expressions over params/layout values.
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs

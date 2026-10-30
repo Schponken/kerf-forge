@@ -112,3 +112,10 @@ entry before each push (date, what changed, verify state, next step, open proble
   every part check) warns when an axis is > 30 deg out of the bed plane in `print_rot`, with the cos^2-blended
   strength (same rule as cantilever_stress), and fails on a malformed axis. 6 tests. ENGINEERING.md section 4 now asks
   for `load_axis` on every structural part.
+
+## 2026-10-30 — session 01S68R6T: `channel_clear` requirement check (done)
+- `channel_clear` (kerf/requirements.py): path waypoints in item frames (coords or joint labels) so the channel follows
+  the parts through `poses`; sweeps a ball-ended tube along it, reports the largest open diameter (bisection, 0.01 mm)
+  and which items block it, at which pose; `ignore` for items allowed inside. tests/test_channel.py: drilled 2 mm bore
+  measures 2.00; 2.2 mm is blocked by the hand-calculated ring volume pi(1.1^2-1^2)(30-2.4); a sliding gate is caught
+  only at the pose where it crosses the bore; runs from project.yaml. Docs: ARCHITECTURE example, ENGINEERING s11.
