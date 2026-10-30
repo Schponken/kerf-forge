@@ -206,3 +206,10 @@ entry before each push (date, what changed, verify state, next step, open proble
 - Headline lessons for eval sessions: an MG996R direct-drive shoulder is marginal for 150 g at 250 mm (counterbalance
   or DS3218-class); bearings under yaw/pan; printed 5" arms must be much thicker than carbon and fail at the root; TVC
   gimbals clamp ~±8.5°, 3 mm rods flex — use 5 mm with a screw lock; tendon bends need r >= 2.5 mm or a steel pin.
+
+## 2026-10-30 — session 1c-pins: kerf skill
+- Done: `.claude/skills/kerf/SKILL.md` rewritten as a gated workflow table (research → DESIGN.md sizing → project.yaml
+  + stubs → parallel part-designers → integrate → FEA + detail → build + look → design-reviewer → deliver), starting
+  from `references/INDEX.md`, with a toolbox of every requirement check, always-on check, iface/drives/features helper.
+  `tests/test_kerf_skill.py` keeps it true to the engine (every REGISTRY check listed, every named helper/command/file
+  exists, stages in order). The end-to-end proof is E6 (blind pan_tilt run).

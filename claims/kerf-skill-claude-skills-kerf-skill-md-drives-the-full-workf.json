@@ -2,6 +2,6 @@
  "item": "`kerf` skill (`.claude/skills/kerf/SKILL.md`) drives the full workflow from a one-paragraph description: design-researcher (REFERENCES.md) \u2192 DESIGN.md with spec-driven sizing and trade-offs \u2192 project.yaml \u2192 parallel part-designer subagents \u2192 integrate \u2192 FEA on structural parts \u2192 detail pass \u2192 build \u2192 design-reviewer \u2192 summary for Spencer",
  "session": "d403fa96a1",
  "since": 1793403011.350649,
- "heartbeat": 1793403011.350649,
+ "heartbeat": 1793403097.3552408,
  "since_utc": "2026-10-30 23:30"
 }
