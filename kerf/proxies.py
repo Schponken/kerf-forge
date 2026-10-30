@@ -229,3 +229,23 @@ def board(ctx, spec):
             ctx.site(Site(_g(spec, "holes"), "male", screw, "clearance", Location((x, y, t)), grip=t))
     ctx.rigid("bottom", Location((0, 0, 0)))
     return ctx.finish(s, color="#1e6b3a")
+
+
+@proxy("stack")
+def stack(ctx, spec):
+    """Flight-controller/ESC stack. Frame: origin at the centre of the bottom face (on the frame), +Z up.
+    Joints: bottom (origin), top. Sites: group[holes] male screws from the top through the whole stack
+    (grip = stack height), into the frame's inserts/nuts. Catalog: drone.stacks.* {spacing, screw, board_size, height}."""
+    e = catalog.get(spec["catalog"])
+    s_ = catalog.num(e, "spacing")
+    size = catalog.num(e, "board_size", default=s_ + 6.0)
+    h = float(spec.get("height", catalog.num(e, "height", default=15.0)))
+    screw = str(e.get("screw", "M3"))
+    body = _box(size, size, h)
+    for (x, y) in iface.square(s_):
+        body -= Pos(x, y, -1) * Cylinder(iface.screw_spec(screw)["clearance"] / 2, h + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        if _g(spec, "holes"):
+            ctx.site(Site(_g(spec, "holes"), "male", screw, "clearance", Location((x, y, h)), grip=h))
+    ctx.rigid("bottom", Location((0, 0, 0)))
+    ctx.rigid("top", Location((0, 0, h)))
+    return ctx.finish(body, color="#1e3b6b")

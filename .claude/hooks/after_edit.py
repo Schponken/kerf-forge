@@ -13,8 +13,16 @@ if rel == os.path.join("catalog", "hardware.json"):
         cat = json.load(open(path))
     except Exception as e:
         print(f"catalog/hardware.json is not valid JSON: {e}", file=sys.stderr); sys.exit(2)
-    bad = [f"{c}.{k}" for c, v in cat.items() if isinstance(v, dict) and not c.startswith("_")
-           for k, e in v.items() if isinstance(e, dict) and not k.startswith("_") and "source" not in e]
+    def walk(node, path=""):
+        out = []
+        if isinstance(node, dict):
+            if path and any(isinstance(v, (int, float)) for v in node.values()) and "source" not in node:
+                out.append(path)
+            for k, v in node.items():
+                if not k.startswith("_") and isinstance(v, dict):
+                    out += walk(v, f"{path}.{k}" if path else k)
+        return out
+    bad = walk(cat)
     if bad:
         print(f"catalog entries need a 'source' URL: {bad[:10]}", file=sys.stderr); sys.exit(2)
     sys.exit(0)

@@ -48,3 +48,16 @@ def num(entry: dict, *keys: str, default=None) -> float:
 def fingerprint() -> str:
     import hashlib
     return hashlib.sha256(CATALOG.read_bytes()).hexdigest()[:16]
+
+
+def unsourced(node=None, path="") -> list[str]:
+    """Paths of catalog entries that hold numbers but no 'source'."""
+    node = load() if node is None else node
+    out = []
+    if isinstance(node, dict):
+        if path and any(isinstance(v, (int, float)) for v in node.values()) and "source" not in node:
+            out.append(path)
+        for k, v in node.items():
+            if not k.startswith("_") and isinstance(v, dict):
+                out += unsourced(v, f"{path}.{k}" if path else k)
+    return out

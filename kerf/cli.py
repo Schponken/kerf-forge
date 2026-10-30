@@ -6,6 +6,7 @@
   kerf verify [--fast]        the definition of done: tests, every project, every eval, every review
   kerf review-status <proj>   is the visual review current for this geometry?
   kerf new <name> "<title>"   scaffold a project
+  kerf status                 one-screen overview: plan progress, every project, review and eval state
 """
 from __future__ import annotations
 
@@ -34,9 +35,11 @@ def doctor() -> int:
         from . import catalog
         d = catalog.load()
         need = ["screws", "fdm_holes", "bearings", "servos", "servo_horns", "steppers", "drone", "motion", "boards", "materials", "rods"]
+        need_drone = [k for k in ("motors", "props", "stacks", "batteries", "cameras") if k not in d.get("drone", {})]
+        if need_drone:
+            bad.append(f"catalog drone section missing {need_drone}")
         missing = [k for k in need if k not in d]
-        unsourced = [f"{c}.{k}" for c, v in d.items() if isinstance(v, dict) and not c.startswith("_")
-                     for k, e in v.items() if isinstance(e, dict) and not k.startswith("_") and "source" not in e]
+        unsourced = catalog.unsourced()
         if missing:
             bad.append(f"catalog missing categories {missing}")
         if unsourced:
@@ -134,6 +137,28 @@ def verify(fast=False) -> int:
     return 0 if not fails else 1
 
 
+def status() -> int:
+    plan = (ROOT / "PLAN.md").read_text().splitlines()
+    done = sum(l.strip().startswith("- [x]") for l in plan)
+    todo = [l.strip()[6:] for l in plan if l.strip().startswith("- [ ]")]
+    _p(f"PLAN: {done} done, {len(todo)} open" + (f"; next: {todo[0][:110]}" if todo else ""))
+    from evals import run_evals
+    ev = {e["id"]: e for e in run_evals.run_all()}
+    for name in projects():
+        rp = ROOT / "projects" / name / "out" / "report.json"
+        rep = json.loads(rp.read_text()) if rp.exists() else None
+        rs = review_status(name)
+        state = "no build yet" if rep is None else ("PASS" if rep["ok"] else f"FAIL ({len(rep['problems'])} problems)")
+        fresh = "" if rep is None or rep.get("fingerprint") == rs["fingerprint"] else " (stale: geometry changed since)"
+        e = ev.get(name)
+        _p(f"  {name:16s} build {state}{fresh} | review {'PASS' if rs['ok'] else 'needed'}"
+           + (f" | eval {'PASS' if e['ok'] else 'FAIL'}" if e else ""))
+    for eid, e in ev.items():
+        if eid not in projects():
+            _p(f"  {eid:16s} not started (evals/{eid}/brief.md)")
+    return 0
+
+
 def new(name, title) -> int:
     d = ROOT / "projects" / name
     if d.exists():
@@ -154,6 +179,7 @@ def main(argv=None) -> int:
     v = sub.add_parser("verify"); v.add_argument("--fast", action="store_true")
     r = sub.add_parser("review-status"); r.add_argument("project")
     n = sub.add_parser("new"); n.add_argument("name"); n.add_argument("title")
+    sub.add_parser("status")
     a = ap.parse_args(argv)
     sys.path.insert(0, str(ROOT))
     if a.cmd == "doctor":
@@ -170,6 +196,8 @@ def main(argv=None) -> int:
         return 0 if s["ok"] else 1
     if a.cmd == "new":
         return new(a.name, a.title)
+    if a.cmd == "status":
+        return status()
     return 2
 
 

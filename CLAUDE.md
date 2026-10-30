@@ -41,6 +41,7 @@ work, never a roadmap and never "should work".
 | `kerf verify [--fast]` | definition of done: pytest, all projects, all reviews current, all evals, PLAN.md complete |
 | `kerf review-status <p>` | whether the visual review matches the current geometry fingerprint |
 | `kerf doctor` | environment self-test |
+| `kerf status` | one-screen overview: PLAN progress, each project's build/review/eval state |
 
 ## How a project is made (read docs/ARCHITECTURE.md for the full schema)
 
