@@ -40,7 +40,10 @@ def test_servo_proxy_matches_catalog(key):
     assert 0 < d["out_x"] < d["L"] / 2
     s = proxies.build(Ctx(key, {}), {"catalog": f"servos.{key}", "proxy": "servo"})
     bb = s.bounding_box()
-    assert bb.size.X == pytest.approx(d["span"], abs=0.01)
+    e = catalog.get(f"servos.{key}")
+    boss = catalog.num(e, "cable_boss_protrusion", default=0.0)
+    reach_out = max(d["span"] / 2, d["L"] / 2 + boss)     # the cable boss can stick out past the tabs on one end
+    assert bb.size.X == pytest.approx(d["span"] / 2 + reach_out, abs=0.01)
     assert bb.size.Z == pytest.approx(d["H"] + d["shaft_h"], abs=0.01)
 
 
