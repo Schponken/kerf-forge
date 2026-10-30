@@ -194,3 +194,15 @@ entry before each push (date, what changed, verify state, next step, open proble
 - Bambu: official LAN/developer mode exists for third-party send + status; fallback is open-in-Bambu-Studio. Search-first:
   Thingiverse API + Printables GraphQL automated, McMaster manual. PLAN items updated.
 - New PLAN item: print-truth calibration loop (per-printer fit offsets from Spencer's real coupon prints).
+
+## 2026-10-30 — session 1c-pins: reference library
+- Done: `references/INDEX.md` — 25 open designs studied for the evals (robot arms: SO-101, EEZYbot MK2, Moveo, Thor,
+  HowToMechatronics; pan-tilts: inertiarobotics, Adafruit/Pimoroni, traxrobotics; 5" frames: OpenFrame-5F, Source One,
+  Apex, Drone-v1, MFPV, Crab, ModuFrame/uavmodel; TVC: fd.iwth tvc-drone, Mistral, Starkit, Goose, arXiv gimbal;
+  fingers: InMoov, Raptor Reloaded, Brunel, Yale OpenHand, Aero Hand, Flexy-Hand) with license, key dimensions
+  (read/measured from cloned repos) and failure lessons, plus anthropometric data and cross-cutting lessons per eval.
+  `tests/test_references.py` enforces complete rows and that every design linked in a project REFERENCES.md is indexed.
+  design-researcher now starts from and appends to the index.
+- Headline lessons for eval sessions: an MG996R direct-drive shoulder is marginal for 150 g at 250 mm (counterbalance
+  or DS3218-class); bearings under yaw/pan; printed 5" arms must be much thicker than carbon and fail at the root; TVC
+  gimbals clamp ~±8.5°, 3 mm rods flex — use 5 mm with a screw lock; tendon bends need r >= 2.5 mm or a steel pin.
