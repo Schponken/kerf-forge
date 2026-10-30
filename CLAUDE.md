@@ -91,7 +91,9 @@ Other Claude sessions may be working in this repo at the same time. To never bre
 ## Style
 
 - Ponytail rules apply (`.claude/skills/ponytail`): use what exists (build123d, bd_warehouse, py_gearworks) before
-  writing new code; no speculative abstractions; but never cut validation, checks, or engineering margins.
+  writing new code; no speculative abstractions; but never cut validation, checks, engineering margins, or the
+  detail features docs/ENGINEERING.md requires (those count as asked for). Vendored Ponytail 5.3.3 (DietrichGebert/ponytail
+  @96608e0, MIT); subagents don't load skills on their own, so part-designer.md tells them to read it.
 - Keep the engine general. A fix that only makes one project pass is wrong if the same problem would hit the next project.
 - Every new engine feature gets a test in `tests/`.
 - Plain-language explanations in user-facing text; Spencer is technical but not a mechanical engineer by training.

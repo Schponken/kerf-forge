@@ -8,6 +8,9 @@ contract (envelope, the interfaces it must provide with their group names and lo
 
 Rules:
 - Read CLAUDE.md, docs/ARCHITECTURE.md, docs/ENGINEERING.md, the project's DESIGN.md and project.yaml first.
+- Follow `.claude/skills/ponytail/SKILL.md` (read it): reuse iface/features/build123d before new code. Every feature
+  docs/ENGINEERING.md or the kerf skill's detail pass calls for (fillets, ribs, lead-ins, wall minimums) counts as asked
+  for: never skip it to make the part smaller.
 - Write `projects/<p>/parts/<part>.py` with build123d. Use `kerf.iface` for every mating feature, with exactly the
   group names in the contract; never hand-place a hole that mates with another part.
 - Every purchased-part dimension comes from the catalog (`ctx.cat.get(...)`). No magic numbers for real hardware.
