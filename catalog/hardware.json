@@ -1074,5 +1074,35 @@
    "confidence": "typical",
    "note": "Hole diameter = pin d + allowance, for a tuned Bambu printer. press: CCI (Bambu H2D) press/interference 0-0.05 mm per side -> +0.05 on diameter; a steel ISO 8734 m6 pin is +0.002..+0.008 oversize so this grips; CCI warns 0 can still be too tight. free (rotating hinge knuckle): CCI hinges 0.15-0.2 per side on Bambu, Sovol PLA slip 0.15-0.25 per side -> +0.35 on diameter. Print a test coupon on the real printer/material before the final print; looser printers (Ultimaker class) need ~+0.4 press / +0.7 free."
   }
+ },
+ "tools": {
+  "hex_key": {
+   "socket_s_shcs": {
+    "M2": 1.5,
+    "M2.5": 2,
+    "M3": 2.5,
+    "M4": 3,
+    "M5": 4,
+    "M6": 5
+   },
+   "socket_s_countersunk": {
+    "M3": 2,
+    "M4": 2.5,
+    "M5": 3,
+    "M6": 4
+   },
+   "long_arm_mm": {
+    "1.5": 42.9,
+    "2": 47.6,
+    "2.5": 52.4,
+    "3": 58.7,
+    "4": 66.7,
+    "5": 76.2
+   },
+   "ball_end_max_deg": 25,
+   "source": "https://fasten.it/norms/norm/din_en_iso_4762 ; https://fasten.it/en/Norms/Norm/DIN EN ISO 10642 ; https://www.mcmaster.com/products/l-keys/specifications-met~iso-2936/ ; https://www.dillonsupply.com/Product/bondhus-10903",
+   "confidence": "standard",
+   "note": "Hex socket size s: ISO 4762 socket head cap screws, ISO 10642 countersunk (M2/M2.5 are not in ISO 10642; use the SHCS key size). long_arm_mm = ISO 2936 'short' series L-key long arm from McMaster (1 11/16, 1 7/8, 2 1/16, 2 5/16, 2 5/8, 3 in): the straight reach a plain L-key gives. ball_end_max_deg: Bondhus ball-end keys drive at up to 25 deg off the screw axis. Key envelope for clearance = across-corners s / cos 30."
+  }
  }
 }
