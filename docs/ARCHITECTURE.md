@@ -18,7 +18,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item |
 | `kerf/assembly.py` | Joint tree, solve poses, interference, motion sweeps, coupled poses, fastener alignment + screw lengths |
 | `kerf/features.py` | Detailed-modeling helpers: swept channels, uniform shell, gussets, teardrop holes, printed ISO threads (bd_warehouse, phase-matched rod/hole), gear pairs (= drives.spur_pair), snap hooks + living hinges with a strain check, text labels, lightening pockets with a minimum web, `safe_fillet` (applies edge groups one by one, reports failures) |
-| `kerf/access.py` | Assembly access, run by every check: hex-key reach for every male screw site (straight, else 25 deg ball-end = warning, else problem; catalog `tools.hex_key`) and insertion paths for items with `insert: {direction, distance}` |
+| `kerf/access.py` | Assembly access, run by every check: hex-key reach for every male screw site (straight, else 25 deg ball-end = warning, else problem; catalog `tools.hex_key`) and insertion paths for items with `insert: {direction, distance}`; results in report.json `assembly.hex_keys` / `assembly.insertion` |
 | `kerf/pins.py` | Pinned hinges: every `pin_hole` of a group coaxial (0.05 mm), pin held (press/heatset/tap) on one side of each moving joint and free on the other, the joint turning about the pin axis, and a stocked pin/screw length that reaches every hole |
 | `kerf/checks.py` | Per-part print checks in print orientation (solids, validity, bed fit, watertight, overhang, wall thickness, `load_axis` across layers, mass) |
 | `kerf/requirements.py` | Engineering checks named in project.yaml (`@check("name")` registry), incl. `fea_static` |
