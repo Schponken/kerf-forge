@@ -194,3 +194,59 @@ def test_teardrop_hole_points_up():
     assert bb.max.Y == pytest.approx(r * 2 ** 0.5, abs=1e-3) and bb.min.Y == pytest.approx(-r, abs=1e-3)
     c, *_ = iface.hole("M3", "clearance", 5, teardrop=0)        # roof toward +X
     assert c.bounding_box().max.X == pytest.approx(r * 2 ** 0.5, abs=1e-3)
+
+
+def test_pilot_hole_uses_material_specific_size():
+    pla = iface.screw_spec("M3")["tap"]
+    petg = iface.screw_spec("M3", "PETG")["tap"]
+    assert petg == pytest.approx(2.60) and pla == pytest.approx(2.72)
+    assert iface.screw_spec("M3", "CF-PETG")["tap"] == pytest.approx(2.60)
+    c, *_ = iface.hole("M3", "tap", 8, material="PETG")
+    assert c.bounding_box().size.X == pytest.approx(2.60, abs=1e-6)
+
+
+TOP_YAML = """
+name: t
+parts:
+  wall: {file: parts/wall.py, material: PETG}
+purchased:
+  servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: s}, tab_screws_from: bottom}
+assembly:
+  root: wall
+  joints: [{parent: wall.seat, child: servo.tabs}]
+"""
+TOP_WALL = """
+from build123d import *
+from kerf import iface
+def build(ctx):
+    t = 8
+    s = Box(80, 50, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    face = Location((0, 0, 0))                       # tab tops press on the underside; servo top goes up through
+    s -= iface.servo_mount(ctx, "servos.MG996R", face, group="s", plate_t=t, kind="tap", top_through=True)
+    tab_t = iface.servo_dims("servos.MG996R")["tab_t"]
+    ctx.rigid("seat", face * Location((0, 0, -tab_t)))
+    return ctx.finish(s)
+"""
+
+
+def test_servo_mount_top_through(tmp_path):
+    proj, asm = _proj(tmp_path, TOP_YAML, {"wall": TOP_WALL})
+    joints, problems = A.fasteners(asm)
+    assert problems == [], problems
+    assert len(joints) == 4 and all(abs(j["gap_mm"]) < 1e-6 for j in joints)
+    assert A.interference(asm) == [], A.interference(asm)       # only the case top passes the window
+    d = iface.servo_dims("servos.MG996R")
+    sbb = proj.items["servo"].shape.bounding_box()
+    assert sbb.min.Z == pytest.approx(-d["tab_t"] - d["tab_z"], abs=1e-3)   # body hangs below the plate
+
+
+def test_part_notes_reach_the_report(tmp_path):
+    from kerf import pipeline
+    d = tmp_path / "n"
+    (d / "parts").mkdir(parents=True)
+    (d / "project.yaml").write_text("name: n\nparts:\n  a: {file: parts/a.py}\nassembly:\n  root: a\n  joints: []\n")
+    (d / "parts" / "a.py").write_text("from build123d import *\ndef build(ctx):\n    ctx.notes.append('fillet skipped')\n"
+                                      "    return ctx.finish(Box(20, 20, 5))\n")
+    rep = pipeline.run(str(d), sweeps=False)
+    assert rep["parts"]["a"]["notes"] == ["fillet skipped"]
+    assert any("fillet skipped" in w for w in rep["warnings"])

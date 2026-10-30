@@ -35,6 +35,13 @@ tested before handoff.
 - [ ] FEA load-case helpers and output: bearing-seat radial loads, torque about a joint, pressure on a face; a von Mises colour render per FEA check saved to `out/renders/fea_<id>.png` for the reviewer
 - [ ] Reference library `references/INDEX.md`: every open design studied (link, license, measured key dimensions, lessons) so later projects reuse the research
 - [ ] `kerf check` total time for `servo_link` under 60 s; profile and cache tessellation/overlaps if slower
+- [ ] Assembly-access checks, each with a test: (a) hex-key reach — a straight key of the screw's size along each screw
+  axis from the head side must clear every other item for its working length (report screws that need a ball-end
+  driver); (b) insertion paths — parts declared with `insert: {direction: [x, y, z], distance: mm}` in project.yaml
+  are swept along that path into their seat and must not collide (catches e.g. a servo body/cable boss that cannot
+  pass its window)
+- [ ] `servo_mount`: 0.5 mm lead-in chamfer on the window's entry face (elephant-foot allowance on bed-side faces);
+  then rebuild `servo_link`, fix arm.py's stale test-mass comment (wire loop / S-hook), and get a fresh PASS review
 
 ## Phase 2 — design from a description
 - [ ] `kerf` skill (`.claude/skills/kerf/SKILL.md`) drives the full workflow from a one-paragraph description: design-researcher (REFERENCES.md) → DESIGN.md with spec-driven sizing and trade-offs → project.yaml → parallel part-designer subagents → integrate → FEA on structural parts → detail pass → build → design-reviewer → summary for Spencer

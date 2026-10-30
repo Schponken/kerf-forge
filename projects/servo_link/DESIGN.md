@@ -68,6 +68,7 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
 3. Remove the servo's rubber grommets (the screws are sized for bare tabs). From BEHIND the wall, push the servo in
    top-first so its output pokes through the window and the tab tops sit flat on the back face; drive 4× M3 × 8 with
    washers from behind through the tabs into the pilot holes (they form their own threads; don't over-tighten).
+   Use a 2.5 mm ball-end hex driver for the two screws next to the cable boss: a straight key grazes the boss.
 4. The servo lead leaves the cable boss behind the wall: run it down and tie it through the two slots under the window.
 5. Centre the servo electrically, press the horn on the spline pointing up, fit its centre screw.
 6. Bolt the arm to the horn (4× M3 × 8). The horn disc is only 2 mm thick: snug them (about 0.5 N·m) with medium
@@ -77,6 +78,7 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
 ## Use
 - Screw the base to the bench (4× M4 counterbored holes) or clamp it. Unclamped it only resists ~0.12 N·m of tipping
   against up to 0.92 N·m of servo stall torque, so fast moves would make it hop.
-- Before printing the final bracket, check the MG996R's tab-hole pattern with calipers (catalog: 49.5 × 10 mm,
-  4.2 mm holes, partly unverified for this exact servo). If it differs, correct `catalog/hardware.json` with the
+- Before printing the final bracket, check the MG996R with calipers: the tab-hole pattern (catalog: 49.5 × 10 mm,
+  4.2 mm holes) and the cable boss (catalog: ~6.6 mm proud, 4 mm tall, 3-7 mm above the case bottom) are partly
+  unverified for this exact servo. If it differs, correct `catalog/hardware.json` with the
   measured value and a note, and rebuild — every dependent hole moves with it.

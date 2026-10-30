@@ -26,3 +26,12 @@ entry before each push (date, what changed, verify state, next step, open proble
 - Hooks tested: the edit hook catches a broken part edit (exit 2 with the problem list); the Stop gate blocks on
   failing verify, uncommitted files and unpushed commits, and allows a stop only when all three are clean.
 - Next: PLAN.md Phase 1, first unchecked item.
+
+## 2026-10-30 — planning session, final handoff
+- `servo_link` passed its third independent review (review.json, PASS). The reviewer measured servo insertion, screw
+  access and assembly order itself.
+- Added tests for material-specific pilot holes, `servo_mount(top_through=True)` and part notes → report warnings
+  (85 tests pass).
+- Reviewer's remaining minor findings went into PLAN.md Phase 1 (hex-key reach + insertion-path checks; window lead-in
+  chamfer + re-review). DESIGN.md now notes the ball-end driver and says to measure the cable boss.
+- Next: PLAN.md Phase 1, first unclaimed item.

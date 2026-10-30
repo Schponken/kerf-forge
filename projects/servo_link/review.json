@@ -1,57 +1,39 @@
 {
-  "verdict": "FAIL",
-  "fingerprint": "a4014bf2f8acbb43",
+  "verdict": "PASS",
+  "fingerprint": "a9b581f37fd9cf80",
   "reviewer": "design-reviewer",
   "date": "2026-10-30",
-  "summary": "The designer fixed 9 of the 11 earlier findings, and I checked each fix in the code, the rebuilt geometry and the renders. Those fixes are: the tip hole, teardrop foot holes, gusset fillets and window dog-bones, pilot holes with a 2.74 mm web, the FEA rework (SF 3, loads at the screws), the grommet and washer step, the horn torque note, the bench clamp note, and the second-support justification. The design still cannot be assembled. The catalog's own cited MG996R drawing shows a cable strain-relief boss sticking out about 6.6 mm from the output-end face, 3-7 mm above the case bottom. Mounted bottom-first through a window with only 0.3 mm clearance, the servo cannot get that boss through the wall. The servo proxy is a plain box, so no check caught this. The remaining findings are minor.",
+  "summary": "The earlier blocker is fixed. The servo now goes into the wall from behind, top-first. I rebuilt the assembly and probed it: the only part of the servo ahead of the back face is the 40.7 x 20 mm case top, which runs from y -23 to -15.5 and fits the 41.3 x 20.6 window. The tabs bear on the back face, and the cable boss (now in the catalog and the proxy) sits 22-26 mm behind the wall. All 12 M3 fasteners line up, the +/-90 deg sweep is clear, both FEA cases pass, and so do the torque and mass checks. I confirmed every earlier minor fix in the code, the report and the renders. What remains is minor: the two cable-end tab screws are awkward to reach with a straight hex key because they sit 1 mm from the cable boss, plus a few small engine and documentation gaps.",
   "findings": [
     {
-      "severity": "blocker",
+      "severity": "minor",
       "part": "bracket",
-      "issue": "The servo cannot be fitted. bracket.py puts the tabs on the wall's front face, so the 26.6 mm of case below the tabs has to pass through the window (41.3 x 20.6 mm, 0.3 mm clearance per side for a 40.7 mm body). The catalog source for servos.MG996R (electronicoscaldas MG996R_Tower-Pro.pdf, side view) shows the lead's strain-relief boss at the bottom of the output-end face. Scaled from that drawing, it sticks out about 6.6 mm (almost as far as the 6.65 mm tab), is about 4 mm tall and sits 3-7 mm above the case bottom. The boss is near the bottom, so it is the first thing that has to pass through the window, and it cannot. The servo proxy in kerf/proxies.py is a plain box, so the interference check never sees the boss. The previous review flagged the cable exit as unverified. DESIGN.md still never addresses it: its 'check before printing' note only covers the tab holes.",
-      "fix": "Turn the mount around. Put the tabs on the wall's BACK face and slide the servo in top-first from behind. Then only the 10 mm case top (36.6 - 26.6, no boss) passes through the 8 mm wall, and it stands about 2 mm proud of the front face. Steps: set seat = Location((0, 0, p.pivot_h), (-90, 0, 0)) on the back face, and cut the pilot holes from the back face (tab-screw heads then sit behind the wall, where a hex key reaches them easily). Re-check the base's y_back room behind the servo and the horn/arm clearance to the wall front, then re-run the sweep and bracket_fea (move the load boxes to the new seat). Do not try a notch at the window end instead: a 7 mm-deep notch passes between the tab holes at z = +/-5 and leaves about 1.1 mm webs. Also add the boss to the catalog entry, with the drawing as its source (for example cable_boss: protrusion 6.6, height 4, z 3-7, at the output end), and model it in the servo proxy, so the next servo design gets caught by the check."
+      "issue": "Hex-key access to the two tab screws on the cable end (x = +24.75, z = 78 and 88). These screws are now driven from behind, the side where the cable boss sits. The boss covers z 79-87, between the two holes and only about 1 mm from each screw axis, 16 mm behind the screw heads. A straight 2.5 mm key on the screw axis (radius 1.5) grazes the boss: I measured 3.1 mm^3 of overlap per key path against the servo proxy. The two screws at the far end are clear. A standard L-key's 18 mm short leg puts its bend inside the boss's depth band, so the key can only turn through the lower half-circle. ENGINEERING section 7 says every screw must be reachable by a hex key, and the boss size is scaled from a low-resolution drawing (+/-1 mm). The screws can be reached, but awkwardly, and DESIGN.md does not mention it.",
+      "fix": "Add to DESIGN.md assembly step 3: drive the two cable-end tab screws with a 2.5 mm ball-end hex driver (or a straight driver tilted a few degrees), before routing the lead. Engine: add a tool-access check that sweeps a hex-key cylinder, about 1.5 mm radius and 60 mm long, back along each male fastener axis and flags hits on other items. Add a test for it."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The servo window has only 0.3 mm clearance per side, and the servo enters it from the back face, which is the first-layer face on the printer (print_rot [90,0,0]). First-layer squish (elephant foot) shrinks exactly that edge. The window also has no lead-in, so a slightly oversize servo case or a seam bulge will catch on the sharp bed-side edge.",
+      "fix": "Cut a 0.5 mm x 45 deg chamfer around the window's back-face edge (inside the servo_mount cutter when top_through=True, so every project gets it). That gives a lead-in and absorbs elephant foot. Keep slicer elephant-foot compensation on."
+    },
+    {
+      "severity": "minor",
+      "part": "engine",
+      "issue": "Three engine changes from this round have no test in tests/, which CLAUDE.md requires: (1) screw_spec(material=...) choosing self_tap_pilot_petg (I confirmed the bracket pilot is 2.60 mm and 7.2 mm deep with a 0.8 mm floor, but no test pins this); (2) servo_mount(top_through=True) with its mirrored, flipped bolt pattern, which only this project exercises; (3) pipeline copying kerf_notes into report warnings. The engine also still cannot see the original blocker class. The boss is now in the proxy, but interference is only checked in the final pose, so a bottom-first mount through a tight window would still pass kerf check on the next project.",
+      "fix": "Add tests: screw_spec('M3', 'PETG')['tap'] == 2.6 and the PLA default stays 2.72; a top_through servo plate plus MG996R proxy with 4 aligned fasteners and no interference; a part that appends a note, with the note appearing in report warnings. Also add an insertion-path check for servo_mount: sweep the servo proxy along the window axis from its insertion side to its seat and report hits. Test it with a bottom-first MG996R mount, which must fail."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "Carried over: the tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog, and so is the cable-boss geometry, which is scaled from the drawing. The tool-access margin in the first finding depends on both. DESIGN.md's 'check before printing' note covers the tab holes only.",
+      "fix": "Extend the DESIGN.md caliper note to cover the boss position and size as well. When a servo is in hand, record the measured values in catalog/hardware.json, noting the measurement as the source."
     },
     {
       "severity": "minor",
       "part": "arm",
-      "issue": "The tip hole fixes the earlier major finding: a 3.5 mm hole at (0, -arm_len) with 5.25 mm of wall each side, confirmed in the geometry. The test mass that DESIGN.md and the BOM specify cannot be built, though. A DIN 125 M8 washer (16 OD, 8.4 ID, 1.6 thick) weighs about 1.8 g, so 50 g takes about 27 washers, a stack about 44 mm long. An M3 x 20 through the 6 mm arm with a 2.4 mm nut leaves about 11.6 mm, room for only about 13 g. M8 washers on a 3 mm shank also sit up to 2.7 mm off-centre, which moves the load point and defeats the reason for the hole.",
-      "fix": "Change the BOM line and assembly step 7 to something that works. For example, hang a 50 g calibration weight or fishing sinker from the hole on a wire loop. Or use M3 x 50 + nut with a slug of known mass. Or use an M8 x 30 bolt + 2 nuts (about 50 g) hung on an S-hook through the hole. Then weigh the actual mass on a kitchen scale and note it."
-    },
-    {
-      "severity": "minor",
-      "part": "bracket",
-      "issue": "The tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog. The same datasheet's top view hints that one end's tabs have U-slots open to the end and that the width spacing may be more than 10 mm (it scales to about 12 mm, but the drawing is low resolution). DESIGN.md now tells the builder to caliper the real servo first, which is an acceptable mitigation.",
-      "fix": "Keep the DESIGN.md note. When the servo is in hand, record the measured hole centres and the boss dimensions in catalog/hardware.json, with the measurement noted as the source."
-    },
-    {
-      "severity": "minor",
-      "part": "bracket",
-      "issue": "The tab screws are now thread-forming M3 screws in 2.72 mm pilot holes, confirmed 7.2 mm deep. That removes the thin-web problem: the pilot-hole edge is at x = 23.39 and the window at 20.65, a 2.74 mm web. But ENGINEERING section 7 limits self-tapping to light, rarely removed parts, and a servo test rig exists to have servos swapped in and out. Also, iface.screw_spec always uses the PLA pilot value (2.72). The catalog note for fdm_holes.M3 gives 2.60 for PETG, and this part is PETG, so each screw gets less thread engagement than intended.",
-      "fix": "Once the mount is reversed (see the blocker), consider clearance holes with M3 nuts on the front face, or keep the pilot holes and add a DESIGN.md line saying they are good for about 5-10 servo swaps. At the engine level, make screw_spec pick the pilot diameter by the part's material (catalog already lists PETG HF 2.60), with a test."
-    },
-    {
-      "severity": "minor",
-      "part": "arm",
-      "issue": "The arm carries the payload but has no fea_static requirement, which ENGINEERING section 3b asks of every structural part. A hand check shows a large margin: the in-plane section modulus is 6 x 14^2 / 6 = 196 mm^3, giving 0.27 MPa under gravity and about 4.7 MPa if the servo stalls against a blocked tip. But the rule asks for the proof, plus a deflection limit (1% of length).",
-      "fix": "Add an fea_static requirement for the arm: fixed at the horn bolt circle, a stall-torque-equivalent force (922 N*mm / 100 mm = 9.2 N) at arm.tip, XY strength, SF 2, max_disp_mm 1.0."
-    },
-    {
-      "severity": "minor",
-      "part": "bracket",
-      "issue": "bracket.py wraps the gusset-root fillet in try/except and appends to ctx.notes, with the comment 'reviewer sees the corners in the renders'. But ctx.notes (shape.kerf_notes) is never written into report.json, so if the fillet ever failed, nothing would report it. I rebuilt the part and confirmed the fillet is applied today (8 faces of r = 1.5, empty notes). The design just should not depend on that luck.",
-      "fix": "Either drop the try/except so a failed fillet stops the build, or (engine) copy kerf_notes into the report's per-part warnings, with a test."
-    },
-    {
-      "severity": "minor",
-      "part": "bracket",
-      "issue": "The docs are stale after the switch to pilot holes. The bracket.py module docstring still says the tabs bolt to 'M3 heat-set inserts' and that 'the inserts face up for installation'. REFERENCES.md 'Decisions' still says the 8 mm wall is sized for a 6.7 mm insert hole.",
-      "fix": "Update both to say thread-forming pilot holes, with the 2.74 mm web reasoning."
-    },
-    {
-      "severity": "minor",
-      "part": "servo",
-      "issue": "The catalog source datasheet says the MG996R rotates 'approximately 120 degrees (60 in each direction)' with standard pulses. The project gives the servo range [-90, 90], and neither the catalog nor DESIGN.md says what that assumes. Mechanically the sweep is clear (confirmed in the report and the pose renders), but a user driving it with a stock 1000-2000 us servo library will only get about +/-60 degrees.",
-      "fix": "Add a travel field to the catalog entry with this source, and a DESIGN.md line saying that +/-90 needs roughly 500-2500 us pulse widths (for example Arduino Servo.attach(pin, 500, 2500)), to be confirmed on the real servo."
+      "issue": "The comment in arm.py still says 'an M3 screw carries the 50 g weight', but DESIGN.md and the BOM now hang a calibration weight or sinker on a wire loop or S-hook. The 3.5 mm tip hole works for both.",
+      "fix": "Update the comment to say the test mass hangs on a wire loop or S-hook through the tip hole (see DESIGN.md)."
     }
   ]
 }
