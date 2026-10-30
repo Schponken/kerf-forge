@@ -49,6 +49,11 @@ DESIGN.md says why.
 - Inside corners on any load path get a fillet r >= 1 mm (stress concentration). Outside edges: 0.5–1 mm chamfer or fillet.
 - No feature thinner than 2 nozzle widths (0.8 mm) unless it is a deliberate flexure.
 - Text/labels: embossed >= 0.6 mm, stroke >= 0.8 mm.
+- Snap-fits and living hinges (`features.snap_hook`, `features.living_hinge`): bending strain <= 70% of yield strain
+  (strength/modulus), x0.6 if taken apart often (Bayer snap-fit manual). Cantilever: eps = y h / (0.67 l^2), tapered to
+  h/2: / (1.09 l^2). Living hinge: eps = t theta / (2 L). PETG/PLA hinges only bend ~20 deg; use TPU for 90 deg.
+- Printed threads only >= M6 and pitch >= 1.0 (`features.threaded_rod/threaded_hole`, 0.4 mm diametral clearance);
+  smaller threads go in heat-set inserts.
 
 ## 6. Fits (mm, on diameter, for a 0.4 mm nozzle; prefer catalog `fdm_holes` values when present)
 | Fit | Printed hole vs. part |

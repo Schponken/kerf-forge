@@ -140,3 +140,12 @@ entry before each push (date, what changed, verify state, next step, open proble
   moving joint's range and any coupled `poses`; reports the tightest pair and pose.
 - tests/test_prop_clearance.py: 3 hand-calc tests (disc-disc 20 mm and disc-frame 10 mm, post between discs 8 mm +
   ignore, prop on a swinging arm: 18.38 mm at +/-20 deg). Documented in docs/ARCHITECTURE.md.
+
+## 2026-10-30 — session 1c-pins: kerf/features.py
+- Done: detailed-modeling helpers, each tested for size/validity (tests/test_features.py, 11 tests): `channel` (spline
+  sweep cutter, volume = pi r^2 L), `shell`, `gusset`, `teardrop_hole`, `threaded_rod`/`threaded_hole` (bd_warehouse
+  ISO, >= M6 and pitch >= 1.0, 0.4 mm clearance; bd_warehouse internal threads are half a pitch out of phase with
+  external ones, so the hole is turned 180 deg and a rod at the hole bottom meshes with zero overlap), `gear_pair`
+  (= drives.spur_pair), `snap_hook` and `living_hinge` with Bayer-manual strain limits (raise with the fix), `label`,
+  `pockets` (min web), `safe_fillet` (groups, then edge by edge, failures reported). ENGINEERING.md section 5 updated.
+- Finding: by that strain rule a 0.5 mm PETG living hinge only bends ~19 deg; 90 deg hinges need TPU.
