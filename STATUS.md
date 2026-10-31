@@ -678,3 +678,11 @@ pushed for it and what I know:
   the last eval runs `kerf build` on every project, `kerf gallery`, then republishes index.html + files.json's files to
   the SAME url (Artifact publish with `url`, after an Artifact `read` of it), and checks the item off.
 
+## 2026-10-31 05:00 UTC — session 262017a2: final cross-project audit -> AUDIT.md
+- Three design-reviewer subagents audited all six projects rule by rule against ENGINEERING.md. AUDIT.md = tracking
+  index + their full reports. 1 blocker: tvc_drone ring_low's 6 leg heat-set inserts are centred ON the lug edge
+  (half-holes) — passed `kerf check` and its review because nothing checks wall around inserts (ENG-1). ~20 project
+  majors, 6 engine majors (insert wall/edge distance, FEA SF enforcement, CG without wire mass, T/W not voltage-derated,
+  single-shear pivot moment, slicer infill not in the 3MF).
+- PLAN: the audit item now has claimable sub-items per project + engine. Mark each finding fixed/justified in AUDIT.md.
+- I take tvc_drone next (the blocker).
