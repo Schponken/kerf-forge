@@ -190,9 +190,14 @@ def _traction(ld, fb):
         def tang(x):  # d x (x - o): tangential, magnitude = distance from the axis
             r = [x[i] - o[i] for i in range(3)]
             return [d[1] * r[2] - d[2] * r[1], d[2] * r[0] - d[0] * r[2], d[0] * r[1] - d[1] * r[0]]
+        # a pure couple: subtract the mean tangential vector so a region off the axis (e.g. a servo's 4 tab screws,
+        # centred on the case, not the output) gets no net force; the moment about the axis stays exactly `torque`
+        area = asm(Functional(lambda w: 1.0 + 0.0 * w.x[0]), fb)
+        tbar = [asm(Functional(lambda w, i=i: tang(w.x)[i]), fb) / area for i in range(3)]
         polar = asm(Functional(lambda w: sum(c ** 2 for c in tang(w.x))), fb)   # integral of r_perp^2 dA
+        polar -= area * sum(c * c for c in tbar)
         k = float(ld["torque"]) / polar
-        return LinearForm(lambda v, w: k * sum(c * v[i] for i, c in enumerate(tang(w.x))))
+        return LinearForm(lambda v, w: k * sum((c - tbar[i]) * v[i] for i, c in enumerate(tang(w.x))))
     if "bearing" in ld:
         F = np.asarray(ld["bearing"], float)
         Fm = float(np.linalg.norm(F))

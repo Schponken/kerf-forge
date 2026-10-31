@@ -34,10 +34,27 @@ def build(ctx):
     body -= Pos(boss_x1 + 2.0, 0, p.base_floor) * Box(8.0, 10.0, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # bearing seats: lower 6001 pushed up from below to a shoulder, upper 6001 dropped in from the top
     body -= iface.bearing_seat(ctx, BRG, Location((0, 0, 0), (180, 0, 0)), fit="press", depth=p.z_blo + p.brg_B,
-                               through=p.z_bhi - p.z_blo - p.brg_B)
-    body -= iface.bearing_seat(ctx, BRG, Location((0, 0, p.z_tt)), fit="press", depth=p.brg_B, through=1.0)
+                               through=p.z_bhi - p.z_blo - p.brg_B, shaft_clear=4.0)
+    # shaft_clear 4 -> 20 mm bore between the seats: clears the turning inner races (land ~16.7 mm) and still
+    # supports the outer races (inner edge ~24 mm)
+    body -= iface.bearing_seat(ctx, BRG, Location((0, 0, p.z_tt)), fit="press", depth=p.brg_B, through=1.0, shaft_clear=4.0)
     body = chamfer(body.edges().filter_by(GeomType.CIRCLE).filter_by(lambda e: abs(e.center().Z - p.z_tt) < 0.01
                                                                           and e.radius > p.brg_D / 2 + 1), 1.0)
+    # gear guard: a wall round the outside of the yaw gear (open only toward the mesh) so cable loops cannot get in
+    r_tip = p.gear_m * (p.gear_z_yaw + 2) / 2
+    with BuildSketch(Plane.XY.offset(p.base_floor - 0.01)) as gs:
+        with Locations((-p.yaw_c, 0)):
+            Circle(r_tip + 4.0)
+            Circle(r_tip + 1.5, mode=Mode.SUBTRACT)
+        with Locations((-p.yaw_c + 60, 0)):
+            Rectangle(80, 80, mode=Mode.SUBTRACT)          # open toward the turntable gear (mesh side)
+        with Locations((-p.yaw_c - r_tip - 10, 0)):
+            Rectangle(30, 30, mode=Mode.SUBTRACT)          # behind: the servo case itself closes that side
+    guard = extrude(gs.sketch, p.z_plat0 - 0.5 - p.base_floor + 0.01)
+    body += guard
+    # cable-tie slots in the guard's -Y side: anchor point for the servo-lead service loop
+    for sx in (-4.0, 4.0):
+        body -= Pos(-p.yaw_c + sx, -(r_tip + 2.75), p.z_shelf + 10.0) * Box(1.8, 6.0, 3.2)
     # desk mounting: 4 x M4 through-holes (bolt or wood-screw down) at the corners; the rear 20 mm is a clamp pad
     for x in (-88.0, 30.0):
         for y in (-40.0, 40.0):

@@ -36,6 +36,10 @@ def build(ctx):
                                depth=FOOT_T, teardrop=-90)
     loc = Location((p.x_sh - p.sh_out_x, p.cheek_out, p.z_sh), (90, 0, 0))   # cheek outer face; +Z into the fork
     body -= iface.servo_mount(ctx, SERVO, loc, group="sh_servo", plate_t=p.plate_t, kind="tap", top_through=True)
+    # cable-tie slots at the back of the cheek: the arm's leads leave the yoke here as a loop down to the base
+    x0 = p.x_sh - p.sh_out_x - p.ds_span / 2 - 6.0
+    for sz in (p.z_sh - 6.0, p.z_sh + 6.0):
+        body -= Pos(x0 + 4.0, p.cheek_in + p.plate_t / 2, sz) * Box(1.8, p.plate_t + 2, 3.2)
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.sh_tab_t)))
     return ctx.finish(body)

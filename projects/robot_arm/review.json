@@ -1,0 +1,81 @@
+{
+  "verdict": "FAIL",
+  "fingerprint": "10e92cdeb98b06be",
+  "reviewer": "design-reviewer",
+  "date": "2026-10-31",
+  "summary": "The arm meets the brief on paper: the joints, ranges, reach (266 mm), grip opening (55.6 mm) and servo torque margins (37/23/20 % of stall) all check out. The fork-per-joint layout with the turntable on two bearings is a sound architecture. It fails on three real problems. The base bearing bore rubs the turning inner races, so the turntable binds once the retainer is tightened. There is no cable path past the yaw axis, and the open gear mesh sits where the cables will hang. The turntable FEA does not test the load it claims to, and it never checks the spindle, which is the part most likely to break.",
+  "findings": [
+    {
+      "severity": "major",
+      "part": "base",
+      "issue": "The bore between the two 6001 seats is only 14 mm (bearing_seat through= with the default shaft_clear 1.0, so d/2+1 = 7 mm radius). A 6001 inner ring face reaches out to about 16.7 mm diameter (d1). retainer.py even says 'inner race land ~12-16.7 mm'. So the fixed printed shoulder at z=28 and z=45.3 touches the TURNING inner race of both bearings from r=7 to about r=8.35. When the retainer's M3 screw clamps the stack, part of that clamp force goes straight through the inner rings into the plastic shoulder instead of through the balls. The turntable then binds or scrapes against an MG996R that only has 6.3 kg*cm at the turntable.",
+      "fix": "Pass shaft_clear so the through-bore is about 19-20 mm diameter: larger than inner-race d1 16.7 plus 1 mm, and well under outer-race D2 about 24.4, so the shoulder still carries the outer races. For example bearing_seat(..., shaft_clear=4.0) on the lower seat and keep through= as is. Do the same on the upper seat's 1 mm through-cut."
+    },
+    {
+      "severity": "major",
+      "part": "turntable",
+      "issue": "There is no cable path (docs/ENGINEERING.md section 10: 'Cable path from base to wrist that survives the full motion range'). DESIGN.md only adds 15-20 cm extension leads to the BOM. Four servo leads (shoulder, elbow, wrist, grip) have to cross the +/-90 deg yaw joint. The spindle is solid, nothing on the turntable or base guides them, and the 36:24 gear mesh (z 53.9-61.9, behind the tower) is fully open right below the platform edge where the leads will hang. A lead caught in the mesh will stall the yaw servo or get cut. The elbow, wrist and grip leads have no clips or channels along the forks either, so they will snag on the joints.",
+      "fix": "Make the spindle hollow (for example 12 mm OD, 6 mm bore, still checked with FEA) or add a cable slot through the platform at the yaw axis. Run the leads down through the tower to a side exit in the base, or add a guarded cable loop at the back with a printed cover over the gear mesh. Add tie-wrap slots or clip bosses on the webs of each fork. Declare the paths as keep-outs or channel_clear and check them at the extreme poses."
+    },
+    {
+      "severity": "major",
+      "part": "turntable",
+      "issue": "turntable_fea does not test the real load. (1) The torque_nmm loads sit on the yoke foot screw sites (x = -29, -14, 10), but their axis is at x = 0. kerf/fea.py applies a torque as traction d x (x - o), so the screw sites, which are not centred on the axis, get a net force. The report shows applied_force_n z = +24.8 N (UP), when the case should be about 12.8 N DOWN, and applied moment 913 N*mm instead of 1280. (2) The tipping moment is underestimated. DESIGN.md uses 0.64 kg x 0.10 m = 0.63 N*m, but the distal arm plus payload alone gives 7.8 kg*cm about the shoulder plus about 0.45 kg x 2.5 cm, roughly 0.85 N*m static, or 1.7 N*m at 2x. (3) The whole spindle is inside the fixed box (z_blo..z_tt), so the critical section is never checked. That section is the 12 mm solid spindle at the upper bearing face, bent ACROSS layers, with a sharp step to the 15 mm collar. By hand: 1.7 N*m / (pi*12^3/32 = 170 mm^3) = 10 MPa nominal against a 13 MPa z-allowable (39/3), before any stress-concentration factor for the unfilleted step. The FEA render (peak 3.57 MPa) also does not match the report (peak 6.70 MPa).",
+      "fix": "Model the load the way it really enters: either apply a resultant force and moment at the yoke feet as matching force pairs (+F/-F at the front and rear screws, plus the downward weight), or apply the torque about the screw-pattern centroid. Fix the turntable at the bearing seats with bearing_n loads on the spindle at each bearing, not as a rigid box over the whole spindle. Use the real 2x tipping moment of about 1.7 N*m. To strengthen the spindle, run a steel M5/M6 rod or bolt through a hollow spindle and preload it with the retainer, which keeps the layers in compression and also opens a cable path. Add a 0.3-0.5 mm fillet at the spindle-to-collar step (it still clears the 6001 inner-ring chamfer)."
+    },
+    {
+      "severity": "minor",
+      "part": "yoke_r",
+      "issue": "Same torque-on-offset-sites effect: yoke_r_fea reports applied_force_n z = +21.3 N, but the spec is -5.9 N. The tab screws are centred 10 mm from the output axis. The real reaction of the servo case to a stall torque is a pure couple, with no net force on the screws. The result passes with a lot of margin, but the load case is not what the 'why' text says.",
+      "fix": "Apply the stall reaction as a couple about the tab-screw centroid (a couple acts the same about any point), plus the 5.9 N separately. Also worth an engine fix: report or remove the net force a torque_nmm load adds when the axis is not centred on its sites."
+    },
+    {
+      "severity": "minor",
+      "part": "upper_arm",
+      "issue": "upper_arm_fea fixes BOTH plates rigidly at the shoulder. In reality plate B is pinned on the yoke_l pivot and passes its moment to plate A through the two 4 mm webs, so the load path through the webs is not tested. The applied load is also 19.2 N in total, against the intended 2 x 3.87 = 7.7 N (force_n per site x 4 sites). That is conservative, so it does not change the pass, but the load case is not the one described.",
+      "fix": "Fix only the shoulder horn screw sites, and hold plate B against radial movement at the pivot only. Divide the per-site forces by the number of sites."
+    },
+    {
+      "severity": "minor",
+      "part": "upper_arm",
+      "issue": "All servo tab screws are thread-formed into PETG (kind='tap'). They carry the joint torque reaction, and the servos will come off at least once (DESIGN.md says to test-fit, and replacement is likely). ENGINEERING.md section 7 asks for heat-set inserts for parts that carry load or are taken apart more than once. Applies to yoke_r, upper_arm, forearm, gripper and base as well.",
+      "fix": "Either use heat-set inserts where the 1.6 mm catalog minimum wall to the window allows (it does for the DS32xx windows), or note in DESIGN.md why tapped holes are accepted here: the screws are loaded mainly in shear, and the build notes should say 'do not overtighten'."
+    },
+    {
+      "severity": "minor",
+      "part": "gripper",
+      "issue": "The grip is a single swinging finger against a fixed jaw. At 55 deg open, the gap measured square to the jaw at the tcp (45 mm from the pivot) is about 39.5 mm. A 40 mm object therefore fits only at the fingertips, and the swing pushes it along the jaw. The finger closes to a 0.5 mm gap, so holding any object means the MG996R sits at stall continuously.",
+      "fix": "Allow grip to about 65 deg, or move the fixed jaw outward by about 5 mm. In DESIGN.md, state the grip force at the tcp and that the controller must back off from stall once it has hold of an object."
+    },
+    {
+      "severity": "minor",
+      "part": "gripper",
+      "issue": "The fixed-jaw post stands along gripper +Y, which is print Z when printed with print_rot [90,0,0]. The 18.4 N jaw load bends it ACROSS layers, but gripper_fea judges it as xy with SF 2. The peak of 9.9 MPa is still under the 13 MPa z-allowable at SF 3, so it does not fail, but the declared direction is wrong for the weakest feature.",
+      "fix": "Use direction z with SF 3 for gripper_fea (it still passes), and add a fillet of at least 2 mm where the post meets the palm."
+    },
+    {
+      "severity": "minor",
+      "part": "yoke_l",
+      "issue": "Inside corners on load paths are sharp: cheek-to-foot on both yokes, web-to-plate on upper_arm and forearm, spindle-to-collar on turntable. ENGINEERING.md section 5 asks for a fillet of at least 1 mm. No structural part declares load_axis (section 4).",
+      "fix": "Add 1-2 mm fillets at these joins and declare load_axis on every structural part."
+    },
+    {
+      "severity": "minor",
+      "part": "yoke_l",
+      "issue": "The three pivots are fully threaded M3x14 screws turning in 3.35 mm printed holes. The threads will wear the hole into an oval over time, which adds play at each joint.",
+      "fix": "Specify ISO 7379 M4/M3 shoulder screws, or a 3 mm dowel or a brass tube sleeve in the free hole. At minimum, list partially threaded screws in the BOM."
+    },
+    {
+      "severity": "minor",
+      "part": "yaw_gear",
+      "issue": "The 0.3 mm backlash at the 18 mm pitch radius of the 24 T gear gives about 0.95 deg of free play at the turntable, which is about 5 mm of side-to-side slop at the 290 mm tcp radius, before adding the MG996R's own deadband. The 24 T gear's lower face also turns only 0.6 mm above the fixed tower top.",
+      "fix": "Accept it and state it in DESIGN.md as the expected positioning accuracy, or reduce backlash, or spring-load the yaw servo against the mesh. Raise z_gear0 so the gap to the tower is at least 1 mm (ENGINEERING.md section 8 asks for at least 0.5 mm, and print/bearing tolerance eats into 0.6)."
+    },
+    {
+      "severity": "minor",
+      "part": "upper_arm",
+      "issue": "Proportions: the forks nest inside each other, so the upper arm is 89.5 mm wide and the shoulder 117 mm wide, on an 85 mm link. The tcp ends up about 21 mm to the side of the yaw-axis plane, so the inverse kinematics must include that offset. The front desk holes at x=30 sit under the upper-arm plates at home, so the desk screws can only be reached with the arm swung to yaw +/-90.",
+      "fix": "Document the tcp side offset for IK and the desk-screw order (swing the arm to yaw 90 first). Optional: put the elbow and wrist servos on alternating sides to narrow the stack."
+    }
+  ]
+}

@@ -18,6 +18,9 @@ def build(ctx):
     r_sp = (p.brg_d - 0.05) / 2                        # printed spindle 0.05 under the bore: slip fit, axially clamped
     body = Pos(0, 0, p.z_blo + 0.2) * Cylinder(r_sp, p.z_tt - p.z_blo - 0.2 + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body += Pos(0, 0, p.z_tt) * Cylinder(7.5, p.z_gear0 - p.z_tt + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # 0.3 mm fillet at the spindle-to-collar step (within the 6001's 0.3 mm inner-race edge chamfer)
+    step = body.edges().filter_by(GeomType.CIRCLE).filter_by(lambda e: abs(e.center().Z - p.z_tt) < 0.01 and abs(e.radius - r_sp) < 0.01)
+    body = fillet(step, 0.3)
     body += Pos(0, 0, p.z_gear0) * (Rot(0, 0, 180) * g1)
     body += Pos(0, 0, p.z_gear1 - 0.01) * Cylinder(14.0, p.z_plat0 - p.z_gear1 + 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
     x0, x1 = -35.0, 15.0                               # rear edge clears the yaw-gear horn screws for a hex key

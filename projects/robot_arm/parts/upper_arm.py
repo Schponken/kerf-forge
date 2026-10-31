@@ -35,6 +35,9 @@ def build(ctx):
         body += Pos(wx, 0, t - 0.01) * Box(4.0, 2 * r, W - 2 * t + 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body += Pos(0, 0, W - t - 3.0) * Cylinder(6.5, 3.01, align=(Align.CENTER, Align.CENTER, Align.MIN))   # pivot boss
     body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="sh_horn", plate_t=t)
+    # cable-tie slot pair: servo leads run along the outside of plate A
+    for sy in (-6.0, 6.0):
+        body -= Pos(35.0, sy, t / 2) * Box(1.8, 3.2, t + 2)
     loc = Location((xc, 0, 0))                     # plate A outer face: tab tops press here, case top points into the fork
     body -= iface.servo_mount(ctx, SERVO, loc, group="el_servo", plate_t=t, kind="tap", top_through=True)
     body -= iface.pin_hole(ctx, "M3", Location((0, 0, W)), "sh_pivot", depth=t + 3.0, fit="heatset")

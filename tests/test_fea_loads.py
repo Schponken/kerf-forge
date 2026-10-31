@@ -33,6 +33,18 @@ def test_torque_about_an_axis():
     assert r["max_disp_mm"] == pytest.approx(T * 80 / (G * J) * 5, rel=0.03)      # twist angle x radius
 
 
+def test_torque_on_a_region_off_the_axis_is_a_pure_couple():
+    """Four screw pads on one side of the axis (like servo tab screws, centred on the case, not the output): the
+    torque must not smuggle in a net force; the moment about the axis is exactly T."""
+    plate = Box(80, 30, 6, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    pads = lambda x, y, z: (z > 5.99) & (np.abs(np.abs(x - 10) - 25) < 3) & (np.abs(np.abs(y) - 5) < 3)  # noqa: E731
+    T = 2000.0
+    r = fea.static(plate, E, NU, fixed=lambda x, y, z: z < 0.01,
+                   loads=[{"pred": pads, "torque": T, "axis_at": [30, 0, 0], "axis_dir": [0, 0, 1]}])
+    assert np.abs(r["applied_force_n"]).max() < 1e-3
+    assert r["applied_moment_nmm"][2] == pytest.approx(T, rel=1e-3)
+
+
 def test_bearing_seat_radial_load():
     blk = Box(30, 20, 30, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(0, 0, 20) * Rot(90, 0, 0) * Cylinder(4, 40)
     bore = lambda x, y, z: np.hypot(x, z - 20) < 4.2  # noqa: E731

@@ -93,18 +93,27 @@ horn → gripper → grip servo → **grip** → horn → finger; yoke_l). `yaw_
 (coupled gears). tcp = rigid joint on the gripper between the jaws.
 
 ## Strength (FEA, report.json)
-| Check | Load case | Result | Allowable |
+| Check | Load case | Result (p99.9, deflection) | Allowable |
 |---|---|---|---|
-| upper_arm_fea | 2 × (3.87 N + 4.29 kg·cm elbow torque) at the elbow, shoulder held | 2.6 MPa, 0.15 mm | 24 MPa (xy, SF 2), 0.85 mm |
-| forearm_fea | 2 × (2.86 N + 1.87 kg·cm) at the wrist | 0.9 MPa, 0.05 mm | 24 MPa, 0.8 mm |
-| yoke_r_fea | shoulder servo **stall** 21 kg·cm + 5.9 N | 4.2 MPa, 0.24 mm | 13 MPa (z, SF 3), 0.5 mm |
+| upper_arm_fea | 2 × (3.87 N at the elbow servo tabs + 3.87 N at the elbow pivot) + 2 × 4.31 kg·cm elbow torque as a pure couple on the tab screws; shoulder end held | 5.8 MPa, 0.39 mm | 24 MPa (xy, SF 2), 0.85 mm |
+| forearm_fea | same pattern at the wrist (2.86 N ×2 sites, 1.87 kg·cm ×2) | 2.5 MPa, 0.15 mm | 24 MPa, 0.8 mm |
+| yoke_r_fea | shoulder servo **stall** 21 kg·cm (couple on the 4 tab screws) + 5.9 N down, feet bolted | 6.7 MPa, 0.47 mm | 13 MPa (z, SF 3), 0.5 mm |
 | yoke_l_fea | 5.9 N on the pivot | 0.7 MPa | 13 MPa |
-| gripper_fea | grip **stall**: 18.4 N on the jaw tip | 4.4 MPa, 0.58 mm | 24 MPa, 1.0 mm |
+| gripper_fea | grip **stall**: 18.4 N on the jaw tip, held at the servo tabs | 4.4 MPa, 0.58 mm | 13 MPa (z: the jaw post bends across layers, SF 3), 1.0 mm |
 | finger_fea | 18.4 N at the finger tip | 8.4 MPa, 0.77 mm | 24 MPa, 1.0 mm |
-| turntable_fea | 2 × arm weight 12.8 N + 1.28 N·m tipping moment, spindle held | 2.7 MPa, 0.23 mm | 13 MPa (z), 0.3 mm |
+| turntable_fea | 2 × arm weight 12.8 N on the yoke feet + 2 × 0.85 N·m tipping moment; spindle held only on the two bearing lands + collar | 4.3 MPa (peak 10.6 at the step), 0.20 mm | 13 MPa (z, SF 3), 0.3 mm |
+
+Applied resultants are checked in report.json (`applied_force_n`): torques are pure couples (engine fix in this
+round: a torque on screw sites off the axis used to add a spurious net force).
 
 The arm links are stiffness-limited, not strength-limited; the stresses are low because a fork of two 7 mm plates
 34 mm tall is deep in bending.
+
+## Cables
+Servo leads run along the outside of each fork's plate A (cable-tie slot pairs on the upper arm and forearm), leave
+the shoulder through the tie slots at the back of yoke_r, and drop to the base as a free service loop long enough
+for ±90° of yaw (~150 mm). The base's gear guard (a wall round the outside of the yaw gear, open only at the mesh
+and behind the servo case) keeps the loop out of the gears; tie it to the slots in the guard's −Y side.
 
 ## Assembly order
 1. Press both 6001 bearings into the base tower (lower one from below, up to its shoulder; upper one from the top).
@@ -122,6 +131,14 @@ The arm links are stiffness-limited, not strength-limited; the stresses are low 
    pivot screw through yoke_l).
 8. Bolt or clamp the base to the desk, near the desk edge if you want the full shoulder range (stretched out at
    shoulder −60° the gripper reaches below the desk top — limit that pose in software otherwise).
+
+## Use notes
+- Grip: command the finger to just touch the object (the servo then holds with little current); commanding it past
+  contact holds the MG996R at stall (≈2.5 A, heat). The fixed jaw/finger are FEA-checked at stall anyway.
+- The tcp sits ~21 mm to the side of the yaw axis (fork stacking): include that offset in the inverse kinematics.
+- Yaw gear backlash 0.3 mm ≈ 1° at the turntable ≈ ±2.5 mm at full reach.
+- Servo tab screws are thread-forming M3 into 2.6 mm PETG pilots (the normal way servos are mounted); for frequent
+  servo swaps, drill the pilots to 4.0 mm and use M3 heat-set inserts (7 mm plates take them).
 
 ## Risks / measure first
 - DS32xx tab holes (scaled from a drawing) and MG996R tab spacing (borrowed from the DS3218 drawing) are UNVERIFIED in

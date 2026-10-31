@@ -29,10 +29,10 @@ parts:
   turntable: {file: parts/turntable.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4}
   retainer: {file: parts/retainer.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0}
   yaw_gear: {file: parts/yaw_gear.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5}
-  yoke_r: {file: parts/yoke_r.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4}
-  yoke_l: {file: parts/yoke_l.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4}
-  upper_arm: {file: parts/upper_arm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
-  forearm: {file: parts/forearm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
+  yoke_r: {file: parts/yoke_r.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: Z}
+  yoke_l: {file: parts/yoke_l.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
+  upper_arm: {file: parts/upper_arm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
+  forearm: {file: parts/forearm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
   gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
   finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}
 purchased:
@@ -77,6 +77,8 @@ assembly:
     - {parent: gripper.servo_seat, child: gr_servo.tabs}
     - {parent: gr_servo.output, child: gr_horn.spline, name: grip, range: [0, 55], home: 0}
     - {parent: gr_horn.face, child: finger.horn_mount}
+  allow_overlap:
+    - {pair: [turntable, brg_hi], max_mm3: 1.0, why: "0.3 mm fillet at the spindle step sits in the 6001 inner race's 0.3 mm edge chamfer (the proxy has square edges)"}
   sweeps:
     - {joint: yaw_drive, follows: base_yaw, ratio: -0.66666}
 requirements:
@@ -142,8 +144,8 @@ requirements:
     check: fea_static
     part: gripper
     why: "the grip servo stalls with the finger closed on the fixed jaw: 9.4 kg*cm / 50 mm = 18.4 N on the jaw tip, reacted at the servo tabs"
-    direction: xy
-    sf: 2.0
+    direction: z             # the jaw post bends across layers (printed on edge)
+    sf: 3.0
     max_disp_mm: 1.0
     fixed: {sites: gr_servo, radius: 4.0}
     loads:
@@ -161,14 +163,18 @@ requirements:
   - id: turntable_fea
     check: fea_static
     part: turntable
-    why: "2x the arm + payload (12.8 N) on the yoke feet and its tipping moment (2 x 6.4 N x 100 mm) about the spindle, which the bearings hold"
+    why: "2x the arm + payload (12.8 N) on the yoke feet and 2x its tipping moment (0.85 N*m static -> 1.7 N*m) about Y, spindle held only where the two bearings touch it"
     direction: z             # the spindle prints vertically: its bending stress runs across layers
     sf: 3.0
     max_disp_mm: 0.3
-    fixed: {box: [[-6.2, -6.2, "z_blo"], [6.2, 6.2, "z_tt"]]}
+    fixed:
+      any:
+        - {cylinder: {at: [0, 0, "z_blo"], dir: [0, 0, 1], r: "(brg_d - 0.05) / 2", tol: 0.3, span: [0, "brg_B"]}}
+        - {cylinder: {at: [0, 0, "z_bhi"], dir: [0, 0, 1], r: "(brg_d - 0.05) / 2", tol: 0.3, span: [0, "brg_B"]}}
+        - {box: [[-7.6, -7.6, "z_tt - 0.01"], [7.6, 7.6, "z_tt + 0.01"]]}     # collar resting on the upper inner race
     loads:
       - {sites: yoke_r_foot, radius: 4.0, force_n: [0, 0, -6.4]}
       - {sites: yoke_l_foot, radius: 4.0, force_n: [0, 0, -6.4]}
-      - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 640, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
-      - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 640, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+      - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 850, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+      - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 850, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
   - {id: arm_mass, check: mass_max, max_g: 900, why: "a desk arm two hobby-servo supplies can move around; also the torque budget"}
