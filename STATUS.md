@@ -928,3 +928,6 @@ pushed for it and what I know:
 - Left this item UNCHECKED on purpose: its text says both runs print VERIFY PASSED, which cannot happen until the
   Bambu box is checked. Next step after Spencer's print: check the Bambu box, then run the clean-clone verify twice
   more (each ~75 min on 2 CPUs) and check this item. Claim released.
+- Note for Spencer: `.claude/hooks/stop_gate.py` gives `kerf verify` 3500 s, but a full verify takes 4100-4400 s on
+  this 2-CPU cloud container, so the gate times out here (traceback, no verdict). Not edited (CLAUDE.md rule 1);
+  raising that timeout to ~6000 s would fix it.
