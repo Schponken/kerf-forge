@@ -968,3 +968,13 @@ pushed for it and what I know:
   no window, never while a job runs; ⏻ Quit asks first when something runs. Tests: 4 lifetime tests (goodbye exits,
   open window cancels goodbye, quit with a running job -> 409 then force). Browser-verified: Quit shows the closed
   screen and the server exits; navigating away sends the goodbye and the server exits.
+
+## 2026-10-31 23:50 UTC — planning session 01S68R6Q: teardown skill + text-to-cad / CADAM teardowns
+- Spencer asked to look into "the teardown GitHub repo": Sanexxxx777/teardown (MIT, Claude Code skill: read a repo's
+  code, not its README; ADOPT / STEAL / SKIP). Vendored to .claude/skills/teardown (VENDORED.md); the design-researcher
+  now tears down any repo before Kerf reuses or depends on it.
+- Teardowns (docs/teardowns/): earthtojake/text-to-cad = ADOPT parts of cadgen 0.8.4 (engineering drawings, URDF
+  validation; installs cleanly on Kerf's build123d 0.13) + STEAL its build memo as a per-part build cache; Adam-CAD/CADAM
+  = SKIP (GPL-3 web app, single parts, no engineering checks). Three PLAN items added (Phase 4c).
+- Note: in this cloud session running the teardown's weigh.py on downloaded repos was blocked ("code from external"),
+  so the method was applied by hand with wc/grep and reading.

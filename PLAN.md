@@ -85,6 +85,20 @@ tested before handoff.
 - [x] Print-truth loop: `kerf calibrate` builds a small A2L coupon (M2/M2.5/M3 clearance + tap + heat-set holes, 608 and 623 bearing pockets, 0.2/0.3/0.4 mm slip-fit pins, a servo-tab window). Spencer reports what fit (`kerf feedback <material> hole_M3=tight ...`); offsets are stored per printer+material in catalog/printers/ with the date and applied by iface, so every later design fits his real printer, not a textbook one. Tests use synthetic feedback
 - [x] Ship package: BOM gains buy links and unit/total cost for every purchased item (catalog sources), and `kerf build` writes `out/ASSEMBLY.md` — step-by-step assembly order with an exploded render per step and the screw/insert list for each step
 
+## Phase 4c — adopted from the text-to-cad teardown (docs/teardowns/text-to-cad.md)
+- [ ] Engineering drawings: add `cadgen==0.8.4` (MIT, same build123d 0.13; see the teardown) and have `kerf build` write
+  `out/drawings/<part>.pdf` for every printed part with `cadgen.eng_drawing` (three views + iso, overall dimensions,
+  hole callouts taken from the part's interface sites, material/print orientation in the title block). Test: a drawing
+  of a test part has the expected views and a hole callout per hole group; Studio Files tab lists the PDFs
+- [ ] URDF export for every project with moving joints: `kerf build` writes `out/<project>.urdf` (links = items moving
+  together, joints from the joint tree with limits, inertials from part masses / CG / inertia of the meshes, visual and
+  collision meshes from the part STLs, metres + kg), validated with `cadgen.urdf_source.validate_urdf_file`, and loads
+  in PyBullet (`pybullet.loadURDF`) in a test. For Spencer's simulators (robot arm, TVC drone RL training)
+- [ ] Per-part build cache (the memo idea at Kerf scale): key = part source + resolved params + catalog deps + engine
+  version; store the built shape as BREP under .cache/parts; `kerf check` / Studio "Try" rebuild only changed parts.
+  Tests: unchanged part = cache hit with identical geometry; editing a param that the part reads = miss; engine change
+  = miss. Measure robot_arm check cold vs warm in STATUS.md
+
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified

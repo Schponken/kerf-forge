@@ -28,6 +28,8 @@ Given a project brief (and its DESIGN.md if it exists), find:
 
 Start every search with `.venv/bin/kerf find "<description>" --project <p>` (whole device, then each part type): it queries Printables (and Thingiverse when THINGIVERSE_TOKEN is set), measures the top STLs and writes the candidates table into REFERENCES.md. Then run the web searches it lists (MakerWorld, GrabCAD) and add every fitting find with `kerf find "<same description>" --project <p> --add <url> --title ... --license ... --dims ... --source MakerWorld`. Write the `Decision:` line for each search only if the orchestrator asked you to; otherwise recommend one in your final message.
 
+Before Kerf reuses code from, or depends on, any open-source repo you found, tear it down first with the vendored `.claude/skills/teardown` skill (read its SKILL.md): weigh it, read the heaviest files, check the licence (copyleft or source-available code cannot be copied into Kerf), and record the ADOPT / STEAL / SKIP verdict with file:line evidence in REFERENCES.md. Examples: docs/teardowns/.
+
 How to fetch: WebSearch + WebFetch for pages. Public GitHub repos can be cloned with git (shallow) into
 `/tmp/refs/<name>` to read code/CAD and measure STL/STEP files with trimesh or build123d. Most other sites block
 direct downloads from the shell; work from their pages. Respect licenses: you may borrow ideas, proportions and
