@@ -35,20 +35,31 @@ def build(ctx):
     body += Pos((14.0 + x_end) / 2, PALM_T / 2, W / 2) * Box(x_end - 14.0, PALM_T, W)
     body += Pos(0, 0, W - t - 3.0) * Cylinder(6.5, 3.01, align=(Align.CENTER, Align.CENTER, Align.MIN))   # pivot boss
     # fixed finger: a post up from the palm's front, then a jaw forward at the moving finger's height
-    zj0, zj1 = g["z_jaw"], g["z_jaw"] + 8.0
+    zj0, zj1 = g["z_jaw"], g["z_jaw"] + 10.0          # 10 mm thick: the stall load bends it across this thickness
     tip_x = g["x_g"] + p.finger_len + 2.0
     body += Pos(x_end - 3.0, (PALM_T + g["y_f"] + 6.0) / 2, (zj0 + zj1) / 2) * Box(6.0, g["y_f"] + 6.0 - PALM_T + 0.02, zj1 - zj0)
     with BuildSketch(Plane.XY.offset(zj0)) as jaw:
         Polygon((x_end - 6.0, PALM_T), (x_end, PALM_T), (tip_x, g["y_f"]), (tip_x, g["y_f"] + 6.0), (x_end - 6.0, g["y_f"] + 6.0),
                 align=None)
     body += extrude(jaw.sketch, zj1 - zj0)
-    # 2 mm fillets where the jaw post stands on the palm (docs/ENGINEERING.md section 5): the jaw load bends it there
+    # 2 mm (1.5 at the upper side) fillets where the jaw post stands on the palm (docs/ENGINEERING.md section 5): the jaw load bends it there
     def at_post_base(e):
         c = e.center()
         return abs(c.Y - PALM_T) < 0.05 and x_end - 6.05 < c.X < x_end + 0.05 and zj0 - 0.05 < c.Z < zj1 + 0.05
-    base_edges = [e for e in body.edges() if at_post_base(e) and abs((e % 0.5).Y) < 1e-6 and not (abs(e.center().X - x_end) < 0.05)]
-    body, failed = safe_fillet(body, [(base_edges, 2.0)])
-    if failed or len(base_edges) != 3:
+    # (3 edges round the post base + the re-entrant corner under the jaw where it leaves the palm's front face)
+    base_edges = [e for e in body.edges() if at_post_base(e) and abs((e % 0.5).Y) < 1e-6]
+    back = [e for e in base_edges if abs(e.center().X - x_end) >= 0.05]
+    body, failed = safe_fillet(body, [(back, 2.0)])
+    if failed:                                   # the edge 2 mm from the palm's side face takes 1.5 mm at most
+        body, failed = safe_fillet(body, [([e for e in body.edges() if at_post_base(e) and abs((e % 0.5).Y) < 1e-6
+                                             and abs(e.center().X - x_end) >= 0.05 and abs(e.center().Z - zj1) < 0.05], 1.5)])
+    # the re-entrant corner under the jaw (palm front face -> sloped jaw underside): OCC can't fillet it, so fill it
+    # with a 4 mm wedge, which turns the sharp corner into two obtuse ones
+    slope = (g["y_f"] - PALM_T) / (tip_x - x_end)
+    with BuildSketch(Plane.XY.offset(zj0)) as wedge:
+        Polygon((x_end - 0.01, PALM_T - 4.0), (x_end - 0.01, PALM_T + 0.01), (x_end + 4.0, PALM_T + 4.0 * slope + 0.01), align=None)
+    body += extrude(wedge.sketch, zj1 - zj0)
+    if failed or len(base_edges) != 4:
         raise ValueError(f"jaw post fillets: {len(base_edges)} edges, failed {failed}")
     body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="wr_horn", plate_t=t)
     loc = Location((g["x_gs"], 0, g["z_c"]), (-90, 0, 0))   # palm underside; +Z up through the palm

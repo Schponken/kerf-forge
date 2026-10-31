@@ -1,14 +1,23 @@
 [
  "bearings.6001",
+ "boards.arduino_nano",
+ "boards.pca9685_adafruit",
+ "electronics.connectors.wago_221_415",
+ "electronics.supplies.meanwell_lrs100_5",
+ "electronics.wire_misc.heatshrink_3mm",
  "fdm_fits.pin",
+ "fdm_holes.M2",
  "fdm_holes.M3",
  "fdm_holes.M4",
  "materials.PETG",
+ "screws.M2",
  "screws.M3",
  "screws.M4",
  "servo_horns.aluminum_25T",
  "servos.DS3218",
  "servos.DS3225",
  "servos.MG996R",
- "tools.hex_key"
+ "tools.hex_key",
+ "wire.awg",
+ "wire.silicone"
 ]
