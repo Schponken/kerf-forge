@@ -1,45 +1,63 @@
 {
-  "verdict": "PASS",
-  "fingerprint": "5b285dd83259e4c0",
+  "verdict": "FAIL",
+  "fingerprint": "f0d19eed2db6770b",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The round-4 major is fixed in the geometry. I re-rendered the LRS-100 datasheet page 4 and measured it: SVR1 at x 4.7, y 9.7 and the LED at x 11.0, y 10.0, which matches the catalog's 5.1/9.6 and 11.1/9.9. psu_hood cuts an 8 mm hole and a 3.5 mm hole at those points, in the solid top (x 0-20), referenced to the -Y wall that bears on the case's y = 0 face. The 5.4 V trim (WIRING step 21, DESIGN step 11) can now be set and checked at the WAGO bus with the hood closed and no mains terminal exposed. The side vent window (x 13-27, z 2-12) covers the datasheet's slots, which measure x 15.7-25.7, z 3-9 (round 4's z 9-13 was a misreading). The tie bridge replaces the floor slots, the cable_mast docstring is correct, and at 5.4 V the worst stall row is 4.951 V against 4.8 V. The arm geometry has not changed since round 4. Poses, FEA hot spots and load cases are still consistent. Only minor items remain.",
+  "summary": "Mounting the yaw servo from below works. I checked the geometry: the shelf is a solid 7 mm round all four M3 tap holes (8 mm screws, 5.5 mm engaged). The 21 x 55 mm opening in the floor passes the tabs. The rear screws take a straight key and the two beside the boss take a ball-end key in the widened pocket. The tab underside is still at z_shelf (33.3), so the horn and gear heights (horn face 53.7, gear screws at 54.4) have not moved. The base FEA hot spots are on the bearing tower and a front bolt foot, at 0.95 MPa against a 13 MPa limit. The stall FEA now runs with case crash and SF 3, and the hood web is fixed. However, the widening that gives key access pushed the housing's -Y wall out to y = -26. The new yaw lead exit (x -38.4..-30.4) now opens against the inside of the gear guard ring, only 0.7 to 3.4 mm away. That is one printed part, so the servo's 3-pin plug (at least 7.6 mm wide at 2.54 mm pitch) cannot get out of the pocket to the guard hole. The yaw servo cannot be wired as the design describes.",
   "findings": [
     {
-      "severity": "minor",
-      "part": "psu_hood",
-      "issue": "The SVR hole (d 8 at x 5.1, y 9.6) and the LED hole (d 3.5 at x 11.1, y 9.9) are 6.0 mm apart centre to centre. That leaves a 0.26 mm web between them (6.007 - 4 - 1.75), less than one 0.4 mm extrusion line. It will print as a ragged sliver or not at all, and the two holes merge into one 8 x 12 mm slot. This is still finger-safe (8 mm wide is less than the 12 mm IEC test finger) and the mains pins are 50 mm or more away, so it is cosmetic and robustness only.",
-      "fix": "Leave at least 1.2 mm web: cut the LED hole at 2.5 mm, or move it to x 12 (the LED still shows, given the ±1 mm case tolerance). Alternatively, cut one deliberate rounded slot over both."
+      "severity": "blocker",
+      "part": "base",
+      "issue": "The yaw lead exit faces the guard ring with almost no gap. I measured the base STL in world coordinates at z = 10, 20 and 50. Between the widened housing's -Y outer face (y = -26.0) and the guard ring's inner face (r 30 about (-45, 0)), the gap is 3.4 mm at x = -38, 2.4 mm at x = -34, 1.2 mm at x = -31 and 0.7 mm at x = -30. The exit box (x -38.4..-30.4, y -27..-21, z 6..14) opens straight into that wedge, and you can see it in part_base_top.png. The guard hole (x -51..-39) is offset in X from the exit, so the lead would have to leave the exit and turn 90 degrees inside a gap of 3 mm or less. The servo's own lead ends in a 3-pin JR/Futaba plug, at least 7.6 mm wide at the catalog's 2.54 mm pitch, and the plug has to get from inside the pocket to outside the ring. The wedge is open only from the top, and it is too narrow for the plug at any height. DESIGN.md step 2 ('Lead out through the pocket's -Y exit and the guard hole') cannot be done without de-pinning the connector. The wiring route check passes only because it treats the lead as a thin polyline: waypoint [-36, -27.2, 10] sits 1.2 mm from the housing and 1.4 mm from the ring. This came in with the round-6 widening. In round 5 the housing face was at y = -14.5 and the lead ran in a channel more than 10 mm wide.",
+      "fix": "Make the lead's path a straight line a plug can pass. Option A: put the exit coaxial with the guard hole. Run one straight -Y cut through the housing wall and the ring at about x = -43 (inside the guard hole's x -51..-39), at least 10 mm wide and 10 mm tall, from the pocket floor up. This may mean starting the widened pocket at x = -47 so the cut opens into it. Option B: make both the exit and the guard hole slots open to the underside (cut from z = -1). The lead is then laid in from below with the base on its back, before the servo screws go in, and nothing has to be threaded. With either option, re-route pwr_yaw and sig_yaw through it. Consider teaching the wiring route check a lead/plug cross-section so a pinch like this fails kerf check."
     },
     {
       "severity": "minor",
-      "part": "psu_hood",
-      "issue": "The assembly order (project.yaml assembly_note, ASSEMBLY step 26) says to slide the hood on, feed the DC pairs out, then 'tie them to the floor bridge'. Once the hood is seated, the bridge (x -12, y -43.5..-37.5, z 2-7) is enclosed: the top covers x -65..20, the inlet fills the end window, and the only opening near it is the 10 mm DC exit 5 mm away. You cannot thread a tie through the X-direction tunnel through that hole. Separately, in the print orientation (standing on the end wall) the bridge block's -X face is a 6 x 5 mm flat overhang that sticks out 5 mm from a vertical wall. Report overhang is only 0.23 %, so it will just sag a little.",
-      "fix": "Reword the note: feed the DC pairs out of the exit and tie them to the bridge with the hood held beside the supply, then lower or slide the hood on and fit the side screw. Optionally, chamfer the bridge block's -X underside at 45 degrees."
+      "part": "base",
+      "issue": "base.py hard-codes the cable boss protrusion as 6.6 mm (boss_x1 = xc + L/2 + 6.6 + 0.6). The catalog's servos.MG996R value is now cable_boss_protrusion 7.0, and its note lists 6.6 as a replaced value. The boss envelope reaches xc + 27.45 and the pocket ends at xc + 27.65, which leaves 0.2 mm instead of the intended 0.6. It still clears, but it goes against the rule that purchased-part dimensions come from the catalog.",
+      "fix": "Read d['cable_boss_protrusion'] (or the catalog key) instead of 6.6, keep the +0.6 clearance, and re-check."
     },
     {
       "severity": "minor",
       "part": "wiring",
-      "issue": "Carried over, now with more margin. The IR-drop rows still leave out the 5 A ATO fuse's catalog cold_resistance_ohm (0.01785 ohm, about 45 mV at 2.5 A), the fuse holder's 16 AWG lead, and the plug-to-extension contacts. They also assume the servo's own lead is 22 AWG, but no gauge is sourced. At 5.4 V the wrist and grip stall rows are 4.951 V, 151 mV above 4.8 V, so the omitted terms (roughly 60-110 mV) still leave positive margin. kerf/electrical.py was not changed.",
-      "fix": "Engine: add the fuse's cold resistance and the holder lead to the run's loop resistance (the data is already in the catalog), and add a sourced lead gauge to the servo catalog entries."
+      "issue": "The last two route points of pwr_yaw and sig_yaw are [-34.4, -12, 10] and then [-55.2, 0, 27.8], the servo body centre. The drawn lead passes through the MG996R case, which also makes ASSEMBLY.md step 11 misleading. The real lead leaves the boss at about (-28, 0, 9..17).",
+      "fix": "End the route at the cable boss (a 'lead' joint on the servo proxy at the boss), or add that point as the last waypoint."
+    },
+    {
+      "severity": "minor",
+      "part": "base",
+      "issue": "In the upright print, the shelf underside is the face the tab tops clamp against, and it is printed over support across the open pocket. The access ceiling at z_shelf - 0.5 (44 x 13 mm) is also supported. A rough supported face under the tabs can let the servo rock slightly once the screws are snug.",
+      "fix": "Use a support interface layer (or a PETG/PLA interface) under the shelf, and file the tab face flat before fitting the servo. Say so in DESIGN.md step 2."
+    },
+    {
+      "severity": "minor",
+      "part": "psu_hood",
+      "issue": "Round-5 items verified. The pot hole is now 7 mm and the LED hole 2.5 mm (web 6.007 - 3.5 - 1.25 = 1.26 mm), and the two holes show separate in part_psu_hood_top.png. The note now says to tie the DC bundle to the bridge before seating the hood. The optional 45 degree chamfer on the bridge's -X underside was not done, so the 6 x 5 mm overhang will still sag slightly.",
+      "fix": "Optional: chamfer the bridge block's -X underside at 45 degrees."
+    },
+    {
+      "severity": "minor",
+      "part": "wiring",
+      "issue": "Carried over from round 5. kerf/electrical.py still does not use the ATO fuse's catalog cold_resistance_ohm (about 45 mV at 2.5 A) or the holder's 16 AWG lead, and no servo catalog entry has a sourced lead gauge. Margin is still positive: the worst stall row is about 151 mV above 4.8 V, against roughly 60-110 mV of omitted drop.",
+      "fix": "Engine: add the fuse's cold resistance and the holder lead to the run's loop resistance, and add a sourced lead gauge to the servo entries."
     },
     {
       "severity": "minor",
       "part": "cable_mast",
-      "issue": "The docstring is now correct (the column is centred on the 26 mm foot and printed lying down on support). The 12.6 % support surface remains, so the support side of the column will be rough. This is cosmetic.",
-      "fix": "Optional: shift the column flush with one long side of the foot so it lies on the bed with no support."
+      "issue": "Carried over: 12.6 % of the surface prints on support, so the support side of the column will be rough. Cosmetic.",
+      "fix": "Optional: set the column flush with one long side of the foot so it lies on the bed with no support."
     },
     {
       "severity": "minor",
       "part": "nano",
-      "issue": "Carried over and accepted: the Nano, the 4 WAGO splices and the 5 inline fuse holders sit loose on the desk behind the base. DESIGN.md tells the builder to case the Nano and screw the supply down. The supply's plan M3 holes take a screw only 3 mm deep.",
-      "fix": "None required. A printed electronics tray on the rear pad would make the layout tidy and short-proof."
+      "issue": "Carried over and accepted: the Nano, the WAGO splices and the inline fuse holders sit loose on the desk behind the base.",
+      "fix": "None required. A printed electronics tray on the rear pad would be tidier and short-proof."
     },
     {
       "severity": "minor",
-      "part": "yoke_r",
-      "issue": "Accepted, for the record. yoke_r_fea peaks at 17.7 MPa and upper_arm_stall at 18.8 MPa, both local singularities. Their p99.9 values (6.55 against 13 and 13.42 against 24 MPa) pass. The hot spots in the renders are on the load path (the cheek root at the foot, and the frame of the servo window in plate A). The DS32xx tab holes are still UNVERIFIED in the catalog.",
-      "fix": "None required. Test-print yoke_r and fit a real DS3225 before printing the rest, as the Risks section of DESIGN.md says."
+      "part": "upper_arm",
+      "issue": "For the record: at the new crash-case SF 3, upper_arm_stall_fea p99.9 is 13.42 MPa against a 16 MPa limit (a margin of 1.19). The peak of 18.76 MPa is a local singularity at the frame of the elbow servo window in plate A, which is on the load path in the render. It passes, but it is the thinnest margin on the arm. The DS32xx tab holes are still UNVERIFIED in the catalog.",
+      "fix": "None required. Test-print yoke_r and the upper arm and fit the real DS3225/DS3218 before printing the rest, as the Risks section of DESIGN.md says."
     }
   ]
 }

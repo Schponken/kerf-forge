@@ -28,7 +28,7 @@ def build(ctx):
     # window, tab tops pressed against the shelf's underside, 4 screws from below. Coming from below, the cable boss
     # (low on the output end) never has to pass the shelf, so the shelf is solid round all four tab holes.
     z_tabtop = p.z_shelf + d["tab_t"]
-    boss_x1 = xc + d["L"] / 2 + 6.6 + 0.6
+    boss_x1 = xc + d["L"] / 2 + float(catalog.get(YAW)["cable_boss_protrusion"]) + 0.6
     cav_x0, cav_x1 = xc - d["span"] / 2 - 0.6, max(boss_x1, xc + d["span"] / 2 + 0.6)   # the tabs pass it on the way up
     hx0, hx1 = cav_x0 - 4.0, cav_x1 + 4.0
     hw = d["W"] / 2 + 0.5 + 4.0
@@ -42,9 +42,13 @@ def build(ctx):
     body -= Pos((ax0 + cav_x1) / 2, 0, -1.0) * Box(cav_x1 - ax0, 2 * 22.0, p.z_shelf - 0.5 + 1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body -= iface.servo_mount(ctx, YAW, Location((xc, 0, z_tabtop)), group="yaw_servo", plate_t=shelf_t, kind="tap",
                               top_through=True)
-    # yaw lead exit: through the widened pocket's -Y wall, at floor level, toward the gear guard's floor hole
-    body -= Pos((ax0 + cav_x1) / 2, -24.0, p.base_floor) * Box(8.0, 6.0, 8.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    ctx.rigid("yaw_lead_exit", Location(((ax0 + cav_x1) / 2, -24.0, p.base_floor + 4.0)))
+    # yaw lead: a groove in the plate's UNDERSIDE from the open pocket straight out to the -Y edge, under the housing
+    # wall and the gear guard; the lead (plug and all) is laid in from below before the base is bolted down
+    xg = (ax0 + cav_x1) / 2
+    body -= Pos(xg, -37.0, -1.0) * Box(7.0, 30.0, 4.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    ctx.rigid("yaw_lead_in", Location((xg, -20.0, 1.5)))          # in the pocket, on the desk
+    ctx.rigid("yaw_lead_out", Location((xg, -53.0, 1.5)))         # just outside the plate edge
+    ctx.rigid("yaw_boss", Location((boss_x1 - 3.0, 0, p.z_shelf - d["tab_z"] + 6.5)))   # the cable boss
     # bearing seats: lower 6001 pushed up from below to a shoulder, upper 6001 dropped in from the top
     body -= iface.bearing_seat(ctx, BRG, Location((0, 0, 0), (180, 0, 0)), fit="press", depth=p.z_blo + p.brg_B,
                                through=p.z_bhi - p.z_blo - p.brg_B, shaft_clear=4.0)

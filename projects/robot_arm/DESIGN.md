@@ -144,8 +144,9 @@ platform. `cable_loop` (channel_clear, 5 mm bundle) proves that span is clear at
 checked against every part at both ends of every joint's range (electrical route check).
 
 The gear mesh is enclosed: the guard ring round the yaw gear plus two side walls past the turntable gear (2.9 mm
-from its tips), the platform above. The yaw servo's own lead leaves the servo pocket through an exit in its −Y wall at
-floor level and goes straight out through a hole in the guard ring's −Y side, well below the gears.
+from its tips), the platform above. The yaw servo's own lead drops from its cable boss into the open-bottomed servo pocket
+and leaves along a 7 × 3 mm groove in the base plate's underside to the −Y edge (laid in from below, so the plug never
+has to pass a hole), well away from the gears.
 
 ## Electrics
 | Item | Catalog | Job |
@@ -191,7 +192,9 @@ non-conductive pad, not loose against the WAGO splices; screw the supply to the 
    window, tab tops against the shelf; 4 × M3 × 8 thread-forming screws from below (the two beside the cable boss
    need a ball-end key, tilted sideways in the widened part of the pocket). The tab holes sit 1–1.5 mm from the
    window edge (less than 1.5 d): the MG996R's own 49.5 × 10 hole pattern forces it, as on every servo bracket;
-   the shelf is solid all round them (holewall check). Lead out through the pocket's −Y exit and the guard hole.
+   the shelf is solid all round them (holewall check). Lay the servo lead (plug first) down the pocket and along the
+   groove in the plate's underside to the −Y edge before the base goes on the desk. The shelf underside the tabs clamp
+   against prints on support: use a support interface layer and file the face flat before fitting the servo.
    Centre it (1500 µs), press the aluminium horn on and fit its centre screw; bolt the yaw gear on (4 × M3 × 8,
    counterbored: an M3 × 10 would reach the servo case under the horn).
 3. Melt the turntable's 11 inserts (3 + 3 yoke feet, 4 cable mast, 1 spindle end) and the 3 pivot inserts (upper
