@@ -1,57 +1,45 @@
 {
   "verdict": "FAIL",
-  "fingerprint": "4a7610667c9345ac",
+  "fingerprint": "fbdd34a30af560b8",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The mechanical round-2 findings are resolved. The yaw-horn screws are counterbored to 0.3 mm under the gear face (0.8 mm under the platform) and screw heads are now solids in the sweeps. The yaw lead runs at floor level, the mesh is walled in, the lead bundle crosses the yaw joint high up between the mast and the post (cable_loop, 7.0 mm open at 10 poses), and the fillets, load_axis, turntable moment and pivot note are fixed. Eval acceptance PASSES. It still fails for three reasons. The electrical system is missing parts a real build needs: a mains cord, a switch, a fuse and the Nano's USB cable. WIRING.md tells the builder to solder wires into screw terminals, and its per-servo instructions contradict the BOM's extension-lead plan. The new 'desk first' step 0 makes steps 1 and 3 impossible, because the bearing bore and the retainer screw are reached from under the base.",
+  "summary": "All three round-3 majors are fixed in the outputs as well as in the prose. The electrics are now complete (SCHURTER fused, switched inlet in a printed hood, C13 cord, earth jumper, a 5 A ATO fuse per servo, mini-B USB cable, ferrules and FASTONs). WIRING.md and the BOM agree on one lead scheme (own lead plus Pololu extension, 600/900 mm against routes of 388-659 mm). The assembly order puts the retainer before the desk bolting. All four round-3 minors and AUDIT C-10 to C-20 are addressed too: base_fea, stall FEA, teardrops, edge distance 6.5, washers, threadlocker note, order, masses. It still fails on one new problem. The new psu_hood covers the LRS-100's SVR1 voltage pot and LED (MEAN WELL drawing: right at the terminal end, x about 4 mm, inside the hood's x 0-20 top), and it covers the DC output terminals. The required 5.3 V trim, which the voltage-drop proof depends on, therefore cannot be set or metered with the hood fitted. The only way to do it is with the mains terminals exposed and live.",
   "findings": [
     {
       "severity": "major",
-      "part": "psu",
-      "issue": "The electrical system is not complete (ENGINEERING.md 10b: 'power connector, switch/fuse where needed'; Spencer's rule: every component needed to make it work). (1) The MEAN WELL LRS-100-5 has bare L/N/FG screw terminals (catalog 'terminals'), but there is no mains cord with a plug, no strain relief and no earth lead in the BOM or WIRING.md. The supply cannot be plugged in. (2) There is no power switch or e-stop, so the only way to stop a runaway arm is to pull the plug. (3) There is no fuse on the 5 V side. The LRS overload trips only at 110-150 % of rated power (about 20-27 A, catalog note), while every servo branch is 22 AWG (7 A chassis rating). A shorted or pinched servo lead in the moving bundle would carry up to about 20 A before the supply hiccups. (4) The Nano runs 'from the PC's USB' and usb_access is checked, but no USB cable is in the BOM (the A000005 is mini-B, which most people no longer have).",
-      "fix": "Add catalog entries with sources and BOM rows for each part: a 3-core mains cord with a moulded plug (or an IEC C14 fused and switched inlet in a small printed terminal cover plus a C13 cord), a cable-gland or clamp strain relief on the PSU end, and a rocker switch on the mains side or a DC switch rated >= 15 A on the arm bus. Add an inline blade fuse (for example 10 A for the 4-servo arm branch and 5 A for the yaw/driver branch) between the PSU +V and each WAGO bus, and include it in wiring: and power_budget. Add a USB mini-B data cable (>= 1 m). Note the earth (FG) connection in WIRING.md."
+      "part": "psu_hood",
+      "issue": "The hood blocks the supply's output adjustment. The MEAN WELL LRS-100 drawing (datasheet page 4, the catalog's source_mech) puts SVR1 and the LED on the top face right beside terminal 7, about 4 mm from the terminal end and about 9 mm from the y = 0 side. That is hood frame (x about 4, y about -39.5), under the hood's solid top (x 0-20, full width, 2 mm above the case). WIRING.md step 21 and DESIGN assembly step 11 say to set the output to 5.3 V with a meter 'at its output terminals' after the hood is on. The pot and the +V/-V terminals are both inside the closed hood. To trim it, the builder must take the hood off with mains connected, exposing the L/N screw terminals 10-20 mm from the pot. That is exactly the hazard the hood was added to remove. Skipping the trim leaves 5.0 V, and then the wrist and grip servos sag to about 4.55 V at stall, below the 4.8 V the power check was satisfied with. The LED (power-on indication) is hidden too.",
+      "fix": "Add the SVR1 and LED positions (datasheet: about x 4, y 9 from the terminal end / LED side) to catalog electronics.supplies.meanwell_lrs100_5 with the source. In psu_hood.py, cut an adjustment hole of about 5 mm in the top over SVR1, sized for an insulated trimmer screwdriver but too small for a finger (IEC test finger 12 mm), and a 3 mm light hole or light-pipe over the LED. Change step 21 / DESIGN step 11 to measure the voltage at the WAGO bus pair, which is reachable, not 'at its output terminals'."
     },
     {
-      "severity": "major",
+      "severity": "minor",
+      "part": "psu_hood",
+      "issue": "(1) The -Y sleeve wall bears flat on the supply's datasheet side face over x 0-42. The drawing's side view shows vent slots there at about x 15-25 (z about 9-13), so they are covered (the LRS cools by free air). (2) The DC tie slots go through the 2 mm floor, which sits flat on the desk. A tie looped through them runs under the floor and rocks the hood or lifts it about 1 mm, unless the hood is lifted every time the bundle is re-tied.",
+      "fix": "Cut matching vent openings in the -Y wall at the slot positions (or stand the wall off 1 mm with ribs and keep only the screw boss in contact). Make the tie anchor a bridge or loop standing on the floor (a 4 x 2 mm tunnel under a 2 mm strap), not a through-slot."
+    },
+    {
+      "severity": "minor",
       "part": "wiring",
-      "issue": "WIRING.md contradicts the BOM and gives unsafe terminations. (1) psu_arm/psu_yaw say 'solder to psu', but the LRS output is a screw terminal. A solder-tinned stranded end in a screw clamp cold-flows and loosens, and this one carries the 10.5 A peak arm current. (2) Every servo run says 'solder to sh_servo / solder to driver' with separate red/brown and orange loose wires (5 m of AWG 22 red/brown, 2.3 m of orange and 29 heat-shrinks bought). Yet DESIGN.md, the project.yaml notes and bom_extra say to use each servo's own lead plus a 300 mm Pololu extension, split at the post. A builder cannot tell which to do, and both are bought. (3) If the extensions are used, the grip run needs a 710 mm cut length (pwr_gr), more than an MG996R's own lead (about 300 mm, not in the catalog) plus one 300 mm extension. Servo lead length is not in the catalog, so none of the 14 cut lengths can be checked against the parts actually bought. (4) The PCA9685 signal ends are 'soldered to driver'. The Adafruit 815's channel outputs are 3-pin male headers, made for plugging in.",
-      "fix": "Choose one scheme and make the docs and BOM match it. Recommended: each servo lead plus an extension (a 500 mm extension for grip and wrist), cut 150 mm from the board end, red and brown into the WAGO, orange crimped into a 1-pin Dupont housing on the PCA9685 channel PWM pin. Remove the loose AWG 22 red/brown and orange wire and the servo-end heat-shrinks from wiring: (or mark those runs as part of the lead). Give the PSU and WAGO ends the right verbs: add terminal: screw to electronics.supplies.meanwell_lrs100_5 and terminal: header to boards.pca9685_adafruit, so the engine writes 'ferrule (or bare twisted strand) into the screw terminal' and 'plug onto header'. Add bootlace ferrules (0.5 mm2 / 1.5 mm2) to the BOM. Add lead_length_mm (sourced) to the servo catalog entries so cut length <= lead + extension is checked."
-    },
-    {
-      "severity": "major",
-      "part": "base",
-      "issue": "DESIGN.md assembly step 0 (new this round) says to bolt or clamp the base to the desk first. But step 1 presses the lower 6001 'from below', and step 3 fits the retainer and its M3x8 'from below'. The bearing bore (bearing_seat at z = 0, open at the bottom, depth z_blo + B) and the retainer screw (head at z 17, pointing +Z) are only reachable through the underside of the base plate, and the desk covers that once the base is mounted. The order as written cannot be done. The round-2 problem it was fixing is real (the front M4 holes at (30, +/-40) sit under the upper arm), but desk-first is the wrong fix.",
-      "fix": "Reorder DESIGN.md: 1 bearings into the tower, 2 yaw servo + horn + gear, 3 turntable + retainer from below (base still loose), 4 'bolt/clamp the base to the desk now: the front M4 holes at x = 30 are still reachable because the platform ends at x = 15 and the yokes are not on yet', then yokes and the arm. Note that removing the turntable later means unbolting the base first."
+      "issue": "The IR-drop rows leave out resistances that are in the catalog or certain to be there. The 5 A ATO fuse has cold_resistance_ohm 0.01785 (about 45 mV at 2.5 A). Each servo lead also has the plug-to-extension contact (two 0.1 in contacts in the loop). The servo's own 300 mm lead is assumed to be 22 AWG, but the catalog has no gauge for any servo's lead (MG996R pigtails are often thinner). The wrist and grip peak rows (4.851 V against 4.8) have 51 mV of margin, which these effects use up. The rows are soft (stall transient), so this is not a failure, but the stated margin is optimistic.",
+      "fix": "Engine: add the fuse's cold_resistance_ohm, and the fuse holder's lead length at its 16 AWG gauge, to the run's loop resistance in electrical.py (the data is already in the catalog). Add a sourced lead gauge to the servo catalog entries, or treat the own-lead part as the thinner of 22/26 AWG. With 5.5 V available from the SVR, trimming to 5.4 V would restore the margin (all servos are rated to at least 6.8 V)."
     },
     {
       "severity": "minor",
       "part": "cable_mast",
-      "issue": "The mast is a 61 mm column 8 x 10 mm on a 28 x 10 x 5 mm foot, held by 2 M3 that both lie on the y = 0 line. A sideways (+/-Y) pull on the bundle is reacted only over the 5 mm half-width of the foot, so a 20 N snag at the top (61 mm) puts about 240 N of prying into one insert. At |yaw| near 90 the bundle tension acts exactly in that direction, because the base post is then off to the side of the turntable. The column-to-foot inside corner is sharp (ENGINEERING.md section 5: >= 1 mm fillet on a load path).",
-      "fix": "Widen the foot to about 22 mm in Y and use 3-4 screws spread in both X and Y (or move the two screws to (-10, +/-8)). Add a 2 mm fillet or a small gusset where the column meets the foot."
-    },
-    {
-      "severity": "minor",
-      "part": "base",
-      "issue": "The cable post is a 126 mm upright cantilever (10 x 26 mm) printed with its layers across its bending direction. It has a sharp root at the plate and the PCA9685 is screwed to it. Stress from the bundle is low (about 1.5 MPa per 5 N), but a knock or a yank on the bundle bends it at the weakest across-layer section, a single sharp corner. DESIGN.md part list says the base is 88 g; report.json says 130.5 g (ENGINEERING.md section 11 requires the mass budget within 10 %).",
-      "fix": "Add a 3-4 mm root fillet or two small triangular gussets at the post foot (front and back). Update the part-list masses from report.json."
+      "issue": "The docstring still says 'foot and column flush (10 mm) so it needs no support'. The foot is now 26 mm wide in Y with the 10 mm column centred on it, so lying on its side (print_rot [90,0,0]) the 61 mm column stands 8 mm off the bed along its whole length on support (12.6 % support surface). The support side of the column is left rough. DESIGN.md has the correct description.",
+      "fix": "Correct the docstring. Optionally, flush the column with one long side of the foot (shift X_COL's Y offset, foot y -5..21), or split the foot into a separate pad, so the column lies on the bed with no support."
     },
     {
       "severity": "minor",
       "part": "nano",
-      "issue": "The Nano (bare board, pins down), the four WAGO splices and the 90 W supply are 'off the base, on the desk' as loose items with flying leads. A bare Nano on a desk next to 5 V/18 A lever connectors can short against them. The supply has M3 mounting holes that are not used.",
-      "fix": "Add a small printed tray on the base's rear pad, or a separate electronics plate, with the Nano on M1.6 posts or in a snap pocket and a clip for the WAGO splices. Or at least state in DESIGN.md to put the Nano in a case and screw the PSU to the desk or to a plate."
-    },
-    {
-      "severity": "minor",
-      "part": "yaw_gear",
-      "issue": "DESIGN.md is out of step with the geometry in places. Assembly step 2 says to bolt the yaw gear on with 4 x M3x10, but the counterbored joint is checked with M3x8 (report fasteners yaw_horn length_mm 8, grip 4.7). An M3x10 leaves only about 0.9 mm between the screw tips and the MG996R case top under the horn. Step 3 lists '3 + 3 yoke inserts and the spindle insert' but leaves out the 2 cable-mast inserts.",
-      "fix": "Change step 2 to M3x8 and step 3 to include the 2 mast inserts. List the insert count per part (turntable 9, links 1 each)."
+      "issue": "Carried over and accepted: the Nano, the 4 WAGO splices and the 5 inline fuse holders are loose on the desk behind the base. DESIGN.md now tells the builder to case the Nano and screw the supply down. The supply's plan-view M3 holes are only 3 mm deep, so screwing it to a desk top needs a thin board or long screws from below.",
+      "fix": "None required. A small printed electronics tray on the rear pad (Nano posts, WAGO clips, fuse-holder slots) would make the desk layout tidy and short-proof."
     },
     {
       "severity": "minor",
       "part": "yoke_r",
-      "issue": "Accepted, recorded for the record. yoke_r_fea volume peak is 15.0 MPa and gripper_fea is 14.56 MPa, both above the 13 MPa z-allowable. Both are local corner singularities, and p99.9 is 6.6 and 5.1 MPa. The FEA renders put the hot spots where the load paths say they should be: the cheek root where the foot ends, and the jaw root. DESIGN.md now describes them correctly. Pivot screws: a partly threaded M3x14 does not exist as DIN 912, and the reasoning is written up. Accepted.",
-      "fix": "None required. Re-check the corners on a test print of yoke_r together with the DS32xx tab-hole check DESIGN.md already asks for."
+      "issue": "Accepted, for the record. yoke_r_fea peak is 17.7 MPa and gripper_fea peak is 14.6 MPa, local corner singularities with p99.9 of 6.6 and 5.1 MPa against 13 MPa. The FEA renders put the hot spots on the load path: the cheek root at the foot end, the jaw root, the servo-window frame of plate A in upper_arm/forearm (static and stall), and the tower and shelf in base_fea. The applied resultants in report.json match the stated load cases. The DS32xx tab holes are still UNVERIFIED in the catalog.",
+      "fix": "None required. Test-print yoke_r and fit a real DS3225 before printing the rest, as DESIGN.md's Risks section says."
     }
   ]
 }

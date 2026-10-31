@@ -14,8 +14,10 @@ Z up. The supply's case is x 0..129, y -48.5..48.5, z 0..30 (catalog, +/-1 mm).
 - Extension: 62 mm beyond the terminal end, floor 2 mm, for the inlet body (30 mm behind its flange) and the three
   L/N/PE jumpers. The inlet fits the 47.1 x 28.1 cut-out in the 3 mm end wall (catalog panel range 2.5-8 mm) and is
   held by its two flange screws in heat-set inserts in bosses behind the wall (2.5 mm wall around each insert).
-- DC exit: a teardrop hole in the -Y wall; the output bundle is tied to the floor through two slots right inside it,
-  so a pull on the leads loads the tie, not the screw terminals.
+- DC exit: a teardrop hole in the -Y wall; the output bundle is tied to a bridge on the floor right inside it, so a
+  pull on the leads loads the tie, not the screw terminals.
+- The top has a 8 mm hole over the supply's output-voltage pot (SVR1) and a 3.5 mm light hole over its LED, so the
+  5.4 V trim is set and checked with the hood on; a window in the -Y wall keeps the supply's side vent slots open.
 Printed standing on its end wall (print_rot [0, -90, 0]): the insert holes print vertical and the inlet window is a
 plain opening in the first layers; the side screw hole and the DC exit are the only horizontal holes (the exit is a
 teardrop, roof toward +X = printer up)."""
@@ -58,10 +60,23 @@ def build(ctx):
     # DC exit (teardrop, roof toward +X) and the tie slots in the floor beside it
     exit_frame = Plane(origin=(X_EXIT, Y_IN_N, Z_EXIT), x_dir=(1, 0, 0), z_dir=(0, -1, 0)).location
     body -= exit_frame * iface._teardrop(R_EXIT, -1.0, T + 1.0, 0.0)
-    for sx in (-5.0, 5.0):
-        body -= Pos(X_EXIT + sx, Y_IN_N + 6.0, FLOOR / 2) * Box(2.0, 4.0, FLOOR + 2)
+    # tie bridge on the floor beside the exit: a block with a tunnel (along X) the cable tie threads through
+    tie_y, tie_h = Y_IN_N + 8.0, 5.0
+    body += Pos(X_EXIT, tie_y, FLOOR - 0.01) * Box(8.0, 6.0, tie_h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= Pos(X_EXIT, tie_y, FLOOR + 1.0) * Box(8.2, 3.0, 2.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # output-voltage pot SVR1 and the power LED under the top (catalog, scaled): a screwdriver hole and a light hole,
+    # so the supply is trimmed and checked with the hood on (the pot is beside terminal 7, +V; the mains pins 1-3 are
+    # 50+ mm away, out of reach of a trim screwdriver through this hole)
+    e_psu = ctx.cat.get("electronics.supplies.meanwell_lrs100_5")
+    sx_, sy_ = e_psu["svr_xy_scaled"]
+    lx, ly = e_psu["led_xy_scaled"]
+    y0 = Y_IN_N                                                # datasheet y = 0 side
+    body -= Pos(sx_, y0 + sy_, ZC - 1) * Cylinder(float(e_psu["svr_d_scaled"]) / 2 + 1.0, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= Pos(lx, y0 + ly, ZC - 1) * Cylinder(1.75, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # the supply's own side vent slots (datasheet side view, x ~15-25 near the base) stay open: window in the -Y wall
+    body -= Pos(20.0, Y_IN_N - T / 2, 2.0) * Box(14.0, T + 2, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("inlet", panel)
     ctx.rigid("dc_exit", Location((X_EXIT, Y_IN_N - T - 2.0, Z_EXIT)))
-    ctx.rigid("dc_tie", Location((X_EXIT, Y_IN_N + 6.0, FLOOR + 3.0)))
+    ctx.rigid("dc_tie", Location((X_EXIT, Y_IN_N + 8.0, FLOOR + tie_h + 3.0)))
     return ctx.finish(body)

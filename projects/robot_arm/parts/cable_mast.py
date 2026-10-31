@@ -4,8 +4,8 @@ yaw joint stays short (its span changes only 68-95 mm over +-90 deg of yaw) and 
 Built in the turntable (world) frame; bolted down with 4 x M3 into heat-set inserts in the platform, spread in X and Y
 (foot 34 x 26) so a sideways pull on the bundle at |yaw| ~ 90 is taken by two screws 12 mm apart, not by one foot edge;
 2 mm fillet at the column root.
-Printed lying on its side (print_rot [90, 0, 0]), foot and column flush (10 mm) so it needs no support; layers
-run along the column."""
+Printed lying on its side (print_rot [90, 0, 0]) so the layers run along the column; the column is centred on the
+wider foot, so it stands 8 mm above the bed on support (supports: allowed)."""
 from build123d import *
 from kerf import iface
 from kerf.features import safe_fillet

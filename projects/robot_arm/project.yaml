@@ -38,7 +38,7 @@ parts:
   finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: X}
   cable_mast: {file: parts/cable_mast.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: Z}
   psu_hood: {file: parts/psu_hood.py, material: PETG, print_rot: [0, -90, 0], infill: 0.3,
-             assembly_note: "on the bench, BEFORE the hood goes on the supply: press the two M3 inserts into the bosses behind the end wall, fit the inlet (next step; its flange screws take at most 0.5 N*m), push the three mains jumpers' receptacles onto its L / N / PE tabs and clamp their ferrules in the supply's AC/L, AC/N and FG terminals (WIRING.md), and the two DC pairs in its +V/-V terminals; then slide the hood over the terminal end, feed the DC pairs out of the side exit, tie them to the floor slots and fit the side screw"}
+             assembly_note: "on the bench, BEFORE the hood goes on the supply: press the two M3 inserts into the bosses behind the end wall, fit the inlet (next step; its flange screws take at most 0.5 N*m), push the three mains jumpers' receptacles onto its L / N / PE tabs and clamp their ferrules in the supply's AC/L, AC/N and FG terminals (WIRING.md), and the two DC pairs in its +V/-V terminals; then slide the hood over the terminal end, feed the DC pairs out of the side exit, tie them to the floor bridge and fit the side screw"}
 purchased:
   brg_lo: {catalog: bearings.6001, proxy: bearing}
   brg_hi: {catalog: bearings.6001, proxy: bearing}
@@ -119,28 +119,28 @@ assembly:
 electrical:
   supply: psu                # mains supply: rated by its 18 A, no run time
   burst_s: 5                 # all five servos stalled together for 5 s (worst case), for wire heating
-  supply_v: 5.3              # LRS output trimmed up with its SVR pot (4.5-5.5 V): covers the lead drop at stall
+  supply_v: 5.4              # LRS output trimmed up with its SVR pot (4.5-5.5 V; reached through the hood top): covers the lead drop at stall
   mains: {inlet: iec_inlet, fuse: electronics.fuses.littelfuse_215_t3_15a, cord: electronics.cords.iec_c13_cord_us_18awg,
           wire: electronics.wire_misc.mains_wire_18awg_ul1015, tab_receptacle: electronics.connectors.fdisc_187_insulated_18awg,
           jumper_mm: 100, input_v: 115}
 wiring:      # servo runs are each servo's own 300 mm lead + an extension (lead:), length-checked at every joint pose
   # supply DC (+V/-V screw pins, ferrules) out of the hood to the two WAGO bus pairs; the hood ties the bundle to its floor
-  - {id: psu_arm, from: psu.dc, to: bus_arm, v: 5.3, gauge: 16, color: red/black, length_mm: 380, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4], [-130, -5, 4]],
+  - {id: psu_arm, from: psu.dc, to: bus_arm, v: 5.4, gauge: 16, color: red/black, length_mm: 380, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4], [-130, -5, 4]],
      note: "supply +V/-V (one pin pair) to the arm bus splices"}
-  - {id: psu_yaw, from: psu.dc, to: bus_yaw, v: 5.3, gauge: 16, color: red/black, length_mm: 360, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4]],
+  - {id: psu_yaw, from: psu.dc, to: bus_yaw, v: 5.4, gauge: 16, color: red/black, length_mm: 360, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4]],
      note: "second +V/-V pin pair to the yaw bus splices"}
   # each servo: red + brown from the bus (5 A blade fuse in the red at the bus), orange on to the PCA9685 channel pin
-  - {id: pwr_sh, from: bus_arm, to: sh_servo, v: 5.3, gauge: 22, color: red/brown, lead: [sh_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+  - {id: pwr_sh, from: bus_arm, to: sh_servo, v: 5.4, gauge: 22, color: red/brown, lead: [sh_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
      ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top],
      note: "up behind the driver, over the post top to the mast, outside the upper arm's plate A"}
-  - {id: pwr_el, from: bus_arm, to: el_servo, v: 5.3, gauge: 22, color: red/brown, lead: [el_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+  - {id: pwr_el, from: bus_arm, to: el_servo, v: 5.4, gauge: 22, color: red/brown, lead: [el_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
      ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2], note: "tied through the upper arm's slot pair"}
-  - {id: pwr_wr, from: bus_arm, to: wr_servo, v: 5.3, gauge: 22, color: red/brown, lead: [wr_servo, electronics.wire_misc.servo_ext_600_pololu2185], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+  - {id: pwr_wr, from: bus_arm, to: wr_servo, v: 5.4, gauge: 22, color: red/brown, lead: [wr_servo, electronics.wire_misc.servo_ext_600_pololu2185], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
      ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_2], note: "tied through the upper arm and forearm slot pairs"}
-  - {id: pwr_gr, from: bus_arm, to: gr_servo, v: 5.3, gauge: 22, color: red/brown, lead: [gr_servo, electronics.wire_misc.servo_ext_600_pololu2185], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+  - {id: pwr_gr, from: bus_arm, to: gr_servo, v: 5.4, gauge: 22, color: red/brown, lead: [gr_servo, electronics.wire_misc.servo_ext_600_pololu2185], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
      ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2],
      note: "tied through the upper arm and forearm slot pairs"}
-  - {id: pwr_yaw, from: bus_yaw, to: yaw_servo, v: 5.3, gauge: 22, color: red/brown, lead: [yaw_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+  - {id: pwr_yaw, from: bus_yaw, to: yaw_servo, v: 5.4, gauge: 22, color: red/brown, lead: [yaw_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
      ends: {from: lever, to: plug}, route: [[-112, -37, 15], [-100, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]],
      note: "out of the housing's front exit, back along the housing inside the gear guard, out of the guard's floor-level hole"}
   - {id: sig_sh, from: driver, to: sh_servo, kind: signal, gauge: 22, color: orange, lead: pwr_sh, ends: {from: crimp, to: plug},

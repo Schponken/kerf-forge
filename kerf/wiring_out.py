@@ -237,7 +237,8 @@ def steps(model) -> list:
                    + ", close the cover over the terminals before plugging in the cord.")
     if model.get("supply_v"):
         out.append(f"Before plugging any load in: set {model['battery']}'s output to {model['supply_v']:g} V with its "
-                   f"adjustment pot, measured with a meter at its output terminals (the ratings above assume it).")
+                   f"adjustment pot, measured with a meter where its output wires land (e.g. the bus splices), with the "
+                   f"terminal cover / enclosure closed (the ratings above assume it).")
     out.append("Before the first battery: check every + to - pair for a short with a multimeter, then power up through "
                "a smoke stopper (fused lead)." if not model.get("mains") else
                "Before plugging in the adapter: check every + to - pair for a short with a multimeter.")

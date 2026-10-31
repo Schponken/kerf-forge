@@ -152,7 +152,7 @@ ring along the housing at floor level and out through a hole in the ring's −Y 
 |---|---|---|
 | iec_inlet | SCHURTER DD11.0121.1111: IEC C14 inlet + 2-pole switch + 2 × T3.15 A fuses (5 × 20 mm) | mains in, on/off, mains fuse; in the PSU hood's end wall |
 | cord | Tripp Lite P006-006, C13 to NEMA 5-15P, 18 AWG, 10 A | wall plug |
-| psu | MEAN WELL LRS-100-5, trimmed to 5.3 V (adjustable 4.5–5.5 V), 18 A | servo power, on the desk behind the base, its terminal end closed by the printed **psu_hood** |
+| psu | MEAN WELL LRS-100-5, trimmed to 5.4 V (adjustable 4.5–5.5 V), 18 A | servo power, on the desk behind the base, its terminal end closed by the printed **psu_hood** |
 | mains jumpers | 3 × 100 mm UL1015 18 AWG (600 V), 4.8 mm insulated FASTONs on the inlet tabs, WAGO 216-203 ferrules in the supply's L / N / FG screws | L, N and protective earth: the earth bonds the supply's metal case to the plug's earth pin |
 | bus_arm / bus_yaw | 2 + 2 × WAGO 221-415 lever splices (32 A) | +5 V and GND buses: arm servos / yaw servo + driver GND reference |
 | fuses | 5 × Littelfuse 257005 5 A ATO in FHAC0001ZXJ inline holders | one per servo, in its red wire right at the bus |
@@ -162,22 +162,23 @@ ring along the housing at floor level and out through a hole in the ring's −Y 
 
 Power budget (report.json `power`): all five servos stalled together = 13.0 A (each servo's highest published stall
 current; running currents are not published, so stall is used for the average too: 8.2 A worst-case average). The
-supply gives 18 A at 5 V (≈ 17 A at 5.3 V for its 90 W), 30 % above 13 A. Every fuse carries its servo's stall current
+supply gives 18 A at 5 V (≈ 16.7 A at 5.4 V for its 90 W), 28 % above 13 A. Every fuse carries its servo's stall current
 inside Littelfuse's 75 % derating (DS3225: 2.9 A vs 3.75 A) and is smaller than the 7 A rating of the 22 AWG lead it
 protects: a shorted or pinched lead in the moving bundle blows its 5 A fuse (200 % → 0.15–5 s, Littelfuse ATO data)
 instead of cooking the lead until the supply's 110–150 % overload trips. The 16 AWG supply-to-bus runs are inside the
 supply's own overload limit (22 A chassis rating vs ≤ 27 A trip, for seconds) and never leave the desk.
 Mains side: the LRS draws 1.9 A at 115 VAC; the T3.15 A fuses run at 60 % (≤ 75 %), the inlet (7 A UL), the cord
-(10 A) and the 18 AWG jumpers are all above it (report rows `mains ...`). The supply output is trimmed to 5.3 V with
-its SVR pot (set it with a meter before connecting the servos): at 5.0 V the long wrist/grip leads (900 mm) would
+(10 A) and the 18 AWG jumpers are all above it (report rows `mains ...`). The supply output is trimmed to 5.4 V with
+its SVR pot through the 8 mm hole in the hood top, hood on and closed (measure at the WAGO bus with a meter before
+connecting the servos; the LED shows through a light hole): at 5.0 V the long wrist/grip leads (900 mm) would
 drop the stalled servos below their 4.8 V minimum. All servos are rated to 6.8 V or more.
 
 The PSU hood (printed): a box over the supply's terminal end. The supply's case is 129 × 97 × 30 ± 1 mm (catalog);
 the hood's side walls slide 42 mm over it and one M3 × 6 goes into the supply's tapped side hole (MEAN WELL: max
 5 mm deep) so the hood cannot be pulled off. The top covers only the terminal block, so the rest of the case top
-stays open for cooling. The inlet sits in the 3 mm end wall (SCHURTER panel range 2.5–8 mm) on two M3 heat-set
+stays open for cooling, and a window in the side wall keeps the supply's side vent slots open. The inlet sits in the 3 mm end wall (SCHURTER panel range 2.5–8 mm) on two M3 heat-set
 inserts in bosses (2.5 mm wall round each insert; flange screws ≤ 0.5 N·m). The DC wires leave through a teardrop
-hole in the side and are tied to the floor through two slots right inside it, so a pull on them never reaches the
+hole in the side and are tied to a bridge on the floor right inside it, so a pull on them never reaches the
 screw terminals. `mains_access` proves a C13 plug and its cord bend (50 mm) fit in front of the inlet.
 
 Where things sit on the desk: the supply + hood 225 mm behind the yaw axis (the arm never reaches there), the WAGO
@@ -208,7 +209,7 @@ non-conductive pad, not loose against the WAGO splices; screw the supply to the 
 11. Electrics, per out/WIRING.md: inserts into the hood's bosses; mains jumpers (FASTON on the inlet, ferrules into
     the supply's L / N / FG), inlet into the hood, hood over the supply (M3 × 6 side screw); DC pairs (ferrules) out
     through the exit and tied; WAGO buses; a fuse holder at the bus end of each servo's red wire; orange wires crimped
-    into housings on the driver; I2C to the Nano. Check every + to − pair with a meter, set the supply to 5.3 V with no
+    into housings on the driver; I2C to the Nano. Check every + to − pair with a meter, set the supply to 5.4 V (pot hole in the hood top, meter on the WAGO bus) with no
     servos plugged in, then plug the servo leads in. Centre every servo (1500 µs) before fitting its horn.
 
 ## Use notes
