@@ -522,7 +522,14 @@
    "weight_g": 60,
    "source": "https://rcdrone.top/products/dsservo-ds3218-digital-servo-de",
    "confidence": "multiple-vendors",
-   "note": "Two DSSERVO drawings: dimensioned photo on the DS3218 page (54.5 tab span, 49.5 x 10 holes, 40 body, 10 axis-to-end, 20 wide, 40.5 body, 45.5 spline top, 27.8 to tab, 3.1 tab callout) and line drawing on https://rcdrone.top/products/dsservo-waterproof-servo-ds3218-20kg-ds3225-25kg-ds3235-35kg (54.5, 49.5, 10, 40, 20, 40.4 body, 27.7 to tab underside). hole_d 4.2 SCALED from line drawing (3.6-4.4 range, open slot). tab_t 3.1 from photo callout (line drawing tab incl. raised lip scales ~4.8). Spec: 19 kg*cm @5 V, 21.5 @6.8 V; 0.16 s/60 @5 V, 0.14 @6.8 V; 60 g; size 40 x 20 x 40.5. 25T spline (supplied horn stamped 25T); spline_d from Pololu 25T standard 5.8 mm. SPREAD: body_h 40.4-40.5, tab_z 27.7-27.8 (small). Both sources are the same reseller (DSSERVO images); no independent drawing found."
+   "note": "Two DSSERVO drawings: dimensioned photo on the DS3218 page (54.5 tab span, 49.5 x 10 holes, 40 body, 10 axis-to-end, 20 wide, 40.5 body, 45.5 spline top, 27.8 to tab, 3.1 tab callout) and line drawing on https://rcdrone.top/products/dsservo-waterproof-servo-ds3218-20kg-ds3225-25kg-ds3235-35kg (54.5, 49.5, 10, 40, 20, 40.4 body, 27.7 to tab underside). hole_d 4.2 SCALED from line drawing (3.6-4.4 range, open slot). tab_t 3.1 from photo callout (line drawing tab incl. raised lip scales ~4.8). Spec: 19 kg*cm @5 V, 21.5 @6.8 V; 0.16 s/60 @5 V, 0.14 @6.8 V; 60 g; size 40 x 20 x 40.5. 25T spline (supplied horn stamped 25T); spline_d from Pololu 25T standard 5.8 mm. SPREAD: body_h 40.4-40.5, tab_z 27.7-27.8 (small). Both sources are the same reseller (DSSERVO images); no independent drawing found.",
+   "stall_current_a": 2.6,
+   "idle_current_a": 0.005,
+   "voltage_min": 4.8,
+   "voltage_max": 6.8,
+   "source_current": "https://aifitlab.com/products/dsservo-ds3218-mg-servo-motor",
+   "confidence_current": "datasheet",
+   "current_note": "DSSERVO DS3218MG spec table as reproduced on the AIFITLAB listing (opened 2026-10-31): operating voltage range 4.8-6.8 V; idle current (at stopped) 4 mA @5 V / 5 mA @6.8 V; stall current (at locked) 1.8 A @5 V / 2.6 A @6.8 V. stall_current_a takes the 6.8 V figure (conservative for any supply up to 6.8 V; 1.8 A applies on a 5 V rail). idle_current_a is the 6.8 V figure. running_current_a is NOT published by DSSERVO or any vendor found (servodatabase.com/servo/dsservo lists 'running current 4-5 A', which is the idle 4/5 mA mis-scaled x1000, so ignored); it is omitted so kerf/electrical.py uses stall current for running too (conservative). Only one vendor copy of the DS3218 current table was found; the rcdrone.top DSSERVO pages carry no current figures. Forum estimate (forum.arduino.cc/t/powering-12-ds3218-servos-at-once/1415585) of 1.8-2.5 A per servo is consistent."
   },
   "DS3225": {
    "body_l": 40.0,
@@ -544,7 +551,16 @@
    "weight_g": 60,
    "source": "https://rcdrone.top/products/dsservo-waterproof-servo-ds3218-20kg-ds3225-25kg-ds3235-35kg",
    "confidence": "multiple-vendors",
-   "note": "DSSERVO spec table on this page lists DS3218MG/DS3218 pro/DS3225MG/DS3235SG with one shared size 40.5 x 40 x 20 and 60 g, and one shared line drawing (54.5, 49.5 x 10, 40, 20, 40.4, 27.7 to tab), so geometry is identical to DS3218. Torque 21 kg*cm @5 V, 24.5 @6.8 V; speed 0.15 s/60 @5 V, 0.13 @6.8 V (marketed as '25 kg'). WebFetch noted the page's DS3225 5 V torque may be copied from the DS3218 pro row; the in-image spec table gives the same 21/24.5. Same UNVERIFIED items as DS3218 (hole_d scaled, tab_t from callout)."
+   "note": "DSSERVO spec table on this page lists DS3218MG/DS3218 pro/DS3225MG/DS3235SG with one shared size 40.5 x 40 x 20 and 60 g, and one shared line drawing (54.5, 49.5 x 10, 40, 20, 40.4, 27.7 to tab), so geometry is identical to DS3218. Torque 21 kg*cm @5 V, 24.5 @6.8 V; speed 0.15 s/60 @5 V, 0.13 @6.8 V (marketed as '25 kg'). WebFetch noted the page's DS3225 5 V torque may be copied from the DS3218 pro row; the in-image spec table gives the same 21/24.5. Same UNVERIFIED items as DS3218 (hole_d scaled, tab_t from callout).",
+   "stall_current_a": 2.9,
+   "idle_current_a": 0.005,
+   "voltage_min": 4.8,
+   "voltage_max": 6.8,
+   "source_current": "https://aifitlab.com/products/dsservo-ds3225-mg-servo-motor",
+   "source_current_2": "https://wiki-md.52pi.com/docs/D-0001",
+   "source_current_3": "https://bzbuas.com/wp-content/uploads/2023/02/DS3225.pdf",
+   "confidence_current": "multiple-vendors",
+   "current_note": "DSSERVO DS3225 spec table (5 V / 6.8 V columns), opened 2026-10-31: AIFITLAB listing and 52Pi wiki D-0001 both give operating voltage range 4.8-6.8 V, idle current 4 mA @5 V / 5 mA @6.8 V, stall current 2.1 A @5 V / 2.9 A @6.8 V. SPREAD: the bzbuas.com DS3225 PDF gives a lower stall current, 1.9 A @5 V / 2.3 A @6.8 V; the higher 2.9 A (6.8 V) is used, conservative for any supply up to 6.8 V (2.1 A applies on a 5 V rail). running_current_a is NOT published (servodatabase.com's 'running current 4-5 A' is the idle mA figure mis-scaled), so it is omitted and kerf/electrical.py uses stall current for running too (conservative)."
   }
  },
  "servo_horns": {
@@ -1201,6 +1217,50 @@
    "source_weight": "https://raspberrypi.dk/en/product/raspberry-pi-zero-2-w/?clang=en",
    "confidence": "datasheet",
    "note": "Official drawing: 65 x 30, holes 3.5 mm in from every edge (58 x 23 pattern). Connector positions from the left edge: mini-HDMI centre 12.4, micro-USB data 41.4, micro-USB power 54 (all on the -y long edge); GPIO header along +y edge. hole_d 2.75 is APPROXIMATE (not on this drawing; standard M2.5 clearance for the Zero family). corner_radius 3.0 assumed same as other Pis. thickness 1.0 and component_height 3.8 are APPROXIMATE (vendor overall height 65x30x5 incl. PCB, botland.store); measure before tight fits. Weight 10 g (raspberrypi.dk; botland lists 15 g likely incl. packaging). Unpopulated GPIO header; add ~8.5 mm if a header is soldered."
+  },
+  "pca9685_adafruit": {
+   "name": "Adafruit 16-Channel 12-bit PWM/Servo Driver, I2C (PCA9685), product 815",
+   "length": 62.23,
+   "width": 25.4,
+   "thickness": 1.57,
+   "component_height": 8.5,
+   "component_height_below": 2.0,
+   "holes": [
+    [
+     -27.94,
+     -9.525
+    ],
+    [
+     27.94,
+     -9.525
+    ],
+    [
+     -27.94,
+     9.525
+    ],
+    [
+     27.94,
+     9.525
+    ]
+   ],
+   "hole_d": 2.5,
+   "hole_screw": "M2",
+   "weight_g": 9.0,
+   "voltage_min": 3.0,
+   "voltage_max": 5.0,
+   "vplus_v_min": 5.0,
+   "vplus_v_max": 6.0,
+   "vplus_v_abs_max": 12.0,
+   "current_a": 0.021,
+   "pwm_current_a": 0.025,
+   "source": "https://learn.adafruit.com/16-channel-pwm-servo-driver/pinouts",
+   "source_cad": "https://github.com/adafruit/Adafruit-16-Channel-PWM-Servo-Driver-PCB (file 'Adafruit PCA9685 rev C.brd')",
+   "source_3d": "https://github.com/adafruit/Adafruit_CAD_Parts/tree/main/815%20Servo%20Driver%2016%20Channel (815 Servo Driver 16 Channel.step)",
+   "source_fab": "https://cdn-learn.adafruit.com/assets/assets/000/144/179/medium800/adafruit_products_fabPWM.png",
+   "source_weight": "https://www.adafruit.com/product/815",
+   "source_current": "https://nxp.com/docs/en/data-sheet/PCA9685.pdf",
+   "confidence": "datasheet",
+   "note": "Outline and holes from Adafruit's own Eagle board (rev C, opened 2026-10-31): outline x -1.905..60.325, y -6.477..18.923 = 62.23 x 25.4 mm (fab print: 2.45 in; product page '62.5 x 25.4 x 3 mm'); 4 plated MOUNTINGHOLE_2.5 (drill 2.5, pad 3.2) at (1.27, 15.748), (1.27, -3.302), (57.15, 15.748), (57.15, -3.302) = 55.88 x 19.05 mm pattern, symmetric about the board centre (29.21, 6.223). Learn guide: 'Holes are 2.5mm diameter'; M2 screws (M2.5 has no clearance). Adafruit STEP model (same frame, measured with build123d): PCB 1.57 thick; 2-pin 3.5 mm terminal block top 8.52 above the PCB top, the four 3x4 servo headers' pins 8.41 above; pins below the PCB 1.4 (headers) / 2.0 (terminal block) -> component_height 8.5, component_height_below 2.0. Servo headers sit along the -y long edge (connectors plug in from above, cables leave toward -y); terminal block at the +y edge at x = 29.21 (board centre). The 6-pin 0.1 in side headers (JP3/JP4 at the short edges) and the optional V+ electrolytic (C2) are NOT in the STEP model; if fitted, pins add ~8.5 above or below. Weight: 'no headers or terminal block: 5.5 grams', with them 9 g (product page). Voltages (learn guide pinouts): VCC logic '3 - 5V max!'; V+ servo power 'provide 5-6VDC if you are using servos', 'If you have to, you can go higher to 12VDC'; V+ 'is not used at all by the chip'. Terminal block has reverse-polarity protection (README; P-FET AOD417, Q1 in the Eagle file). current_a 0.021 = logic draw bound, derived: NXP PCA9685 datasheet Table 14 IDD max 10 mA (operating, no load, VDD 2.3-5.5 V) + power LED on VCC through 470 ohm (Eagle: LED1-R10 on VCC), bounded at 5 V/470 = 10.6 mA. pwm_current_a 0.025: per-output limit (learn guide 'Max current per pin is 25mA'; NXP 25 mA/pin, 400 mA package total) - signal lines only. NO V+ CURRENT RATING IS PUBLISHED by Adafruit (product page, learn guide, README checked), so vplus_current_a is deliberately omitted. For reference only (not a rating): Eagle traces are 0.81 mm from the terminal block to the FET (PWRIN) and 1.778 mm (some 1.016 mm segments) on the servo V+ rail; copper weight not stated. Arduino forum users warn the traces/MOSFET cannot carry many high-current servos (forum.arduino.cc/t/powering-12-ds3218-servos-at-once/1415585). With 5 stall-capable servos (up to ~13 A), feed servo V+ from the supply through a separate splice/bus and use the board only for signal + GND."
   }
  },
  "fdm_fits": {
@@ -1310,6 +1370,25 @@
     "source": "https://www.power-supplies-australia.com.au/MEAN-WELL-GST60A05-P1J",
     "confidence": "datasheet",
     "note": "Distributor page (opened 2026-10-31): 5 V DC, 6 A rated, 30 W, 125 x 50 x 31.5 mm, 0.31 kg. No peak/overload current published, so current_peak_a omitted (the rated 6 A is used for peaks too). Mains bench supply for desk servo projects: MG996R runs 4.8-7.2 V."
+   },
+   "meanwell_lrs100_5": {
+    "model": "MEAN WELL LRS-100-5 enclosed switching supply, 5 V 18 A (90 W), screw terminals",
+    "length": 129,
+    "width": 97,
+    "height": 30,
+    "weight_g": 330,
+    "output_v": 5.0,
+    "output_v_adj_min": 4.5,
+    "output_v_adj_max": 5.5,
+    "current_a": 18.0,
+    "input_v_ac_min": 85,
+    "input_v_ac_max": 264,
+    "terminals": "7-position screw terminal block: 1 AC/L, 2 AC/N, 3 FG (earth), 4-5 DC -V, 6-7 DC +V",
+    "mounting": "2 x M3 (L=3.0) and 3 x M3 (L=5) threaded holes per the datasheet mechanical drawing (positions not transcribed)",
+    "source": "https://www.power-supplies-australia.com.au/sites/default/files/specifications/MEAN%20WELL%20LRS-100%20DATA%20SHEET.pdf",
+    "source_listing": "https://www.power-supplies-australia.com.au/mean-well-lrs-100-5-enclosed-power-supply",
+    "confidence": "datasheet",
+    "note": "MEAN WELL datasheet LRS-100-SPEC 2025-04-07 (opened 2026-10-31): 5 V, rated current 18 A (range 0-18 A), 90 W, adj. 4.5-5.5 V, ripple 100 mVp-p, input 85-264 VAC, 129 x 97 x 30 mm, 0.33 kg; overload protection 110-150 % rated power, hiccup mode, auto-recover; OVP 5.75-6.75 V; derating curve applies above ~50 C. No peak/burst current is rated, so current_peak_a is omitted (the overload trip band is a protection threshold, not a rating). SIZING: 5 servos stalled together = 3 x MG996R 2.5 A + DS3218 2.6 A + DS3225 2.9 A = 13.0 A using each servo's highest published stall figure (DS 6.8 V figures), or 11.4 A with the DS 5 V figures; 18 A leaves 38 % margin over 13.0 A. A desktop brick was not possible: MEAN WELL's GST desktop series tops out at 6 A at 5 V (GST60A05; ledsupply.com/power-supplies/mean-well-gst-desktop-adaptor). The LRS is an open-frame-style enclosed unit with exposed mains screw terminals: the user must wire a mains cord (L, N and protective earth to FG) and fit a terminal cover (e.g. MEAN WELL TBC-07, listed on the distributor page) or an enclosure. Output 5 V is inside every servo's range (MG996R 4.8-7.2 V, DS32xx 4.8-6.8 V)."
    }
   },
   "receivers": {
@@ -1377,6 +1456,18 @@
     "source": "https://www.digikey.lt/en/products/detail/adam-tech/HST-04-BK-4/14651099",
     "confidence": "datasheet",
     "note": "Digi-Key: 'Heat Shrink Tubing, Flexible 0.118\" (3.00mm) 2 to 1'. d_mm is the expanded (as-supplied) ID; recovered_d_mm = 3.0/2 derived from the ratio (max fully-recovered ID, not separately published). Wall thickness not published on the page: UNVERIFIED."
+   },
+   "servo_ext_300_pololu2184": {
+    "model": "Pololu #2184 servo extension cable 12 in (300 mm), male-female, flat, JR/Futaba compatible",
+    "length": 300,
+    "gauge": 22,
+    "conductors": 3,
+    "strands": 60,
+    "pitch": 2.54,
+    "source": "https://www.pololu.com/product/2184",
+    "source_specs": "https://www.pololu.com/product/2184/specs",
+    "confidence": "datasheet",
+    "note": "Pololu page (opened 2026-10-31): '12-inch (300-mm), flat cable', '22-AWG wires', each conductor 60 strands, male Futaba J / female JR ends, both compatible with JR and Futaba, gold-flashed contacts on 0.1 in spacing; colours brown/black GND, red servo power, orange/yellow/white/blue signal. length 300 is Pololu's metric figure (12 in = 304.8). NO current rating and NO weight published by Pololu, so neither is given: the wire's own limit comes from wire.awg (22 AWG); the 0.1 in crimp contacts are not rated by Pololu either - keep each lead to one servo (<= 2.9 A stall here)."
    }
   },
   "antennas": {
@@ -1395,6 +1486,25 @@
      "https://pyrodrone.com/collections/foxeer-antennas/products/foxeer-5-8g-lollipop-4-plus-2-6dbi-omni-antenna-2pcs-right-angle-mmcx-95mm-rhcp-teal"
     ],
     "confidence": "vendor"
+   }
+  },
+  "connectors": {
+   "wago_221_415": {
+    "model": "WAGO 221-415 5-conductor lever splicing connector (servo V+/GND bus)",
+    "length": 18.6,
+    "width": 29.9,
+    "height": 8.3,
+    "weight_g": 4.048,
+    "positions": 5,
+    "current_a": 32,
+    "voltage_max": 450,
+    "wire_awg_min": 24,
+    "wire_awg_max": 12,
+    "strip_length": 11,
+    "source": "https://www.rlocman.es/datasheet/data.html?di=537187",
+    "source_listing": "https://nz.element14.com/wago/221-415/terminal-block-pluggable-5pos/dp/2534734",
+    "confidence": "datasheet",
+    "note": "WAGO data (rlocman datasheet page, opened 2026-10-31): rated current 32 A, rated voltage 450 V (II/2), conductors 0.14-4 mm2 fine-stranded / 0.2-4 mm2 solid and stranded = 24-12 AWG, strip length 11 mm, width 29.9 x height 8.3 x depth 18.6 mm, 4.048 g; element14 listing agrees (32 A, 450 V AC, 24-12 AWG, 0.004 kg). No burst rating published, so current_peak_a omitted. Use: the MEAN WELL LRS-100-5 has screw terminals (no plug), so its +V and -V leads each land in one 221-415 and fan out to the servos' red/brown wires (one +V and one GND splice; 1 input + 4 outputs each - five servos need a second splice or a 221-413 chained, or one servo on the PCA9685 V+). The 32 A rating is the IEC figure for the connector itself; the wires are rated separately (wire.awg). For a disconnectable supply lead, drone.connectors.XT60 (30 A) is already in the catalog."
    }
   }
  }

@@ -27,6 +27,11 @@ def yoke(p, side):
     body, failed = safe_fillet(body, [(corner, 2.0)])
     if failed or len(corner) != 1:
         raise ValueError(f"yoke cheek-to-foot fillet failed: {failed or 'edge not found'}")
+    # 4 mm fillet where the foot ends against the cheek (front end): the cheek's bending stress peaks at that step
+    end = body.edges().filter_by(Axis.Z).filter_by(lambda e: abs(e.center().X - fx1) < 0.05 and abs(e.center().Y - y_in) < 0.05)
+    body, failed = safe_fillet(body, [(end, 4.0)])
+    if failed or not end:
+        raise ValueError(f"yoke foot-end fillet failed: {failed or f'{len(end)} edges'}")
     zt = z0 + FOOT_T - 0.01
     for gx in (-21.0, -8.5):                   # gussets carry the cheek tipping moment; between the foot screws, behind the servo case top
         tri = Polygon((y_in + side * 0.01, zt), (y_in - side * (foot_w - 3.0), zt), (y_in + side * 0.01, zt + 24.0), align=None)
