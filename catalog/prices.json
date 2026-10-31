@@ -492,5 +492,85 @@
     "checked": "2026-10-31",
     "source": "https://www.walmart.com/ip/48405331",
     "note": "Walmart 'Unique Bargains M2 x 12mm 12.9 Alloy Steel Machine Bolt Hex Socket Head Cap Screws Black 20pcs', $8.38/20 (page also lists 14 mm total length = 12 mm shank + 2 mm head)."
+  },
+  "electronics.connectors.iec_inlet_fused_switched_schurter_dd11": {
+    "buy": "https://www.lcsc.com/product-detail/C17332945.html",
+    "pack_qty": 1,
+    "pack_usd": 12.87,
+    "checked": "2026-10-31",
+    "source": "https://www.lcsc.com/product-detail/C17332945.html",
+    "note": "LCSC C17332945, SCHURTER DD11.0121.1111, 'From $12.8716' (tier table not shown), 20 in stock. Fuses not included: 2 x electronics.fuses.littelfuse_215_t3_15a per inlet."
+  },
+  "electronics.fuses.littelfuse_215_t3_15a": {
+    "buy": "https://futureelectronics.com/p/electromechanical--circuit-protection--electronic-fuses/02153-15mxp-littelfuse-6002475",
+    "pack_qty": 30,
+    "pack_usd": 18.6,
+    "checked": "2026-10-31",
+    "source": "https://futureelectronics.com/p/electromechanical--circuit-protection--electronic-fuses/02153-15mxp-littelfuse-6002475",
+    "note": "Future Electronics 02153.15MXP bag listing: $0.62 each at the 30-piece minimum (173 in stock on the bag listing; reel listing min 1000 and out of stock). pack_usd = 30 x 0.62."
+  },
+  "electronics.fuses.ato_10a_littelfuse_257010": {
+    "buy": "https://www.masterelectronics.com/es/littelfuse/257010-11679158.html",
+    "pack_qty": 40,
+    "pack_usd": 28.0,
+    "checked": "2026-10-31",
+    "source": "https://www.masterelectronics.com/es/littelfuse/257010-11679158.html",
+    "note": "Master Electronics Littelfuse 257010: $0.700 each at the 40-piece minimum, 16,684 in stock, marked discontinued. pack_usd = 40 x 0.70."
+  },
+  "electronics.fuses.ato_5a_littelfuse_257005": {
+    "buy": "https://skycraftsurplus.com/products/littelfuse-257005-ato-fuse-32vdc-5-amp-100pcs.html",
+    "pack_qty": 100,
+    "pack_usd": 19.95,
+    "checked": "2026-10-31",
+    "source": "https://skycraftsurplus.com/products/littelfuse-257005-ato-fuse-32vdc-5-amp-100pcs.html",
+    "note": "Skycraft Surplus 'Littelfuse 257005 ATC/ATO Fuse, 32VDC 5 Amp, 100pcs', $19.95 per 100, new old stock re-bagged, 13 packs in stock."
+  },
+  "electronics.wire_misc.servo_ext_600_pololu2185": {
+    "buy": "https://www.pololu.com/product/2185",
+    "pack_qty": 1,
+    "pack_usd": 6.58,
+    "checked": "2026-10-31",
+    "source": "https://www.pololu.com/product/2185",
+    "note": "Pololu #2185 24 in servo extension, $6.58 at qty 1 (5+: $6.05), backorders allowed."
+  },
+  "electronics.wire_misc.ferrule_wago_216_224_16awg": {
+    "buy": "https://www.standardelectricsupply.com/WAGO-216-224-Ferrule",
+    "pack_qty": 1000,
+    "pack_usd": 112.6,
+    "checked": "2026-10-31",
+    "source": "https://www.standardelectricsupply.com/WAGO-216-224-Ferrule",
+    "note": "Standard Electric Supply WAGO 216-224, '$112.60 / 1000Each', 1000 pieces per pack (page also shows an inconsistent 'Typical price $122.00 / Each')."
+  },
+  "electronics.wire_misc.ferrule_wago_216_201_20awg": {
+    "buy": "https://masterelectronics.com/en/wago/216201-12729817.html",
+    "pack_qty": 1000,
+    "pack_usd": 125.9,
+    "checked": "2026-10-31",
+    "source": "https://masterelectronics.com/en/wago/216201-12729817.html",
+    "note": "Master Electronics WAGO 216-201: $0.1259 each at the 1,000 minimum (reel), 3,328 in stock, marked no longer manufactured. pack_usd = 1000 x 0.1259."
+  },
+  "electronics.wire_misc.ferrule_wago_216_322_22awg": {
+    "buy": "https://www.standardelectricsupply.com/WAGO-216-322-Ferrule",
+    "pack_qty": 1000,
+    "pack_usd": 112.6,
+    "checked": "2026-10-31",
+    "source": "https://www.standardelectricsupply.com/WAGO-216-322-Ferrule",
+    "note": "Standard Electric Supply WAGO 216-322, '$112.60 / 1000Each', '1000 PCS' (page also shows 'Typical price $122.00 / Each')."
+  },
+  "electronics.connectors.servo_housing_1x3_pololu1902": {
+    "buy": "https://www.pololu.com/product/1902",
+    "pack_qty": 25,
+    "pack_usd": 2.54,
+    "checked": "2026-10-31",
+    "source": "https://www.pololu.com/product/1902",
+    "note": "Pololu #1902 1x3 crimp housing 25-pack, $2.54 at qty 1 (Pololu prices the pack as the item). UNIT = housings."
+  },
+  "electronics.connectors.crimp_pin_female_pololu1930": {
+    "buy": "https://www.pololu.com/product/1930",
+    "pack_qty": 100,
+    "pack_usd": 11.95,
+    "checked": "2026-10-31",
+    "source": "https://www.pololu.com/product/1930",
+    "note": "Pololu #1930 female crimp pins 100-pack, $11.95 at qty 1. UNIT = pins."
   }
 }

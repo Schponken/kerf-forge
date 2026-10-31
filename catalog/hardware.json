@@ -13,6 +13,20 @@
   "policy": "Every entry has a source URL that was opened and a confidence (datasheet|standard|multiple-vendors|typical). Values marked UNVERIFIED or typical in a note should be measured on the real part before printing a final version."
  },
  "screws": {
+  "M1.6": {
+   "clearance_hole": 1.8,
+   "tap_drill": 1.25,
+   "shcs_head_d": 3.0,
+   "shcs_head_h": 1.6,
+   "socket_s": 1.56,
+   "countersunk_head_d": 3.0,
+   "countersunk_head_h": 1.0,
+   "nut_across_flats": 3.2,
+   "nut_thickness": 1.3,
+   "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://engineersedge.com/iso_socket_head_screw.htm ; https://host.engineersedge.com/hardware/metric_hex_nuts_14056.htm ; https://fasten.it/Norms/Norm/DIN_EN_ISO_7046_1",
+   "confidence": "standard",
+   "note": "Opened 2026-10-31. Optimas row 'M1.6 | 0.35 | 1.25 | 1.7 | 1.8 | 2' = tap drill 1.25, clearance close 1.7 / medium (normal) 1.8 / free 2.0 (clearance_hole = medium, same rule as M2). ISO 4762 socket head (Engineers Edge row 'M1.6 x 0.35 | 1.6000 | 3.0000 | 1.6000 | 1.5600'): dk 3.0, k 1.6, hex socket 1.56 (the table's 'Hex Width' column, as printed). Countersunk ISO 7046-1 (fasten.it): dk nom=max 3.0, k 1.0 (no ISO 10642 socket countersunk at M1.6). Hex nut (Engineers Edge, ASME B18.2.4.1M style 1 metric hex nut table; the ISO 4032 table itself could not be read as text): s 3.20 max / 3.02 min, m 1.30 max / 1.05 min. accu-components lists an M1.6 ISO 4762 head as D 3 +0/-0.14, H 1.6 +0/-0.14 (agrees). Pan head ISO 7045 not transcribed (no source opened). Use: Arduino Nano mounting holes are d1.8 (boards.arduino_nano)."
+  },
   "M2": {
    "clearance_hole": 2.4,
    "tap_drill": 1.6,
@@ -78,6 +92,13 @@
   }
  },
  "fdm_holes": {
+  "M1.6": {
+   "clearance_hole": 1.9,
+   "nut_pocket_af": 3.4,
+   "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://makerworld.com/en/community/post/1182854",
+   "confidence": "derived",
+   "note": "Derived with the same rules as fdm_holes.M2: clearance = ISO 273 medium 1.8 + 0.1 (typical printed-hole shrink); nut_pocket_af = nut s 3.2 + 0.2 (the +0.2 mm Hubs rule cited in fdm_holes.M2; iterate per printer). NO PUBLISHED FDM SELF-TAP PILOT FOR M1.6 WAS FOUND: Bambu Lab's screw-hole guide (MakerWorld post 1182854, mirrored on forum.bambulab.com 217352) starts at M2 / BT2 and only states the rule 'keep the hole diameter equal to the pitch diameter'; no M1.6 row. self_tap_pilot is therefore deliberately omitted (note kerf.iface.screw_spec then falls back to screws.M1.6 tap_drill 1.25, a metal tap-drill size - print-test before relying on a self-tapped M1.6 in PLA/PETG; through-bolting with a nut or a heat-set insert is not catalogued either: no M1.6 insert size sourced). No heat-set insert data."
+  },
   "M2": {
    "clearance_hole": 2.5,
    "self_tap_pilot": 1.84,
@@ -526,7 +547,10 @@
     "https://www.printables.com/model/326713 (Baxcor STL: d 4.8, tab_t 2.5, shaft 10.0)",
     "https://github.com/SanikaPatil-2101/6dof-robotic-arm-ros2 (cad/MG995 v2 (1).step: holes 49.5 x 10.2, d 4.5, tab_t 2.45, shaft 10.0)",
     "Mounts made for real MG996R, hole patterns measured from their STLs: printables.com/model/732064 49.5 x 10.0; /1107201 49.97 x 10.0; /255041 49.0 x 10.0; /1311446 49.04 x 9.0"
-   ]
+   ],
+   "lead_length_mm": 300,
+   "source_lead": "https://components101.com/sites/default/files/component_datasheet/MG996R%20Datasheet.pdf",
+   "lead_note": "TowerPro MG996R datasheet text (components101-hosted copy, opened 2026-10-31): 'The unit comes complete with 30cm wire and 3 pin 'S' type female header connector that fits most receivers, including Futaba, JR, ...'. Length is measured from the case to the plug; clones vary, so measure before cutting a tight cable path. towerpro.com.tw could not be opened from this session to cross-check."
   },
   "DS3218": {
    "body_l": 40.0,
@@ -555,7 +579,10 @@
    "voltage_max": 6.8,
    "source_current": "https://aifitlab.com/products/dsservo-ds3218-mg-servo-motor",
    "confidence_current": "datasheet",
-   "current_note": "DSSERVO DS3218MG spec table as reproduced on the AIFITLAB listing (opened 2026-10-31): operating voltage range 4.8-6.8 V; idle current (at stopped) 4 mA @5 V / 5 mA @6.8 V; stall current (at locked) 1.8 A @5 V / 2.6 A @6.8 V. stall_current_a takes the 6.8 V figure (conservative for any supply up to 6.8 V; 1.8 A applies on a 5 V rail). idle_current_a is the 6.8 V figure. running_current_a is NOT published by DSSERVO or any vendor found (servodatabase.com/servo/dsservo lists 'running current 4-5 A', which is the idle 4/5 mA mis-scaled x1000, so ignored); it is omitted so kerf/electrical.py uses stall current for running too (conservative). Only one vendor copy of the DS3218 current table was found; the rcdrone.top DSSERVO pages carry no current figures. Forum estimate (forum.arduino.cc/t/powering-12-ds3218-servos-at-once/1415585) of 1.8-2.5 A per servo is consistent."
+   "current_note": "DSSERVO DS3218MG spec table as reproduced on the AIFITLAB listing (opened 2026-10-31): operating voltage range 4.8-6.8 V; idle current (at stopped) 4 mA @5 V / 5 mA @6.8 V; stall current (at locked) 1.8 A @5 V / 2.6 A @6.8 V. stall_current_a takes the 6.8 V figure (conservative for any supply up to 6.8 V; 1.8 A applies on a 5 V rail). idle_current_a is the 6.8 V figure. running_current_a is NOT published by DSSERVO or any vendor found (servodatabase.com/servo/dsservo lists 'running current 4-5 A', which is the idle 4/5 mA mis-scaled x1000, so ignored); it is omitted so kerf/electrical.py uses stall current for running too (conservative). Only one vendor copy of the DS3218 current table was found; the rcdrone.top DSSERVO pages carry no current figures. Forum estimate (forum.arduino.cc/t/powering-12-ds3218-servos-at-once/1415585) of 1.8-2.5 A per servo is consistent.",
+   "lead_length_mm": 300,
+   "source_lead": "https://aifitlab.com/products/dsservo-ds3218-mg-servo-motor",
+   "lead_note": "DSSERVO DS3218MG spec table on the AIFITLAB listing (opened 2026-10-31): 'Connector wire 300+/-5mm' (5 V and 6.8 V columns). Connector not named there; the DS3225 table (52Pi) gives 'JR-3Pin-2.54mm'."
   },
   "DS3225": {
    "body_l": 40.0,
@@ -586,7 +613,10 @@
    "source_current_2": "https://wiki-md.52pi.com/docs/D-0001",
    "source_current_3": "https://bzbuas.com/wp-content/uploads/2023/02/DS3225.pdf",
    "confidence_current": "multiple-vendors",
-   "current_note": "DSSERVO DS3225 spec table (5 V / 6.8 V columns), opened 2026-10-31: AIFITLAB listing and 52Pi wiki D-0001 both give operating voltage range 4.8-6.8 V, idle current 4 mA @5 V / 5 mA @6.8 V, stall current 2.1 A @5 V / 2.9 A @6.8 V. SPREAD: the bzbuas.com DS3225 PDF gives a lower stall current, 1.9 A @5 V / 2.3 A @6.8 V; the higher 2.9 A (6.8 V) is used, conservative for any supply up to 6.8 V (2.1 A applies on a 5 V rail). running_current_a is NOT published (servodatabase.com's 'running current 4-5 A' is the idle mA figure mis-scaled), so it is omitted and kerf/electrical.py uses stall current for running too (conservative)."
+   "current_note": "DSSERVO DS3225 spec table (5 V / 6.8 V columns), opened 2026-10-31: AIFITLAB listing and 52Pi wiki D-0001 both give operating voltage range 4.8-6.8 V, idle current 4 mA @5 V / 5 mA @6.8 V, stall current 2.1 A @5 V / 2.9 A @6.8 V. SPREAD: the bzbuas.com DS3225 PDF gives a lower stall current, 1.9 A @5 V / 2.3 A @6.8 V; the higher 2.9 A (6.8 V) is used, conservative for any supply up to 6.8 V (2.1 A applies on a 5 V rail). running_current_a is NOT published (servodatabase.com's 'running current 4-5 A' is the idle mA figure mis-scaled), so it is omitted and kerf/electrical.py uses stall current for running too (conservative).",
+   "lead_length_mm": 300,
+   "source_lead": "https://wiki-md.52pi.com/docs/D-0001",
+   "lead_note": "DSSERVO DS3225 mechanical specification on the 52Pi wiki D-0001 (opened 2026-10-31): 'Connector wire 300+/-5mm', 'Connector: JR-3Pin-2.54mm'."
   }
  },
  "servo_horns": {
@@ -1286,7 +1316,9 @@
    "source_weight": "https://www.adafruit.com/product/815",
    "source_current": "https://nxp.com/docs/en/data-sheet/PCA9685.pdf",
    "confidence": "datasheet",
-   "note": "Outline and holes from Adafruit's own Eagle board (rev C, opened 2026-10-31): outline x -1.905..60.325, y -6.477..18.923 = 62.23 x 25.4 mm (fab print: 2.45 in; product page '62.5 x 25.4 x 3 mm'); 4 plated MOUNTINGHOLE_2.5 (drill 2.5, pad 3.2) at (1.27, 15.748), (1.27, -3.302), (57.15, 15.748), (57.15, -3.302) = 55.88 x 19.05 mm pattern, symmetric about the board centre (29.21, 6.223). Learn guide: 'Holes are 2.5mm diameter'; M2 screws (M2.5 has no clearance). Adafruit STEP model (same frame, measured with build123d): PCB 1.57 thick; 2-pin 3.5 mm terminal block top 8.52 above the PCB top, the four 3x4 servo headers' pins 8.41 above; pins below the PCB 1.4 (headers) / 2.0 (terminal block) -> component_height 8.5, component_height_below 2.0. Servo headers sit along the -y long edge (connectors plug in from above, cables leave toward -y); terminal block at the +y edge at x = 29.21 (board centre). The 6-pin 0.1 in side headers (JP3/JP4 at the short edges) and the optional V+ electrolytic (C2) are NOT in the STEP model; if fitted, pins add ~8.5 above or below. Weight: 'no headers or terminal block: 5.5 grams', with them 9 g (product page). Voltages (learn guide pinouts): VCC logic '3 - 5V max!'; V+ servo power 'provide 5-6VDC if you are using servos', 'If you have to, you can go higher to 12VDC'; V+ 'is not used at all by the chip'. Terminal block has reverse-polarity protection (README; P-FET AOD417, Q1 in the Eagle file). current_a 0.021 = logic draw bound, derived: NXP PCA9685 datasheet Table 14 IDD max 10 mA (operating, no load, VDD 2.3-5.5 V) + power LED on VCC through 470 ohm (Eagle: LED1-R10 on VCC), bounded at 5 V/470 = 10.6 mA. pwm_current_a 0.025: per-output limit (learn guide 'Max current per pin is 25mA'; NXP 25 mA/pin, 400 mA package total) - signal lines only. NO V+ CURRENT RATING IS PUBLISHED by Adafruit (product page, learn guide, README checked), so vplus_current_a is deliberately omitted. For reference only (not a rating): Eagle traces are 0.81 mm from the terminal block to the FET (PWRIN) and 1.778 mm (some 1.016 mm segments) on the servo V+ rail; copper weight not stated. Arduino forum users warn the traces/MOSFET cannot carry many high-current servos (forum.arduino.cc/t/powering-12-ds3218-servos-at-once/1415585). With 5 stall-capable servos (up to ~13 A), feed servo V+ from the supply through a separate splice/bus and use the board only for signal + GND."
+   "note": "Outline and holes from Adafruit's own Eagle board (rev C, opened 2026-10-31): outline x -1.905..60.325, y -6.477..18.923 = 62.23 x 25.4 mm (fab print: 2.45 in; product page '62.5 x 25.4 x 3 mm'); 4 plated MOUNTINGHOLE_2.5 (drill 2.5, pad 3.2) at (1.27, 15.748), (1.27, -3.302), (57.15, 15.748), (57.15, -3.302) = 55.88 x 19.05 mm pattern, symmetric about the board centre (29.21, 6.223). Learn guide: 'Holes are 2.5mm diameter'; M2 screws (M2.5 has no clearance). Adafruit STEP model (same frame, measured with build123d): PCB 1.57 thick; 2-pin 3.5 mm terminal block top 8.52 above the PCB top, the four 3x4 servo headers' pins 8.41 above; pins below the PCB 1.4 (headers) / 2.0 (terminal block) -> component_height 8.5, component_height_below 2.0. Servo headers sit along the -y long edge (connectors plug in from above, cables leave toward -y); terminal block at the +y edge at x = 29.21 (board centre). The 6-pin 0.1 in side headers (JP3/JP4 at the short edges) and the optional V+ electrolytic (C2) are NOT in the STEP model; if fitted, pins add ~8.5 above or below. Weight: 'no headers or terminal block: 5.5 grams', with them 9 g (product page). Voltages (learn guide pinouts): VCC logic '3 - 5V max!'; V+ servo power 'provide 5-6VDC if you are using servos', 'If you have to, you can go higher to 12VDC'; V+ 'is not used at all by the chip'. Terminal block has reverse-polarity protection (README; P-FET AOD417, Q1 in the Eagle file). current_a 0.021 = logic draw bound, derived: NXP PCA9685 datasheet Table 14 IDD max 10 mA (operating, no load, VDD 2.3-5.5 V) + power LED on VCC through 470 ohm (Eagle: LED1-R10 on VCC), bounded at 5 V/470 = 10.6 mA. pwm_current_a 0.025: per-output limit (learn guide 'Max current per pin is 25mA'; NXP 25 mA/pin, 400 mA package total) - signal lines only. NO V+ CURRENT RATING IS PUBLISHED by Adafruit (product page, learn guide, README checked), so vplus_current_a is deliberately omitted. For reference only (not a rating): Eagle traces are 0.81 mm from the terminal block to the FET (PWRIN) and 1.778 mm (some 1.016 mm segments) on the servo V+ rail; copper weight not stated. Arduino forum users warn the traces/MOSFET cannot carry many high-current servos (forum.arduino.cc/t/powering-12-ds3218-servos-at-once/1415585). With 5 stall-capable servos (up to ~13 A), feed servo V+ from the supply through a separate splice/bus and use the board only for signal + GND.",
+   "terminal": "header",
+   "terminal_note": "Servo plugs and the signal/GND jumpers push onto its 0.1 in male headers (3x4 servo blocks + 6-pin side headers), so wiring runs default to header ends here. The V+ 2-pin 3.5 mm terminal block is a screw terminal: set ends: {to: screw} on a run that lands there."
   }
  },
  "fdm_fits": {
@@ -1401,6 +1433,67 @@
     "source_listing": "https://nz.element14.com/wago/221-415/terminal-block-pluggable-5pos/dp/2534734",
     "confidence": "datasheet",
     "note": "WAGO data (rlocman datasheet page, opened 2026-10-31): rated current 32 A, rated voltage 450 V (II/2), conductors 0.14-4 mm2 fine-stranded / 0.2-4 mm2 solid and stranded = 24-12 AWG, strip length 11 mm, width 29.9 x height 8.3 x depth 18.6 mm, 4.048 g; element14 listing agrees (32 A, 450 V AC, 24-12 AWG, 0.004 kg). No burst rating published, so current_peak_a omitted. Use: the MEAN WELL LRS-100-5 has screw terminals (no plug), so its +V and -V leads each land in one 221-415 and fan out to the servos' red/brown wires (one +V and one GND splice; 1 input + 4 outputs each - five servos need a second splice or a 221-413 chained, or one servo on the PCA9685 V+). The 32 A rating is the IEC figure for the connector itself; the wires are rated separately (wire.awg). For a disconnectable supply lead, drone.connectors.XT60 (30 A) is already in the catalog."
+   },
+   "iec_inlet_fused_switched_schurter_dd11": {
+    "model": "SCHURTER DD11.0121.1111 IEC C14 appliance inlet + 2-pole line switch + 2-pole 5x20 mm fuse drawer, screw-on, with terminal cover",
+    "part_number": "DD11.0121.1111",
+    "current_a": 10,
+    "current_a_ul": 7,
+    "voltage_max": 250,
+    "fuse_size": "5x20",
+    "fuses_per_inlet": 2,
+    "fuse_power_w_per_pole": 1.6,
+    "terminal": "plug",
+    "terminal_tab": "quick-connect 4.8 x 0.8 mm",
+    "terminal_tab_w": 4.8,
+    "terminal_tab_t": 0.8,
+    "panel_cutout_w": 47.1,
+    "panel_cutout_h": 28.1,
+    "panel_cutout_tol": 0.1,
+    "panel_cutout_corner_r": 1.0,
+    "screw_hole_spacing": 56,
+    "screw_hole_spacing_tol": 0.15,
+    "screw_hole_d": 3.4,
+    "flange_w": 65,
+    "flange_h": 30.5,
+    "flange_t": 2.5,
+    "body_w": 46.7,
+    "body_h": 27.7,
+    "depth_behind_flange": 30,
+    "front_protrusion": 5,
+    "panel_t_max": 8,
+    "panel_t_max_rear_mount": 2,
+    "mount_screw_torque_nm_max": 0.5,
+    "temp_c_min": -25,
+    "temp_c_max": 85,
+    "source": "https://www.farnell.com/datasheets/1832727.pdf",
+    "source_listing": "https://www.lcsc.com/product-detail/C17332945.html",
+    "source_lifecycle": "https://masterelectronics.com/en/schurter/dd1101111110-12644380.html",
+    "confidence": "datasheet",
+    "note": "SCHURTER DD11 datasheet (Farnell-hosted copy, 4 pages, opened and drawing read 2026-10-31). Ratings: IEC 10 A / 250 VAC 50 Hz; UL/CSA 8 A / 250 VAC 60 Hz, footnote 'with cover 7 A, without cover 8 A' (current_a_ul = 7 for this .1111 cover variant). C14 per IEC 60320, protection class I, fuseholder for 5 x 20 mm fuse-links, shock-safe PC2; admissible fuse power 2 W (1-pole) / 1.6 W per pole (2-pole) at 23 C, derated with temperature (curve). Terminals 'Quick connect terminals 4.8 x 0.8 mm' (crimp 4.8 mm female receptacles, insulated, on the L/N/PE wires -> terminal 'plug'); solder terminals only on request. Panel: 'Screw-on mounting: max 8 mm', 'Mounting screw torque max 0.5 Nm', 'Rear side mounting: max 2 mm'. Drawing, screw version, mounted from the front: panel cut-out 47.1 +/-0.10 x 28.1 +/-0.10 with R1 corners, two d3.4 screw holes 56 +/-0.15 apart on the cut-out's horizontal centre line (=> M3 screws; the screw size itself is not printed); flange 65 x 30.5, body 46.7 x 27.7; side view with cover: 30 behind the flange's rear face, flange 2.5, 5 in front of the flange (the switch rocker / drawer front), overall dimension 33.1 also printed (its end points are not clear in the drawing; keep 33.1 + 5 free behind/in front). Rear view shows PE on one side and N, L tabs on the other (dims 10.6 / 29.8 / 6, 6 from the centre line). The 2-pole fuse drawer (.0121) fuses BOTH L and N (F1 + F2), so a reversible plug (e.g. Schuko) is protected either way: buy 2 fuses per inlet. The switch is 2-pole. The datasheet lists 'Fusedrawer' under 'Required Accessory' while the ordering table calls it a fuseholder module; whether a drawer ships in the box is not stated: check the distributor listing. LIFECYCLE: Master Electronics marks the 1-pole sibling DD11.0111.1110 'no longer being manufactured' (16-week lead time); LCSC showed DD11.0121.1111 20 in stock on 2026-10-31. For a printed end cover: front-mount through a 47.1 x 28.1 window in a wall 2.5-8 mm thick, two M3 screws into heat-set inserts or captive nuts on the inside; keep the 30 mm deep body plus wire bend room behind it. No weight published (counted 0 g)."
+   },
+   "servo_housing_1x3_pololu1902": {
+    "model": "Pololu #1902 0.1 in (2.54 mm) crimp connector housing 1x3 (25-pack), the standard 3-pin servo/Dupont-style plug for a PCA9685 servo header",
+    "positions": 3,
+    "pitch": 2.54,
+    "length": 7.62,
+    "terminal": "plug",
+    "pins": "electronics.connectors.crimp_pin_female_pololu1930",
+    "pack_qty": 25,
+    "source": "https://www.pololu.com/product/1902",
+    "confidence": "datasheet",
+    "note": "Pololu page (opened 2026-10-31): 0.1 in (2.54 mm) pitch, takes Pololu female crimp pins #1930 (or male #1931); wires snap in ('getting the wires out is possible but not as easy'); no keying/latch on the 1x3. The page's dimension table gives two unlabelled columns for 1x3: A 5.08, B 7.62 (= 2 and 3 x pitch; length 7.62 taken as the housing length). Housing width/height are not printed in text (drawing images only), so they are not given. Use: a servo lead's own 3-pin female plug already pushes onto the PCA9685's 3x4 male headers (signal/V+/GND per column); this housing + #1930 pins is how to make a new plug when a lead is cut to length or extended (single signal wire: fit one pin in a 1x1 housing, or a pre-crimped F-F jumper, Pololu category 72, 26 AWG)."
+   },
+   "crimp_pin_female_pololu1930": {
+    "model": "Pololu #1930 female crimp pins for 0.1 in housings (100-pack)",
+    "wire_awg_min": 28,
+    "wire_awg_max": 22,
+    "pitch": 2.54,
+    "terminal": "plug",
+    "pack_qty": 100,
+    "source": "https://www.pololu.com/product/1930",
+    "confidence": "datasheet",
+    "note": "Pololu page (opened 2026-10-31): 'These female pins can be crimped on 22-28AWG wires', '22AWG wires with thick insulation might be difficult to fit into the pins'; compatible with standard 0.1 in headers. NO current rating published (not given); crimp with a 20-28 AWG tool (Pololu #1929)."
    }
   },
   "supplies": {
@@ -1433,11 +1526,122 @@
     "input_v_ac_min": 85,
     "input_v_ac_max": 264,
     "terminals": "7-position screw terminal block: 1 AC/L, 2 AC/N, 3 FG (earth), 4-5 DC -V, 6-7 DC +V",
-    "mounting": "2 x M3 (L=3.0) and 3 x M3 (L=5) threaded holes per the datasheet mechanical drawing (positions not transcribed)",
+    "mounting": "2 x M3 (max screw depth L=3.0) in the plan view + 3 x M3 (L=5) in one long side face, positions below (holes_plan_m3, holes_side_m3)",
+    "terminal": "screw",
+    "datum": "x along the 129 length from the TERMINAL-BLOCK END FACE (x=0); y across the 97 width from the long side whose face is the datasheet side view (the plan view's lower edge, LED/SVR1 side; terminal pin 7 is nearest it); z up from the base (bottom face) over the 30 height",
+    "holes_plan_m3": [[78, 34], [78, 67]],
+    "holes_plan_m3_max_depth": 3.0,
+    "holes_side_m3": [[32, 15], [109, 6], [109, 24]],
+    "holes_side_m3_max_depth": 5.0,
+    "holes_plan_d3_5": [[4.5, 85]],
+    "holes_side_d3_5": [[6.5, 26]],
+    "terminal_positions": 7,
+    "terminal_pitch": 9.5,
+    "terminal_pin1_y_scaled": 80.5,
+    "terminal_pin7_y_scaled": 23.5,
+    "terminal_block_depth_x_scaled": 14.7,
+    "terminal_screw": "M3.5",
+    "terminal_torque_kgfcm_min": 8,
+    "terminal_torque_kgfcm_max": 10,
+    "terminal_torque_nm_min": 0.78,
+    "terminal_torque_nm_max": 0.98,
+    "input_current_a_115vac": 1.9,
+    "input_current_a_230vac": 1.2,
+    "inrush_a_230vac_cold": 50,
+    "leakage_ma_240vac": 0.75,
+    "source_mech": "https://www.power-supplies-australia.com.au/sites/default/files/specifications/MEAN%20WELL%20LRS-100%20DATA%20SHEET.pdf (page 4, Mechanical Specification, Case No.238A, unit mm, tolerance +/-1)",
+    "source_terminal": "https://www.meanwell.com/Upload/PDF/Enclosed_Type_EN.pdf (MEAN WELL Installation Manual, enclosed types, item (5) table: 'LRS-035 / 050 / 075 / 100 / ...' -> screw size M3.5, suggested torque 8-10 [kgf-cm])",
+    "note_mech": "Read 2026-10-31 from the datasheet's page-4 drawing (rendered and read by eye; every number below is a printed dimension unless the field name ends in _scaled). PLAN VIEW: 129 x 97; 2-M3 L=3.0 at x=78 from the terminal end, y=34 and y=34+33=67 from the lower edge; the drawing does not say which face (top cover or base) the 2-M3 sit in - LRS cases are normally screwed down through the base, but check the real part before relying on it. A d3.5 through hole at x=4.5, y=85 (dims 4.5 and 85; 97 overall). SIDE VIEW (the long face at y=0): 3-M3 L=5 at (x 32, z 15), (x 32+77=109, z 6) and (109, 6+18=24); a d3.5 hole at x=6.5, z=26; a 120 dimension runs from x=6.5 to the cover end. The far (non-terminal) end shows a small U-notch dimensioned 6.5 / 3.5 in plan and 14.5 / 3.5 in the side view (purpose not stated; not transcribed as fields). TERMINAL BLOCK: 7 screw positions along the x=0 end, numbered 1 (AC/L) at the +y side to 7 at the -y side, pitch 9.5 (dimensioned); an '8' dimension is also printed beside position 5 (probably the screw cell size, unlabelled). Pin-1/pin-7 y and the block depth are SCALED from the drawing at 3.81 px/mm (129 mm = 492 px at 200 dpi): pin 1 y~80.5, pin 7 y~23.5 (difference 57 = 6 x 9.5, consistent), block ~14.7 deep in x - leave >= 2 mm margin around them. Screw access is from the top (the screws face up in the plan view). Max screw depths: L=3.0 (plan) / L=5 (side) are MEAN WELL's limits for screw penetration into the case (Installation Manual item (2): keep insulation distance, see case drawing). Terminal screws M3.5, 8-10 kgf-cm (= 0.78-0.98 N*m). Manual item (7) recommended wire: 18 AWG up to 6 A, 16 AWG 6-10 A, 14 AWG 10-16 A, 12 AWG 16-25 A (0.75/1.0/1.5/2.5 mm2), de-rate to 80 % with 5 or more wires on the unit. Input (datasheet): AC current typ. 1.9 A at 115 VAC / 1.2 A at 230 VAC, inrush typ. 50 A cold start at 230 VAC, leakage < 0.75 mA at 240 VAC. MEAN WELL publishes no inrush I2t and no recommended external fuse for the LRS-100; see electronics.fuses.littelfuse_215_t3_15a for the inlet fuse sizing.",
     "source": "https://www.power-supplies-australia.com.au/sites/default/files/specifications/MEAN%20WELL%20LRS-100%20DATA%20SHEET.pdf",
     "source_listing": "https://www.power-supplies-australia.com.au/mean-well-lrs-100-5-enclosed-power-supply",
     "confidence": "datasheet",
     "note": "MEAN WELL datasheet LRS-100-SPEC 2025-04-07 (opened 2026-10-31): 5 V, rated current 18 A (range 0-18 A), 90 W, adj. 4.5-5.5 V, ripple 100 mVp-p, input 85-264 VAC, 129 x 97 x 30 mm, 0.33 kg; overload protection 110-150 % rated power, hiccup mode, auto-recover; OVP 5.75-6.75 V; derating curve applies above ~50 C. No peak/burst current is rated, so current_peak_a is omitted (the overload trip band is a protection threshold, not a rating). SIZING: 5 servos stalled together = 3 x MG996R 2.5 A + DS3218 2.6 A + DS3225 2.9 A = 13.0 A using each servo's highest published stall figure (DS 6.8 V figures), or 11.4 A with the DS 5 V figures; 18 A leaves 38 % margin over 13.0 A. A desktop brick was not possible: MEAN WELL's GST desktop series tops out at 6 A at 5 V (GST60A05; ledsupply.com/power-supplies/mean-well-gst-desktop-adaptor). The LRS is an open-frame-style enclosed unit with exposed mains screw terminals: the user must wire a mains cord (L, N and protective earth to FG) and fit a terminal cover (e.g. MEAN WELL TBC-07, listed on the distributor page) or an enclosure. Output 5 V is inside every servo's range (MG996R 4.8-7.2 V, DS32xx 4.8-6.8 V)."
+   }
+  },
+  "fuses": {
+   "littelfuse_215_t3_15a": {
+    "model": "Littelfuse 02153.15MXP, 215 series 5 x 20 mm ceramic time-lag (T) fuse, 3.15 A 250 VAC (mains inlet fuse for the MEAN WELL LRS-100-5)",
+    "current_a": 3.15,
+    "voltage_max": 250,
+    "characteristic": "T (time-lag)",
+    "d": 5.2,
+    "length": 20,
+    "melting_i2t_a2s": 43.255,
+    "cold_resistance_ohm": 0.0283,
+    "voltage_drop_mv_max": 140,
+    "terminal": "plug",
+    "source": "https://littelfuse.com/products/fuses/cartridge-fuses/5x20mm-fuses/215/2153_15.aspx",
+    "source_datasheet": "https://littelfuse.com/%7E/media/electronics/datasheets/fuses/littelfuse_fuse_215_datasheet.pdf.pdf",
+    "source_rule": "https://www.cosel.com/en/contact/product/faq/a0047.html",
+    "source_listing": "https://futureelectronics.com/p/electromechanical--circuit-protection--electronic-fuses/02153-15mxp-littelfuse-6002475",
+    "confidence": "datasheet",
+    "note": "Littelfuse product page + 215 datasheet (opened 2026-10-31): 3.15 A, 250 VAC, IEC marking T3.15AH250V, nominal melting I2t 43.255 A2s, cold resistance 0.0283 ohm, max voltage drop 140 mV; dimensions 20 +/-0.5 long, cap d 5.2 +0.1/-0.2 (Future lists 'D 5.2 x 20 mm'). The interrupting rating for the 3.15 A rating is not stated in the table text read (1500 A at 250 VAC is printed on the 0.125 A row only), so none is given. SIZING (derived, not a MEAN WELL figure): COSEL's rule for a supply's external fuse is 'approximately 1.5 to 2.0 times the continuous input current' and 'a time-lag (slow-blow) type fuse'; LRS-100 input current typ. 1.9 A at 115 VAC -> 2.85-3.8 A -> T3.15 A; at 230 VAC (1.2 A) the rule gives 1.8-2.4 A, so T2 A would also do there, but T3.15 A suits both mains voltages. Inrush: MEAN WELL gives 50 A typ cold start at 230 VAC and no I2t; COSEL notes inrush lasts about 5 ms - not enough data to prove the I2t margin, the time-lag type is the guard. A 2 A fuse at 115 VAC would run at 95 % of rating: do not use 2 A in the US. The DD11.0121 inlet takes two (L and N)."
+   },
+   "ato_holder_littelfuse_fhac0001zxj": {
+    "model": "Littelfuse FHAC0001ZXJ in-line ATO blade fuse holder with attached cover, 16 AWG GXL leads",
+    "current_a": 20,
+    "voltage_max": 32,
+    "wire_awg": 16,
+    "lead_length_mm": 88.9,
+    "body_length": 50,
+    "body_w": 17.2,
+    "cover_length": 20.0,
+    "cover_h": 21.2,
+    "terminal": "solder",
+    "ip_rating": "IP67",
+    "temp_c_min": -40,
+    "temp_c_max": 105,
+    "source": "https://static.chipdip.ru/lib/165/DOC013165828.pdf",
+    "source_listing": "https://rspsupply.com/p-562964-littelfuse-fhac0001zxj-ato-fuse-holder-20-amp-32-vac32-vdc.aspx",
+    "confidence": "datasheet",
+    "note": "Littelfuse 'ATO FHAC Series Fuse Holders' datasheet Rev 062519 (distributor-hosted copy, opened and drawing read 2026-10-31): max voltage 32 V DC, -40 to +105 C, IP67, UL94 V-0 thermoplastic body; 'Use with ATO Fuse 1 to 20 amps (standard duty)'; ordering table FHAC0001ZXJG: max fuse rating 20 A, wire size 16 AWG, black. Two 3.5 in GXL leads (88.9 mm; RSP Supply lists 3.524 in / 89.5 mm). Drawing ('dimensions shown for M-606, may vary per part number'): body 50 +/-1 long between the lead exits, end view 17.2 +/-0.25 across, fuse window 9.15 x 4.4, cover 20.0 x 21.2, body top 17.2 / 12.0 above the lead axis. The suffix-less FHAC0001ZXJ is the same holder in the distributors' listings (20 A, 32 V, 16 AWG); the G suffix is the datasheet's ordering code. Ends are bare 16 AWG leads: solder or crimp-splice them to the run, or land them in a WAGO 221 lever splice / the supply's screw terminal (then the run's end is that item's terminal type). Fuse sizing: 16 AWG wire is good for a 10 A ATO here; never fit a fuse bigger than the wire after it can carry (wire.awg)."
+   },
+   "ato_10a_littelfuse_257010": {
+    "model": "Littelfuse 257 series ATO blade fuse 10 A 32 V DC (0257010.PXPV)",
+    "current_a": 10,
+    "voltage_max": 32,
+    "interrupting_a": 1000,
+    "characteristic": "fast-acting",
+    "width": 19.05,
+    "height": 18.54,
+    "thickness": 5.08,
+    "body_h": 12.19,
+    "blade_length": 6.35,
+    "blade_t": 0.66,
+    "blade_gap": 4.064,
+    "blade_outer_span": 14.48,
+    "cold_resistance_ohm": 0.0077,
+    "voltage_drop_mv_typ": 109,
+    "i2t_a2s": 115,
+    "terminal": "plug",
+    "source": "https://projectlab2019.phas.ubc.ca/projectlab.engphys.ubc.ca/wp-content/phys253/files/datasheets-elec/bladefuse0257010PXPV_10A_BatteryFuse.pdf",
+    "source_listing": "https://www.masterelectronics.com/es/littelfuse/257010-11679158.html",
+    "confidence": "datasheet",
+    "note": "Littelfuse 'ATO Blade Fuse Rated 32V' catalogue pages (2006, university-hosted copy, opened 2026-10-31): voltage rating 32 VDC, interrupting rating 1000 A at 32 VDC, -40 to +105 C; 10 A row: typ. voltage drop 109 mV, cold resistance 7.70 mohm, I2t 115 A2s. Opening times: 110 % 100 h min; 135 % 0.75-600 s; 200 % 0.15-5 s; 350 % 0.08-0.5 s; 600 % <= 0.15 s (catalogue table, min/max pairs as printed). Rerating curve ~104 % at 0 C, 100 % at ~20 C, ~92 % at 80 C. Dimensions (drawing): 19.05 wide, body 12.19 + blades 6.35 = 18.54 tall, 5.08 thick, blades 0.66 thick, 4.064 gap between blades, 14.48 across the blades' outer edges. Colour not readable in the text copy (ATO convention: 10 A red, not relied on). Master Electronics marks part 257010 'discontinued' (still 16,684 in stock on the check date); Littelfuse's current ATOF 287 series has the same footprint and fits the same holders."
+   },
+   "ato_5a_littelfuse_257005": {
+    "model": "Littelfuse 257 series ATO blade fuse 5 A 32 V DC (0257005.PXPV)",
+    "current_a": 5,
+    "voltage_max": 32,
+    "interrupting_a": 1000,
+    "characteristic": "fast-acting",
+    "width": 19.05,
+    "height": 18.54,
+    "thickness": 5.08,
+    "body_h": 12.19,
+    "blade_length": 6.35,
+    "blade_t": 0.66,
+    "blade_gap": 4.064,
+    "blade_outer_span": 14.48,
+    "cold_resistance_ohm": 0.01785,
+    "voltage_drop_mv_typ": 128,
+    "i2t_a2s": 26,
+    "terminal": "plug",
+    "source": "https://projectlab2019.phas.ubc.ca/projectlab.engphys.ubc.ca/wp-content/phys253/files/datasheets-elec/bladefuse0257010PXPV_10A_BatteryFuse.pdf",
+    "source_listing": "https://skycraftsurplus.com/products/littelfuse-257005-ato-fuse-32vdc-5-amp-100pcs.html",
+    "source_colour": "https://www.carltonbates.com/Fuses/LITTELFUSE/Fast-Acting-Miniature-Auto-Blade-Type-Fuse-5A-1000A-IR/257005/p/07945892998-1",
+    "confidence": "datasheet",
+    "note": "Same Littelfuse ATO catalogue pages as ato_10a_littelfuse_257010 (32 VDC, 1000 A interrupting, same outline and opening-time table); 5 A row: typ. voltage drop 128 mV, cold resistance 17.85 mohm, I2t 26 A2s. Carlton-Bates lists part 257005 as 5 A, 32 V DC, 1,000 A interrupting, 0.75 in long, tan. A stalled DS3225 draws up to 2.9 A, an MG996R 2.5 A, so a 5 A fuse per single servo is about 1.7-2x stall (opens in 0.15-5 s at 200 %, so a hard short is cleared, a long stall is not)."
    }
   },
   "receivers": {
@@ -1517,6 +1721,63 @@
     "source_specs": "https://www.pololu.com/product/2184/specs",
     "confidence": "datasheet",
     "note": "Pololu page (opened 2026-10-31): '12-inch (300-mm), flat cable', '22-AWG wires', each conductor 60 strands, male Futaba J / female JR ends, both compatible with JR and Futaba, gold-flashed contacts on 0.1 in spacing; colours brown/black GND, red servo power, orange/yellow/white/blue signal. length 300 is Pololu's metric figure (12 in = 304.8). NO current rating and NO weight published by Pololu, so neither is given: the wire's own limit comes from wire.awg (22 AWG); the 0.1 in crimp contacts are not rated by Pololu either - keep each lead to one servo (<= 2.9 A stall here)."
+   },
+   "servo_ext_600_pololu2185": {
+    "model": "Pololu #2185 servo extension cable 24 in (600 mm), male-female, flat, JR/Futaba compatible",
+    "length": 600,
+    "gauge": 22,
+    "conductors": 3,
+    "strands": 60,
+    "pitch": 2.54,
+    "source": "https://www.pololu.com/product/2185",
+    "confidence": "datasheet",
+    "note": "Pololu page (opened 2026-10-31): '24-inch (600-mm), flat cable', '22-AWG wires', 60 strands per wire, male Futaba J one end / female JR the other, both JR- and Futaba-compatible, gold-flashed contacts on 0.1 in spacing. Same family as servo_ext_300_pololu2184; NO current rating or weight published (wire limit from wire.awg 22 AWG). Twisted version: Pololu #2168."
+   },
+   "ferrule_wago_216_224_16awg": {
+    "model": "WAGO 216-224 insulated bootlace ferrule, 1.5 mm2 / 16 AWG, black, short (6 mm sleeve)",
+    "wire_mm2": 1.5,
+    "wire_awg": 16,
+    "length": 12,
+    "sleeve_length": 6,
+    "collar_d": 4.0,
+    "sleeve_od": 3.5,
+    "sleeve_id": 1.7,
+    "strip_length": 8,
+    "weight_g": 0.11,
+    "source": "https://static.rapidonline.com/pdf/21-5760_v1.pdf",
+    "confidence": "datasheet",
+    "note": "WAGO printview 216-224 (Rapid-hosted, opened 2026-10-31): 'Ferrule; Sleeve for 1.5 mm2 / AWG 16; insulated; electro-tin plated', strip length 8 mm, Length 12, Length 1 (metal sleeve) 6, Diameter 4 (collar), Diameter 1 3.5, Diameter 2 1.7 (bore), black, 0.11 g. diameter labels are WAGO's (D, D1, D2); collar/sleeve_od/sleeve_id is this catalog's reading of them. For stranded wire into the LRS-100-5 M3.5 screw terminals (MEAN WELL manual: 'all strands of each stranded wire enter the terminal'). The longer 216-204 (14 mm, 8 mm sleeve) is the same size class."
+   },
+   "ferrule_wago_216_201_20awg": {
+    "model": "WAGO 216-201 insulated bootlace ferrule, 0.5 mm2 / 20 AWG, white (8 mm sleeve)",
+    "wire_mm2": 0.5,
+    "wire_awg": 20,
+    "length": 14,
+    "sleeve_length": 8,
+    "collar_d": 3.1,
+    "sleeve_od": 2.6,
+    "sleeve_id": 1.0,
+    "strip_length": 9,
+    "weight_g": 0.1,
+    "source": "https://doc.7-el.ru/2/216-201.pdf",
+    "source_listing": "https://masterelectronics.com/en/wago/216201-12729817.html",
+    "confidence": "datasheet",
+    "note": "WAGO data sheet 216-201 (distributor-hosted, opened 2026-10-31): 'Ferrule; Sleeve for 0.5 mm2 / 20 AWG; insulated; electro-tin plated; white', strip length 9 mm, Length 14, Length 1 8, Diameter 3.1, Diameter 1 2.6, Diameter 2 1, 0.1 g. Master Electronics marks 216-201 'no longer being manufactured' (3,328 in stock on the check date)."
+   },
+   "ferrule_wago_216_322_22awg": {
+    "model": "WAGO 216-322 insulated bootlace ferrule, 0.34 mm2 / 22 AWG, green (6 mm sleeve)",
+    "wire_mm2": 0.34,
+    "wire_awg": 22,
+    "length": 10,
+    "sleeve_length": 6,
+    "collar_d": 2.5,
+    "sleeve_od": 2.0,
+    "sleeve_id": 0.5,
+    "strip_length": 7,
+    "weight_g": 0.1,
+    "source": "https://www.farnell.com/datasheets/3014558.pdf",
+    "confidence": "datasheet",
+    "note": "WAGO data sheet 216-322 (22.05.2020, Farnell-hosted, opened 2026-10-31): 'Ferrule; Sleeve for 0.34 mm2 / 22 AWG; insulated; electro-tin plated; green', strip length 7 mm, Length 10, Length 1 6, Diameter 2.5, Diameter 1 2, Diameter 2 0.5 (as printed), 0.1 g. For 22 AWG servo-lead wires into a screw terminal (e.g. a PCA9685 V+ block or the supply)."
    }
   },
   "antennas": {
