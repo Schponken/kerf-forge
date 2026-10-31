@@ -32,6 +32,8 @@ appends new designs to the index, adds every purchased-part dimension to `catalo
 and writes `projects/<p>/REFERENCES.md` (references, decisions they support, open questions). Borrow architecture,
 proportions and known-good numbers; avoid the failure points others hit. Only copy geometry from permissive licenses.
 
+Search first, per part: for the whole device and for each printed part or sub-assembly in the part list run `.venv/bin/kerf find "<short description>" --project <p>` (Printables measured, Thingiverse with a token, plus the MakerWorld/GrabCAD searches the researcher runs and adds with `--add`). If a candidate fits the contract (dimensions, interfaces, load) and its license allows it, reuse or adapt it — rebuild its proven geometry and numbers in the part code with credit — instead of inventing one. Either way fill in its `Decision:` line in REFERENCES.md (reuse / adapt / design new, and why); `kerf check` warns while one is TODO. Purchased hardware with a McMaster STEP: ask Spencer to drop the file into catalog/models/.
+
 ## 1. Understand and size (`projects/<p>/DESIGN.md`)
 - **Requirements** in numbers: function, loads/payloads, motion ranges, size limits, mass budget, environment.
 - **Architecture**: 2-3 options in one line each, the pick and why (cite REFERENCES.md).

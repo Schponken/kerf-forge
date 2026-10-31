@@ -26,6 +26,8 @@ Given a project brief (and its DESIGN.md if it exists), find:
 4. **Engineering guidance** that applies: torque/thrust sizing rules, typical safety factors, FDM design guides from
    filament or printer makers, tendon/linkage geometry for hands, prop clearance conventions for drones.
 
+Start every search with `.venv/bin/kerf find "<description>" --project <p>` (whole device, then each part type): it queries Printables (and Thingiverse when THINGIVERSE_TOKEN is set), measures the top STLs and writes the candidates table into REFERENCES.md. Then run the web searches it lists (MakerWorld, GrabCAD) and add every fitting find with `kerf find "<same description>" --project <p> --add <url> --title ... --license ... --dims ... --source MakerWorld`. Write the `Decision:` line for each search only if the orchestrator asked you to; otherwise recommend one in your final message.
+
 How to fetch: WebSearch + WebFetch for pages. Public GitHub repos can be cloned with git (shallow) into
 `/tmp/refs/<name>` to read code/CAD and measure STL/STEP files with trimesh or build123d. Most other sites block
 direct downloads from the shell; work from their pages. Respect licenses: you may borrow ideas, proportions and

@@ -35,6 +35,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep.setdefault("traces", {})[iid] = getattr(it, "trace", "")
             if it.diag is not None:
                 rep.setdefault("diagnoses", {})[iid] = it.diag.as_dict()
+    from . import find
+    for q in find.pending_decisions(proj.dir):
+        rep["warnings"].append(f"REFERENCES.md: `kerf find \"{q}\"` has no reuse decision yet (Decision: TODO)")
     for iid, it in proj.printed.items():
         if it.shape is None:
             continue

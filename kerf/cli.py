@@ -183,6 +183,10 @@ def main(argv=None) -> int:
     k = sub.add_parser("calibrate"); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
     f = sub.add_parser("feedback"); f.add_argument("material"); f.add_argument("reports", nargs="+")
     f.add_argument("--printer", default=None)
+    fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
+    fd.add_argument("--limit", type=int, default=8); fd.add_argument("--measure", type=int, default=4)
+    for k in ("--add", "--title", "--license", "--dims", "--source"):
+        fd.add_argument(k, default=None)
     a = ap.parse_args(argv)
     sys.path.insert(0, str(ROOT))
     if a.cmd == "doctor":
@@ -201,6 +205,20 @@ def main(argv=None) -> int:
         return new(a.name, a.title)
     if a.cmd == "status":
         return status()
+    if a.cmd == "find":
+        from . import find as F, project as P
+        pdir = P.resolve_dir(a.project) if a.project else None
+        if a.add:
+            if pdir is None:
+                _p("FAIL --add needs --project"); return 1
+            F.add(pdir / "REFERENCES.md", a.query, {"source": a.source or "web", "title": a.title or a.add, "url": a.add,
+                                                   "license": a.license or "", "dims": a.dims or "—"})
+            _p(f"added to {pdir.name}/REFERENCES.md"); return 0
+        r = F.find(a.query, pdir, a.limit, a.measure)
+        _p(r["text"])
+        if pdir is not None:
+            _p(f"written to {pdir.name}/REFERENCES.md — fill in the Decision line")
+        return 0
     if a.cmd in ("calibrate", "feedback"):
         from . import calibrate as C
         printer = a.printer or C.DEFAULT_PRINTER
