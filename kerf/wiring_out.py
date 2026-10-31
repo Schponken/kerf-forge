@@ -25,12 +25,13 @@ def link(path: str) -> str:
 
 
 def wire_link(gauge) -> str:
-    """Shop page of a sourced silicone-wire set that has this gauge (catalog wire.silicone.sets)."""
+    """Buy link for this gauge from catalog/prices.json key 'wire:AWG<g>' (kept out of hardware.json so a shop link
+    never changes a project's design fingerprint). Empty when not yet priced."""
     try:
-        sets = catalog.get("wire.silicone")["sets"]
+        from .ship import load_prices
+        return (load_prices().get(f"wire:AWG{int(gauge)}") or {}).get("buy", "")
     except Exception:  # noqa: BLE001
         return ""
-    return next((x["buy"] for x in sets if int(gauge) in x["gauges"]), "")
 
 
 def _conductors(w):
@@ -48,12 +49,12 @@ def bom_rows(model) -> list:
         ends[int(w["gauge"])] += 2 * n
     for (g, col), mm in sorted(wire.items()):
         rows.append({"type": "wire", "item": f"AWG {g} silicone stranded wire ({col}), metres", "qty": math.ceil(mm / 100) / 10,
-                     "spec": f"chassis rating {catalog.get('wire.awg')['ampacity_a'][str(g)]} A", "link": wire_link(g),
+                     "spec": f"chassis rating {catalog.get('wire.awg')['ampacity_a'][str(g)]} A", "link": wire_link(g), "price_key": f"wire:AWG{g}",
                      "note": f"{mm:g} mm of cut lengths in WIRING.md, rounded up to 0.1 m"})
     for g, n in sorted(ends.items()):
         d = float(catalog.get("wire.awg")["diameter_mm"][str(g)])
         rows.append({"type": "wire", "item": f"heat-shrink for AWG {g} joints, {HEATSHRINK_MM} mm pieces", "qty": n,
-                     "spec": f"2:1, expanded ID >= {max(1.5, round(d * 2.2 + 0.5, 1)):g} mm", "link": link("electronics.wire_misc.heatshrink_3mm"),
+                     "spec": f"2:1, expanded ID >= {max(1.5, round(d * 2.2 + 0.5, 1)):g} mm", "link": link("electronics.wire_misc.heatshrink_3mm"), "price_key": "heatshrink",
                      "note": "one per soldered conductor end"})
     return rows
 

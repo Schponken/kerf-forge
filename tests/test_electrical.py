@@ -165,7 +165,7 @@ def test_outputs_written(tmp_path):
     assert "hover time" in (out / "WIRING.md").read_text() and "<svg" in (out / "wiring.svg").read_text()
     wires = [r for r in rep["bom"] if r["type"] == "wire"]
     # power runs are pairs: lead 2 x 200 + main 2 x 200 = 800 mm of AWG 14 red/black -> 0.8 m
-    assert any(r["item"].startswith("AWG 14") and r["qty"] == 0.8 and "outofdarts" in r["link"] for r in wires)
+    assert any(r["item"].startswith("AWG 14") and r["qty"] == 0.8 and r["price_key"] == "wire:AWG14" for r in wires)
     assert not [p for p in rep["problems"] if "ship" in p or "electrical" in p]
     assert any("heat-shrink" in r["item"] for r in wires)
     assert all(r["link"] for r in rep["bom"] if r["type"] == "purchased")
