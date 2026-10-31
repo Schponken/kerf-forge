@@ -118,6 +118,25 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
 - Cable path from base to wrist that survives the full motion range.
 - Gripper: opening and grip force stated in DESIGN.md.
 
+## 10b. Electrical (every project that moves or powers anything)
+- Derive the whole electrical system, not only what the brief names: controller/FC, ESCs or drivers, receiver +
+  antenna, VTX + antenna + camera for FPV, BEC/regulator for servos and logic, battery, strap + pad, power connector,
+  switch/fuse where needed, sensors. Every one is a catalog item with a source (add it first).
+- `power_budget` must pass: battery C rating at average and burst, every BEC/ESC output, connector and wire. Wire gauge
+  from current: chassis ampacity (PowerStream table, catalog `wire.awg`) at the average current, and at the peak an
+  adiabatic copper temperature rise over the burst (`burst_s`, default 5 s) of at most 60 K (40 C ambient to 100 C,
+  half the 200 C rating of silicone insulation). Copper: 1.72e-8 ohm m and 0.00393 /K at 20 C (CRC via
+  hyperphysics), 8.92 g/cm3 x 385 J/(kg K) (copper.org). A real, configured ESC/firmware current limit may cap the
+  peak (`electrical.limits` with a why); never lower a rating.
+- `flight_time` (drones, hover) or `run_time` (everything else) from 80 % of capacity (the LiPo 80 % rule, Flite
+  Test). Hover power by momentum theory: P = sum(kappa x T^1.5 / sqrt(2 rho A)) / (FM x eta) with rho 1.225, figure
+  of merit FM 0.5 (UIUC measured 0.38-0.61 on 2.5-5 in props, Deters & Selig 2008; 0.6 typical per Bauersfeld &
+  Scaramuzza 2021, arXiv 2109.04741), motor efficiency eta 0.75 (same paper), kappa 1.281 for a coaxial pair at
+  equal thrust (momentum theory, Simoes, IST). This is an estimate; measured motor tables beat it when catalogued.
+- `connector_access`: the battery plug and the FC USB port are reachable with the device assembled.
+- Every run declared in `wiring:` with gauge, colour and a cut length >= routed length + 15 %; route power runs
+  through the frame's wire channels / keep-outs (`channel_clear` for enclosed channels).
+
 ## 11. Assembly sanity
 - Tendon / wire channels are declared with `channel_clear` at the diameter of the tendon or wire plus clearance
   (bare wire or PTFE-sleeved tendon: add at least the free-running fit of section 6), at home and at the extreme poses.

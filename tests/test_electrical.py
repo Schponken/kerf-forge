@@ -1,0 +1,172 @@
+"""Electrical system: power tree currents, ratings, hover time and connector access against hand calculations."""
+import math
+
+import pytest
+
+from kerf import assembly as A, electrical as E, project as P, requirements
+from test_engine import _write_project
+
+# A 3" quad reduced to its electrical parts. Masses are fixed with mass_g so the hover numbers are hand-checkable:
+# 164 + 5 + 16.8 + 4 x 9.1 + 2.2 = 224.4 g.
+YAML = """
+name: Elec test
+params: {{}}
+parts: {{}}
+purchased:
+  battery: {{catalog: drone.batteries.4S_1500, proxy: box, mass_g: 164,
+            joints: {{m1: [60, 60, 40], m2: [-60, 60, 40], m3: [-60, -60, 40], m4: [60, -60, 40], xt: [{xt_x}, 0, 0],
+                      st: [0, 0, 60], rxj: [0, 30, 60]}}}}
+  xt60: {{catalog: drone.connectors.XT60, proxy: box, mass_g: 5}}
+  stack: {{catalog: drone.stacks.fc_20, proxy: box, size: [30, 30, 10], mass_g: 16.8}}
+  rx: {{catalog: electronics.receivers.elrs_nano, proxy: box, mass_g: 2.2}}
+  m1: {{catalog: drone.motors.1404_3800kv_3in, proxy: box, size: [20, 20, 15], mass_g: 9.1}}
+  m2: {{catalog: drone.motors.1404_3800kv_3in, proxy: box, size: [20, 20, 15], mass_g: 9.1}}
+  m3: {{catalog: drone.motors.1404_3800kv_3in, proxy: box, size: [20, 20, 15], mass_g: 9.1}}
+  m4: {{catalog: drone.motors.1404_3800kv_3in, proxy: box, size: [20, 20, 15], mass_g: 9.1}}
+keepouts:
+  p1: {{catalog: drone.props.3in, proxy: prop_disc, h: 5}}
+  p2: {{catalog: drone.props.3in, proxy: prop_disc, h: 5}}
+  p3: {{catalog: drone.props.3in, proxy: prop_disc, h: 5}}
+  p4: {{catalog: drone.props.3in, proxy: prop_disc, h: 5}}
+assembly:
+  root: battery
+  joints:
+    - {{parent: battery.m1, child: m1.bottom}}
+    - {{parent: battery.m2, child: m2.bottom}}
+    - {{parent: battery.m3, child: m3.bottom}}
+    - {{parent: battery.m4, child: m4.bottom}}
+    - {{parent: m1.top, child: p1.hub}}
+    - {{parent: m2.top, child: p2.hub}}
+    - {{parent: m3.top, child: p3.hub}}
+    - {{parent: m4.top, child: p4.hub}}
+    - {{parent: battery.xt, child: xt60.bottom}}
+    - {{parent: battery.st, child: stack.bottom}}
+    - {{parent: battery.rxj, child: rx.bottom}}
+electrical:
+  battery: battery
+{extra}
+wiring:
+  - {{id: lead, from: battery, to: xt60, v: 16.8, gauge: 14, color: red/black, length_mm: {lead_len}}}
+  - {{id: main, from: xt60, to: stack, v: 16.8, gauge: 14, color: red/black, length_mm: 200}}
+  - {{id: ph1, from: stack.esc, to: m1, v: 16.8, gauge: 20, length_mm: 200}}
+  - {{id: ph2, from: stack.esc, to: m2, v: 16.8, gauge: 20, length_mm: 200}}
+  - {{id: ph3, from: stack.esc, to: m3, v: 16.8, gauge: 20, length_mm: 200}}
+  - {{id: ph4, from: stack.esc, to: m4, v: 16.8, gauge: 20, length_mm: 200}}
+  - {{id: rx5v, from: stack.5v, to: rx, v: 5.0, gauge: 28, length_mm: 100}}
+  - {{id: crsf, from: stack, to: rx, kind: signal, gauge: 28, length_mm: 100}}
+requirements:
+  - {{id: power, check: power_budget}}
+  - {{id: flight_time, check: flight_time, min_min: 3}}
+  - {{id: plug, check: connector_access, item: xt60, direction: [1, 0, 0], length_mm: 30}}
+"""
+
+
+def _proj(tmp_path, extra="", lead_len=200, xt_x=0):
+    d = _write_project(tmp_path / "elec", YAML.format(extra=extra, lead_len=lead_len, xt_x=xt_x), {})
+    proj = P.build(P.load(str(d)))
+    for i, it in proj.items.items():
+        assert it.error is None, (i, it.error)
+    asm = A.plan(proj)
+    A.solve(asm)
+    return proj, asm
+
+
+def test_hover_power_by_hand():
+    # 1 kg on 4 x 10 in (254 mm) props: T = 2.4517 N per rotor, A = pi 0.127^2 = 0.050671 m2,
+    # P_ideal = T^1.5 / sqrt(2 rho A) = 3.8389 / 0.35233 = 10.896 W per rotor; x4 / (0.5 x 0.75) = 116.2 W
+    assert E.hover_power_w(1000, 254, [1, 1, 1, 1]) == pytest.approx(116.2, abs=0.1)
+    # the same thrust on one coaxial pair of the same props: 2 rotors at 4.9033 N, x 1.281
+    t = 1 * 9.80665 / 2
+    p = 1.281 * 2 * t ** 1.5 / math.sqrt(2 * 1.225 * math.pi * 0.127 ** 2) / 0.375
+    assert E.hover_power_w(1000, 254, [2]) == pytest.approx(p, rel=1e-9)
+    # T^1.5 = 10.858 -> 30.817 W per rotor, x 2 x 1.281 / 0.375 = 210.5 W (81 % more than the quad: half the disc area)
+    assert E.hover_power_w(1000, 254, [2]) == pytest.approx(210.5, abs=0.1)
+
+
+def test_burst_rise_by_hand():
+    # 14 AWG (1.62814 mm): A = 2.0819 mm2; 63.7 A -> J = 3.0597e7 A/m2; rho(100 C) = 1.72e-8 x 1.3144 = 2.2608e-8;
+    # dT/dt = J^2 rho / (8920 x 385) = 6.163 K/s -> 30.8 K in 5 s
+    assert E.burst_rise_k(63.7, 14, 5) == pytest.approx(30.8, abs=0.1)
+
+
+def test_quad_currents_and_flight_time(tmp_path):
+    proj, asm = _proj(tmp_path)
+    m = E.analyse(proj)
+    # hover: 224.4 g on 4 x 76.49 mm props -> 41.0 W electrical (see test_hover_power_by_hand for the method)
+    assert m["hover"]["mass_g"] == pytest.approx(224.4, abs=0.01)
+    assert m["hover"]["power_w"] == pytest.approx(41.0, abs=0.1)
+    # battery avg = 41.02 W / 14.8 V (4S nominal) + FC 0.3 A + RX 0.1 A x 5 V / (16.8 V x 0.8) = 2.772 + 0.3 + 0.0372
+    assert m["avg_a"] == pytest.approx(3.109, abs=0.003)
+    # peak = 4 x 15.84 (catalog max) + 0.3 + 0.0372 = 63.70 A
+    assert m["peak_a"] == pytest.approx(63.70, abs=0.01)
+    # 1.5 Ah x 0.8 / 3.109 A = 23.2 min
+    assert m["minutes"] == pytest.approx(23.2, abs=0.05)
+    rows = {(r["what"], r["kind"]): r for r in m["ratings"]}
+    # the XT60's 60 A instantaneous rating is exceeded by the 63.7 A punch-out; the 30 A continuous one is not
+    assert not rows[("connector xt60", "peak A vs peak rating")]["ok"]
+    assert rows[("connector xt60", "avg A vs rated")]["ok"]
+    assert rows[("stack.5v", "avg A vs rated")]["limit"] == 2.0          # SpeedyBee 5 V pad budget
+    assert rows[("stack.esc -> m1", "peak A vs burst rating")]["limit"] == 45  # per-channel ESC burst
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert not r["power"]["ok"] and "connector xt60" in r["power"]["detail"]
+    assert r["flight_time"]["ok"] and r["flight_time"]["value"] == pytest.approx(23.2, abs=0.05)
+
+
+def test_current_limit_and_overrides_need_a_why(tmp_path):
+    proj, asm = _proj(tmp_path, extra="  limits: {stack: {peak_a: 55, why: 'ESC current limit set to 55 A'}}")
+    m = E.analyse(proj)
+    assert m["peak_a"] == pytest.approx(55, abs=1e-6)
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert r["power"]["ok"], r["power"]["detail"]
+    proj, asm = _proj(tmp_path, extra="  limits: {stack: {peak_a: 55}}")
+    with pytest.raises(E.ElectricalError, match="why"):
+        E.analyse(proj)
+
+
+def test_routed_length_needs_slack(tmp_path):
+    # the XT60 sits on the battery's bottom centre: both box centres are 15.5 - 8.0 mm apart in z (battery 28 mm
+    # tall, centre 14; XT60 16 mm tall, centre 8) -> routed 6.0 mm, cut length >= 6.9 mm
+    proj, asm = _proj(tmp_path, lead_len=6.5)
+    m = E.analyse(proj)
+    w = next(w for w in m["wires"] if w["id"] == "lead")
+    assert w["routed_mm"] == pytest.approx(6.0, abs=0.01)
+    assert E.length_problems(m) and "lead" in E.length_problems(m)[0]
+    proj, asm = _proj(tmp_path, lead_len=7)
+    assert not [p for p in E.length_problems(E.analyse(proj)) if "'lead'" in p]
+
+
+def test_connector_access(tmp_path):
+    # XT60 21.3 mm long on the battery's bottom centre: its +X face is inside the battery footprint (80 mm long)
+    # -> a plug along +X runs into the battery. Moved to x = 60 its face is at 70.65, past the battery end at 40.
+    proj, asm = _proj(tmp_path)
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert not r["plug"]["ok"] and "battery" in str(r["plug"]["value"])
+    proj, asm = _proj(tmp_path, xt_x=60)
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert r["plug"]["ok"], r["plug"]
+
+
+def test_input_voltage_range(tmp_path):
+    # the receiver takes 5.0 V only (catalog voltage_min = voltage_max = 5); feeding it from the 9 V pad fails
+    proj, asm = _proj(tmp_path)
+    proj.data["wiring"][6] = {**proj.data["wiring"][6], "v": 9.0}
+    rows = [r for r in E.analyse(proj)["ratings"] if r["kind"] == "voltage"]
+    assert rows and not rows[0]["ok"] and rows[0]["what"] == "rx input"
+
+
+def test_outputs_written(tmp_path):
+    from kerf import pipeline
+    _proj(tmp_path)
+    rep = pipeline.run(str(tmp_path / "elec"), sweeps=False, do_export=True)
+    out = tmp_path / "elec" / "out"
+    for f in ("WIRING.md", "wiring.svg", "ASSEMBLY.md", "bom.csv"):
+        assert (out / f).exists(), f
+    assert "## Electrical" in (out / "ASSEMBLY.md").read_text() and "Step 1" in (out / "ASSEMBLY.md").read_text()
+    assert "hover time" in (out / "WIRING.md").read_text() and "<svg" in (out / "wiring.svg").read_text()
+    wires = [r for r in rep["bom"] if r["type"] == "wire"]
+    # power runs are pairs: lead 2 x 200 + main 2 x 200 = 800 mm of AWG 14 red/black -> 0.8 m
+    assert any(r["item"].startswith("AWG 14") and r["qty"] == 0.8 and "outofdarts" in r["link"] for r in wires)
+    assert not [p for p in rep["problems"] if "ship" in p or "electrical" in p]
+    assert any("heat-shrink" in r["item"] for r in wires)
+    assert all(r["link"] for r in rep["bom"] if r["type"] == "purchased")
+    assert rep["electrical"]["minutes"] > 20

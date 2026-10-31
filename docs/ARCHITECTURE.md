@@ -32,7 +32,10 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/calibrate.py` | Print-truth loop: `kerf calibrate` writes a fit coupon (M2/M2.5/M3 clearance, pilot and heat-set holes, 608/623 pockets, 3 mm dowel holes at 0.2/0.3/0.4 slip + press, MG90S window) with a CARD.md; `kerf feedback <material> hole_M3=tight ...` stores per-printer+material diameter offsets with dated history in `catalog/printers/<printer>.json`; iface applies them (screw holes, bearing seats, servo windows, pin allowances) while a part builds; the profile is part of the project fingerprint |
 | `kerf/diagnose.py` | Self-correcting build errors: an exception from part code becomes part + file line + operation (fillet, chamfer, sweep, iface.*, ctx.p, catalog) + a computed `fix:` hint (largest fillet/chamfer the same edges take, nearest param/name/catalog key, the material a heat-set or pilot hole needs); in the PROBLEM line, report.json `diagnoses{}`, and fed first by the after-edit hook |
 | `kerf/shanks.py` | Screw bodies: after fastener sizing, each screw (head seat to tip, 0.8 d cylinder) must not run into any item but the two it joins (a tip poking out of a nut into a neighbour, a screw reaching a prop disc) |
-| `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM |
+| `kerf/electrical.py` | Complete electrical system from `electrical:` + `wiring:`: power tree, current per item and run (avg + peak), hover power (momentum theory), ratings (battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltage), routed wire lengths |
+| `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
+| `kerf/wiring_out.py` | `out/WIRING.md`, `out/wiring.svg`, the solder/wiring steps appended to `out/ASSEMBLY.md`, and the BOM rows for wire and heat-shrink; buy links from catalog sources |
+| `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM (with a buy / source link column) |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` |
 | `kerf/cli.py` | `kerf doctor | check | build | verify | review-status | new | status | calibrate | feedback` |
 
@@ -114,6 +117,10 @@ Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each funct
 | `tip_over` | `min_deg`, `support`, `poses`, `payload_g`, `payload_at` | smallest tip-over angle (deg) |
 | `channel_clear` | `path`, `diameter`, `poses`, `ignore` | largest diameter that passes (mm) |
 | `prop_clearance` | `min_mm`, `min_between_mm`, `props`, `ignore`, `joints`, `poses` | tightest prop-disc gap (mm) |
+| `power_budget` | (`fm`, `eta`) — reads `electrical:` / `wiring:` | worst load / rating (must be <= 1) |
+| `flight_time` | `min_min`, (`fm`, `eta`) | hover minutes on usable capacity |
+| `run_time` | `min_min` | minutes at every load's average draw |
+| `connector_access` | `item`, `direction` (item axis), `length_mm`, `size`, `at`, `ignore`, `pose` | `clear` or the items in the way |
 
 `cantilever_stress` cuts the part with the section plane, takes the section's area and second-moment tensor, and
 reports kt x max |N/A + unsymmetric bending stress| over the outline. Torsion is reported, not included.
@@ -132,6 +139,37 @@ for a bore, or `any: [region, ...]` for a union, e.g. `fixed` at both pivots) pl
 on the half of a bore facing the load). Each FEA result reports `applied_force_n` / `applied_moment_nmm` (part origin),
 and `kerf build` writes `out/renders/fea_<id>.png` (kerf/fea_render.py: von Mises, magenta above the limit).
 Numbers inside requirement regions and forces may be expressions over params/layout values.
+
+## Electrical (`electrical:` + `wiring:`; kerf/electrical.py)
+Every project that moves or powers anything declares its whole electrical system: each board, ESC, receiver, BEC,
+battery, connector, strap is a catalog-backed purchased item, and every connection is a run:
+
+```yaml
+electrical:
+  battery: battery            # the pack item (catalog cells, capacity_mah, c_rating, c_burst)
+  burst_s: 5                  # longest full-power burst (s) for wire heating; default 5
+  usable: 0.8                 # usable capacity fraction (80 % rule); fm / eta / bec_eff override the defaults
+  draw: {rx: {avg_a: 0.1, peak_a: 0.1, why: "..."}}         # only where the catalog has no current figure
+  limits: {stack: {peak_a: 100, why: "ESC current limit configured to 25 A per motor"}}   # a real, set cap
+wiring:
+  - {id: main, from: xt60, to: stack, kind: power, v: 25.2, gauge: 12, color: red/black, length_mm: 90,
+     route: [top_plate.xt60, body.stack]}            # waypoints: item, item.joint or [x, y, z]; ends = item centres
+  - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 20, conductors: 3, length_mm: 120, route: [arm_1.motor]}
+  - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, length_mm: 60}
+```
+- A power run (`kind: power`, default) is the +/- pair (`conductors` overrides, e.g. 3 motor phases) and carries
+  everything downstream of its `to` item. A run at a lower `v` than the item's feed is a regulator output and is
+  referred back to the input at `bec_eff` (0.8). Each item has one feed; the tree starts at the battery.
+- Item draw: motors `max_current_a` (peak) and, when prop discs exist, their hover share (momentum theory, figure of
+  merit `fm` 0.5, motor efficiency `eta` 0.75); servos `running_current_a` / `stall_current_a`; others `current_a`
+  [/`current_peak_a`]; connectors (catalog path `...connectors...`) and regulators (`output_v`) draw nothing themselves.
+- Ratings: battery avg <= C x Ah and peak <= C_burst x Ah; output pins `<pin>_current_a` / `<pin>_burst_a`
+  (per run, e.g. ESC channels) or `bec_<pin>_a` (summed); a regulator by `current_a`; connectors `current_a` /
+  `current_peak_a`; each power run avg <= chassis ampacity (catalog `wire.awg`) and adiabatic burst rise at peak for
+  `burst_s` <= 60 K; `v` within the `to` item's `voltage_min..max` / `input_v_min..max`; battery runs at 4.2 V/cell.
+- `length_mm` is the cut length: it must be >= the routed 3D length (ends + waypoints) + 15 % (a check problem).
+- `kerf build` writes `out/WIRING.md` (runs, loads, ratings, solder steps), `out/wiring.svg`, the electrical steps of `out/ASSEMBLY.md`, and
+  adds wire (per gauge/colour, total mm) and heat-shrink rows with buy links to the BOM.
 
 ## Item keys
 - Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),

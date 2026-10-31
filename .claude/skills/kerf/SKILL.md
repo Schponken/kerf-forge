@@ -38,6 +38,14 @@ proportions and known-good numbers; avoid the failure points others hit. Only co
 - **Purchased parts** from the catalog with the sizing math shown, e.g. servo torque = Σ m·g·r at the worst pose
   (arm stretched horizontal) + payload, ask <= 50% of stall; thrust/weight; reach; bearing loads. Missing hardware:
   research it and add it to the catalog with a source URL first.
+- **Electrical system** (anything that moves or is powered): derive EVERY part it needs to work, not only the ones
+  the brief names — controller/FC, ESCs or servo/motor drivers, receiver + antenna, VTX + antenna + camera for FPV,
+  BEC/regulator for servos and logic (servo stall current x count), battery (capacity from the run/flight time
+  target), strap + pad, power connector, switch, fuse where needed, sensors. Each is a catalog item with a source.
+  Draw the power tree (battery -> connector -> distribution -> loads) and pick wire gauges from current
+  (docs/ENGINEERING.md 10b); it becomes `electrical:` + `wiring:` (docs/ARCHITECTURE.md "Electrical") with
+  `power_budget`, `flight_time`/`run_time` and `connector_access` requirements. Leave wire channels and tie points
+  in the parts for every run.
 - **Part list**: each printed part, its job, material (docs/ENGINEERING.md section 2), `print_rot`, `load_axis`,
   rough envelope.
 - **Interface table**: every connection — part A, part B, interface call (toolbox below), group name, screw/pin
@@ -106,6 +114,10 @@ Requirement checks (`requirements:` in project.yaml; arguments in each function'
 | `tip_over` | static tip-over angle from CG height and the support polygon |
 | `channel_clear` | an internal channel (tendon, wire) is open end to end for a diameter, over poses |
 | `prop_clearance` | prop discs clear each other and every other item, at home and over sweeps |
+| `power_budget` | battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltages hold at avg and peak |
+| `flight_time` | hover minutes on 80 % of the pack (momentum-theory hover power + every other load) |
+| `run_time` | minutes on 80 % of the pack at every load's average draw (robots, gadgets) |
+| `connector_access` | a plug / cable / finger reaches the battery plug or USB port with the device assembled |
 
 Always-on checks (no yaml needed): print checks per part (one solid, bed fit, watertight, overhang, wall thickness,
 `load_axis` across layers), interference at home, motion sweeps of every joint, fastener alignment + screw lengths,

@@ -38,6 +38,7 @@ def test_every_yaml_key_documented():
 
 
 def test_engineering_rules_name_the_checks_that_enforce_them():
-    for name in ("fea_static", "static_torque", "cantilever_stress", "channel_clear", "cg", "tip_over", "prop_clearance"):
+    for name in ("fea_static", "static_torque", "cantilever_stress", "channel_clear", "cg", "tip_over", "prop_clearance",
+                 "power_budget", "flight_time", "run_time", "connector_access"):
         assert name in requirements.REGISTRY and re.search(rf"\b{name}\b", ENG), name
     assert "pin_hole" in ENG and "load_axis" in ENG

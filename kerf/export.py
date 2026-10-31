@@ -98,7 +98,7 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
     return out
 
 
-def bom(proj, fastener_joints, part_reports, outdir, pins=None):
+def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
     rows = []
     for iid, it in proj.printed.items():
         r = part_reports.get(iid, {})
@@ -106,8 +106,9 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None):
                      "note": f"{r.get('mass_est_g', '?')} g each, {r.get('size_mm')}"})
     for iid, it in proj.items.items():
         if it.role == "purchased":
+            from .wiring_out import link
             rows.append({"type": "purchased", "item": iid, "qty": it.spec.get("qty", 1), "spec": it.spec.get("catalog", ""),
-                         "note": it.spec.get("note", "")})
+                         "note": it.spec.get("note", ""), "link": link(it.spec.get("catalog", ""))})
     screws = Counter((j["screw"], j["length_mm"], {"countersink": "flat head"}.get(j["head"], "socket head")) for j in fastener_joints)
     for (size, length, head), n in sorted(screws.items(), key=lambda x: str(x)):
         rows.append({"type": "fastener", "item": f"{size} x {length} mm {head} screw", "qty": n, "spec": "ISO 4762 / 10642", "note": ""})
@@ -123,14 +124,17 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None):
         else:
             rows.append({"type": "pin", "item": f"{pj['d_mm']:g} x {pj['length_mm']:g} mm steel dowel pin", "qty": 1,
                          "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})
+    rows += extra or []
     for x in proj.data.get("bom_extra") or []:
         rows.append({"type": x.get("type", "extra"), "item": x["item"], "qty": x.get("qty", 1), "spec": x.get("spec", ""),
-                     "note": x.get("note", "")})
+                     "note": x.get("note", ""), "link": x.get("link", "")})
+    for r in rows:
+        r.setdefault("link", "")
     with open(outdir / "bom.csv", "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["type", "item", "qty", "spec", "note"])
+        w = csv.DictWriter(fh, fieldnames=["type", "item", "qty", "spec", "note", "link"])
         w.writeheader()
         w.writerows(rows)
-    md = ["| Type | Item | Qty | Spec | Note |", "|---|---|---|---|---|"]
-    md += [f"| {r['type']} | {r['item']} | {r['qty']} | {r['spec']} | {r['note']} |" for r in rows]
+    md = ["| Type | Item | Qty | Spec | Note | Buy / source |", "|---|---|---|---|---|---|"]
+    md += [f"| {r['type']} | {r['item']} | {r['qty']} | {r['spec']} | {r['note']} | {r['link']} |" for r in rows]
     (outdir / "bom.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     return rows

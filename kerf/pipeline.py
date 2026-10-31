@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import access, assembly as A, checks, export, pins, project as P, requirements, shanks, ship, viewer
+from . import access, assembly as A, checks, electrical, export, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -87,6 +87,14 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                                                                  round(j.location.position.Z, 3)]
                                                 for iid, it in proj.items.items() if it.shape is not None
                                                 for lab, j in it.shape.joints.items()}
+            emodel = None
+            if proj.data.get("wiring") or proj.data.get("electrical"):     # complete electrical system (kerf/electrical.py)
+                try:
+                    emodel = electrical.analyse(proj)
+                    rep["electrical"] = emodel
+                    rep["problems"] += electrical.length_problems(emodel)
+                except electrical.ElectricalError as e:
+                    rep["problems"].append(f"electrical: {e}")
             rq = requirements.run_all(proj, asm, quick=not sweeps)
             fea_viz = {r["id"]: r.pop("_viz") for r in rq if "_viz" in r}   # meshes stay out of report.json
             rep["requirements"] = rq
@@ -102,7 +110,12 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 export.glb(proj, out / "assembly_keepouts.glb", include_keepouts=True)
                 rep["files"] = {"parts": export.part_files(proj, out / "parts"),
                                 "plates": export.plates(proj, out / "plates", printer)}
-                rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj)
+                rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj,
+                                        extra=wiring_out.bom_rows(emodel) if emodel else None)
+                if emodel:
+                    (out / "WIRING.md").write_text(wiring_out.wiring_md(proj, emodel), encoding="utf-8")
+                    (out / "wiring.svg").write_text(wiring_out.svg(proj, emodel), encoding="utf-8")
+                    rep["files"]["wiring"] = ["WIRING.md", "wiring.svg"]
                 try:  # self-contained assembly viewer (kerf/viewer.py); a failure here is a build problem, not silent
                     rep["files"]["viewer"] = "viewer.html"
                     viewer.write(proj, asm, rep, out / "viewer.html")
@@ -111,6 +124,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 try:  # ship package (kerf/ship.py): priced BOM + ASSEMBLY.md with a render per step when rendering
                     rnd = (lambda g, pre: render_glb(g, pre, views="iso", sheet=False)) if do_render else None
                     rep["files"]["ship"] = ship.write(proj, asm, rep, out, render=rnd)
+                    if emodel:      # solder / wiring steps after the mechanical ones
+                        wiring_out.append_assembly(out / "ASSEMBLY.md", emodel)
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"ship package (priced BOM / ASSEMBLY.md) could not be written: {type(e).__name__}: {e}")
             if do_render:

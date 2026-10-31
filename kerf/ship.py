@@ -74,7 +74,7 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
     total, unpriced = 0.0, []
     for r in rows:
         cands = price_key(r)                      # before clearing: a bom_extra row may carry its own price_key
-        r.update(buy="", unit_usd="", total_usd="", price_key="")
+        r.update(buy=r.get("link", ""), unit_usd="", total_usd="", price_key="")   # unpriced rows keep the catalog link
         qty = float(r.get("qty") or 1)
         if r["type"] == "printed":
             mat = r.get("spec") or "PETG"

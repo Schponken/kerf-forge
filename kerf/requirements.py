@@ -572,3 +572,4 @@ def run_all(proj, asm, quick: bool = False) -> list:
 
 
 from . import req_balance  # noqa: E402,F401  (registers the balance checks: cg)
+from . import req_electrical  # noqa: E402,F401  (power_budget, flight_time, run_time, connector_access)
