@@ -1112,11 +1112,15 @@
    },
    "lens_d": 5.75,
    "lens_housing_square": 10.8,
+   "rear_clearance": 3.2,
+   "hfov_deg": 66,
+   "vfov_deg": 41,
+   "source_fov": "https://joy-it.net/en/products/RB-Camera-3",
    "weight_g": 4,
    "source": "https://pip-assets.raspberrypi.com/categories/786-raspberry-pi-camera-module-3/documents/RP-008151-DS-1-camera-module-3-product-brief.pdf",
    "source_weight": "https://core-electronics.com.au/raspberry-pi-camera-3.html.plain.md",
    "confidence": "datasheet",
-   "note": "Product brief p.4 drawing (tolerance 0.2): board 25 x 23.862, x along the 25 mm side, +y toward the edge away from the FPC connector (connector edge is -y). Holes d2.2 (pads d4.75) 2.0 mm in from left/right edges, at 2.0 and 14.5 mm above the connector edge (21 x 12.5 pattern, same as Camera Module 2). Lens centre on the vertical centreline, 14.4 mm above the connector edge; lens barrel d5.75 on a 10.8 mm square housing. Side view: 11.3 overall depth; my reading is lens tip 6.98 above the PCB front face and ~3.2 mm of rear parts (FPC connector) behind the 1.12 PCB, so component_height and rear clearance are APPROXIMATE interpretation of the drawing. Spec table: 25 x 24 x 11.5 mm (12.4 for Wide). Weight 4 g from vendor listing."
+   "note": "Product brief p.4 drawing (tolerance 0.2): board 25 x 23.862, x along the 25 mm side, +y toward the edge away from the FPC connector (connector edge is -y). Holes d2.2 (pads d4.75) 2.0 mm in from left/right edges, at 2.0 and 14.5 mm above the connector edge (21 x 12.5 pattern, same as Camera Module 2). Lens centre on the vertical centreline, 14.4 mm above the connector edge; lens barrel d5.75 on a 10.8 mm square housing. Side view: 11.3 overall depth; my reading is lens tip 6.98 above the PCB front face and ~3.2 mm of rear parts (FPC connector) behind the 1.12 PCB, so component_height and rear clearance are APPROXIMATE interpretation of the drawing. Spec table: 25 x 24 x 11.5 mm (12.4 for Wide). Weight 4 g from vendor listing. rear_clearance 3.2 = that APPROXIMATE rear-parts reading (keep >= 3.2 mm free behind the PCB). hfov_deg/vfov_deg: standard lens 66 / 41 deg (75 diagonal) per Joy-IT RB-Camera-3 spec page (source_fov, opened 2026-10-31); the Wide variant is wider."
   },
   "rpi_zero_2w": {
    "name": "Raspberry Pi Zero 2 W",
