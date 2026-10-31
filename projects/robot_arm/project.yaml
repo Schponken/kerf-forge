@@ -46,7 +46,7 @@ purchased:
   el_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: el_horn}}
   wr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: wr_servo}, tab_screws_from: bottom, range: [-75, 75]}
   wr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: wr_horn}}
-  gr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: gr_servo}, tab_screws_from: bottom, range: [0, 55]}
+  gr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: gr_servo}, tab_screws_from: bottom, range: [0, 65]}
   gr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: gr_horn}}
 bom_extra:
   - {type: fastener, item: "M4 screws or 4 mm wood screws (desk mounting), or two small C-clamps on the rear pad", qty: 4, spec: "length = 6 mm base + desk; the base holes are 4.5 mm"}
@@ -75,7 +75,7 @@ assembly:
     - {parent: wr_servo.output, child: wr_horn.spline, name: wrist, range: [-75, 75]}
     - {parent: wr_horn.face, child: gripper.horn_mount}
     - {parent: gripper.servo_seat, child: gr_servo.tabs}
-    - {parent: gr_servo.output, child: gr_horn.spline, name: grip, range: [0, 55], home: 0}
+    - {parent: gr_servo.output, child: gr_horn.spline, name: grip, range: [0, 65], home: 0}
     - {parent: gr_horn.face, child: finger.horn_mount}
   allow_overlap:
     - {pair: [turntable, brg_hi], max_mm3: 1.0, why: "0.3 mm fillet at the spindle step sits in the 6001 inner race's 0.3 mm edge chamfer (the proxy has square edges)"}
@@ -89,11 +89,11 @@ requirements:
      max_fraction: 0.5, poses: [{}, {elbow: -60}, {elbow: 60}, {shoulder: 60, elbow: -60}, {wrist: 75}, {wrist: -75}],
      why: "same for the elbow (DS3218), forearm horizontal included"}
   - {id: torque_wrist, check: static_torque, joint: wrist, actuator: wr_servo, payload_g: 150, payload_at: gripper.tcp,
-     max_fraction: 0.5, poses: [{}, {wrist: -75}, {wrist: 75}, {grip: 55}],
+     max_fraction: 0.5, poses: [{}, {wrist: -75}, {wrist: 75}, {grip: 65}],
      why: "same for the wrist (MG996R), gripper horizontal included"}
   - {id: reach, check: distance, a: upper_arm.shoulder_ref, b: gripper.tcp, min_mm: 230, max_mm: 300, pose: {},
      why: "about 250 mm reach, measured square to the shoulder axis with the arm stretched out"}
-  - {id: grip_open, check: distance, a: finger.tip, b: gripper.fixed_tip, min_mm: 40, pose: {grip: 55},
+  - {id: grip_open, check: distance, a: finger.tip, b: gripper.fixed_tip, min_mm: 40, pose: {grip: 65},
      why: "the open gripper takes a 40 mm object"}
   - id: upper_arm_fea
     check: fea_static
@@ -102,7 +102,10 @@ requirements:
     direction: xy            # printed on edge: the plates' bending stress runs along the layers
     sf: 2.0
     max_disp_mm: 0.85
-    fixed: {box: [[-20, -20, -1], [20, 20, "w_u + 1"]]}
+    fixed:                   # plate A on the shoulder horn screws; plate B only on its pivot bore (the heat-set insert on the screw)
+      any:
+        - {sites: sh_horn, radius: 4.0}
+        - {cylinder: {at: [0, 0, "w_u"], dir: [0, 0, -1], r: 2.0, tol: 0.3, span: [0, "plate_t + 3"]}}
     loads:
       - {sites: el_servo, radius: 4.0, force_n: [0, -3.87, 0]}
       - {box: [["L1 - 4", -4, "w_u - plate_t - 0.1"], ["L1 + 4", 4, "w_u + 0.1"]], force_n: [0, -3.87, 0]}
@@ -114,7 +117,10 @@ requirements:
     direction: xy
     sf: 2.0
     max_disp_mm: 0.8
-    fixed: {box: [[-20, -20, -1], [20, 20, "w_f + 1"]]}
+    fixed:                   # plate A on the elbow horn screws; plate B only on its pivot bore
+      any:
+        - {sites: el_horn, radius: 4.0}
+        - {cylinder: {at: [0, 0, "w_f"], dir: [0, 0, -1], r: 2.0, tol: 0.3, span: [0, "plate_t + 3"]}}
     loads:
       - {sites: wr_servo, radius: 4.0, force_n: [0, -2.86, 0]}
       - {box: [["L2 - 4", -4, "w_f - plate_t - 0.1"], ["L2 + 4", 4, "w_f + 0.1"]], force_n: [0, -2.86, 0]}

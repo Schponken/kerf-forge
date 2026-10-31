@@ -34,7 +34,7 @@ def layout(p, cat):
     z_shelf = p.base_floor + 0.5 + s["yaw"]["tab_z"]        # yaw servo tab undersides rest here
     z_horn_yaw = z_shelf + s["yaw"]["top"] + s["yaw"]["shaft_h"] + hub
     z_gear0, z_gear1 = z_horn_yaw, z_horn_yaw + p.gear_w
-    z_tt = z_gear0 - 0.6                                    # tower top = top face of the upper bearing
+    z_tt = z_gear0 - 1.2                                    # tower top = top face of the upper bearing; >= 1 mm under the gear
     b = iface.bearing_dims("bearings.6001")
     z_bhi = z_tt - b["B"]
     z_blo = p.brg_lo_z

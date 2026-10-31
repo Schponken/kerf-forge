@@ -5,6 +5,7 @@ Frame: elbow horn face on the elbow axis; X along the arm, Y up (home), Z across
 Printed standing on the plates' lower edges (print_rot [90,0,0]): webs vertical, window top bridges 41 mm."""
 from build123d import *
 from kerf import iface
+from kerf.features import safe_fillet
 
 HORN = "servo_horns.aluminum_25T"
 SERVO = "servos.MG996R"
@@ -31,8 +32,15 @@ def build(ctx):
     a = plate(L, r, xc + p.mg_span / 2 + 5.0, t)
     b = Pos(0, 0, W - t) * plate(L, r, L, t)
     body = a + b
-    for wx in (22.0, xc - p.mg_L / 2 - 9.0):
+    webs = (22.0, xc - p.mg_L / 2 - 9.0)
+    for wx in webs:
         body += Pos(wx, 0, t - 0.01) * Box(4.0, 2 * r, W - 2 * t + 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # 1.5 mm fillets where the webs meet the plates (docs/ENGINEERING.md section 5): the webs carry plate B's share
+    corners = body.edges().filter_by(Axis.Y).filter_by(
+        lambda e: any(abs(abs(e.center().X - wx) - 2.0) < 0.05 for wx in webs) and min(abs(e.center().Z - t), abs(e.center().Z - (W - t))) < 0.05)
+    body, failed = safe_fillet(body, [(corners, 1.5)])
+    if failed or len(corners) != 8:
+        raise ValueError(f"web fillets: {len(corners)} edges found, failed {failed}")
     body += Pos(0, 0, W - t - 3.0) * Cylinder(6.5, 3.01, align=(Align.CENTER, Align.CENTER, Align.MIN))   # pivot boss
     body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="el_horn", plate_t=t)
     # cable-tie slot pair: servo leads run along the outside of plate A

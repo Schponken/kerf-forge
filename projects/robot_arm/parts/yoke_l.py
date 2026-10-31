@@ -3,6 +3,7 @@ insert in the upper arm, coaxial with the shoulder servo), with a foot bolted to
 two gussets. Built in the turntable (world) frame. Printed lying on the cheek's outer face (-Y)."""
 from build123d import *
 from kerf import iface
+from kerf.features import safe_fillet
 
 FOOT_X = (-29.0, -14.0, 10.0)
 FOOT_T = 6.0
@@ -18,8 +19,14 @@ def yoke(p, side):
     cheek = fillet(cheek.edges().filter_by(Axis.Y).group_by(Axis.Z)[-1], 8.0)
     fx0, fx1, foot_w = -35.0, 14.0, 20.0
     fy0 = y_in - side * foot_w
-    foot = Pos((fx0 + fx1) / 2, (y_in + fy0) / 2, z0) * Box(fx1 - fx0, foot_w + 0.01, FOOT_T, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    foot = Pos((fx0 + fx1) / 2, (y_in + fy0) / 2, z0) * Box(fx1 - fx0, foot_w, FOOT_T, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body = cheek + foot
+    # 2 mm fillet in the cheek-to-foot inside corner (docs/ENGINEERING.md section 5: no sharp corner on a load path)
+    corner = body.edges().filter_by(Axis.X).filter_by(lambda e: abs(e.center().Y - y_in) < 0.05 and abs(e.center().Z - (z0 + FOOT_T)) < 0.05
+                                                    and e.center().X > x0)   # only where the cheek stands on the foot
+    body, failed = safe_fillet(body, [(corner, 2.0)])
+    if failed or len(corner) != 1:
+        raise ValueError(f"yoke cheek-to-foot fillet failed: {failed or 'edge not found'}")
     zt = z0 + FOOT_T - 0.01
     for gx in (-21.0, -8.5):                   # gussets carry the cheek tipping moment; between the foot screws, behind the servo case top
         tri = Polygon((y_in + side * 0.01, zt), (y_in - side * (foot_w - 3.0), zt), (y_in + side * 0.01, zt + 24.0), align=None)

@@ -3,10 +3,10 @@
 ## Requirements (from evals/robot_arm/brief.md)
 | Requirement | Number | Where it is proven |
 |---|---|---|
-| Joints | base_yaw ±90°, shoulder ±60°, elbow ±60°, wrist ±75°, grip 0–55° | joint tree + sweeps (all clear) |
+| Joints | base_yaw ±90°, shoulder ±60°, elbow ±60°, wrist ±75°, grip 0–65° | joint tree + sweeps (all clear) |
 | Reach | 230–300 mm, shoulder axis → tcp, arm stretched out | `reach` = 266 mm |
 | Payload | 150 g at the tcp, arm stretched out horizontally, every servo ≤ 50 % of stall | `torque_*` |
-| Gripper | two fingers, ≥ 40 mm opening | `grip_open` = 55.6 mm |
+| Gripper | two fingers, ≥ 40 mm opening | `grip_open` = 62.9 mm |
 | Desk | bolts (4 × M4 / wood screws) or clamps (rear pad) to a desk | base holes |
 | Strength | FEA on every structural part, SF per ENGINEERING.md §3 | `*_fea` |
 
@@ -41,11 +41,11 @@ Masses from the catalog and from the part geometry (report.json); torque = Σ m�
 Hand check (shoulder): payload 0.15 kg × 26.6 cm = 4.0 kg·cm; the rest of the arm ≈ 0.49 kg at ≈ 7.8 cm ≈ 3.8 kg·cm;
 total ≈ 7.8 — matches the check.
 
-Yaw bearings (2 × 6001, C0 ≈ 2.4 kN): tipping moment ≈ 0.64 kg × 9.81 × 0.10 m ≈ 0.63 N·m → ±25 N on each bearing
-over the 25 mm spacing; negligible.
+Yaw bearings (2 × 6001, C0 ≈ 2.4 kN): tipping moment ≈ 7.8 kg·cm about the shoulder + 0.45 kg × 2.5 cm ≈ 0.85 N·m
+→ ±34 N on each bearing over the ~25 mm spacing; negligible.
 
 Servo travel: the wrist needs ±75° = 150°: drive the MG996R with 500–2500 µs pulses (catalog note: ~180° there,
-~120° at 1000–2000 µs). Yaw ±90° needs only ±60° at the servo. Grip uses 0–55°.
+~120° at 1000–2000 µs). Yaw ±90° needs only ±60° at the servo. Grip uses 0–65° (round 2: at 55° a 40 mm object only fit at the finger tips).
 
 Power: five standard servos stall at ~2.5 A each; use a 5–6 V supply rated ≥ 5 A (BOM), never a microcontroller pin.
 
@@ -95,16 +95,19 @@ horn → gripper → grip servo → **grip** → horn → finger; yoke_l). `yaw_
 ## Strength (FEA, report.json)
 | Check | Load case | Result (p99.9, deflection) | Allowable |
 |---|---|---|---|
-| upper_arm_fea | 2 × (3.87 N at the elbow servo tabs + 3.87 N at the elbow pivot) + 2 × 4.31 kg·cm elbow torque as a pure couple on the tab screws; shoulder end held | 5.8 MPa, 0.39 mm | 24 MPa (xy, SF 2), 0.85 mm |
-| forearm_fea | same pattern at the wrist (2.86 N ×2 sites, 1.87 kg·cm ×2) | 2.5 MPa, 0.15 mm | 24 MPa, 0.8 mm |
-| yoke_r_fea | shoulder servo **stall** 21 kg·cm (couple on the 4 tab screws) + 5.9 N down, feet bolted | 6.7 MPa, 0.47 mm | 13 MPa (z, SF 3), 0.5 mm |
+| upper_arm_fea | 2 × (3.87 N at the elbow servo tabs + 3.87 N at the elbow pivot) + 2 × 4.31 kg·cm elbow torque as a pure couple on the tab screws; plate A held at the 4 shoulder-horn screws, plate B only at its pivot bore, so plate B's share goes through the webs | 5.7 MPa (peak 7.9), 0.42 mm | 24 MPa (xy, SF 2), 0.85 mm |
+| forearm_fea | same pattern at the wrist (2.86 N ×2 sites, 1.87 kg·cm ×2), held the same way at the elbow | 1.8 MPa (peak 3.0), 0.16 mm | 24 MPa, 0.8 mm |
+| yoke_r_fea | shoulder servo **stall** 21 kg·cm (couple on the 4 tab screws) + 5.9 N down, feet bolted | 7.0 MPa (peak 17.5 at a tab-screw hole edge, where the load is applied), 0.49 mm | 13 MPa (z, SF 3), 0.5 mm |
 | yoke_l_fea | 5.9 N on the pivot | 0.7 MPa | 13 MPa |
-| gripper_fea | grip **stall**: 18.4 N on the jaw tip, held at the servo tabs | 4.4 MPa, 0.58 mm | 13 MPa (z: the jaw post bends across layers, SF 3), 1.0 mm |
+| gripper_fea | grip **stall**: 18.4 N on the jaw tip, held at the servo tabs | 4.4 MPa (peak 9.9), 0.58 mm | 13 MPa (z: the jaw post bends across layers, SF 3), 1.0 mm |
 | finger_fea | 18.4 N at the finger tip | 8.4 MPa, 0.77 mm | 24 MPa, 1.0 mm |
-| turntable_fea | 2 × arm weight 12.8 N on the yoke feet + 2 × 0.85 N·m tipping moment; spindle held only on the two bearing lands + collar | 4.3 MPa (peak 10.6 at the step), 0.20 mm | 13 MPa (z, SF 3), 0.3 mm |
+| turntable_fea | 2 × arm weight 12.8 N on the yoke feet + 2 × 0.85 N·m tipping moment; spindle held only on the two bearing lands + collar | 3.9 MPa (peak 9.4 at the step), 0.21 mm | 13 MPa (z, SF 3), 0.3 mm |
 
 Applied resultants are checked in report.json (`applied_force_n`): torques are pure couples (engine fix in this
 round: a torque on screw sites off the axis used to add a spurious net force).
+
+Every load-path inside corner has a fillet: cheek-to-foot 2 mm on both yokes, web-to-plate 1.5 mm on the upper
+arm and forearm, 0.3 mm at the spindle step.
 
 The arm links are stiffness-limited, not strength-limited; the stresses are low because a fork of two 7 mm plates
 34 mm tall is deep in bending.
@@ -136,14 +139,17 @@ and behind the servo case) keeps the loop out of the gears; tie it to the slots 
 - Grip: command the finger to just touch the object (the servo then holds with little current); commanding it past
   contact holds the MG996R at stall (≈2.5 A, heat). The fixed jaw/finger are FEA-checked at stall anyway.
 - The tcp sits ~21 mm to the side of the yaw axis (fork stacking): include that offset in the inverse kinematics.
-- Yaw gear backlash 0.3 mm ≈ 1° at the turntable ≈ ±2.5 mm at full reach.
+- Yaw gear backlash 0.3 mm ≈ 1° at the turntable ≈ ±2.5 mm at full reach (plus the servo's own deadband): that is the
+  expected side-to-side positioning accuracy. The yaw gear's lower face turns 1.2 mm above the fixed tower top.
 - Servo tab screws are thread-forming M3 into 2.6 mm PETG pilots (the normal way servos are mounted); for frequent
   servo swaps, drill the pilots to 4.0 mm and use M3 heat-set inserts (7 mm plates take them).
 
 ## Risks / measure first
-- DS32xx tab holes (scaled from a drawing) and MG996R tab spacing (borrowed from the DS3218 drawing) are UNVERIFIED in
-  the catalog: print yoke_r and test-fit a servo before printing everything.
+- DS32xx tab holes (scaled from a drawing) are UNVERIFIED in the catalog; the MG996R hole pattern (49.5 × 10) is
+  confirmed by 2 TowerPro drawings + 7 CAD models, its tab height is not: print yoke_r and test-fit a servo first.
 - Horn hub height 4.5–5.5 mm by vendor: measured horn + washers on the pivots.
-- The M3 pivots are screws turning in 3.35 mm printed holes (ENGINEERING.md: metal pin, allowed); a real shoulder
-  screw (ISO 7379) would wear less — swap in if you have one.
+- The M3 pivots are screws turning in 3.35 mm printed holes (ENGINEERING.md: metal pin, allowed). Wear check: the
+  pivot carries ≤ 6 N (2× static) over a 7 mm long hole → 6 / (3 × 7) ≈ 0.3 MPa bearing pressure, oscillating ±60°
+  at low speed — a light duty, so the thread wears the hole slowly (expect some play after long use). Prefer a partly
+  threaded M3 × 14 (DIN 912 with a plain shank) or an ISO 7379 shoulder screw if you have one; a little grease helps.
 - Gripper and forearm need some support material (jaw overhang, window bridges); bridges are ≤ 41 mm.
