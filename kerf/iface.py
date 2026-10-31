@@ -101,6 +101,20 @@ KINDS_MALE = ("clearance", "counterbore", "countersink")
 KINDS_FEMALE = ("heatset", "tap", "nut_trap")
 
 
+def print_up_deg(ctx, loc: Location, vertical_tol_deg: float = 30.0) -> float | None:
+    """Teardrop angle for a hole cut at `loc` (hole axis = loc's +Z) in this part: the direction, in loc's XY plane, that
+    is UP on the printer for the part's `print_rot`. None when the hole prints within `vertical_tol_deg` of vertical
+    (it needs no teardrop). Pass the result as `teardrop=` so a part keeps working if its print orientation changes."""
+    rot = ((getattr(ctx, "meta", None) or {}).get("spec") or {}).get("print_rot") or [0, 0, 0]
+    up = Location((0, 0, 0), tuple(float(a) for a in rot)).inverse() * Location((0, 0, 1))
+    up = up.position
+    o = loc.position
+    ax = [(loc * Location(v)).position - o for v in ((1, 0, 0), (0, 1, 0), (0, 0, 1))]
+    if abs(up.dot(ax[2])) > math.cos(math.radians(vertical_tol_deg)):
+        return None
+    return math.degrees(math.atan2(up.dot(ax[1]), up.dot(ax[0])))
+
+
 def _teardrop(r, z0, z1, up_deg):
     """Horizontal-hole shape for FDM: a circle with a 45-degree pointed roof toward `up_deg` (direction that is UP
     on the printer, measured in the hole's XY plane). Prints without sagging or supports."""
@@ -111,8 +125,10 @@ def _teardrop(r, z0, z1, up_deg):
 
 
 def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = None, teardrop: float | None = None,
-         material: str | None = None, nut_recess: float = 0.0):
+         material: str | None = None, nut_recess: float = 0.0, relief: float = 0.0):
     """Cutter for one hole at the origin, axis Z, surface at z=0, material at z<0. Returns (solid, grip, engage, min_engage).
+    relief (heatset): a screw-clearance bore this much deeper than the insert, so a screw may run on through the insert
+    (lets a standard length fit a fixed grip such as a flight stack); the fastener check allows that much more length.
     teardrop: for holes that print horizontally, the direction (deg, in the hole's XY plane) that is UP on the printer.
     nut_recess (nut_trap): sink the nut this far below the far face, so the shortest screw that fills the nut ends
     below that face instead of standing proud of it (nothing lying on the face meets a thread end)."""
@@ -140,11 +156,13 @@ def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = 
         if not sp.get("insert_hole") or not sp.get("insert_len"):
             raise ValueError(f"catalog fdm_holes.{screw} has no heat-set insert size")
         hd = sp.get("insert_depth") or sp["insert_len"] + 1.0
-        if hd > depth - 0.8:
+        if hd + relief > depth - 0.8:
             raise ValueError(f"{screw} heat-set insert needs a {hd:.1f} mm deep hole plus a 0.8 mm floor; only {depth:.1f} mm of material")
         # brass threads: ~1.3 d of engagement holds an M2-M5 screw to its proof load
         c = _cyl(sp["insert_hole"] / 2, -hd, EXTRA) if teardrop is None else _teardrop(sp["insert_hole"] / 2, -hd, EXTRA, teardrop)
-        return c, 0.0, hd - 0.5, min(sp["insert_len"] * 0.7, 1.5 * sp["d"])
+        if relief > 0:
+            c += _cyl(sp["clearance"] / 2, -hd - relief, -hd + EXTRA)
+        return c, 0.0, hd - 0.5 + relief, min(sp["insert_len"] * 0.7, 1.5 * sp["d"])
     if kind == "tap":
         hd = min(depth - 0.8, 2.5 * sp["d"] + 1.0)
         if hd < sp["min_engage"] + 0.5:
@@ -166,14 +184,15 @@ def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = 
 
 
 def bolt_pattern(ctx, group: str, screw: str, points, loc: Location, kind: str, depth: float,
-                 counterbore_depth: float | None = None, teardrop: float | None = None, nut_recess: float = 0.0):
+                 counterbore_depth: float | None = None, teardrop: float | None = None, nut_recess: float = 0.0,
+                 relief: float = 0.0):
     """Holes at `points` (in loc's XY plane) through/into `depth` mm of material below loc.
     Registers one site per hole: male for clearance/counterbore/countersink, female for heatset/tap/nut_trap."""
     role = "male" if kind in KINDS_MALE else "female"
     cut = None
     for (x, y) in points:
         mat = (getattr(ctx, "meta", None) or {}).get("spec", {}).get("material") if ctx is not None else None
-        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth, teardrop, mat, nut_recess)
+        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth, teardrop, mat, nut_recess, relief)
         hl = loc * Location((x, y, 0))
         placed = hl * c
         cut = placed if cut is None else cut + placed
@@ -205,7 +224,7 @@ def servo_dims(path: str) -> dict:
 
 
 def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind: str = "heatset",
-                clearance: float = 0.6, top_through: bool = False, lead_in: float = 0.5):
+                clearance: float = 0.6, top_through: bool = False, lead_in: float = 0.5, teardrop: float | None = None):
     """Cutter for a plate a servo's mounting tabs bolt to: a window plus the four tab screw holes.
 
     Default (top_through=False): the body drops through the window from the TOP and the tabs rest ON the plate.
@@ -218,7 +237,9 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
       `tab_screws_from: bottom` in project.yaml so its screws come from behind the tabs.
     lead_in: 45-degree chamfer (mm) around the window on its ENTRY face (z = 0 in both modes): guides the body in and
       absorbs elephant's foot when that face prints on the bed. 0 disables it. It is reduced (see servo_lead_in) so the
-      wall between the widened window and every tab screw hole keeps docs/ENGINEERING.md section 5's minimum."""
+      wall between the widened window and every tab screw hole keeps docs/ENGINEERING.md section 5's minimum.
+    teardrop: when the plate prints standing (tab screw holes horizontal), the direction (deg in loc's XY plane) that
+      is UP on the printer; see print_up_deg."""
     d = servo_dims(servo)
     clearance += calibrate.offset("servo_window")
     wx, wy = d["L"] + clearance, d["W"] + clearance
@@ -238,10 +259,11 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
         pocket += cone if top_through else Rot(180, 0, 0) * cone
     cut = loc * pocket
     if not top_through:
-        cut += bolt_pattern(ctx, group, d["screw"], d["holes"], loc, kind, plate_t)
+        cut += bolt_pattern(ctx, group, d["screw"], d["holes"], loc, kind, plate_t, teardrop=teardrop)
     else:
         # female holes face the servo tabs (-Z of loc); flip the frame and mirror Y so the holes land in place
-        cut += bolt_pattern(ctx, group, d["screw"], [(x, -y) for (x, y) in d["holes"]], loc * Rot(180, 0, 0), kind, plate_t)
+        cut += bolt_pattern(ctx, group, d["screw"], [(x, -y) for (x, y) in d["holes"]], loc * Rot(180, 0, 0), kind, plate_t,
+                            teardrop=None if teardrop is None else -teardrop)
     return cut
 
 
@@ -388,13 +410,13 @@ def motor_center_hole(motor: str, center_hole: float | None = None) -> float:
     return ch
 
 
-def stack_mount(ctx, stack: str, loc: Location, group: str, depth: float, kind: str = "heatset"):
+def stack_mount(ctx, stack: str, loc: Location, group: str, depth: float, kind: str = "heatset", relief: float = 0.0):
     """Four holes for a flight-controller/ESC stack (30.5, 20, 25.5 mm patterns from the catalog).
     loc: on the frame face the stack sits on, +Z toward the stack."""
     e = catalog.get(stack)
     s = _first(e, "spacing", "hole_spacing", "pattern")
     screw = str(e.get("screw", "M3"))
-    return bolt_pattern(ctx, group, screw, square(s), loc, kind, depth)
+    return bolt_pattern(ctx, group, screw, square(s), loc, kind, depth, relief=relief)
 
 
 # ---------------------------------------------------------------- pins (printed hinges, dowels, screw pivots)

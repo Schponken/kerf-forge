@@ -1,7 +1,8 @@
 """motor_hub: the pitch frame of the gimbal. A disc the top motor screws onto (M3 from below, heads sunk), with an
 arm along +Y to the pitch servo's horn and an arm along -Y to the pitch dowel (free fit). The motor_plate with the
 bottom motor bolts under it (3 heat-set M3 inserts). Both motors' thrust enters here.
-Frame: world at home (origin = gimbal centre, thrust along +Z). Printed flat, top face up."""
+Frame: world at home (origin = gimbal centre, thrust along +Z). Printed upside down: the disc top (the top motor's
+seat) is on the bed, and the arms and horn lug are flush with it (z 8) so nothing hangs below the first layer."""
 import math
 
 from build123d import *
@@ -22,21 +23,21 @@ def build(ctx):
     yl = p.pitch_face - lug_t
     # +Y arm is a fork (two side bars) so a hex key can reach the horn screws along the axis between them
     for sx in (-1, 1):
-        body += Pos(sx * 10.25, (20 + yl) / 2, 0) * Box(4.5, yl - 20 + 0.02, 14)
-    body += Pos(0, (yl + p.pitch_face) / 2, 0) * Box(25, lug_t, 18)
+        body += Pos(sx * 10.25, (20 + yl) / 2, 1) * Box(4.5, yl - 20 + 0.02, 14)
+    body += Pos(0, (yl + p.pitch_face) / 2, -1) * Box(25, lug_t, 18)
     ye = p.ring_r_in - 1.5                               # -Y arm end, 1.5 mm inside the ring
-    body += Pos(0, -(y0 + ye) / 2, 0) * Box(14, ye - y0, 14)
+    body += Pos(0, -(y0 + ye) / 2, 1) * Box(14, ye - y0, 14)
     # the arm roots reach into the disc
-    body += Pos(0, -(y0 + 1) / 2, 0) * Box(14, y0 + 1, 14)        # -Y arm root (the +Y fork joins the disc directly)
+    body += Pos(0, -(y0 + 1) / 2, 1) * Box(14, y0 + 1, 14)        # -Y arm root (the +Y fork joins the disc directly)
     # nothing below the disc inside motor_plate's radius (the plate sits there)
     body -= Pos(0, 0, -20) * Cylinder(p.hub_r - 0.5, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # pitch horn: screws from the arm side (heads on the -Y face of the lug) into the horn
-    body -= iface.horn_mount(ctx, HORN, Location(Plane(origin=(0, yl, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0))),
-                             group="pitch_horn", plate_t=lug_t)
+    hloc = Location(Plane(origin=(0, yl, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
+    body -= iface.horn_mount(ctx, HORN, hloc, group="pitch_horn", plate_t=lug_t, teardrop=iface.print_up_deg(ctx, hloc))
     # pitch dowel, free fit, from the -Y end face
-    body -= iface.pin_hole(ctx, PIN, Location(Plane(origin=(0, -ye, 0), z_dir=(0, -1, 0))), group="pitch_pin",
-                           depth=10.0, fit="free")
-    # top motor: M3 x 6 from below, heads sunk 4 mm so they sit inside the hub (motor_plate covers them)
+    ploc = Location(Plane(origin=(0, -ye, 0), z_dir=(0, -1, 0)))
+    body -= iface.pin_hole(ctx, PIN, ploc, group="pitch_pin", depth=10.0, fit="free", teardrop=iface.print_up_deg(ctx, ploc))
+    # top motor: M3 x 5 (picked by the fastener check) from below, heads sunk 4 mm so they sit inside the hub (motor_plate covers them)
     under = Location((0, 0, 0), (180, 0, 0))
     body -= iface.motor_mount(ctx, MOTOR, under, group="hub_motor_top", plate_t=t, kind="counterbore",
                               counterbore_depth=t - 3.0)

@@ -1,6 +1,7 @@
 """ring_mid: the middle mast ring; the three tubes pass through it and are locked with radial M3 screws. The flight
 stack (20 x 20, M2) sits on its flat top on four heat-set inserts.
-Frame: origin on the underside centre, +Z up. Printed flat, top face down? No: top face up (bosses hang below)."""
+Frame: origin on the underside centre, +Z up. Printed upside down (print_rot [180, 0, 0]): the stack face on the bed,
+the tube bosses up."""
 import math
 
 from build123d import *
@@ -34,7 +35,8 @@ def build(ctx):
                  (-rl / 2 - 1.3, RX_Y), (rl / 2 + 1.3, RX_Y)):
         horiz = abs(y - RX_Y) > 1e-6
         body -= Pos(x, y, -1) * Box(3.0 if horiz else 1.6, 1.6 if horiz else 3.0, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    body -= iface.stack_mount(ctx, STACK, Location((0, 0, t)), group="mid_stack", depth=t, kind="tap")  # M2 thread-forming
+    body -= iface.stack_mount(ctx, STACK, Location((0, 0, t)), group="mid_stack", depth=t, kind="heatset",
+                             relief=2.0)  # M2 inserts (+2 mm screw run-on so M2 x 18 fits the 14.2 stack); stack on its grommets
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("stack_seat", Location((0, 0, t)))
     ctx.rigid("bec_seat", Location((0, BEC_Y, 0)) * Rot(180, 0, 0))     # hangs under the ring, tie round its middle

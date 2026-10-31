@@ -8,27 +8,27 @@ supports: allowed
 params:
   ring_r_in: {value: 72, min: 70, max: 80, step: 0.5, label: Gimbal outer ring inner radius (props are 65.9)}
   ring_r_out: {value: 82, min: 76, max: 88, step: 0.5, label: Gimbal outer ring outer radius}
-  ring_h: {value: 16, min: 8, max: 20, step: 0.5, label: Gimbal outer ring height}
+  ring_h: {value: 17, min: 8, max: 22, step: 0.5, label: Gimbal outer ring height (pads match it)}
   lug_out: {value: 2, min: 1, max: 4, step: 0.5, label: Roll horn lug beyond the ring}
   hub_t: {value: 8, min: 8, max: 10, step: 0.5, label: Motor hub / motor plate thickness}
   hub_r: {value: 27, min: 24, max: 30, step: 0.5, label: Motor hub disc radius}
-  ring_low_z: {value: 72, min: 68, max: 90, step: 1, label: Underside of the lower mast ring above the gimbal centre}
+  ring_low_z: {value: 75, min: 68, max: 90, step: 1, label: Underside of the lower mast ring above the gimbal centre}
   rod_len: {value: 228, min: 150, max: 300, step: 1, label: Carbon mast tube length}
   rod_r: {value: 30, min: 26, max: 36, step: 0.5, label: Mast tube circle radius}
   mid_z: {value: 186, min: 120, max: 260, step: 1, label: Middle ring underside height}
   foot_r: {value: 150, min: 110, max: 170, step: 1, label: Foot radius from the thrust axis}
   ground_z: {value: -85, min: -110, max: -70, step: 1, label: Ground below the gimbal centre}
   leg_r0: {value: 72, min: 66, max: 80, step: 0.5, label: Leg attachment radius}
-  batt_dx: {value: -14, min: -15, max: 15, step: 0.5, label: Battery offset x (CG trim)}
-  batt_dy: {value: -4.2, min: -15, max: 15, step: 0.5, label: Battery offset y (CG trim)}
+  batt_dx: {value: -24.5, min: -30, max: 15, step: 0.5, label: Battery offset x (CG trim)}
+  batt_dy: {value: -10, min: -15, max: 15, step: 0.5, label: Battery offset y (CG trim)}
 layout: parts/layout.py
 parts:
   ring_low: {file: parts/ring_low.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: z}
   gimbal_outer: {file: parts/gimbal_outer.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: [x, y]}
-  motor_hub: {file: parts/motor_hub.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: y}
-  motor_plate: {file: parts/motor_plate.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5}
-  ring_mid: {file: parts/ring_mid.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3}
-  ring_top: {file: parts/ring_top.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3}
+  motor_hub: {file: parts/motor_hub.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, load_axis: y}
+  motor_plate: {file: parts/motor_plate.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: [x, y]}
+  ring_mid: {file: parts/ring_mid.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3, load_axis: [x, y]}
+  ring_top: {file: parts/ring_top.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3, load_axis: [x, y]}
   leg_1: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
   leg_2: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
   leg_3: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
@@ -58,10 +58,14 @@ keepouts:
   prop_top: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_top}
   prop_bottom: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_bottom}
 bom_extra:
-  - {type: electrical, item: "low-ESR electrolytic capacitor, >= 35 V, 470-1000 uF", qty: 1,
+  - {type: electrical, item: "low-ESR capacitor 470 uF (Rubycon, ships with the stack), >= 35 V", qty: 1,
      spec: "across the ESC battery pads, short leads (6S full charge is 25.2 V; the UBEC input max is 26 V)",
-     note: "skip if the stack ships with one"}
-  - {type: fastener, item: M3 x 6 mm set screw / short screw, qty: 9, spec: "radial rod locks, one per ring boss; file a flat on the tube"}
+     link: "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/",
+     note: "included with the stack (catalog drone.stacks.fc_20 includes); its voltage is not published: if it is marked under 35 V buy a 35 V 470-1000 uF low-ESR one"}
+  - {type: hardware, item: M2 silicone grommets (stack), qty: 4, spec: "in the stack's 3.5 mm holes; soft-mount (ENGINEERING.md s9)",
+     link: "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/", note: "included with the stack (no separate purchase)"}
+  - {type: fastener, item: "M3 x 6 mm cup-point set screw (ISO 4029)", qty: 9, spec: "radial rod locks, one per ring boss, 1.5 mm hex key; file a flat on the tube"}
+  - {type: tool, item: 1.5 mm ball-end hex driver, qty: 1, spec: "the two pitch-horn M2 screws inside the hub fork (a straight key hits the fork)"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 14, spec: "2 at the yoke slots, 3 round the gimbal ring, 2 round the hub fork bar, 4 along the mast tube, 1 XT60 pigtail, 1 UBEC, 1 receiver"}
 assembly:
   root: ring_low
@@ -106,30 +110,30 @@ electrical:
   battery: battery
   burst_s: 5                 # longest full-throttle climb; the ESC burst rating is 45 A for 5 s
   limits:
-    motor_top: {peak_a: 17.96, why: "ArduPilot MOT_SPIN_MAX = 0.80 (default 0.95) caps the motor output at 80 % of range: static prop power goes as speed^3 (P = C_P rho n^3 D^5) and motor speed follows the output, so peak current = 0.8^3 x 35.08 A = 17.96 A per motor (thrust 0.8^2 = 64 %). Keeps the pair inside the XT60's 60 A instantaneous rating."}
-    motor_bottom: {peak_a: 17.96, why: "same MOT_SPIN_MAX = 0.80 as motor_top"}
+    motor_top: {peak_a: 21.54, why: "ArduPilot MOT_SPIN_MAX = 0.85 (default 0.95) caps the motor output at 85 % of range: static prop power goes as speed^3 (P = C_P rho n^3 D^5) and motor speed follows the output, so peak current = 0.85^3 x 35.08 A = 21.54 A per motor (thrust 0.85^2 = 72 %). The pair (43 A) stays inside the XT60's 60 A instantaneous rating."}
+    motor_bottom: {peak_a: 21.54, why: "same MOT_SPIN_MAX = 0.85 as motor_top"}
 # Routes. Fixed points are world mm (ring_low frame); {item, at} points ride on the gimbal parts (tie points: a cable
 # tie round the ring section / the hub fork bar). Path for everything going to the gimbal: down through the ring_mid
 # wire pass at 30 deg, over the ring_low +Y edge to the +X yoke, down beside the yoke plate (2 tie slots), across the
 # roll pivot near its axis onto the gimbal ring, along the ring top to the pitch servo, across the pitch pivot onto the
 # hub fork. Cut lengths = worst routed length over every gimbal pose + 15 %, rounded up (out/WIRING.md).
 wiring:
-  - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, supplied: true, length_mm: 110,
+  - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, supplied: true, length_mm: 115,
      route: [[42, 12, 318], [46, 20, 300]], note: "the pack's own XT60 lead (CNHL does not publish its length): it must be at least this long"}
   - {id: main, from: xt60, to: stack, v: 25.2, gauge: 14, color: red/black, length_mm: 170,
      route: [[28.6, 16.5, 299], [20, 22, 280], [20, 22, 205]], note: "XT60 pigtail, tied through the two ring_top slots"}
-  - {id: ph_top, from: stack.esc, to: motor_top, v: 25.2, gauge: 18, conductors: 3, length_mm: 550,
+  - {id: ph_top, from: stack.esc, to: motor_top, v: 25.2, gauge: 18, color: black, conductors: 3, length_mm: 550,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
-             {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
-             {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]},
-             {item: gimbal_outer, at: [18, 50, 11]}, {item: motor_hub, at: [10.25, 36, 8.5]}, {item: motor_hub, at: [8, 22, 9.5]}],
+             {item: gimbal_outer, at: [78, 16, 12.5]}, {item: gimbal_outer, at: [66.7, 38.5, 11.5]},
+             {item: gimbal_outer, at: [44.2, 63.1, 11.5]}, {item: gimbal_outer, at: [20, 74, 13]},
+             {item: gimbal_outer, at: [18, 50, 13]}, {item: motor_hub, at: [10.25, 36, 9.5]}, {item: motor_hub, at: [8, 22, 10.5]}],
      note: "ESC channel 1; extend the motor leads"}
-  - {id: ph_bottom, from: stack.esc, to: motor_bottom, v: 25.2, gauge: 18, conductors: 3, length_mm: 580,
+  - {id: ph_bottom, from: stack.esc, to: motor_bottom, v: 25.2, gauge: 18, color: black, conductors: 3, length_mm: 580,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
-             {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
-             {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]},
-             {item: gimbal_outer, at: [18, 50, 11]}, {item: motor_hub, at: [10.25, 36, 8.5]},
-             {item: motor_hub, at: [16, 34, 8.5]}, {item: motor_hub, at: [16, 34, -12]}],
+             {item: gimbal_outer, at: [78, 16, 12.5]}, {item: gimbal_outer, at: [66.7, 38.5, 11.5]},
+             {item: gimbal_outer, at: [44.2, 63.1, 11.5]}, {item: gimbal_outer, at: [20, 74, 13]},
+             {item: gimbal_outer, at: [18, 50, 13]}, {item: motor_hub, at: [10.25, 36, 9.5]},
+             {item: motor_hub, at: [16, 34, 9.5]}, {item: motor_hub, at: [16, 34, -11]}],
      note: "ESC channel 2; extend the motor leads; down beside the hub fork, under the motor plate"}
   - {id: bec_in, from: stack.vbat, to: bec, v: 25.2, gauge: 24, color: red/black, length_mm: 90,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 182]], note: "UBEC input on the ESC battery pads, through the 30 deg wire pass"}
@@ -137,23 +141,25 @@ wiring:
      route: [[26.8, 15.5, 182], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12], [95.8, 18, 11], [95.8, 8, 9], [94.8, -5, 8]]}
   - {id: servo_pitch_pwr, from: bec, to: servo_pitch, v: 5.0, gauge: 24, color: red/brown, length_mm: 480,
      route: [[26.8, 15.5, 182], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
-             {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
-             {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]}, {item: gimbal_outer, at: [6, 64, 10]}]}
+             {item: gimbal_outer, at: [78, 16, 12.5]}, {item: gimbal_outer, at: [66.7, 38.5, 11.5]},
+             {item: gimbal_outer, at: [44.2, 63.1, 11.5]}, {item: gimbal_outer, at: [20, 74, 13]}, {item: gimbal_outer, at: [6, 64, 12]}]}
   - {id: servo_roll_sig, from: stack, to: servo_roll, kind: signal, gauge: 28, color: orange, length_mm: 370,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12], [95.8, 18, 11], [95.8, 8, 9], [94.8, -5, 8]],
      note: "FC PWM output 4 (M4 pad, timer group 2 at 50 Hz)"}
   - {id: servo_pitch_sig, from: stack, to: servo_pitch, kind: signal, gauge: 28, color: orange, length_mm: 500,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
-             {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
-             {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]}, {item: gimbal_outer, at: [6, 64, 10]}],
+             {item: gimbal_outer, at: [78, 16, 12.5]}, {item: gimbal_outer, at: [66.7, 38.5, 11.5]},
+             {item: gimbal_outer, at: [44.2, 63.1, 11.5]}, {item: gimbal_outer, at: [20, 74, 13]}, {item: gimbal_outer, at: [6, 64, 12]}],
      note: "FC PWM output 3 (M3 pad, timer group 2 at 50 Hz)"}
   - {id: rx_pwr, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 70,
      route: [[0, -31, 197], [0, -31, 180]], note: "through the 270 deg wire pass"}
   - {id: rx_crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: yellow/white, conductors: 2, length_mm: 70,
      route: [[0, -31, 197], [0, -31, 180]], note: "CRSF TX/RX to a free FC UART"}
 requirements:
-  - {id: twr, check: thrust_to_weight, thrust_g_total: 1683, min_ratio: 1.8,
-     why: "2 x 1685 g (XING2 2207 + 51466 at 24 V) x 0.78 coax efficiency (MDPI Aerospace 3(4):32) x 0.64 (thrust at the 80 % motor_output_limit, see electrical.limits) must lift the drone with margin"}
+  - {id: twr, check: thrust_to_weight, thrust_g_total: 1899, test_v: 24.0, pack_v: 22.2, min_ratio: 2.0,
+     why: "ENGINEERING.md s3 multirotor T/W >= 2 at the pack's nominal 22.2 V: 2 x 1685 g (XING2 2207 + 51466, measured at 24 V) x 0.78 coax efficiency (MDPI Aerospace 3(4):32) x 0.7225 (thrust at the 85 % output cap, see electrical.limits) = 1899 g at 24 V"}
+  - {id: twr_sag, check: thrust_to_weight, thrust_g_total: 1899, test_v: 24.0, pack_v: 21.0, min_ratio: 1.8,
+     why: "still climbs with authority when the 6S pack sags to 3.5 V/cell (21 V) under full load late in the flight"}
   - {id: power, check: power_budget,
      why: "battery C rating, XT60, ESC channels, FC 5 V pad, servo UBEC and every wire within rating at average (hover) and peak current"}
   - {id: flight_time, check: flight_time, min_min: 2,
@@ -171,7 +177,7 @@ requirements:
     part: motor_hub
     why: "the hub carries both motors' thrust into the two pitch pivots: 2 x max thrust (2 x 2 x 1685 g = 66 N)"
     direction: xy
-    sf: 2.0                  # on top of the brief's 2 x max thrust (ENGINEERING.md static along layers)
+    sf: 3.0                  # on top of the brief's 2 x max thrust: the hub is the drone's arm (ENGINEERING.md s3 crash-exposed)
     max_disp_mm: 0.5
     fixed: {any: [{near_joint: pitch_horn, radius: 12},                                     # horn face + screws
                   {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.68, span: [-71, -60]}}]}   # dowel bore
@@ -181,35 +187,57 @@ requirements:
     part: gimbal_outer
     why: "the roll ring passes the hub's 2 x max thrust from the pitch servo pad and pitch dowel to the roll pivots"
     direction: xy            # printed flat: the ring's bending runs along the layers
-    sf: 2.0
+    sf: 3.0                  # thrust path = the drone's arm (ENGINEERING.md s3 crash-exposed)
     max_disp_mm: 1.0         # props clear the ring by > 5 mm; 1 mm of flex at 2 x max thrust is harmless
     fixed: {any: [{near_joint: roll_horn, radius: 12},
                   {cylinder: {at: [0, 0, 0], dir: [1, 0, 0], r: 1.68, span: [-83, -71]}}]}
     loads:
       - {sites: ring_servo, radius: 3, force_n: [0, 0, 33.05]}
-      - {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.525, span: [-83, -71]}, force_n: [0, 0, 33.05]}
+      - {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.525, span: [-83, -71]}, bearing_n: [0, 0, 33.05]}
   - id: yoke_fea
     check: fea_static
     part: ring_low
     why: "the yoke arms carry 2 x max thrust from the roll pivots up into the mast tubes"
     direction: z             # printed upside down: the arms' axial load runs across the layers
-    sf: 2.0
+    sf: 3.0                  # ENGINEERING.md s3: static load across layers
     max_disp_mm: 1.0
     fixed: {any: [{cylinder: {at: [0, rod_r, 0], dir: [0, 0, 1], r: 2.75}},
                   {cylinder: {at: [-0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}},
                   {cylinder: {at: [0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}}]}
     loads:
       - {sites: yoke_servo, radius: 3, force_n: [0, 0, 33.05]}
-      - {cylinder: {at: [0, 0, 0], dir: [1, 0, 0], r: 1.525, span: [-92, -82]}, force_n: [0, 0, 33.05]}
+      - {cylinder: {at: [0, 0, 0], dir: [1, 0, 0], r: 1.525, span: [-92, -82]}, bearing_n: [0, 0, 33.05]}
+  - id: lug_fea
+    check: fea_static
+    part: ring_low
+    why: >-
+      hard landing pulls the leg screws out of the lug inserts. Per leg at 3 g on two legs (729 g x 3 x 9.81 / 2 =
+      10.7 N up, 5.4 N sideways at the foot, 78 mm out and 157 mm below the pad): 10.7 x 78 = 835 N mm about the
+      tangential axis over a ~26 mm lever from the pad's outer bearing edge to the screws = 32 N, plus 5.4 x 157 =
+      848 N mm about the radial axis over the 7 mm half-width of the pad = 121 N; 160 N per leg on its two inserts,
+      applied on all three legs at once, with the pad's bearing reaction at each lug end (conservative: only two legs land)
+    direction: z             # the inserts pull across ring_low's layers
+    sf: 3.0
+    max_disp_mm: 2.0         # largest anywhere: the -X yoke pin-plate tip swings as the plate tilts (1.67 mm in this
+                             # all-three-legs case); elastic, and the gimbal hangs from the yoke so it moves with it
+    fixed: {any: [{cylinder: {at: [0, rod_r, 0], dir: [0, 0, 1], r: 2.75}},
+                  {cylinder: {at: [-0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}},
+                  {cylinder: {at: [0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}}]}
+    loads:                   # per leg: screws pull 160 N down, the pad's outer end bears 170.7 N up (net = the 10.7 N foot load)
+      - {sites: leg, radius: 3.5, force_n: [0, 0, -480]}
+      - {near_joint: leg_1, radius: 9, force_n: [0, 0, 170.7]}
+      - {near_joint: leg_2, radius: 9, force_n: [0, 0, 170.7]}
+      - {near_joint: leg_3, radius: 9, force_n: [0, 0, 170.7]}
   - id: leg_fea
     check: fea_static
     part: leg_1
-    why: "a hard landing on two legs at 3 g: 600 g x 3 x 9.81 / 2 = 8.8 N up at each foot, plus a 4.4 N sideways (tangential) kick"
+    why: "a hard landing on two legs at 3 g: 729 g (all-up, report mass) x 3 x 9.81 / 2 = 10.7 N up at each foot, plus a 5.4 N sideways (tangential) kick"
     direction: xy            # printed on its side: the strut bends along the layers
-    sf: 2.0
+    sf: 3.0                  # ENGINEERING.md s3: crash-exposed
     max_disp_mm: 3.0
-    fixed: {box: [[-10, -17, -0.01], [10, 17, 0.01]]}     # pad top face, clamped under the ring_low lug
-    loads: [{box: [[foot_r - leg_r0 - 11, -11, ground_z - ring_low_z - 0.01], [foot_r - leg_r0 + 11, 11, ground_z - ring_low_z + 0.01]], force_n: [0, 4.4, 8.8]}]
+    fixed: {any: [{sites: leg, radius: 4},                              # the two screw heads
+                  {box: [[-5, -7.01, -0.01], [9.01, 7.01, 0.01]]}]}       # pad's outer end bearing up on the lug
+    loads: [{box: [[foot_r - leg_r0 - 11, -11, ground_z - ring_low_z - 0.01], [foot_r - leg_r0 + 11, 11, ground_z - ring_low_z + 0.01]], force_n: [0, 5.4, 10.7]}]
   - {id: props, check: prop_clearance, min_mm: 3, min_between_mm: 20, joints: [],
      poses: [{gimbal_roll: 15}, {gimbal_roll: -15}, {gimbal_pitch: 15}, {gimbal_pitch: -15},
              {gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: 15, gimbal_pitch: -15},
@@ -219,4 +247,4 @@ requirements:
      why: "gravity alone must not load the roll servo past half stall"}
   - {id: pitch_torque, check: static_torque, joint: gimbal_pitch, actuator: servo_pitch, max_fraction: 0.5,
      why: "gravity alone must not load the pitch servo past half stall"}
-  - {id: mass, check: mass_max, max_g: 750, why: "keep T/W well above 3 for control authority"}
+  - {id: mass, check: mass_max, max_g: 750, why: "the twr requirement is sized at this all-up mass; heavier eats the thrust margin"}

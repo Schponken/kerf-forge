@@ -13,9 +13,28 @@ from .checks import item_mass_g
 from .requirements import _com, _joint_world, check
 
 
+def wiring_masses(proj):
+    """[(mass g, centroid xyz)] for every declared run that is not part of an item (`supplied`), at the CURRENT solved
+    pose: the run's mass sits at the length-weighted centroid of its route polyline (from, route points, to)."""
+    from .electrical import _point, wire_mass_g
+    out = []
+    for w in proj.data.get("wiring") or []:
+        if w.get("supplied"):
+            continue
+        m = wire_mass_g(w)
+        if m <= 0:
+            continue
+        pts = [_point(proj, w["from"], True)] + [_point(proj, r) for r in (w.get("route") or [])] + [_point(proj, w["to"], True)]
+        segs = [(np.linalg.norm(b - a), (a + b) / 2) for a, b in zip(pts, pts[1:])]
+        L = sum(l for l, _ in segs)
+        c = sum(l * mid for l, mid in segs) / L if L > 0 else pts[0]
+        out.append((m, np.asarray(c, dtype=float)))
+    return out
+
+
 def assembly_cg(proj, include=None, payload_g=0.0, payload_at=None):
-    """(cg xyz in mm, total mass g) of the solved assembly: all non-keepout items, or `include`, plus a point payload
-    at a joint origin."""
+    """(cg xyz in mm, total mass g) of the solved assembly: all non-keepout items plus every declared wiring run (the
+    same all-up mass mass_max and thrust_to_weight use), or only `include`, plus a point payload at a joint origin."""
     ids = include or [i for i, it in proj.items.items() if it.role != "keepout" and it.shape is not None]
     ms, cs = [], []
     for i in ids:
@@ -23,6 +42,10 @@ def assembly_cg(proj, include=None, payload_g=0.0, payload_at=None):
         if m > 0:
             ms.append(m)
             cs.append(_com(proj.items[i]))
+    if include is None:
+        for m, c in wiring_masses(proj):
+            ms.append(m)
+            cs.append(c)
     if payload_g and payload_at:
         ms.append(float(payload_g))
         cs.append(_joint_world(proj, payload_at)[0])

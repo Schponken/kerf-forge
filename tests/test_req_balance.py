@@ -89,3 +89,22 @@ def test_cg_payload_and_include(built):
 def test_cg_needs_a_limit(built):
     with pytest.raises(ValueError):
         _run(built, point=[0, 0, 0])
+
+
+def test_cg_counts_wiring_at_route_centroid(built):
+    """A run base -> (100, 0, 5) -> base: polyline centroid (50, 0, 5) (base's bbox centre is (0, 0, 5))."""
+    from kerf.electrical import wire_mass_g
+    proj, asm = built
+    w = {"id": "w", "from": "base", "to": "base", "gauge": 22, "length_mm": 230, "route": [[100, 0, 5]]}
+    proj.data["wiring"] = [w]
+    try:
+        mp = sum(item_mass_g(it) for it in proj.items.values())
+        mw = wire_mass_g(w)
+        assert mw > 0
+        r = _run(built, point=[0, 0, 0], max_lateral_mm=100)
+        want = (mp * 15 / 17 + mw * 50) / (mp + mw)
+        assert r["value"]["lateral_mm"] == pytest.approx(want, abs=0.01)
+        proj.data["wiring"] = [{**w, "supplied": True}]          # supplied leads are part of an item's mass
+        assert _run(built, point=[0, 0, 0], max_lateral_mm=100)["value"]["lateral_mm"] == pytest.approx(15 / 17, abs=0.01)
+    finally:
+        proj.data.pop("wiring", None)

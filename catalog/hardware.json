@@ -917,6 +917,7 @@
     "weight_g": 16.8,
     "weight_note": "FC 9.6 g + ESC 7.2 g. SpeedyBee's stack summary lists 13.5 g, which is lower than the sum of its own per-board figures; use 16.8 g as the conservative value.",
     "note": "3.5 mm holes accept M2 or M3 screws / silicone grommets; M2 with grommets is the usual choice. Stack height 14.2 mm from SpeedyBee's assembled-stack dimension.",
+    "includes": "two sets of M2 and M3 screws + silicone grommets; a Rubycon 470 uF low-ESR capacitor (product page, 2026-10-31; voltage not printed, fit it only if marked >= 35 V for 6S)",
     "source": "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/",
     "confidence": "datasheet",
     "bec_5v_a": 2.0,

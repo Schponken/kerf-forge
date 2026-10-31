@@ -124,12 +124,20 @@ def static_torque(proj, asm, joint, actuator=None, stall_kgcm=None, max_fraction
 
 
 @check("thrust_to_weight")
-def thrust_to_weight(proj, asm, thrust_g_total, min_ratio):
+def thrust_to_weight(proj, asm, thrust_g_total, min_ratio, test_v=None, pack_v=None):
+    """Static thrust / all-up mass. Motor thrust tables are measured at one supply voltage (`test_v`); prop thrust goes
+    with speed squared and speed with voltage, so a thrust from a 24 V table flown on a 22.2 V pack is scaled by
+    (pack_v / test_v)^2. Give both to check at the pack's nominal (or loaded) voltage."""
     from .electrical import wiring_mass_g
+    if (test_v is None) != (pack_v is None):
+        raise ValueError("thrust_to_weight: give both test_v and pack_v (or neither)")
+    k = (float(pack_v) / float(test_v)) ** 2 if test_v else 1.0
+    t = thrust_g_total * k
     m = sum(item_mass_g(it) for it in proj.items.values() if it.role != "keepout") + wiring_mass_g(proj)
-    r = thrust_g_total / m if m else 0.0
+    r = t / m if m else 0.0
+    volt = f" ({thrust_g_total} g at {test_v} V x ({pack_v}/{test_v})^2 = {t:.0f} g at {pack_v} V)" if test_v else ""
     return {"ok": r >= min_ratio, "value": round(r, 2), "limit": min_ratio,
-            "detail": f"{thrust_g_total} g thrust / {m:.0f} g all-up mass"}
+            "detail": f"{t:.0f} g thrust / {m:.0f} g all-up mass{volt}"}
 
 
 def _ev(v, params):
@@ -257,11 +265,12 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
     ok = res["max_vm_mpa"] <= allow and (max_disp_mm is None or res["max_disp_mm"] <= max_disp_mm)
     return {"ok": ok, "value": round(res["max_vm_mpa"], 2), "limit": round(allow, 2),
             "applied_force_n": res["applied_force_n"], "applied_moment_nmm": res["applied_moment_nmm"],
+            "max_disp_mm": round(res["max_disp_mm"], 3), "max_disp_at": res.get("max_disp_at"),
             "_viz": {**res["_viz"], "allow": allow, "title": f"{part}: von Mises (MPa), limit {allow:.1f}",
                      "p999": res["max_vm_mpa"], "peak": res["max_vm_peak_mpa"]},
             "detail": f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
                       f"peak {res['max_vm_peak_mpa']:.2f} MPa, deflection {res['max_disp_mm']:.3f} mm"
-                      + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f", {res['elements']} elements"}
+                      + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f" at {res.get('max_disp_at')}, {res['elements']} elements"}
 
 
 def section_props(shape, origin, normal):

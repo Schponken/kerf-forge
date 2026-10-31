@@ -701,3 +701,16 @@ pushed for it and what I know:
   assembly.order + desk step note (review major 3, C-19).
 - Also fixed: tests/test_iface_fit M1.6 (no published FDM pilot -> tap drill fallback), hard_stop listed in the kerf skill.
 - Next: DESIGN.md numbers from the new build, design-reviewer round 4.
+## 2026-10-31 07:00 UTC — session 262017a2: tvc_drone audit fixes (A-1..A-14), engine ENG-3/ENG-4 + bits
+- A-1 blocker fixed: leg inserts now on the lug centre line, inboard of the strut (2 x M3 x 10 per leg); new
+  `lug_fea` landing case (screw pull-out 160 N per leg, SF 3, Z): 8.08 / 13 MPa with a 10 x 10 T-rib on each lug.
+- Legs are one 14 mm width (whole side face on the bed, root fillet); motor_hub prints motor-face-down with arms flush;
+  gimbal_outer ring 17 high with every pad as tall; teardrops on every horizontal hole (new `iface.print_up_deg`,
+  `servo_mount(teardrop=)`); stack on grommets + M2 heat-set inserts (new heatset `relief`); FEA SF 3 everywhere,
+  leg case at the real 729 g, bearing_n on pin bores; wire colours, set-screw spec, ball-end driver, capacitor/grommets
+  from the stack's own package (catalog `includes`, source opened); DESIGN.md numbers refreshed.
+- Engine: ENG-3 `cg` (and tip_over through assembly_cg) counts every non-supplied wiring run at its route centroid per
+  pose (test); ENG-4 `thrust_to_weight` takes test_v / pack_v and scales thrust by (V/test_V)^2 (test); FEA reports
+  where the max deflection is (`max_disp_at`, test). Other projects re-checked: all still PASS.
+- tvc_drone: twr 2.18 at 22.2 V (>= 2.0, MOT_SPIN_MAX 0.85), twr_sag 1.95 at 21 V; CG 0.35 mm with wiring (battery
+  trimmed to -24.5 / -10). `kerf build` PASS. Next: design-reviewer re-review, then mark AUDIT.md.
