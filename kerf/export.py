@@ -8,6 +8,7 @@ from collections import Counter
 from build123d import Compound, Location, Mesher, Pos, export_gltf, export_step, export_stl, Color
 
 from . import catalog, checks, geom
+from .pins import lock_advice
 
 PALETTE = ["#4C78A8", "#F58518", "#54A24B", "#B279A2", "#E45756", "#72B7B2", "#EECA3B", "#9D755D", "#FF9DA6", "#BAB0AC"]
 PURCHASED_COLOR = "#3A3F44"
@@ -171,6 +172,52 @@ def _write_part_settings(path, specs: dict):
             z.writestr(n, b)
 
 
+def horn_screw_rows(proj) -> list:
+    """ENG-14: each servo horn's centre screw (catalog servo_horns.*.center_screw) is a part of the build too: one BOM
+    row per size (it comes with the servo; access to it is checked in kerf/access.py)."""
+    from collections import Counter
+    n = Counter()
+    for it in proj.items.values():
+        cat = str(it.spec.get("catalog", ""))
+        if it.role == "purchased" and cat.startswith("servo_horns."):
+            cs = catalog.get(cat).get("center_screw")
+            if cs:
+                n[str(cs)] += int(it.spec.get("qty", 1))
+    return [{"type": "fastener", "item": f"{cs} horn centre screw", "qty": q, "spec": "",
+             "note": "comes with the servo; holds the horn on the spline (a drop of medium threadlocker: metal into metal)"}
+            for cs, q in sorted(n.items())]
+
+
+BOM_EXTRA_KEYS = {"type", "item", "qty", "spec", "note", "link", "group", "price_key"}
+
+
+def bom_extra_check(proj, fasteners) -> tuple[list, list]:
+    """bom_extra rows (ENG-15): unknown keys and a missing item are problems (a YAML comma inside a row silently splits
+    it into junk keys); a row naming a metric screw size the fastener check already buys is a warning (likely a
+    duplicate of an automatic fastener row, e.g. 'M2 x 8' by hand next to the auto 'M2 x 5')."""
+    import re
+    problems, warnings = [], []
+    auto = {}
+    for j in fasteners or []:
+        auto.setdefault(j["screw"], set()).add(j.get("length_mm"))
+    for k, x in enumerate(proj.data.get("bom_extra") or []):
+        if not isinstance(x, dict) or "item" not in x:
+            problems.append(f"bom_extra row {k + 1}: needs an 'item' ({x!r})")
+            continue
+        bad = sorted(set(x) - BOM_EXTRA_KEYS)
+        if bad:
+            problems.append(f"bom_extra '{x['item']}': unknown key(s) {bad} (allowed {sorted(BOM_EXTRA_KEYS)}); a comma "
+                            f"inside a value splits the row, quote it")
+        m = re.search(r"\b(M\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\b", str(x["item"]))
+        it = str(x["item"]).lower()
+        screwish = "screw" in it and not any(k in it for k in ("set screw", "spacer", "standoff", "wood", "nut", "washer"))
+        if m and screwish and m.group(1) in auto and str(x.get("type", "")) in ("fastener", "hardware", "extra", ""):
+            warnings.append(f"bom_extra '{x['item']}': the fastener check already buys {m.group(1)} screws "
+                            f"({', '.join(f'{L:g} mm' for L in sorted(v for v in auto[m.group(1)] if v))}); "
+                            f"if this row is the same screws, drop it (duplicate)")
+    return problems, warnings
+
+
 def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
     rows = []
     for iid, it in proj.printed.items():
@@ -206,13 +253,14 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
                 rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
         elif pj["screw_pivot"]:
             rows.append({"type": "fastener", "item": f"{pj['pin']} x {g(pj['length_mm'])} mm socket head screw (pivot)", "qty": 1,
-                         "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; medium threadlocker"})
+                         "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; {lock_advice(pj['fixed_fit'])}"})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pj['pin']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
         else:
             rows.append({"type": "pin", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm steel dowel pin", "qty": 1,
                          "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})
     rows += extra or []
+    rows += horn_screw_rows(proj)
     for x in proj.data.get("bom_extra") or []:
         rows.append({"type": x.get("type", "extra"), "item": x["item"], "qty": x.get("qty", 1), "spec": x.get("spec", ""),
                      "note": x.get("note", ""), "link": x.get("link", "")})

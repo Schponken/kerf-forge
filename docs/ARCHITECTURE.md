@@ -38,6 +38,8 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/shanks.py` | Screw bodies: after fastener sizing, each screw (head seat to tip, 0.8 d cylinder) must not run into any item but the two it joins (a tip poking out of a nut into a neighbour, a screw reaching a prop disc) |
 | `kerf/electrical.py` | Complete electrical system from `electrical:` + `wiring:`: power tree, current per item and run (avg + peak), hover power (momentum theory), ratings (battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltage), routed wire lengths |
 | `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
+| `kerf/req_gears.py` | Requirement `gear_bending`: Lewis tooth bending of a spur pair at actuator stall |
+| `kerf/hole_axes.py` | Horizontal holes cut round (iface knows whether it cut a teardrop): pin holes = problem, fastener holes = warning (ENGINEERING s4) |
 | `kerf/req_stops.py` | Requirement `hard_stop`: a joint moved past an end of its range must collide (proves a mechanical stop) |
 | `kerf/wiring_out.py` | `out/WIRING.md`, `out/wiring.svg`, the solder/wiring steps appended to `out/ASSEMBLY.md`, and the BOM rows for wire and heat-shrink; buy links from catalog sources |
 | `kerf/bambu.py` | `kerf print <p>`: orients each printed part (24 axis-aligned rotations scored on one tessellation: bed fit, `load_axis` within 30 deg of the layers, least >45 deg overhang, then height; the yaml `print_rot` is kept unless another needs clearly less support, and every change is reported), packs plates into `out/print/`, slices each with the Bambu Studio / OrcaSlicer CLI (full exported machine/process/filament JSON from `~/.kerf/bambu.json`) to `.gcode.3mf`, and with `--send N` uploads plate N over FTPS (implicit TLS, 990) and starts it with MQTT `print.project_file` (TLS 8883, Developer Mode), polling `pushall` reports until it starts; without a slicer config it writes the plates and opens them in Bambu Studio / Bambu Connect; `--dry-run` prints every command and payload (access code masked) |
@@ -134,6 +136,7 @@ Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each funct
 | `tip_over` | `min_deg`, `support`, `poses`, `payload_g`, `payload_at` | smallest tip-over angle (deg) |
 | `channel_clear` | `path`, `diameter`, `poses`, `ignore` | largest diameter that passes (mm) |
 | `hard_stop` | `joint`, `beyond` (a value past an end of the range), `min_mm3` (default 1) | parent/child overlap at `beyond` (mm3) |
+| `gear_bending` | `module`, `z_driver`, `z_driven`, `width`, `torque_nmm` (the driving actuator's stall), `material`, `sf` (3), `direction` | Lewis tooth-root stress (MPa, Shigley Table 14-2 form factor) vs strength / sf |
 | `prop_clearance` | `min_mm`, `min_between_mm`, `props`, `ignore`, `joints`, `poses` | tightest prop-disc gap (mm) |
 | `power_budget` | (`fm`, `eta`) — reads `electrical:` / `wiring:` | worst load / rating (must be <= 1) |
 | `flight_time` | `min_min`, (`fm`, `eta`) | hover minutes on usable capacity |
@@ -171,6 +174,8 @@ electrical:
   usable: 0.8                 # usable capacity fraction (80 % rule); fm / eta / bec_eff override the defaults
   draw: {rx: {avg_a: 0.1, peak_a: 0.1, why: "..."}}         # only where the catalog has no current figure
   limits: {stack: {peak_a: 100, why: "ESC current limit configured to 25 A per motor"}}   # a real, set cap
+  # kind: current_limit (default: configured and enforced) | throttle_estimate (how hard it will be driven: the wiring
+  # is then rated for peak_a x 1.15, since nothing stops the real current exceeding an estimate)
 wiring:
   - {id: main, from: xt60, to: stack, kind: power, v: 25.2, gauge: 12, color: red/black, length_mm: 90,
      route: [top_plate.xt60, body.stack]}            # waypoints: item, item.joint or [x, y, z]; ends = item centres
@@ -301,6 +306,8 @@ calibration profile, and the catalog entries the project reads. Every check/buil
 into `projects/<p>/catalog_deps.json` (a growing union; commit it), so an edit to a catalog entry the project does
 not use leaves its review current, and an edit to one it uses makes it stale. Without that file the whole catalog
 file is hashed.
+It also reports `out_stale` (and says so in `why`) when `out/report.json` was built from another fingerprint: the
+review stands, but the shipped ASSEMBLY.md / BOM / renders need `kerf build` (verify rebuilds everything anyway).
 
 ## report.json (out/report.json, written by check/build)
 `ok`, `problems[]`, `warnings[]`, `fingerprint`, `parts{id: print checks}`, `purchased{}`,

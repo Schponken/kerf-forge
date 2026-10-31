@@ -38,6 +38,17 @@ def _line_off(o_ref, u, p) -> float:
     return float(np.linalg.norm(v - np.dot(v, u) * u))
 
 
+def lock_advice(fixed_fit) -> str:
+    """How to stop a screw pivot backing out (ENG-16): anaerobic threadlocker stress-cracks PETG/PLA/ABS, so it goes only
+    on a screw tip that sits in a brass insert; a screw tapped into plastic gets a pre-applied nylon-patch locking screw."""
+    if "heatset" in str(fixed_fit):
+        return ("a small drop of medium threadlocker on the screw TIP only (it sits in the brass insert; keep it off the "
+                "printed bores: anaerobic threadlocker stress-cracks printed plastic)")
+    return ("no threadlocker on printed threads (it stress-cracks the plastic): use a nylon-patch (pre-applied locking) "
+            "screw, or a heat-set insert")
+
+
+PIN_SPAN_SLACK = 1.0  # mm; a dowel this much shorter than its span gets a warning (ENG-13)
 SHOULDER_PLAY = 0.5  # mm; most axial play a shoulder-screw pivot may leave between the head and the moving part
 
 
@@ -142,8 +153,8 @@ def check(asm) -> tuple[list, list, list]:
             if length:
                 hp = sorted({x[2] for x in iv if abs((x[1] if head_end == "hi" else x[0]) - (hi if head_end == "hi" else lo)) < 1e-3})
                 warnings.append(f"pin group '{g}': {pin} x {length:g} screw pivot - tightening the screw clamps the stack "
-                                f"(head on {', '.join(hp)}) and stops the joint turning; use medium threadlocker and back "
-                                f"the screw off ~1/8 turn, or use a shoulder screw")
+                                f"(head on {', '.join(hp)}) and stops the joint turning; back the screw off ~1/8 turn and lock it "
+                                f"({lock_advice({x.fit for _, x, _, _ in sites if x.fit in FIXED})}), or use a shoulder screw")
         else:
             for L in sorted(pd["lengths"], reverse=True):
                 if L > span + 1e-3:
@@ -151,6 +162,11 @@ def check(asm) -> tuple[list, list, list]:
                 if any(covers(a, a + L) for a in [*np.arange(lo, hi - L, 0.1), hi - L]):
                     length = L
                     break
+            if length is not None and span - length > PIN_SPAN_SLACK:      # ENG-13: docs/ENGINEERING.md s8
+                warnings.append(f"pin group '{g}': the {length:g} mm {pin} is {span - length:.1f} mm shorter than the "
+                                f"{span:.1f} mm span it sits in (outer face to outer face): it can wander and an end "
+                                f"hole is only partly filled; make the span equal a stocked length (ENGINEERING.md s8) "
+                                f"or say in DESIGN.md what retains it")
         if length is None and not bad:
             need = ", ".join(f"{iid} {b - a:.1f} mm hole needs {_min_cover(st, d):.1f}" for a, b, iid, st in iv)
             rule = ("a screw pivot runs from its head end to the threaded hole, which must be the far end of the line; "

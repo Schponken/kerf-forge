@@ -204,7 +204,7 @@ def bolt_pattern(ctx, group: str, screw: str, points, loc: Location, kind: str, 
         placed = hl * c
         cut = placed if cut is None else cut + placed
         surf = hl if kind != "counterbore" else hl * Location((0, 0, -(counterbore_depth if counterbore_depth is not None else screw_spec(screw)["head_h"] + 0.3)))
-        ctx.site(Site(group, role, screw, kind, surf, grip=grip, engage=engage, min_engage=mn))
+        ctx.site(Site(group, role, screw, kind, surf, grip=grip, engage=engage, min_engage=mn, teardrop=teardrop is not None))
     return cut
 
 
@@ -510,7 +510,7 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
         if not pd["screw"]:
             raise ValueError(f"fit '{fit}' needs a screw pivot (pin='M3' or a shoulder screw), not dowel '{pin}'")
         c, _, engage, _ = hole(pd.get("thread", pin), fit, depth, teardrop=teardrop)
-        ctx.pin_site(PinSite(group, pin, fit, loc, engage, pd["d"]))  # deepest the tip may go
+        ctx.pin_site(PinSite(group, pin, fit, loc, engage, pd["d"], teardrop=teardrop is not None))  # deepest the tip may go
         return loc * c
     if fit == "press" and pd["screw"]:
         raise ValueError("a screw cannot be pressed in; use fit='heatset' or 'tap' for a screw pivot")
@@ -518,7 +518,7 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
     r = (pd["d"] + calibrate.pin_allowance(fit, _first(f, f"{fit}_allowance_d"))) / 2
     z1 = -depth - (EXTRA if through else 0.0)
     c = _teardrop(r, z1, EXTRA, teardrop) if teardrop is not None else _cyl(r, z1, EXTRA)
-    ctx.pin_site(PinSite(group, pin, fit, loc, depth, pd["d"]))
+    ctx.pin_site(PinSite(group, pin, fit, loc, depth, pd["d"], teardrop=teardrop is not None))
     return loc * c
 
 

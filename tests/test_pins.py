@@ -248,3 +248,23 @@ def test_single_shear_pin_adds_the_lever_moment(tmp_path):
     assert r["applied_moment_nmm"][0] == pytest.approx(0, abs=15)
     r0 = requirements.REGISTRY["fea_static"](proj, asm, **{**kw, "loads": [{**load, "single_shear": False}]})
     assert r0["applied_moment_nmm"][0] == pytest.approx(-600, abs=15)
+
+
+def test_dowel_shorter_than_span_warned(tmp_path):
+    """ENG-13: span 21.5 mm (lug_out 10.75): a 20 mm dowel still reaches 1.5 d into each lug, so it passes, but it is
+    1.5 mm shorter than its span -> warning (ENGINEERING.md s8: make the span equal a stocked length)."""
+    _, asm = _asm(tmp_path, lug_out=10.75)
+    out, problems, warnings = pins.check(asm)
+    assert problems == [], problems
+    assert out[0]["length_mm"] == 20
+    assert any("shorter than the" in w and "span" in w for w in warnings), warnings
+    _, asm = _asm(tmp_path / "b")                                  # span 16 = stocked 16: no warning
+    _, _, warnings = pins.check(asm)
+    assert not any("shorter than the" in w for w in warnings)
+
+
+def test_ship_shoulder_insert_text_eng19():
+    import inspect
+    from kerf import ship
+    src = inspect.getsource(ship)
+    assert "an insert left proud only adds play" in src and "an insert left proud clamps it" not in src

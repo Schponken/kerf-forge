@@ -260,6 +260,9 @@ def step_glb(proj, asm, present: list, new: list, path: Path):
     geom.write_glb(shapes, path, 0.08, 0.3, label=proj.name)
 
 
+from .pins import lock_advice  # noqa: E402
+
+
 def wiring_tools(model) -> list:
     """Hand tools the electrical steps need, from how each wire end is joined (kerf/electrical.py TERMINALS)."""
     if not model or not model.get("wires"):
@@ -328,10 +331,11 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
             if p.get("shoulder"):
                 L.append(f"- Pivot `{p['group']}`: {p['d_mm']:g} x {p['length_mm']:g} mm shoulder screw through {', '.join(p['free_in'])} "
                          f"into {', '.join(p['fixed_in'])}; tighten gently (~0.5 N m) until the shoulder bottoms, then check the joint "
-                         f"turns freely (an insert left proud clamps it).")
+                         f"turns freely (the shoulder bottoms on the insert, so an insert left proud only adds play; one set deeper "
+                         f"than the free band's length lets the shoulder clamp the stack and stop the joint).")
             elif p.get("screw_pivot"):
                 L.append(f"- Pivot `{p['group']}`: {p['pin']} x {p['length_mm']:g} mm screw through {', '.join(p['free_in'])} into "
-                         f"{', '.join(p['fixed_in'])}; medium threadlocker, back off ~1/8 turn so it turns freely.")
+                         f"{', '.join(p['fixed_in'])}; back off ~1/8 turn so it turns freely and lock it: {lock_advice(p.get('fixed_fit'))}.")
             else:
                 L.append(f"- Hinge `{p['group']}`: press the {p['d_mm']:g} x {p['length_mm']:g} mm dowel into {', '.join(p['fixed_in'])}; "
                          f"it turns in {', '.join(p['free_in'])}.")

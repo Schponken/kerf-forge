@@ -19,7 +19,7 @@ def _cat_copy(tmp_path, monkeypatch, edit=None):
 def test_fingerprint_follows_used_entries_only(tmp_path, monkeypatch):
     y = SERVO_YAML.format(servos="  s0: {catalog: servos.MG996R, proxy: box, size: [40, 20, 37]}", joints="j0: [0, 0, 40]",
                           tree="    - {parent: psu.j0, child: s0.bottom}",
-                          wires="  - {id: w0, from: psu, to: s0, v: 5.0, gauge: 20, length_mm: 400}")
+                          wires="  - {id: w0, from: psu, to: s0, v: 5.0, gauge: 20, length_mm: 400, color: red/black}")
     d = _write_project(tmp_path / "fp", y, {})
     try:
         _cat_copy(tmp_path, monkeypatch)

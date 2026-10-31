@@ -37,6 +37,7 @@ class Site:
     grip: float = 0.0  # male: clamped thickness this part contributes (mm)
     engage: float = 0.0  # female: deepest the screw tip may go past the entry surface (mm)
     min_engage: float = 0.0  # female: shortest thread engagement that holds (mm); 0 = default for the screw size
+    teardrop: bool | None = None  # cut with a teardrop roof (iface); None = not known (proxies, hand-cut holes)
 
 
 @dataclass
@@ -49,6 +50,7 @@ class PinSite:
     loc: Location
     depth: float
     d: float           # pin / screw nominal diameter (mm)
+    teardrop: bool | None = None  # cut with a teardrop roof (iface.pin_hole); None = not known
 
 
 @dataclass

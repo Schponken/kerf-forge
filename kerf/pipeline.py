@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import access, assembly as A, checks, electrical, export, heads, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
+from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -50,6 +50,54 @@ def _layer_proofs(proj, rep):
     rep["warnings"] = keep
 
 
+def _fea_hygiene(proj) -> list:
+    """Warnings on how strength checks are set up (audit ENG-8, ENG-11):
+    - a part with fea_static / cantilever_stress but no `load_axis` (the layer-direction checks cannot judge it);
+    - `direction: xy` while the part's load_axis runs > 30 deg out of the bed plane (judged on the strong direction);
+    - a `cylinder` load (a bore or seat) given as `force_n`: a pin or bearing pushes on one side of a bore, use
+      `bearing_n` (cosine-distributed);
+    - a `fixed` box that holds none of the part's fastener sites (the clamp should be where the screws are)."""
+    import numpy as np
+    from build123d import Location
+    from . import geom
+    from .checks import LAYER_WARN_NZ2
+    from .requirements import _across_share, _region
+    out = []
+    for r in proj.data.get("requirements") or []:
+        if r.get("check") not in ("fea_static", "cantilever_stress"):
+            continue
+        it = proj.items.get(r.get("part"))
+        if it is None or it.shape is None:
+            continue
+        rid = r.get("id")
+        if it.spec.get("load_axis") is None:
+            out.append(f"requirement '{rid}': part {it.id} has no load_axis, so its print orientation is not judged "
+                       f"against the load (ENGINEERING.md s4); add load_axis")
+        elif r.get("check") == "fea_static" and r.get("direction", "xy") == "xy" and _across_share(it) > LAYER_WARN_NZ2:
+            out.append(f"requirement '{rid}': direction xy but {it.id}'s load_axis runs across the layers in its print "
+                       f"orientation; use direction z or auto")
+        if r.get("check") != "fea_static":
+            continue
+        for ld in r.get("loads") or []:
+            if "force_n" in ld and ("cylinder" in ld or any("cylinder" in a for a in (ld.get("any") or []))):
+                out.append(f"requirement '{rid}': a cylinder (bore/seat) load given as force_n spreads it all round the "
+                           f"bore; a pin or bearing pushes on one side: use bearing_n")
+        fx = r.get("fixed") or {}
+        boxes = [fx] if "box" in fx else [a for a in (fx.get("any") or []) if "box" in a]
+        sites = [geom.world_point(st.loc, (0, 0, 0)) for st in getattr(it.shape, "kerf_sites", []) or []]
+        if boxes and sites and len(boxes) == len(fx.get("any") or [fx]):
+            pts = np.array(sites)
+            held = False
+            for b in boxes:
+                pred = _region(it, {"box": b["box"]}, proj.params)
+                lo = pred(pts[:, 0] - 0.0, pts[:, 1], pts[:, 2])
+                held = held or bool(np.any(lo))
+            if not held:
+                out.append(f"requirement '{rid}': the fixed box(es) hold none of {it.id}'s fastener sites; clamp the part "
+                           f"where its screws are (sites: radius) unless a face really rests on something")
+    return out
+
+
 def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9) -> dict:
     t0 = time.time()
     from . import catalog
@@ -80,6 +128,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         r["problems"] += hp
         r["warnings"] += hw
         r["hole_walls"] = hres
+        tp, tw = hole_axes.check(it)                       # horizontal holes cut round (ENGINEERING.md s4)
+        r["problems"] += tp
+        r["warnings"] += tw
         rep["parts"][iid] = r
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]
@@ -154,6 +205,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             fea_viz = {r["id"]: r.pop("_viz") for r in rq if "_viz" in r}   # meshes stay out of report.json
             rep["requirements"] = rq
             _layer_proofs(proj, rep)
+            rep["warnings"] += _fea_hygiene(proj)
+            bp, bw = export.bom_extra_check(proj, rep.get("assembly", {}).get("fasteners"))
+            rep["problems"] += bp
+            rep["warnings"] += bw
             for r in rq:
                 if not r["ok"]:
                     rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {r['value']} (limit {r['limit']})")

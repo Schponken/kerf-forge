@@ -98,7 +98,21 @@ def review_status(name) -> dict:
         return {"ok": False, "why": f"review is for fingerprint {r.get('fingerprint')}, geometry is now {fp}; review again", "fingerprint": fp}
     if r.get("verdict") != "PASS":
         return {"ok": False, "why": f"review verdict {r.get('verdict')}: {r.get('summary', '')}", "fingerprint": fp}
-    return {"ok": True, "why": "current PASS review", "fingerprint": fp}
+    out = _out_stale(proj, fp)
+    return {"ok": True, "why": "current PASS review" + (f"; {out}" if out else ""), "fingerprint": fp, "out_stale": bool(out)}
+
+
+def _out_stale(proj, fp) -> str:
+    """ENG-18: out/ (ASSEMBLY.md, BOM, renders the reviewer read) built from other inputs than the current geometry.
+    The review itself still stands (verify rebuilds every project); this only says the shipped docs need `kerf build`."""
+    rp = proj.dir / "out" / "report.json"
+    if not rp.exists():
+        return "out/ not built yet: run kerf build"
+    try:
+        ofp = json.loads(rp.read_text(encoding="utf-8")).get("fingerprint")
+    except Exception:  # noqa: BLE001
+        return "out/report.json unreadable: run kerf build"
+    return "" if ofp == fp else f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
 
 
 def verify(fast=False) -> int:

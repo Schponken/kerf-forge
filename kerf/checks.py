@@ -39,6 +39,29 @@ def oriented(shape, rot) -> object:
     return Pos(-(lo[0] + hi[0]) / 2, -(lo[1] + hi[1]) / 2, -lo[2]) * s
 
 
+BED_RATIO_WARN = 0.1   # bed contact under 10 % of the part's largest flat face: it stands on an edge or a point (ENG-9)
+
+
+def bed_contact(pid, s) -> list:
+    """First layer (docs/ENGINEERING.md s4, audit ENG-9): warn when the faces on the bed (planar, facing down, at the
+    lowest z) add up to less than BED_RATIO_WARN of the part's largest planar face, i.e. the big flat face is lifted
+    off the bed and the part starts on a narrow edge or on supports."""
+    try:
+        from build123d import GeomType
+        faces = [f for f in s.faces() if f.geom_type == GeomType.PLANE]
+        if not faces:
+            return []
+        zmin = s.bounding_box().min.Z
+        big = max(f.area for f in faces)
+        bed = sum(f.area for f in faces if f.normal_at().Z < -0.999 and abs(f.center().Z - zmin) < 0.05)
+    except Exception:  # noqa: BLE001 - meshes / odd shapes: no verdict
+        return []
+    if big > 0 and bed < BED_RATIO_WARN * big:
+        return [f"{pid}: only {bed:.0f} mm2 sits on the bed against a {big:.0f} mm2 flat face elsewhere: it starts on a "
+                f"narrow edge or on supports; put the largest flat face down if the loads allow (ENGINEERING.md s4)"]
+    return []
+
+
 def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     spec = item.spec
     shape = item.shape
@@ -78,6 +101,8 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     lp, lw = layer_direction(item)
     problems += lp
     warnings += lw
+    bw = bed_contact(item.id, s)
+    warnings += bw
     vol = geom.volume(s)
     mat = spec.get("material", "PETG")
     rho = density(mat)

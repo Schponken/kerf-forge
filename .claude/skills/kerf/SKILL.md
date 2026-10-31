@@ -146,6 +146,7 @@ Requirement checks (`requirements:` in project.yaml; arguments in each function'
 | `run_time` | minutes on 80 % of the pack at every load's average draw (robots, gadgets) |
 | `connector_access` | a plug / cable / finger reaches the battery plug or USB port with the device assembled |
 | `hard_stop` | a joint moved past an end of its range collides, i.e. a real mechanical stop holds it there |
+| `gear_bending` | Lewis tooth bending of a printed spur pair at the driving servo's stall torque |
 
 Always-on checks (no yaml needed): print checks per part (one solid, bed fit, watertight, overhang, wall thickness,
 `load_axis` across layers), interference at home, motion sweeps of every joint, fastener alignment + screw lengths,

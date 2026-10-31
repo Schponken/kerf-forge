@@ -50,12 +50,12 @@ electrical:
 wiring:
   - {{id: lead, from: battery, to: xt60, v: 16.8, gauge: 14, color: red/black, length_mm: {lead_len}}}
   - {{id: main, from: xt60, to: stack, v: 16.8, gauge: 14, color: red/black, length_mm: 200}}
-  - {{id: ph1, from: stack.esc, to: m1, v: 16.8, gauge: 20, length_mm: 200}}
-  - {{id: ph2, from: stack.esc, to: m2, v: 16.8, gauge: 20, length_mm: 200}}
-  - {{id: ph3, from: stack.esc, to: m3, v: 16.8, gauge: 20, length_mm: 200}}
-  - {{id: ph4, from: stack.esc, to: m4, v: 16.8, gauge: 20, length_mm: 200}}
-  - {{id: rx5v, from: stack.5v, to: rx, v: 5.0, gauge: 28, length_mm: 100}}
-  - {{id: crsf, from: stack, to: rx, kind: signal, gauge: 28, length_mm: 100}}
+  - {{id: ph1, from: stack.esc, to: m1, v: 16.8, gauge: 20, length_mm: 200, color: red/black}}
+  - {{id: ph2, from: stack.esc, to: m2, v: 16.8, gauge: 20, length_mm: 200, color: red/black}}
+  - {{id: ph3, from: stack.esc, to: m3, v: 16.8, gauge: 20, length_mm: 200, color: red/black}}
+  - {{id: ph4, from: stack.esc, to: m4, v: 16.8, gauge: 20, length_mm: 200, color: red/black}}
+  - {{id: rx5v, from: stack.5v, to: rx, v: 5.0, gauge: 28, length_mm: 100, color: red/black}}
+  - {{id: crsf, from: stack, to: rx, kind: signal, gauge: 28, length_mm: 100, color: red/black}}
 requirements:
   - {{id: power, check: power_budget}}
   - {{id: flight_time, check: flight_time, min_min: 3}}
@@ -222,7 +222,7 @@ def _servos(tmp_path, n):
     servos = "\n".join(f"  s{k}: {{catalog: servos.MG996R, proxy: box, size: [40, 20, 37]}}" for k in range(n))
     joints = ", ".join(f"j{k}: [{k * 50}, 0, 40]" for k in range(n))
     tree = "\n".join(f"    - {{parent: psu.j{k}, child: s{k}.bottom}}" for k in range(n))
-    wires = "\n".join(f"  - {{id: w{k}, from: psu, to: s{k}, v: 5.0, gauge: 20, length_mm: 400}}" for k in range(n))
+    wires = "\n".join(f"  - {{id: w{k}, from: psu, to: s{k}, v: 5.0, gauge: 20, length_mm: 400, color: red/black}}" for k in range(n))
     d = _write_project(tmp_path / f"psu{n}", SERVO_YAML.format(servos=servos, joints=joints, tree=tree, wires=wires), {})
     proj = P.build(P.load(str(d)))
     asm = A.plan(proj)
@@ -281,8 +281,8 @@ assembly:
     - {parent: base.pivot, child: arm.hub, name: swing, range: [-90, 90]}
     - {parent: base.blk, child: blk.bottom}
 wiring:
-  - {id: hinge, from: base, to: arm, kind: signal, gauge: 24, length_mm: 100, route: [{item: arm, at: [60, 0, 10]}]}
-  - {id: thru, from: base, to: arm, kind: signal, gauge: 24, length_mm: 500, route: [[0, 40, 5]]}
+  - {id: hinge, from: base, to: arm, kind: signal, gauge: 24, length_mm: 100, color: red/black, route: [{item: arm, at: [60, 0, 10]}]}
+  - {id: thru, from: base, to: arm, kind: signal, gauge: 24, length_mm: 500, color: red/black, route: [[0, 40, 5]]}
 """
 
 
@@ -320,7 +320,7 @@ def test_route_check_slack_and_collisions(tmp_path):
 
 
 def test_supplied_lead_is_not_bought_or_weighed():
-    w = {"id": "lead", "from": "battery", "to": "xt60", "kind": "power", "gauge": 12, "length_mm": 100,
+    w = {"id": "lead", "from": "battery", "to": "xt60", "kind": "power", "gauge": 12, "color": "red/black", "length_mm": 100,
          "supplied": True, "points": [[0, 0, 0], [0, 0, 1]]}
     assert WO.bom_rows({"wires": [w]}) == []
     assert "nothing to cut" in WO.steps({"wires": [w]})[0]
@@ -409,7 +409,7 @@ def test_fuse_must_carry_the_load_and_protect_the_wire(tmp_path):
 
 def test_fuse_on_a_signal_run_is_refused(tmp_path):
     proj, asm = _servo_run(tmp_path, 1, {"kind": "signal", "fuse": "electronics.fuses.ato_5a_littelfuse_257005"})
-    proj.data["wiring"].append({"id": "p", "from": "psu", "to": "s0", "v": 5.0, "gauge": 20, "length_mm": 400})
+    proj.data["wiring"].append({"id": "p", "from": "psu", "to": "s0", "v": 5.0, "gauge": 20, "color": "red/black", "length_mm": 400})
     proj.data["wiring"][0]["to"] = "s0"
     with pytest.raises(E.ElectricalError, match="fuse goes in a power run"):
         E.analyse(proj)
@@ -420,7 +420,7 @@ def test_ready_made_lead_length_and_bom(tmp_path):
     second run sharing the lead gets the same length and no extra BOM."""
     proj, asm = _servo_run(tmp_path, 1, {"lead": ["s0", "electronics.wire_misc.servo_ext_300_pololu2184"], "gauge": 22})
     del proj.data["wiring"][0]["length_mm"]
-    proj.data["wiring"].append({"id": "sig", "from": "psu", "to": "s0", "kind": "signal", "gauge": 22, "lead": "w0",
+    proj.data["wiring"].append({"id": "sig", "from": "psu", "to": "s0", "kind": "signal", "gauge": 22, "color": "orange", "lead": "w0",
                                 "ends": {"from": "crimp", "to": "plug"}})
     m = E.analyse(proj)
     w = {x["id"]: x for x in m["wires"]}

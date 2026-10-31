@@ -823,3 +823,14 @@ pushed for it and what I know:
 - Open minors (review.json): the drawn yaw lead ends at the servo origin (engine: lead end at the cable boss), fuse
   cold resistance not in the voltage drop, optional hood bridge chamfer, mast support, Nano loose on the desk.
 - Note for whoever re-reviews fpv_5in / servo_link: their reviews went stale from catalog edits only.
+
+## 2026-10-31 12:45 UTC — session 18259c3d8c (01S68R6S): audit ENG-7..ENG-20 DONE
+- New: kerf/hole_axes.py (horizontal round holes: pin = problem, fastener = warning; iface Sites record teardrop),
+  checks.bed_contact (first-layer warning), pipeline._fea_hygiene (no load_axis / xy across layers / cylinder load as
+  force_n / fixed box away from every screw), export.bom_extra_check (unknown keys = problem, duplicate screws =
+  warning), export.horn_screw_rows, pins.lock_advice (no threadlocker on printed threads), dowel-shorter-than-span
+  warning, electrical.limits kind throttle_estimate (+15 %), wire colour required, review-status out_stale,
+  requirement gear_bending (Lewis, Shigley Table 14-2). ENG-10 and parts of ENG-12/ENG-20 justified in AUDIT.md.
+- Tests: tests/test_eng_minors.py + test_pins additions; full suite 438 passed. All six projects re-checked
+  (--quick): all PASS except fpv_5in twr 5.94 < 6 (already known, its owner's B-F3). New warnings (not problems) on
+  existing parts: horizontal round clearance holes, a few fixed boxes away from screws, fpv top_plate load_axis.

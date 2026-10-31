@@ -218,6 +218,8 @@ def analyse(proj, fm=None, eta=None) -> dict:
             if x not in proj.items:
                 raise ElectricalError(f"wiring '{wid}': unknown item '{x}'")
         kind = w.get("kind", "power")
+        if not w.get("color") and not w.get("supplied"):        # ENGINEERING.md s10b: every run has a colour (ENG-12)
+            raise ElectricalError(f"wiring '{wid}': needs a `color` (docs/ENGINEERING.md s10b), e.g. red/black")
         if kind not in ("power", "signal"):
             raise ElectricalError(f"wiring '{wid}': kind must be power or signal")
         if kind == "power" and "v" not in w:
@@ -303,7 +305,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
                 ca, cp = ca * k, cp * k
             a, p = a + ca, p + cp
         if i in limits:
-            p = min(p, float(limits[i]["peak_a"]))
+            p = min(p, _limit_peak(limits[i]))
         stack.discard(i)
         memo[i] = (a, p)
         return a, p
@@ -408,7 +410,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
             "avg_a": round(tot_avg, 3), "peak_a": round(tot_peak, 3), "hover": hover,
             "minutes": round(ah * usable / tot_avg * 60, 2) if tot_avg > 0 and not mains else None,
             "loads": {i: _capped(dict(zip(("avg_a", "peak_a", "source"), own(i))), limits.get(i)) for i in memo},
-            "limits": {i: {"peak_a": float(v["peak_a"]), "why": v["why"]} for i, v in limits.items()},
+            "limits": {i: {"peak_a": _limit_peak(v), "why": v["why"]} for i, v in limits.items()},
             "wires": [{k: w.get(k) for k in ("id", "from", "to", "kind", "v", "gauge", "color", "conductors", "length_mm", "avg_a",
                                              "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note", "terms", "fuse",
                                              "fuse_holder", "lead_parts", "lead_of", "crimp_housing")} for w in ws],
@@ -417,10 +419,23 @@ def analyse(proj, fm=None, eta=None) -> dict:
             "ratings": rows}
 
 
+LIMIT_ESTIMATE_MARGIN = 1.15   # a throttle/usage estimate is not a hard cap: rate the wiring 15 % above it (ENG-17)
+
+
+def _limit_peak(lim) -> float:
+    """electrical.limits entry -> the peak the wiring must be rated for. kind: current_limit (a configured, enforced
+    cap, e.g. ESC firmware current limit; default) is used as is; kind: throttle_estimate (how hard it will be driven)
+    gets LIMIT_ESTIMATE_MARGIN on top, because nothing stops the real current exceeding an estimate."""
+    k = lim.get("kind", "current_limit")
+    if k not in ("current_limit", "throttle_estimate"):
+        raise ElectricalError(f"electrical.limits kind '{k}': use current_limit or throttle_estimate")
+    return float(lim["peak_a"]) * (LIMIT_ESTIMATE_MARGIN if k == "throttle_estimate" else 1.0)
+
+
 def _capped(load: dict, lim) -> dict:
     """A load's own peak as the configured cap leaves it (the tree above already uses the capped value)."""
-    if lim and float(lim["peak_a"]) < load["peak_a"]:
-        return {**load, "peak_a": float(lim["peak_a"]), "source": f"{load['source']}; capped: {lim['why']}"}
+    if lim and _limit_peak(lim) < load["peak_a"]:
+        return {**load, "peak_a": _limit_peak(lim), "source": f"{load['source']}; capped: {lim['why']}"}
     return load
 
 
