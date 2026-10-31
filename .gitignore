@@ -12,3 +12,4 @@ kerf.egg-info/
 .claude/state/YIELD
 .claude/state/session_id
 /out/
+.cache/

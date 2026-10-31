@@ -931,3 +931,12 @@ pushed for it and what I know:
 - Note for Spencer: `.claude/hooks/stop_gate.py` gives `kerf verify` 3500 s, but a full verify takes 4100-4400 s on
   this 2-CPU cloud container, so the gate times out here (traceback, no verdict). Not edited (CLAUDE.md rule 1);
   raising that timeout to ~6000 s would fix it.
+
+## 2026-10-31 22:30 UTC — planning session 01S68R6Q: Bambu item closed by Spencer, FEA cache
+- Spencer (in chat): "let me handle the connection between file and printer". PLAN "Bambu A2L handoff" checked off on
+  his decision; .claude/state/BLOCKED removed (its only blocker was that real print). The LAN send path stays
+  untested on hardware (noted in the PLAN line).
+- kerf/fea.py: result cache. Key = sha256 of the mesh, the faces each fixed/load region selects, every load value,
+  E, nu, fea.py source and skfem/pyamg/scipy versions, taken after meshing and before solving, so a hit is the same
+  problem by construction. Stored in .cache/fea (gitignored; KERF_CACHE moves it, KERF_FEA_CACHE=0 disables).
+  servo_link check 56 s cold -> 18 s warm, identical results. Test: test_result_cache_hits_only_for_identical_problems.

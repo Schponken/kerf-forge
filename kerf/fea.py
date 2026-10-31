@@ -30,6 +30,34 @@ import numpy as np
 logging.getLogger("skfem").setLevel(logging.ERROR)
 
 
+# Result cache: a solve is fully determined by the mesh, the boundary faces each region selects, the load values,
+# the material and this file's code. Hashing exactly those (after meshing, before solving) makes a cache hit
+# provably the same answer; any change to geometry, loads, material or the solver is a miss. KERF_FEA_CACHE=0 disables.
+_SRC_HASH = __import__("hashlib").sha256(open(__file__, "rb").read()).hexdigest()[:16]
+
+
+def _cache_dir():
+    if os.environ.get("KERF_FEA_CACHE", "1") == "0":
+        return None
+    d = os.environ.get("KERF_CACHE") or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".cache")
+    d = os.path.join(d, "fea")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def _key(E, nu, pts, tets, fixed_facets, loads):
+    import hashlib
+    h = hashlib.sha256()
+    import pyamg, scipy, skfem
+    h.update(f"{_SRC_HASH}|{skfem.__version__}|{pyamg.__version__}|{scipy.__version__}|{float(E)!r}|{float(nu)!r}|".encode())
+    for a in (np.round(pts, 6), np.ascontiguousarray(tets), np.sort(fixed_facets)):
+        h.update(str(a.shape).encode() + np.ascontiguousarray(a).tobytes())
+    for ld, facets in loads:
+        vals = {k: np.round(np.asarray(v, dtype=float), 9).tolist() for k, v in sorted(ld.items()) if k != "pred"}
+        h.update(repr(vals).encode() + np.sort(facets).tobytes())
+    return h.hexdigest()
+
+
 DIRECT_MAX_DOFS = 120000  # sparse LU fallback stays under ~2 GB up to here (P2 tets)
 MAX_TETS = 80000  # quadratic tets with the AMG solver stay well under ~2 GB
 
@@ -106,22 +134,34 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
         pts, tets = _mesh(shape, size)
     mesh = MeshTet(pts.T, tets.T)
     elem = ElementVector(ElementTetP2())
-    basis = Basis(mesh, elem, intorder=4)          # stresses are sampled at these points
-    lam, mu = lame_parameters(E_mpa, nu)
-    # P2 gradients are linear on a straight-sided tet, so the stiffness integrand is quadratic: order 2 is exact.
-    K = stiffness(Basis(mesh, elem, intorder=2), lam, mu)
-    f = np.zeros(K.shape[0])
+    sel = []
     for ld in loads:
         ld = ld if isinstance(ld, dict) else {"pred": ld[0], "force": ld[1]}
         pred = ld["pred"]
         facets = mesh.facets_satisfying(lambda x: pred(x[0], x[1], x[2]), boundaries_only=True)
         if len(facets) == 0:
             raise ValueError("a load region selects no boundary faces")
-        fb = FacetBasis(mesh, elem, facets=facets, intorder=4)
-        f += asm(_traction(ld, fb), fb)
+        sel.append((ld, facets))
     fixed_facets = mesh.facets_satisfying(lambda x: fixed(x[0], x[1], x[2]), boundaries_only=True)
     if len(fixed_facets) == 0:
         raise ValueError("the fixed region selects no boundary faces")
+    cdir = _cache_dir()
+    cfile = os.path.join(cdir, _key(E_mpa, nu, pts, tets, fixed_facets, sel) + ".pkl") if cdir else None
+    if cfile and os.path.exists(cfile):
+        import pickle
+        try:
+            with open(cfile, "rb") as fh:
+                return dict(pickle.load(fh), cached=True)
+        except Exception:  # noqa: BLE001 - a damaged cache entry is just a miss
+            pass
+    basis = Basis(mesh, elem, intorder=4)          # stresses are sampled at these points
+    lam, mu = lame_parameters(E_mpa, nu)
+    # P2 gradients are linear on a straight-sided tet, so the stiffness integrand is quadratic: order 2 is exact.
+    K = stiffness(Basis(mesh, elem, intorder=2), lam, mu)
+    f = np.zeros(K.shape[0])
+    for ld, facets in sel:
+        fb = FacetBasis(mesh, elem, facets=facets, intorder=4)
+        f += asm(_traction(ld, fb), fb)
     D = basis.get_dofs(fixed_facets).all()
     # Iterative solve (algebraic multigrid + CG): a direct solver on quadratic tets needs GBs of RAM.
     import pyamg
@@ -165,12 +205,19 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
     bf = mesh.boundary_facets()
     vm_el = vm.mean(axis=1)
     viz = {"tris": mesh.p[:, mesh.facets[:, bf]].transpose(2, 1, 0), "vm": vm_el[mesh.f2t[0, bf]]}
-    return {"applied_force_n": Fapp.round(4).tolist(), "applied_moment_nmm": Mapp.round(3).tolist(), "_viz": viz,
+    res = {"applied_force_n": Fapp.round(4).tolist(), "applied_moment_nmm": Mapp.round(3).tolist(), "_viz": viz,
             "max_vm_mpa": float(np.percentile(vm, 99.9)), "max_vm_peak_mpa": float(vm.max()), "median_vm_mpa": float(np.median(vm)),
             "max_disp_mm": float(np.linalg.norm(disp, axis=1).max()),
             "max_disp_at": mesh.p[:, int(np.argmax(np.linalg.norm(disp, axis=1)))].round(1).tolist(),
             "max_vm_peak_at": mesh.p[:, mesh.t[:, int(np.argmax(vm.max(axis=1)))]].mean(axis=1).round(1).tolist(),
             "nodes": int(mesh.p.shape[1]), "elements": int(mesh.t.shape[1])}
+    if cfile:
+        import pickle
+        tmp = cfile + f".{os.getpid()}.tmp"
+        with open(tmp, "wb") as fh:
+            pickle.dump(res, fh)
+        os.replace(tmp, cfile)                     # atomic: parallel runs never read a half-written entry
+    return dict(res, cached=False)
 
 
 def _traction(ld, fb):

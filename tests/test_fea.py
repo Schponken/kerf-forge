@@ -43,3 +43,23 @@ def test_fast_stiffness_equals_skfem():
     fast = fea.stiffness(Basis(mesh, elem, intorder=2), lam, mu, chunk=97)   # small chunks exercise the chunking
     assert abs(fast - ref).max() <= 1e-10 * abs(ref).max()     # round-off below 1e-10 x max is dropped on purpose
     assert np.allclose(fast.diagonal(), ref.diagonal())
+
+
+def test_result_cache_hits_only_for_identical_problems(tmp_path, monkeypatch):
+    from build123d import Box, Align
+    monkeypatch.setenv("KERF_CACHE", str(tmp_path))
+    bar = Box(60, 6, 6, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    fixed = lambda x, y, z: x < 0.01  # noqa: E731
+    tip = lambda x, y, z: x > 59.99   # noqa: E731
+    a = fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -5.0))])
+    b = fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -5.0))])
+    assert a["cached"] is False and b["cached"] is True
+    for k in ("max_vm_mpa", "max_disp_mm", "nodes", "elements"):
+        assert a[k] == b[k]
+    c = fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -6.0))])      # different load -> new solve
+    d = fea.static(bar, 2100, 0.38, fixed, [(tip, (0, 0, -5.0))])      # different material -> new solve
+    e = fea.static(bar, 2000, 0.38, lambda x, y, z: x < 3, [(tip, (0, 0, -5.0))])  # different support -> new solve
+    assert not c["cached"] and not d["cached"] and not e["cached"]
+    assert c["max_disp_mm"] == pytest.approx(a["max_disp_mm"] * 1.2, rel=1e-6)
+    monkeypatch.setenv("KERF_FEA_CACHE", "0")
+    assert fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -5.0))])["cached"] is False
