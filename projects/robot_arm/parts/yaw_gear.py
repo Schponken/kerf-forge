@@ -12,5 +12,8 @@ def build(ctx):
     ctx.notes += info.warnings
     g = Rot(0, 0, 180) * g2                  # the pair is built with gear 2 at +X; here it sits at -X of the turntable
     g -= iface.horn_mount(ctx, HORN, Location((0, 0, p.gear_w)), group="yaw_horn", plate_t=p.gear_w)
+    # hex-key access (at home) to the yaw servo's two tab screws that sit under the gear
+    for sy in (-1, 1):
+        g -= Pos(p.mg_hx / 2 - p.yaw_out_x, sy * p.mg_hy / 2, -1) * Cylinder(2.5, p.gear_w + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("mount", Location((0, 0, 0)))
     return ctx.finish(g)

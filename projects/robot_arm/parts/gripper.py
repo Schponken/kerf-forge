@@ -17,7 +17,7 @@ def grip_geom(p):
     x_g = x_gs + p.gr_out_x                        # grip servo axis
     z_c = p.w_g / 2
     y_f = p.face_gr                                # finger underside (horn face) above the palm underside (y = 0)
-    return {"x_gs": x_gs, "x_g": x_g, "z_c": z_c, "y_f": y_f, "z_jaw": z_c + 4.0 + 0.5}
+    return {"x_gs": x_gs, "x_g": x_g, "z_c": z_c, "y_f": y_f, "z_jaw": z_c + 5.0 + 0.5}
 
 
 def build(ctx):
@@ -34,17 +34,19 @@ def build(ctx):
     body += Pos((14.0 + x_end) / 2, PALM_T / 2, W / 2) * Box(x_end - 14.0, PALM_T, W)
     body += Pos(0, 0, W - t - 3.0) * Cylinder(6.5, 3.01, align=(Align.CENTER, Align.CENTER, Align.MIN))   # pivot boss
     # fixed finger: a post up from the palm's front, then a jaw forward at the moving finger's height
-    zj0, zj1 = g["z_jaw"], g["z_jaw"] + 6.0
+    zj0, zj1 = g["z_jaw"], g["z_jaw"] + 8.0
     tip_x = g["x_g"] + p.finger_len + 2.0
-    body += Pos(x_end - 3.0, (PALM_T + g["y_f"] + 6.0) / 2, (zj0 + zj1) / 2) * Box(6.0, g["y_f"] + 6.0 - PALM_T + 0.02, 6.0)
+    body += Pos(x_end - 3.0, (PALM_T + g["y_f"] + 6.0) / 2, (zj0 + zj1) / 2) * Box(6.0, g["y_f"] + 6.0 - PALM_T + 0.02, zj1 - zj0)
     with BuildSketch(Plane.XY.offset(zj0)) as jaw:
         Polygon((x_end - 6.0, PALM_T), (x_end, PALM_T), (tip_x, g["y_f"]), (tip_x, g["y_f"] + 6.0), (x_end - 6.0, g["y_f"] + 6.0),
                 align=None)
-    body += extrude(jaw.sketch, 6.0)
+    body += extrude(jaw.sketch, zj1 - zj0)
     body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="wr_horn", plate_t=t)
     loc = Location((g["x_gs"], 0, g["z_c"]), (-90, 0, 0))   # palm underside; +Z up through the palm
     body -= iface.servo_mount(ctx, SERVO, loc, group="gr_servo", plate_t=PALM_T, kind="tap", top_through=True)
     body -= iface.pin_hole(ctx, "M3", Location((0, 0, W)), "wr_pivot", depth=t + 3.0, fit="heatset")
+    for (hx, hy) in iface.circle(4, iface.horn_dims(HORN)["bc"], 45.0):     # hex-key access to the horn screws
+        body -= Pos(hx, hy, W - t - 4) * Cylinder(2.0, t + 5, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("horn_mount", Location((0, 0, 0)))
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.gr_tab_t)))
     ctx.rigid("tcp", Location((g["x_g"] + p.finger_len - 5.0, g["y_f"] + 3.0, g["z_jaw"] - 0.25)))

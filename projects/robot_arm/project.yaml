@@ -8,7 +8,7 @@ printer: Bambu Lab A2L
 supports: allowed
 params:
   plate_t: {value: 7, min: 7, max: 8, step: 0.5, label: Side-plate thickness}
-  side_gap: {value: 0.5, min: 0.3, max: 1.0, step: 0.1, label: Axial gap between a fork and the link inside it}
+  side_gap: {value: 1.5, min: 0.5, max: 2.0, step: 0.1, label: Axial gap between a fork and the link inside it (takes a 4.5-5.5 mm horn; shim with M3 washers)}
   grip_w: {value: 35, min: 34, max: 40, step: 1, label: Gripper body width (across the fork)}
   base_floor: {value: 6, min: 5, max: 8, step: 0.5, label: Base plate thickness}
   gear_w: {value: 8, min: 6, max: 12, step: 1, label: Yaw gear face width}
@@ -48,6 +48,11 @@ purchased:
   wr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: wr_horn}}
   gr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: gr_servo}, tab_screws_from: bottom, range: [0, 55]}
   gr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: gr_horn}}
+bom_extra:
+  - {type: fastener, item: "M4 screws or 4 mm wood screws (desk mounting), or two small C-clamps on the rear pad", qty: 4, spec: "length = 6 mm base + desk; the base holes are 4.5 mm"}
+  - {type: hardware, item: Medium-strength threadlocker, qty: 1, spec: "on the three M3 pivot screws (they turn with the link)"}
+  - {type: hardware, item: "5-6 V servo supply, >= 5 A peak (five standard servos)", qty: 1, spec: "e.g. a 6 V 5 A brick or a UBEC; never from a microcontroller's 5 V pin"}
+  - {type: hardware, item: 15-20 cm servo extension leads, qty: 3, spec: "elbow, wrist and grip servos to the controller in the base"}
 assembly:
   root: base
   joints:
@@ -88,4 +93,82 @@ requirements:
      why: "about 250 mm reach, measured square to the shoulder axis with the arm stretched out"}
   - {id: grip_open, check: distance, a: finger.tip, b: gripper.fixed_tip, min_mm: 40, pose: {grip: 55},
      why: "the open gripper takes a 40 mm object"}
+  - id: upper_arm_fea
+    check: fea_static
+    part: upper_arm
+    why: "2x the worst static load at the elbow (everything beyond it + 150 g = 3.87 N, and the 4.29 kg*cm elbow holding torque) with the shoulder end held; tip deflection <= 1% of L1"
+    direction: xy            # printed on edge: the plates' bending stress runs along the layers
+    sf: 2.0
+    max_disp_mm: 0.85
+    fixed: {box: [[-20, -20, -1], [20, 20, "w_u + 1"]]}
+    loads:
+      - {sites: el_servo, radius: 4.0, force_n: [0, -3.87, 0]}
+      - {box: [["L1 - 4", -4, "w_u - plate_t - 0.1"], ["L1 + 4", 4, "w_u + 0.1"]], force_n: [0, -3.87, 0]}
+      - {sites: el_servo, radius: 4.0, torque_nmm: 841, axis: {at: ["L1", 0, 0], dir: [0, 0, 1]}}
+  - id: forearm_fea
+    check: fea_static
+    part: forearm
+    why: "2x the worst static load at the wrist (2.86 N beyond it + the 1.87 kg*cm wrist torque) with the elbow end held; deflection <= 1% of L2"
+    direction: xy
+    sf: 2.0
+    max_disp_mm: 0.8
+    fixed: {box: [[-20, -20, -1], [20, 20, "w_f + 1"]]}
+    loads:
+      - {sites: wr_servo, radius: 4.0, force_n: [0, -2.86, 0]}
+      - {box: [["L2 - 4", -4, "w_f - plate_t - 0.1"], ["L2 + 4", 4, "w_f + 0.1"]], force_n: [0, -2.86, 0]}
+      - {sites: wr_servo, radius: 4.0, torque_nmm: 367, axis: {at: ["L2", 0, 0], dir: [0, 0, 1]}}
+  - id: yoke_r_fea
+    check: fea_static
+    part: yoke_r
+    why: "the shoulder servo stalls (21 kg*cm reaction through its four tab screws) while carrying half of 2x the arm + payload weight; feet bolted"
+    direction: z             # the foot prints standing up: judge the cheek-foot corner against layer strength
+    sf: 3.0
+    max_disp_mm: 0.5
+    fixed: {sites: yoke_r_foot, radius: 4.0}
+    loads:
+      - {sites: sh_servo, radius: 4.0, torque_nmm: "sh_stall_nmm", axis: {at: ["x_sh", 0, "z_sh"], dir: [0, 1, 0]}}
+      - {sites: sh_servo, radius: 4.0, force_n: [0, 0, -5.9]}
+  - id: yoke_l_fea
+    check: fea_static
+    part: yoke_l
+    why: "the pivot side carries half of 2x the arm + payload weight; feet bolted"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 0.3
+    fixed: {sites: yoke_l_foot, radius: 4.0}
+    loads:
+      - {box: [["x_sh - 4", "-cheek_out - 0.1", "z_sh - 4"], ["x_sh + 4", "-cheek_in + 0.1", "z_sh + 4"]], force_n: [0, 0, -5.9]}
+  - id: gripper_fea
+    check: fea_static
+    part: gripper
+    why: "the grip servo stalls with the finger closed on the fixed jaw: 9.4 kg*cm / 50 mm = 18.4 N on the jaw tip, reacted at the servo tabs"
+    direction: xy
+    sf: 2.0
+    max_disp_mm: 1.0
+    fixed: {sites: gr_servo, radius: 4.0}
+    loads:
+      - {near_joint: fixed_tip, radius: 5.0, force_n: [0, 0, 18.4]}
+  - id: finger_fea
+    check: fea_static
+    part: finger
+    why: "the moving finger pressed on the jaw at stall: 18.4 N at the tip, horn screws held"
+    direction: xy
+    sf: 2.0
+    max_disp_mm: 1.0
+    fixed: {sites: gr_horn, radius: 4.0}
+    loads:
+      - {near_joint: tip, radius: 5.0, force_n: [0, 18.4, 0]}
+  - id: turntable_fea
+    check: fea_static
+    part: turntable
+    why: "2x the arm + payload (12.8 N) on the yoke feet and its tipping moment (2 x 6.4 N x 100 mm) about the spindle, which the bearings hold"
+    direction: z             # the spindle prints vertically: its bending stress runs across layers
+    sf: 3.0
+    max_disp_mm: 0.3
+    fixed: {box: [[-6.2, -6.2, "z_blo"], [6.2, 6.2, "z_tt"]]}
+    loads:
+      - {sites: yoke_r_foot, radius: 4.0, force_n: [0, 0, -6.4]}
+      - {sites: yoke_l_foot, radius: 4.0, force_n: [0, 0, -6.4]}
+      - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 640, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+      - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 640, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
   - {id: arm_mass, check: mass_max, max_g: 900, why: "a desk arm two hobby-servo supplies can move around; also the torque budget"}

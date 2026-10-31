@@ -4,7 +4,7 @@ base_yaw = 0. Printed upside down (platform top on the bed): the gear and spindl
 from build123d import *
 from kerf import drives, iface
 
-FOOT_X = (-28.0, -8.0, 10.0)
+FOOT_X = (-29.0, -14.0, 10.0)
 
 
 def foot_y(p):
@@ -20,10 +20,14 @@ def build(ctx):
     body += Pos(0, 0, p.z_tt) * Cylinder(7.5, p.z_gear0 - p.z_tt + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body += Pos(0, 0, p.z_gear0) * (Rot(0, 0, 180) * g1)
     body += Pos(0, 0, p.z_gear1 - 0.01) * Cylinder(14.0, p.z_plat0 - p.z_gear1 + 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    x0, x1 = -44.0, 15.0
+    x0, x1 = -35.0, 15.0                               # rear edge clears the yaw-gear horn screws for a hex key
     plat = Pos((x0 + x1) / 2, 0, p.z_plat0) * Box(x1 - x0, 2 * p.cheek_out, p.plat_t, align=(Align.CENTER, Align.CENTER, Align.MIN))
     plat = fillet(plat.edges().filter_by(Axis.Z), 6.0)
     body += plat
+    # hex-key access (at base_yaw = 0) to the two yaw-servo tab screws under the platform
+    xs = -p.yaw_c - p.yaw_out_x + p.mg_hx / 2
+    for sy in (-1, 1):
+        body -= Pos(xs, sy * p.mg_hy / 2, p.z_plat0 - 1) * Cylinder(2.5, p.plat_t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # yoke feet: 3 x M3 heat-set inserts per side, from the platform top
     for side, grp in ((1, "yoke_r_foot"), (-1, "yoke_l_foot")):
         pts = [(x, side * foot_y(p)) for x in FOOT_X]

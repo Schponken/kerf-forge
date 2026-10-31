@@ -4,7 +4,7 @@ two gussets. Built in the turntable (world) frame. Printed lying on the cheek's 
 from build123d import *
 from kerf import iface
 
-FOOT_X = (-28.0, -8.0, 10.0)
+FOOT_X = (-29.0, -14.0, 10.0)
 FOOT_T = 6.0
 
 
@@ -21,7 +21,7 @@ def yoke(p, side):
     foot = Pos((fx0 + fx1) / 2, (y_in + fy0) / 2, z0) * Box(fx1 - fx0, foot_w + 0.01, FOOT_T, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body = cheek + foot
     zt = z0 + FOOT_T - 0.01
-    for gx in (-30.0, -12.0):                  # gussets between cheek and foot (carry the cheek's tipping moment)
+    for gx in (-21.0, -8.5):                   # gussets carry the cheek tipping moment; between the foot screws, behind the servo case top
         tri = Polygon((y_in + side * 0.01, zt), (y_in - side * (foot_w - 3.0), zt), (y_in + side * 0.01, zt + 24.0), align=None)
         body += Plane.YZ.offset(gx) * extrude(tri, 2.5, both=True)
     pts = [(x, side * (p.cheek_in - 10.0)) for x in FOOT_X]

@@ -51,9 +51,10 @@ def layout(p, cat):
         "sh_tab_t": s["sh"]["tab_t"], "el_tab_t": s["el"]["tab_t"], "wr_tab_t": s["wr"]["tab_t"], "gr_tab_t": s["gr"]["tab_t"],
         "yaw_tab_t": s["yaw"]["tab_t"],
         "ds_L": s["sh"]["L"], "ds_W": s["sh"]["W"], "ds_span": s["sh"]["span"], "ds_hx": s["sh"]["hx"],
-        "mg_L": s["wr"]["L"], "mg_W": s["wr"]["W"], "mg_span": s["wr"]["span"], "mg_hx": s["wr"]["hx"],
+        "mg_hy": s["yaw"]["hy"], "mg_L": s["wr"]["L"], "mg_W": s["wr"]["W"], "mg_span": s["wr"]["span"], "mg_hx": s["wr"]["hx"],
         "mg_tab_z": s["wr"]["tab_z"], "mg_top": s["wr"]["top"], "ds_tab_z": s["sh"]["tab_z"], "ds_top": s["sh"]["top"],
         "yaw_stall_nmm": cat.num(cat.get(SERVOS["yaw"]), "stall_torque_kgcm") * 98.0665,
         "sh_stall_nmm": cat.num(cat.get(SERVOS["sh"]), "stall_torque_kgcm") * 98.0665,
         "el_stall_nmm": cat.num(cat.get(SERVOS["el"]), "stall_torque_kgcm") * 98.0665,
+        "mg_stall_nmm": cat.num(cat.get(SERVOS["gr"]), "stall_torque_kgcm") * 98.0665,
     }
