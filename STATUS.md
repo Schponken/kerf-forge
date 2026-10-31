@@ -796,3 +796,10 @@ pushed for it and what I know:
 - Note for the ENG-7 / pan_tilt owner (reviewer minor): `tap_h` (horizontal pilot 2.10 for M2) is also applied to
   TEARDROP taps, where the teardrop already removes the droop it compensates; the screws may have little bite. Decide
   whether teardrop taps should keep the vertical pilot, and print a coupon.
+## 2026-10-31 13:00 UTC — session dafdd49d (fork): pan_tilt audit F11-F18 — re-review PASS
+- design-reviewer audit round 1 FAIL (base cavity had zero vertical clearance for the SG90 tab-height spread) ->
+  cavity floor 1 mm lower; yoke knock cases (`yoke_knock_out/_in`, 30 N, strength-governed, 2 mm elastic limit).
+  Round 2 **PASS** at fingerprint b13fdb08322fb884 (`kerf review-status pan_tilt` ok); 6 minors in review.json.
+- Minor left open (engine, ship.py): generated ASSEMBLY.md lists the tilt pivot pin before the tilt servo and has no
+  horn centre-screw step (DESIGN.md §8 has the right order). Headless reviewers still run `kerf verify` from the repo
+  Stop hook (E6 stumble #4).

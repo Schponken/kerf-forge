@@ -1,15 +1,45 @@
 {
-  "verdict": "FAIL",
-  "fingerprint": "6a575390434bbb9b",
+  "verdict": "PASS",
+  "fingerprint": "b13fdb08322fb884",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The rework and fixes F11-F18 are sound. The hanging pan servo, shoulder-screw pivot in a heat-set insert, horizontal tap pilots, base knock case, pan-stall case and torque_pan are all present and consistent with report.json. All requirements pass with large margins, the sweeps are clear, and every hex-key path is straight. One real fit problem keeps it from passing: the new base cavity has zero vertical clearance around the pan servo, and the catalog's own documented tab-height spread (15.6 to 16.0 mm) would stop the servo from sliding in.",
+  "summary": "The reworked base works: the servo slides in from -Y, the tab tops sit against a 5 mm deck, the cavity floor is now 1 mm lower so the 15.6-16.0 mm tab-height spread fits, and the lead leaves through the open side. The F11-F18 fixes hold up in code, catalog and FEA. Every FEA case passes at p99.9 with SF 3 (base 6.2 of 13 MPa, yoke knock 8.9/9.8 of 13 MPa), the pan/tilt/corner sweeps are clear, and every hex key reaches its screw. The remaining findings are minor: the generated ASSEMBLY.md order contradicts the correct order in DESIGN.md section 8, and a few margins are thin.",
   "findings": [
-    {"severity": "major", "part": "base", "issue": "Zero vertical clearance for the slide-in pan servo. The servo bottom sits at servo_floor_z = 10.0 mm, which is exactly the top of the nut plinth, because the cavity box starts at z = servo_floor_z. The tab tops sit exactly on the deck underside (deck_z = tab_z + tab_t). Horizontal CLEAR is 0.5 mm per side, but the vertical stack has none. catalog SG90 note: tab underside is 15.6 mm (baud-dance) to ~16 mm (TowerPro drawings), a 0.4 mm spread. At 16.0 the servo bottom would be 0.4 mm below the plinth top, so it cannot slide in from -Y. At the low end the tab leaves a gap under the deck and the M2 screws pull the tab up, bending it. The insertion check only proves the nominal geometry. FDM bridge sag on the deck underside also lands at the tab seat.", "fix": "Lower the cavity floor so the servo hangs from the deck on its tabs with a gap above the plinth. For example, start the cavity 1.0 mm below servo_floor_z (or add a vertical CLEAR term to the cavity), keeping the 8 mm tripod-screw tip room. The servo then hangs from the tab tops, as DESIGN.md says, and tolerates 15.6-16.0 mm. Update the tab-seat/tab_z maths and re-run the insertion check."},
-    {"severity": "minor", "part": "yoke", "issue": "The 30 N knock at the camera was added to base_fea (F15), but the yoke has only the 5 N pivot load and the stall cases. A sideways 30 N at the tilt axis (29.5 mm above the plate) puts about 0.9 N*m at the wall root. A hand estimate for a bare 30 x 5 mm wall section gives about 7 MPa across layers against the 13 MPa allowable. The gussets should lower this, but it is not proven.", "fix": "Add a yoke FEA case with a 30 N knock along Y at the tilt axis, and reacted at the pan-horn screws. Or add a cantilever_stress hand check."},
-    {"severity": "minor", "part": "DESIGN.md", "issue": "Numbers have gone stale after the rework. DESIGN.md says 59.3 g complete and printed masses of base 14.2 g, yoke 12.8 g, bracket 6.0 g; report.json says 67.6 g, with perimeter-aware estimates of 18.0, 16.0 and 7.6 g. Envelopes are also off (yoke 30 x 72.9 x 43.1 in the report, 40.6 high in DESIGN.md).", "fix": "Refresh sections 3-4 and 7 from report.json."},
-    {"severity": "minor", "part": "base", "issue": "The two tab-screw pilots sit about 2 mm from the deck slot edge (ring 79% material, as the edge-distance warning shows), leaving about 1.2 mm of thread ligament. The FEA peak (9.1 MPa, pilot at the slot corner) is the highest stress in the project. The pilots start in a bridged deck underside.", "fix": "Print the base first as a coupon. If the pilots strip, fit M2 heat-set inserts or widen the ledge. Say in DESIGN.md that the pattern forces this edge distance, as the warning asks."},
-    {"severity": "minor", "part": "base/bracket", "issue": "Putting in the pan servo screws is fiddly. They go up from below through 4.8 mm holes in the plinth and 13 mm of air to the tabs, with a 1.5 mm key that must be at least 25 mm long. Overhang on the bracket is 3.5% (roofs of 2-3 mm horizontal holes).", "fix": "Say in ASSEMBLY that a magnetic or long hex driver and a ball-end key are needed. Check the slice preview of the bracket holes."},
-    {"severity": "minor", "part": "horns/servos", "issue": "The 21T horn bolt circle, thread and hub height are catalog estimates. The SG90 tab-hole and output-offset positions are scaled from a drawing. The pivot gap (0.9) against cam_clear (0.8) leaves 0.1 mm of margin.", "fix": "Measure the purchased horns and servos before printing the full set. Print the base and the bracket horn plate as test pieces. Hand-check the tilt, and shim or sand the knuckle if it binds."}
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The generated ASSEMBLY.md puts the shoulder-screw pivot (step 8) before the tilt servo goes in (step 9). It never tells the user to drive the two horn centre screws. DESIGN.md section 8 has the right order: servo in, centre screw through the pivot hole and the 2.4 mm knuckle hole, then the shoulder screw. A user who follows ASSEMBLY.md ends up with the -Y access path to the tilt-horn centre screw blocked by the shoulder screw. The hex_keys check lists that screw as 'straight' only because it is evaluated at the bench stage (step 5, no servo, no yoke).",
+      "fix": "Make the generated assembly text match DESIGN.md section 8. Split the pivot out of the yoke step and place it after tilt_servo. Add explicit 'drive the horn centre screw' lines for both horns. Or add a note in project.yaml assembly_note for tilt_servo: 'drive the tilt horn centre screw through the -Y pivot hole BEFORE the shoulder screw'."
+    },
+    {
+      "severity": "minor",
+      "part": "base",
+      "issue": "The pan servo is held only by two M2 self-tap pilots with 3.6 mm engagement (6 mm screw minus 2.4 mm tab) in the bridged underside of the deck. The 30 N camera knock puts about 1260 N·mm on the tab contact. That is roughly 45 N pull-out on the far screw, which is only about 3x the typical PETG pull-out for M2. The FEA peak (9.2 MPa) is at those pilots, but pull-out is not checked. The pilots also sit 2.1 mm from the window edge (the hole pattern forces this; the DESIGN.md risk list already says so).",
+      "fix": "Print the base first and pull-test the tab screws. If they are marginal, go to M2 x 8 (needs a taller deck, deck_t 6.5) or M2 heat-set inserts. Say in DESIGN.md that the M2 pull-out under the knock moment was not computed."
+    },
+    {
+      "severity": "minor",
+      "part": "yoke",
+      "issue": "The knock cases are judged on p99.9. The local volume peaks are 22.6 MPa (knock_in, pivot-wall root fillet) and 16.8 MPa (knock_out) against 39 MPa across layers, which is SF 1.7 and 2.3 locally. They sit at wall-root corners and are likely mesh singularities. The elastic travel of 1.3-1.7 mm is accepted by a relaxed 2.0 mm limit. In the render the +Y window edge near the upper tab pilots looks ragged (the pilots break into the window edge).",
+      "fix": "Optionally enlarge the root fillets from 1.5 mm to 2.5 mm, or add a gusset at the pivot-wall root. Check the +Y window pilots in the slicer preview. Keep the note that this is a handling transient."
+    },
+    {
+      "severity": "minor",
+      "part": "base",
+      "issue": "The 1/4-20 nut pocket is cut from the floor right up into the open cavity, so the nut is not captive until the pan servo is in. Before the servo is fitted, and any time it is removed, the nut can fall out of the open -Y side. The tripod screw tip needs 5.5-8 mm protrusion (A2) and clears the servo bottom by about 2 mm only for 8 mm or shorter screws.",
+      "fix": "Keep the assembly order nut, then servo. Add a line to ASSEMBLY.md and the base note: 'nut is captive only once the pan servo is in'. Put the 8 mm maximum tripod screw protrusion on a label or in the assembly notes."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The M3 heat-set insert hole (4.0 mm) sits in a knuckle of r 4.4 mm, leaving about 2.4 mm of wall, above the catalog minimum of 1.6 mm. The teardrop point adds material below. The knuckle hole depth is 8 mm for a 5.7 mm insert, which is fine. The shoulder screw's 4.5 mm thread against the 5.7 mm insert is fine. Heat-set into a teardrop prism is a one-shot job: a crooked press cannot be fixed.",
+      "fix": "No geometry change needed. Add a press-in jig note: press with the screw loosely threaded as a guide, flush to just below the -Y face."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The horn bolt circle, thread and hub height (catalog A3 estimates), the SG90 tab hole and output offset (scaled from a drawing) and the gear-boss relief are unmeasured. The bracket and yoke fit all depend on them. DESIGN.md section 10 already lists these.",
+      "fix": "Measure the actual horns and servos before printing the bracket and yoke. Print the base first as a test fit, as DESIGN.md says."
+    }
   ]
 }
