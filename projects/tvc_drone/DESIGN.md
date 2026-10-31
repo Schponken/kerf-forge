@@ -13,8 +13,8 @@ three splayed legs. Numbers below are from `kerf build tvc_drone` (out/report.js
 | Gimbal travel | +/-15 deg each axis + 4 corners, collision-free | clear (sweeps + `gimbal_corners`) |
 | Prop clearance (`props`) | >= 3 mm to anything, >= 20 mm between discs | 5.7 mm (top prop to leg_1 at roll -15 / pitch 15) |
 | Gimbal hub strength (`gimbal_fea`) | 2 x max thrust = 66.1 N, SF 3 | 3.97 MPa vs 16 MPa allowable |
-| Roll ring / yoke / leg FEA | SF 3 (ENGINEERING.md s3) | 4.06 / 3.06 (Z-strength, incl. the single-shear roll-pin moment) / 3.37 MPa vs 16 / 13 / 16; leg case 790 g x 3 g (leg tip deflects 2.97 mm, limit 3) |
-| Leg lug landing (`lug_fea`) | screws pull 168 N per leg, SF 3, Z-strength | 7.88 MPa vs 13 (3 mm fillets where the lugs and bridges leave the disc; peak 11 MPa) |
+| Roll ring / yoke / leg FEA | SF 3 (ENGINEERING.md s3) | 4.05 / 3.49 (Z-strength, incl. the single-shear roll-pin moment) / 3.37 MPa vs 16 / 13 / 16; leg case 790 g x 3 g (leg tip deflects 2.97 mm, limit 3) |
+| Leg lug landing (`lug_fea`) | screws pull 168 N per leg, SF 3, Z-strength | 8.1 MPa vs 13 (3 mm fillets where the lugs and bridges leave the disc; peak 11 MPa) |
 | Mass (`mass`) | <= 790 g (from twr: 1625 g / 2.0 = 812 g less ~20 g of unmodelled screws, inserts, dowels) | 781 g incl. tubes (density x section x length), XT60 and wire from the catalog g/m x cut lengths |
 | Power budget (`power`) | every rating at avg and peak | worst 0.73 of rating (battery 13.0 A hover, 43.8 A peak) |
 | Hover time (`flight_time`) | >= 2 min | 4.0 min on 80 % of 1100 mAh (momentum theory, coax kappa 1.281) |
