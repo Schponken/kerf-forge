@@ -564,6 +564,7 @@ pushed for it and what I know:
   `kerf build <p>`, commit catalog_deps.json and get one more review (or a re-confirm if nothing else changed).
 - tvc_drone: rebuilt, deps committed, reviewer re-confirmed PASS at 00af8263a5d0de73.
 
+<<<<<<< Updated upstream
 ## 2026-10-31 — session 01S68R6S: fpv_5in review round 4 fixes
 - Round 4 FAIL (1 major, 7 minor): the 74 % Betaflight output limit lived only in DESIGN.md. Engine fix for every
   project: `electrical.limits` now print as "Configure before the first power-up" in WIRING.md and as an ASSEMBLY.md
@@ -590,3 +591,14 @@ pushed for it and what I know:
 - Not mine, seen: tests/test_kerf_skill.py fails on `hard_stop` (another session's new check not yet in the skill
   toolbox).
 
+=======
+## 2026-10-31 05:30 UTC — session 01S68R6RW: README.md written (PLAN item stays open)
+- README.md: what Kerf Forge is, setup, `/kerf ...` usage, commands, what it can and can't do, repo map. The results
+  table is a generated block: `.venv/bin/python tools/readme_results.py` fills it from each eval's latest
+  `kerf build` (build / current review / acceptance, parts, purchased, mass, plates) and copies each assembly sheet to
+  docs/results/<id>.png (out/ is not in git). Left empty on purpose until every eval passes; the session that runs
+  the final verify should run the tool, commit README + docs/results, then check the README box.
+- Reminder (engine change above): the first build of each project after 59d5324 writes projects/<p>/catalog_deps.json
+  and moves its fingerprint once (servo_link -> 9e6f0f16, pan_tilt -> 27adc6f9 in my sandbox): commit that file
+  and get a re-confirm review.
+>>>>>>> Stashed changes
