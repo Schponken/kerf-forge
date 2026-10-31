@@ -39,4 +39,5 @@ def build(ctx):
     ctx.rigid("battery_seat", Location((p.batt_dx, p.batt_dy, t)))
     a = math.radians(XT60_ANG)
     ctx.rigid("xt60_seat", Location((XT60_R * math.cos(a), XT60_R * math.sin(a), 0)) * Rot(0, 0, XT60_ANG) * Rot(180, 0, 0))
+    body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
     return ctx.finish(body)

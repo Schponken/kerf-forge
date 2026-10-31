@@ -6,7 +6,7 @@ seat) is on the bed, and the arms and horn lug are flush with it (z 8) so nothin
 import math
 
 from build123d import *
-from kerf import iface
+from kerf import features, iface
 
 HORN = "servo_horns.aluminum_micro_21T"
 MOTOR = "drone.motors.2207_1855kv_6s"
@@ -31,6 +31,14 @@ def build(ctx):
     body += Pos(0, -(y0 + 1) / 2, 1) * Box(14, y0 + 1, 14)        # -Y arm root (the +Y fork joins the disc directly)
     # nothing below the disc inside motor_plate's radius (the plate sits there)
     body -= Pos(0, 0, -20) * Cylinder(p.hub_r - 0.5, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # 1 mm fillets (ENGINEERING.md s5) where the fork bars and the -Y arm leave the disc and the bars meet the horn lug
+    roots = [e for e in body.edges().filter_by(Axis.Z)
+             if (abs(math.hypot(e.center().X, e.center().Y) - p.hub_r) < 1.0 and 0 < e.center().Z < t
+                 and not (e.center().X > 0 and abs(e.center().Y) < 0.1))
+             or (abs(abs(e.center().X) - 8.0) < 0.1 and abs(e.center().Y - yl) < 0.1)]
+    body, failed = features.safe_fillet(body, [(roots, 1.0)])
+    if failed or len(roots) < 4:
+        raise ValueError(f"motor_hub root fillets: {len(roots)} edges, failed {failed}")
     # pitch horn: screws from the arm side (heads on the -Y face of the lug) into the horn
     hloc = Location(Plane(origin=(0, yl, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
     body -= iface.horn_mount(ctx, HORN, hloc, group="pitch_horn", plate_t=lug_t, teardrop=iface.print_up_deg(ctx, hloc))
@@ -47,4 +55,5 @@ def build(ctx):
     ctx.rigid("pitch_horn", Location(Plane(origin=(0, p.pitch_face, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0))))
     ctx.rigid("top_motor", Location((0, 0, t)))
     ctx.rigid("plate_seat", Location((0, 0, 0)))
+    body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
     return ctx.finish(body)

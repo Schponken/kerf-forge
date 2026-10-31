@@ -93,4 +93,5 @@ def build(ctx):
     ctx.rigid("top_seat", Location((0, 0, p.ring_top_z)))
     ctx.rigid("roll_servo", tab)
     ctx.rigid("origin", Location((0, 0, 0)))
+    body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
     return ctx.finish(body)

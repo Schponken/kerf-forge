@@ -31,4 +31,5 @@ def build(ctx):
                                teardrop=iface.print_up_deg(ctx, sloc))
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("foot", Location((dx, 0, dz)))
+    body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
     return ctx.finish(body)

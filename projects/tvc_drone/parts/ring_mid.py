@@ -42,4 +42,5 @@ def build(ctx):
     ctx.rigid("stack_seat", Location((0, 0, t)))
     ctx.rigid("bec_seat", Location((0, BEC_Y, 0)) * Rot(180, 0, 0))     # hangs under the ring, tie round its middle
     ctx.rigid("rx_seat", Location((0, RX_Y, 0)) * Rot(180, 0, 0))
+    body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
     return ctx.finish(body)

@@ -4,7 +4,7 @@ Frame: origin on the top face (the hub's underside at home), plate below it, +Z 
 import math
 
 from build123d import *
-from kerf import iface
+from kerf import features, iface
 
 MOTOR = "drone.motors.2207_1855kv_6s"
 JOIN_R = 21.0
@@ -21,4 +21,5 @@ def build(ctx):
                                kind="clearance", depth=t)
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("bottom_motor", Location((0, 0, -t), (180, 0, 0)))
+    body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
     return ctx.finish(body)

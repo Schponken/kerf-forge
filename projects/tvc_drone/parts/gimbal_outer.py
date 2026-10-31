@@ -2,8 +2,10 @@
 bolts to the roll servo's horn, its -X pad turns on the roll dowel. It carries the pitch servo on a +Y pad (tabs on
 the inner face, body out through a window) and holds the pitch dowel pressed into its -Y pad.
 Frame: world at home (origin = gimbal centre). Printed flat (ring plane on the bed)."""
+import math
+
 from build123d import *
-from kerf import iface
+from kerf import features, iface
 
 SERVO = "servos.MG90S"
 HORN = "servo_horns.aluminum_micro_21T"
@@ -25,6 +27,14 @@ def build(ctx):
     body = ring + roll_lug + pin_pad_x + servo_pad + pin_pad_y
     # the ring's inner curve bulges inside the flat servo pad face toward its ends: cut it back so the tabs seat flat
     body -= Pos((x_lo + x_hi) / 2, ri - 4.0, 0) * Box(x_hi - x_lo, 8.0, h + 2)
+    # 1 mm fillets (ENGINEERING.md s5) where the pads stand proud of the ring's inner face
+    roots = [e for e in body.edges().filter_by(Axis.Z)
+             if abs(math.hypot(e.center().X, e.center().Y) - ri) < 0.4
+             and not (e.center().X > 0 and abs(e.center().Y) < 0.1)
+             and not e.center().Y < -60]    # -Y pin pad stands only 0.5 mm proud (hub arm end): no corner to round
+    body, failed = features.safe_fillet(body, [(roots, 1.0)])
+    if failed or len(roots) < 4:
+        raise ValueError(f"gimbal_outer pad fillets: {len(roots)} edges, failed {failed}")
     # roll horn: screws from inside the ring (heads on x = ri face) into the horn's threaded holes
     hloc = Location(Plane(origin=(li, 0, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))
     body -= iface.horn_mount(ctx, HORN, hloc, group="roll_horn", plate_t=lug_t, teardrop=iface.print_up_deg(ctx, hloc))
@@ -41,4 +51,5 @@ def build(ctx):
                            teardrop=iface.print_up_deg(ctx, ploc))
     ctx.rigid("roll_horn", Location(Plane(origin=(p.roll_face, 0, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))))
     ctx.rigid("pitch_servo", tab)
+    body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
     return ctx.finish(body)

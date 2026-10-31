@@ -47,3 +47,17 @@ def test_heatset_relief_allows_a_longer_screw():
     assert e1 == pytest.approx(e0 + 2.0) and c1.volume > c0.volume
     with pytest.raises(ValueError):
         i.hole("M2", "heatset", 5, relief=2.0)       # 4 mm insert hole + 2 relief + 0.8 floor > 5
+
+
+def test_bed_edges_follow_print_rot():
+    from build123d import Box
+    from kerf import features
+    b = Box(10, 20, 30)                            # centred: z -15..15
+    flat = features.bed_edges(ctx([0, 0, 0]), b)
+    assert len(flat) == 4 and all(abs(e.center().Z + 15) < 1e-6 for e in flat)
+    flip = features.bed_edges(ctx([180, 0, 0]), b)
+    assert len(flip) == 4 and all(abs(e.center().Z - 15) < 1e-6 for e in flip)
+    side = features.bed_edges(ctx([90, 0, 0]), b)  # part +Y is printer up -> the y = -10 face is on the bed
+    assert len(side) == 4 and all(abs(e.center().Y + 10) < 1e-6 for e in side)
+    s, failed = features.bed_chamfer(ctx([0, 0, 0]), b)
+    assert not failed and s.volume < b.volume

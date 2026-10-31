@@ -7,15 +7,15 @@ three splayed legs. Numbers below are from `kerf build tvc_drone` (out/report.js
 ## Requirements (numbers)
 | What | Target | Result |
 |---|---|---|
-| Thrust / weight (`twr`, `twr_sag`) | >= 2.0 at 22.2 V nominal (ENGINEERING.md s3), >= 1.8 sagged to 21 V | 2.12 / 1.90 (1899 g at 24 V and the 85 % motor output cap, x (V/24)^2; 765 g incl. tubes and wiring) |
+| Thrust / weight (`twr`, `twr_sag`) | >= 2.0 at 22.2 V nominal (ENGINEERING.md s3), >= 1.8 sagged to 21 V | 2.13 / 1.90 (1899 g at 24 V and the 85 % motor output cap, x (V/24)^2; 764 g incl. tubes and wiring) |
 | CG on thrust axis (`cg_axis`) | <= 3 mm lateral, above pivot | 0.24 mm worst over gimbal corners, wiring mass included at its routed position; 141 mm above the pivot |
 | Stand on its own (`stand`) | >= 15 deg tip-over | 20.5 deg |
 | Gimbal travel | +/-15 deg each axis + 4 corners, collision-free | clear (sweeps + `gimbal_corners`) |
 | Prop clearance (`props`) | >= 3 mm to anything, >= 20 mm between discs | 5.7 mm (top prop to leg_1 at roll -15 / pitch 15) |
-| Gimbal hub strength (`gimbal_fea`) | 2 x max thrust = 66.1 N, SF 3 | 3.35 MPa vs 16 MPa allowable |
-| Roll ring / yoke / leg FEA | SF 3 (ENGINEERING.md s3) | 4.02 / 3.58 (Z-strength) / 3.34 MPa vs 16 / 13 / 16; leg case 790 g x 3 g |
-| Leg lug landing (`lug_fea`) | screws pull 168 N per leg, SF 3, Z-strength | 8.05 MPa vs 13 (3 mm fillets where the lugs and bridges leave the disc; peak 11 MPa) |
-| Mass (`mass`) | <= 790 g (from twr: 1625 g / 2.0 = 812 g less ~20 g of unmodelled screws, inserts, dowels) | 765 g incl. tubes (density x section x length), XT60 and wire from the catalog g/m x cut lengths |
+| Gimbal hub strength (`gimbal_fea`) | 2 x max thrust = 66.1 N, SF 3 | 3.97 MPa vs 16 MPa allowable |
+| Roll ring / yoke / leg FEA | SF 3 (ENGINEERING.md s3) | 4.06 / 3.51 (Z-strength) / 3.37 MPa vs 16 / 13 / 16; leg case 790 g x 3 g (leg tip deflects 2.97 mm, limit 3) |
+| Leg lug landing (`lug_fea`) | screws pull 168 N per leg, SF 3, Z-strength | 7.88 MPa vs 13 (3 mm fillets where the lugs and bridges leave the disc; peak 11 MPa) |
+| Mass (`mass`) | <= 790 g (from twr: 1625 g / 2.0 = 812 g less ~20 g of unmodelled screws, inserts, dowels) | 764 g incl. tubes (density x section x length), XT60 and wire from the catalog g/m x cut lengths |
 | Power budget (`power`) | every rating at avg and peak | worst 0.73 of rating (battery 12.7 A hover, 43.8 A peak) |
 | Hover time (`flight_time`) | >= 2 min | 4.2 min on 80 % of 1100 mAh (momentum theory, coax kappa 1.281) |
 | Battery plug / USB (`plug_access`, `usb_access`) | reachable assembled | both clear |
@@ -74,8 +74,8 @@ directions and tune on a tether (Risks).
 - **Motor output limit 85 % (ArduPilot `MOT_SPIN_MAX = 0.85`, default 0.95) is required**: two motors at full
   output draw 2 x 35.08 A = 70 A, above the XT60's 60 A instantaneous rating. Prop power goes as speed^3, so 85 %
   output = 0.614 x 35.08 = 21.5 A per motor (43 A for the pair) and 72 % thrust: 1899 g at the motor table's 24 V,
-  1625 g at 22.2 V nominal (T/W 2.12) and 1454 g sagged to 21 V (1.90). Thrust scales with voltage squared.
-- Hover: 765 g on one coaxial 5.1" pair -> electrical power from momentum theory (FM 0.5, motor eff. 0.75, coax
+  1625 g at 22.2 V nominal (T/W 2.13) and 1454 g sagged to 21 V (1.90). Thrust scales with voltage squared.
+- Hover: 764 g on one coaxial 5.1" pair -> electrical power from momentum theory (FM 0.5, motor eff. 0.75, coax
   1.281), 12.7 A at 22.2 V with FC, servos and receiver -> 4.2 min on 880 mAh usable.
 - Routes (every one is checked at home, at both ends of each gimbal axis and at the 4 gimbal corners: a tube of the
   wire's diameter must not enter any part or prop disc, and the cut length covers the worst pose + 15 %): down
@@ -92,13 +92,18 @@ directions and tune on a tether (Risks).
 ## Parts (all PETG)
 | Part | Job | print_rot | load_axis |
 |---|---|---|---|
-| ring_low | root: mast base, 3 tube bosses, 3 leg lugs (22 wide, 10 x 10 T-rib on top, 2 inserts on the centre line), +X yoke with roll servo window, -X yoke with roll dowel, top webs | [180,0,0] upside down (bosses, webs and ribs on the bed, the plate on supports: 15 % support, accepted, no flat face can carry it) | z (FEA in Z strength) |
+| ring_low | root: mast base, 3 tube bosses, 3 leg lugs (22 wide, 10 x 10 T-rib on top, 2 inserts on the centre line), +X yoke with roll servo window, -X yoke with roll dowel, top webs | [180,0,0] upside down (the 18 mm bosses and webs on the bed, the plate and lug ribs on supports: 15 % support, accepted, no flat face can carry it) | z (FEA in Z strength) |
 | gimbal_outer | roll ring (17 high; every pad as tall as the ring, so one flat face is on the bed): roll horn lug (+X), roll dowel pad (-X), pitch servo pad (+Y), pitch dowel pad (-Y) | flat | x, y |
 | motor_hub | pitch frame: top motor (counterbored M3 x 5), +Y fork to the pitch horn, -Y arm to the dowel, 3 M3 inserts; arms flush with the disc top | [180,0,0]: the motor seat face on the bed | y |
 | motor_plate | bottom motor (M3 x 5, counterbored), bolts under the hub | flat | x, y |
 | ring_mid | tubes through, radial locks, flight stack on its silicone grommets, 4 x M2 x 18 into heat-set inserts (2 mm screw run-on below each); UBEC + receiver tied underneath | upside down | x, y |
 | ring_top | tube caps, battery tray with strap slots beside the pack, two tie slots for the XT60 pigtail | upside down | x, y |
 | leg_1..3 | splayed legs to r = 150 mm, ground 85 mm under the pivot; pad, strut and foot one 14 mm width (whole side face on the bed), 2 mm root fillet | on its side | x, z |
+
+Detail (ENGINEERING.md s5): 0.5 mm chamfer on every first-layer edge (`features.bed_chamfer`; 14 gimbal_outer edges
+that OCC cannot chamfer are listed as a build warning: deburr them), 3 mm fillets where the ring_low lugs and bridges
+leave the disc, 1 mm where the motor_hub arms leave the disc and the gimbal_outer pads stand off the ring, 2 mm at the
+leg root.
 
 ## Interfaces
 | A | B | How | Group |

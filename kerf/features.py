@@ -245,3 +245,27 @@ def _match(shape, e):
     """The edge of `shape` closest to edge e (edges change identity after each operation)."""
     c = e.center()
     return min(shape.edges(), key=lambda x: (x.center() - c).length + abs(x.length - e.length))
+
+
+def bed_edges(ctx, shape, tol: float = 0.05):
+    """Edges of `shape` (part frame) that lie on the print bed for the part's `print_rot`: outer outline and hole rims
+    of the first layer. Use for docs/ENGINEERING.md section 5's 0.5 mm elephant's-foot chamfer."""
+    rot = ((getattr(ctx, "meta", None) or {}).get("spec") or {}).get("print_rot") or [0, 0, 0]
+    up = (Location((0, 0, 0), tuple(float(a) for a in rot)).inverse() * Location((0, 0, 1))).position
+    h = lambda v: v.X * up.X + v.Y * up.Y + v.Z * up.Z  # noqa: E731
+    z0 = min(h(v) for v in shape.vertices())
+    return [e for e in shape.edges() if all(abs(h(v) - z0) < tol for v in e.vertices())
+            and abs(h(e.center()) - z0) < tol]
+
+
+def bed_chamfer(ctx, shape, size: float = 0.5):
+    """0.5 mm chamfer on every first-layer edge (bed_edges); returns (shape, failed) like safe_fillet. Edges OCC cannot
+    chamfer (slivers, edges meeting a fillet) are skipped and reported as a part note (a build warning) so the builder
+    knows to deburr them."""
+    edges = bed_edges(ctx, shape)
+    shape, failed = safe_fillet(shape, [(edges, size)], kind="chamfer")
+    if failed and getattr(ctx, "notes", None) is not None:
+        ctx.notes.append(f"{len(failed)} of {len(edges)} first-layer edges could not take the {size} mm elephant's-foot "
+                         f"chamfer (deburr them after printing): " + "; ".join(f.split(" chamfer")[0] for f in failed[:4])
+                         + (" ..." if len(failed) > 4 else ""))
+    return shape, failed
