@@ -44,8 +44,13 @@ def render(viz: dict, path, title: str = "") -> str:
                  label=f"von Mises (MPa), scale 0-{top:.2f}; magenta = over the {allow:.1f} MPa limit")
     # colours are per-element means on the surface; the checked numbers (p99.9 and peak over every integration point
     # in the volume, the same solve) come from the report so the picture and report.json can't disagree
-    nums = (f"   checked p99.9 {viz['p999']:.2f} / peak {viz['peak']:.2f} MPa" if "p999" in viz else "")
-    fig.suptitle(f"{title}{nums}   (colour: surface element mean, max {vm.max():.2f})")
+    fig.suptitle(heading(viz, title, float(vm.max())))
     fig.savefig(str(path))
     plt.close(fig)
     return str(path)
+
+
+def heading(viz: dict, title: str, surface_peak: float) -> str:
+    """The picture's title: the value judged (volume p99.9), the volume peak and the surface peak the colours show."""
+    nums = (f"   pass/fail on volume p99.9 {viz['p999']:.2f} MPa; volume peak {viz['peak']:.2f}" if "p999" in viz else "")
+    return f"{title}{nums}; surface peak {surface_peak:.2f} (colour = surface element mean)"

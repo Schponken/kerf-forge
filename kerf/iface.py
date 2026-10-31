@@ -269,11 +269,17 @@ def servo_lead_in(servo: str, kind: str, plate_t: float, lead_in: float, clearan
 
 
 def horn_dims(path: str) -> dict:
+    """hub_total: hub bottom to disc top. engage: how far the servo spline slides up into the hub (catalog
+    spline_engage, 0 if unknown). hub_h: what layouts add above the servo's spline top to reach the horn face
+    (= hub_total - engage), so a horn that slides over its spline sits that much lower."""
     e = catalog.get(path)
+    total = _first(e, "hub_height", "hub_h", "total_height", default=0.0)
+    engage = _first(e, "spline_engage", default=0.0)
     return {
         "od": _first(e, "outer_d", "od", "outer_diameter", "diameter"),
         "t": _first(e, "thickness", "disc_thickness", "plate_thickness"),
-        "hub_h": _first(e, "hub_height", "hub_h", "total_height", default=0.0),
+        "hub_total": total, "engage": engage, "spline_d": _first(e, "spline_d", default=0.0),
+        "hub_h": total - engage,
         "hub_d": _first(e, "hub_d", "hub_diameter", default=0.0),
         "bc": _first(e, "bolt_circle_d", "hole_circle_d", "bolt_circle_diameter", "pcd"),
         "n": int(_first(e, "hole_count", "holes", "n_holes", "number_of_holes")),

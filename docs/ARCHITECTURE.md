@@ -55,7 +55,8 @@ layout: parts/layout.py         # optional: def layout(p, cat) -> dict of shared
 parts:                          # printed parts
   bracket: {file: parts/bracket.py, material: PETG, qty: 1, print_rot: [0, 0, 0], infill: 0.3, load_axis: X}   # load_axis: main stress direction (part frame); warned if > 30 deg across layers
   # any part or purchased item may add  insert: {direction: [0, 0, -1], distance: 30}  (own frame, the way it moves
-  # going IN): kerf check slides it (and what is mounted on it) in from that far and reports collisions on the way
+  # going IN): kerf check slides it (and what is mounted on it) in from that far and reports collisions on the way;
+  # with assembly.order, parts installed after it neither ride along nor block
 purchased:                      # catalog-backed proxies (real mass + geometry for collisions)
   servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}}
   horn:  {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}
@@ -69,7 +70,8 @@ assembly:
   order: [base, bracket, servo, horn, arm]   # optional build sequence (ids or [ids]); a screw is driven when the later of
                                 # its two parts goes on, so only parts installed by then can block its hex key
   allow_overlap:                # only with a physical reason
-    - {pair: [servo, horn], max_mm3: 60, why: horn spline engages the servo output shaft}
+    - {pair: [servo, horn], max_mm3: 60, why: horn spline engages the servo output shaft}  # horn proxies with
+      # catalog spline_engage get a spline bore and sit that far down over the spline, so need no allowance
   key_access:                   # assembly order for the hex-key check: these items go on after the group's screws
     - {group: hub_motor_top, before: [motor_plate, motor_bottom], why: top motor is screwed on before the bottom plate}
   sweeps:
@@ -180,7 +182,8 @@ wiring:
   `supports` (per-part override), `params` (per-part param overrides), `note` (shown in the BOM).
 - Purchased items: `catalog`, `proxy`, `groups` (proxy site key -> fastener group), `qty`, `mass_g` (overrides the
   catalog mass), `note`, `color`, `tab_screws_from: bottom` (servo screws from behind the tabs, with
-  `servo_mount(top_through=True)`), proxy-specific sizes (`length` rod, `size` box, `h` prop-disc thickness,
+  `servo_mount(top_through=True)`), `tab_washers: true` (a flat washer under each tab screw head: catalog
+  `washer_h` added to the grip), proxy-specific sizes (`length` rod, `size` box, `h` prop-disc thickness,
   `diameter` prop disc, `hole_start_deg` horn holes, `component_height` board, `model`/`model_rot`/`model_pos`/
   `models_dir`/`base` vendor STEP, `center`/`teeth`/`width` belt).
 - Keep-outs: as purchased, plus `owner` (the item the volume belongs to; never an interference with it).

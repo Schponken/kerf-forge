@@ -5,7 +5,8 @@
     to 25 deg does, that's a warning (buy a ball-end driver); if neither, it's a problem.
 (b) insertion paths: an item declared with `insert: {direction: [x, y, z], distance: mm}` (direction = the way it moves
     as it goes IN, in the item's own frame) is slid in from `distance` away and must not hit anything on the way
-    (its own subtree moves with it; allow_overlap allowances still apply).
+    (its own subtree moves with it; allow_overlap allowances still apply). With `assembly.order`, items installed
+    later than it (in its subtree or not) are not there yet: they neither move with it nor block it.
 Assembly order: `assembly.key_access: [{group, before: [items], why}]` says those items are fitted after the group's
 screws are driven (e.g. the second motor of a coax pair covers the first motor's screw heads), so they don't block it.
 """
@@ -116,6 +117,7 @@ def insertion_paths(asm, step_mm: float = 1.0) -> tuple[list, list]:
     """Slide every item with an `insert:` spec into its seat; returns (results, problems)."""
     items = asm.proj.items
     allow = A._allowed(asm)
+    step = _install_steps(asm)
     results, problems = [], []
     for iid, it in items.items():
         spec = it.spec.get("insert")
@@ -124,10 +126,14 @@ def insertion_paths(asm, step_mm: float = 1.0) -> tuple[list, list]:
         d_loc = np.asarray(spec["direction"], float)
         d_loc /= np.linalg.norm(d_loc)
         dist = float(spec["distance"])
-        moving = sorted(asm.subtree(iid))
+        # with assembly.order, only what is already installed matters: subtree items fitted later (a horn and arm on a
+        # servo that goes in first) neither ride along nor block, and nothing installed later blocks
+        now = step.get(iid, 0)
+        moving = sorted(m for m in asm.subtree(iid) if m == iid or step.get(m, 0) <= now)
         homes = {m: items[m].shape.location for m in moving}
         d = geom.world_dir(items[iid].shape.location, d_loc)
-        others = [i for i, o in items.items() if o.shape is not None and o.role != "keepout" and i not in moving]
+        others = [i for i, o in items.items() if o.shape is not None and o.role != "keepout" and i not in moving
+                  and i not in asm.subtree(iid) and step.get(i, 0) <= now]
         n = max(8, math.ceil(dist / step_mm))
         hits = []
         try:

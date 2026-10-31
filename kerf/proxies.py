@@ -65,9 +65,12 @@ def servo(ctx, spec):
         s += Pos(sx * (d["L"] / 2 + bp / 2 - 0.01), 0, -d["tab_z"] + bz) * Box(bp + 0.02, bw, bh, align=(Align.CENTER, Align.CENTER, Align.MIN))
     if _g(spec, "tabs"):
         from_bottom = spec.get("tab_screws_from", "top") == "bottom"
+        # tab_washers: a flat washer under each head (big keyhole tab slots); it adds its thickness to the grip and
+        # moves the head seat out by the same amount
+        wh = catalog.num(catalog.get(f"screws.{d['screw']}"), "washer_h") if spec.get("tab_washers") else 0.0
         for (x, y) in d["holes"]:
-            loc = Location((x, y, 0)) * Rot(180, 0, 0) if from_bottom else Location((x, y, d["tab_t"]))
-            ctx.site(Site(_g(spec, "tabs"), "male", d["screw"], "clearance", loc, grip=d["tab_t"]))
+            loc = Location((x, y, -wh)) * Rot(180, 0, 0) if from_bottom else Location((x, y, d["tab_t"] + wh))
+            ctx.site(Site(_g(spec, "tabs"), "male", d["screw"], "clearance", loc, grip=d["tab_t"] + wh))
     ctx.rigid("tabs", Location((0, 0, 0)))
     top = d["top"] + d["shaft_h"]
     rng = tuple(spec.get("range", (-90, 90)))
@@ -78,17 +81,23 @@ def servo(ctx, spec):
 
 @proxy("horn")
 def horn(ctx, spec):
-    """Round disc horn. Frame: origin on the servo axis at the hub's bottom (where it seats on the spline top), +Z up.
+    """Round disc horn. Frame: origin on the servo axis at the servo's spline TOP, +Z up. The hub slides `engage` mm
+    down over the spline (catalog spline_engage; a bore of the spline diameter is cut that deep), so the hub bottom is
+    at z = -engage and the disc top at hub_total - engage.
     Joints: spline (rigid, origin), face (rigid, top face of the disc).
     Sites: group[holes] female threaded holes on the top face."""
     h = iface.horn_dims(spec["catalog"])
-    hub_h = h["hub_h"] or h["t"]
+    hub_total = h["hub_total"] or h["t"]
     hub_d = h["hub_d"] or h["od"] * 0.45
-    # the disc sits on top of the hub; the hub wraps the spline (modelled as an overlap allowed with the servo)
-    disc_z = max(hub_h - h["t"], 0.0)
+    z0 = -h["engage"]
+    disc_z = z0 + max(hub_total - h["t"], 0.0)
     s = _cyl(h["od"] / 2, h["t"], z0=disc_z)
-    if hub_h > h["t"]:
-        s += _cyl(hub_d / 2, hub_h - h["t"] + 0.01, z0=0)
+    if hub_total > h["t"]:
+        s += _cyl(hub_d / 2, hub_total - h["t"] + 0.01, z0=z0)
+    if h["engage"] > 0:
+        if not h["spline_d"]:
+            raise ValueError(f"{spec['catalog']}: spline_engage needs spline_d (the bore the spline slides into)")
+        s -= _cyl(h["spline_d"] / 2 + 0.05, h["engage"] + 0.01, z0=z0 - 0.01)
     top = disc_z + h["t"]
     for (x, y) in iface.circle(h["n"], h["bc"], spec.get("hole_start_deg", 45.0)):
         s -= Pos(x, y, disc_z - 1) * Cylinder(iface.screw_spec(h["screw"])["tap"] / 2, h["t"] + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))

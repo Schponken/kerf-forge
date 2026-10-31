@@ -21,14 +21,16 @@ parts:
   bracket: {file: parts/bracket.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
   arm: {file: parts/arm.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
 purchased:
-  servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}, tab_screws_from: bottom, range: [-90, 90]}
+  servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}, tab_screws_from: bottom, tab_washers: true,
+          range: [-90, 90], insert: {direction: [0, 0, 1], distance: 25}}   # top-first through the wall window, from behind
   horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}
 bom_extra:
-  - {type: fastener, item: M3 flat washer (DIN 125), qty: 4, spec: "under the servo tab screws (the tab holes are 4.2 mm)"}
+  - {type: fastener, item: M3 flat washer (DIN 125), qty: 4, spec: "under the servo tab screw heads (the tab holes are 4.5 mm keyhole slots); counted in the screw grip"}
   - {type: hardware, item: 50 g calibration weight or fishing sinker on a wire loop or S-hook, qty: 1, spec: "hangs from the arm tip hole"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 1, spec: "servo lead strain relief"}
 assembly:
   root: base
+  order: [base, bracket, servo, horn, arm]   # servo in from behind before the horn and arm go on its spline
   joints:
     - {parent: base.bracket_seat, child: bracket.origin}
     - {parent: bracket.servo_seat, child: servo.tabs}

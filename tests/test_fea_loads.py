@@ -102,6 +102,8 @@ def test_yaml_load_cases_and_render(tmp_path):
     assert (tmp_path / "fea_seat.png").stat().st_size > 20000 and png.endswith(".png")
     # the picture's title states the same checked p99.9 as the report (review finding: render and report disagreed)
     assert res["_viz"]["p999"] == pytest.approx(r["value"], abs=0.01) and res["_viz"]["peak"] >= res["_viz"]["p999"]
+    h = fea_render.heading(res["_viz"], "seat", 3.21)
+    assert f"volume p99.9 {r['value']:.2f}" in h and f"volume peak {res['_viz']['peak']:.2f}" in h and "surface peak 3.21" in h
     json.dumps({k: v for k, v in res.items() if k != "_viz"})
 
 

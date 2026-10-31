@@ -168,3 +168,50 @@ def test_key_access_order(tmp_path):
         else:
             res, problems, warnings = access.hex_key_reach(asm)
             assert problems == [] and warnings == [] and all(r["straight"] for r in res)
+
+
+BAR = """
+from build123d import *
+def build(ctx):
+    ctx.rigid("origin", Location((0, 0, 0)))
+    return ctx.finish(Box(60, 4, 2, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+"""
+PEG_TOP = PEG.replace('    ctx.rigid("foot"', '    ctx.rigid("top", Location((0, 0, 10)))\n    ctx.rigid("foot"')
+
+
+def _insert_with_child(tmp_path, order):
+    y = f"""
+name: Insert order test
+params: {{}}
+parts:
+  base: {{file: parts/base.py}}
+  peg: {{file: parts/peg.py, insert: {{direction: [0, 0, -1], distance: 25}}}}
+  bar: {{file: parts/bar.py}}
+  lip: {{file: parts/lip.py}}
+assembly:
+  root: base
+  joints:
+    - {{parent: base.seat, child: peg.foot}}
+    - {{parent: peg.top, child: bar.origin}}
+    - {{parent: base.origin, child: lip.origin}}
+{order}
+"""
+    lip = LIP.replace("Box(8, 8, 2", "Box(12, 12, 2")      # the 10 mm peg alone passes the opening
+    d = _write_project(tmp_path / f"io{len(order)}", y, {"base": BASE, "peg": PEG_TOP, "bar": BAR, "lip": lip})
+    proj = P.build(P.load(str(d)))
+    assert all(it.error is None for it in proj.items.values()), [it.error for it in proj.items.values()]
+    asm = A.plan(proj)
+    A.solve(asm)
+    return access.insertion_paths(asm)
+
+
+def test_insertion_skips_subtree_items_installed_later(tmp_path):
+    """The 60 mm bar on top of the peg would ride down with it and hit the lip; when assembly.order fits the bar after
+    the peg, the peg goes in alone and is clear. Items installed later never block either."""
+    res, problems = _insert_with_child(tmp_path, "")
+    assert len(problems) == 1 and "bar hits lip" in problems[0]
+    res, problems = _insert_with_child(tmp_path, "  order: [base, lip, peg, bar]")
+    assert problems == [] and res[0]["clear"]
+    # the lip fitted after the peg: it is not there yet either
+    res, problems = _insert_with_child(tmp_path, "  order: [base, peg, bar, lip]")
+    assert problems == []
