@@ -679,6 +679,8 @@ def run_all(proj, asm, quick: bool = False) -> list:
         if quick and name in SLOW:
             out.append({"id": rid, "check": name, "why": req.get("why", ""), "ok": True, "skipped": True,
                         "value": None, "limit": None, "detail": "skipped in --quick (runs in full check/build/verify)"})
+            from . import progress
+            progress.emit("req", id=rid, check=name, ok=True, value=None, limit=None, skipped=True)
             continue
         try:
             if name not in REGISTRY:
@@ -687,6 +689,9 @@ def run_all(proj, asm, quick: bool = False) -> list:
         except Exception as e:  # noqa: BLE001
             r = {"ok": False, "value": None, "limit": None, "detail": f"check failed to run: {type(e).__name__}: {e}"}
         out.append({"id": rid, "check": name, "why": req.get("why", ""), **r})
+        from . import progress
+        progress.emit("req", id=rid, check=name, ok=bool(r.get("ok")), value=r.get("value"), limit=r.get("limit"),
+                      skipped=bool(r.get("skipped")))
     return out
 
 

@@ -955,3 +955,10 @@ pushed for it and what I know:
   the requirement detail says so. Found by Studio: servo_link with arm_len 120 used to error ("did not converge");
   it now answers (4.41 MPa of 24, but 1.07 mm deflection vs the 1.0 mm limit = a real fail). Test:
   test_stalled_solver_coarsens_and_solves_exactly.
+- Studio v2 (same session): dark theme by default (light toggle, remembered; the 3D viewer follows it), live
+  "mission control" panel for every job: pipeline stepper fed by engine progress events (kerf/progress.py,
+  KERF_PROGRESS=1, off by default so CLI output is unchanged), printed-part chips with mass, sweep chips,
+  engineering checks streaming in with animated margin bars ("uses 12 % of the limit"), Claude Code design jobs
+  shown as an 8-phase timeline (research, plan, contract, parts, check, build, review, save) plus a live action feed;
+  Checks tab with a pass ring and margin bars; toasts, a burst on PASS, shake on FAIL; reduced-motion respected.
+  Verified with real browser runs (screenshots at 3/9/20/40 s of a live full check, done state), no page errors.

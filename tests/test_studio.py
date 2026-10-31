@@ -51,7 +51,24 @@ def test_trial_copy_leaves_the_real_project_alone(tmp_path, monkeypatch):
 def test_claude_stream_lines():
     ev = {"type": "assistant", "message": {"content": [{"type": "text", "text": "Researching"},
                                                        {"type": "tool_use", "name": "Bash", "input": {"command": "kerf check x\nmore"}}]}}
-    assert studio._claude_lines(json.dumps(ev)) == ["Researching", "  > Bash: kerf check x"]
+    lines = studio._claude_lines(json.dumps(ev))
+    assert lines[:2] == ["Researching", "  > Bash: kerf check x"]
+    assert json.loads(lines[2][2:]) == {"k": "tool", "name": "Bash", "what": "kerf check x", "phase": "check"}
+
+
+@pytest.mark.parametrize("tool,inp,phase", [
+    ("WebSearch", {"query": "servo arm"}, "research"),
+    ("Agent", {"subagent_type": "design-researcher"}, "research"),
+    ("Write", {"file_path": "/r/projects/x/DESIGN.md"}, "plan"),
+    ("Edit", {"file_path": "/r/projects/x/project.yaml"}, "contract"),
+    ("Write", {"file_path": "/r/projects/x/parts/arm.py"}, "parts"),
+    ("Agent", {"subagent_type": "part-designer", "description": "arm"}, "parts"),
+    ("Bash", {"command": ".venv/bin/kerf build x"}, "build"),
+    ("Agent", {"subagent_type": "design-reviewer"}, "review"),
+    ("Bash", {"command": "git pull --rebase && git push"}, "ship"),
+    ("Read", {"file_path": "/r/CLAUDE.md"}, None)])
+def test_design_phase_classifier(tool, inp, phase):
+    assert studio._phase(tool, inp) == phase
     assert studio._claude_lines("plain text") == ["plain text"]
 
 
@@ -100,3 +117,17 @@ def test_api_refuses_bad_input(server):
     assert _post(server + "/api/save", {"project": "servo_link", "values": {"arm_len": 9999}})[0] == 400
     assert _post(server + "/api/new", {"name": "Bad Name!", "description": "x"})[0] == 400
     assert _post(server + "/api/new", {"name": "servo_link", "description": "x"})[0] == 400
+
+
+def test_progress_events_are_off_by_default_and_ordered_when_on(capsys, monkeypatch):
+    from kerf import pipeline, progress
+    monkeypatch.delenv("KERF_PROGRESS", raising=False)
+    progress.emit("x")
+    assert capsys.readouterr().out == ""
+    monkeypatch.setenv("KERF_PROGRESS", "1")
+    pipeline.run("servo_link", sweeps=False)
+    ev = [json.loads(l[2:]) for l in capsys.readouterr().out.splitlines() if l.startswith("@@")]
+    stages = [e["stage"] for e in ev if e["k"] == "stage"]
+    assert ev[0]["k"] == "start" and ev[-1]["k"] == "done" and stages == ["build", "print", "fit", "requirements"]
+    assert {e["id"] for e in ev if e["k"] == "part"} == set(ev[0]["parts"])
+    assert [e["id"] for e in ev if e["k"] == "req"] == ev[0]["reqs"]

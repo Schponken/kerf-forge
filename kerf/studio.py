@@ -43,6 +43,7 @@ class Job:
         self.id = uuid.uuid4().hex[:10]
         self.kind, self.project, self.cmd, self.label, self.parse = kind, project, cmd, label, parse
         self.lines: list[str] = []
+        self.events: list[dict] = []
         self.state = "running"
         self.started, self.ended = time.time(), None
         self.result: dict | None = None
@@ -53,8 +54,15 @@ class Job:
     def _pump(self):
         for raw in self.proc.stdout:
             for ln in (self.parse(raw) if self.parse else [raw.rstrip("\n")]):
-                if ln is not None:
-                    self.lines.append(ln)
+                if ln is None:
+                    continue
+                if ln.startswith("@@"):
+                    try:
+                        self.events.append(json.loads(ln[2:]))
+                        continue
+                    except Exception:  # noqa: BLE001
+                        pass
+                self.lines.append(ln)
         rc = self.proc.wait()
         self.ended = time.time()
         if rc and self.state == "running":
@@ -70,11 +78,11 @@ class Job:
             except Exception:  # noqa: BLE001
                 self.proc.terminate()
 
-    def info(self, since: int = 0) -> dict:
+    def info(self, since: int = 0, esince: int = 0) -> dict:
         end = self.ended or time.time()
         return {"id": self.id, "kind": self.kind, "project": self.project, "label": self.label, "state": self.state,
                 "started": self.started, "seconds": round(end - self.started, 1), "lines": self.lines[since:],
-                "n": len(self.lines)}
+                "n": len(self.lines), "events": self.events[esince:], "ne": len(self.events)}
 
 
 JOBS: dict[str, Job] = {}
@@ -84,6 +92,9 @@ def start_job(*a, **k) -> Job:
     j = Job(*a, **k)
     JOBS[j.id] = j
     return j
+
+
+PROGRESS_ENV = {"KERF_PROGRESS": "1", "PYTHONUNBUFFERED": "1"}
 
 
 def kerf_cmd(*args) -> list[str]:
@@ -244,11 +255,43 @@ def _claude_lines(raw: str):
                 inp = c.get("input", {})
                 what = inp.get("description") or inp.get("command") or inp.get("file_path") or inp.get("prompt") or ""
                 out.append(f"  > {c.get('name')}: {str(what).splitlines()[0][:140] if what else ''}")
+            if c.get("type") == "tool_use":
+                ph = _phase(c.get("name", ""), inp)
+                out.append("@@" + json.dumps({"k": "tool", "name": c.get("name"), "what": str(what).splitlines()[0][:140] if what else "",
+                                               "phase": ph}))
     elif t == "result":
         out.append(f"== finished: {ev.get('subtype', '')} in {round(ev.get('duration_ms', 0) / 60000, 1)} min ==")
         if ev.get("result"):
             out.append(str(ev["result"]))
     return out
+
+
+DESIGN_PHASES = [("research", "Research"), ("plan", "Plan"), ("contract", "Contract"), ("parts", "Model parts"),
+                 ("check", "Check + fix"), ("build", "Build"), ("review", "Review"), ("ship", "Save + push")]
+
+
+def _phase(tool: str, inp: dict) -> str | None:
+    """Which design phase a Claude Code tool call belongs to (for the studio timeline)."""
+    path = str(inp.get("file_path") or "")
+    cmd = str(inp.get("command") or "")
+    agent = str(inp.get("subagent_type") or "") + " " + str(inp.get("description") or "")
+    if tool in ("WebSearch", "WebFetch") or "researcher" in agent or "kerf find" in cmd:
+        return "research"
+    if "reviewer" in agent:
+        return "review"
+    if "part-designer" in agent or re.search(r"/parts/[^/]+\.py$", path):
+        return "parts"
+    if path.endswith(("DESIGN.md", "REFERENCES.md")):
+        return "plan"
+    if path.endswith("project.yaml"):
+        return "contract"
+    if "kerf build" in cmd:
+        return "build"
+    if "kerf check" in cmd or "kerf verify" in cmd:
+        return "check"
+    if "git push" in cmd or "git commit" in cmd:
+        return "ship"
+    return None
 
 
 def new_design(name: str, description: str) -> Job:
@@ -330,11 +373,11 @@ class Handler(BaseHTTPRequestHandler):
                     return self._err("no such project", 404)
                 return self._json(detail(parts[2]))
             if parts == ["api", "jobs"]:
-                return self._json({"jobs": [j.info(len(j.lines)) | {"tail": j.lines[-1:] } for j in
+                return self._json({"jobs": [j.info(len(j.lines), len(j.events)) | {"tail": j.lines[-1:]} for j in
                                             sorted(JOBS.values(), key=lambda j: -j.started)]})
             if parts[:2] == ["api", "job"] and len(parts) == 3:
                 j = JOBS.get(parts[2])
-                return self._json(j.info(int(q.get("since", ["0"])[0]))) if j else self._err("no such job", 404)
+                return self._json(j.info(int(q.get("since", ["0"])[0]), int(q.get("esince", ["0"])[0]))) if j else self._err("no such job", 404)
             if parts[0] in ("files", "trial") and len(parts) >= 3:
                 base = (PROJECTS if parts[0] == "files" else TRIALS) / parts[1]
                 f = _safe(base, "/".join(parts[2:]))
@@ -364,7 +407,7 @@ class Handler(BaseHTTPRequestHandler):
                 todo = [n for n in project_names() if body.get("all") or _report(PROJECTS / n) is None]
                 if not todo:
                     return self._err("every project is already built")
-                j = start_job("build", "*", [PY, "-m", "kerf.studio", "_buildall", *todo], f"Build {len(todo)} project(s)")
+                j = start_job("build", "*", [PY, "-m", "kerf.studio", "_buildall", *todo], f"Build {len(todo)} project(s)", env=PROGRESS_ENV)
                 return self._json({"job": j.id})
             if u.path == "/api/stop":
                 j = JOBS.get(body.get("job"))
@@ -377,15 +420,15 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/run":
                 action = body.get("action")
                 if action == "check":
-                    j = start_job("check", name, kerf_cmd("check", name), f"Check {name}")
+                    j = start_job("check", name, kerf_cmd("check", name), f"Check {name}", env=PROGRESS_ENV)
                 elif action == "quick":
-                    j = start_job("check", name, kerf_cmd("check", name, "--quick"), f"Quick check {name}")
+                    j = start_job("check", name, kerf_cmd("check", name, "--quick"), f"Quick check {name}", env=PROGRESS_ENV)
                 elif action == "build":
-                    j = start_job("build", name, kerf_cmd("build", name), f"Build {name}")
+                    j = start_job("build", name, kerf_cmd("build", name), f"Build {name}", env=PROGRESS_ENV)
                 elif action == "trial":
                     vals = {k: float(v) for k, v in (body.get("values") or {}).items()}
                     trial_copy(name, vals)
-                    j = start_job("trial", name, [PY, "-m", "kerf.studio", "_trial", name], f"Try new values on {name}")
+                    j = start_job("trial", name, [PY, "-m", "kerf.studio", "_trial", name], f"Try new values on {name}", env=PROGRESS_ENV)
                 else:
                     return self._err(f"unknown action {action}")
                 return self._json({"job": j.id})
@@ -413,10 +456,17 @@ def _buildall(names: list[str]) -> int:
     bad = 0
     for i, n in enumerate(names, 1):
         print(f"[{i}/{len(names)}] building {n} ...", flush=True)
-        r = subprocess.run(kerf_cmd("build", n), cwd=ROOT, capture_output=True, text=True)
-        first = (r.stdout.strip().splitlines() or [r.stderr.strip()[-300:]])[0]
-        print(f"    {first}", flush=True)
-        bad += r.returncode != 0
+        print("@@" + json.dumps({"k": "project", "name": n, "i": i, "n": len(names)}), flush=True)
+        p = subprocess.Popen(kerf_cmd("build", n), cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                             env={**os.environ, **PROGRESS_ENV})
+        first = None
+        for ln in p.stdout:
+            if ln.startswith("@@"):
+                print(ln.rstrip("\n"), flush=True)
+            elif first is None and ln.strip() and ln.split()[0] in ("PASS", "FAIL"):
+                first = ln.strip()
+        bad += p.wait() != 0
+        print(f"    {first or 'finished'}", flush=True)
     print(f"done: {len(names) - bad} passed, {bad} with problems", flush=True)
     return 1 if bad else 0
 

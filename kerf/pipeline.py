@@ -6,6 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
+from . import progress
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -103,6 +104,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     from . import catalog
     catalog.track()
     proj = P.load(name, overrides)
+    progress.emit("start", project=proj.name, stages=[k for k, _ in progress.STAGES if (k != "motion" or sweeps)
+                                                       and (k != "export" or do_export or do_render) and (k != "renders" or do_render)],
+                  parts=list(proj.printed), reqs=[r.get("id", r.get("check")) for r in proj.data.get("requirements") or []])
+    progress.stage("build")
     P.build(proj)
     printer = proj.data.get("printer", "Bambu Lab A2L")
     supports = proj.data.get("supports", "allowed")
@@ -118,10 +123,13 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     from . import find
     for q in find.pending_decisions(proj.dir):
         rep["warnings"].append(f"REFERENCES.md: `kerf find \"{q}\"` has no reuse decision yet (Decision: TODO)")
+    progress.stage("print")
     for iid, it in proj.printed.items():
         if it.shape is None:
+            progress.emit("part", id=iid, ok=False)
             continue
         r = checks.part_checks(it, printer, supports=it.spec.get("supports", supports))
+        progress.emit("part", id=iid, ok=not r.get("problems"), mass=r.get("mass_est_g"))
         r["notes"] = list(getattr(it.shape, "kerf_notes", []))
         r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]
         hp, hw, hres = holewall.check(it)                  # wall around every fastener hole (ENGINEERING.md s5/s7)
@@ -144,6 +152,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                                      "mass_g": round(checks.item_mass_g(it), 1)}
     if not any(it.error for it in proj.items.values()):
         try:
+            progress.stage("fit")
             asm = A.plan(proj)
             A.solve(asm)
             hits = A.interference(asm)
@@ -168,8 +177,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep["problems"] += kprob + iprob
             rep["warnings"] += kwarn
             if sweeps:
+                progress.stage("motion")
                 sw = A.sweeps(asm, samples=sweep_samples)
                 rep["assembly"]["sweeps"] = sw
+                for s_ in sw:
+                    progress.emit("sweep", joint=s_["joint"], clear=s_["clear"])
                 for s in sw:
                     if not s["clear"]:
                         c = s["collisions"][0]
@@ -201,6 +213,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         rep["problems"] += rprob
                 except electrical.ElectricalError as e:
                     rep["problems"].append(f"electrical: {e}")
+            progress.stage("requirements")
             rq = requirements.run_all(proj, asm, quick=not sweeps)
             fea_viz = {r["id"]: r.pop("_viz") for r in rq if "_viz" in r}   # meshes stay out of report.json
             rep["requirements"] = rq
@@ -214,6 +227,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {r['value']} (limit {r['limit']})")
             A.solve(asm)
             if do_export or do_render:
+                progress.stage("export")
                 out = proj.out()
                 export.step_assembly(proj, out / "assembly.step")
                 export.glb(proj, out / "assembly.glb")
@@ -240,6 +254,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"ship package (priced BOM / ASSEMBLY.md) could not be written: {type(e).__name__}: {e}")
             if do_render:
+                progress.stage("renders")
                 out = proj.out("renders")
                 out.mkdir(exist_ok=True)
                 render_glb(proj.out("assembly.glb"), out / "assembly", sheet=True)
@@ -276,6 +291,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         rep["fingerprint"] = proj.fingerprint()
     rep["ok"] = not rep["problems"]
     rep["seconds"] = round(time.time() - t0, 1)
+    progress.emit("done", ok=rep["ok"], problems=len(rep["problems"]), seconds=rep["seconds"])
     proj.out("report.json").write_text(json.dumps(rep, indent=1, default=str), encoding="utf-8")
     return rep
 
