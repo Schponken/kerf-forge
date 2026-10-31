@@ -87,3 +87,11 @@ servo_horns.aluminum_micro_21T and drone.stacks.fc_20.
   build.
 - The 1685 g thrust is at 24.0 V (full 6S), 100 % throttle, 35 A per motor. A 1100 mAh 130C pack can supply it
   briefly. It will sag in flight.
+
+## Flight control and power references (added 2026-10-31, electronics round)
+| Reference | Link | Used for |
+|---|---|---|
+| ArduPilot: SpeedyBee F405 Mini | https://ardupilot.org/copter/docs/common-speedybeef405-mini.html | board supported; PWM 1-2 timer group 1, PWM 3-4 group 2, PWM 5 (LED pad) group 3; channels in a group share one rate -> motors on 1-2 (DShot), servos on 3-4 (50 Hz); 5 V 2 A and 9 V 3 A BECs |
+| ArduPilot: SingleCopter and CoaxCopter | https://ardupilot.org/copter/docs/singlecopter-and-coaxcopter.html | FRAME_CLASS 9 = CoaxCopter; motors on outputs 5/6 (upper CCW, lower CW) and flaps on 1-4 by default -> remap with SERVOn_FUNCTION to this board's 5 outputs |
+| ArduPilot: Motor Thrust Scaling | https://ardupilot.org/copter/docs/motor-thrust-scaling.html | MOT_SPIN_MAX: the output at which thrust saturates, default 0.95; set 0.80 here as the current cap |
+| letronic UL 3672 silicone wire data sheet | https://www.letronic.de/de/produkte/kabel/pdf/970/silicone-ul-3672.pdf | wire OD and g/m per AWG (catalog wire.silicone) |

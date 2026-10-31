@@ -498,6 +498,7 @@ pushed for it and what I know:
 - catalog/prices.json: wire AWG12/18/26/28, heat-shrink, antenna, M2 button/washer, M3x14/x30, M2 nylon spacer,
   cable ties (all read 2026-10-31); every fpv_5in BOM row has a buy link, total $373.76.
 
+<<<<<<< Updated upstream
 ## 2026-10-31 04:30 UTC — session 12d9384eb7: PLAN "Bambu A2L handoff" — code done, waiting on one real print
 - `kerf print <p>` (kerf/bambu.py): orientation chooser (24 rotations, bed fit, load_axis <= 30 deg from the layers,
   least support, then height; keeps the designed print_rot unless another needs >= max(5 mm2, 10 %) less support;
@@ -518,3 +519,18 @@ pushed for it and what I know:
      "slicer": {"bin", "machine", "process", "filaments": {"PETG": ...}}}.
   4. `kerf print servo_link --dry-run`, then `kerf print servo_link --send 1` and watch it start.
   Untested against hardware: the implicit-TLS FTPS wrapper and the paho MQTT link (both follow the protocol docs).
+=======
+## 2026-10-31 03:40 UTC — session 01S68R6RW: E4 tvc_drone done (build PASS, review PASS 616ec954, acceptance PASS)
+- Complete electronics: XT60 on a 14 AWG pigtail past the ring_top edge, UBEC + ELRS receiver tied under ring_mid,
+  strap item across the pack (slots moved: the old ones sat under the battery), anti-slip pad, capacitor row.
+  ArduPilot CoaxCopter on the SpeedyBee F405 Mini (PWM 1-2 motors, 3-4 servos), MOT_SPIN_MAX 0.80 caps each motor at
+  18 A (0.8^3 x 35.08), twr recomputed at that cap: 2.31. power worst 0.47 of rating, hover 4.46 min, mass 729 g.
+- Engine (kerf/electrical.py `route_check`, run in every full check): every wiring run is swept as a tube of the
+  wire's OD (catalog wire.silicone, letronic UL 3672) at home, both ends of each moving joint and every named sweep
+  pose; it must not enter any part but its two ends nor any prop disc, and its cut length must cover the worst pose
+  + 15 %. Route tie points `{item, at}` ride on moving parts. Wire mass now counts in hover power, thrust_to_weight
+  and all-up mass_max. NOTE for fpv_5in / servo_link / robot_arm / pan_tilt owners: your full checks now run this
+  route check, so routes that pass through a plate need a waypoint through a real hole/slot.
+- Open (minor, engine): ASSEMBLY.md (ship.py) says "press the dowel" without "last, from outside" — a pin insertion
+  direction/order in the pin check would fix it for every project.
+>>>>>>> Stashed changes

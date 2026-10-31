@@ -1,69 +1,51 @@
 {
-  "verdict": "FAIL",
-  "fingerprint": "c5e3310a64dd4c7e",
+  "verdict": "PASS",
+  "fingerprint": "616ec954005e4033",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The mechanical design is coherent: the checks, sweeps and FEA pass, the load cases match the real load paths, and the 80 % motor_output_limit reasoning is honest, derived correctly (P ~ n^3 gives 0.512 x 35.08 A; T ~ n^2 gives 0.64) and propagated into twr. The wiring is the problem. Every lead that goes to the gimbal (both motors and both servos) is routed straight through the spinning top prop and top motor bell, and through solid ring_low; it ignores the two moving pivots; and its cut lengths are therefore about half of what the leads really need. On top of that, the FC's ability to drive the two servos (firmware and outputs) is asserted without evidence, and the dowel step order in DESIGN.md cannot physically be followed.",
+  "summary": "Round 2: every blocker and major finding from round 1 is fixed. Wire routes now follow the real load-free path (mast, ring_low +Y edge, down beside the +X yoke on two tie slots, across the roll pivot, along the ring top, across the pitch pivot, then the hub fork). They are machine-checked at home, at both ends of each gimbal axis and at the four corners against every part and prop disc. Cut lengths come from the worst pose, and the 66 g of wire is now counted in hover current, T/W (2.31) and mass (729 g). The rest is fixed too: the firmware path (ArduPilot CoaxCopter, PWM 1-2 motors / 3-4 servos in separate timer groups, MOT_SPIN_MAX 0.80) is stated with its residual risk; the dowels go in last from outside; the XT60 is on a grippable pigtail; the BOM additions (pad, capacitor, single 3 x 20 dowel row) are in. The mechanical side (sweeps, CG, tip-over, FEA load cases) is unchanged and sound; only minor documentation and BOM gaps remain.",
   "findings": [
     {
-      "severity": "blocker",
-      "part": "wiring (project.yaml) / ring_low / motor_hub / gimbal_outer",
-      "issue": "The routes for ph_top, ph_bottom, servo_pitch_pwr/sig (and servo_roll at gimbal tilt) cannot be built. ph_top runs (26.8,15.5,80) -> (12,8,40) -> (0,0,24.3): it goes down the axis through prop_top (disc at z 32.5, r 65.9) and the top motor's spinning bell. ph_bottom runs straight down at (12,-8) from z 30 to -10, which is r 14.4, inside the 14.54 mm bell radius of the top motor and through the solid motor_hub/motor_plate. servo_pitch is at r ~53 when it crosses z 32.5, inside the prop disc. All four drop from z 80 at r ~31 straight through ring_low's solid 8 mm plate, which has only an r 10 centre hole, and that hole opens onto the top prop. None of the routes crosses the roll pivot or the pitch pivot, even though both motors and servo_pitch ride on the moving gimbal. The real path is: down the mast, out along a ring_low yoke bridge, down the -X yoke arm (outside the prop discs), a service loop across the roll pivot, along gimbal_outer to the pitch pivot, a second service loop, then along the hub arm to the motor. That is about 550-650 mm, not 280/340 mm, so cutting to WIRING.md leaves every motor and gimbal-servo lead far too short. Nothing in the printed parts gives these leads a channel or a tie point either, and the extra copper (about 3.6 m of 18 AWG at about 9 g/m) is missing from the mass, hover-current and flight-time numbers.",
-      "fix": "Re-route every gimbal-bound run as described: mast, then ring_low yoke bridge, then down the -X (or +X) yoke arm outside r 66, then a roll-pivot service loop, along the ring, then a pitch-pivot service loop, along the hub -Y arm. Add cable-tie slots or wire clips on ring_low's yoke arm and bridge, on gimbal_outer next to both pivots, and on the hub -Y arm. Declare the routes with real waypoints and add a channel_clear (or a prop-keep-out check on the polylines) at home and at the gimbal corners. Re-derive the cut lengths, add the wire mass, and re-run twr, cg_axis, flight_time and power. Ideally, make the engine fail any wiring segment that crosses a solid part or a prop keep-out, so the next project cannot pass with the same error."
-    },
-    {
-      "severity": "major",
-      "part": "stack (drone.stacks.fc_20) / electrical",
-      "issue": "The design says the SpeedyBee F405 Mini drives both gimbal servos from 'FC servo output S1/S2 (Betaflight servo_tilt / custom mixer)'. Nothing in the catalog entry or REFERENCES.md shows that this FC has two free PWM outputs on a timer that is not shared with the DShot motor outputs. Betaflight's servo_tilt is camera stabilisation, not a control output. Servo support in Betaflight is an optional cloud-build feature, and only some mixer types support it. fd.iwth and Mistral both run custom firmware. If the outputs or the firmware path don't exist, the drone cannot steer, and the brief explicitly grades an 'FC that can drive the gimbal servos'. The motor_output_limit = 80 that the whole power budget depends on is Betaflight-specific.",
-      "fix": "Pick the firmware and prove it. Record in the catalog, with a source: the FC's resource/timer map, which pads become the servo outputs (for example M3/M4 or LED on a separate timer), and the firmware. INAV's multirotor mixer with servo rules plus per-timer output mode is the usual path; if you use INAV, its equivalent of the 80 % cap is max_throttle. Write the exact CLI (mixer/smix or INAV mixer rules, plus the output cap) into DESIGN.md and WIRING.md. If this FC can't do it, choose an FC that can."
-    },
-    {
-      "severity": "major",
-      "part": "ring_low / gimbal_outer / motor_hub (assembly order)",
-      "issue": "DESIGN.md step 2 presses both dowels in first, then step 3 fits horn_roll on the roll servo and step 4 'slides gimbal_outer's -X pad onto the roll dowel'. That cannot be done. To engage the 20 mm dowel the ring has to start about 11 mm toward +X and move -X, but then its +X lug overlaps horn_roll and the servo, which are already fitted. The pitch axis has the same problem: the hub's +Y lug would overlap horn_pitch. ASSEMBLY.md says 'press the dowel into ring_low' without saying when or from which side. The press holes are through holes, so a workable order exists, but it is not the one written down.",
-      "fix": "Rewrite the order. Fit the servo and horn, bolt the ring or hub to the horn while it is aligned with the pivot, and only then press the dowel in from outside: through ring_low's -X plate into gimbal_outer, and through gimbal_outer's -Y pad into the hub. Back up the yoke arm or pad in a vise while pressing. Add an assembly `insert` direction for the pins so the engine checks this."
-    },
-    {
-      "severity": "major",
-      "part": "ring_top (xt60 mount)",
-      "issue": "The XT60 is held by one cable tie plus a stop block that only resists pushing in. XT60 mating and unmating forces are tens of newtons. The connector's outer end sits at r 37.65, inside the 39 mm plate edge, so you can't hold the drone-side connector while you unplug. Every battery removal pulls the male XT60 outward through the tie, and the 14 AWG solder cups take the load.",
-      "fix": "Capture the connector in both directions. Use a printed U-cradle or pocket with a lip in front of the XT60 body's shoulder (or a second stop on the outer side plus a clamp strap), or move the connector out so its body protrudes past the plate edge and can be gripped. Strain-relieve the main lead to the plate with the tie."
+      "severity": "minor",
+      "part": "stack (drone.stacks.fc_20) / REFERENCES.md",
+      "issue": "The ArduPilot facts the flight depends on are only cited in DESIGN.md prose. They are not in the catalog entry or REFERENCES.md: board support, the PWM timer groups (1-2 / 3-4 / 5), CoaxCopter flap output functions 33/34 and motors 37/38, and MOT_SPIN_MAX. Whether the CoaxCopter flap mixer (which scales flap authority with throttle) steers a gimbal well is still unproven; it is correctly flagged as a risk.",
+      "fix": "Add an `ardupilot` block to drone.stacks.fc_20 with the hwdef/board-page URL and the timer groups. Add the CoaxCopter page to REFERENCES.md. Write the exact SERVOn_FUNCTION values (1=37, 2=38, 3/4=33/34 or as bench-verified) into WIRING.md."
     },
     {
       "severity": "minor",
-      "part": "wiring bat_lead",
-      "issue": "WIRING.md step 1 says to 'cut 2 x 100 mm AWG 12 and solder battery -> xt60', and the BOM buys 0.2 m of 12 AWG for it. The pack's own XT60 lead plugs into the drone's XT60; nobody should be soldering to a LiPo. Also, the pack's lead length (not in the catalog) has to reach the 97 mm minimum cut over the ring_top edge.",
-      "fix": "Mark bat_lead as the pack's existing lead (no cut, no solder, no BOM wire). Add the CNHL lead length to the catalog with a source and check it against the routed length."
+      "part": "out/ASSEMBLY.md",
+      "issue": "The generated steps still say 'press the 3 x 20 mm dowel into ring_low / gimbal_outer' at the step where the part is fitted, without saying it goes in last and from outside. DESIGN.md steps 3 and 6 are correct, but a builder following ASSEMBLY.md alone could press the pin first and then be unable to hang the ring or hub.",
+      "fix": "Give pin sites an insert direction or order flag so ASSEMBLY.md says 'after the horn screws, press the dowel in from outside through <part>'. As a stopgap, add a note to the two steps."
+    },
+    {
+      "severity": "minor",
+      "part": "wiring (roll and pitch pivot crossings)",
+      "issue": "All the gimbal-bound conductors cross the roll pivot as a single short span of about 23 mm, roughly 20 mm off the axis: 2 x 3 x 18 AWG plus the pitch servo leads, a bundle of about 8 mm. This span flexes every control cycle and adds torque that the 1.8 kg cm MG90S has to overcome. The cut length covers the stretch, but no geometry forces a real service loop.",
+      "fix": "After wiring, measure servo current (or check free movement by hand) at the four corners, as DESIGN.md already says. Make the crossing a U-loop of 30-40 mm hanging outside the yoke, tied on both sides, so the flex is spread out. Twist the motor triplets."
     },
     {
       "severity": "minor",
       "part": "bom",
-      "issue": "The brief asks for a buy link on every wire, connector and electrical part. The wire rows (AWG 12-28) and the cable ties have no link. The power path also has no battery anti-slip pad (ENGINEERING 10b lists 'strap + pad') and no low-ESR input capacitor at the ESC pads, even though the UBEC on those pads has only 0.8 V of headroom (26 V max vs 25.2 V) before regen spikes.",
-      "fix": "Add catalog wire entries with sources and links. Add a silicone battery pad and a 35 V low-ESR capacitor (if the stack doesn't ship one) as catalog items."
+      "issue": "Several electrical rows still have no buy link: AWG 14 and AWG 24 wire, the low-ESR capacitor, the cable ties and the UBEC price. The brief asks for a buy link on every wire, connector and electrical part.",
+      "fix": "Add catalog/prices entries (with sources) for 14 and 24 AWG silicone wire, a 35 V low-ESR capacitor and 2.5 mm cable ties."
     },
     {
       "severity": "minor",
-      "part": "bom (dowels)",
-      "issue": "The pin check sizes the dowels at 3 x 20 mm and the BOM lists them that way (twice), but bom_extra and DESIGN.md still list '3 x 16 mm hardened steel dowel' x 2. The buyer gets two conflicting rows.",
-      "fix": "Remove the bom_extra dowel row and change DESIGN.md to 3 x 20 mm."
+      "part": "wiring bat_lead / ring_top",
+      "issue": "The pack's own XT60 lead must be at least 110 mm long, but CNHL does not publish its length. The mated XT60 pair also hangs free past the ring_top edge on a 14 AWG pigtail, so it will flop in flight and in a tip-over.",
+      "fix": "Measure the pack lead on arrival and record it in the catalog. Once plugged in, tuck the mated pair under the battery strap or tie it to the battery lead."
     },
     {
       "severity": "minor",
-      "part": "ring_mid / motor_hub",
-      "issue": "ring_mid is printed top-up with its tube bosses hanging below, so the whole plate underside (29 % of the surface) needs support, and that is the face the UBEC and receiver tie against. motor_hub (24 %) has the same problem: the disc overhangs the arm roots.",
-      "fix": "Print ring_mid at [180,0,0] (plate on the bed, bosses up). Check whether flipping motor_hub, or chamfering its arm roots to 45 deg, removes most of its support."
+      "part": "motor_hub / ring_low / legs",
+      "issue": "The support warnings are unchanged: motor_hub 24 %, ring_low 17 %, gimbal_outer 18 %, legs 20 %. The two upper pitch-horn M2 screws still need a ball-end key.",
+      "fix": "Optional: add 45 deg chamfers under motor_hub's disc where it meets the arm roots, and under the leg feet, to cut support. Keep the ball-end key note in step 6."
     },
     {
       "severity": "minor",
-      "part": "ring_low / ring_mid / ring_top (tube locks)",
-      "issue": "Radial M3 set screws bear directly on a pultruded 5x3 CF tube with a 1 mm wall. Overtightening crushes or splits the tube.",
-      "fix": "Specify a torque or 'snug only' and a dot of CA, or use a printed split-clamp boss with a cross screw instead of a point load."
-    },
-    {
-      "severity": "minor",
-      "part": "horn_roll / horn_pitch",
-      "issue": "Both horn mounts and the servo face positions depend on the 21T micro disc horn geometry, which is an estimate in the catalog, and on the MG90S tab height (18.5 vs 21 mm spread). DESIGN.md already flags this.",
-      "fix": "Buy and measure the horn and servo before printing gimbal_outer, motor_hub and ring_low, update the catalog, and re-run kerf check."
+      "part": "horn_roll / horn_pitch / servos",
+      "issue": "The micro 21T disc horn geometry is still an estimate, and the MG90S tab height has a 2.5 mm spread between sources. Both set the horn-face positions on gimbal_outer, motor_hub and ring_low.",
+      "fix": "Buy and measure the horn and servo before printing the three gimbal parts, update the catalog, and re-run kerf check."
     }
   ]
 }

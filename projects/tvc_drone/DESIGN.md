@@ -146,3 +146,7 @@ motor_plate -> motor_bottom -> prop_bottom. Coupled sweep `gimbal_corners` = the
   on the bench, clamp the gimbal to about +/-8.5 deg (REFERENCES.md), and make the first hovers on a tether.
 - Wire runs to the gimbal are long (550-580 mm motor extensions): keep them twisted, tie them at the listed points
   and leave loose loops at both pivots; recheck the gimbal moves freely through all four corners after wiring.
+- Reviewer round 2 (PASS) follow-ups for the builder: make the roll-pivot crossing a 30-40 mm U-loop (not a straight
+  23 mm span) and check the gimbal still moves freely at all four corners with the servo current low; measure the
+  pack's XT60 lead on arrival (it must reach 110 mm; CNHL does not publish it) and tie the mated XT60 pair under the
+  strap; in ASSEMBLY.md the two dowel steps must be done LAST and from outside (step order here, steps 3 and 6).
