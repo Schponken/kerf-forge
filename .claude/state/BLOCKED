@@ -6,3 +6,7 @@ orients all 6 parts and falls back to "open plate_1.3mf in Bambu Studio" because
 exist here. Spencer's one-time steps are in STATUS.md (entry "PLAN Bambu A2L handoff — code done", session
 12d9384eb7): enable LAN + Developer Mode, export configs, write ~/.kerf/bambu.json, then
 `kerf print servo_link --dry-run` and `kerf print servo_link --send 1`.
+
+Also waiting on it (2026-10-31, session 216d7672b4): PLAN "Run kerf verify (full) twice from a clean clone".
+Two clean-clone full verifies (4134 s, 4389 s) fail only on the PLAN.md check (the Bambu box + that item itself);
+re-run them after the Bambu box is checked.

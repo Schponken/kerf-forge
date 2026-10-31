@@ -921,3 +921,10 @@ pushed for it and what I know:
   (gripper foot change; re-reviewed PASS at 3dea877d2f86fff3 in 44505ff since) and PLAN.md unchecked items.
 - Run 2 (clone at 2c85982) in progress. Note: a full PASS needs every PLAN box checked, and "Bambu A2L handoff" waits
   on one real print by Spencer (.claude/state/BLOCKED), so this item cannot honestly be checked until after that.
+## 2026-10-31 16:30 UTC — session 216d7672b4: clean-clone verify run 2 — only the PLAN boxes fail
+- Run 2: fresh clone at 2c85982 to /tmp/kf-clean2, `./setup.sh` ALL OK, full `kerf verify` 4389 s: pytest, all six
+  projects (check, build, sweeps, FEA), all reviews current, all evals PASS. Sole failure: "PLAN.md has 2 unchecked
+  items" = "Bambu A2L handoff" (waits on one real print with Spencer, .claude/state/BLOCKED) and this item itself.
+- Left this item UNCHECKED on purpose: its text says both runs print VERIFY PASSED, which cannot happen until the
+  Bambu box is checked. Next step after Spencer's print: check the Bambu box, then run the clean-clone verify twice
+  more (each ~75 min on 2 CPUs) and check this item. Claim released.
