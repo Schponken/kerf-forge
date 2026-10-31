@@ -42,7 +42,10 @@ def render(viz: dict, path, title: str = "") -> str:
     sm = cm.ScalarMappable(norm=norm, cmap=cmap)
     fig.colorbar(sm, ax=fig.axes, shrink=0.6, extend="max",
                  label=f"von Mises (MPa), scale 0-{top:.2f}; magenta = over the {allow:.1f} MPa limit")
-    fig.suptitle(f"{title}   peak {vm.max():.2f} MPa")
+    # colours are per-element means on the surface; the checked numbers (p99.9 and peak over every integration point
+    # in the volume, the same solve) come from the report so the picture and report.json can't disagree
+    nums = (f"   checked p99.9 {viz['p999']:.2f} / peak {viz['peak']:.2f} MPa" if "p999" in viz else "")
+    fig.suptitle(f"{title}{nums}   (colour: surface element mean, max {vm.max():.2f})")
     fig.savefig(str(path))
     plt.close(fig)
     return str(path)

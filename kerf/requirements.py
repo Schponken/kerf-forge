@@ -255,7 +255,8 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
     ok = res["max_vm_mpa"] <= allow and (max_disp_mm is None or res["max_disp_mm"] <= max_disp_mm)
     return {"ok": ok, "value": round(res["max_vm_mpa"], 2), "limit": round(allow, 2),
             "applied_force_n": res["applied_force_n"], "applied_moment_nmm": res["applied_moment_nmm"],
-            "_viz": {**res["_viz"], "allow": allow, "title": f"{part}: von Mises (MPa), limit {allow:.1f}"},
+            "_viz": {**res["_viz"], "allow": allow, "title": f"{part}: von Mises (MPa), limit {allow:.1f}",
+                     "p999": res["max_vm_mpa"], "peak": res["max_vm_peak_mpa"]},
             "detail": f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
                       f"peak {res['max_vm_peak_mpa']:.2f} MPa, deflection {res['max_disp_mm']:.3f} mm"
                       + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f", {res['elements']} elements"}

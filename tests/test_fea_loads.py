@@ -100,6 +100,8 @@ def test_yaml_load_cases_and_render(tmp_path):
     res = requirements.run_all(proj, A.plan(proj))[0]
     png = fea_render.render(res["_viz"], tmp_path / "fea_seat.png", res["_viz"]["title"])
     assert (tmp_path / "fea_seat.png").stat().st_size > 20000 and png.endswith(".png")
+    # the picture's title states the same checked p99.9 as the report (review finding: render and report disagreed)
+    assert res["_viz"]["p999"] == pytest.approx(r["value"], abs=0.01) and res["_viz"]["peak"] >= res["_viz"]["p999"]
     json.dumps({k: v for k, v in res.items() if k != "_viz"})
 
 
