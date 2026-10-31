@@ -1,0 +1,8 @@
+PLAN item "Bambu A2L handoff" — everything except "one real print verified with Spencer" is done and tested.
+Blocker: a real print needs Spencer's Bambu Lab A2L on his LAN (Developer Mode on, IP/serial/8-digit access code in
+~/.kerf/bambu.json) and Bambu Studio's exported A2L + PETG configs on his Mac. Cloud sessions cannot reach his printer
+or his computer. Tried (2026-10-31, session 01S68R6S): tests/test_bambu.py 9/9 pass; `kerf print fpv_5in --dry-run`
+orients all 6 parts and falls back to "open plate_1.3mf in Bambu Studio" because no slicer config / printer creds
+exist here. Spencer's one-time steps are in STATUS.md (entry "PLAN Bambu A2L handoff — code done", session
+12d9384eb7): enable LAN + Developer Mode, export configs, write ~/.kerf/bambu.json, then
+`kerf print servo_link --dry-run` and `kerf print servo_link --send 1`.

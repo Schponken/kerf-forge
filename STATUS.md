@@ -652,3 +652,8 @@ pushed for it and what I know:
   12 min ideal hover, all FEA inside SF 3, complete electronics with routed wiring, BOM $373 with buy links.
 - Open minors worth an engine item later: ASSEMBLY.md has no nut-insertion step, no bom_extra notes, and always puts
   soldering last; heat-shrink rows are fixed 20 mm pieces.
+
+## 2026-10-31 — session 01S68R6S: Bambu A2L handoff -> BLOCKED on Spencer's printer
+- Re-verified the other session's `kerf print` (tests 9/9, dry-run on fpv_5in orients all parts and falls back to
+  Bambu Studio). The only open part is the real print, which needs Spencer's A2L and Mac: wrote .claude/state/BLOCKED
+  with the exact steps. PLAN box stays open until Spencer runs `kerf print servo_link --send 1`.
