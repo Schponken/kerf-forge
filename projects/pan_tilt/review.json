@@ -1,45 +1,16 @@
 {
-  "verdict": "FAIL",
-  "fingerprint": "5f429c0ee7dd5195",
-  "reviewer": "design-reviewer",
-  "date": "2026-10-31",
-  "summary": "Architecture, sizing, FEA, sweeps, print orientation and the hex-key/assembly order are sound and match the brief (pan +-90, tilt -35..+65, 59.7 g, tilt torque 2% of stall, 1/4-20 nut captive on a 1.5 mm floor). But both servo horns are modelled with zero spline engagement: the catalog entry servo_horns.aluminum_micro_21T has no spline_engage, so the horn proxy puts the hub bottom on the spline TIP and the disc face 3.2 mm too far out. The layout derives the yoke plate height, the tilt wall position, the bracket arm position and the pivot screw span from that, so as printed neither axis would drive and the pivot geometry is off by 3.2 mm.",
-  "findings": [
-    {
-      "severity": "blocker",
-      "part": "yoke / bracket / base (layout.py via catalog servo_horns.aluminum_micro_21T)",
-      "issue": "The horn does not engage the spline in the model. The catalog horn entry has hub_height 4.0 (hub bottom to disc top) but no spline_engage, so iface.horn_dims gives hub_h = 4.0 - 0 = 4.0 and the horn proxy sits with its hub bottom exactly at the spline top (y = 21.0 for the tilt horn, spline occupying 21.0..24.2). A real horn slides ~3.2 mm (the SG90 spline length in servos.SG90.shaft_h note) down over the spline, so its disc face is only ~0.8 mm above the spline top. The catalog's own aluminum_25T note records exactly this bug ('before 2026-10-31 it sat on top of it, 4 mm too far out'). Consequence for this project: horn_face_z (pan), wall_out/wall_in, the +Y arm outer face (horn_y = 17.0) are all 3.2 mm too far out. If the bracket arm is pushed 3.2 mm toward the servo so the horn can engage, the -Y knuckle gap to the pivot wall grows from 0.6 to ~3.8 mm and the 12 mm M3 pivot screw (6.4 mm thread in the knuckle) no longer reaches. Built as designed, the horn cannot grip the spline and neither joint transmits torque.",
-      "fix": "Add spline_engage (about 3.2, cite the SG90 spline length / Tinytronics already quoted in servos.SG90) to catalog servo_horns.aluminum_micro_21T, keep confidence 'estimate' with a measure-your-horn note, then rebuild: hub_h becomes 0.8 and horn_face_z, wall_out, wall_in, horn_y and the pivot span all follow. Re-run kerf check and re-confirm the pivot screw length/thread engagement (kerf pins), pivot_gap, cam_clear, the yoke/base FEA, hex-key access and the base clearances. If the real horn is found to differ, change the catalog entry, not the part code."
-    },
-    {
-      "severity": "minor",
-      "part": "project.yaml bom_extra",
-      "issue": "The BOM is inconsistent. bom_extra lists 'M3 x 10 SHCS + washer' for the pivot, while the fastener check picks M3 x 12 and the BOM also lists an 'M3 x 12 (pivot)' row, so the pivot appears twice with different lengths. M3 x 10 would leave only ~4.4 mm of thread in the knuckle.",
-      "fix": "Delete or correct the bom_extra M3 x 10 entry. Keep one M3 x 12 (length re-checked after the horn fix) plus one M3 washer."
-    },
-    {
-      "severity": "minor",
-      "part": "yoke / base",
-      "issue": "No camera FPC or servo-lead routing. The camera FPC (~12-16 mm wide) hangs from the camera's lower edge. The only hole in the yoke plate is the ~4 mm horn centre-screw access, and there is no strain relief or clip. With +-90 deg pan it will be dragged across the base and the tilted bracket. Only the tilt servo lead has a tie point. kerf also warns about the missing electrical section.",
-      "fix": "Add a cable-tie or FPC clip slot on the yoke plate near the pan axis (or a slot through the plate) and an electrical: block in project.yaml. State a minimum FPC loop length in DESIGN.md."
-    },
-    {
-      "severity": "minor",
-      "part": "base",
-      "issue": "Servo pocket is only 0.3 mm per side (23.2 x 12.8 for a 22.6 x 12.2 case) and 15.6 mm deep. With FDM hole shrinkage and the SG90 body-width spread in the catalog (11.8-12.2), a drop-in fit is marginal. The servo-lead slot starts 12 mm up and is only 3.6 mm wide for a flat 3-wire lead.",
-      "fix": "Raise the pocket clearance to ~0.5 mm per side (or add a calibration note to print the base first, as DESIGN section 9 already suggests) and widen the lead slot to ~5 mm."
-    },
-    {
-      "severity": "minor",
-      "part": "yoke / bracket",
-      "issue": "Moving clearance is thin: cam_clear min is 0.6 mm against a 0.5 mm limit and the pivot axial gap is 0.6 mm, both on printed PETG parts with 0.1-0.2 mm dimensional error. The bracket also has only 3.5% overhang area, mostly 45-deg roofs and teardrops of the small horizontal holes. These should print, but the 2.4 mm key holes are marginal.",
-      "fix": "After the horn fix, give cam_clear >= 0.8 mm if the geometry allows. Print the bracket first as a fit test."
-    },
-    {
-      "severity": "minor",
-      "part": "base",
-      "issue": "Tripod screw engagement depends on A2 (screw protrusion). The nut top sits 7.24 mm above the base underside, so a 5-6 mm screw engages only ~3-4 threads beyond the 1.5 mm floor. Fine for 60 g, but there is no stop and a >8 mm screw hits the pan servo at z = 10.",
-      "fix": "State the supported protrusion range (about 5.5-8 mm) in DESIGN.md and the assembly notes."
-    }
-  ]
+ "verdict": "PASS",
+ "fingerprint": "c035849619be1e50",
+ "reviewer": "design-reviewer",
+ "date": "2026-10-31",
+ "summary": "Round 2 re-review from scratch. The round-1 blocker (horn proxy sitting on the spline tip) is fixed: horn face is 0.8 mm above the spline top, and the tilt-axis, wall_out and horn_y chain is consistent with the catalog (SG90 shaft_h 7.6, tab_t 2.4, horn hub 4.0 / spline_engage 3.2). All requirement checks pass with margin (pan +/-90, tilt -35..+65, torque 2% of stall, FEA 1-2.6 MPa against 13 MPa, deflection 0.22 of 0.3 mm on the yoke, sweeps clear, mass 59 g). The FEA hot spots sit where the load path puts them (horn contact and standoff holes on the bracket, tilt window corners and wall root on the yoke, tab pilots on the base). The remaining risks are the estimated horn dimensions and a few small fit and print details, all minor.",
+ "findings": [
+  {"severity": "minor", "part": "yoke", "issue": "Pan-horn screws are M2 x 8 through the 6 mm plate, so they engage only 2.0 mm in a horn disc that the catalog lists as an UNVERIFIED 2.0 mm estimate. That is 1 d of thread in aluminium and the tip ends flush. If the real disc is thinner, the thread is short.", "fix": "Measure the purchased horn. Keep the M2 x 8 only if the disc is at least 2 mm thick; otherwise reduce yoke_t to 5 or add a thin shim, then update the catalog value."},
+  {"severity": "minor", "part": "bracket", "issue": "Tilt horn screws are M2 x 6 through the 3.5 mm arm, giving 2.5 mm into the same estimated 2 mm disc. The tips protrude about 0.5 mm toward the servo boss. Clearance is fine in the model, but it depends on the estimated hub depth.", "fix": "Verify with the real horn. If the hub is shallower than assumed, use M2 x 5 or recheck the clearance to the servo boss."},
+  {"severity": "minor", "part": "base", "issue": "The servo-lead slot is only 4.7 mm wide with a 1.3 mm wall to the tab pilot. An SG90 three-wire flat lead with its connector housing may not fit through it, and the 1.3 mm wall will not take a rough fit. The pilots are printed M2 threads, good for only a few cycles (already noted in DESIGN.md).", "fix": "Print the base first and test-fit the lead. If tight, open the slot to about 6 mm or route the lead over the end wall. Consider M2 heat-set inserts for the tab pilots if the servo will be removed often."},
+  {"severity": "minor", "part": "yoke", "issue": "The yoke needs support or bridging at the tilt-servo window, which has a 12.8 mm top bridge, plus the ledge slots and the FPC notch. The part sheet shows ragged window edges at the top of the +Y wall. The overhang is flagged only as 1.9%, but the bridge quality decides how the servo case seats.", "fix": "Check the sliced preview of the window. Add a 0.2 mm sacrificial layer or enable bridge-flow tuning, and ream the window to size if it sags."},
+  {"severity": "minor", "part": "bracket", "issue": "Slicer warning: 3.5% of the surface needs support. The cause is the teardrop and 45-degree holes and the horizontal horn-key access holes (2.4 mm). The small 2.4 mm teardrop holes may close up or leave strings, so the 1.5 mm key may not pass cleanly.", "fix": "Ream the 2.4 mm key-access holes with a 2.5 mm drill after printing, and say so in ASSEMBLY.md."},
+  {"severity": "minor", "part": "pan_tilt", "issue": "No electrical: block (kerf warning). Servo power and signal, the 5 V supply and bulk capacitor (A6), and the lead strain relief are described in prose only. The tilt servo lead is tied to the yoke and then dangles to the base without a strain relief at the pan axis; with +/-90 deg pan it twists around the horn.", "fix": "Add the electrical block (servo pair 5 V >= 1 A, 470-1000 uF). Specify a loose lead loop at the pan axis of at least 60 mm, like the FPC, in ASSEMBLY.md."},
+  {"severity": "minor", "part": "base", "issue": "The tripod screw protrusion window of 5.5-8 mm (A2) is an assumption, and a longer screw would hit the pan servo only 2 mm above an 8 mm tip. The 40 x 26 mm footprint is small for a head that sits 13 mm off-centre on a 70 mm tall stack, so a tall tripod screw or a loose joint could tip it.", "fix": "Keep the warning in the instructions. Consider a printed 3 mm skirt or a wider base if it will sit on soft surfaces."}
+ ]
 }
