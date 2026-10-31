@@ -50,6 +50,10 @@ DESIGN.md says why.
 ## 5. Walls and features
 - Wall thickness >= 1.2 mm anywhere (check fails < 0.8 mm), >= 1.6 mm on structural parts, >= 2.4 mm around heat-set
   inserts and screw bosses (use catalog `fdm_holes` min wall where given).
+- Perimeters: a part with a strength check (fea_static / cantilever_stress, or a copy of its file) prints with 4 wall
+  loops by default (`walls` in project.yaml; 2 otherwise). FEA treats the part as solid; the stress peaks at the
+  surface, which 4 x 0.42 mm of solid perimeter carries. The mass estimate counts the perimeters, and the plate 3MF and
+  out/plates/PRINT_SETTINGS.md carry infill + wall loops per part.
 - Inside corners on any load path get a fillet r >= 1 mm (stress concentration). Outside edges: 0.5–1 mm chamfer or fillet.
 - No feature thinner than 2 nozzle widths (0.8 mm) unless it is a deliberate flexure.
 - Text/labels: embossed >= 0.6 mm, stroke >= 0.8 mm.

@@ -113,8 +113,62 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
             for iid, n, s in plate:
                 m.add_shape(s, linear_deflection=0.01, angular_deflection=0.1, part_number=f"{iid}_{n + 1}")
             m.write(str(f))
+        _write_part_settings(f, {f"{iid}_{n + 1}": proj.items[iid].spec for iid, n, _ in plate})
         out.append({"file": f.name, "parts": [f"{iid} #{n + 1}" for iid, n, _ in plate]})
+    (outdir / "PRINT_SETTINGS.md").write_text(print_settings_md(proj), encoding="utf-8")
     return out
+
+
+def part_print_settings(spec) -> dict:
+    """Slicer settings a printed part's numbers assume (mass estimate, FEA): infill and perimeters."""
+    return {"infill_pct": round(float(spec.get("infill", 0.25)) * 100), "walls": int(spec.get("walls", 2)),
+            "material": spec.get("material", "PETG"), "print_rot": list(spec.get("print_rot", [0, 0, 0]))}
+
+
+def print_settings_md(proj) -> str:
+    L = ["# Print settings per part", "",
+         "The mass estimate and the strength checks assume these. Set them per object in the slicer (Bambu Studio / "
+         "OrcaSlicer: right-click the object, *Add settings*: Sparse infill density and Wall loops). The plate files carry "
+         "them in `Metadata/model_settings.config` too.", "",
+         "| Part | Material | Infill | Wall loops | Orientation (print_rot) |", "|---|---|---|---|---|"]
+    for iid, it in proj.printed.items():
+        ps = part_print_settings(it.spec)
+        L.append(f"| {iid} | {ps['material']} | {ps['infill_pct']} % | {ps['walls']} | {ps['print_rot']} |")
+    return "\n".join(L) + "\n"
+
+
+def _write_part_settings(path, specs: dict):
+    """Add per-object slicer settings (Bambu Studio / OrcaSlicer `Metadata/model_settings.config` form: one <object>
+    per model object, keyed by the 3MF object id) to a plate 3MF written by the mesher."""
+    import re
+    import zipfile
+    from xml.sax.saxutils import quoteattr
+    with zipfile.ZipFile(path) as z:
+        files = {n: z.read(n) for n in z.namelist()}
+    model = next((n for n in files if n.lower().endswith("3dmodel.model")), None)
+    if model is None:
+        return
+    head = files[model][:200000].decode("utf-8", "ignore")
+    objs = []
+    for tag in re.findall(r"<object\s[^>]*>", head):
+        oid = re.search(r'\sid="(\d+)"', tag)
+        pn = re.search(r'partnumber="([^"]+)"', tag) or re.search(r'\sname="([^"]+)"', tag)
+        if oid and pn:
+            objs.append((oid.group(1), pn.group(1)))
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>', "<config>"]
+    for oid, pn in objs:
+        sp = specs.get(pn)
+        if sp is None:
+            continue
+        ps = part_print_settings(sp)
+        lines += [f'  <object id="{oid}">', f'    <metadata key="name" value={quoteattr(pn)}/>',
+                  f'    <metadata key="sparse_infill_density" value="{ps["infill_pct"]}%"/>',
+                  f'    <metadata key="wall_loops" value="{ps["walls"]}"/>', "  </object>"]
+    lines.append("</config>")
+    files["Metadata/model_settings.config"] = "\n".join(lines).encode()
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, b in files.items():
+            z.writestr(n, b)
 
 
 def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):

@@ -753,3 +753,12 @@ pushed for it and what I know:
 - PLAN: E3 and "Audit fixes: robot_arm" checked; a fresh build + design-reviewer pass on the new fingerprint follows
   in this session. Other sessions: fpv_5in and servo_link reviews went stale from catalog edits (XT60 by the tvc
   session, MG996R lead_length_mm by ecf0d5e); they need a re-review (no geometry change).
+## 2026-10-31 11:00 UTC — session 262017a2: ENG-5 single-shear pin moment, ENG-6 print settings
+- ENG-5: a `bearing_n` load on a pin bore whose pin group puts the other parts' bands off this part's bands (single
+  shear) gets the lever moment M = (c_other - c_this) x F added automatically (detail says so; `single_shear: false`
+  opts out); hand-checked test. Effect: tvc yoke_fea 3.51 -> 3.06 (still fine); **bionic_finger proximal_fea_line now
+  FAILS 26.5 / 24 MPa** (the audit's C-2: 1594 N mm on the pip insert was unmodelled) -> bionic audit item.
+- ENG-6: strength-checked parts (and copies of their file) default to 4 wall loops (`walls`), the mass estimate counts
+  perimeters vs top/bottom skin by face orientation (checks.shell_volume, test), plate 3MFs carry per-object
+  infill + wall loops (Bambu/Orca Metadata/model_settings.config; not yet confirmed in Bambu Studio) and
+  out/plates/PRINT_SETTINGS.md lists them (test). ENGINEERING.md s5 documents it.

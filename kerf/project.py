@@ -103,6 +103,9 @@ _MATH = {n: getattr(_m, n) for n in ("sqrt", "sin", "cos", "tan", "atan2", "radi
 _MATH.update(min=min, max=max, abs=abs, round=round)
 
 
+DEFAULT_WALLS, STRESSED_WALLS = 2, 4   # perimeters (0.42 mm lines); see checks.shell_volume
+
+
 def load(name_or_path: str, overrides: dict | None = None) -> Project:
     d = resolve_dir(name_or_path)
     data = yaml.safe_load((d / "project.yaml").read_text(encoding="utf-8")) or {}
@@ -110,8 +113,13 @@ def load(name_or_path: str, overrides: dict | None = None) -> Project:
         if key not in data:
             raise ProjectError(f"{d.name}/project.yaml is missing '{key}'")
     proj = Project(name=data["name"], dir=d, data=data, params=param_values(data, overrides))
+    stressed = {r.get("part") for r in data.get("requirements") or [] if r.get("check") in ("fea_static", "cantilever_stress")}
+    stressed_files = {(data.get("parts") or {}).get(q, {}).get("file") for q in stressed}
     for pid, spec in (data.get("parts") or {}).items():
-        proj.items[pid] = Item(pid, "printed", spec or {})
+        spec = dict(spec or {})
+        if "walls" not in spec:     # ENG-6: strength-checked parts (or copies of their file) print with 4 perimeters
+            spec["walls"] = STRESSED_WALLS if (pid in stressed or spec.get("file") in stressed_files) else DEFAULT_WALLS
+        proj.items[pid] = Item(pid, "printed", spec)
     for pid, spec in (data.get("purchased") or {}).items():
         proj.items[pid] = Item(pid, "purchased", spec or {})
     for pid, spec in (data.get("keepouts") or {}).items():

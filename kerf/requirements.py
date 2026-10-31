@@ -261,6 +261,42 @@ def _across_share(item) -> float:
     return max(float(geom.world_dir(rot, tuple(_axis_vec(a)))[2]) ** 2 for a in axes)
 
 
+def _pin_lever_load(proj, asm, item, spec):
+    """Single-shear pivots (ENG-5): a bearing load on a pin bore of this part is really applied by the OTHER parts of
+    the pin group, at their bands along the pin. When those bands' centroid is off this part's bands' centroid along
+    the axis, the pin also bends this part's bore by M = (c_other - c_this) x F. Returns (extra torque load, note) or
+    None (no matching pin, balanced double shear, or `single_shear: false` on the load)."""
+    if "bearing_n" not in spec or "cylinder" not in spec or spec.get("single_shear") is False or asm is None:
+        return None
+    from . import pins as PN
+    o, d = _axis(item, spec["cylinder"], proj.params or {})
+    F = np.array([_ev(v, proj.params) for v in spec["bearing_n"]], dtype=float)
+    inv = item.shape.location.inverse()
+    for g, members in PN._collect(asm).items():
+        mine, other = [], []
+        for iid, s, p_w, u_w in members:
+            p = geom.world_point(inv, p_w)
+            u = geom.world_dir(inv, u_w)
+            c = p - u * s.depth / 2                       # band centre (the hole runs `depth` into -Z of its site)
+            (mine if iid == item.id else other).append((c, u))
+        if not mine or not other:
+            continue
+        u0 = mine[0][1]
+        if abs(abs(float(np.dot(u0, d))) - 1) > 1e-3 or np.linalg.norm(np.cross(mine[0][0] - o, d)) > 0.3:
+            continue                                      # not this load's bore
+        ct = np.mean([c for c, _ in mine], axis=0)
+        co = np.mean([c for c, _ in other], axis=0)
+        lever = float(np.dot(co - ct, d)) * d
+        M = np.cross(lever, F)
+        m = float(np.linalg.norm(M))
+        if m < 1.0:
+            return None
+        ld = {"pred": _region(item, spec, proj.params), "torque": m, "axis_at": ct, "axis_dir": M / m}
+        return ld, (f"pin '{g}' is single-shear here: the load enters {np.linalg.norm(lever):.1f} mm along the pin "
+                    f"from this part's band, so a {m:.0f} N mm moment was added on the bore")
+    return None
+
+
 SF_MIN = {"static": 2.0, "across_layers": 3.0, "crash": 3.0, "landing": 3.0}   # docs/ENGINEERING.md section 3
 
 
@@ -287,8 +323,14 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
     E = catalog.num(m, "youngs_modulus_mpa", "tensile_modulus_mpa", "youngs_modulus", "E_mpa")
     nu = catalog.num(m, "poisson", "poissons_ratio", default=0.38)
     shape = it.shape.located(__import__("build123d").Location())
-    res = fea.static(shape, E, nu, _region(it, fixed, proj.params),
-                     [_fea_load(it, l, proj.params) for l in loads], size=mesh_size)
+    fl, shear_notes = [], []
+    for l in loads:
+        fl.append(_fea_load(it, l, proj.params))
+        extra = _pin_lever_load(proj, asm, it, l)
+        if extra is not None:
+            fl.append(extra[0])
+            shear_notes.append(extra[1])
+    res = fea.static(shape, E, nu, _region(it, fixed, proj.params), fl, size=mesh_size)
     xy, z = _strength(mat, "xy"), _strength(mat, "z")
     strength = xy - (xy - z) * nz2
     allow = strength / sf
@@ -301,7 +343,7 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
             "max_disp_mm": round(res["max_disp_mm"], 3), "max_disp_at": res.get("max_disp_at"),
             "_viz": {**res["_viz"], "allow": allow, "title": f"{part}: von Mises (MPa), limit {allow:.1f}",
                      "p999": res["max_vm_mpa"], "peak": res["max_vm_peak_mpa"]},
-            "detail": sf_msg + f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
+            "detail": sf_msg + "".join(n + "; " for n in shear_notes) + f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
                       f"peak {res['max_vm_peak_mpa']:.2f} MPa at {res.get('max_vm_peak_at')}, deflection {res['max_disp_mm']:.3f} mm"
                       + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f" at {res.get('max_disp_at')}, {res['elements']} elements"}
 

@@ -83,13 +83,14 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     rho = density(mat)
     km = geom.kmesh(s)
     area = float(sum(fc.area for fc in s.faces())) if km is None else float(__import__("trimesh").Trimesh(*km, process=False).area)
-    shell = min(vol, area * 0.84)  # two 0.42 mm perimeters / top-bottom skins
+    shell = min(vol, area * 0.84) if km is not None else shell_volume(s, spec, vol)
     infill = float(spec.get("infill", 0.25))
     return {
         "ok": not problems, "problems": problems, "warnings": warnings,
         "material": mat, "print_rot": rot, "size_mm": [round(x, 2) for x in size], "fits": fits,
         "volume_mm3": round(vol, 1), "mass_solid_g": round(vol / 1000 * rho, 1),
         "mass_est_g": round((shell + infill * max(vol - shell, 0)) / 1000 * rho, 1), "infill": infill,
+        "walls": int(spec.get("walls", 2)),
         "overhang_pct": round(oh_frac * 100, 2), "wall_p02_mm": None if p02 is None else round(p02, 2),
         "watertight": ms["watertight"], "solids": len(sol), "faces": len(s.faces()), "build_ms": item.build_ms,
     }
@@ -147,14 +148,38 @@ def layer_direction(item) -> tuple[list, list]:
     return problems, warnings
 
 
+LINE_W, SKIN_MM = 0.42, 0.84    # perimeter line width; top/bottom skin (~4 layers of 0.2 mm)
+
+
+def shell_volume(s, spec, vol=None) -> float:
+    """Solid-printed volume of a part in its PRINT orientation: faces that point up/down (within 45 deg of build Z) get
+    the top/bottom skin, every other face `walls` perimeters of 0.42 mm. Capped at the part volume."""
+    walls = float(spec.get("walls", 2))
+    tb = side = 0.0
+    for fc in s.faces():
+        try:
+            nz = abs(float(fc.normal_at().Z))
+        except Exception:  # noqa: BLE001  (a face without a usable normal: count it as a side)
+            nz = 0.0
+        if nz > 0.7071:
+            tb += fc.area
+        else:
+            side += fc.area
+    vol = geom.volume(s) if vol is None else vol
+    return min(vol, tb * SKIN_MM + side * walls * LINE_W)
+
+
 def item_mass_g(item) -> float:
     """Mass used for statics: printed parts from geometry, purchased parts from the catalog."""
     if item.role == "printed":
         vol = geom.volume(item.shape)
         rho = density(item.spec.get("material", "PETG"))
         infill = float(item.spec.get("infill", 0.25))
-        area = float(sum(fc.area for fc in item.shape.faces()))
-        shell = min(vol, area * 0.84)
+        if geom.kmesh(item.shape) is not None:
+            area = float(sum(fc.area for fc in item.shape.faces()))
+            shell = min(vol, area * 0.84)
+        else:
+            shell = shell_volume(oriented(item.shape, item.spec.get("print_rot", [0, 0, 0])), item.spec, vol)
         return (shell + infill * max(vol - shell, 0)) / 1000 * rho
     if item.role == "purchased":
         if "mass_g" in item.spec:

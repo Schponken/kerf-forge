@@ -222,3 +222,29 @@ def test_shoulder_pivot_insert_in_assembly_plan(tmp_path):
     assert problems == []
     st = ship.plan(asm, [], out)
     assert any(x["item"] == "base" and x["screw"] == "M3" and x["qty"] == 1 for s in st for x in s["inserts"]), st
+
+
+SINGLE = BASE.replace("for sy, rx in ((1, -90), (-1, 90)):", "for sy, rx in ((1, -90),):").replace(
+    "for sy in (1, -1):", "for sy in (1,):")
+
+
+def test_single_shear_pin_adds_the_lever_moment(tmp_path):
+    """ENG-5: one lug (band centre y = +6) and the arm knuckle (centre y = 0). 100 N down on the lug bore really acts
+    at the knuckle, 6 mm along the pin: (0, -6, 0) x (0, 0, -100) = (600, 0, 0) N mm is added, so the total moment about
+    the origin equals that of 100 N acting on the pin axis at y = 0, z = 20: zero."""
+    from kerf import requirements
+    d = tmp_path / "ss"
+    (d / "parts").mkdir(parents=True)
+    (d / "project.yaml").write_text(textwrap.dedent(YAML))
+    (d / "parts" / "base.py").write_text(textwrap.dedent(SINGLE))
+    (d / "parts" / "arm.py").write_text(textwrap.dedent(ARM))
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    load = {"cylinder": {"at": [0, 8, 20], "dir": [0, 1, 0], "r": 1.6, "span": [-4.5, 0.5]}, "bearing_n": [0, 0, -100]}
+    kw = dict(part="base", fixed={"box": [[-100, -100, -1], [100, 100, 0.01]]}, loads=[load], sf=2)
+    r = requirements.REGISTRY["fea_static"](proj, asm, **kw)
+    assert "single-shear" in r["detail"] and "600 N mm" in r["detail"]
+    assert r["applied_moment_nmm"][0] == pytest.approx(0, abs=15)
+    r0 = requirements.REGISTRY["fea_static"](proj, asm, **{**kw, "loads": [{**load, "single_shear": False}]})
+    assert r0["applied_moment_nmm"][0] == pytest.approx(-600, abs=15)
