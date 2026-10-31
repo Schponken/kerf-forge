@@ -232,6 +232,11 @@ def board(ctx, spec):
     s = _box(L, W, t)
     holes = e.get("holes")
     screw = str(e.get("hole_screw", "M2.5"))
+    if comp > 0 and "lens_housing_square" in e:   # camera board: the tall part is the lens housing, holes stay open
+        sq = catalog.num(e, "lens_housing_square")
+        lo_ = e.get("lens_offset") or {}
+        s += Pos(float(lo_.get("x", 0)), float(lo_.get("y", 0)), 0) * _box(sq, sq, comp, z0=t)
+        comp = 0.0
     if comp > 0:
         parts = _box(L * 0.9, W * 0.9, comp, z0=t)
         if holes and screw in catalog.load()["screws"]:   # boards keep mounting holes clear of parts: don't block the screws

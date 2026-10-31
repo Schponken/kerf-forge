@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
-from build123d import Box, Location
+from build123d import Align, Box, Location, Pos
 
 from kerf import catalog, electrical, export, geom
 from kerf.pipeline import req_line
@@ -115,3 +115,17 @@ def test_render_false_items_left_out_of_views_only():
                                   "psu": SimpleNamespace(shape=b, role="purchased", spec={"render": False})})
     assert [s.label for s in export._placed_copies(proj, for_render=True)] == ["head"]
     assert [s.label for s in export._placed_copies(proj)] == ["head", "psu"]
+
+
+def test_camera_board_proxy_keeps_mounting_holes_open():
+    from build123d import Cylinder
+    from kerf import proxies
+    from kerf.ctx import Ctx
+    e = catalog.get("boards.rpi_camera_module_3")
+    s = proxies.build(Ctx("cam", {}), {"catalog": "boards.rpi_camera_module_3", "proxy": "board"})
+    t = e["thickness"]
+    lo, hi = geom.bbox(s)
+    assert hi[2] >= t + e["component_height"] - 1e-6                  # the lens housing is there, full height
+    for (x, y) in e["holes"]:                                         # a hex key column above every hole is free
+        col = Pos(x, y, t + 0.01) * Cylinder(1.0, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        assert (s & col).volume < 1e-6, (x, y)
