@@ -13,7 +13,7 @@ params:
   base_side: {value: 7.0, min: 5, max: 12, step: 0.5, label: Base wall beside the servo body (each side)}
   yoke_t: {value: 6.0, min: 3.5, max: 8, step: 0.5, label: Yoke plate thickness}
   wall_t: {value: 5.0, min: 5.0, max: 6, step: 0.1, label: Yoke side-wall thickness}
-  tilt_h: {value: 28.0, min: 24, max: 36, step: 0.5, label: Tilt axis above the yoke underside}
+  tilt_h: {value: 29.5, min: 24, max: 36, step: 0.5, label: Tilt axis above the yoke underside}
   cam_gap: {value: 27.0, min: 26, max: 32, step: 0.5, label: Space between the bracket arms (camera board 25 wide)}
   arm_t: {value: 3.5, min: 3, max: 5, step: 0.5, label: Bracket arm thickness}
   knuckle_len: {value: 8.0, min: 6, max: 10, step: 0.5, label: Pivot knuckle length (M3 thread depth)}

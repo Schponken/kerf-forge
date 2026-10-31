@@ -60,7 +60,7 @@ position), so tilting keeps the image centre in place and the tilt servo carries
 | M3 x 12 SHCS + washer | screws.M3 | 1 | tilt pivot (length picked by kerf/pins.py: span 12.6 mm = 5 wall + 0.9 gap + 6.7 thread; 6.1 mm of thread in the knuckle ≥ 1.5 d) |
 | M2 screws | screws.M2 | 2+2+4+4+4 | lengths picked by the fastener check (out/bom.md): servo tabs M2 x 6, horns M2 x 8 / x 6, camera M2 x 5 |
 
-Mass: 59.1 g complete (report.json), printed parts base 14.2 g, yoke 12.8 g, bracket 6.0 g (40% infill estimate).
+Mass: 59.3 g complete (report.json), printed parts base 14.2 g, yoke 12.8 g, bracket 6.0 g (40% infill estimate).
 
 ## 4. Printed parts
 | Part | Job | Material | print_rot | load_axis | Envelope |
@@ -104,7 +104,7 @@ FEA load cases (all SF 3 on PETG Z strength 39 MPa → allowable 13 MPa):
 | Check | Fixed | Load | Result |
 |---|---|---|---|
 | bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 2.2 MPa p99.9, 0.05 mm |
-| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the pivot bore | 2.5 MPa, 0.21 mm (limit 0.3) |
+| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the pivot bore | 2.6 MPa, 0.2 mm (limit 0.3) |
 | base_fea | underside on the tripod plate | 176.5 N·mm pan stall reaction + 10 N sideways at the tab screws | 1.1 MPa, 0.006 mm |
 | bracket_arm | section 5.5 mm ahead of the tilt axis | 13 N at the camera seat (stall torque / 13.5 mm), kt 1.5 | 0.2 MPa |
 The yoke first failed its stiffness limit (0.56 mm, the 4 mm plate twisting under the tilt-servo reaction); the plate
@@ -142,6 +142,8 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
   sat on the spline tip and every horn-derived position was 3.2 mm off. Fixed in the catalog (sourced spline length);
   the layout follows automatically. Minors fixed: duplicate pivot screw in bom_extra, FPC notch + loop length,
   base pocket 0.5 mm/side and 4.7 mm lead slot, pivot gap 0.9 mm (cam_clear ≥ 0.8), tripod protrusion range (A2).
+  After a concurrent engine change (kerf now models screw heads) the camera touched a pan-horn screw head at
+  tilt -35°: the tilt axis went up 1.5 mm (`tilt_h` 29.5), camera-to-yoke clearance now 3.3 mm.
   Not done: an `electrical:` block (kerf warns; servo current/supply is A6, owned by the electronics PLAN item).
 
 ## 10. Risks / numbers to measure before the final print
