@@ -204,12 +204,12 @@ def plan(asm, fasteners: list, pins: list) -> list[dict]:
 
 
 def _explode_offset(proj, asm, iid, present) -> np.ndarray:
-    """Where to draw a part that is about to go on: back along its declared insertion path, else away from its
-    parent's centre, about 60 % of its own size (at least 15 mm)."""
+    """Where to draw a part that is about to go on: back along its declared `insert` path, else along the axis of the
+    joint it mates on (pointing away from the parent), else away from the parent's centre; 40 % of its size, 15-40 mm."""
     it = proj.items[iid]
     lo, hi = geom.bbox(it.shape)
     size = float(np.linalg.norm(hi - lo))
-    dist = max(15.0, 0.6 * size)
+    dist = min(max(15.0, 0.4 * size), 40.0)
     ins = it.spec.get("insert")
     if ins and "direction" in ins:
         d = geom.world_dir(it.shape.location, ins["direction"])
@@ -218,9 +218,17 @@ def _explode_offset(proj, asm, iid, present) -> np.ndarray:
     c = (lo + hi) / 2
     if e is not None and e.parent in present:
         plo, phi = geom.bbox(proj.items[e.parent].shape)
-        d = c - (plo + phi) / 2
-        if np.linalg.norm(d) > 1e-6:
-            return d / np.linalg.norm(d) * dist
+        away = c - (plo + phi) / 2
+        # parts slide on along the mating joint's axis (screw axis of a seat, shaft of a spline or pin): use it,
+        # pointing away from the parent; fall back to centre-to-centre when the axis is across that direction
+        pj = proj.items[e.parent].shape.joints.get(e.pjoint)
+        if pj is not None:
+            ax = geom.world_dir(pj.location, (0, 0, 1))
+            ax = ax / (np.linalg.norm(ax) or 1.0)
+            dot = float(np.dot(ax, away))
+            return (ax if dot >= 0 else -ax) * dist
+        if np.linalg.norm(away) > 1e-6:
+            return away / np.linalg.norm(away) * dist
     return np.array([0.0, 0.0, dist])
 
 
