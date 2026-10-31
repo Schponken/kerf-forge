@@ -283,3 +283,16 @@ entry before each push (date, what changed, verify state, next step, open proble
   stalls (seen on a sideways-loaded leg); `assembly.key_access` merged with the other session's `assembly.order`.
 - Acceptance now also grades "complete electronics" (Spencer's new PLAN item: receiver, BEC, XT60, strap, wiring,
   power_budget, flight_time, WIRING.md/svg). tvc_drone stays open until that engine item exists; I'm taking it next.
+
+## 2026-10-31 00:55 UTC — MG996R re-sourced from published models (planning chat, second session)
+- `catalog/hardware.json` servos.MG996R now rests on 2 TowerPro drawings + 7 independently made CAD models (measured
+  here, 4 spot-checked) + 4 published mounts (all listed in its `sources`). No caliper measurement is published.
+- Confirmed: holes 49.5 x 10.0, tab 2.5 thick, shaft 10.0 from the body end. Changed: body_l 40.9, body_h 37.0,
+  tab_span 54.0, hole_d 4.5 (tab holes are keyhole slots open to the outer end), tab_z 26.8, cable boss keep-out
+  7.0 out x 8.0 tall from z 2.5 x 8.0 wide. Still unconfirmed: tab_z (models say 26.5-30.2) — keep >= 4 mm free under
+  the case and take heights from the tab face.
+- robot_arm (another session's item) and servo_link both still PASS `kerf check` with the new numbers; 274 tests
+  pass. The catalog change makes every project's review stale (fingerprint includes the catalog): servo_link is
+  re-reviewed by this session; the robot_arm session needs a fresh design-reviewer pass before it finishes.
+- Free STEP models of this servo exist (Printables 1199804 is CC0) but none is the manufacturer's and they disagree
+  on tab height, so they are evidence for the numbers, not loaded as `proxy: step` geometry.
