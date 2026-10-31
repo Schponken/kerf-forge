@@ -158,6 +158,26 @@ def box(ctx, spec):
     return ctx.finish(s, color=spec.get("color", "#2b2f33"))
 
 
+@proxy("view_cone")
+def view_cone(ctx, spec):
+    """Camera field of view as a keep-out: a rectangular pyramid frustum. Frame: origin at the lens front, +Z along the
+    view. spec: length (mm), aperture [w, h] at the lens (default the catalog lens_d square), hfov_deg / vfov_deg, or
+    `catalog:` a camera board with hfov_deg / vfov_deg (+ lens_d). Joints: bottom (origin)."""
+    from build123d import Plane, Rectangle, loft
+    e = catalog.get(spec["catalog"]) if spec.get("catalog") else {}
+    hf = float(spec.get("hfov_deg", e.get("hfov_deg", 0)))
+    vf = float(spec.get("vfov_deg", e.get("vfov_deg", 0)))
+    if not (0 < hf < 170 and 0 < vf < 170):
+        raise ValueError("view_cone needs hfov_deg and vfov_deg between 0 and 170 (spec or catalog)")
+    L = float(spec["length"])
+    a = spec.get("aperture") or [float(e.get("lens_d", 1.0))] * 2
+    w1 = a[0] + 2 * L * math.tan(math.radians(hf / 2))
+    h1 = a[1] + 2 * L * math.tan(math.radians(vf / 2))
+    s = loft([Plane.XY * Rectangle(a[0], a[1]), Plane.XY.offset(L) * Rectangle(w1, h1)])
+    ctx.rigid("bottom", Location((0, 0, 0)))
+    return ctx.finish(s, color="#ff8c1a")
+
+
 @proxy("motor")
 def motor(ctx, spec):
     """Outrunner brushless motor. Frame: origin at the centre of the base (mounting face), +Z toward the prop.
@@ -252,6 +272,10 @@ def board(ctx, spec):
         for (x, y) in holes:
             ctx.site(Site(_g(spec, "holes"), "male", screw, "clearance", Location((x, y, t)), grip=t))
     ctx.rigid("bottom", Location((0, 0, 0)))
+    if "lens_offset" in e:   # camera board: a joint at the lens front so lens / view keep-outs can hang off the camera
+        lo_ = e["lens_offset"]
+        ctx.rigid("lens", Location((float(lo_.get("x", 0)), float(lo_.get("y", 0)),
+                                    t + catalog.num(e, "component_height", default=0.0))))
     return ctx.finish(s, color="#1e6b3a")
 
 

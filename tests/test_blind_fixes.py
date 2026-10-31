@@ -129,3 +129,20 @@ def test_camera_board_proxy_keeps_mounting_holes_open():
     for (x, y) in e["holes"]:                                         # a hex key column above every hole is free
         col = Pos(x, y, t + 0.01) * Cylinder(1.0, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
         assert (s & col).volume < 1e-6, (x, y)
+
+
+def test_view_cone_frustum_and_camera_lens_joint():
+    import math
+    from kerf import proxies
+    from kerf.ctx import Ctx
+    s = proxies.build(Ctx("v", {}), {"proxy": "view_cone", "length": 30, "aperture": [6, 6], "hfov_deg": 66, "vfov_deg": 41})
+    lo, hi = geom.bbox(s)
+    assert abs((hi[0] - lo[0]) - (6 + 60 * math.tan(math.radians(33)))) < 0.01
+    assert abs((hi[1] - lo[1]) - (6 + 60 * math.tan(math.radians(20.5)))) < 0.01
+    assert abs(hi[2] - 30) < 1e-6
+    # frustum, not a box: volume well under the bounding box
+    assert s.volume < 0.6 * (hi[0] - lo[0]) * (hi[1] - lo[1]) * 30
+    cam = proxies.build(Ctx("cam", {}), {"catalog": "boards.rpi_camera_module_3", "proxy": "board"})
+    assert "lens" in cam.joints
+    with pytest.raises(ValueError):
+        proxies.build(Ctx("v", {}), {"proxy": "view_cone", "length": 30})

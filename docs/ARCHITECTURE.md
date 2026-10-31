@@ -68,6 +68,9 @@ purchased:                      # catalog-backed proxies (real mass + geometry f
                                 # off-device supply that would shrink the device in them); still checked, in STEP + BOM
 keepouts:                       # volumes nothing may enter (prop discs, camera view, fingers)
   prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1}
+  cam_view: {catalog: boards.rpi_camera_module_3, proxy: view_cone, length: 30, owner: camera}  # FOV frustum from the
+                                # catalog (or spec `hfov_deg`, `vfov_deg`, `aperture: [w, h]` at the lens); join it to
+                                # the board's `lens` joint (camera boards with lens_offset)
 assembly:
   root: base
   joints:                       # parent.joint_label -> child.joint_label; child joints are always rigid
