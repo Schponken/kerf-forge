@@ -211,7 +211,8 @@ def bom_extra_check(proj, fasteners) -> tuple[list, list]:
         m = re.search(r"\b(M\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\b", str(x["item"]))
         it = str(x["item"]).lower()
         screwish = "screw" in it and not any(k in it for k in ("set screw", "spacer", "standoff", "wood", "nut", "washer"))
-        if m and screwish and m.group(1) in auto and str(x.get("type", "")) in ("fastener", "hardware", "extra", ""):
+        same_len = m and any(v is not None and abs(float(v) - float(m.group(2))) < 1e-6 for v in auto.get(m.group(1), ()))
+        if m and screwish and same_len and str(x.get("type", "")) in ("fastener", "hardware", "extra", ""):
             warnings.append(f"bom_extra '{x['item']}': the fastener check already buys {m.group(1)} screws "
                             f"({', '.join(f'{L:g} mm' for L in sorted(v for v in auto[m.group(1)] if v))}); "
                             f"if this row is the same screws, drop it (duplicate)")

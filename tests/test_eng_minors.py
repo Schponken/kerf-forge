@@ -60,9 +60,11 @@ def test_eng15_bom_extra_keys_and_duplicates():
     class Pr:
         data = {"bom_extra": [{"item": "M2 x 8 screw", "qty": 4, "type": "hardware"},
                               {"item": "Glue", "qty": 1, "spce": "typo"}, {"qty": 3}]}
-    p, w = export.bom_extra_check(Pr, [{"screw": "M2", "length_mm": 5}])
+    p, w = export.bom_extra_check(Pr, [{"screw": "M2", "length_mm": 8}])
     assert any("unknown key" in x and "spce" in x for x in p) and any("needs an 'item'" in x for x in p)
     assert w and "M2" in w[0] and "duplicate" in w[0]
+    _, w = export.bom_extra_check(Pr, [{"screw": "M2", "length_mm": 5}])      # another length: a different screw
+    assert not w
 
 
 def test_eng14_horn_centre_screw_rows():

@@ -1,9 +1,9 @@
 {
   "verdict": "PASS",
-  "fingerprint": "b13fdb08322fb884",
+  "fingerprint": "9c5e485a165723a5",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The reworked base works: the servo slides in from -Y, the tab tops sit against a 5 mm deck, the cavity floor is now 1 mm lower so the 15.6-16.0 mm tab-height spread fits, and the lead leaves through the open side. The F11-F18 fixes hold up in code, catalog and FEA. Every FEA case passes at p99.9 with SF 3 (base 6.2 of 13 MPa, yoke knock 8.9/9.8 of 13 MPa), the pan/tilt/corner sweeps are clear, and every hex key reaches its screw. The remaining findings are minor: the generated ASSEMBLY.md order contradicts the correct order in DESIGN.md section 8, and a few margins are thin.",
+  "summary": "This is a re-review after a catalog-only fingerprint change (bd486a2: M2 washer_d1/d2/h fields and the shoulder-screw buy link). Nothing in projects/pan_tilt changed. pan_tilt uses no tab_washers, which is the only engine consumer of washer_h, so geometry, fasteners and checks are unchanged. The full kerf check PASSes at 9c5e485a165723a5 with the same numbers as the previous PASS (base FEA 6.16, yoke knock 8.93/9.79 of 13 MPa, all sweeps clear, 16 screws aligned). The previous minor findings carry forward. New minors cover warnings the d3677bb engine audit added after the last review (round horn-screw holes, base_fea support, cam pilot edge) and the BOM buy link that needs a rebuild.",
   "findings": [
     {
       "severity": "minor",
@@ -14,7 +14,7 @@
     {
       "severity": "minor",
       "part": "base",
-      "issue": "The pan servo is held only by two M2 self-tap pilots with 3.6 mm engagement (6 mm screw minus 2.4 mm tab) in the bridged underside of the deck. The 30 N camera knock puts about 1260 N·mm on the tab contact. That is roughly 45 N pull-out on the far screw, which is only about 3x the typical PETG pull-out for M2. The FEA peak (9.2 MPa) is at those pilots, but pull-out is not checked. The pilots also sit 2.1 mm from the window edge (the hole pattern forces this; the DESIGN.md risk list already says so).",
+      "issue": "The pan servo is held only by two M2 self-tap pilots with 3.6 mm engagement (6 mm screw minus 2.4 mm tab) in the bridged underside of the deck. The 30 N camera knock puts about 1260 N\u00b7mm on the tab contact. That is roughly 45 N pull-out on the far screw, which is only about 3x the typical PETG pull-out for M2. The FEA peak (9.2 MPa) is at those pilots, but pull-out is not checked. The pilots also sit 2.1 mm from the window edge (the hole pattern forces this; the DESIGN.md risk list already says so).",
       "fix": "Print the base first and pull-test the tab screws. If they are marginal, go to M2 x 8 (needs a taller deck, deck_t 6.5) or M2 heat-set inserts. Say in DESIGN.md that the M2 pull-out under the knock moment was not computed."
     },
     {
@@ -40,6 +40,30 @@
       "part": "bracket",
       "issue": "The horn bolt circle, thread and hub height (catalog A3 estimates), the SG90 tab hole and output offset (scaled from a drawing) and the gear-boss relief are unmeasured. The bracket and yoke fit all depend on them. DESIGN.md section 10 already lists these.",
       "fix": "Measure the actual horns and servos before printing the bracket and yoke. Print the base first as a test fit, as DESIGN.md says."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The 4 M2 clearance holes of group 'bracket_tilt' (horn screws through the +Y arm) print horizontal but are cut round. iface.horn_mount is called without teardrop, so these holes and the centre-screw access cut get no 45-degree roof (ENGINEERING.md s4; engine warning added in d3677bb, after the previous review). The 2.4 mm ISO 273 medium clearance leaves 0.4 mm over the 2.0 mm screw, so a small sag still passes. The -Y arm key holes and the knuckle are already teardrops.",
+      "fix": "In bracket.py pass teardrop=iface.print_up_deg(ctx, hm) to iface.horn_mount. Then the separate centre-hole roof cut that follows becomes redundant and can stay or go."
+    },
+    {
+      "severity": "minor",
+      "part": "base",
+      "issue": "base_fea holds the whole bottom face fixed (engine warning: the fixed box holds no fastener site). It does rest on the tripod plate, so this support is real. A fully bonded face also resists tension on the knock's uplift side, which the real joint only gets from the 1/4-20 screw. The hot spot is still in the right place (the deck pilots at the tab screws, 6.16 MPa p99.9 / 9.17 peak vs 13), and that is where the load enters.",
+      "fix": "Optionally fix only the compression side plus the tripod-nut floor ring (or add a second case with that support) to confirm the deck result does not depend on a bonded bottom face."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "The camera M2 pilots in group 'cam_mount' have only 22 % of a 1.5 x d ring of material at worst, because the standoffs are trimmed on their inner side by the camera rear-parts keep-out. The load is a 4 g camera, so strength is not a concern, but the pilots can split when the self-tapping screws are driven.",
+      "fix": "Drive the camera screws gently by hand, or go to r 3.0 standoffs where the keep-out allows. Note it in DESIGN.md next to the existing edge-distance note."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "Catalog bd486a2 changed motion.shoulder_4_m3.buy from 97505A139 to 97505A106, the correct 4 x 8 part its buy_note already named. The current out/bom.csv and bom.md were written before that change and still hold the old link next to the right note.",
+      "fix": "Run kerf build pan_tilt so the BOM picks up the 97505A106 link. No geometry change."
     }
   ]
 }

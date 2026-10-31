@@ -1,13 +1,45 @@
 {
   "verdict": "PASS",
-  "fingerprint": "8aedf000a3cf1767",
+  "fingerprint": "e400e7b4a255941c",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 6, on a current build: out/report.json and review-status both give 8aedf000a3cf1767. Nothing regressed. ok, no problems, no interference or insertion issues, all three gimbal sweeps clear, every requirement passes (twr 2.08, twr_sag 1.86, mass 780.5 / 790 g, CG 0.4 mm, tip-over 20.6 deg). All FEA pass at SF 3 (gimbal 3.97, outer 4.05, yoke 3.49, lug 8.10, leg 3.37 MPa). The M2 tab taps (yoke_servo, ring_servo) take an M2x6 with 2.4 mm grip and no gap. Their only holewall warning is the documented MG90S edge distance (79 %); the lock taps use the horizontal pilot. Every plate 3MF has a settings entry for every object (2/2, 4/4, 3/3), matching PRINT_SETTINGS.md.",
+  "summary": "Round 7, a catalog-only re-fingerprint. No commit touched projects/tvc_drone after 3d0ef07. Since 1e06c55, catalog/hardware.json gained only screws.M2 washer_d1/d2/h/source and a corrected shoulder_4_m3 buy link. tvc_drone does not depend on shoulder_4_m3. The engine reads washer_h only when a fastener spec sets tab_washers, and tvc_drone sets none, so the change does not alter geometry, fasteners, BOM or checks. kerf check --quick: PASS at e400e7b4a255941c, same 9 part masses, 0 interference, 33 screws aligned, 2 pins coaxial, mass 780.5/790 g, CG 0.4 mm, stand 20.6 deg. The out/ build at 12:42 (FEA all pass) and the round-6 findings stand.",
   "findings": [
-    {"severity": "minor", "part": "ring_low, gimbal_outer (M2 servo-tab taps)", "issue": "The teardropped servo-tab taps now use the horizontal pilot tap_h = 2.10 mm, which is larger than the M2 major diameter (2.0). The Bambu table's larger horizontal value makes up for the drooping top of a round horizontal hole. A teardrop already removes that droop, so applying both may leave the thread-forming tab screws with little bite. The ring lock taps (M3 PETG tap_h 2.78, for set screws) are fine.", "fix": "Print a pin/tap coupon (`kerf calibrate`) with a teardropped M2 hole before the full parts. If the screws spin, set a negative tap calibration offset for the printer. Engine follow-up: decide whether tap_h should apply to teardrop holes or only to plain round horizontal ones."},
-    {"severity": "minor", "part": "ring_low (lug_fea)", "issue": "Carried over and accepted: the FEA uses a solid model while the print is 30 % infill with 4 perimeters; lug_fea is 8.10 vs 13 MPa.", "fix": "Optional: a >= 50 % infill modifier on the three leg lugs."},
-    {"severity": "minor", "part": "gimbal_outer", "issue": "Carried over: 14 first-layer edges cannot take the 0.5 mm chamfer (deburr warning).", "fix": "Deburr after printing or use slicer elephant-foot compensation."},
-    {"severity": "minor", "part": "leg_1..3", "issue": "Carried over: leg_fea deflection is 2.966 vs 3.0 mm (99 %); accepted.", "fix": "None required."}
+    {
+      "severity": "minor",
+      "part": "ring_low, gimbal_outer (M2 servo-tab taps)",
+      "issue": "The teardropped servo-tab taps now use the horizontal pilot tap_h = 2.10 mm, which is larger than the M2 major diameter (2.0). The Bambu table's larger horizontal value makes up for the drooping top of a round horizontal hole. A teardrop already removes that droop, so applying both may leave the thread-forming tab screws with little bite. The ring lock taps (M3 PETG tap_h 2.78, for set screws) are fine.",
+      "fix": "Print a pin/tap coupon (`kerf calibrate`) with a teardropped M2 hole before the full parts. If the screws spin, set a negative tap calibration offset for the printer. Engine follow-up: decide whether tap_h should apply to teardrop holes or only to plain round horizontal ones."
+    },
+    {
+      "severity": "minor",
+      "part": "ring_low (lug_fea)",
+      "issue": "Carried over and accepted: the FEA uses a solid model while the print is 30 % infill with 4 perimeters; lug_fea is 8.10 vs 13 MPa.",
+      "fix": "Optional: a >= 50 % infill modifier on the three leg lugs."
+    },
+    {
+      "severity": "minor",
+      "part": "gimbal_outer",
+      "issue": "Carried over: 14 first-layer edges cannot take the 0.5 mm chamfer (deburr warning).",
+      "fix": "Deburr after printing or use slicer elephant-foot compensation."
+    },
+    {
+      "severity": "minor",
+      "part": "leg_1..3",
+      "issue": "Carried over: leg_fea deflection is 2.966 vs 3.0 mm (99 %); accepted.",
+      "fix": "None required."
+    },
+    {
+      "severity": "minor",
+      "part": "gimbal_outer, ring_low (pitch_pin, roll_pin)",
+      "issue": "First recorded here (the warning comes from the ENG-7..20 engine and was already in the 12:42 report): the 20 mm motion.pin_3mm is 1.5 mm / 1.0 mm shorter than the 21.5 / 21.0 mm span. The pin is a press fit in one side (DESIGN.md interface table), so it is retained, but the free-side bore is only partly filled.",
+      "fix": "Press each pin flush with the outer face of its press side so the whole shortfall sits at the press-side end and the free bearing bore is fully engaged. Optional: lengthen the span to a stocked length or add a note to DESIGN.md."
+    },
+    {
+      "severity": "minor",
+      "part": "motor_hub (pitch_horn)",
+      "issue": "Carried over and documented in DESIGN.md assembly step 6: a straight 1.5 mm key cannot reach the two upper M2 horn screws.",
+      "fix": "Use a ball-end 1.5 mm key as the DESIGN says. List it in the tools section of the BOM if it isn't there already."
+    }
   ]
 }

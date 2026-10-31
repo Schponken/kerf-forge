@@ -1,16 +1,57 @@
 {
   "verdict": "PASS",
-  "fingerprint": "0fffc865b90f4c37",
+  "fingerprint": "741a1d6a812ac11d",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 9, after the audit-B fixes. Every check in report.json passes with no problems: prop gap 3.45 mm, FEA hot spots sit at the arm-screw ribs, the arm root and the pillar roots, where the load path puts them, and the camera tilt sweep is clear. The mating dimensions I spot-checked match the catalog (motor 16 x 16 M3, stack 30.5 mm, camera side holes). No blocker or major remains. The thin T/W margin (6.02) and the unverified 60 A peak current are both stated in DESIGN.md with a measurement gate, so they stay minor.",
+  "summary": "Round 10, a re-review after a fingerprint-only change. No file in projects/fpv_5in has changed since the round 9 PASS (f31da76), and the engine is unchanged too. The only catalog edits are the new ISO 7089 washer fields on screws.M2, which only proxies.py reads, and only for tab_washers, which fpv_5in does not use. The other edit is the buy link for shoulder_4_m3, which fpv_5in does not depend on. The rebuilt out/ (PASS, 741a1d6a) gives the same values as round 9: prop gap 3.45, T/W 6.02, mass 161.3 g, FEA 8.99/10.76/10.76/7.02/9.02 MPa, hot spots in the same load-path places, and the renders look the same. The new 0.3 mm washer height agrees with the VTX stack note (1.6 + 6 + 0.3 = 8 mm envelope). All previous minor findings carry forward, plus one new minor finding: a false-positive duplicate warning in the BOM.",
   "findings": [
-    {"severity": "minor", "part": "body", "issue": "FEA is judged on the engine's 99.9th-percentile stress. The body passes at 10.76 MPa against 11.67. The volume peak is 20.7 MPa and the surface peak 15.6 MPa, both above the 11.67 allowable. The hot spot is the rib-to-plate junction at the arm_1 screws, which is where the load goes, but it has little margin if the p99.9 convention hides a real concentration.", "fix": "Print a spare body and a crash-test arm_1 load coupon, or add 1 mm more rib root fillet / a wider rib foot. Do not lower the 3 SF."},
-    {"severity": "minor", "part": "top_plate", "issue": "T/W is 6.02 against a 6.0 floor, on a 161 g printed-mass estimate and a 74 % output cap. DESIGN.md says 3 g of extra print mass fails it. The pillars run across the layers at 7.0 / 9.0 MPa against 9.67, so that margin is also thin.", "fix": "Weigh the printed parts before flying. If heavy, widen the lightening windows in the top plate and body, not the pillars. Keep the 4-wall setting on the pillars."},
-    {"severity": "minor", "part": "body", "issue": "The 14.22 A per motor at the 74 % limit is a propeller-law estimate, not a firmware limit. BLHeli_S has no current limit, and peak 57.5 A sits against the XT60's 60 A rating. The brief's twr contract assumes catalog thrust x 4, and this project uses a reduced 3691 g.", "fix": "Keep the Blackbox/OSD punch-out gate as a mandatory first-flight step. Consider an XT90 or an AM32 ESC if the logged peak is above 55 A."},
-    {"severity": "minor", "part": "body", "issue": "Generated ASSEMBLY.md still has no step to drop the 8 arm nuts and 4 stack nuts into their pockets (the stack ones open downward and need tape or CA), and it gives no threadlocker step. It also puts top_plate (step 6) before vtx (step 7), although the VTX has to be screwed under the plate on the bench first (the bench note is only a bullet under step 7). All solder steps come last. DESIGN.md has the correct order.", "fix": "Engine: honour key_access ordering in the step list, emit nut-pocket and insert steps before the screw step, and print bom_extra notes at their steps. Until then, tell the builder to follow DESIGN.md section 'Assembly order'."},
-    {"severity": "minor", "part": "top_plate", "issue": "BOM heat-shrink row for AWG 12 still says 20 mm pieces, but the wiring note needs 8-10 mm at the XT60 cups (20 mm reaches the rear pillar). The XT60 is held rearward only by cable-tie friction.", "fix": "Make the AWG 12 row 10 mm. Optionally add a 1 mm rear retaining lip to the XT60 cradle."},
-    {"severity": "minor", "part": "arm_1", "issue": "The motor-screw edge-distance warnings (88 % of the ring is material on the arm pad, 46-50 % at the top-plate insert and VTX pilot holes) are forced by the purchased hole patterns. The motor M3 x 10 gives only 2.5 mm thread engagement in a motor whose thread depth is typical, not published, so the 0.5 mm margin to the windings is unverified.", "fix": "Measure the thread depth of one motor before tightening all 16 screws (already in DESIGN.md risks). Add a note to the top-plate heat-set inserts to be pressed slowly to avoid splitting the 46 % ring."},
-    {"severity": "minor", "part": "body", "issue": "Carried: the arm nut wells sit on the phase-wire line, with the M3 x 12 tip only about 0.3 mm past the sunk nut. A short screw or a nylon-insert nut would not engage fully.", "fix": "Keep the blue threadlocker on all 8 screws, use plain steel nuts only, and put a dab of RTV or a Kapton strip over each well."}
+    {
+      "severity": "minor",
+      "part": "body",
+      "issue": "FEA is judged on the engine's 99.9th-percentile stress. The body passes at 10.76 MPa against 11.67. The volume peak is 20.7 MPa and the surface peak 15.6 MPa, both above the 11.67 allowable. The hot spot is the rib-to-plate junction at the arm_1 screws, which is where the load goes, but it has little margin if the p99.9 convention hides a real concentration.",
+      "fix": "Print a spare body and a crash-test arm_1 load coupon, or add 1 mm more rib root fillet / a wider rib foot. Do not lower the 3 SF."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "T/W is 6.02 against a 6.0 floor, on a 161 g printed-mass estimate and a 74 % output cap. DESIGN.md says 3 g of extra print mass fails it. The pillars run across the layers at 7.0 / 9.0 MPa against 9.67, so that margin is also thin.",
+      "fix": "Weigh the printed parts before flying. If heavy, widen the lightening windows in the top plate and body, not the pillars. Keep the 4-wall setting on the pillars."
+    },
+    {
+      "severity": "minor",
+      "part": "body",
+      "issue": "The 14.22 A per motor at the 74 % limit is a propeller-law estimate, not a firmware limit. BLHeli_S has no current limit, and peak 57.5 A sits against the XT60's 60 A rating. The brief's twr contract assumes catalog thrust x 4, and this project uses a reduced 3691 g.",
+      "fix": "Keep the Blackbox/OSD punch-out gate as a mandatory first-flight step. Consider an XT90 or an AM32 ESC if the logged peak is above 55 A."
+    },
+    {
+      "severity": "minor",
+      "part": "body",
+      "issue": "Generated ASSEMBLY.md still has no step to drop the 8 arm nuts and 4 stack nuts into their pockets (the stack ones open downward and need tape or CA), and it gives no threadlocker step. It also puts top_plate (step 6) before vtx (step 7), although the VTX has to be screwed under the plate on the bench first (the bench note is only a bullet under step 7). All solder steps come last. DESIGN.md has the correct order.",
+      "fix": "Engine: honour key_access ordering in the step list, emit nut-pocket and insert steps before the screw step, and print bom_extra notes at their steps. Until then, tell the builder to follow DESIGN.md section 'Assembly order'."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "BOM heat-shrink row for AWG 12 still says 20 mm pieces, but the wiring note needs 8-10 mm at the XT60 cups (20 mm reaches the rear pillar). The XT60 is held rearward only by cable-tie friction.",
+      "fix": "Make the AWG 12 row 10 mm. Optionally add a 1 mm rear retaining lip to the XT60 cradle."
+    },
+    {
+      "severity": "minor",
+      "part": "arm_1",
+      "issue": "The motor-screw edge-distance warnings (88 % of the ring is material on the arm pad, 46-50 % at the top-plate insert and VTX pilot holes) are forced by the purchased hole patterns. The motor M3 x 10 gives only 2.5 mm thread engagement in a motor whose thread depth is typical, not published, so the 0.5 mm margin to the windings is unverified.",
+      "fix": "Measure the thread depth of one motor before tightening all 16 screws (already in DESIGN.md risks). Add a note to the top-plate heat-set inserts to be pressed slowly to avoid splitting the 46 % ring."
+    },
+    {
+      "severity": "minor",
+      "part": "body",
+      "issue": "Carried: the arm nut wells sit on the phase-wire line, with the M3 x 12 tip only about 0.3 mm past the sunk nut. A short screw or a nylon-insert nut would not engage fully.",
+      "fix": "Keep the blue threadlocker on all 8 screws, use plain steel nuts only, and put a dab of RTV or a Kapton strip over each well."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "New since round 9 (engine check added in d3677bb): report.json warns that the bom_extra row 'M2 x 6 mm button head screw' duplicates the fastener check's M2 screws. It is a false positive: the 2 x M2 x 6 button heads are the camera pivots, the 4 x M2 x 12 socket heads are the VTX screws, and the BOM correctly lists both. A builder reading the warning could still drop the camera screws.",
+      "fix": "Engine: compare length and head type before calling a bom_extra row a duplicate, or let a row carry a 'distinct from group X' reason that silences the warning. No geometry change needed."
+    }
   ]
 }
