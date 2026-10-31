@@ -1,63 +1,51 @@
 {
-  "verdict": "FAIL",
-  "fingerprint": "2e5a8afdd24429d2",
+  "verdict": "PASS",
+  "fingerprint": "265e1face625ee22",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The geometry meets every graded number: lengths 44/25/21, flexion sweeps clear, channels 2.2 mm, FEA SF > 3, no overhangs, and the lap-knuckle side-print scheme is clever and printable. But no joint has an extension stop. Measured on assembly.step, every joint bends backward freely to about -60 deg, so pulling the extensor does not 'straighten' the finger; it bends it backward. The pivots are also fully threaded M3 screws turning in printed bores under tendon loads about 20x the FEA case.",
+  "summary": "Round 2: both round-1 failures are fixed and I checked them myself on out/assembly.step. Each joint now hits a dorsal stop lug at about -2 deg (overlap 0 at -1.5 deg, 0.11 mm3 at -2, 1.9 mm3 at -3), and flexion still runs clear to 80/80/70 with a natural stop just past range. The pivots are 4 x 8 mm ground-shoulder screws whose shoulder bottoms on the insert, so they turn on a smooth surface and the head never clamps. The tendon-load FEA case (222 N line + 10 N tip) passes at 10.5 MPa vs 24 allowed, with the hot spot at the pip bore. What remains is minor: side play, insert-flushness sensitivity, stale DESIGN text, a missing buy link, a cusp on the stop lug, and one thin wall.",
   "findings": [
     {
-      "severity": "blocker",
-      "part": "base/proximal/middle/distal (fingerlib.child_end, parent_end)",
-      "issue": "No hyperextension (straight) hard stop at any joint. Child positioned at negative flexion against its parent in assembly.step: intersection volume is zero at -10, -30 and -45 deg, 0.09 mm3 at -60 deg, and 13.6 mm3 only at -70 deg (same for mcp, pip and dip). The pocket rect |x-lj| <= XT removes all parent material in the child's band, and child_end keeps nothing behind the axis outside RH. So the extensor (or the elastic the DESIGN recommends on it) pulls each joint backward until something at about -60 deg stops it. With 3 joints and 2 tendons the straight pose is not defined by line lengths: it only exists if each joint bottoms out on a stop at 0 deg. A push on the back of the finger also folds it backward. This fails the brief's 'straightens when the lines are pulled'. The sweeps only test [0, range], so no check catches it.",
-      "fix": "Add a dorsal extension stop at every joint that makes contact at 0 deg (0 to -2 deg), e.g. a dorsal lug on the child's non-knuckle band that sits behind the axis and bears on a matching dorsal shoulder of the parent's knuckle band (shrink RK or the pocket there, or let the lug stand just proud of the dorsal surface). Prove it: sweep each joint to -5 deg and require contact, while keeping [0, range] clear. Make the engine general too: a revolute joint should be able to declare a hard stop that the sweep proves (collides just outside the range)."
-    },
-    {
-      "severity": "major",
-      "part": "fingerlib.pin_holes / all joints",
-      "issue": "The pivots are ISO 4762 M3 x 14 SHCS, which are fully threaded at that length (b = 18 mm). The moving part therefore turns on thread crests in a 3.35 mm printed PETG bore for 7.85 mm. The real pivot load is set by the tendon, not by the 15 N FEA case: DESIGN s7 gives flexor tension = 22.5 x tip force at the mcp (about 225-340 N for a 10-15 N tip force). That is about 10-14 MPa of projected bearing on threads, cycling, so the bore wears oval and the finger gets sloppy quickly. kerf itself warns on all three pin groups to 'use a shoulder screw'. DESIGN s8 states pin bearing as 0.64 MPa from the 15 N case only, which understates it 15-20x.",
-      "fix": "Turn on a smooth surface: an ISO 7379 shoulder screw (4 mm shoulder, M3 thread, bore 4.35), or a 3 mm steel dowel/brass tube bushing pressed into the child with the M3 screw through it. Add a catalog entry with its source. Redo the pin bearing hand-check with the tendon reaction (tip force + flexor tension vector) and state it in DESIGN s8."
+      "severity": "minor",
+      "part": "all joints (fingerlib W/GAP, shoulder length)",
+      "issue": "Axial play per joint is now 0.45 mm: the 0.3 lap gap plus 0.15 from the 8 mm shoulder over the 7.85 stack. Diametral play is ~0.35-0.38 (4.35 hole on a 3.97-4.0 shoulder). Both are single-shear laps, so each joint can tilt about 1.7 deg sideways. That adds up to roughly 4-5 mm of side-to-side wobble at the fingertip, more than the round-1 screw pivot had. The brief does not limit it, but a finger that wobbles this much is noticeable in a hand.",
+      "fix": "Cut the stack slack: make the gap 0.15 and the band 7.7 so 7.85 + 0.15 -> about 8.0 - 0.05, and/or use a 4.2 free hole for the ground shoulder (print a coupon first). A thin PTFE shim in the lap would also help. State the expected tip side play in DESIGN."
     },
     {
       "severity": "minor",
-      "part": "base/proximal/middle (parent knuckle band)",
-      "issue": "Over the top ~1 mm of the heat-set bore (the gap face), the swept extensor groove comes to r ~ 2.5 mm from the pivot axis. Measured: a ring r 2.05-3.0 at the gap face is only 96 % solid on base/proximal. The CNC Kitchen insert knurl is D1 4.6 (r 2.3), so the wall is ~0.2 mm against a catalog min wall of 1.6. Plastic the hot insert pushes aside will flow into the extensor groove and leave a lip in the 0.3 mm lap gap.",
-      "fix": "Recess the insert 0.3-0.5 mm below the gap face (bore counterbore) and/or move the extensor crown points out (EXT 5 -> 5.5 to 6 with the wrap angle) so the swept groove stays >= 1.6 mm from the insert OD; or use the M3 short insert (L 3.0) set deeper."
+      "part": "base/proximal/middle (insert mouth)",
+      "issue": "The shoulder bottoms on the insert face and the joint only has 0.15 mm of head play. An insert left even ~0.15 mm proud of the gap face (normal for hand heat-setting) will clamp the moving part when the screw is tightened fully. Tightening against the insert also loads it in pull-out, and its mouth wall to the swept extensor groove is only ~0.2 mm. ASSEMBLY.md says 'tighten fully' with no check of flushness and no torque limit.",
+      "fix": "Add an assembly step: seat each insert flush to 0.05 mm below the face (press it flat with a plate while it is hot), and tighten the shoulder screw only until it stops (light torque, threadlocker instead of torque). Better: give the parent a 0.2 mm counterbore so the insert can sit slightly low."
     },
     {
       "severity": "minor",
-      "part": "fingerlib.crossing_cuts",
-      "issue": "The knuckle-face tendon grooves are a union of straight tubes at 10 deg steps. The part renders (proximal/base/distal top views) show a serrated fan of ridges that the braided line rides across as the joint turns. Under 200+ N of flexor tension those ridges abrade the line and the plastic.",
-      "fix": "Sample at 2-3 deg, or build the groove as one swept/lofted solid, so the fan floor is smooth."
+      "part": "DESIGN.md",
+      "issue": "Section 2 'Side play' is stale. It still says the 7.85 mm lap faces and that the 0.3 mm gap is the only axial play. The bands are now 7.55 and the play is 0.45 mm. The stop contact is also on one band only (y -7.7 to -0.15, z 7.9-9.5), which DESIGN does not describe.",
+      "fix": "Update section 2 with the current numbers and the expected tip side play."
+    },
+    {
+      "severity": "minor",
+      "part": "bom (motion.shoulder_4_m3)",
+      "issue": "In report.json the shoulder-screw BOM rows have an empty buy link and no price. It is the one non-commodity part, and the owner needs the exact part number (McMaster 97505A106, 4 x 8, low 7 x 1.8 slotted head) to order it.",
+      "fix": "Add buy/price data for the catalog entry so the BOM lists the 97505A106 link and price."
+    },
+    {
+      "severity": "minor",
+      "part": "proximal/middle/distal (child stop lug, fingerlib.child_end)",
+      "issue": "In the child's top band the lug is cut by the r = RH circle. Where that circle meets the lug's lower edge (z = 7, x ~ 3.7) it leaves a sharp cusp, visible as a thin crescent in the middle part's top view. It is cosmetic and will print as a fragile point, but it is not on the load path (the stop face is the 1.6 x 7.55 mm face at x = 0.15).",
+      "fix": "Start the lug's lower edge at z = RH in the top band (or round the cusp) so there is no zero-thickness tip."
     },
     {
       "severity": "minor",
       "part": "distal",
-      "issue": "Line termination: 3 mm knot pockets behind a 2.2 mm channel. A single stopper knot in 0.5 mm braid is ~1.5-2 mm and can pull into the channel, so retention rests mostly on CA glue. At straight-finger tip loads the flexor carries 5-11x the tip force here.",
-      "fix": "Specify a crimp sleeve or bead larger than 2.5 mm (or a double figure-eight), or add a cross-pin/transverse wrap post in the distal so the line does not depend on the glue."
+      "issue": "The wall check still reports 1.12 mm walls (p2) at the knot pockets / tendon grooves, below the 1.2 mm reliable minimum.",
+      "fix": "Move the pockets or the channel 0.1-0.2 mm to reach >= 1.2 mm."
     },
     {
       "severity": "minor",
-      "part": "all (tendon geometry)",
-      "issue": "The flexor moment arm is only 4 mm (inside the 7.5 mm knuckle disc), so tendon tension is 22.5x the tip force at a straight finger. The 445 N line rates ~10 N tip force at SF 2, and the actuator and pivots see the full tension. Documented in DESIGN, but it drives the pivot wear above.",
-      "fix": "If a larger grip force is wanted, route the flexor palmar of the knuckle (a pulley/sheath at r ~ 6-7 mm) to halve the tension. Otherwise state the tip-force rating in the README/ASSEMBLY."
-    },
-    {
-      "severity": "minor",
-      "part": "all (pin screws)",
-      "issue": "The screw heads (5.5 dia x 3 mm, on alternating sides) are not modelled as proxies, so they are not in any collision or envelope check. The real finger is ~22 mm wide at the knuckles, against 16 mm for the parts, and a neighbouring finger in a hand will rub the heads.",
-      "fix": "Add the screws as catalog proxies so the sweeps include the heads, or use a low-head (ISO 7380 / DIN 7984) screw or counterbore the heads into the outer faces, and note the spacing to adjacent fingers."
-    },
-    {
-      "severity": "minor",
-      "part": "middle, distal",
-      "issue": "Wall check warns of 1.14-1.15 mm walls (below the 1.2 mm reliable minimum), at the tendon grooves and knot pockets.",
-      "fix": "Shift the knot pockets or channel 0.1-0.2 mm, or narrow the groove locally, to get >= 1.2 mm."
-    },
-    {
-      "severity": "minor",
-      "part": "proximal (FEA)",
-      "issue": "The FEA follows the brief's load case: hot spots at the pip load bore and the mcp fixed bore, where expected, with peak 12.4 MPa against a 24 MPa allowable and 0.34 mm deflection. But it omits the flexor compression, which is the dominant real load (axial ~20x tip force plus bearing at both bores).",
-      "fix": "Add a second load case with the tendon reaction at both pivots, so the pivot-bore bearing at the real load is shown."
+      "part": "fingerlib.crossing_cuts",
+      "issue": "The knuckle-face grooves are still built from 10-deg steps and show a serrated fan in the renders. The new STEP comment argues the 0.5 mm line stays inside the tube union (<= 0.8 mm off axis inside the 1.1 mm radius), which holds for a taut line. A slack or 0.8 mm line can still drag across the ridges.",
+      "fix": "Acceptable as is. If the line frays in testing, generate the groove as one revolved/lofted solid instead of discrete tubes."
     }
   ]
 }

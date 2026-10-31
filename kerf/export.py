@@ -7,7 +7,7 @@ from collections import Counter
 
 from build123d import Compound, Location, Mesher, Pos, export_gltf, export_step, export_stl, Color
 
-from . import checks, geom
+from . import catalog, checks, geom
 
 PALETTE = ["#4C78A8", "#F58518", "#54A24B", "#B279A2", "#E45756", "#72B7B2", "#EECA3B", "#9D755D", "#FF9DA6", "#BAB0AC"]
 PURCHASED_COLOR = "#3A3F44"
@@ -136,7 +136,9 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
             from .iface import pin_dims
             pd = pin_dims(pj["pin"])
             rows.append({"type": "fastener", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm shoulder screw, {pd['thread']} thread (pivot)",
-                         "qty": 1, "spec": pj["pin"], "note": f"hinge '{pj['group']}'; tighten fully (the shoulder bottoms)"})
+                         "qty": 1, "spec": pj["pin"], "link": catalog.get(pj["pin"]).get("buy", ""),
+                         "note": f"hinge '{pj['group']}'; tighten fully (the shoulder bottoms)"
+                                 + (f"; {catalog.get(pj['pin'])['buy_note']}" if catalog.get(pj["pin"]).get("buy_note") else "")})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
         elif pj["screw_pivot"]:

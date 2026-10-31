@@ -56,10 +56,12 @@ band that faces the parent's knuckle. At 0 deg they are 0.3 mm apart; they touch
 `stop_pip`, `stop_dip` requirements (`hard_stop`) prove the parts overlap at -5 deg; the sweeps prove 0-80 is clear.
 The lugs make the knuckles 17 mm deep, like a real finger's knuckles.
 
-Side play: the two 7.85 mm lap faces bear on each other over the whole 15 mm disc and the 0.3 mm gap is the only axial
-play. Expect a slight sideways
-rock under a hard side push; a thin PTFE/nylon washer is not needed at 0.3 mm (the open designs run 0.15-0.25 mm
-per side, REFERENCES.md).
+Side play: the two 7.55 mm lap faces bear on each other over the whole 15 mm disc. Axial play is the 0.3 mm gap plus
+the 0.15 mm the 8 mm shoulder leaves under the head (0.45 mm), and the shoulder has 0.35 mm diametral clearance in a
+single-shear joint: each joint can tilt ~1.7 deg sideways, a few mm of wobble at the fingertip under a side push
+(review round 2). If that matters for the hand, print the free holes at 4.2 mm after a test pair, or shim with a 0.2 mm
+PTFE washer under the head. The hyperextension stop meets in one band only (a 1.6 x 7.55 mm face, loaded along the
+layers). The child's lug is cut by the pocket circle on its band-facing side: a small cosmetic point, not loaded.
 
 ## 3. Purchased parts
 
@@ -139,9 +141,11 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
 ## 9. Assembly order
 
 1. Heat-set an M3 insert into the gap face of the base, proximal and middle knuckle bands (soldering iron at
-   ~230 C for PETG), flush with the face; shave off any plastic lip it pushes up (the face must stay flat).
+   ~230 C for PETG), then press it flush to slightly below the face with a flat plate while it cools, and shave off
+   any plastic lip (the face must stay flat): with 0.15 mm under the head, an insert left proud clamps the joint.
 2. Put the proximal's knuckle over the base's, push a 4 x 8 shoulder screw through the proximal's outer face into the
-   base's insert and tighten fully: the shoulder bottoms on the insert and the joint swings freely.
+   base's insert and tighten until the shoulder bottoms on the insert - gently (~0.5 N m, two-finger torque on the
+   driver; the insert's wall to the extensor groove is thin) - then check the joint swings freely.
 3. Same for proximal -> middle and middle -> distal.
 4. Thread the flexor from the base's back face through the palmar channel to the distal pocket; sleeve, pull in, CA.
    Same for the extensor along the dorsal channel.

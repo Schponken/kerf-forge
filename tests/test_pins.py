@@ -188,7 +188,7 @@ def test_shoulder_screw_pivot(tmp_path):
     arm_pin = proj.items["arm"].shape.kerf_pins[0]
     assert arm_pin.d == 4.0 and arm_pin.fit == "free"
     rows = export.bom(proj, [], {}, tmp_path, pins=out)
-    assert any(r["item"] == "4 x 8 mm shoulder screw, M3 thread (pivot)" for r in rows)
+    assert any(r["item"] == "4 x 8 mm shoulder screw, M3 thread (pivot)" and "mcmaster" in r["link"] for r in rows)
     assert any(r["item"] == "M3 heat-set insert" for r in rows)
 
 

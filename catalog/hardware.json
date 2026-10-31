@@ -248,6 +248,8 @@
    "note": "StepperOnline 17HS19-2004S1 drawing: shaft 5 (0/-0.012), across-flat 4.5 +/-0.1, flat length 15, shaft length 24."
   },
    "shoulder_4_m3": {
+   "buy": "https://www.mcmaster.com/products/97505A139/",
+   "buy_note": "McMaster family table: order 97505A106 (4 x 8 mm, pack of 10); price not shown on the page when checked 2026-10-31",
     "d": 4.0,
     "thread": "M3",
     "thread_len": 4.5,
