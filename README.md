@@ -79,15 +79,15 @@ printed + purchased parts without wire).
 <!-- RESULTS:START -->
 | Project | Build | Review | Eval | Printed parts | Purchased | Mass (g, parts) | Plates | Renders |
 |---|---|---|---|---|---|---|---|---|
-| bionic_finger | PASS | stale/none | PASS | 4 | 0 | 20.6 | 1 | [assembly](docs/results/bionic_finger.png) |
-| fpv_5in | PASS | stale/none | PASS | 6 | 13 | 559.4 | 1 | [assembly](docs/results/fpv_5in.png) |
-| pan_tilt | PASS | PASS | FAIL | 3 | 8 | 379.3 | 1 | [assembly](docs/results/pan_tilt.png) |
+| bionic_finger | PASS | PASS | PASS | 4 | 0 | 20.6 | 1 | [assembly](docs/results/bionic_finger.png) |
+| fpv_5in | PASS | PASS | PASS | 6 | 13 | 559.4 | 1 | [assembly](docs/results/fpv_5in.png) |
+| pan_tilt | PASS | PASS | PASS | 3 | 8 | 379.3 | 1 | [assembly](docs/results/pan_tilt.png) |
 | robot_arm | PASS | stale/none | PASS | 11 | 17 | 1044.0 | 1 | [assembly](docs/results/robot_arm.png) |
 | servo_link | PASS | PASS | PASS | 3 | 5 | 505.4 | 1 | [assembly](docs/results/servo_link.png) |
 | tvc_drone | PASS | PASS | PASS | 9 | 16 | 667.1 | 3 | [assembly](docs/results/tvc_drone.png) |
 <!-- RESULTS:END -->
 
-The table is a snapshot from the last regeneration (2026-10-31 04:30 UTC, while E2/E3/E5/E6 were still in review);
+The table is a snapshot from the last regeneration (2026-10-31 04:35 UTC, while robot_arm was still in review);
 "stale/none" means the project changed after its last independent review. It is regenerated when every eval is done.
 
 The design notes, sizing math, assembly order and what to measure first are in each `projects/<id>/DESIGN.md`.
