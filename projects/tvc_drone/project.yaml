@@ -1,0 +1,114 @@
+name: TVC coax rocket drone
+description: >
+  A rocket-style thrust-vectoring drone (fd.iwth / Mistral layout): a 3-rod carbon mast with printed rings, the 6S
+  battery on top, a counter-rotating pair of 2207 motors with 5.1" props on a two-axis gimbal at the bottom driven
+  directly by two MG90S servos (free steel pins on the opposite sides), and three splayed printed legs.
+printer: Bambu Lab A2L
+supports: allowed
+params:
+  ring_r_in: {value: 72, min: 70, max: 80, step: 0.5, label: Gimbal outer ring inner radius (props are 65.9)}
+  ring_r_out: {value: 80, min: 76, max: 88, step: 0.5, label: Gimbal outer ring outer radius}
+  ring_h: {value: 10, min: 8, max: 14, step: 0.5, label: Gimbal outer ring height}
+  lug_out: {value: 2, min: 1, max: 4, step: 0.5, label: Roll horn lug beyond the ring}
+  hub_t: {value: 8, min: 8, max: 10, step: 0.5, label: Motor hub / motor plate thickness}
+  hub_r: {value: 27, min: 24, max: 30, step: 0.5, label: Motor hub disc radius}
+  ring_low_z: {value: 72, min: 68, max: 90, step: 1, label: Underside of the lower mast ring above the gimbal centre}
+  rod_len: {value: 228, min: 150, max: 300, step: 1, label: Carbon mast tube length}
+  rod_r: {value: 30, min: 26, max: 36, step: 0.5, label: Mast tube circle radius}
+  mid_z: {value: 186, min: 120, max: 260, step: 1, label: Middle ring underside height}
+  foot_r: {value: 150, min: 110, max: 170, step: 1, label: Foot radius from the thrust axis}
+  ground_z: {value: -85, min: -110, max: -70, step: 1, label: Ground below the gimbal centre}
+  leg_r0: {value: 72, min: 66, max: 80, step: 0.5, label: Leg attachment radius}
+  batt_dx: {value: -14, min: -15, max: 15, step: 0.5, label: Battery offset x (CG trim)}
+  batt_dy: {value: -4.2, min: -15, max: 15, step: 0.5, label: Battery offset y (CG trim)}
+layout: parts/layout.py
+parts:
+  ring_low: {file: parts/ring_low.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: z}
+  gimbal_outer: {file: parts/gimbal_outer.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: [x, y]}
+  motor_hub: {file: parts/motor_hub.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: y}
+  motor_plate: {file: parts/motor_plate.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5}
+  ring_mid: {file: parts/ring_mid.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
+  ring_top: {file: parts/ring_top.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3}
+  leg_1: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
+  leg_2: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
+  leg_3: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
+purchased:
+  servo_roll: {catalog: servos.MG90S, proxy: servo, groups: {tabs: yoke_servo}, range: [-15, 15]}
+  servo_pitch: {catalog: servos.MG90S, proxy: servo, groups: {tabs: ring_servo}, range: [-15, 15]}
+  horn_roll: {catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {holes: roll_horn}}
+  horn_pitch: {catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {holes: pitch_horn}}
+  motor_top: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: hub_motor_top}}
+  motor_bottom: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: plate_motor_bottom}}
+  rod_1: {catalog: rods.cf_tube_5x3, proxy: rod, length: 228}
+  rod_2: {catalog: rods.cf_tube_5x3, proxy: rod, length: 228}
+  rod_3: {catalog: rods.cf_tube_5x3, proxy: rod, length: 228}
+  stack: {catalog: drone.stacks.fc_20, proxy: stack, groups: {holes: mid_stack}}
+  battery: {catalog: drone.batteries.6S_1100, proxy: box, color: "#c8a400"}
+keepouts:
+  prop_top: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_top}
+  prop_bottom: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_bottom}
+bom_extra:
+  - {type: hardware, item: "3 x 16 mm hardened steel dowel pin (ISO 8734)", qty: 2, spec: "gimbal pivots opposite the servos"}
+  - {type: hardware, item: 20 mm battery strap (250 mm), qty: 1, spec: "through the two ring_top slots"}
+  - {type: fastener, item: M3 x 6 mm set screw / short screw, qty: 9, spec: "radial rod locks, one per ring boss; file a flat on the tube"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 8, spec: "motor and servo leads along a mast tube"}
+assembly:
+  root: ring_low
+  joints:
+    - {parent: ring_low.rod_1, child: rod_1.end_a}
+    - {parent: ring_low.rod_2, child: rod_2.end_a}
+    - {parent: ring_low.rod_3, child: rod_3.end_a}
+    - {parent: ring_low.mid_seat, child: ring_mid.origin}
+    - {parent: ring_low.top_seat, child: ring_top.origin}
+    - {parent: ring_mid.stack_seat, child: stack.bottom}
+    - {parent: ring_top.battery_seat, child: battery.bottom}
+    - {parent: ring_low.leg_1, child: leg_1.origin}
+    - {parent: ring_low.leg_2, child: leg_2.origin}
+    - {parent: ring_low.leg_3, child: leg_3.origin}
+    - {parent: ring_low.roll_servo, child: servo_roll.tabs}
+    - {parent: servo_roll.output, child: horn_roll.spline, name: gimbal_roll, range: [-15, 15], home: 0}
+    - {parent: horn_roll.face, child: gimbal_outer.roll_horn}
+    - {parent: gimbal_outer.pitch_servo, child: servo_pitch.tabs}
+    - {parent: servo_pitch.output, child: horn_pitch.spline, name: gimbal_pitch, range: [-15, 15], home: 0}
+    - {parent: horn_pitch.face, child: motor_hub.pitch_horn}
+    - {parent: motor_hub.top_motor, child: motor_top.base}
+    - {parent: motor_hub.plate_seat, child: motor_plate.origin}
+    - {parent: motor_plate.bottom_motor, child: motor_bottom.base}
+    - {parent: motor_top.prop, child: prop_top.hub}
+    - {parent: motor_bottom.prop, child: prop_bottom.hub}
+  allow_overlap:
+    - {pair: [servo_roll, horn_roll], max_mm3: 120, why: horn hub engages the servo output spline}
+    - {pair: [servo_pitch, horn_pitch], max_mm3: 120, why: horn hub engages the servo output spline}
+  order: [servo_roll, horn_roll, gimbal_outer, servo_pitch, horn_pitch, motor_hub, motor_top, motor_plate, motor_bottom]
+  key_access:
+    - {group: plate_motor_bottom, before: [motor_hub, motor_top],
+       why: "the bottom motor is screwed to motor_plate on the bench; the plate then bolts under the hub"}
+  sweeps:
+    - {name: gimbal_corners, poses: [{gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: 15, gimbal_pitch: -15},
+                                     {gimbal_roll: -15, gimbal_pitch: 15}, {gimbal_roll: -15, gimbal_pitch: -15}]}
+requirements:
+  - {id: twr, check: thrust_to_weight, thrust_g_total: 2629, min_ratio: 1.8,
+     why: "2 x 1685 g (XING2 2207 + 51466 at 24 V) x 0.78 coax efficiency (MDPI Aerospace 3(4):32) must lift the drone with margin"}
+  - {id: cg_axis, check: cg, point: [0, 0, 0], axis: [0, 0, 1], max_lateral_mm: 3, min_along_mm: 0,
+     poses: [{gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: -15, gimbal_pitch: -15}],
+     why: "the CG must sit on the thrust axis (within 3 mm) and above the gimbal pivot so thrust vectoring can balance it"}
+  - {id: stand, check: tip_over, min_deg: 15, why: "must stand on its three legs on a 15 deg slope or a bump"}
+  - id: gimbal_fea
+    check: fea_static
+    part: motor_hub
+    why: "the hub carries both motors' thrust into the two pitch pivots: 2 x max thrust (2 x 2 x 1685 g = 66 N)"
+    direction: xy
+    sf: 1.0                  # the 2 x max-thrust load already is the safety factor the brief asks for
+    max_disp_mm: 0.5
+    fixed: {near_joint: pitch_horn, radius: 12}
+    loads: [{box: [[-15, -15, hub_t - 0.01], [15, 15, hub_t + 0.01]], force_n: [0, 0, 66.1]}]
+  - {id: props, check: prop_clearance, min_mm: 3, min_between_mm: 20, joints: [],
+     poses: [{gimbal_roll: 15}, {gimbal_roll: -15}, {gimbal_pitch: 15}, {gimbal_pitch: -15},
+             {gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: 15, gimbal_pitch: -15},
+             {gimbal_roll: -15, gimbal_pitch: 15}, {gimbal_roll: -15, gimbal_pitch: -15}],
+     why: "props must clear the mast, legs, gimbal and each other at every gimbal angle"}
+  - {id: roll_torque, check: static_torque, joint: gimbal_roll, actuator: servo_roll, max_fraction: 0.5,
+     why: "gravity alone must not load the roll servo past half stall"}
+  - {id: pitch_torque, check: static_torque, joint: gimbal_pitch, actuator: servo_pitch, max_fraction: 0.5,
+     why: "gravity alone must not load the pitch servo past half stall"}
+  - {id: mass, check: mass_max, max_g: 750, why: "keep T/W well above 3 for control authority"}

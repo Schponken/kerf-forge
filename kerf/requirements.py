@@ -459,6 +459,42 @@ def channel_clear(proj, asm, path, diameter, poses=None, ignore=None, tol_frac=1
             "detail": f"largest diameter open along the {len(path)}-point channel over {1 + len(poses or [])} pose(s) (mm){where}"}
 
 
+SAMPLE_MM = 1.0
+
+
+def _surface_points(shape) -> np.ndarray:
+    """Points on a shape's surface (its own frame, Location()), no two neighbours more than SAMPLE_MM apart."""
+    import trimesh
+    from build123d import Location
+    v, f = geom.mesh(shape.located(Location()), tol=0.05, ang=0.2)
+    v, _ = trimesh.remesh.subdivide_to_size(v, f, max_edge=SAMPLE_MM, max_iter=20)
+    return v
+
+
+def _matrix(loc):
+    tr = loc.wrapped.Transformation()
+    return (np.array([[tr.Value(i, j) for j in (1, 2, 3)] for i in (1, 2, 3)]),
+            np.array([tr.Value(i, 4) for i in (1, 2, 3)]))
+
+
+def _disc_gap(disc, other, cache) -> float:
+    """Upper bound (<= SAMPLE_MM high) on the gap between a prop-disc keep-out (a cylinder, frame at its bottom
+    centre) and any item: the other item's sampled surface measured against the exact cylinder."""
+    from build123d import Location
+    if ("disc", disc.id) not in cache:
+        lo, hi = geom.bbox(disc.shape.located(Location()))
+        cache[("disc", disc.id)] = ((hi[0] - lo[0]) / 2, hi[2] - lo[2])
+    if ("pts", other.id) not in cache:
+        cache[("pts", other.id)] = _surface_points(other.shape)
+    R, h = cache[("disc", disc.id)]
+    Ro, to = _matrix(other.shape.location)
+    Rd, td = _matrix(disc.shape.location)
+    q = (cache[("pts", other.id)] @ Ro.T + to - td) @ Rd          # world -> disc frame (Rd is orthonormal)
+    rho = np.hypot(q[:, 0], q[:, 1])
+    dz = np.maximum(0.0, np.abs(q[:, 2] - h / 2) - h / 2)
+    return float(np.min(np.hypot(np.maximum(0.0, rho - R), dz)))
+
+
 @check("prop_clearance")
 def prop_clearance(proj, asm, min_mm, min_between_mm=None, props=None, ignore=None, joints=None, samples=9,
                    poses=None):
@@ -481,10 +517,20 @@ def prop_clearance(proj, asm, min_mm, min_between_mm=None, props=None, ignore=No
     for e in asm.movable:
         if joints is None or e.name in joints:
             all_pose += [{e.name: float(v)} for v in np.linspace(e.range[0], e.range[1], samples)]
-    worst = None  # (margin, gap, a, b, pose)
+    # Exact B-rep distances cost seconds per pair on big parts, so each pose is screened with sampled surfaces
+    # (points <= SAMPLE_MM apart, measured against the disc's exact cylinder: an upper bound, never more than
+    # SAMPLE_MM too large), and only pairs that could still be the worst get the exact OCC distance.
+    clouds = {}
+    worst = None  # (margin, gap, a, b, pose, lim)
     for pose in all_pose:
         A.solve(asm, pose)
+        cand = []
         for a, b, lim in pairs:
+            approx = _disc_gap(items[a], items[b], clouds)
+            cand.append((approx - lim, a, b, lim))
+        for m_up, a, b, lim in sorted(cand):
+            if worst is not None and m_up - SAMPLE_MM >= worst[0]:
+                break
             g = float(items[a].shape.distance_to(items[b].shape))
             if worst is None or g - lim < worst[0]:
                 worst = (g - lim, g, a, b, pose, lim)

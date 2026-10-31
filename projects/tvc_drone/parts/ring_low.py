@@ -1,0 +1,69 @@
+"""ring_low: the root of the airframe. A spider plate under the mast with three tube bosses, three leg lugs, and two
+yoke arms hanging down to the gimbal: +X carries the roll servo (window + 4 tapped M2 tab holes), -X holds the roll
+pivot dowel (press fit). Printed upside down (plate on the bed, yoke arms and bosses... see print_rot)."""
+import math
+
+from build123d import *
+from kerf import iface
+
+SERVO = "servos.MG90S"
+PIN = "motion.pin_3mm"
+
+
+def build(ctx):
+    p = ctx.p
+    z0, t = p.ring_low_z, 8.0                     # plate underside and thickness
+    yoke_t = 5.0                                  # +X servo plate thickness (tapped M2 needs >= 3.8 mm)
+    pin_t = 8.0                                   # -X pin plate thickness
+    gap = 1.0                                     # roll pin plate to outer ring
+    # --- plate: centre disc + leg lugs + yoke bridges
+    plate = Pos(0, 0, z0) * Cylinder(p.rod_r + 9, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for a in p.leg_angles:
+        lug = Pos((p.leg_r0 + 12) / 2, 0, z0) * Box(p.leg_r0 + 12, 22, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        plate += Rot(0, 0, a) * lug
+    ox = p.servo_out_x
+    y_lo, y_hi = -ox - p.servo_span / 2 - 4.0, -ox + p.servo_span / 2 + 4.0     # yoke plate covers the tab span
+    xp = p.roll_tab_x + yoke_t
+    plate += Pos(xp / 2, (y_lo + y_hi) / 2, z0) * Box(xp, y_hi - y_lo, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    xm = p.ring_r_out + gap + pin_t
+    plate += Pos(-xm / 2, 0, z0) * Box(xm, 18, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # --- +X yoke: vertical plate in the YZ plane from the servo down to the plate
+    zb = -p.servo_W / 2 - 4.0
+    arm_p = Pos(p.roll_tab_x, y_lo, zb) * Box(yoke_t, y_hi - y_lo, z0 + t - zb, align=(Align.MIN, Align.MIN, Align.MIN))
+    # --- -X yoke: pin plate
+    arm_m = Pos(-xm, -9, -9) * Box(pin_t, 18, z0 + t + 9, align=(Align.MIN, Align.MIN, Align.MIN))
+    body = plate + arm_p + arm_m
+    # stiffening gussets between each yoke arm and the plate (inside corner of the load path)
+    for x0, x1, sgn in ((p.roll_tab_x, p.roll_tab_x - 22, 1), (-xm + pin_t, -xm + pin_t + 22, -1)):
+        tri = Polygon((x0, z0 + 0.5), (x1, z0 + 0.5), (x0, z0 - 22), align=None)
+        for yy in ((y_lo + 2, y_hi - 2) if sgn > 0 else (-7, 7)):
+            body += Pos(0, yy, 0) * (Plane.XZ * extrude(tri, 1.5, both=True))
+    # --- tube bosses (up), bores 5.5 (0.5 mm clearance on the 5 mm tube), radial M3 lock holes
+    for a in p.rod_angles:
+        c = (p.rod_r * math.cos(math.radians(a)), p.rod_r * math.sin(math.radians(a)))
+        body += Pos(c[0], c[1], z0 + t - 0.01) * Cylinder(6.0, 14.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for a in p.rod_angles:
+        c = (p.rod_r * math.cos(math.radians(a)), p.rod_r * math.sin(math.radians(a)))
+        body -= Pos(c[0], c[1], p.rod_z0) * Cylinder(2.75, 40, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        body -= Pos(c[0], c[1], z0 + t + 7) * Rot(0, 0, a) * Rot(0, 90, 0) * Cylinder(
+            iface.screw_spec("M3")["tap"] / 2, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= Cylinder(10, 400)                                            # wire pass + mass
+    # --- roll servo: tabs rest on the yoke plate's inner face (x = roll_tab_x), body through the window outward
+    tab = Location(Plane(origin=(p.roll_tab_x, -ox, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))
+    body -= iface.servo_mount(ctx, SERVO, tab, group="yoke_servo", plate_t=yoke_t, kind="tap")
+    # --- roll pivot pin, pressed into the -X plate (outer face of the hole on the ring side)
+    body -= iface.pin_hole(ctx, PIN, Location(Plane(origin=(-(p.ring_r_out + gap), 0, 0), z_dir=(1, 0, 0))),
+                           group="roll_pin", depth=pin_t, fit="press")
+    # --- leg lugs: two heat-set M3 inserts each, from below, flanking the leg strut
+    for i, a in enumerate(p.leg_angles, start=1):
+        r = Rot(0, 0, a)
+        body -= iface.bolt_pattern(ctx, "leg", "M3", [(0, -11), (0, 11)], r * Location((p.leg_r0, 0, z0), (180, 0, 0)),
+                                   kind="heatset", depth=t)
+        ctx.rigid(f"leg_{i}", r * Location((p.leg_r0, 0, z0)))
+    for i, a in enumerate(p.rod_angles, start=1):
+        ctx.rigid(f"rod_{i}", Location((p.rod_r * math.cos(math.radians(a)), p.rod_r * math.sin(math.radians(a)), p.rod_z0)))
+    ctx.rigid("mid_seat", Location((0, 0, p.mid_z)))
+    ctx.rigid("top_seat", Location((0, 0, p.ring_top_z)))
+    ctx.rigid("roll_servo", tab)
+    ctx.rigid("origin", Location((0, 0, 0)))
+    return ctx.finish(body)
