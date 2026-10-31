@@ -23,7 +23,15 @@ DESIGN.md. Work through the steps in order; each has an output file and a gate.
 | 7 Review | design-reviewer subagent | `projects/<p>/review.json` | PASS, `kerf review-status <p>` ok |
 | 8 Deliver | you | commit + push, summary for Spencer | — |
 
-Start with `.venv/bin/kerf new <p> "<Title>"` (creates the folder and a skeleton project.yaml).
+Start with `.venv/bin/kerf new <p> "<Title>"` (creates the folder and a skeleton project.yaml). Its `root: TODO`
+makes the edit hook report "assembly.root 'TODO' is not a part" until the contract and stub parts exist (step 2);
+that is expected, not a problem to chase.
+
+**No subagent tool?** (You are yourself a subagent, or the Agent/Task tool is missing.) Do the researcher and
+part-designer work yourself, following `.claude/agents/<name>.md`. The review must still come from a separate
+design-reviewer agent: run it headless with the prompt on stdin (`--allowedTools` takes several values and would
+swallow a prompt argument): `claude -p --agent design-reviewer --allowedTools "Read,Glob,Grep,Bash,Write" < prompt.txt`.
+Wait for it to finish; never leave one running in the background.
 
 ## 0. Research first
 Read `references/INDEX.md` — the library of open designs already studied (dimensions, licenses, failure lessons per
@@ -144,7 +152,8 @@ Interfaces (`kerf/iface.py`, both sides use the same group): `bolt_pattern` with
 (clearance, counterbore, countersink, heatset, tap, nut_trap), `servo_mount`, `horn_mount`, `bearing_seat`,
 `motor_mount`, `stack_mount`, `pin_hole` (printed hinges: `press` or `heatset`/`tap` on the side that holds the pin,
 `free` on the side that turns; the revolute axis must be the pin axis; the knuckle span should equal a stocked pin
-length from the catalog `lengths`).
+length from the catalog `lengths`), `tripod_socket` (1/4-20 camera-tripod mount: captive catalog nut over a
+clearance hole).
 
 Drives (`kerf/drives.py`): `spur_pair` (gears at the right centre distance), `belt_length`, `belt_teeth`,
 `center_for_belt`, `belt_keepout` for GT2 belts.

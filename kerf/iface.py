@@ -438,3 +438,24 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
     c = _teardrop(r, z1, EXTRA, teardrop) if teardrop is not None else _cyl(r, z1, EXTRA)
     ctx.pin_site(PinSite(group, pin, fit, loc, depth, pd["d"]))
     return loc * c
+
+
+TRIPOD_SCREW_D = 6.35   # 1/4-20 UNC major diameter (ISO 1222 / ASME B1.1: 1/4 in)
+
+
+def tripod_socket(loc: Location, floor_t: float = 1.5, nut: str = "tripod_nut_1_4_20", slip: float = 0.2,
+                  free: float = 0.55, pocket_h: float | None = None, lead_in: float = 0.8):
+    """Cutter for a camera-tripod mount: a 1/4-20 clearance hole through a `floor_t` floor and a hex pocket for a
+    captive catalog nut above it, so the tripod screw pulls the nut down onto the floor (pure compression, it can't
+    pull out). `loc` is the screw axis on the part's bottom face, +Z into the part. The pocket is the nut's max
+    across-flats + `slip` and its thickness + 0.3 (or `pocket_h`, e.g. to run it up into a cavity the nut drops
+    down). Size `floor_t` so a standard tripod screw (about 4.5-6 mm protrusion) reaches through the floor into
+    the nut: floor_t + nut thickness >= the screw's protrusion keeps its tip inside the nut."""
+    n = catalog.get(nut)
+    af, h = float(n["across_flats"]) + slip, float(n["thickness"])
+    top = floor_t + (h + 0.3 if pocket_h is None else pocket_h)
+    r = TRIPOD_SCREW_D / 2 + free / 2
+    c = _hex(af, floor_t, top) + _cyl(r, -1.0, floor_t + 0.01)
+    if lead_in:
+        c += _cone(r + lead_in, r, -0.01, lead_in)
+    return loc * c

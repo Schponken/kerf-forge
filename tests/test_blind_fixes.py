@@ -65,3 +65,17 @@ def test_bom_survives_pin_without_valid_length(tmp_path):
         pytest.fail(f"bom crashed on a pin with no length: {e}")
     text = json.dumps(rows, default=str) if rows is not None else (tmp_path / "bom.md").read_text()
     assert "no stocked length" in text or any("no stocked length" in p.read_text() for p in tmp_path.glob("bom*"))
+
+
+def test_tripod_socket_cutter():
+    from build123d import Box, Align, Location
+    from kerf import iface
+    blk = Box(30, 30, 12, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    cut = iface.tripod_socket(Location((0, 0, 0)), floor_t=1.5)
+    out = blk - cut
+    lo, hi = geom.bbox(cut)
+    nut = catalog.get("tripod_nut_1_4_20")
+    assert abs((hi[2]) - (1.5 + nut["thickness"] + 0.3)) < 1e-6        # pocket top
+    removed = blk.volume - out.volume
+    hex_v = 3 * 3 ** 0.5 / 2 * ((nut["across_flats"] + 0.2) / 3 ** 0.5) ** 2 * (nut["thickness"] + 0.3)
+    assert hex_v < removed < hex_v + 3.14159 * 4.3 ** 2 * 1.6               # + the clearance hole and lead-in
