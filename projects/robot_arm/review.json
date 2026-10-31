@@ -1,69 +1,63 @@
 {
-  "verdict": "FAIL",
-  "fingerprint": "666098c2af2cce95",
+  "verdict": "PASS",
+  "fingerprint": "3dea877d2f86fff3",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The catalog change that moved the fingerprint has no effect on robot_arm. bd486a2 only added washer_d1/d2/h/source to screws.M2, which the engine reads only for servo proxies with tab_washers (robot_arm has none), and changed the buy URL of shoulder_4_m3, which robot_arm does not use. kerf check --quick still passes: 0 interferences, 58 screws aligned, all non-FEA requirements ok. However, the bed-contact check added in d3677bb (12:19 UTC, after the round-9 review at 11:57) exposes a real print problem that round 9 missed. The gripper's print orientation stands it on the round bottoms of its two wrist discs. Its plates' lower edges and palm hang 11 mm above the bed on support, not on the bed as the code and DESIGN.md claim.",
+  "summary": "The round-10 major is fixed. The gripper now stands on a 25 mm flat foot at y = -r with a true 45 degree rise to y = -6. The print-oriented STL has about 368 mm2 of flat bed contact on two 7 mm edges, and the bed-contact warning is gone. I re-ran the wrist, grip and elbow sweeps in memory at 61 samples each: 0 collisions. Gripper-to-forearm clearance stays 1.5 mm and gripper-to-wrist-servo 0.78 mm at every wrist angle. gripper_fea (5.13 of 13 MPa, hot spot at the jaw root where the stall load enters) and torque_wrist (1.91 of 4.7 kg cm) still pass. The teardrops on the horn, mast, hood and driver holes are present and point up in print orientation, and the DESIGN.md base_fea note and deflections (0.13 / 0.24 mm) now match report.json. All remaining findings are minor. The only new one is that the desk-avoidance rule in the use notes is too loose for the grip servo hanging under the palm.",
   "findings": [
     {
-      "severity": "major",
+      "severity": "minor",
       "part": "gripper",
-      "issue": "In print orientation (print_rot [90,0,0], out/parts/gripper.stl) the lowest geometry is the bottom of the two r = link_h/2 = 17 mm wrist discs. The side-plate rectangles only reach y = -6 (Rectangle(x_end, 12.0)), so the plates' 80 mm lower edges and the palm start 11 mm above the bed. Bed contact is about 36 mm2 of tessellated cylinder: two line contacts on round 7 mm discs. The largest downward flat face (897 mm2, the plate lower edges) is printed entirely on support. The engine warns 'only 0 mm2 sits on the bed against a 1669 mm2 flat face'. The gripper.py docstring ('Printed standing on its lower edges ... the jaw needs a little support') and the DESIGN.md table ('on edge, supports under the jaw') describe a print that this geometry does not make. A 37 mm tall part on two round line contacts is likely to rock, lose adhesion, or be knocked over by the nozzle. If it survives, all 80 mm of each plate edge comes off support. Every other printed part has its largest flat face on the bed (checked from the STLs).",
-      "fix": "Give the side plates a flat lower edge at the disc tangent. In gripper.py, extend each plate profile down to y = -r (for example Rectangle from y = -r to +6 over at least the first ~25 mm), then rise at 45 degrees back to y = -6 so the rest of the edge is self-supporting. Alternatively take the full 80 mm down to y = -r if the mass budget allows (about +12 g; arm_mass is 791 of 900 g). Then re-run kerf check (full: wrist/grip sweeps, gripper_fea, torque_wrist with the new mass). Confirm the bed-contact warning is gone, and correct the docstring and the DESIGN.md orientation row."
+      "issue": "DESIGN.md 'Use notes' tells the IK to reject poses whose tcp or wrist pivot is below z = 15 mm, assuming the jaws are about 12 mm below the tcp line. The grip MG996R hangs under the palm about 31 mm below the tcp. I checked a pose grid with shoulder/elbow in 20 degree steps and wrist at -75/0/75, keeping only poses that pass the documented rule. At shoulder -20 / elbow 0 / wrist 0 (tcp z = 25 mm) the grip servo's lowest point is at z = -6.4 mm, and at shoulder -60 / elbow 60 it is at -2.9 mm. So the rule as written lets the grip servo case hit the desk. The stall FEA covers the printed parts, but the purchased servo case takes the hit.",
+      "fix": "In DESIGN.md Use notes, base the desk limit on the lowest point of the gripper and grip servo, not the tcp: reject any pose where the tcp is below about z = 45 mm with the wrist horizontal, or compute the grip servo's bottom corner in the IK and keep it above z = 10 mm."
+    },
+    {
+      "severity": "minor",
+      "part": "gripper",
+      "issue": "11.1 % of the surface still prints on support: the palm underside (11 mm above the bed between the plates) and the fixed jaw. This is documented in DESIGN.md and the docstring, and it is the right trade-off for an on-edge print that keeps the plates' bending stress along the layers.",
+      "fix": "None required. Optionally chamfer the jaw's underside at 45 degrees to cut its support."
     },
     {
       "severity": "minor",
       "part": "upper_arm",
-      "issue": "Not seen in round 9 (engine check added after it): the horn clearance holes (sh_horn on upper_arm, el_horn on forearm, wr_horn on gripper) and the cable_mast and psu_side clearance holes print horizontal without a teardrop. These are 3.4 mm clearance holes for M3, so a 0.1-0.2 mm sag at the top still passes a screw.",
-      "fix": "Pass teardrop=iface.print_up_deg(ctx, loc) to those horn_mount/bolt_pattern calls, as already done for the tab pilots and pivot inserts. Otherwise, add a DESIGN.md note to run a 3.4 mm drill through them."
-    },
-    {
-      "severity": "minor",
-      "part": "base",
-      "issue": "Not seen in round 9: the engine warns that base_fea's fixed boxes hold none of base's fastener sites. The four 12 x 12 mm boxes do sit on the underside around the four M4 desk holes, which is the real restraint. The warning fires because those holes are cut with iface.hole and not registered as sites. The FEA setup is right, but the warning stays.",
-      "fix": "Cut the desk holes with a site-registering call (bolt_pattern with group 'desk') so the check can see them, or note in DESIGN.md that the boxes are the M4 desk-screw footprints."
-    },
-    {
-      "severity": "minor",
-      "part": "base",
-      "issue": "Carried from round 9: DESIGN.md's Strength table gives base_fea deflection as 0.11 mm and turntable as 0.23 mm. The round-9 report values are 0.129 and 0.239. Both are under the 0.3 mm limit.",
-      "fix": "Update the rows to 0.13 mm and 0.24 mm."
-    },
-    {
-      "severity": "minor",
-      "part": "upper_arm",
-      "issue": "Carried from round 9: upper_arm_stall_fea p99.9 is 13.34 MPa against 16 MPa (margin 1.20). The peak is at the elbow servo window frame, which is on the load path. This is the thinnest margin on the arm, and the DS32xx tab holes are still UNVERIFIED in the catalog.",
+      "issue": "Carried over: upper_arm_stall_fea p99.9 is 13.3 MPa against 16 MPa (margin 1.20), at the elbow servo window frame. This is the thinnest margin on the arm, and the DS32xx tab holes are still UNVERIFIED in the catalog.",
       "fix": "Test-fit a real DS3225/DS3218 in a printed yoke_r before printing the rest (already in DESIGN.md Risks)."
     },
     {
       "severity": "minor",
+      "part": "base",
+      "issue": "Resolved by documentation: the engine still warns that base_fea's fixed boxes hold no fastener site, and DESIGN.md now explains that the boxes are the four M4 desk-bolt footprints (plain holes with no printed mate). The setup is correct.",
+      "fix": "Optional: register the desk holes as a site group so the warning goes away."
+    },
+    {
+      "severity": "minor",
       "part": "wiring",
-      "issue": "Carried over: the yaw lead routes end at base.yaw_boss, but the engine appends the servo origin as the last point, so the drawn lead ends inside the MG996R case.",
-      "fix": "Engine: end a lead at the servo's cable-boss point instead of its origin."
+      "issue": "Carried over: the yaw lead route ends at the servo origin, inside the MG996R case, instead of at its cable boss.",
+      "fix": "Engine: end a lead at the servo's cable-boss point."
     },
     {
       "severity": "minor",
       "part": "wiring",
       "issue": "Carried over: kerf/electrical.py leaves the ATO fuse's cold resistance and the holder lead out of each fused run's loop resistance. The margin is still positive.",
-      "fix": "Engine: add the fuse cold resistance and the holder lead to each fused run."
+      "fix": "Engine: add the fuse and holder lead resistance to each fused run."
     },
     {
       "severity": "minor",
       "part": "psu_hood",
-      "issue": "Carried over: the optional 45 degree chamfer under the overhanging side of the floor tie bridge was not done.",
-      "fix": "Optional: chamfer the underside of the bridge block at 45 degrees."
+      "issue": "Carried over: no 45 degree chamfer under the overhanging side of the floor tie bridge.",
+      "fix": "Optional: chamfer the underside of the bridge block."
     },
     {
       "severity": "minor",
       "part": "cable_mast",
-      "issue": "Carried over: 12.6 % of the surface prints on support. Bed contact is 144 mm2 against a 465 mm2 flat face (the column is centred on the foot).",
-      "fix": "Optional: set the column flush with one side of the foot so that face lies on the bed."
+      "issue": "Carried over: 11.4 % of the surface prints on support, because the column is centred on the wider foot.",
+      "fix": "Optional: set the column flush with one side of the foot."
     },
     {
       "severity": "minor",
       "part": "nano",
       "issue": "Carried over and accepted: the Nano, the WAGO splices and the fuse holders sit loose on the desk.",
-      "fix": "None required; an electronics tray on the rear pad would be tidier."
+      "fix": "None required; an electronics tray would be tidier."
     }
   ]
 }

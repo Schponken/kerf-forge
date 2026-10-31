@@ -228,8 +228,10 @@ non-conductive pad, not loose against the WAGO splices; screw the supply to the 
 - Desk limit (software): the shoulder axis is 100 mm above the desk and the arm reaches 266 mm, so on a desk top
   (not at an edge) the gripper hits the desk below about shoulder −22° with the arm stretched out (asin(100 / 266)),
   and a crash stalls the elbow/shoulder (the stall FEA cases cover that, the desk does not care). In the inverse
-  kinematics reject any solution whose tool point or wrist pivot is below z = 15 mm (desk = 0, gripper jaws ~12 mm
-  below the tcp line when the wrist is horizontal), or mount the base at the desk edge to use the full −60°.
+  kinematics reject any solution where the lowest point of the gripper is below z = 10 mm (desk = 0): that is the
+  grip servo's bottom corner, about 31 mm below the tool point with the wrist level, so with the wrist level keep the
+  tool point above ~45 mm (check the servo corner for tilted wrists), or mount the base at the desk edge to use the
+  full −60°.
 - Grip: command the finger to just touch the object (the servo then holds with little current); commanding it past
   contact holds the MG996R at stall (≈2.5 A, heat). The fixed jaw/finger are FEA-checked at stall anyway.
 - The tcp sits ~21 mm to the side of the yaw axis (fork stacking): include that offset in the inverse kinematics.
