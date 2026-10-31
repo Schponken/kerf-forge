@@ -1,27 +1,45 @@
 {
   "verdict": "PASS",
-  "fingerprint": "ed0039103648c353",
+  "fingerprint": "43b35f19ba1da96c",
   "reviewer": "design-reviewer",
   "date": "2026-10-30",
-  "summary": "The pilot-hole wall finding is fixed. I rebuilt the bracket and sliced it at the entry (back, bed) face: servo_lead_in now gives a 0.4 mm chamfer for the 2.60 mm PETG pilot holes, the window is 42.10 x 21.40 mm at y = 0, tapers to the nominal 41.30 x 20.60 mm by y = 0.4, and the thinnest wall to a pilot hole is 2.400 mm at the face (2.80 mm behind the chamfer), so it meets the 2.4 mm rule. The new test checks the same wall, and the iface tests pass (21/21). The rest of the rig is still sound: no interference, all 12 M3 fasteners aligned, the +/-90 deg sweep is clear, and arm_torque (0.54 of 4.7 kg*cm), bracket_fea (0.67 of 13 MPa), arm_fea (4.58 of 24 MPa, 0.75 mm tip deflection) and rig_mass (188 of 250 g) all pass. The renders show nothing wrong. What remains is minor: the engine still has no access checks, the catalog servo tab and boss dimensions are still unverified, and DESIGN.md quotes the old pilot and chamfer sizes.",
+  "summary": "The re-sourced MG996R values still fit. I sliced the rebuilt bracket: the window is 41.48 x 20.56 mm (0.29 mm clearance per side on the 40.9 x 20 body) and widens to 42.04 x 21.16 at the entry face. I also slid the servo alone 45 mm along its top-first insertion axis and nothing touched; the bigger cable-boss envelope stays behind the wall the whole way. iface.servo_lead_in reduced the chamfer to 0.30 mm for the PETG 2.60 mm pilot holes, which leaves exactly 2.40 mm of wall at the face and 2.70 mm behind the chamfer. Re-running the assembly with tab_z = 30.2 (and with 30.2 plus body_h 36.05) and with 26.5 gave no interference, a clear +/-90 deg sweep and no new key-access problem. The report shows 12 aligned M3 screws, arm_torque 0.54 of 4.7 kg*cm, bracket_fea 0.56 of 13 MPa, arm_fea 4.58 of 24 MPa (0.75 mm deflection) and mass 188.5 of 250 g. The renders show nothing wrong. What remains is minor: DESIGN.md and the BOM still quote the old servo numbers, the engine's insertion check can't be used on this rig, and the horn model's seating overstates the arm-to-wall gap.",
   "findings": [
     {
       "severity": "minor",
+      "part": "bracket",
+      "issue": "DESIGN.md and project.yaml still quote the replaced catalog values. DESIGN.md line 29 says the lead-in is limited to 0.4 mm; the build now gives 0.30 mm because the window grew to 41.5 mm. Lines 32-33 and 85 give the boss as ~6.6 mm proud, 4 mm tall, 3-7 mm above the case bottom; the catalog envelope is now 7.0 proud, 8.0 tall, z 2.5-10.5, 8.0 wide. Line 85 and the project.yaml bom_extra washer spec say 4.2 mm tab holes; they are 4.5 mm keyhole slots open to the tab end. Line 25 says inserts would leave 2.1 mm of wall; with the new window that is 2.0 mm (24.75 - 20.75 - 2.0). The geometry is right, but someone checking a servo with calipers against DESIGN.md would use the wrong numbers.",
+      "fix": "In DESIGN.md: lead-in 'asked for 0.5 mm, reduced automatically to 0.30 mm'. Insert wall '2.0 mm'. Boss 'keep-out envelope 7.0 mm proud, 8 mm wide, 2.5-10.5 mm above the case bottom'. Tab holes '4.5 mm keyhole slots open to the tab end'. Also add a line that tab_z is unconfirmed (26.5-30.2) and was checked at both ends. In the project.yaml bom_extra washer spec, replace '4.2 mm' with '4.5 mm keyhole slots open to the tab end; washers are required, because a bare 5.5 mm M3 head bears on only 0.5 mm each side of the slot'."
+    },
+    {
+      "severity": "minor",
+      "part": "servo",
+      "issue": "The keyhole slots make the washers load-bearing, not optional. A DIN 125 M3 washer (7 mm OD) centred on a hole at x = 24.75 reaches x = 28.25, which is 1.25 mm past the 54 mm tab end, so it bears on a partial ring, roughly 1.25 mm strips on each side of the slot. That is adequate for the in-plane stall couple: the +/-18.6 N acts in Z, across the slots, which open along X. But the washer is the only thing stopping the head from pulling into the slot. The fastener check also counts a 2.5 mm grip without the 0.5 mm washer, so engagement is really 5.0 mm in the 7.2 mm pilot (minimum 4.5), not 5.5. It still passes, with 0.5 mm of margin.",
+      "fix": "Leave the geometry as it is. In DESIGN.md assembly step 3 say 'washers are required (the tab holes are slots open to the end)' and note that M3 x 8 gives 5.0 mm of thread with the washer. If the grommets are ever left in, the screws must go to M3 x 12."
+    },
+    {
+      "severity": "minor",
       "part": "engine",
-      "issue": "Still open: nothing in the engine checks assembly access. PLAN.md's 'Assembly-access checks' item is still unchecked and kerf/ has no hex-key or insertion-path sweep. The servo, tabs and boss did not move in this change, so the earlier probe result still holds: a straight 3 mm hex key along the two cable-end tab screw axes overlaps the cable boss, and DESIGN.md step 3 covers that with a ball-end driver. kerf check would still miss the same problem on the next project, and would also miss a servo that cannot pass its window bottom-first.",
-      "fix": "Finish the PLAN item: (a) sweep a hex-key cylinder along each male fastener axis from the head side and flag screws that need a ball-end driver; (b) sweep parts that declare an `insert:` path into their seat and report collisions. Test both: this rig's cable-end screws must be flagged as ball-end, and a bottom-first MG996R through a tight window must fail."
+      "issue": "The servo's insertion path can't be proven by kerf check. access.insertion_paths moves the whole subtree, and assembly.order doesn't change that. I declared `insert: {direction: [0,0,1], distance: 45}` on the servo and the check reported a false failure, because it dragged the horn and arm, which go on later, through the bracket. With the servo moved alone (my own probe) the path is clear. So this project leaves its top-first insertion undeclared, and the boss-vs-window question that this catalog change raised is protected only by manual probes.",
+      "fix": "In access.insertion_paths, leave out of the moving set any subtree items that assembly.order installs after the inserted item, and add a test for that case. Then add `insert` for the servo and `order: [base, bracket, servo, horn, arm]` to servo_link/project.yaml, so the top-first path through the 41.5 x 20.6 window is checked every build."
     },
     {
       "severity": "minor",
-      "part": "bracket",
-      "issue": "Still open: the catalog still marks the MG996R tab-hole pattern (49.5 x 10 mm, 4.2 mm holes, 2.5 mm tab) and the cable-boss geometry UNVERIFIED. Every tab hole, the window-to-hole wall measured above, and the ball-end driver note depend on these values. DESIGN.md already tells the owner to check them with calipers.",
-      "fix": "With a real MG996R in hand, measure the tab-hole pattern, the tab thickness and the boss. Record the measurements in catalog/hardware.json, citing the measurement as the source, then rebuild. The lead-in will re-size itself from the new hole positions."
+      "part": "horn",
+      "issue": "The horn proxy seats the hub bottom on top of the 6.3 mm spline, but a real 25T horn slides over the spline. That puts the modelled horn and arm about 4 mm further from the wall than the real ones. The modelled arm-to-wall-face gap is 10.5 mm at nominal tab_z and 7.1 mm at tab_z 30.2. Assuming about 4 mm of spline engagement, the real gap is roughly 6.5 mm and 3 mm (estimated; the disc itself would sit about 1 mm in front of the wall face at tab_z 30.2). Nothing collides even then. But the margin the sweep reports is optimistic, and a deeper-seating horn on a servo with a high tab could rub the disc on the window edge, which has only 0.28 mm of side clearance.",
+      "fix": "Add a spline-engagement value to catalog servo_horns.aluminum_25T, with a source or a caliper measurement. In the proxy, seat the horn by that engagement instead of on the spline top. Rebuild and re-sweep. Until then, when the real servo arrives, measure tab underside to case top as well as the hole pattern."
     },
     {
       "severity": "minor",
-      "part": "bracket",
-      "issue": "New: DESIGN.md describes the old numbers. Sizing says '2.72 mm pilot holes', but the built PETG bracket uses the catalog's self_tap_pilot_petg value of 2.60 mm (2.72 is the PLA value). It also says '0.5 mm x 45 deg lead-in chamfer', but servo_lead_in now cuts it to 0.4 mm to keep the 2.4 mm wall. The geometry is right; only the record is out of date, and someone drilling out or checking holes from DESIGN.md would use the wrong numbers.",
-      "fix": "In DESIGN.md Sizing, change the pilot to '2.60 mm (PETG HF vertical; catalog fdm_holes.M3.self_tap_pilot_petg)'. Change the window line to 'lead-in requested 0.5 mm, reduced automatically to 0.4 mm so the wall to the tab pilot holes stays >= 2.4 mm (ENGINEERING section 5)'."
+      "part": "catalog",
+      "issue": "The servos.MG996R note is dated '2026-10-31', a day after this review. tab_z is still marked UNCONFIRMED. I checked that 26.5-30.2 causes no collision, but the pivot height, arm clearance and horn position all move with it.",
+      "fix": "Correct the date in the note. Measure tab_z on a real servo and record it with that measurement as the source."
+    },
+    {
+      "severity": "minor",
+      "part": "engine",
+      "issue": "The FEA pictures show a different peak from report.json. fea_bracket_fea.png says 0.65 MPa while the report says 0.88; fea_arm_fea.png says 7.28 MPa while the report says 11.49. The render colours surface triangles and the report takes the peak over all elements. The hot spots are where the load path says they should be: the lower window corners next to the tab-screw load boxes on the bracket, and the hub neck on the arm, with the load at the tip. The limits are judged on p99.9, so nothing passes that shouldn't, but a reviewer comparing the numbers could be misled.",
+      "fix": "In kerf/fea_render.py, title the picture 'surface peak X MPa (volume peak Y, p99.9 Z)', with Y and Z taken from the FEA result dict."
     }
   ]
 }

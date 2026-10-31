@@ -22,15 +22,15 @@ upright wall, arm swinging in a vertical plane — real gravity torque, real bra
 ## Sizing
 - Worst static torque at ±90°: 0.050 kg × 10.0 cm + arm 7.7 g × ~5 cm ≈ 0.54 kg·cm → 11% of the 4.7 kg·cm allowed.
 - Servo tabs: thread-forming M3 screws into 2.60 mm pilot holes (the catalog's PETG size; 7.2 mm deep in the 8 mm wall). Heat-set inserts
-  were rejected: their 4.0 mm holes would leave only 2.1 mm of wall to the servo window (rule: >= 2.4 mm) and melting
+  were rejected: their 4.0 mm holes would leave only 2.0 mm of wall to the servo window (rule: >= 2.4 mm) and melting
   them could bulge the wall into a window that has 0.3 mm clearance per side. Window corners get 1 mm dog-bone reliefs.
 - Servo window: 45° lead-in chamfer on its entry face (the back face, which prints on the bed), so the case slides in
   square and elephant's foot on that face can't pinch it; the window itself keeps 0.3 mm clearance per side. Asked
-  for 0.5 mm; `iface.servo_lead_in` limits it to 0.4 mm so the wall to the pilot holes stays 2.4 mm at that face.
+  for 0.5 mm; `iface.servo_lead_in` limits it to 0.30 mm (window 41.48 x 20.56 for the 40.9 x 20 body) so the wall to the pilot holes stays 2.4 mm at that face.
 - Test mass: a 50 g calibration weight or fishing sinker on a wire loop / S-hook through the 3.5 mm tip hole
   (a washer stack on an M3 screw is too long to reach 50 g).
-- Servo mounting direction: the MG996R has a cable strain-relief boss low on its output-end face (~6.6 mm proud,
-  3-7 mm above the case bottom; catalog note), so it cannot be pushed through a tight window bottom-first. The servo
+- Servo mounting direction: the MG996R has a cable strain-relief boss low on its output-end face (catalog keep-out: 7.0 mm proud,
+  2.5-10.5 mm above the case bottom, 8 mm wide), so it cannot be pushed through a tight window bottom-first. The servo
   goes in TOP-first from behind the wall: only the 10 mm case top passes the window, the tab tops bear on the back
   face, and the body + cable boss stay behind the wall.
 - Thread-forming tab screws vs ENGINEERING §7 (inserts for parts assembled repeatedly): PETG pilot holes take
@@ -68,7 +68,10 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
 ## Assembly order
 1. Melt the 4 M3 inserts into the base.
 2. Screw the bracket foot to the base (4× M3 × 10).
-3. Remove the servo's rubber grommets (the screws are sized for bare tabs). From BEHIND the wall, push the servo in
+3. Remove the servo's rubber grommets (the screws are sized for bare tabs; with grommets in, use M3 × 12).
+   The tab holes are 4.5 mm keyhole slots open to the tab end, so the washers are required, not optional: without
+   them a screw head bears on only ~0.5 mm each side of the slot. With the 0.5 mm washer each screw gets 5.0 mm of
+   thread in the pilot hole (minimum 4.5). From BEHIND the wall, push the servo in
    top-first so its output pokes through the window and the tab tops sit flat on the back face; drive 4× M3 × 8 with
    washers from behind through the tabs into the pilot holes (they form their own threads; don't over-tighten).
    Use a 2.5 mm ball-end hex driver for the two screws next to the cable boss: a straight key grazes the boss.
@@ -81,7 +84,9 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
 ## Use
 - Screw the base to the bench (4× M4 counterbored holes) or clamp it. Unclamped it only resists ~0.12 N·m of tipping
   against up to 0.92 N·m of servo stall torque, so fast moves would make it hop.
-- Before printing the final bracket, check the MG996R with calipers: the tab-hole pattern (catalog: 49.5 × 10 mm,
-  4.2 mm holes) and the cable boss (catalog: ~6.6 mm proud, 4 mm tall, 3-7 mm above the case bottom) are partly
-  unverified for this exact servo. If it differs, correct `catalog/hardware.json` with the
+- The MG996R numbers are re-sourced from 2 TowerPro drawings, 7 independent CAD models and 4 published mounts
+  (catalog `sources`): hole pattern 49.5 × 10 mm, 4.5 mm keyhole slots, tab 2.5 mm and shaft offset 10 mm are confirmed.
+  The tab height above the case bottom is not (TowerPro 26.6-26.8, models 26.5-30.2); the review rebuilt the rig at
+  26.5 and 30.2 and it still fits, sweeps and keeps key access. The cable boss is a keep-out envelope covering every
+  source (7.0 proud, 2.5-10.5 up, 8 wide). Optional: measure the tab height on a real servo. If it differs, correct `catalog/hardware.json` with the
   measured value and a note, and rebuild — every dependent hole moves with it.
