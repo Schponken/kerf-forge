@@ -1,39 +1,33 @@
 {
   "verdict": "PASS",
-  "fingerprint": "9cd85f37a0e0caf4",
+  "fingerprint": "eff1d2579a304422",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The round-2 major is closed. The BOM now has the C13 mains cord, the cord fact is recorded in the adapter's catalog note with an element14 source, and the BOM also lists the USB Mini-B cable, the 3-pin header the servo plug pushes onto (red in the middle, brown on the outside, as on a standard servo plug), the ball-end driver and real buy links. gnd_common takes the Nano's ground to the jack's minus terminal, so no header pin carries two wires. I recomputed the new routes by hand (servo_pwr 207.6 mm routed, 238.7 mm minimum cut, 250 mm cut; gnd_common 88.8, 102.1 and 110 mm) and the ratings (2.5 of 6 A; burst rise 4.9 K and 1.9 K; ampacity 3.5 and 7 A). Geometry, sweep, insertion and FEA are unchanged from my round-2 probes, and 81 electrical, catalog and access tests pass. What remains are engine follow-ups and documented margins.",
+  "summary": "All round-3 minors are worked through, and the new numbers are right by hand. Voltage drop with AWG 22 (0.3257 mm2): the 1 m cord pair plus the 0.25 m servo_pwr pair is 2.5 m of conductor, which is 0.142 ohm at 40 C, so 0.9 A running gives 4.872 V; the same path is 0.174 ohm at 100 C, so the 2.5 A stall gives 4.568 V. Both match report.json. A 24 AWG cord would still give 4.81 V running, so the gauge change did not buy the pass. ASSEMBLY.md step 3 now carries the grommet and top-first note, the checked +Y insertion path, the washers and the ball-end warning. Wire steps use clamp and solder verbs per end, and heat-shrink is counted only for soldered ends (2 + 3). The BOM is priced at $77.83 with only the test mass, cable tie and driver unpriced. Geometry, sweep, insertion, FEA and mass are unchanged from my earlier probes, and 85 electrical, access and catalog tests pass.",
   "findings": [
     {
       "severity": "minor",
-      "part": "engine",
-      "issue": "The generated packages still give the wrong action words. WIRING.md and the Electrical section of ASSEMBLY.md say 'solder jack -> servo' and 'solder nano -> jack', but both ends are screw terminals or a header; the run notes printed after them say so, so the correct instruction is there. ASSEMBLY.md step 6 (servo) still leaves out the washers, removing the grommets, the top-first insertion from behind and the ball-end driver. DESIGN.md and the BOM have all of these. This is an engine issue in ship.py and wiring_out.py, not this project's design.",
-      "fix": "In wiring_out.steps, choose the verb per end ('clamp into the screw terminal' for connector items, 'solder to the header' when the run declares a header end). In ship.py, add to each fastener step the matching bom_extra items, the ball-end warnings from hex_keys and the item's insert direction. Add tests."
+      "part": "project",
+      "issue": "The generated ASSEMBLY.md fits the electrics last (step 6, after the horn at step 4). The horn step says only 'fit horn' and does not say to centre the servo first. DESIGN.md step 5 says 'centre the servo electrically, press the horn on', and that needs the Nano wired and powered, which in the generated order hasn't happened yet. Followed literally, the horn goes on at whatever angle the servo shaft happens to be. Home could then be one or more spline teeth (14.4 deg each) off vertical, and the commanded +/-90 deg would not be the swept +/-90 deg. It is clear up to about 120 deg (I checked the geometry), but the swing would be lopsided.",
+      "fix": "Either put [psu, jack, nano] and the wiring before the horn in assembly.order, or add an assembly_note on the horn: 'first wire up (Electrical section) and run servo.write(90), i.e. 1500 us, then press the horn on with the arm pointing straight up; fit the centre screw'. The arm step should also carry DESIGN.md's 'snug about 0.5 N*m, medium threadlocker' note."
     },
     {
       "severity": "minor",
-      "part": "engine",
-      "issue": "Nothing checks voltage drop. Checked as AWG 24, the adapter cord drops about 0.42 V at the 2.5 A stall, so the servo would see about 4.5 V, below its 4.8 V minimum, while the report still shows 'servo input 5.0 V' as passing. DESIGN.md now states this, and the effect is harmless here: the rig uses 11 % of stall torque and runs at 0.9 A.",
-      "fix": "Add an IR-drop term along each feed path at peak current (resistance at 100 C, both conductors, plus connector resistance where catalogued) to the voltage-range check."
+      "part": "catalog",
+      "issue": "The adapter's DC cord gauge is still assumed (now AWG 22, the thinnest gauge whose chassis ampacity covers the 6 A rating), not sourced. The result does not depend on it: 24 AWG gives 4.81 V running, still at or above 4.8. The stall sag of 4.57 V is reported as a soft limit and does no harm at 11 % torque use.",
+      "fix": "Cite the GST60A datasheet's DC cable specification, or measure the cord, and record it in electronics.supplies.meanwell_gst60a05."
     },
     {
       "severity": "minor",
       "part": "bracket",
-      "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the 20 mm horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its top and bottom edges, and the arm is 2.5 mm off the wall face. It is clear in every probe, and DESIGN.md now says to measure tab_z before printing.",
-      "fix": "Measure tab_z on the real servo and catalogue it. Optionally make the window about 1 mm taller (the pilot-hole wall depends on X, not on the window height) to remove the rub risk outright."
+      "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its edges, and the arm is 2.5 mm off the wall face. It is clear in every probe, and DESIGN.md says to measure before printing.",
+      "fix": "Measure tab_z on the real servo and catalogue it. Optionally make the window about 1 mm taller; that costs nothing at the pilot holes."
     },
     {
       "severity": "minor",
       "part": "servo",
-      "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented and now in the BOM as a tool.",
+      "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented in DESIGN.md, in ASSEMBLY.md step 3 and in the BOM.",
       "fix": "None."
-    },
-    {
-      "severity": "minor",
-      "part": "project",
-      "issue": "Some BOM rows have no buy link or price: the mains cord, the Mini-B cable, the header, the AWG 22 wire, the adapter, the jack and the Nano. The total of $14.86 therefore leaves out most of the electrics, and the adapter alone costs more than that.",
-      "fix": "Add catalog/prices.json entries (or bom_extra links) for these rows so the BOM total is real."
     }
   ]
 }

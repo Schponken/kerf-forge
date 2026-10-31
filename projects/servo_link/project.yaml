@@ -19,12 +19,14 @@ layout: parts/layout.py     # shared geometry both base and bracket use (screw p
 parts:
   base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
   bracket: {file: parts/bracket.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
-  arm: {file: parts/arm.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
+  arm: {file: parts/arm.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3,
+        assembly_note: "the horn disc is only 2 mm thick: snug the 4 screws (about 0.5 N m) with medium threadlocker, do not torque them down"}
 purchased:
   servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}, tab_screws_from: bottom, tab_washers: true,
           assembly_note: "pull out its 4 rubber grommets first (the screws are sized for bare tabs); push it in top-first from BEHIND the wall",
           range: [-90, 90], insert: {direction: [0, 0, 1], distance: 25}}   # top-first through the wall window, from behind
-  horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}
+  horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm},
+         assembly_note: "centre the servo first: wire it up (WIRING.md), run servo.write(90) (1500 us), then press the horn on so the arm will point straight up; fit its centre screw"}
   # electrics (off the rig, on the desk): 5 V mains adapter -> barrel-jack terminal adapter -> servo power; an Arduino
   # Nano on USB makes the 500-2500 us pulses for the full +/-90 deg swing (DESIGN.md 'Electrics')
   psu: {catalog: electronics.supplies.meanwell_gst60a05, proxy: box}
@@ -40,7 +42,7 @@ bom_extra:
   - {type: tool, item: 2.5 mm ball-end hex driver, qty: 1, spec: "the two servo tab screws next to the cable boss (a straight key grazes the boss)"}
 assembly:
   root: base
-  order: [base, bracket, servo, horn, arm, [psu, jack, nano]]   # servo in from behind before the horn and arm go on its spline; electrics last
+  order: [base, bracket, servo, [psu, jack, nano], horn, arm]   # servo in from behind; wire it up so it can be centred before the horn goes on
   joints:
     - {parent: base.bracket_seat, child: bracket.origin}
     - {parent: bracket.servo_seat, child: servo.tabs}
