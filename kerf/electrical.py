@@ -413,6 +413,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
                                              "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note", "terms", "fuse",
                                              "fuse_holder", "lead_parts", "lead_of", "crimp_housing")} for w in ws],
             "mains_side": mains_spec(proj, el) if mains else None,
+            "supply_v": float(el["supply_v"]) if mains and el.get("supply_v") is not None else None,
             "ratings": rows}
 
 

@@ -38,7 +38,7 @@ parts:
   finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: X}
   cable_mast: {file: parts/cable_mast.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: Z}
   psu_hood: {file: parts/psu_hood.py, material: PETG, print_rot: [0, -90, 0], infill: 0.3,
-             assembly_note: "press the two M3 inserts into the bosses behind the end wall before fitting the inlet; the inlet's flange screws take at most 0.5 N*m (SCHURTER)"}
+             assembly_note: "on the bench, BEFORE the hood goes on the supply: press the two M3 inserts into the bosses behind the end wall, fit the inlet (next step; its flange screws take at most 0.5 N*m), push the three mains jumpers' receptacles onto its L / N / PE tabs and clamp their ferrules in the supply's AC/L, AC/N and FG terminals (WIRING.md), and the two DC pairs in its +V/-V terminals; then slide the hood over the terminal end, feed the DC pairs out of the side exit, tie them to the floor slots and fit the side screw"}
 purchased:
   brg_lo: {catalog: bearings.6001, proxy: bearing}
   brg_hi: {catalog: bearings.6001, proxy: bearing}

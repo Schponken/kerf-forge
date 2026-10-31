@@ -103,7 +103,7 @@ def bom_rows(model) -> list:
         rows.append({"type": "wire", "item": f"AWG {g} silicone stranded wire ({col}), metres", "qty": math.ceil(mm / 100) / 10,
                      "spec": f"chassis rating {catalog.get('wire.awg')['ampacity_a'][str(g)]} A", "link": wire_link(g), "price_key": f"wire:AWG{g}",
                      "note": f"{mm:g} mm of cut lengths in WIRING.md, rounded up to 0.1 m"})
-    for g, n in sorted(ends.items()):
+    for g, n in sorted((g, n) for g, n in ends.items() if n > 0):
         d = float(catalog.get("wire.awg")["diameter_mm"][str(g)])
         rows.append({"type": "wire", "item": f"heat-shrink for AWG {g} joints, {HEATSHRINK_MM} mm pieces", "qty": n,
                      "spec": f"2:1, expanded ID >= {max(1.5, round(d * 2.2 + 0.5, 1)):g} mm", "link": link("electronics.wire_misc.heatshrink_3mm"), "price_key": "heatshrink",
@@ -235,6 +235,9 @@ def steps(model) -> list:
                    f"in the inlet drawer"
                    + (f" ({catalog.get(m['fuse'])['current_a']:g} A {_item_name(m['fuse'])})" if m.get("fuse") else "")
                    + ", close the cover over the terminals before plugging in the cord.")
+    if model.get("supply_v"):
+        out.append(f"Before plugging any load in: set {model['battery']}'s output to {model['supply_v']:g} V with its "
+                   f"adjustment pot, measured with a meter at its output terminals (the ratings above assume it).")
     out.append("Before the first battery: check every + to - pair for a short with a multimeter, then power up through "
                "a smoke stopper (fused lead)." if not model.get("mains") else
                "Before plugging in the adapter: check every + to - pair for a short with a multimeter.")

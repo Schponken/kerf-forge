@@ -466,6 +466,7 @@ def test_adjustable_supply_voltage(tmp_path):
     proj.data["wiring"][0]["v"] = 5.3
     m = E.analyse(proj)
     assert m["v_bat"] == 5.3 and all(r["ok"] for r in m["ratings"] if r["kind"] == "voltage")
+    assert any("output to 5.3 V" in x for x in WO.steps(m))
     proj.data["electrical"]["supply_v"] = 6.0
     with pytest.raises(E.ElectricalError, match="not adjustable"):
         E.analyse(proj)
@@ -489,3 +490,13 @@ def test_box_sites_and_panel_module():
                       "screw": "M3", "groups": {"holes": "inlet"}})
     xs = sorted(round(s.loc.position.X, 3) for s in c.sites)
     assert xs == [-28.0, 28.0] and all(s.role == "male" and s.grip == 2.5 for s in c.sites)
+
+
+def test_wiring_tools_from_wire_ends():
+    from kerf.ship import wiring_tools
+    assert wiring_tools(None) == []
+    m = {"wires": [{"terms": {"from": "screw", "to": "crimp"}}, {"terms": {"from": "lever", "to": "plug"}, "fuse_holder": "x"}],
+         "mains_side": {"tab_receptacle": "y"}}
+    t = " | ".join(wiring_tools(m))
+    for k in ("stripper", "multimeter", "soldering iron", "0.1 in", "ferrule crimper", "4.8 mm"):
+        assert k in t

@@ -260,6 +260,25 @@ def step_glb(proj, asm, present: list, new: list, path: Path):
     geom.write_glb(shapes, path, 0.08, 0.3, label=proj.name)
 
 
+def wiring_tools(model) -> list:
+    """Hand tools the electrical steps need, from how each wire end is joined (kerf/electrical.py TERMINALS)."""
+    if not model or not model.get("wires"):
+        return []
+    terms = {t for w in model["wires"] for t in (w.get("terms") or {"from": "solder", "to": "solder"}).values()}
+    if any(w.get("fuse_holder") for w in model["wires"]):
+        terms.add("solder")
+    out = ["wire stripper and cutter", "multimeter"]
+    if terms & {"solder", "header"}:
+        out.append("soldering iron, solder and a heat gun for the heat-shrink")
+    if "crimp" in terms:
+        out.append("crimp tool for 0.1 in (Dupont-style) pins")
+    if "screw" in terms:
+        out.append("ferrule crimper and a small flat screwdriver for the screw terminals")
+    if (model.get("mains_side") or {}).get("tab_receptacle"):
+        out.append("crimp tool for insulated 4.8 mm receptacles")
+    return out
+
+
 def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
     """out/ASSEMBLY.md (+ out/assembly_steps/step_NN_iso.png when `render` is given: render(glb, prefix))."""
     from .access import key_spec
@@ -281,7 +300,8 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
          "- Tools: " + ("; ".join(sorted(keys)
                                   + (["soldering iron with a heat-set insert tip", "a flat plate to press inserts flush"] if any_insert else [])
                                   + (["a vise or small hammer to press dowel pins"] if any(not p.get('screw_pivot') for s in st for p in s['pins']) else [])
-                                  + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for s in st for p in s['pins']) else []))
+                                  + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for s in st for p in s['pins']) else [])
+                                  + wiring_tools(rep.get("electrical")))
                          or "none") + ".", "- Shopping list with links and prices: `bom.md`.", ""]
     for s in st:
         L.append(f"## Step {s['step']} — {', '.join(s['items'])}")
