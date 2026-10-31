@@ -119,13 +119,13 @@ wiring:
   - {id: main, from: xt60, to: stack, v: 25.2, gauge: 14, color: red/black, length_mm: 170,
      route: [[28.6, 16.5, 299], [20, 22, 280], [20, 22, 205]], note: "XT60 pigtail, tied through the two ring_top slots"}
   - {id: ph_top, from: stack.esc, to: motor_top, v: 25.2, gauge: 18, conductors: 3, length_mm: 550,
-     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [104, 18.5, 85], [104, 18.5, 12],
+     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
              {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
              {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]},
              {item: gimbal_outer, at: [18, 50, 11]}, {item: motor_hub, at: [10.25, 36, 8.5]}, {item: motor_hub, at: [8, 22, 9.5]}],
      note: "ESC channel 1; extend the motor leads"}
   - {id: ph_bottom, from: stack.esc, to: motor_bottom, v: 25.2, gauge: 18, conductors: 3, length_mm: 580,
-     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [104, 18.5, 85], [104, 18.5, 12],
+     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
              {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
              {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]},
              {item: gimbal_outer, at: [18, 50, 11]}, {item: motor_hub, at: [10.25, 36, 8.5]},
@@ -134,16 +134,16 @@ wiring:
   - {id: bec_in, from: stack.vbat, to: bec, v: 25.2, gauge: 24, color: red/black, length_mm: 90,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 182]], note: "UBEC input on the ESC battery pads, through the 30 deg wire pass"}
   - {id: servo_roll_pwr, from: bec, to: servo_roll, v: 5.0, gauge: 24, color: red/brown, length_mm: 350,
-     route: [[26.8, 15.5, 182], [26.8, 20, 100], [104, 18.5, 85], [104, 18.5, 12], [99, 18, 11], [99, 8, 9], [98, -5, 8]]}
+     route: [[26.8, 15.5, 182], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12], [95.8, 18, 11], [95.8, 8, 9], [94.8, -5, 8]]}
   - {id: servo_pitch_pwr, from: bec, to: servo_pitch, v: 5.0, gauge: 24, color: red/brown, length_mm: 480,
-     route: [[26.8, 15.5, 182], [26.8, 20, 100], [104, 18.5, 85], [104, 18.5, 12],
+     route: [[26.8, 15.5, 182], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
              {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
              {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]}, {item: gimbal_outer, at: [6, 64, 10]}]}
   - {id: servo_roll_sig, from: stack, to: servo_roll, kind: signal, gauge: 28, color: orange, length_mm: 370,
-     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [104, 18.5, 85], [104, 18.5, 12], [99, 18, 11], [99, 8, 9], [98, -5, 8]],
+     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12], [95.8, 18, 11], [95.8, 8, 9], [94.8, -5, 8]],
      note: "FC PWM output 4 (M4 pad, timer group 2 at 50 Hz)"}
   - {id: servo_pitch_sig, from: stack, to: servo_pitch, kind: signal, gauge: 28, color: orange, length_mm: 500,
-     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [104, 18.5, 85], [104, 18.5, 12],
+     route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
              {item: gimbal_outer, at: [78, 16, 10.5]}, {item: gimbal_outer, at: [66.7, 38.5, 9.5]},
              {item: gimbal_outer, at: [44.2, 63.1, 9.5]}, {item: gimbal_outer, at: [20, 74, 11]}, {item: gimbal_outer, at: [6, 64, 10]}],
      note: "FC PWM output 3 (M3 pad, timer group 2 at 50 Hz)"}
