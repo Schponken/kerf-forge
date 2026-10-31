@@ -2,6 +2,8 @@
  "boards.arduino_nano",
  "electronics.connectors.dc_jack_5521_screw",
  "electronics.supplies.meanwell_gst60a05",
+ "electronics.wire_misc",
+ "electronics.wire_misc.ferrule_wago_216_322_22awg",
  "electronics.wire_misc.heatshrink_3mm",
  "fdm_holes.M1.6",
  "fdm_holes.M3",

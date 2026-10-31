@@ -484,16 +484,17 @@ def _support_polygon(shapes, tol):
 
 
 @check("tip_over")
-def tip_over(proj, asm, min_deg, support=None, poses=None, payload_g=0.0, payload_at=None, tol=0.5):
+def tip_over(proj, asm, min_deg, support=None, poses=None, payload_g=0.0, payload_at=None, tol=0.5, include=None):
     """Static tip-over angle on a flat floor: the smallest tilt (deg) about any edge of the support polygon that
     brings the assembled CG over that edge, atan(distance CG-to-edge / CG height). Worst over `poses`.
     support: item ids that touch the floor (default: whatever is lowest). payload_g at a joint adds to the CG.
-    Negative = the CG is already outside the footprint (falls over by itself)."""
+    Negative = the CG is already outside the footprint (falls over by itself). include: only these items' mass (e.g.
+    leave out a desk adapter that stands beside the device; default every item plus the wiring)."""
     ids = [i for i, it in proj.items.items() if it.role != "keepout" and it.shape is not None]
     worst, worst_pose, worst_h = np.inf, None, None
     for pose in poses or [{}]:
         A.solve(asm, pose)
-        cg, _ = req_balance.assembly_cg(proj, payload_g=payload_g, payload_at=payload_at)
+        cg, _ = req_balance.assembly_cg(proj, include=include, payload_g=payload_g, payload_at=payload_at)
         z0, hull = _support_polygon([proj.items[i].shape for i in (support or ids)], tol)
         h = cg[2] - z0
         if hull is None:

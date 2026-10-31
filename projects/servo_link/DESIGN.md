@@ -10,7 +10,8 @@ Forge mechanism (catalog-backed mounts on both sides, joint tree, sweep, fastene
 |---|---|---|
 | Arm swing | ±90° from vertical, collision-free | sweep `swing` |
 | Holding torque | arm + 50 g at 100 mm, <= 50% of MG996R stall (9.4 kg·cm at 4.8 V) | `arm_torque` |
-| Bracket strength | full stall-torque reaction at the four tab screws, SF 3 on layer-direction strength, deflection <= 0.3 mm | `bracket_fea` |
+| Bracket strength | full stall-torque reaction at the four tab screws, SF 3 on layer-direction strength, deflection <= 0.3 mm; held only at its 4 foot screw heads (the foot may lift: conservative) | `bracket_fea` (0.64 of 13 MPa) |
+| Stays put | screwed to the bench through the base's 4 counterbored M4 holes (stall reaction 0.92 N m vs 0.12 N m from its own weight); free-standing it must survive a 10 deg knock with the 50 g weight at either end of the swing | `stand` (37.1 deg), BOM: 4 x M4 wood screws |
 | Arm strength | stall torque driving the arm into an obstacle (9.2 N at the tip), SF 2 in-plane, tip deflection <= 1 mm | `arm_fea` |
 | Mass | <= 250 g assembled | `rig_mass` |
 | Printability | every part fits the A2L, no supports needed | print checks |
@@ -20,7 +21,7 @@ Options: (a) servo upright, arm swinging horizontally — no gravity load, tests
 upright wall, arm swinging in a vertical plane — real gravity torque, real bracket moment. **Picked (b).**
 
 ## Sizing
-- Worst static torque at ±90°: 0.050 kg × 10.0 cm + arm 7.7 g × ~5 cm ≈ 0.54 kg·cm → 11% of the 4.7 kg·cm allowed.
+- Worst static torque at ±90°: 0.050 kg × 10.0 cm + arm 10.6 g × ~5 cm ≈ 0.55 kg·cm → 12% of the 4.7 kg·cm allowed.
 - Servo tabs: thread-forming M3 screws into 2.60 mm pilot holes (the catalog's PETG size; 7.2 mm deep in the 8 mm wall). Heat-set inserts
   were rejected: their 4.0 mm holes would leave only 2.0 mm of wall to the servo window (rule: >= 2.4 mm) and melting
   them could bulge the wall into a window that has 0.3 mm clearance per side. Window corners get 1 mm dog-bone reliefs.
@@ -44,6 +45,23 @@ upright wall, arm swinging in a vertical plane — real gravity torque, real bra
   servo output with about 0.6 N radially at ~10 mm from the bearing, far inside what the MG996R's own two output
   bearings carry, so the extra pivot (and the friction it adds) is not worth it for a test rig.
 - Stall reaction 9.4 kg·cm = 922 N·mm, carried as a ±18.6 N couple across the 49.5 mm tab-hole spacing.
+
+## Mass budget (report.json)
+| Item | g |
+|---|---|
+| base (2 perimeters, 30 % infill) | 60.3 |
+| bracket (4 perimeters, strength-checked, 40 %) | 69.3 |
+| arm (4 perimeters, 30 %) | 10.6 |
+| MG996R servo | 55.0 |
+| aluminium 25T horn | 3.0 |
+| **rig total (`rig_mass`)** | **198.3** of 250 |
+| beside it on the desk: adapter 310, Nano 7, jack (weight not published) | — |
+
+## Edge distance
+The four servo tab pilot holes sit 4.0 mm from the window edge, under ENGINEERING.md s7's 1.5 d = 4.5 mm (`kerf
+check` warns). The MG996R's tab hole pattern fixes both the window and the holes, so it cannot move; the wall round
+each pilot is still 2.4 mm at the lead-in (`iface.servo_lead_in`) and the bracket FEA (stall couple at those holes)
+is at 0.64 of 13 MPa. The horn bolt circle on the arm is likewise set by the horn.
 
 ## Parts
 | Part | Job | Material | Print orientation |
@@ -71,15 +89,16 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
   (datasheet) is 42 % of the adapter's 6 A (`power` check, worst element). A USB port could not feed a stall.
 - The servo's own female plug pushes onto a 3-pin 2.54 mm male header: jack + / - to its red / brown pins, Nano D9
   to orange. The adapter needs a separate IEC C13 mains cord; the Nano a USB Mini-B cable (both in the BOM).
-- Not checked by Kerf yet: voltage drop. At the 2.5 A stall the 1 m adapter cord (gauge not published; 24 AWG would
-  drop ~0.4 V) can pull the servo below 4.8 V for the moment it stalls; at the 0.9 A running current it stays above.
-  Harmless here (the arm needs 11 % of stall torque).
+- Voltage drop (`power` check): at the 2.5 A stall the servo input sags to 4.57 V, under the MG996R's 4.8 V minimum,
+  for the moment it stalls; at the 0.9 A running current it stays above. Harmless here (the arm needs 12 % of stall
+  torque).
 - Signal: Arduino Nano on USB, D9 -> servo signal (orange), Nano GND -> jack minus (common ground). Sweep sketch with
   `servo.attach(9, 500, 2500)` so the pulse range reaches the full ±90° (a cheap servo tester stops at about ±60°).
 - The adapter sits behind the rig, the jack and Nano beside it on the desk (base `desk_*` spots), plugs facing away:
   `plug_access` / `usb_access` prove 30 mm free in front of both. `kerf build` writes out/WIRING.md and wiring.svg.
 
 ## Assembly order
+0. Screw the base to the bench through its 4 counterbored M4 holes (4 x M4 x 20 wood screws, or bolts through).
 1. Melt the 4 M3 inserts into the base.
 2. Screw the bracket foot to the base (4× M3 × 10).
 3. Remove the servo's rubber grommets (the screws are sized for bare tabs; with grommets in, use M3 × 12).

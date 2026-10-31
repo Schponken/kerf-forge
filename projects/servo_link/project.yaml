@@ -17,9 +17,10 @@ params:
   gusset_t: {value: 5, min: 4, max: 8, step: 0.5, label: Gusset thickness}
 layout: parts/layout.py     # shared geometry both base and bracket use (screw positions, seat heights)
 parts:
-  base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
+  base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: [x, y],
+        assembly_note: "screw it to the bench through its 4 counterbored M4 holes before powering the servo: free-standing it holds 0.12 N m, a stall pushes 0.92 N m"}
   bracket: {file: parts/bracket.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
-  arm: {file: parts/arm.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3,
+  arm: {file: parts/arm.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: y,
         assembly_note: "the horn disc is only 2 mm thick: snug the 4 screws (about 0.5 N m) with medium threadlocker, do not torque them down"}
 purchased:
   servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}, tab_screws_from: bottom, tab_washers: true,
@@ -39,6 +40,8 @@ bom_extra:
   - {type: electrical, item: "IEC C13 mains cord (country plug)", qty: 1, price_key: "mains_cord:C13", spec: "the MEAN WELL adapter ships without one (element14: mains lead sold separately)"}
   - {type: electrical, item: USB Mini-B cable, qty: 1, price_key: "cable:usb_mini_b", spec: "programs and powers the Arduino Nano A000005 (Mini-B, PiShop page)"}
   - {type: electrical, item: "2.54 mm male pin header (pins, break 3 off a strip)", qty: 3, price_key: "header:2.54x40", spec: "servo plug pushes onto it; solder servo_pwr red/black and servo_sig orange to its pins, heat-shrink each"}
+  - {type: fastener, item: "M4 x 20 mm pan-head wood screw (or M4 bolt + washer + nut through the bench)", qty: 4,
+     spec: "base to the bench through its 4 counterbored holes; the servo's stall reaction would tip the free-standing rig"}
   - {type: tool, item: 2.5 mm ball-end hex driver, qty: 1, spec: "the two servo tab screws next to the cable boss (a straight key grazes the boss)"}
 assembly:
   root: base
@@ -79,7 +82,7 @@ requirements:
     direction: z            # judge against layer-direction strength (conservative; the wall prints on its back)
     sf: 3.0                 # docs/ENGINEERING.md: static load across layers
     max_disp_mm: 0.3
-    fixed: {box: [[-200, -1, -1], [200, 200, 0.01]]}          # foot underside, clamped to the base
+    fixed: {sites: base_bracket, radius: 3.5}                # the four M3 screw heads only: the foot may lift (conservative)
     loads:                                                    # stall torque about the output axis = +/- Z couple at the tab screws
       - {box: [[servo_hx / 2 - 3, wall_t - 8, pivot_h - 8], [servo_hx / 2 + 3, wall_t + 0.01, pivot_h + 8]], force_n: [0, 0, "servo_stall_nmm / servo_hx"]}
       - {box: [[-servo_hx / 2 - 3, wall_t - 8, pivot_h - 8], [-servo_hx / 2 + 3, wall_t + 0.01, pivot_h + 8]], force_n: [0, 0, "-servo_stall_nmm / servo_hx"]}
@@ -94,6 +97,8 @@ requirements:
     loads: [{near_joint: tip, radius: 4.0, force_n: ["servo_stall_nmm / arm_len", 0, 0]}]
   - {id: rig_mass, check: mass_max, max_g: 250, include: [base, bracket, servo, horn, arm],
      why: "bench rig; keep it light enough to move around (the adapter, jack and Nano sit on the desk beside it)"}
+  - {id: stand, check: tip_over, min_deg: 10, support: [base], include: [base, bracket, servo, horn, arm], payload_g: 50, payload_at: arm.tip, poses: [{swing: -90}, {swing: 90}],
+     why: "free-standing (before it is screwed down) the rig with the 50 g weight must not fall over from a small knock at either end of the swing; under power it is screwed to the bench (stall 0.92 N m vs 0.12 N m from its weight)"}
   - {id: power, check: power_budget, why: "adapter, jack and every wire within rating with the servo stalled"}
   - {id: plug_access, check: connector_access, item: jack, direction: [1, 0, 0], length_mm: 30,
      why: "the adapter plug (11 mm barrel) and fingers reach the jack"}

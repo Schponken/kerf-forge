@@ -105,3 +105,11 @@ assembly:
     assert b < 0 < a                       # arm straight up (home) stands; out to the side it falls
     assert both["value"] == min(a, b)
     assert f"'swing': {0 if a < b else 90}" in both["detail"]
+
+
+def test_include_limits_the_mass(tmp_path):
+    """include: only the listed items count (a payload far outside would tip it; leaving it out does not)."""
+    proj, r = _run(tmp_path, "{check: tip_over, min_deg: 10, payload_g: 2000, payload_at: body.tip, include: [body]}", BLOCK)
+    assert r["value"] < 0                       # the payload still counts (it is not an item)
+    proj, r = _run(tmp_path, "{check: tip_over, min_deg: 30, include: [body]}", BLOCK)
+    assert r["value"] == pytest.approx(math.degrees(math.atan(30 / 10)), abs=0.06)
