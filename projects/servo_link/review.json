@@ -1,32 +1,32 @@
 {
   "verdict": "PASS",
-  "fingerprint": "eff1d2579a304422",
+  "fingerprint": "a4eacf651775531c",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "All round-3 minors are worked through, and the new numbers are right by hand. Voltage drop with AWG 22 (0.3257 mm2): the 1 m cord pair plus the 0.25 m servo_pwr pair is 2.5 m of conductor, which is 0.142 ohm at 40 C, so 0.9 A running gives 4.872 V; the same path is 0.174 ohm at 100 C, so the 2.5 A stall gives 4.568 V. Both match report.json. A 24 AWG cord would still give 4.81 V running, so the gauge change did not buy the pass. ASSEMBLY.md step 3 now carries the grommet and top-first note, the checked +Y insertion path, the washers and the ball-end warning. Wire steps use clamp and solder verbs per end, and heat-shrink is counted only for soldered ends (2 + 3). The BOM is priced at $77.83 with only the test mass, cable tie and driver unpriced. Geometry, sweep, insertion, FEA and mass are unchanged from my earlier probes, and 85 electrical, access and catalog tests pass.",
+  "summary": "Since eff1d257 (commit 35c8a10), only project.yaml changed: the assembly order now fits the electrics before the horn, the horn has an assembly_note to centre the servo at 1500 us first, and the arm has the 0.5 N*m / threadlocker note. Both notes appear in ASSEMBLY.md steps 5 and 6, which closes the last round's horn-centring minor. I re-ran the full pipeline in memory (13-sample sweep, FEA, electrical, with file writes redirected to my scratchpad) and nothing else moved: item positions are the same, there is no interference, the sweep is clear at 0 mm3, insertion is clear, arm_torque is 0.54, bracket_fea 0.56, arm_fea 4.59, mass 188.5 g, and power 0.417.",
   "findings": [
     {
       "severity": "minor",
       "part": "project",
-      "issue": "The generated ASSEMBLY.md fits the electrics last (step 6, after the horn at step 4). The horn step says only 'fit horn' and does not say to centre the servo first. DESIGN.md step 5 says 'centre the servo electrically, press the horn on', and that needs the Nano wired and powered, which in the generated order hasn't happened yet. Followed literally, the horn goes on at whatever angle the servo shaft happens to be. Home could then be one or more spline teeth (14.4 deg each) off vertical, and the commanded +/-90 deg would not be the swept +/-90 deg. It is clear up to about 120 deg (I checked the geometry), but the swing would be lopsided.",
-      "fix": "Either put [psu, jack, nano] and the wiring before the horn in assembly.order, or add an assembly_note on the horn: 'first wire up (Electrical section) and run servo.write(90), i.e. 1500 us, then press the horn on with the arm pointing straight up; fit the centre screw'. The arm step should also carry DESIGN.md's 'snug about 0.5 N*m, medium threadlocker' note."
+      "issue": "out/report.json (written 03:09:43) is newer than the build outputs (bom.md 03:09:00, renders and ASSEMBLY.md at 03:09:12). It holds 'seconds: 4.6', has no assembly.sweeps key, and the FEA requirements have value null. So a `kerf check --quick` overwrote the full build report after the build. The fingerprint is correct, and my own full run passes with the numbers above, but anything that reads the sweep or FEA results from out/report.json (viewer, README results, evals) sees a partial report.",
+      "fix": "Re-run `kerf build servo_link` last, so out/report.json is the full build report. Optionally, have quick checks write their report somewhere else or keep the last full results."
     },
     {
       "severity": "minor",
       "part": "catalog",
-      "issue": "The adapter's DC cord gauge is still assumed (now AWG 22, the thinnest gauge whose chassis ampacity covers the 6 A rating), not sourced. The result does not depend on it: 24 AWG gives 4.81 V running, still at or above 4.8. The stall sag of 4.57 V is reported as a soft limit and does no harm at 11 % torque use.",
-      "fix": "Cite the GST60A datasheet's DC cable specification, or measure the cord, and record it in electronics.supplies.meanwell_gst60a05."
+      "issue": "The adapter's DC cord gauge is still assumed (AWG 22), not sourced. The result does not depend on it: a 24 AWG cord gives 4.81 V running.",
+      "fix": "Cite the GST60A datasheet's DC cable specification, or measure the cord."
     },
     {
       "severity": "minor",
       "part": "bracket",
-      "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its edges, and the arm is 2.5 mm off the wall face. It is clear in every probe, and DESIGN.md says to measure before printing.",
-      "fix": "Measure tab_z on the real servo and catalogue it. Optionally make the window about 1 mm taller; that costs nothing at the pilot holes."
+      "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its edges. DESIGN.md says to measure before printing.",
+      "fix": "Measure tab_z on the real servo and catalogue it. Optionally make the window about 1 mm taller."
     },
     {
       "severity": "minor",
       "part": "servo",
-      "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented in DESIGN.md, in ASSEMBLY.md step 3 and in the BOM.",
+      "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented in DESIGN.md, in ASSEMBLY.md and in the BOM.",
       "fix": "None."
     }
   ]
