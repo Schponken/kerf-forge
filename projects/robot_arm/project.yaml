@@ -25,16 +25,16 @@ params:
   finger_len: {value: 50, min: 45, max: 60, step: 1, label: Finger length (pivot to tip)}
 layout: parts/layout.py
 parts:
-  base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3}
-  turntable: {file: parts/turntable.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4}
+  base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: Z}
+  turntable: {file: parts/turntable.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: Z}
   retainer: {file: parts/retainer.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0}
   yaw_gear: {file: parts/yaw_gear.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5}
   yoke_r: {file: parts/yoke_r.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: Z}
   yoke_l: {file: parts/yoke_l.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
   upper_arm: {file: parts/upper_arm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
   forearm: {file: parts/forearm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
-  gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
-  finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}
+  gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
+  finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: X}
   cable_mast: {file: parts/cable_mast.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: Z}
 purchased:
   brg_lo: {catalog: bearings.6001, proxy: bearing}
@@ -49,11 +49,22 @@ purchased:
   wr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: wr_horn}}
   gr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: gr_servo}, tab_screws_from: bottom, range: [0, 65]}
   gr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: gr_horn}}
+  # electrics (DESIGN.md 'Electrics'): 5 V 18 A supply -> two WAGO lever buses (+ and - each) -> every servo's red/brown;
+  # Arduino Nano on USB -> I2C -> PCA9685 driver on the base post -> every servo's signal (orange)
+  driver: {catalog: boards.pca9685_adafruit, proxy: board, groups: {holes: driver}}
+  nano: {catalog: boards.arduino_nano, proxy: board}
+  psu: {catalog: electronics.supplies.meanwell_lrs100_5, proxy: box, color: "#9aa0a6",
+        note: "mains wiring (L, N, earth) to its screw terminals by a competent person, with the terminal cover fitted"}
+  bus_arm: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8",
+            note: "two splices (+5 V and GND): supply in, shoulder/elbow/wrist/grip servo red (or brown) out"}
+  bus_yaw: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8",
+            note: "two splices (+5 V and GND): supply in, yaw servo out, PCA9685 GND reference out"}
 bom_extra:
   - {type: fastener, item: "M4 screws or 4 mm wood screws (desk mounting), or two small C-clamps on the rear pad", qty: 4, spec: "length = 6 mm base + desk; the base holes are 4.5 mm"}
   - {type: hardware, item: Medium-strength threadlocker, qty: 1, spec: "on the three M3 pivot screws (they turn with the link)"}
-  - {type: hardware, item: "5-6 V servo supply, >= 5 A peak (five standard servos)", qty: 1, spec: "e.g. a 6 V 5 A brick or a UBEC; never from a microcontroller's 5 V pin"}
-  - {type: hardware, item: 15-20 cm servo extension leads, qty: 3, spec: "elbow, wrist and grip servos to the controller in the base"}
+  - {type: hardware, item: "Servo extension lead 300 mm (Pololu #2184 or any JR/Futaba 22 AWG)", qty: 5, spec: "one per servo; the leads are split at the base post: red/brown to the WAGO buses, orange to the PCA9685 (lengths in WIRING.md)"}
+  - {type: hardware, item: "M2 x 8 screw", qty: 4, spec: "PCA9685 board to the base post bosses (thread-forming into PETG)"}
+  - {type: hardware, item: "Cable ties 2.5 mm", qty: 10, spec: "lead bundle at the cable mast, base post, link slot pairs"}
 assembly:
   root: base
   joints:
@@ -67,6 +78,11 @@ assembly:
     - {parent: turntable.yoke_r_seat, child: yoke_r.origin}
     - {parent: turntable.yoke_l_seat, child: yoke_l.origin}
     - {parent: turntable.mast_seat, child: cable_mast.origin}
+    - {parent: base.driver_seat, child: driver.bottom}
+    - {parent: base.desk_nano, child: nano.bottom}
+    - {parent: base.desk_psu, child: psu.bottom}
+    - {parent: base.desk_bus_arm, child: bus_arm.bottom}
+    - {parent: base.desk_bus_yaw, child: bus_yaw.bottom}
     - {parent: yoke_r.servo_seat, child: sh_servo.tabs}
     - {parent: sh_servo.output, child: sh_horn.spline, name: shoulder, range: [-60, 60]}
     - {parent: sh_horn.face, child: upper_arm.horn_mount}
@@ -83,6 +99,42 @@ assembly:
     - {pair: [turntable, brg_hi], max_mm3: 1.0, why: "0.3 mm fillet at the spindle step sits in the 6001 inner race's 0.3 mm edge chamfer (the proxy has square edges)"}
   sweeps:
     - {joint: yaw_drive, follows: base_yaw, ratio: -0.66666}
+electrical:
+  supply: psu                # mains supply: rated by its 18 A, no run time
+  burst_s: 5                 # all five servos stalled together for 5 s (worst case), for wire heating
+wiring:      # cut lengths >= routed + 15 % (checked); arm leads also carry extra for the yaw loop (span 68-95 mm) and joints
+  - {id: psu_arm, from: psu, to: bus_arm, v: 5.0, gauge: 16, color: red/black, length_mm: 200,
+     note: "supply +V/-V screw terminals to the arm bus splices; silicone wire"}
+  - {id: psu_yaw, from: psu, to: bus_yaw, v: 5.0, gauge: 20, color: red/black, length_mm: 200,
+     note: "second +V/-V terminal pair to the yaw bus splices"}
+  - {id: pwr_sh, from: bus_arm, to: sh_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 440,
+     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top],
+     note: "servo lead red + brown (servo's own lead + 300 mm extension): up behind the driver, over the post top to the mast, outside the upper arm's plate A"}
+  - {id: pwr_el, from: bus_arm, to: el_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 520,
+     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2], note: "tied through the upper arm's slot pair"}
+  - {id: pwr_wr, from: bus_arm, to: wr_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 600,
+     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_2], note: "tied through the upper arm and forearm slot pairs"}
+  - {id: pwr_gr, from: bus_arm, to: gr_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 710,
+     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2], note: "tied through the upper arm and forearm slot pairs"}
+  - {id: pwr_yaw, from: bus_yaw, to: yaw_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 210,
+     route: [[-112, -37, 15], [-100, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]],
+     note: "out of the housing's front exit, back along the housing inside the gear guard, out of the guard's floor-level hole"}
+  - {id: sig_sh, from: driver, to: sh_servo, kind: signal, gauge: 22, color: orange, length_mm: 350,
+     route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top], note: "orange wire of the same lead to PCA9685 channel 1 (signal pin)"}
+  - {id: sig_el, from: driver, to: el_servo, kind: signal, gauge: 22, color: orange, length_mm: 440,
+     route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2], note: "channel 2"}
+  - {id: sig_wr, from: driver, to: wr_servo, kind: signal, gauge: 22, color: orange, length_mm: 510,
+     route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_2], note: "channel 3"}
+  - {id: sig_gr, from: driver, to: gr_servo, kind: signal, gauge: 22, color: orange, length_mm: 620,
+     route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2], note: "channel 4"}
+  - {id: sig_yaw, from: driver, to: yaw_servo, kind: signal, gauge: 22, color: orange, length_mm: 320,
+     route: [[-114, -20, 95], [-114, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]], note: "channel 0"}
+  - {id: gnd_ref, from: bus_yaw, to: driver, kind: signal, gauge: 22, color: black, length_mm: 150,
+     route: [[-112, -37, 15], [-114, -20, 30], [-114, -20, 95]],
+     note: "supply GND to the PCA9685 GND pin: the servo signals need a common ground (the driver's V+ terminal stays unused)"}
+  - {id: i2c, from: nano, to: driver, kind: signal, gauge: 26, conductors: 4, color: red/black/blue/yellow, length_mm: 150,
+     route: [[-125, 40, 12], [-114, 20, 30], [-114, 20, 95]],
+     note: "Nano 5V/GND/A4 (SDA)/A5 (SCL) to the PCA9685 VCC/GND/SDA/SCL header; the Nano runs from the PC's USB"}
 requirements:
   - {id: torque_shoulder, check: static_torque, joint: shoulder, actuator: sh_servo, payload_g: 150, payload_at: gripper.tcp,
      max_fraction: 0.5, poses: [{}, {shoulder: -60}, {shoulder: -30}, {shoulder: 30}, {shoulder: 60}, {elbow: 60}, {elbow: -60}],
@@ -171,7 +223,7 @@ requirements:
   - id: turntable_fea
     check: fea_static
     part: turntable
-    why: "2x the arm + payload (12.8 N) on the yoke feet and 2x its tipping moment (0.85 N*m static -> 1.7 N*m) about Y, spindle held only where the two bearings touch it"
+    why: "2x the arm + payload (12.8 N) on the yoke feet and 2x its tipping moment (0.85 N*m static -> 1.7 N*m) about Y (2 x 920 N*mm couples: the 12.8 N acting at the foot-screw centroid x = -11 takes 141 N*mm back off, so the net is 1.70 N*m), spindle held only where the two bearings touch it"
     direction: z             # the spindle prints vertically: its bending stress runs across layers
     sf: 3.0
     max_disp_mm: 0.3
@@ -183,8 +235,8 @@ requirements:
     loads:
       - {sites: yoke_r_foot, radius: 4.0, force_n: [0, 0, -6.4]}
       - {sites: yoke_l_foot, radius: 4.0, force_n: [0, 0, -6.4]}
-      - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 850, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
-      - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 850, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+      - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 920, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+      - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 920, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
   - id: cable_loop
     check: channel_clear
     path: [{item: cable_mast, at: cable_top}, {item: base, at: cable_post}]
@@ -192,4 +244,7 @@ requirements:
     poses: [{base_yaw: -90}, {base_yaw: -45}, {base_yaw: 45}, {base_yaw: 90}, {base_yaw: -90, shoulder: -60}, {base_yaw: 90, shoulder: -60},
             {base_yaw: -90, shoulder: 60}, {base_yaw: 90, shoulder: 60}, {shoulder: -60, elbow: -60}]
     why: "the servo-lead bundle (4 leads, ~5 mm incl. clearance) from the turntable's cable mast to the base cable post stays clear of every part over the full yaw range, with the arm stretched out or raised"
-  - {id: arm_mass, check: mass_max, max_g: 900, why: "a desk arm two hobby-servo supplies can move around; also the torque budget"}
+  - {id: power, check: power_budget, why: "supply, buses and every wire within rating with all five servos stalled together"}
+  - {id: usb_access, check: connector_access, item: nano, direction: [1, 0, 0], length_mm: 30,
+     why: "the USB cable reaches the Nano to load the sketch"}
+  - {id: arm_mass, check: mass_max, max_g: 900, include: [base, turntable, retainer, yaw_gear, yoke_r, yoke_l, upper_arm, forearm, gripper, finger, cable_mast, brg_lo, brg_hi, yaw_servo, yaw_horn, sh_servo, sh_horn, el_servo, el_horn, wr_servo, wr_horn, gr_servo, gr_horn, driver], why: "the arm on its base (the supply, buses and Nano sit on the desk); also the torque budget"}

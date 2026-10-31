@@ -5,6 +5,7 @@ the grip servo's axis (vertical at home) and closes against the fixed finger's j
 Printed standing on its lower edges (print_rot [90,0,0]); the fixed finger's jaw needs a little support."""
 from build123d import *
 from kerf import iface
+from kerf.features import safe_fillet
 
 HORN = "servo_horns.aluminum_25T"
 SERVO = "servos.MG996R"
@@ -41,6 +42,14 @@ def build(ctx):
         Polygon((x_end - 6.0, PALM_T), (x_end, PALM_T), (tip_x, g["y_f"]), (tip_x, g["y_f"] + 6.0), (x_end - 6.0, g["y_f"] + 6.0),
                 align=None)
     body += extrude(jaw.sketch, zj1 - zj0)
+    # 2 mm fillets where the jaw post stands on the palm (docs/ENGINEERING.md section 5): the jaw load bends it there
+    def at_post_base(e):
+        c = e.center()
+        return abs(c.Y - PALM_T) < 0.05 and x_end - 6.05 < c.X < x_end + 0.05 and zj0 - 0.05 < c.Z < zj1 + 0.05
+    base_edges = [e for e in body.edges() if at_post_base(e) and abs((e % 0.5).Y) < 1e-6 and not (abs(e.center().X - x_end) < 0.05)]
+    body, failed = safe_fillet(body, [(base_edges, 2.0)])
+    if failed or len(base_edges) != 3:
+        raise ValueError(f"jaw post fillets: {len(base_edges)} edges, failed {failed}")
     body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="wr_horn", plate_t=t)
     loc = Location((g["x_gs"], 0, g["z_c"]), (-90, 0, 0))   # palm underside; +Z up through the palm
     body -= iface.servo_mount(ctx, SERVO, loc, group="gr_servo", plate_t=PALM_T, kind="tap", top_through=True)
@@ -48,6 +57,9 @@ def build(ctx):
     for (hx, hy) in iface.circle(4, iface.horn_dims(HORN)["bc"], 45.0):     # hex-key access to the horn screws
         body -= Pos(hx, hy, W - t - 4) * Cylinder(2.0, t + 5, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("horn_mount", Location((0, 0, 0)))
+    # servo-lead waypoints (wiring routes): along the outside of plate A, above the plate's top edge
+    ctx.rigid("lead_1", Location((0, 30, -3)))
+    ctx.rigid("lead_2", Location((40, -10, -3)))
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.gr_tab_t)))
     ctx.rigid("tcp", Location((g["x_g"] + p.finger_len - 5.0, g["y_f"] + 3.0, g["z_jaw"] - 0.25)))
     ctx.rigid("fixed_tip", Location((tip_x, g["y_f"] + 3.0, (zj0 + zj1) / 2)))

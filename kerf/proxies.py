@@ -230,13 +230,19 @@ def board(ctx, spec):
     t = catalog.num(e, "thickness", "pcb_thickness", default=1.6)
     comp = float(spec.get("component_height", catalog.num(e, "component_height", default=0.0)))
     s = _box(L, W, t)
+    holes = e.get("holes")
+    screw = str(e.get("hole_screw", "M2.5"))
     if comp > 0:
-        s += _box(L * 0.9, W * 0.9, comp, z0=t)
+        parts = _box(L * 0.9, W * 0.9, comp, z0=t)
+        if holes and screw in catalog.load()["screws"]:   # boards keep mounting holes clear of parts: don't block the screws
+            from .iface import screw_spec
+            r = screw_spec(screw)["head_d"] / 2 + 0.5
+            for (x, y) in holes:
+                parts -= Pos(x, y, t) * Cylinder(r, comp + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        s += parts
     if "usb_overhang" in e:  # connector overhanging the +X short edge (e.g. Pico micro-USB), top at component height
         ov, uw = catalog.num(e, "usb_overhang"), catalog.num(e, "usb_w")
         s += Pos(L / 2 + ov / 2 - L * 0.05 / 2, 0, t) * Box(ov + L * 0.05, uw, max(comp, 0.1), align=(Align.CENTER, Align.CENTER, Align.MIN))
-    holes = e.get("holes")
-    screw = str(e.get("hole_screw", "M2.5"))
     if holes and _g(spec, "holes"):
         for (x, y) in holes:
             ctx.site(Site(_g(spec, "holes"), "male", screw, "clearance", Location((x, y, t)), grip=t))

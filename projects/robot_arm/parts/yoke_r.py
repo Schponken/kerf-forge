@@ -52,6 +52,8 @@ def build(ctx):
     x0 = p.x_sh - p.sh_out_x - p.ds_span / 2 - 6.0
     for sz in (p.z_sh - 6.0, p.z_sh + 6.0):
         body -= Pos(x0 + 4.0, p.cheek_in + p.plate_t / 2, sz) * Box(1.8, p.plate_t + 2, 3.2)
+    # shoulder-servo lead waypoint: above the cheek top, outside it (the servo hangs outside the cheek)
+    ctx.rigid("lead_top", Location((x0 + 10.0, p.cheek_out + 4.0, p.z_sh + p.ds_W / 2 + 12.0)))
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.sh_tab_t)))
     return ctx.finish(body)

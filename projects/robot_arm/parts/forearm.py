@@ -54,5 +54,10 @@ def build(ctx):
     for (hx, hy) in iface.circle(4, iface.horn_dims(HORN)["bc"], 45.0):
         body -= Pos(L + hx, hy, W - t - 1) * Cylinder(2.0, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("horn_mount", Location((0, 0, 0)))
+    # servo-lead waypoints (wiring routes): along the outside of plate A, above the plate's top edge
+    ctx.rigid("lead_1", Location((0, 30, -3)))
+    ctx.rigid("lead_2", Location((55, 20, -3)))         # down to the wrist servo from here
+    ctx.rigid("lead_3", Location((L, 30, -3)))          # over the wrist axis toward the gripper
+    ctx.rigid("lead_4", Location((L, 30, p.face_wr - 3)))   # ...and over plate A's top into the gripper's plane (gripper z = -3)
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.wr_tab_t)))
     return ctx.finish(body)

@@ -137,3 +137,17 @@ def test_no_duplicate_keys():
         return dict(pairs)
     json.loads(catalog.CATALOG.read_text(encoding="utf-8"), object_pairs_hook=hook)
     assert not dups, f"duplicate keys in catalog/hardware.json: {dups}"
+
+
+def test_board_proxy_keeps_mounting_holes_clear():
+    """The components block must not cover the mounting holes, or no driver could reach the screws (robot_arm PCA9685)."""
+    from build123d import Align, Cylinder, Pos
+    e = catalog.get("boards.pca9685_adafruit")
+    s = proxies.build(Ctx("pca", {}), {"catalog": "boards.pca9685_adafruit", "proxy": "board", "groups": {"holes": "g"}})
+    t, comp = catalog.num(e, "thickness"), catalog.num(e, "component_height")
+    r = iface.screw_spec(e["hole_screw"])["head_d"] / 2      # the screw head's footprint above each hole
+    for (x, y) in e["holes"]:
+        probe = Pos(x, y, t + 0.01) * Cylinder(r, comp - 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        assert (s & probe).volume < 1e-6
+    # ... while the parts block still exists between the holes
+    assert s.bounding_box().size.Z == pytest.approx(t + comp, abs=0.01)

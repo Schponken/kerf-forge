@@ -51,6 +51,9 @@ def build(ctx):
     body -= iface.pin_hole(ctx, "M3", Location((0, 0, W)), "sh_pivot", depth=t + 3.0, fit="heatset")
     body -= iface.pin_hole(ctx, "M3", Location((L, 0, W)), "el_pivot", depth=t, fit="free")
     ctx.rigid("horn_mount", Location((0, 0, 0)))
+    # servo-lead waypoints (wiring routes): along the outside of plate A, above the plate's top edge
+    ctx.rigid("lead_1", Location((0, 24, -3)))          # 24 mm from the shoulder axis: clear of the plate end at any angle
+    ctx.rigid("lead_2", Location((L, 30, -3)))          # 30 mm above the elbow axis: the hop to the forearm clears both plate ends at +-60 deg
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.el_tab_t)))
     # a point on the shoulder axis level with the gripper's tcp (across the fork), so `reach` is measured square to it
     ctx.rigid("shoulder_ref", Location((0, 0, p.face_el + p.face_wr + p.w_g / 2 + 4.25)))

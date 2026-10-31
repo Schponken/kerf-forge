@@ -5,15 +5,18 @@ Printed upright; the servo shelf and the bearing-bore ceiling need supports (sup
 import math
 
 from build123d import *
-from kerf import iface
+from kerf import catalog, iface
 
 YAW = "servos.MG996R"
 BRG = "bearings.6001"
+DRV = "boards.pca9685_adafruit"
+DRV_Z = 95.0                     # driver board centre height on the post
 
 
 def build(ctx):
     p = ctx.p
     d = iface.servo_dims(YAW)
+    DRV_HOLES = [tuple(h) for h in catalog.get(DRV)["holes"]]
     xc = -p.yaw_c - p.yaw_out_x                    # yaw servo body centre (output end toward the tower)
     shelf_t = 8.0
     r_tower = p.brg_D / 2 + 6.0
@@ -60,10 +63,19 @@ def build(ctx):
     for sy in (-1, 1):
         body += Pos(-2.75, sy * (y0 + 1.6), p.base_floor - 0.01) * Box(45.5, 3.2, p.z_plat0 - 0.5 - p.base_floor + 0.01,
                                                                        align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # cable hole through the guard ring's -Y side at floor level: the yaw servo lead leaves the housing's front exit,
+    # runs back along the housing inside the ring and out here
+    body -= Pos(-p.yaw_c, -(r_tip + 2.75), p.base_floor) * Box(12.0, 6.0, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # cable post on the rear pad, outside the circle the turntable sweeps (r ~68); the lead bundle spans from the
     # turntable's cable mast to here above the arm, so it never drapes near the gears
     post_top = 132.0                                            # level with the turntable's cable mast
-    body += Pos(-92.0, 0, p.base_floor - 0.01) * Box(10.0, 16.0, post_top - p.base_floor, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body += Pos(-92.0, 0, p.base_floor - 0.01) * Box(10.0, 26.0, post_top - p.base_floor, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # servo driver (Adafruit PCA9685, 62 x 25 board) on 4 bosses on the post's rear face, long side vertical, parts
+    # facing away from the arm; M2 screws tapped into the bosses (iface + board proxy share group 'driver')
+    drv = Location((-100.0, 0, DRV_Z), (0, -90, 0))              # boss faces at x = -100; +Z (board up) = world -X
+    for (hx, hy) in DRV_HOLES:
+        body += drv * Pos(hx, hy, -0.01) * Cylinder(3.0, 3.02, align=(Align.CENTER, Align.CENTER, Align.MAX))
+    body -= iface.bolt_pattern(ctx, "driver", "M2", DRV_HOLES, drv, kind="tap", depth=7.0)
     for sy in (-5.0, 5.0):                                       # tie slots through the post (front to back)
         body -= Pos(-92.0, sy, post_top - 5.0) * Box(12.0, 1.8, 3.2)
     # desk mounting: 4 x M4 through-holes (bolt or wood-screw down) at the corners; the rear 20 mm is a clamp pad
@@ -76,4 +88,10 @@ def build(ctx):
     ctx.rigid("brg_hi", Location((0, 0, p.z_bhi)))
     ctx.rigid("yaw_servo_seat", Location((xc, 0, p.z_shelf)))
     ctx.rigid("cable_post", Location((-92.0, 0, post_top + 3.5)))   # bundle tied across the post top
+    ctx.rigid("driver_seat", drv)
+    # off the base, on the desk behind it (where the arm never reaches): supply, the two WAGO power buses, the Nano
+    ctx.rigid("desk_psu", Location((-225.0, 0, 0)))
+    ctx.rigid("desk_bus_arm", Location((-112.0, -5.0, 0)))
+    ctx.rigid("desk_bus_yaw", Location((-112.0, -37.0, 0)))
+    ctx.rigid("desk_nano", Location((-125.0, 40.0, 0), (0, 0, 90)))   # USB end toward +Y, free to plug in
     return ctx.finish(body)
