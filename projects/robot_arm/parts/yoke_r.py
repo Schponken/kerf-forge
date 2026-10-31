@@ -6,7 +6,7 @@ from kerf import iface
 from kerf.features import safe_fillet
 
 SERVO = "servos.DS3225"
-FOOT_X = (-29.0, -14.0, 10.0)
+FOOT_X = (-29.0, -14.0, 7.5)          # front screw 6.5 mm from the foot end (>= 1.5 d + wall, ENGINEERING.md section 7)
 FOOT_T = 6.0
 
 

@@ -1,11 +1,11 @@
-"""Left yoke (-Y): the cheek the upper arm's pivot screw turns in (M3 shoulder screw through a free hole into a heat-set
+"""Left yoke (-Y): the cheek the upper arm's pivot screw turns in (M3 socket-head screw through a free hole into a heat-set
 insert in the upper arm, coaxial with the shoulder servo), with a foot bolted to the turntable platform (3 x M3) and
 two gussets. Built in the turntable (world) frame. Printed lying on the cheek's outer face (-Y)."""
 from build123d import *
 from kerf import iface
 from kerf.features import safe_fillet
 
-FOOT_X = (-29.0, -14.0, 10.0)
+FOOT_X = (-29.0, -14.0, 7.5)          # front screw 6.5 mm from the foot end (>= 1.5 d + wall, ENGINEERING.md section 7)
 FOOT_T = 6.0
 
 

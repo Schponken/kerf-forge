@@ -3,7 +3,7 @@ description: >
   A 4-axis desktop arm (base yaw, shoulder, elbow, wrist pitch) on hobby servos with a two-finger gripper on a fifth
   servo. ~260 mm reach, lifts 150 g at full reach with every servo at or under half its stall torque. The turntable
   runs on two 6001 bearings on a 12 mm spindle and is driven through a 36:24 printed gear pair; every arm joint is a
-  fork with the servo on one side and an M3 shoulder-screw pivot on the other. Bolts (4x M4) or clamps to a desk.
+  fork with the servo on one side and an M3 socket-screw pivot (into a heat-set insert) on the other. Bolts (4x M4) or clamps to a desk.
 printer: Bambu Lab A2L
 supports: allowed
 params:
@@ -27,7 +27,8 @@ layout: parts/layout.py
 parts:
   base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: Z}
   turntable: {file: parts/turntable.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: Z}
-  retainer: {file: parts/retainer.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0}
+  retainer: {file: parts/retainer.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0,
+             assembly_note: "NOW bolt or clamp the base to the desk (4 x M4 / wood screws, or C-clamps on the rear pad): the front holes at x = 30 are still reachable because the platform ends at x = 15 and the yokes are not on yet. Taking the turntable out later means unbolting the base first (bearing bore and retainer screw are under it)"}
   yaw_gear: {file: parts/yaw_gear.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5}
   yoke_r: {file: parts/yoke_r.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: Z}
   yoke_l: {file: parts/yoke_l.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
@@ -106,6 +107,11 @@ assembly:
     - {parent: gripper.servo_seat, child: gr_servo.tabs}
     - {parent: gr_servo.output, child: gr_horn.spline, name: grip, range: [0, 65], home: 0}
     - {parent: gr_horn.face, child: finger.horn_mount}
+  # DESIGN.md 'Assembly order': the turntable and its retainer go in while the base is still loose (bearing bore and
+  # retainer screw are reached from under the base), THEN the base is bolted to the desk, then the yokes and the arm
+  order: [base, brg_lo, brg_hi, yaw_servo, yaw_horn, yaw_gear, turntable, retainer, cable_mast, yoke_r, sh_servo, sh_horn,
+          upper_arm, el_servo, el_horn, forearm, wr_servo, wr_horn, gripper, gr_servo, gr_horn, finger, yoke_l, driver,
+          psu, psu_hood, iec_inlet, bus_arm, bus_yaw, nano]
   allow_overlap:
     - {pair: [turntable, brg_hi], max_mm3: 1.0, why: "0.3 mm fillet at the spindle step sits in the 6001 inner race's 0.3 mm edge chamfer (the proxy has square edges)"}
   sweeps:
@@ -255,6 +261,56 @@ requirements:
       - {sites: yoke_l_foot, radius: 4.0, force_n: [0, 0, -6.4]}
       - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 920, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
       - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 920, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+  - id: base_fea
+    check: fea_static
+    part: base
+    why: "the bearing tower carries 2x the arm's tipping moment (1.7 N*m) as a +-68 N couple on the two 6001 seats 25 mm apart, 2x the arm weight (12.8 N) on the upper seat's floor, and the yaw servo at stall: its 9.4 kg*cm reacted through the 4 tab screws plus the 34 N gear-mesh force (922 N*mm / 27 mm pitch radius) on the shelf and on the upper bearing; base bolted down at its 4 M4 holes"
+    direction: z             # the tower prints upright: its bending stress runs across layers
+    sf: 3.0
+    max_disp_mm: 0.3
+    mesh_size: 4.0           # the default (smallest bbox side / 4 = 25 mm) cannot resolve the 28 mm bearing bores
+    fixed:
+      any:
+        - {box: [[-94, -46, -0.01], [-82, -34, 0.01]]}
+        - {box: [[-94, 34, -0.01], [-82, 46, 0.01]]}
+        - {box: [[24, -46, -0.01], [36, -34, 0.01]]}
+        - {box: [[24, 34, -0.01], [36, 46, 0.01]]}
+    loads:
+      - {cylinder: {at: [0, 0, "z_bhi"], dir: [0, 0, 1], r: "brg_D / 2", tol: 0.3, span: [0, "brg_B"]}, bearing_n: [68, -34, 0]}
+      - {cylinder: {at: [0, 0, "z_blo"], dir: [0, 0, 1], r: "brg_D / 2", tol: 0.3, span: [0, "brg_B"]}, bearing_n: [-68, 0, 0]}
+      - {box: [["-brg_D / 2", "-brg_D / 2", "z_bhi - 0.05"], ["brg_D / 2", "brg_D / 2", "z_bhi + 0.05"]], force_n: [0, 0, -12.8]}
+      - {sites: yaw_servo, radius: 4.0, torque_nmm: "yaw_stall_nmm", axis: {at: ["-yaw_c", 0, 0], dir: [0, 0, 1]}}
+      - {sites: yaw_servo, radius: 4.0, force_n: [0, 34, 0]}
+  - id: upper_arm_stall_fea
+    check: fea_static
+    part: upper_arm
+    why: "fault case (a crash into the desk or an obstacle): the elbow servo at STALL (19 kg*cm) on its tab screws plus 2x the static elbow load; strength only, the 1 % deflection rule is for the working load (upper_arm_fea)"
+    direction: xy
+    sf: 2.0
+    max_disp_mm: 2.0
+    fixed:
+      any:
+        - {sites: sh_horn, radius: 4.0}
+        - {cylinder: {at: [0, 0, "w_u"], dir: [0, 0, -1], r: 2.0, tol: 0.3, span: [0, "plate_t + 3"]}}
+    loads:
+      - {sites: el_servo, radius: 4.0, force_n: [0, -3.87, 0]}
+      - {box: [["L1 - 4", -4, "w_u - plate_t - 0.1"], ["L1 + 4", 4, "w_u + 0.1"]], force_n: [0, -3.87, 0]}
+      - {sites: el_servo, radius: 4.0, torque_nmm: "el_stall_nmm", axis: {at: ["L1", 0, 0], dir: [0, 0, 1]}}
+  - id: forearm_stall_fea
+    check: fea_static
+    part: forearm
+    why: "fault case: the wrist servo at STALL (9.4 kg*cm) on its tab screws plus 2x the static wrist load; strength only (forearm_fea is the working-load deflection check)"
+    direction: xy
+    sf: 2.0
+    max_disp_mm: 2.0
+    fixed:
+      any:
+        - {sites: el_horn, radius: 4.0}
+        - {cylinder: {at: [0, 0, "w_f"], dir: [0, 0, -1], r: 2.0, tol: 0.3, span: [0, "plate_t + 3"]}}
+    loads:
+      - {sites: wr_servo, radius: 4.0, force_n: [0, -2.86, 0]}
+      - {box: [["L2 - 4", -4, "w_f - plate_t - 0.1"], ["L2 + 4", 4, "w_f + 0.1"]], force_n: [0, -2.86, 0]}
+      - {sites: wr_servo, radius: 4.0, torque_nmm: "mg_stall_nmm", axis: {at: ["L2", 0, 0], dir: [0, 0, 1]}}
   - id: cable_loop
     check: channel_clear
     path: [{item: cable_mast, at: cable_top}, {item: base, at: cable_post}]

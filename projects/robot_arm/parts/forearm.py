@@ -49,7 +49,7 @@ def build(ctx):
     loc = Location((xc, 0, 0))                     # plate A outer face: tab tops press here, case top points into the fork
     body -= iface.servo_mount(ctx, SERVO, loc, group="wr_servo", plate_t=t, kind="tap", top_through=True)
     body -= iface.pin_hole(ctx, "M3", Location((0, 0, W)), "el_pivot", depth=t + 3.0, fit="heatset")
-    body -= iface.pin_hole(ctx, "M3", Location((L, 0, W)), "wr_pivot", depth=t, fit="free")
+    body -= iface.pin_hole(ctx, "M3", Location((L, 0, W)), "wr_pivot", depth=t, fit="free", teardrop=90)   # prints horizontal: roof up (+Y)
     # hex-key access through plate B to the gripper's horn screws (the gripper's own fork is too narrow for a key)
     for (hx, hy) in iface.circle(4, iface.horn_dims(HORN)["bc"], 45.0):
         body -= Pos(L + hx, hy, W - t - 1) * Cylinder(2.0, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))

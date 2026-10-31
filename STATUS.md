@@ -686,3 +686,18 @@ pushed for it and what I know:
   single-shear pivot moment, slicer infill not in the 3MF).
 - PLAN: the audit item now has claimable sub-items per project + engine. Mark each finding fixed/justified in AUDIT.md.
 - I take tvc_drone next (the blocker).
+
+## 2026-10-31 07:50 UTC — session 18259c3d8c (01S68R6S): E3 robot_arm review round 3 fixes (in progress)
+- Engine (kerf/electrical.py, wiring_out.py, proxies.py; tests in test_electrical.py): run `fuse:` + `fuse_holder:`
+  (Littelfuse 75 % derating, rating <= smallest protected wire ampacity), `lead:` ready-made leads (servo pigtail
+  lead_length_mm + extension cables, length checked, no reel wire), `crimp` ends (pins + housings in BOM), ferrules on
+  screw ends, `electrical.mains` (inlet/cord/fuse/jumper rows + BOM + L/N/earth step), `electrical.supply_v`
+  (adjustable supply trim inside the catalog range), box proxy `sites:`, `panel_module` proxy. docs/ARCHITECTURE.md.
+- robot_arm: new part psu_hood (closes the LRS terminal end, carries the SCHURTER DD11 fused/switched IEC inlet,
+  M3 into the supply's tapped side hole, DC exit with floor tie); C13 cord; per-servo 5 A ATO fuses; servo leads +
+  300/600 mm extensions; signal pins crimped into 1x3 housings; LRS trimmed to 5.3 V; base_fea (audit C-10) +
+  upper_arm/forearm stall FEA (C-13); front foot screws to x = 7.5 (C-15); mast foot 34 x 26 with 4 screws + root
+  fillet; base post root gussets; teardrop free pivot holes (C-14); M3 washers, USB cable, threadlocker note (C-16/17);
+  assembly.order + desk step note (review major 3, C-19).
+- Also fixed: tests/test_iface_fit M1.6 (no published FDM pilot -> tap drill fallback), hard_stop listed in the kerf skill.
+- Next: DESIGN.md numbers from the new build, design-reviewer round 4.

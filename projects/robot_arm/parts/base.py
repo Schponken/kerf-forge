@@ -70,6 +70,15 @@ def build(ctx):
     # turntable's cable mast to here above the arm, so it never drapes near the gears
     post_top = 132.0                                            # level with the turntable's cable mast
     body += Pos(-92.0, 0, p.base_floor - 0.01) * Box(10.0, 26.0, post_top - p.base_floor, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # post root: a knock or a yank on the bundle bends it at its across-layer root. Its front face is tied to the
+    # servo housing (the 1 mm slot between them filled up to the shelf), so a pull toward the arm bends it above the
+    # housing, not at the plate; 4 mm root gussets along its two sides (its rear face is flush with the plate's edge).
+    if hx0 > -87.0:
+        body += Pos((-87.0 + hx0) / 2, 0, p.base_floor - 0.01) * Box(hx0 - (-87.0) + 0.02, 26.0, p.z_shelf - p.base_floor,
+                                                                    align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for sy in (-1, 1):            # 4 mm triangular root gussets along both sides of the post foot
+        tri = Polygon((sy * 12.99, p.base_floor - 0.01), (sy * 17.0, p.base_floor - 0.01), (sy * 12.99, p.base_floor + 4.0), align=None)
+        body += Plane.YZ.offset(-92.0) * extrude(tri, 5.0, both=True)
     # servo driver (Adafruit PCA9685, 62 x 25 board) on 4 bosses on the post's rear face, long side vertical, parts
     # facing away from the arm; M2 screws tapped into the bosses (iface + board proxy share group 'driver')
     drv = Location((-100.0, 0, DRV_Z), (0, -90, 0))              # boss faces at x = -100; +Z (board up) = world -X

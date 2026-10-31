@@ -4,7 +4,7 @@ base_yaw = 0. Printed upside down (platform top on the bed): the gear and spindl
 from build123d import *
 from kerf import drives, iface
 
-FOOT_X = (-29.0, -14.0, 10.0)
+FOOT_X = (-29.0, -14.0, 7.5)          # front screw 6.5 mm from the foot end (>= 1.5 d + wall, ENGINEERING.md section 7)
 
 
 def foot_y(p):
@@ -35,8 +35,8 @@ def build(ctx):
     for side, grp in ((1, "yoke_r_foot"), (-1, "yoke_l_foot")):
         pts = [(x, side * foot_y(p)) for x in FOOT_X]
         body -= iface.bolt_pattern(ctx, grp, "M3", pts, Location((0, 0, p.z_plat1)), kind="heatset", depth=p.plat_t)
-    # cable mast: 2 x M3 heat-set inserts from the platform top (parts/cable_mast.py)
-    body -= iface.bolt_pattern(ctx, "cable_mast", "M3", [(-19.0, 0.0), (-1.0, 0.0)], Location((0, 0, p.z_plat1)), kind="heatset",
+    # cable mast: 4 x M3 heat-set inserts from the platform top (parts/cable_mast.py)
+    body -= iface.bolt_pattern(ctx, "cable_mast", "M3", [(-20.0, -6.0), (-20.0, 6.0), (0.0, -6.0), (0.0, 6.0)], Location((0, 0, p.z_plat1)), kind="heatset",
                                depth=p.plat_t)
     # spindle end: heat-set insert for the retainer screw (screw comes up from below)
     body -= iface.bolt_pattern(ctx, "retainer", "M3", [(0, 0)], Location((0, 0, p.z_blo + 0.2), (180, 0, 0)), kind="heatset",

@@ -49,7 +49,7 @@ def build(ctx):
     loc = Location((xc, 0, 0))                     # plate A outer face: tab tops press here, case top points into the fork
     body -= iface.servo_mount(ctx, SERVO, loc, group="el_servo", plate_t=t, kind="tap", top_through=True)
     body -= iface.pin_hole(ctx, "M3", Location((0, 0, W)), "sh_pivot", depth=t + 3.0, fit="heatset")
-    body -= iface.pin_hole(ctx, "M3", Location((L, 0, W)), "el_pivot", depth=t, fit="free")
+    body -= iface.pin_hole(ctx, "M3", Location((L, 0, W)), "el_pivot", depth=t, fit="free", teardrop=90)   # prints horizontal: roof up (+Y)
     ctx.rigid("horn_mount", Location((0, 0, 0)))
     # servo-lead waypoints (wiring routes): along the outside of plate A, above the plate's top edge
     ctx.rigid("lead_1", Location((0, 24, -3)))          # 24 mm from the shoulder axis: clear of the plate end at any angle

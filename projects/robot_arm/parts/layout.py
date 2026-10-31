@@ -2,7 +2,7 @@
 
 World frame at home (all joints 0): desk at z = 0, yaw axis = Z axis, arm stretched out along +X, horizontal.
 Every link is a fork (two side plates): the servo hangs OUTSIDE plate A (+Y side), mounted top-first from behind
-(iface.servo_mount top_through), its horn drives the child's plate A; the child's plate B turns on an M3 shoulder
+(iface.servo_mount top_through), its horn drives the child's plate A; the child's plate B turns on an M3 socket-head
 screw through the parent's plate B (dual support, docs/ENGINEERING.md section 8). Link frames (upper arm, forearm,
 gripper) sit on the horn face: X along the link, Y = world up at home, Z = world -Y (across the fork).
 """
