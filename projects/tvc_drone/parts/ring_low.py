@@ -53,6 +53,9 @@ def build(ctx):
         body -= Pos(c[0], c[1], z0 + t + 7) * Rot(0, 0, a) * Rot(0, 90, 0) * Cylinder(
             iface.screw_spec("M3")["tap"] / 2, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body -= Cylinder(10, 400)                                            # wire pass + mass
+    # two cable-tie slots through the +X yoke plate near its +Y edge: the motor and servo leads run down beside it
+    for zt in (15.0, 40.0):
+        body -= Pos(p.roll_tab_x - 1, y_hi - 3.0, zt) * Box(yoke_t + 2, 1.6, 3.0, align=(Align.MIN, Align.CENTER, Align.CENTER))
     # --- roll servo: tabs rest on the yoke plate's inner face (x = roll_tab_x), body through the window outward
     tab = Location(Plane(origin=(p.roll_tab_x, -ox, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))
     body -= iface.servo_mount(ctx, SERVO, tab, group="yoke_servo", plate_t=yoke_t, kind="tap")

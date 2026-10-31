@@ -1274,6 +1274,14 @@
    "source": "https://www.powerstream.com/Wire_Size.htm",
    "confidence": "typical",
    "note": "PowerStream 'Max Amps for Chassis Wiring' column; diameter_mm is the bare solid-conductor diameter (stranded wire is slightly larger; insulation not included). The page says the chassis rating is 'meant for wiring in air, and not in a bundle' (i.e. single conductor in free air); it gives no ambient/insulation temperature assumption and calls these rules of thumb. Derate for bundles/enclosed runs (the same page's 'power transmission' column is ~4-6x lower: 12 AWG 9.3 A, 18 AWG 2.3 A, 22 AWG 0.92 A). FPV practice runs short silicone leads (200 C insulation) above these figures for seconds-long bursts; this table is the conservative continuous limit. mass_g_per_m omitted: no manufacturer silicone-wire mass table was found and opened."
+  },
+  "silicone": {
+   "model": "Silicone-insulated tinned stranded hook-up wire, UL 3672 style (letronic SiF/UL 3672 data sheet)",
+   "od_mm": {"10": 4.8, "12": 3.6, "14": 3.0, "16": 2.4, "18": 2.1, "20": 1.7, "22": 1.5, "24": 1.4},
+   "g_per_m": {"10": 69, "12": 43, "14": 28, "16": 17, "18": 12, "20": 8, "22": 5, "24": 4},
+   "source": "https://www.letronic.de/de/produkte/kabel/pdf/970/silicone-ul-3672.pdf",
+   "confidence": "datasheet",
+   "note": "Outer diameter and cable weight per conductor (g/m = kg/km) from the letronic UL 3672 silicone wire data sheet (opened 2026-10-31). 26-30 AWG are not listed: the engine uses the 24 AWG figures for them (an upper bound on both)."
   }
  },
  "electronics": {

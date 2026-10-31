@@ -46,8 +46,9 @@ def _axis_world(proj, e):
 @check("mass_max")
 def mass_max(proj, asm, max_g, include=None):
     ids = include or [i for i, it in proj.items.items() if it.role != "keepout"]
-    m = sum(item_mass_g(proj.items[i]) for i in ids)
-    return {"ok": m <= max_g, "value": round(m, 1), "limit": max_g, "detail": "estimated assembled mass (g)"}
+    from .electrical import wiring_mass_g
+    m = sum(item_mass_g(proj.items[i]) for i in ids) + (0.0 if include else wiring_mass_g(proj))   # all-up incl. wires
+    return {"ok": m <= max_g, "value": round(m, 1), "limit": max_g, "detail": "estimated assembled mass (g)" + ("" if include else ", incl. declared wiring")}
 
 
 @check("size_max")
@@ -124,7 +125,8 @@ def static_torque(proj, asm, joint, actuator=None, stall_kgcm=None, max_fraction
 
 @check("thrust_to_weight")
 def thrust_to_weight(proj, asm, thrust_g_total, min_ratio):
-    m = sum(item_mass_g(it) for it in proj.items.values() if it.role != "keepout")
+    from .electrical import wiring_mass_g
+    m = sum(item_mass_g(it) for it in proj.items.values() if it.role != "keepout") + wiring_mass_g(proj)
     r = thrust_g_total / m if m else 0.0
     return {"ok": r >= min_ratio, "value": round(r, 2), "limit": min_ratio,
             "detail": f"{thrust_g_total} g thrust / {m:.0f} g all-up mass"}

@@ -176,7 +176,14 @@ wiring:
   (per run, e.g. ESC channels) or `bec_<pin>_a` (summed); a regulator by `current_a`; connectors `current_a` /
   `current_peak_a`; each power run avg <= chassis ampacity (catalog `wire.awg`) and adiabatic burst rise at peak for
   `burst_s` <= 60 K; `v` within the `to` item's `voltage_min..max` / `input_v_min..max`; battery runs at 4.2 V/cell.
-- `length_mm` is the cut length: it must be >= the routed 3D length (ends + waypoints) + 15 % (a check problem).
+- Route waypoints: `item`, `item.joint`, `[x, y, z]` (world, fixed) or `{item, at: [x, y, z] | joint}` (a tie point
+  in that item's frame that moves with it — use these on anything past a moving joint).
+- `length_mm` is the cut length: it must be >= the routed 3D length (ends + waypoints) + 15 % at home and, in the full
+  check, at both ends of every moving joint and every named sweep pose (`electrical.route_check`). The full check also
+  sweeps a tube of the wire's outer diameter (catalog `wire.silicone`) along each route at those poses: it must not
+  pass through any item but the two it connects, nor through a prop disc (problems).
+- Wire mass (catalog `wire.silicone` g/m x cut length x conductors) is added to hover power, `thrust_to_weight` and
+  the all-up `mass_max`.
 - `kerf build` writes `out/WIRING.md` (runs, loads, ratings, solder steps), `out/wiring.svg`, the electrical steps of `out/ASSEMBLY.md`, and
   adds wire (per gauge/colour, total mm) and heat-shrink rows with buy links to the BOM.
 

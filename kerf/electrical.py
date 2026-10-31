@@ -135,9 +135,32 @@ def _rotors(proj):
     return discs, groups
 
 
+def _silicone(key, gauge) -> float:
+    """OD (mm) or g/m of one silicone conductor (catalog wire.silicone). Gauges finer than the table use its finest
+    entry (an upper bound on both)."""
+    t = catalog.get("wire.silicone")[key]
+    g = int(gauge)
+    if str(g) in t:
+        return float(t[str(g)])
+    finest = max(int(k) for k in t)
+    if g > finest:
+        return float(t[str(finest)])
+    raise ElectricalError(f"AWG {g} is not in catalog wire.silicone.{key}")
+
+
+def wire_mass_g(w) -> float:
+    n = int(w.get("conductors") or (2 if w.get("kind", "power") == "power" else 1))
+    return _silicone("g_per_m", w["gauge"]) * float(w["length_mm"]) / 1000 * n
+
+
+def wiring_mass_g(proj) -> float:
+    """Mass of every declared run (silicone wire g/m x cut length x conductors); 0 without `wiring:`."""
+    return sum(wire_mass_g(w) for w in proj.data.get("wiring") or [] if not w.get("supplied"))   # supplied leads: in the item
+
+
 def total_mass_g(proj) -> float:
     from .checks import item_mass_g
-    return sum(item_mass_g(it) for it in proj.items.values() if it.role != "keepout" and it.shape is not None)
+    return sum(item_mass_g(it) for it in proj.items.values() if it.role != "keepout" and it.shape is not None) + wiring_mass_g(proj)
 
 
 def analyse(proj, fm=None, eta=None) -> dict:
@@ -352,6 +375,14 @@ def _point(proj, ref, endpoint=False):
     electrical pin name: the item's bounding-box centre stands in for it."""
     if isinstance(ref, (list, tuple)):
         return np.asarray(ref, float)
+    if isinstance(ref, dict):                       # {item, at: [x, y, z] | joint}: a tie point that moves with the item
+        it = proj.items.get(ref.get("item"))
+        if it is None or it.shape is None:
+            raise ElectricalError(f"route point {ref}: unknown item")
+        at = ref.get("at", [0, 0, 0])
+        if isinstance(at, str):
+            return geom.world_point(it.shape.joints[at].location, (0, 0, 0))
+        return geom.world_point(it.shape.location, at)
     item, pin = _ref(ref)
     if item not in proj.items or proj.items[item].shape is None:
         raise ElectricalError(f"route point '{ref}': unknown item")
@@ -375,3 +406,57 @@ def _route(proj, w):
 def length_problems(model) -> list:
     return [f"wiring '{w['id']}': length_mm {w['length_mm']} is shorter than the routed length {w['routed_mm']} mm "
             f"+ 15 % slack = {w['cut_min_mm']} mm" for w in model["wires"] if float(w["length_mm"]) < w["cut_min_mm"]]
+
+
+def route_check(proj, asm, model) -> tuple[list, list]:
+    """Every run at home and at both ends of every moving joint: (a) its routed length + 15 % must fit the cut length
+    (runs that cross a moving joint need the slack the worst pose asks for); (b) a tube of the wire's outer diameter
+    along the route must not pass through any item other than the two it connects, nor through a spinning prop disc.
+    Returns (per-run results, problems)."""
+    from . import assembly as A
+    from .requirements import _tube
+    poses = [("home", {})] + [(f"{e.name}={v:g}", {e.name: v}) for e in asm.movable for v in e.range]
+    poses += [(f"{s.get('name')}#{k}", p) for s in proj.data["assembly"].get("sweeps") or [] for k, p in enumerate(s.get("poses") or [])]
+    wires = {w["id"]: w for w in model["wires"]}
+    res = {i: {"id": i, "max_routed_mm": 0.0, "worst_pose": "home", "hits": []} for i in wires}
+    try:
+        for name, pose in poses:
+            A.solve(asm, pose)
+            for i, w in wires.items():
+                spec = _spec(proj, i)
+                pts = [_point(proj, spec["from"], True)] + [_point(proj, r) for r in (spec.get("route") or [])] + \
+                      [_point(proj, spec["to"], True)]
+                L = float(sum(np.linalg.norm(b - a) for a, b in zip(pts, pts[1:])))
+                r = res[i]
+                if L > r["max_routed_mm"]:
+                    r["max_routed_mm"], r["worst_pose"] = round(L, 1), name
+                tube = _tube(pts, _silicone("od_mm", spec["gauge"]))
+                skip = {_ref(spec["from"])[0], _ref(spec["to"])[0]}
+                for j, it in proj.items.items():
+                    if j in skip or it.shape is None:
+                        continue
+                    if it.role == "keepout" and it.spec.get("proxy") != "prop_disc":
+                        continue
+                    v = geom.overlap(tube, it.shape)
+                    if v > geom.OVERLAP_TOL_MM3 and (j, name) not in {(h[0], h[1]) for h in r["hits"]}:
+                        r["hits"].append((j, name, round(v, 1)))
+    finally:
+        A.solve(asm)
+    problems = []
+    for i, r in res.items():
+        need = round(r["max_routed_mm"] * SLACK, 1)
+        r["cut_min_mm"] = need
+        if float(wires[i]["length_mm"]) < need:
+            problems.append(f"wiring '{i}': length_mm {wires[i]['length_mm']} < {need} mm (routed {r['max_routed_mm']} mm "
+                            f"at {r['worst_pose']} + 15 %)")
+        for j, pose, v in r["hits"][:3]:
+            problems.append(f"wiring '{i}' runs through {j} at {pose} ({v} mm3): route it round, through a hole, or "
+                            f"along a channel")
+    return list(res.values()), problems
+
+
+def _spec(proj, wid):
+    for k, w in enumerate(proj.data.get("wiring") or []):
+        if w.get("id", f"w{k + 1}") == wid:
+            return w
+    raise ElectricalError(f"wiring '{wid}' not found")

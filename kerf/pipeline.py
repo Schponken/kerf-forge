@@ -104,6 +104,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     emodel = electrical.analyse(proj)
                     rep["electrical"] = emodel
                     rep["problems"] += electrical.length_problems(emodel)
+                    if sweeps:      # routes over every joint extreme (slack, collisions): part of the full check
+                        emodel["routes"], rprob = electrical.route_check(proj, asm, emodel)
+                        rep["problems"] += rprob
                 except electrical.ElectricalError as e:
                     rep["problems"].append(f"electrical: {e}")
             rq = requirements.run_all(proj, asm, quick=not sweeps)

@@ -7,7 +7,9 @@ from kerf import assembly as A, electrical as E, project as P, requirements, wir
 from test_engine import _write_project
 
 # A 3" quad reduced to its electrical parts. Masses are fixed with mass_g so the hover numbers are hand-checkable:
-# 164 + 5 + 16.8 + 4 x 9.1 + 2.2 = 224.4 g.
+# 164 + 5 + 16.8 + 4 x 9.1 + 2.2 = 224.4 g of parts, plus the declared wiring (catalog wire.silicone g/m x cut length
+# x conductors): lead + main 2 x (2 x 0.2 m x 28 g/m) = 22.4, phases 4 x 2 x 0.2 x 8 = 12.8, rx5v 2 x 0.1 x 4 = 0.8
+# (28 AWG uses the 24 AWG figure), crsf 0.1 x 4 = 0.4 -> 36.4 g; all-up 260.8 g.
 YAML = """
 name: Elec test
 params: {{}}
@@ -92,15 +94,16 @@ def test_burst_rise_by_hand():
 def test_quad_currents_and_flight_time(tmp_path):
     proj, asm = _proj(tmp_path)
     m = E.analyse(proj)
-    # hover: 224.4 g on 4 x 76.49 mm props -> 41.0 W electrical (see test_hover_power_by_hand for the method)
-    assert m["hover"]["mass_g"] == pytest.approx(224.4, abs=0.01)
-    assert m["hover"]["power_w"] == pytest.approx(41.0, abs=0.1)
-    # battery avg = 41.02 W / 14.8 V (4S nominal) + FC 0.3 A + RX 0.1 A x 5 V / (16.8 V x 0.8) = 2.772 + 0.3 + 0.0372
-    assert m["avg_a"] == pytest.approx(3.109, abs=0.003)
+    # hover: 260.8 g on 4 x 76.49 mm props: T = 0.6394 N/rotor, T^1.5 / sqrt(2 rho A) = 0.51127 / 0.10611 = 4.818 W,
+    # x 4 / 0.375 = 51.4 W electrical (see test_hover_power_by_hand for the method)
+    assert m["hover"]["mass_g"] == pytest.approx(260.8, abs=0.01)
+    assert m["hover"]["power_w"] == pytest.approx(51.4, abs=0.1)
+    # battery avg = 51.40 W / 14.8 V (4S nominal) + FC 0.3 A + RX 0.1 A x 5 V / (16.8 V x 0.8) = 3.473 + 0.3 + 0.0372
+    assert m["avg_a"] == pytest.approx(3.810, abs=0.003)
     # peak = 4 x 15.84 (catalog max) + 0.3 + 0.0372 = 63.70 A
     assert m["peak_a"] == pytest.approx(63.70, abs=0.01)
-    # 1.5 Ah x 0.8 / 3.109 A = 23.2 min
-    assert m["minutes"] == pytest.approx(23.2, abs=0.05)
+    # 1.5 Ah x 0.8 / 3.810 A = 18.9 min
+    assert m["minutes"] == pytest.approx(18.9, abs=0.05)
     rows = {(r["what"], r["kind"].split(" (")[0]): r for r in m["ratings"]}
     # the XT60's 60 A rating is for 1 minute (Holybro); for the default 5 s burst the thermal model allows 194.9 A
     # (test_connector_burst_limit_by_hand), so the 63.7 A punch-out is inside it
@@ -111,7 +114,7 @@ def test_quad_currents_and_flight_time(tmp_path):
     assert rows[("stack.esc -> m1", "peak A vs burst rating")]["limit"] == 45  # per-channel ESC burst
     r = {x["id"]: x for x in requirements.run_all(proj, asm)}
     assert r["power"]["ok"], r["power"]
-    assert r["flight_time"]["ok"] and r["flight_time"]["value"] == pytest.approx(23.2, abs=0.05)
+    assert r["flight_time"]["ok"] and r["flight_time"]["value"] == pytest.approx(18.9, abs=0.05)
     # a full-power burst as long as the rating's own minute: back to the plain 60 A, which 63.7 A exceeds
     proj, asm = _proj(tmp_path / "long", extra="  burst_s: 60")
     rows = {(r["what"], r["kind"]): r for r in E.analyse(proj)["ratings"]}
@@ -176,7 +179,7 @@ def test_outputs_written(tmp_path):
     assert not [p for p in rep["problems"] if "ship" in p or "electrical" in p]
     assert any("heat-shrink" in r["item"] for r in wires)
     assert all(r["link"] for r in rep["bom"] if r["type"] == "purchased")
-    assert rep["electrical"]["minutes"] > 20
+    assert rep["electrical"]["minutes"] > 15
 
 
 def test_wire_rows_carry_price_keys():
@@ -262,3 +265,61 @@ def test_supplied_lead_is_not_bought_or_cut():
     st = WO.steps({"wires": wires, "mains": True})
     assert st[0].startswith("**cord** is the lead that comes with psu") and "Cut 2 x 250 mm" in st[1]
     assert "adapter" in st[-1]
+
+
+ROUTE_BASE = """
+from build123d import *
+def build(ctx):
+    s = Box(20, 20, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    ctx.revolute("pivot", Axis((0, 0, 10), (0, 1, 0)), range=(-90, 90))
+    ctx.rigid("blk", Location((0, 40, 0)))
+    return ctx.finish(s)
+"""
+ROUTE_YAML = """
+name: Route test
+params: {L: 60}
+parts:
+  base: {file: parts/base.py, material: PETG}
+  arm: {file: parts/arm.py, material: PETG}
+purchased:
+  blk: {proxy: box, size: [10, 10, 10], mass_g: 1}
+assembly:
+  root: base
+  joints:
+    - {parent: base.pivot, child: arm.hub, name: swing, range: [-90, 90]}
+    - {parent: base.blk, child: blk.bottom}
+wiring:
+  - {id: hinge, from: base, to: arm, kind: signal, gauge: 24, length_mm: 100, route: [{item: arm, at: [60, 0, 10]}]}
+  - {id: thru, from: base, to: arm, kind: signal, gauge: 24, length_mm: 500, route: [[0, 40, 5]]}
+"""
+
+
+def test_route_check_slack_and_collisions(tmp_path):
+    from test_engine import HINGE_ARM
+    d = _write_project(tmp_path / "route", ROUTE_YAML, {"base": ROUTE_BASE, "arm": HINGE_ARM})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    model = {"wires": [{"id": "hinge", "length_mm": 100}, {"id": "thru", "length_mm": 500}]}
+    res, problems = E.route_check(proj, asm, model)
+    r = {x["id"]: x for x in res}
+    # The revolute frame stands the arm up at home (arm local x -> world +z, local z -> world +y, pivot (0,0,10)):
+    # base centre (0,0,5) -> tie point (local 60,0,10) = (0,12,70) -> arm bbox centre (local 30,0,2) = (0,2,40):
+    # sqrt(12^2 + 65^2) + sqrt(10^2 + 30^2) = 66.10 + 31.62 = 97.72 mm. Swung 90 deg the tie point is at (+-60,12,10):
+    # 61.39 + 31.62 = 93.0 mm. Worst = home, 97.7 -> cut >= 112.4 mm, so the 100 mm run is short.
+    assert r["hinge"]["max_routed_mm"] == pytest.approx(97.7, abs=0.05) and r["hinge"]["worst_pose"] == "home"
+    assert any("'hinge'" in p and "112.4" in p for p in problems)
+    # the second run goes straight through the purchased block; the first never touches it
+    assert any("'thru' runs through blk" in p for p in problems)
+    assert not any("'hinge' runs through" in p for p in problems)
+
+
+def test_supplied_lead_is_not_bought_or_weighed():
+    w = {"id": "lead", "from": "battery", "to": "xt60", "kind": "power", "gauge": 12, "length_mm": 100,
+         "supplied": True, "points": [[0, 0, 0], [0, 0, 1]]}
+    assert WO.bom_rows({"wires": [w]}) == []
+    assert "nothing to cut" in WO.steps({"wires": [w]})[0]
+
+    class _P:
+        data = {"wiring": [w, {**w, "supplied": False}]}
+    assert E.wiring_mass_g(_P()) == pytest.approx(2 * 0.1 * 43)     # only the second: 2 x 0.1 m x 43 g/m (AWG 12)
