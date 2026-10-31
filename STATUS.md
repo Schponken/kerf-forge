@@ -645,3 +645,10 @@ pushed for it and what I know:
   fallback). Engine (kerf/ship.py, test): a fallback price is flagged on the row ("PRICE FROM A DIFFERENT PACK ...
   buy <item>") and listed under the BOM total. prices.json: exact screw:M3x12:socket (Zoro) and screw:M2x12:socket.
 - fpv_5in: camera powered from the FC 9 V pad (5 V lead drop took it to 4.99 V < its 5.0 V minimum); DESIGN numbers.
+
+## 2026-10-31 — session 01S68R6S: E2 fpv_5in DONE
+- design-reviewer round 8 PASS (fingerprint c0d6880d38b83a40, 11 minor notes in review.json), acceptance PASS.
+  Frame 149.4 g printed, T/W 6.18 at the 74 % Betaflight output limit (XT60 kept inside 60 A; Blackbox gate),
+  12 min ideal hover, all FEA inside SF 3, complete electronics with routed wiring, BOM $373 with buy links.
+- Open minors worth an engine item later: ASSEMBLY.md has no nut-insertion step, no bom_extra notes, and always puts
+  soldering last; heat-shrink rows are fixed 20 mm pieces.

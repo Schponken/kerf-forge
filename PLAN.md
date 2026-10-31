@@ -65,7 +65,7 @@ tested before handoff.
   parts) still produce this package
 
 ## Phase 3 — the eval projects (each: REFERENCES.md from the design-researcher, `kerf build` PASS, design-reviewer PASS, `evals/<id>/acceptance.py` PASS)
-- [ ] E2 `fpv_5in` — 5" freestyle FPV quad frame (evals/fpv_5in/brief.md)
+- [x] E2 `fpv_5in` — 5" freestyle FPV quad frame (evals/fpv_5in/brief.md)
 - [ ] E3 `robot_arm` — 4-axis desk robot arm with gripper (evals/robot_arm/brief.md)
 - [x] E4 `tvc_drone` — coax thrust-vectoring rocket-style drone (evals/tvc_drone/brief.md)
 - [ ] E5 `bionic_finger` — tendon-driven 3-segment finger (evals/bionic_finger/brief.md)
