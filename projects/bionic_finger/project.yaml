@@ -23,7 +23,8 @@ parts:
   base: {file: parts/base.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X}
   proximal: {file: parts/proximal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
   middle: {file: parts/middle.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X}
-  distal: {file: parts/distal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
+  distal: {file: parts/distal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X,
+           assembly_note: "Then the tendons: feed the flexor (>= 100 lb braid) from the base's back face through the palmar channel to the distal's front pocket, the extensor along the dorsal channel to the rear pocket; thread a 2.5-2.9 mm crimp sleeve or bead on each end, crimp/knot it, pull it into its pocket and wick thin CA in. Pull each line to check the finger curls and comes back to the straight stop."}
 bom_extra:
   - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 100 lb (445 N) rated", qty: 1, spec: "about 0.5 m: one flexor and one extensor line"}
   - {type: hardware, item: "Line stop: crimp sleeve or bead, 2.5-2.9 mm OD", qty: 2, spec: "on each line end inside its 3 mm fingertip pocket, so the line cannot pull into the 2.2 mm channel"}

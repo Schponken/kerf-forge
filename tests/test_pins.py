@@ -212,3 +212,13 @@ def test_hard_stop_requirement(tmp_path):
         R.REGISTRY["hard_stop"](proj, asm, joint="swing", beyond=-30)
     A.solve(asm)
     assert proj.items["arm"].shape.joints  # the joint's range was restored: home pose still solves
+
+
+def test_shoulder_pivot_insert_in_assembly_plan(tmp_path):
+    """The heat-set insert a screw pivot threads into is listed in the build steps (pressed before its part is fitted)."""
+    from kerf import ship
+    proj, asm = _shoulder_asm(tmp_path, through_lug=False)
+    out, problems, _ = pins.check(asm)
+    assert problems == []
+    st = ship.plan(asm, [], out)
+    assert any(x["item"] == "base" and x["screw"] == "M3" and x["qty"] == 1 for s in st for x in s["inserts"]), st

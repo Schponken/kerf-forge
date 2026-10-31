@@ -1,51 +1,39 @@
 {
   "verdict": "PASS",
-  "fingerprint": "265e1face625ee22",
+  "fingerprint": "fff481bce3957f7e",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 2: both round-1 failures are fixed and I checked them myself on out/assembly.step. Each joint now hits a dorsal stop lug at about -2 deg (overlap 0 at -1.5 deg, 0.11 mm3 at -2, 1.9 mm3 at -3), and flexion still runs clear to 80/80/70 with a natural stop just past range. The pivots are 4 x 8 mm ground-shoulder screws whose shoulder bottoms on the insert, so they turn on a smooth surface and the head never clamps. The tendon-load FEA case (222 N line + 10 N tip) passes at 10.5 MPa vs 24 allowed, with the hot spot at the pip bore. What remains is minor: side play, insert-flushness sensitivity, stale DESIGN text, a missing buy link, a cusp on the stop lug, and one thin wall.",
+  "summary": "Round 3: the geometry is identical to round 2 (same part volumes, walls and requirement values in report.json), so the round-2 engineering conclusions stand. Every joint stops at about -2 deg, flexion is clear to 80/80/70, the pivots are ground-shoulder screws, and both FEA cases pass (4.6 and 10.5 MPa vs 24). The round-2 doc and BOM items are fixed in DESIGN.md and bom (side play stated, insert flush-to-low, ~0.5 N m torque, McMaster 97505A106 link). The remaining issues are minor: the generated ASSEMBLY.md the owner will follow does not carry those instructions, plus two accepted geometry nits.",
   "findings": [
     {
       "severity": "minor",
-      "part": "all joints (fingerlib W/GAP, shoulder length)",
-      "issue": "Axial play per joint is now 0.45 mm: the 0.3 lap gap plus 0.15 from the 8 mm shoulder over the 7.85 stack. Diametral play is ~0.35-0.38 (4.35 hole on a 3.97-4.0 shoulder). Both are single-shear laps, so each joint can tilt about 1.7 deg sideways. That adds up to roughly 4-5 mm of side-to-side wobble at the fingertip, more than the round-1 screw pivot had. The brief does not limit it, but a finger that wobbles this much is noticeable in a hand.",
-      "fix": "Cut the stack slack: make the gap 0.15 and the band 7.7 so 7.85 + 0.15 -> about 8.0 - 0.05, and/or use a 4.2 free hole for the ground shoulder (print a coupon first). A thin PTFE shim in the lap would also help. State the expected tip side play in DESIGN."
+      "part": "out/ASSEMBLY.md, bom (generated)",
+      "issue": "The owner-facing build sheet still has 'Tools: none', no insert heat-set step, no flush-to-low instruction, no torque limit (each pivot line says 'tighten until the shoulder bottoms'), and no tendon threading / crimp-sleeve steps. The BOM note still says 'tighten fully'. The correct procedure exists only in DESIGN.md s9, so someone working from ASSEMBLY.md can leave an insert proud (clamping the joint, which has only 0.15 mm of head play) or pull an insert whose mouth wall to the extensor groove is ~0.2 mm.",
+      "fix": "Have the generator include the project's assembly notes (e.g. an `assembly.notes`/per-step text field in project.yaml, or append DESIGN s9), list the tools (soldering iron with insert tip, flat plate, small slotted driver, crimper), and add a 'light torque' note for shoulder pivots into heat-set inserts. That is a general engine improvement, not a one-project patch."
     },
     {
       "severity": "minor",
-      "part": "base/proximal/middle (insert mouth)",
-      "issue": "The shoulder bottoms on the insert face and the joint only has 0.15 mm of head play. An insert left even ~0.15 mm proud of the gap face (normal for hand heat-setting) will clamp the moving part when the screw is tightened fully. Tightening against the insert also loads it in pull-out, and its mouth wall to the swept extensor groove is only ~0.2 mm. ASSEMBLY.md says 'tighten fully' with no check of flushness and no torque limit.",
-      "fix": "Add an assembly step: seat each insert flush to 0.05 mm below the face (press it flat with a plate while it is hot), and tighten the shoulder screw only until it stops (light torque, threadlocker instead of torque). Better: give the parent a 0.2 mm counterbore so the insert can sit slightly low."
+      "part": "all joints",
+      "issue": "Side play is unchanged in geometry: 0.45 mm axial, ~1.7 deg tilt per joint, a few mm of fingertip wobble. It is now documented in DESIGN s2 with remedies (4.2 mm hole after a test pair, or a 0.2 mm PTFE washer under the head, which cuts the play to 0.25 mm without clamping).",
+      "fix": "Accept as documented, or apply the 4.2 mm hole after the test print."
     },
     {
       "severity": "minor",
-      "part": "DESIGN.md",
-      "issue": "Section 2 'Side play' is stale. It still says the 7.85 mm lap faces and that the 0.3 mm gap is the only axial play. The bands are now 7.55 and the play is 0.45 mm. The stop contact is also on one band only (y -7.7 to -0.15, z 7.9-9.5), which DESIGN does not describe.",
-      "fix": "Update section 2 with the current numbers and the expected tip side play."
-    },
-    {
-      "severity": "minor",
-      "part": "bom (motion.shoulder_4_m3)",
-      "issue": "In report.json the shoulder-screw BOM rows have an empty buy link and no price. It is the one non-commodity part, and the owner needs the exact part number (McMaster 97505A106, 4 x 8, low 7 x 1.8 slotted head) to order it.",
-      "fix": "Add buy/price data for the catalog entry so the BOM lists the 97505A106 link and price."
-    },
-    {
-      "severity": "minor",
-      "part": "proximal/middle/distal (child stop lug, fingerlib.child_end)",
-      "issue": "In the child's top band the lug is cut by the r = RH circle. Where that circle meets the lug's lower edge (z = 7, x ~ 3.7) it leaves a sharp cusp, visible as a thin crescent in the middle part's top view. It is cosmetic and will print as a fragile point, but it is not on the load path (the stop face is the 1.6 x 7.55 mm face at x = 0.15).",
-      "fix": "Start the lug's lower edge at z = RH in the top band (or round the cusp) so there is no zero-thickness tip."
+      "part": "proximal/middle/distal (child stop lug)",
+      "issue": "Cosmetic cusp where the pocket circle cuts the child's top-band lug (documented in DESIGN). It is not on the load path.",
+      "fix": "Optional: start the lug at z = RH in the top band."
     },
     {
       "severity": "minor",
       "part": "distal",
-      "issue": "The wall check still reports 1.12 mm walls (p2) at the knot pockets / tendon grooves, below the 1.2 mm reliable minimum.",
-      "fix": "Move the pockets or the channel 0.1-0.2 mm to reach >= 1.2 mm."
+      "issue": "The wall check still reports 1.12 mm (p2), below the 1.2 mm reliable minimum, at the knot pockets / grooves.",
+      "fix": "Move the pockets or channel 0.1-0.2 mm."
     },
     {
       "severity": "minor",
       "part": "fingerlib.crossing_cuts",
-      "issue": "The knuckle-face grooves are still built from 10-deg steps and show a serrated fan in the renders. The new STEP comment argues the 0.5 mm line stays inside the tube union (<= 0.8 mm off axis inside the 1.1 mm radius), which holds for a taut line. A slack or 0.8 mm line can still drag across the ridges.",
-      "fix": "Acceptable as is. If the line frays in testing, generate the groove as one revolved/lofted solid instead of discrete tubes."
+      "issue": "Knuckle-face grooves are built from 10-deg steps (serrated fan). A taut 0.5 mm line stays inside the tube union per the STEP comment; a slack or 0.8 mm line may drag on the ridges.",
+      "fix": "Acceptable. Use a single swept groove if the line frays in testing."
     }
   ]
 }

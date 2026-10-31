@@ -143,7 +143,7 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
             pd = pin_dims(pj["pin"])
             rows.append({"type": "fastener", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm shoulder screw, {pd['thread']} thread (pivot)",
                          "qty": 1, "spec": pj["pin"], "link": catalog.get(pj["pin"]).get("buy", ""),
-                         "note": f"hinge '{pj['group']}'; tighten fully (the shoulder bottoms)"
+                         "note": f"hinge '{pj['group']}'; tighten gently until the shoulder bottoms"
                                  + (f"; {catalog.get(pj['pin'])['buy_note']}" if catalog.get(pj["pin"]).get("buy_note") else "")})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})

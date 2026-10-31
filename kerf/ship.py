@@ -170,6 +170,10 @@ def plan(asm, fasteners: list, pins: list) -> list[dict]:
         for s in getattr(it.shape, "kerf_sites", []) if it.shape is not None else []:
             if s.role == "female" and s.kind == "heatset":
                 inserts[iid][s.screw] += 1
+        for s in getattr(it.shape, "kerf_pins", []) if it.shape is not None else []:   # screw-pivot inserts
+            if s.fit == "heatset":
+                from .iface import pin_dims
+                inserts[iid][pin_dims(s.pin).get("thread", s.pin)] += 1
     screws = defaultdict(list)
     for j in fasteners:
         k = max(at.get(j["male"], 0), at.get(j["female"], 0))
@@ -268,6 +272,8 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
          f"- Print every part in `plates/` (orientation is already set). Parts: {', '.join(proj.printed)}.",
          f"- Tools: {', '.join(sorted(keys)) or 'none'}" + ("; soldering iron with a heat-set insert tip" if any_insert else "")
          + ("; a vise or small hammer to press dowel pins" if any(not p.get('screw_pivot') for s in st for p in s['pins']) else "")
+         + ("; a screwdriver that fits the shoulder screws' heads" if any(p.get('shoulder') for s in st for p in s['pins']) else "")
+         + ("; a flat plate to press inserts flush" if any_insert else "")
          + ".", "- Shopping list with links and prices: `bom.md`.", ""]
     for s in st:
         L.append(f"## Step {s['step']} — {', '.join(s['items'])}")
@@ -280,7 +286,7 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
             glb.unlink(missing_ok=True)
             L += [f"![step {s['step']}](assembly_steps/step_{s['step']:02d}_iso.png)", ""]
         for x in s["inserts"]:
-            L.append(f"- First press {x['qty']} x {x['screw']} heat-set insert(s) into **{x['item']}** (iron tip, press square, let cool).")
+            L.append(f"- First press {x['qty']} x {x['screw']} heat-set insert(s) into **{x['item']}** (iron tip, press square until flush with or just below the face, hold a flat plate on it while it cools, trim any plastic lip).")
         for f in s["fits"]:
             qty = f" x{f['qty']}" if f["qty"] != 1 else ""
             if f["onto"] is None:
@@ -293,7 +299,8 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
         for p in s["pins"]:
             if p.get("shoulder"):
                 L.append(f"- Pivot `{p['group']}`: {p['d_mm']:g} x {p['length_mm']:g} mm shoulder screw through {', '.join(p['free_in'])} "
-                         f"into {', '.join(p['fixed_in'])}; tighten until the shoulder bottoms - the joint then turns freely.")
+                         f"into {', '.join(p['fixed_in'])}; tighten gently (~0.5 N m) until the shoulder bottoms, then check the joint "
+                         f"turns freely (an insert left proud clamps it).")
             elif p.get("screw_pivot"):
                 L.append(f"- Pivot `{p['group']}`: {p['pin']} x {p['length_mm']:g} mm screw through {', '.join(p['free_in'])} into "
                          f"{', '.join(p['fixed_in'])}; medium threadlocker, back off ~1/8 turn so it turns freely.")
