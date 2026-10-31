@@ -1,5 +1,5 @@
 import itertools
-from evals.common import base_checks, dist, need_joint, need_req, screws_touching
+from evals.common import FLIGHT_ELECTRONICS, complete_electronics, base_checks, dist, need_joint, need_req, screws_touching
 
 
 def accept(rep, proj_dir):
@@ -32,4 +32,5 @@ def accept(rep, proj_dir):
     r = need_req(rep, "frame_mass", "mass_max", fails)
     if r and r["limit"] > 250:
         fails.append("frame_mass limit must be <= 250 g")
+    complete_electronics(rep, proj_dir, fails, {**FLIGHT_ELECTRONICS, "video TX": ("vtx",), "camera": ("camera",)}, 3)
     return fails

@@ -14,3 +14,12 @@ move freely, and it needs enough thrust to climb."
 - Requirements (ids exactly): `twr` (thrust_to_weight >= 1.8), `cg_axis` (cg: assembled CG within 3 mm of the
   thrust axis laterally and above the gimbal pivot), `stand` (tip_over: static tip-over angle >= 15°),
   `gimbal_fea` (fea_static on the part that carries the motors' thrust into the gimbal, 2x max thrust).
+
+## Complete electronics (added 2026-10-30; graded)
+- Every electrical part needed to actually fly is in the project as a catalog-backed purchased item, not just the
+  ones named above: flight controller, ESC(s), receiver + antenna, BEC/regulator for any servos, battery strap, power
+  connector, IMU-capable FC that can drive the gimbal servos.
+- project.yaml has a `wiring:` section covering every connection, with wire gauge and routed length per run.
+- Requirements (ids exactly): `power` (power_budget: battery C-rating, BEC, connector and every wire within rating
+  at peak current), `flight_time` (estimate reported; must be >= 2 min at hover).
+- out/WIRING.md and out/wiring.svg exist; the BOM lists every wire, connector and electrical part with a buy link.

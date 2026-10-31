@@ -18,3 +18,12 @@ battery strapped on top. It should survive normal crashes and be as light as a p
   per docs/ENGINEERING.md),
   `frame_mass` (mass_max on the printed parts only, <= 250 g).
 - Every printed part fits the A2L.
+
+## Complete electronics (added 2026-10-30; graded)
+- Every electrical part needed to actually fly is in the project as a catalog-backed purchased item, not just the
+  ones named above: flight controller, ESC(s), receiver + antenna, BEC/regulator for any servos, battery strap, power
+  connector, video TX + antenna + camera.
+- project.yaml has a `wiring:` section covering every connection, with wire gauge and routed length per run.
+- Requirements (ids exactly): `power` (power_budget: battery C-rating, BEC, connector and every wire within rating
+  at peak current), `flight_time` (estimate reported; must be >= 3 min at hover).
+- out/WIRING.md and out/wiring.svg exist; the BOM lists every wire, connector and electrical part with a buy link.

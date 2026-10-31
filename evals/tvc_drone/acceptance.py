@@ -1,4 +1,4 @@
-from evals.common import base_checks, need_joint, need_req
+from evals.common import FLIGHT_ELECTRONICS, complete_electronics, base_checks, need_joint, need_req
 
 
 def accept(rep, proj_dir):
@@ -27,4 +27,5 @@ def accept(rep, proj_dir):
     r = need_req(rep, "stand", "tip_over", fails)
     if r and r["limit"] is not None and r["limit"] < 15:
         fails.append("stand limit must be >= 15 degrees")
+    complete_electronics(rep, proj_dir, fails, FLIGHT_ELECTRONICS, 2)
     return fails

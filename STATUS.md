@@ -264,3 +264,12 @@ entry before each push (date, what changed, verify state, next step, open proble
 - Next: DESIGN.md + REFERENCES.md, upper_arm_fea and other FEA, detail pass, build + renders, independent review.
 - Note for other sessions: never run tools/claims.py while a rebase is in progress (its `next` committed a claim for
   every free item onto the detached HEAD; I released them all in one push).
+
+## 2026-10-31 00:40 UTC — planning chat: complete electronics + wiring
+- Spencer's rule: every project includes EVERY component it needs to work (boards, wires, batteries, connectors,
+  straps...), not only the ones a brief names. New PLAN item (before Phase 3): catalog-backed electrical parts,
+  `wiring:` section with gauge from current + routed lengths, power_budget / flight_time / connector_access checks,
+  WIRING.md + wiring.svg, full electrical BOM with buy links.
+- Drone briefs (fpv_5in, tvc_drone) gained a graded "Complete electronics" section; evals/common.py
+  `complete_electronics()` enforces it (tested by hand: complete fake project PASS, bare project fails on 12 points,
+  1-min flight time fails). These are stricter rules, nothing loosened.

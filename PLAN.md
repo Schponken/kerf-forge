@@ -47,6 +47,21 @@ tested before handoff.
 - [x] `kerf` skill (`.claude/skills/kerf/SKILL.md`) drives the full workflow from a one-paragraph description: design-researcher (REFERENCES.md) → DESIGN.md with spec-driven sizing and trade-offs → project.yaml → parallel part-designer subagents → integrate → FEA on structural parts → detail pass → build → design-reviewer → summary for Spencer
 - [x] docs/ARCHITECTURE.md and docs/ENGINEERING.md complete and accurate for everything the engine now does
 
+- [ ] Complete electronics + wiring for EVERY project that moves or powers anything (engine feature, applies to all
+  evals): the `kerf` skill derives the full electrical system from the description, never only the parts the brief
+  names. (a) Every component is a catalog-backed purchased item with a source: controller/flight controller, ESCs or
+  motor drivers, receiver + antenna(s), video TX + antenna + camera where FPV, BEC/regulator for servos and logic,
+  battery, battery strap + pad, power switch/connector (XT30/XT60/JST), fuses where needed, sensors. Add missing
+  catalog entries with sources first. (b) `wiring:` section in project.yaml: every connection (from pin/pad → to
+  pin/pad, signal or power, voltage, peak current); wire gauge chosen from current with a cited ampacity table; each
+  run routed through declared channels/keep-outs with its 3D length + 15 % slack. (c) New checks with hand-calculated
+  tests: `power_budget` (peak + average current per rail vs. battery C-rating, BEC rating, connector rating, wire
+  ampacity), `flight_time` / `run_time` estimate from capacity and average draw, `connector_access` (battery plug and
+  USB port reachable with the frame assembled). (d) Outputs: BOM gets every electrical item, wire (gauge, colour,
+  cut length), connector, heat-shrink, strap, with buy links + cost; `out/WIRING.md` + `out/wiring.svg` diagram
+  (pins, colours, gauges); ASSEMBLY.md includes the solder/wiring steps. Purchased-parts-only builds (no printed
+  parts) still produce this package
+
 ## Phase 3 — the eval projects (each: REFERENCES.md from the design-researcher, `kerf build` PASS, design-reviewer PASS, `evals/<id>/acceptance.py` PASS)
 - [ ] E2 `fpv_5in` — 5" freestyle FPV quad frame (evals/fpv_5in/brief.md)
 - [ ] E3 `robot_arm` — 4-axis desk robot arm with gripper (evals/robot_arm/brief.md)
