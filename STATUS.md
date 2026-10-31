@@ -498,7 +498,6 @@ pushed for it and what I know:
 - catalog/prices.json: wire AWG12/18/26/28, heat-shrink, antenna, M2 button/washer, M3x14/x30, M2 nylon spacer,
   cable ties (all read 2026-10-31); every fpv_5in BOM row has a buy link, total $373.76.
 
-<<<<<<< Updated upstream
 ## 2026-10-31 04:30 UTC — session 12d9384eb7: PLAN "Bambu A2L handoff" — code done, waiting on one real print
 - `kerf print <p>` (kerf/bambu.py): orientation chooser (24 rotations, bed fit, load_axis <= 30 deg from the layers,
   least support, then height; keeps the designed print_rot unless another needs >= max(5 mm2, 10 %) less support;
@@ -519,7 +518,7 @@ pushed for it and what I know:
      "slicer": {"bin", "machine", "process", "filaments": {"PETG": ...}}}.
   4. `kerf print servo_link --dry-run`, then `kerf print servo_link --send 1` and watch it start.
   Untested against hardware: the implicit-TLS FTPS wrapper and the paho MQTT link (both follow the protocol docs).
-=======
+
 ## 2026-10-31 03:40 UTC — session 01S68R6RW: E4 tvc_drone done (build PASS, review PASS 616ec954, acceptance PASS)
 - Complete electronics: XT60 on a 14 AWG pigtail past the ring_top edge, UBEC + ELRS receiver tied under ring_mid,
   strap item across the pack (slots moved: the old ones sat under the battery), anti-slip pad, capacitor row.
@@ -533,4 +532,9 @@ pushed for it and what I know:
   route check, so routes that pass through a plate need a waypoint through a real hole/slot.
 - Open (minor, engine): ASSEMBLY.md (ship.py) says "press the dowel" without "last, from outside" — a pin insertion
   direction/order in the pin check would fix it for every project.
->>>>>>> Stashed changes
+## 2026-10-31 — session 01S68R6S: fpv_5in wiring routes
+- Rebased onto the electrical route_check / wire-mass engine: every fpv_5in run now has real
+  waypoints (arm tie points ride with the arms) and passes the tube sweep; XT60 moved back to x -59 (tab to -72) so
+  its leads can turn before the rear pillar; output limit 74 % (T/W 6.18 incl. wire mass, peak 57.4 A, power 0.957);
+  battery lead marked `supplied`.
+

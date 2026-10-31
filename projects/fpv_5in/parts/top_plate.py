@@ -22,14 +22,14 @@ from build123d import *
 from kerf import iface
 
 POSTS = [(33.0, 8), (33.0, -8), (-33.0, 8), (-33.0, -8)]   # must match parts/body.py
-XT60_X = -51.0
+XT60_X = -59.0  # cradle x -71.55..-46.45: the solder cups end 9 mm behind the rear pillar so the 12 AWG leads can turn
 VTX = "drone.vtx.tx800"
 BOSS_H = 3.0
 VTX_X = -13.5    # VTX centre: its 28 mm board spans x -27.5..0.5, 1 mm from the rear pillar, clear of the strap band
 STRAP_X0, STRAP_X1 = 4.5, 24.5   # width-wise battery strap band (20 mm strap), clear of the VTX and the front pillar
 STRAP_T = 1.8
 ROOF_X1 = 58.0   # camera roof front edge (lens front is at x 61.9-64.8 over the tilt range)
-ANT_X = -70.0    # VTX antenna head centre (tab ends at x -64; head is 11 mm across)
+ANT_X = -78.0    # VTX antenna head centre (tab ends at x -72; head is 11 mm across)
 TAB_W = 28.0     # rear tab width: XT60 cradle + its tie slots + the antenna tie slots with >= 2.5 mm edge margin
 RX_X, RX_Y = 46.5, 0.0     # receiver (13 x 11 mm) under the camera roof: >= 5 mm above the camera at full tilt,
 #                            clear of the pillars, VTX and the strap's under-run
@@ -41,8 +41,8 @@ def build(ctx):
     xl, xw, xh = [ctx.cat.num(ctx.cat.get("drone.connectors.XT60"), k) for k in ("length", "width", "height")]
     plate = Pos(0, 0, H) * Box(80, 42, T, align=(Align.CENTER, Align.CENTER, Align.MIN))
     plate = plate.fillet(4.0, plate.edges().filter_by(Axis.Z))
-    tab = Pos(-50, 0, H) * Box(28, TAB_W, T, align=(Align.CENTER, Align.CENTER, Align.MIN))   # x -64..-36: the cradle walls
-    #                                                                                   (to x -63.55) start on the plate
+    tab = Pos(-54, 0, H) * Box(36, TAB_W, T, align=(Align.CENTER, Align.CENTER, Align.MIN))   # x -72..-36: the cradle walls
+    #                                                                                   (to x -71.55) start on the plate
     # camera roof: a 24 mm wide tongue of the plate reaching forward over the camera (top of the camera at 40 deg tilt
     # is z 35.2 above the body bottom = 28 here, the roof underside is at 38), ending 4 mm behind the lens front, so
     # a pole or branch coming from above hits the roof, not the camera (review round 2)
@@ -70,7 +70,7 @@ def build(ctx):
     s += cradle
     for sy in (1, -1):                           # XT60 tie: down outside one wall, under the connector, up the other
         s -= Pos(XT60_X, sy * (cw / 2 + 0.8), H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    for x in (-58.0, -46.0):                     # VTX antenna tie slots through the rear tab (y -10.5, clear of the cradle)
+    for x in (-66.0, -54.0):                     # VTX antenna tie slots through the rear tab (y -10.5, clear of the cradle)
         s -= Pos(x, -10.5, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for sy in (1, -1):                           # receiver T-antenna legs tied up and out in a V at the roof's front
         s -= Pos(52.0, sy * 9.0, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))

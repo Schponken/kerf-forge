@@ -23,10 +23,10 @@
 | VTX | drone.vtx.tx800 | 5.6 g | 28 × 28 mm, 20 × 20 M2, hangs under the rear half of the top plate (centre x −13.5) |
 | VTX antenna | electronics.antennas.lollipop4p_mmcx_95 | 4.8 g | 95 mm tube, MMCX 90°, head above the rear tab end |
 - Thrust/weight: 4 × 1685 = 6740 g at full output, but the XT60 is rated 60 A burst (Holybro: 1 minute) and four
-  motors at full output draw 4 × 35.08 = 140 A. Betaflight `set motor_output_limit = 73` caps each motor: by the
-  propeller law (thrust ~ rpm², power ~ rpm³) 1685 × 0.73² = 898 g and 35.08 × 0.73³ = 13.65 A per motor →
-  3592 g / 558.5 g all-up = **6.43**, peak 55.1 A (the `power` requirement). Raise the limit only with a bigger
-  connector; the 73 % figure is an estimate — check the Blackbox current peak on the first flights.
+  motors at full output draw 4 × 35.08 = 140 A. Betaflight `set motor_output_limit = 74` caps each motor: by the
+  propeller law (thrust ~ rpm², power ~ rpm³) 1685 × 0.74² = 923 g and 35.08 × 0.74³ = 14.22 A per motor →
+  3691 g / ~597 g all-up incl. wire = **6.18**, peak 57.4 A (the `power` requirement). Raise the limit only with a bigger
+  connector; the 74 % figure is an estimate — check the Blackbox current peak on the first flights.
   → 12.6 (requirement ≥ 6).
 - Arm root bending (hand calc): crash load 2 × 1685 g = 33.1 N at r = 113 mm; outer arm screw at r = 52 mm → lever
   61 mm, M = 2017 N·mm; section 20 × 11 mm: Z = 403 mm³ → 5.0 MPa nominal. FEA (fixed at the two arm screws, load on
@@ -81,6 +81,11 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   61.9-64.8), 9.8 mm above the camera top at full tilt, so a hit from above lands on the roof.
 - Arm key ridges are 4.5 × 1.5 mm: a 33 N side hit bends the ridge root across one layer line at about 3 MPa.
 
+- Wiring (out/WIRING.md, every run swept against the parts by `kerf check`): XT60 sits at x −59 so its solder
+  cups end 9 mm behind the rear pillar; the 12 AWG pigtail turns out of the cradle front, passes the pillar at
+  y −16 under the VTX and drops to the ESC pads. Motor phases run over the body top between each arm's ribs and
+  along the arm top (2 ties per arm). Camera and receiver leads pass the front pillar at y +15.
+
 ## Assembly order
 1. Press 4 M3 heat-set inserts into the top-plate post feet; screw the VTX under the top plate (4 × M2 × 12 with
    washers and 6 mm nylon spacers) — on the bench, before the plate goes on.
@@ -95,7 +100,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
    VTX antenna tube tied under the tab and bent up behind it; receiver antenna legs tied in a V at the roof front. XT60 leads run outside the post pillars (|y| > 12.5 mm).
 8. Battery on the pad; strap around the pack's width in the plate-edge notches, under the plate (between the VTX
    and the front pillar).
-9. Betaflight: `set motor_output_limit = 73`, `save` (keeps the XT60 inside its 60 A rating; see sizing).
+9. Betaflight: `set motor_output_limit = 74`, `save` (keeps the XT60 inside its 60 A rating; see sizing).
 
 ## Risks / measure first
 - Camera side-hole position (catalog note: scaled from a drawing) and the 22 mm stack height (typical, not published).
@@ -107,4 +112,4 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 - Flight time 13 min is the ideal-hover estimate (momentum theory, figure of merit 0.5); real hover draws more and
   freestyle flying gives about 3–5 min on a 1300 mAh 6S pack.
 - Motor phase runs are modelled as 18 AWG extensions; the motors' own lead gauge/length is not in the catalog (with
-  the 73 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 13.65 A).
+  the 73 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 14.22 A).

@@ -49,34 +49,47 @@ purchased:
 electrical:
   battery: battery
   burst_s: 5
-  # Betaflight `set motor_output_limit = 73` clips every motor's final output to 73 %. Propeller law (static): rpm ~
-  # output, thrust ~ rpm^2, shaft power ~ rpm^3, so the catalog full-output figures scale to 1685 x 0.73^2 = 898 g and
-  # 35.08 x 0.73^3 = 13.65 A per motor (motor efficiency rises at part load, so the current estimate is on the high
-  # side). 4 x 13.65 + FC/5 V = 55.1 A keeps the XT60 (60 A burst, Holybro) and its 12 AWG pigtail inside rating.
+  # Betaflight `set motor_output_limit = 74` clips every motor's final output to 74 %. Propeller law (static): rpm ~
+  # output, thrust ~ rpm^2, shaft power ~ rpm^3, so the catalog full-output figures scale to 1685 x 0.74^2 = 923 g and
+  # 35.08 x 0.74^3 = 14.22 A per motor (motor efficiency rises at part load, so the current estimate is on the high
+  # side). 4 x 14.22 + FC/5 V = 57.4 A keeps the XT60 (60 A burst, Holybro) and its 12 AWG pigtail inside rating.
   limits:
-    motor_1: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
-    motor_2: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
-    motor_3: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
-    motor_4: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
+    motor_1: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
+    motor_2: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
+    motor_3: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
+    motor_4: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
 wiring:
-  # battery side: the pack's own 12 AWG lead and the frame's XT60 pigtail to the ESC pads
-  - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, length_mm: 100,
+  # world waypoints [x, y, z] (body bottom z 0, body top 7, top-plate underside 45); arm points ride with the arm
+  # battery side: the pack's own lead to the XT60 (plugs in from behind the tab), the XT60 pigtail to the ESC pads
+  # (out of the cradle's open front, round the rear pillar at y -16, under the VTX, down to the pads)
+  - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, length_mm: 140,
+     route: [[-46, 0, 60], [-80, 0, 50], [-80, 0, 37]], supplied: battery,
      note: "the pack's own lead (comes with the battery)"}
-  - {id: main, from: xt60, to: stack, v: 25.2, gauge: 12, color: red/black, length_mm: 100,
-     route: [top_plate.xt60, [-34, -16, 30], body.stack], note: "XT60 pigtail to the ESC battery pads; 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
-  # motor phases: 3 wires each, the motor's own leads extended where needed, tied under each arm
-  - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_1, arm_1.motor]}
-  - {id: ph2, from: stack.esc, to: motor_2, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_2, arm_2.motor]}
-  - {id: ph3, from: stack.esc, to: motor_3, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_3, arm_3.motor]}
-  - {id: ph4, from: stack.esc, to: motor_4, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_4, arm_4.motor]}
+  - {id: main, from: xt60, to: stack, v: 25.2, gauge: 12, color: red/black, length_mm: 110,
+     route: [[-44, 0, 37], [-43, -16, 34], [-25, -16, 30]],
+     note: "XT60 pigtail to the ESC battery pads; 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
+  # motor phases: 3 wires each over the body top between the arm's two ribs, down onto the arm top past the body
+  # corner, along the arm (2 ties through the arm slots) to the motor
+  - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
+     route: [{item: arm_1, at: [24, 0, 9]}, {item: arm_1, at: [64, 0, 9]}, {item: arm_1, at: [70, 0, 1.5]}, {item: arm_1, at: [96, 0, 1.5]}]}
+  - {id: ph2, from: stack.esc, to: motor_2, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
+     route: [{item: arm_2, at: [24, 0, 9]}, {item: arm_2, at: [64, 0, 9]}, {item: arm_2, at: [70, 0, 1.5]}, {item: arm_2, at: [96, 0, 1.5]}]}
+  - {id: ph3, from: stack.esc, to: motor_3, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
+     route: [{item: arm_3, at: [24, 0, 9]}, {item: arm_3, at: [64, 0, 9]}, {item: arm_3, at: [70, 0, 1.5]}, {item: arm_3, at: [96, 0, 1.5]}]}
+  - {id: ph4, from: stack.esc, to: motor_4, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
+     route: [{item: arm_4, at: [24, 0, 9]}, {item: arm_4, at: [64, 0, 9]}, {item: arm_4, at: [70, 0, 1.5]}, {item: arm_4, at: [96, 0, 1.5]}]}
   # FC 5 V rail: VTX (0.75 A at 800 mW), camera (0.2 A), receiver (0.1 A) = 1.05 A of the 3 A BEC
-  - {id: vtx_5v, from: stack.5v, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 80, route: [top_plate.vtx]}
-  - {id: cam_5v, from: stack.5v, to: camera, v: 5.0, gauge: 28, color: red/black, length_mm: 90}
-  - {id: rx_5v, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 90, route: [top_plate.rx]}
+  - {id: vtx_5v, from: stack.5v, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 80}
+  - {id: cam_5v, from: stack.5v, to: camera, v: 5.0, gauge: 28, color: red/black, length_mm: 110,
+     route: [[20, 15, 20], [37, 15, 20], [38, 11, 20]]}
+  - {id: rx_5v, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 110,
+     route: [[20, 15, 32], [38, 15, 40]]}
   # signals
-  - {id: cam_video, from: camera, to: stack, kind: signal, gauge: 28, color: yellow, length_mm: 90, note: "camera video into the FC (OSD)"}
+  - {id: cam_video, from: camera, to: stack, kind: signal, gauge: 28, color: yellow, length_mm: 110,
+     route: [[38, 11, 20], [37, 15, 20], [20, 15, 20]], note: "camera video into the FC (OSD)"}
   - {id: vtx_video, from: stack, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 80, note: "FC video out + SmartAudio (UART) to the VTX"}
-  - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 90, route: [top_plate.rx], note: "CRSF TX/RX to an FC UART"}
+  - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 110,
+     route: [[20, 15, 32], [38, 15, 40]], note: "CRSF TX/RX to an FC UART"}
 keepouts:
   strap_under: {proxy: box, size: [20, 43.6, 1.8], owner: strap, note: "strap run under the top plate"}
   strap_l: {proxy: box, size: [20, 1.8, 45.6], owner: strap, note: "strap side run, plate underside to pack top"}
@@ -127,8 +140,8 @@ assembly:
 requirements:
   - {id: prop_gap, check: prop_clearance, min_mm: 3, min_between_mm: 4, joints: [cam_tilt],
      why: "spinning props must clear each other by 4 mm and everything else by 3 mm, also while the camera tilts"}
-  - {id: twr, check: thrust_to_weight, thrust_g_total: 3592, min_ratio: 6,
-     why: "freestyle needs >= 6:1; catalog XING2 2207 max thrust 1685 g at full output, x 0.73^2 for the 73 % Betaflight motor_output_limit that keeps the XT60 in rating = 898 g x 4 motors = 3592 g"}
+  - {id: twr, check: thrust_to_weight, thrust_g_total: 3691, min_ratio: 6,
+     why: "freestyle needs >= 6:1; catalog XING2 2207 max thrust 1685 g at full output, x 0.74^2 for the 74 % Betaflight motor_output_limit that keeps the XT60 in rating = 922.7 g x 4 motors = 3691 g"}
   - {id: frame_mass, check: mass_max, max_g: 250, include: [body, arm_1, arm_2, arm_3, arm_4, top_plate],
      why: "printed frame no heavier than 250 g"}
   - {id: cg_center, check: cg, point: [0, 0, 0], max_lateral_mm: 5,
