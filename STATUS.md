@@ -425,3 +425,24 @@ pushed for it and what I know:
     the pocket): replaced by one simple polygon.
 - Limit stays 0.44 mm (session 12d9384eb7 had raised it to 1.0; no longer needed). Next: their handover A-C
   (axial pin retention, line strength, tendon travel), build + renders, design-reviewer.
+
+## 2026-10-31 02:40 UTC — session 12d9384eb7: PLAN "Ship package" done
+- `kerf/ship.py` (hooked once in pipeline after the BOM/viewer): every BOM row gets buy link, unit $ and total $ from
+  the new `catalog/prices.json` (39 dated, sourced prices, 2026-10-30: all purchased catalog items the projects use,
+  M2-M4 screw packs + exact M3x8/M3x10/M3x8-flat, inserts, nuts, washers, 3 x 16 dowels, PETG/PLA/CF-PETG per gram);
+  `bom.md` gets a total and lists unpriced rows; fasteners fall back from exact length to the size pack; printed
+  parts are priced as filament. A bom_extra row can name `price_key`.
+- `out/ASSEMBLY.md`: root first, then `assembly.order` (unnamed items right after their parent); per step the
+  heat-set inserts to press first, pins, screws (driven with the later of their two parts, as access.py), bench
+  sub-assemblies from `key_access`, and an iso render (`out/assembly_steps/step_NN_iso.png`) with earlier parts grey
+  and the new part pulled back along its mating joint axis (or `insert` path). The electrical session appends its
+  solder/wiring steps to the same file.
+- tests/test_ship.py (8): hand-computed totals incl. fallbacks and filament, price-key mapping, bom.md/csv columns,
+  every prices.json entry well formed, step plan (screws with the later part, inserts first, order + unknown-id
+  error), ASSEMBLY.md + one render per step, explode direction. servo_link `kerf build` PASS: 5 steps, total $13.72
+  (2 hobby rows unpriced). Spot-checked live: MG996R $6.99 (HobbyKing), M3x8 100 pk $6.99 (Zoro).
+- Price caveats (from the research, in each entry's note): SpeedyBee stacks discontinued (RDQ lists $86-111);
+  MG90S priced as Waveshare's; DS servos from single eBay listings; dowel prices are A4 stainless DIN 7, not hardened
+  ISO 8734; carbon tube unit = one 1 m tube (yields four 228 mm mast rods, so the tvc rod rows overstate ~4x).
+- Also: added the new kerf/heads.py to the ARCHITECTURE.md package map (tests/test_docs was red on main).
+- Open for whoever wants it: price keys `wire:AWG<g>` / `heatshrink` that wiring_out.py rows ask for.

@@ -1,0 +1,320 @@
+{
+  "_meta": {
+    "currency": "USD",
+    "checked": "2026-10-30",
+    "note": "Dated price snapshot for BOM costing (unit = pack_usd / pack_qty). Every price was read from the linked page with WebFetch on the check date; prices exclude shipping and sales tax unless stated. Store pages change often, so re-check before ordering. Amazon blocked automated reading, so no Amazon prices are used.",
+    "missing": {}
+  },
+  "servos.MG996R": {
+    "buy": "https://hobbyking.com/towerpro-mg996r-10kg-servo-10kg-0-20sec-55g.html",
+    "pack_qty": 1,
+    "pack_usd": 6.99,
+    "checked": "2026-10-30",
+    "source": "https://hobbyking.com/towerpro-mg996r-10kg-servo-10kg-0-20sec-55g.html",
+    "note": "Towerpro MG996R Servo 25T 11kg / 0.16sec / 55g (genuine TowerPro brand). $6.99 special price, regular $12.49; page says In Stock and ships from USA or Global warehouse."
+  },
+  "servos.DS3218": {
+    "buy": "https://www.ebay.com/itm/276097973274",
+    "pack_qty": 1,
+    "pack_usd": 16.95,
+    "checked": "2026-10-30",
+    "source": "https://www.ebay.com/itm/276097973274",
+    "note": "eBay US listing 'DSservo DS3218 MG 20kg Metal Gear Digital Steering Servo For RC Baja Car Robot', brand DSSERVO, 1 servo, US $16.95 or Best Offer. The vendor page (rcdrone.top) was sold out."
+  },
+  "servos.DS3225": {
+    "buy": "https://www.ebay.com/itm/147275061597",
+    "pack_qty": 1,
+    "pack_usd": 12.0,
+    "checked": "2026-10-30",
+    "source": "https://www.ebay.com/itm/147275061597",
+    "note": "eBay US listing '25KG DS3225 MG 180° Metal Steering Digital Waterproof Servo High Torque RC Hobby', brand DSSERVO, 1 servo + 25T aluminium arm. US $12.00 item price (was $15.00); shipping US $5.50 not included."
+  },
+  "servos.MG90S": {
+    "buy": "https://www.pishop.us/product/mg90s-micro-servo-metal-gear/",
+    "pack_qty": 1,
+    "pack_usd": 4.95,
+    "checked": "2026-10-30",
+    "source": "https://www.pishop.us/product/mg90s-micro-servo-metal-gear/",
+    "note": "PiShop.us 'MG90S Micro Servo, Metal Gear', Waveshare 15024, In Stock. This is Waveshare's MG90S (same standard MG90S body), not TowerPro-branded; no genuine TowerPro MG90S with a US price was found."
+  },
+  "servo_horns.aluminum_25T": {
+    "buy": "https://www.ebay.com/itm/112539019739",
+    "pack_qty": 5,
+    "pack_usd": 11.84,
+    "checked": "2026-10-30",
+    "source": "https://www.ebay.com/itm/112539019739",
+    "note": "eBay US listing '5pcs Metal Servo Arm 25T Disc Metal Horns for MG995 MG996R RC Plane/Drone/Robots', 5 discs with screws, M3 mount holes, ships from Illinois, free shipping. The listing gives no disc diameter or bolt circle, so check them against the catalog's 20 mm OD / 14 mm bolt circle."
+  },
+  "servo_horns.aluminum_micro_21T": {
+    "buy": "https://www.ebay.com/itm/275463027179",
+    "pack_qty": 1,
+    "pack_usd": 14.98,
+    "checked": "2026-10-30",
+    "source": "https://www.ebay.com/itm/275463027179",
+    "note": "eBay US listing 'TL2366 21T Metal Servo Horn Arm 12G-18G CS-929MG,CS-939MG,DS-929MG,DS-939MG', 1 piece, US $14.98, free shipping from Shenzhen. It is the same TL2366 model the catalog cites, but it is an arm-shaped horn (23x5x8 mm), not a disc."
+  },
+  "bearings.6001": {
+    "buy": "https://bearingsdirect.com/6001-2rs-ball-bearing-12x28x8-sealed-6001ddu/",
+    "pack_qty": 1,
+    "pack_usd": 3.93,
+    "checked": "2026-10-30",
+    "source": "https://bearingsdirect.com/6001-2rs-ball-bearing-12x28x8-sealed-6001ddu/",
+    "note": "Bearings Direct '6001-2RS Ball Bearing 12x28x8 Sealed 6001DDU' (AMPEC brand), $3.93 each; 5% off for 10+; in stock."
+  },
+  "drone.motors.2207_1855kv_6s": {
+    "buy": "https://www.racedayquads.com/products/iflight-xing2-2207-1855kv-motor",
+    "pack_qty": 1,
+    "pack_usd": 28.99,
+    "checked": "2026-10-30",
+    "source": "https://www.racedayquads.com/products/iflight-xing2-2207-1855kv-motor",
+    "note": "RaceDayQuads 'iFlight Xing2 2207 1855Kv Motor', $28.99. The page title names a single motor, but the page does not state the quantity."
+  },
+  "drone.batteries.6S_1100": {
+    "buy": "https://www.getfpv.com/batteries/mini-quad-batteries/cnhl-black-series-100c-6s-lipo-battery-1100mah.html",
+    "pack_qty": 1,
+    "pack_usd": 32.99,
+    "checked": "2026-10-30",
+    "source": "https://www.getfpv.com/batteries/mini-quad-batteries/cnhl-black-series-100c-6s-lipo-battery-1100mah.html",
+    "note": "GetFPV 'CNHL Black Series V2 130C 6S LiPo Battery - 1100mAh', includes 1 battery, XT60, In Stock. (The page's item name also says 100C; the spec says 130C.)"
+  },
+  "drone.batteries.6S_1300": {
+    "buy": "https://pyrodrone.com/products/cnhl-black-series-1300mah-22-2v-6s-130c-lipo-battery-xt6099-copy",
+    "pack_qty": 1,
+    "pack_usd": 40.99,
+    "checked": "2026-10-30",
+    "source": "https://pyrodrone.com/products/cnhl-black-series-1300mah-22-2v-6s-130c-lipo-battery-xt6099-copy",
+    "note": "Pyrodrone 'CNHL Black Series 1300MAH 22.2V 6S 130C Lipo Battery - XT60', 1 battery, in stock. RaceDayQuads lists the V2.0 1300 6S 130C at $36.49, but its page does not state the pack quantity."
+  },
+  "drone.cameras.micro_19mm": {
+    "buy": "https://shop.runcam.com/runcam-phoenix-2/",
+    "pack_qty": 1,
+    "pack_usd": 29.99,
+    "checked": "2026-10-30",
+    "source": "https://shop.runcam.com/runcam-phoenix-2/",
+    "note": "RunCam store 'RunCam Phoenix 2', standard model 'Now: US$29.99' (Joshua Edition +US$2.00). The page does not show stock status."
+  },
+  "drone.connectors.XT60": {
+    "buy": "https://www.racedayquads.com/products/xt60-connector-1pc-choose-your-version",
+    "pack_qty": 1,
+    "pack_usd": 1.98,
+    "checked": "2026-10-30",
+    "source": "https://www.racedayquads.com/products/xt60-connector-1pc-choose-your-version",
+    "note": "One male + one female pair, bought as two RaceDayQuads 'XT60 Connector (1PC) - Choose Your Version' (Amass) at $0.99 each, so 1 pair = $1.98. The $0.99 comes from the page's price meta, and the page did not show prices per variant."
+  },
+  "drone.stacks.fc_20": {
+    "buy": "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/",
+    "pack_qty": 1,
+    "pack_usd": 64.99,
+    "checked": "2026-10-30",
+    "source": "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/",
+    "note": "SpeedyBee official store 'SpeedyBee F405 Mini BLS 35A 20x20 Stack', US$64.99, but the page marks it Discontinued. RaceDayQuads lists 'SpeedyBee F405 Mini BLS 35A 20x20 Stack (F405 FC / 35A 8Bit 4in1 ESC)' at $110.99 (https://www.racedayquads.com/products/speedybee-f4-3-6s-20x20-stack-combo-f405-fc-35a-8bit-4in1-esc), stock not shown."
+  },
+  "drone.stacks.fc_30_5": {
+    "buy": "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/",
+    "pack_qty": 1,
+    "pack_usd": 65.99,
+    "checked": "2026-10-30",
+    "source": "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/",
+    "note": "SpeedyBee official store 'SpeedyBee F405 V4 BLS 55A 30x30 FC&ESC Stack', US$65.99, but the page marks it Discontinued. RaceDayQuads lists the same stack at $86.49 (https://www.racedayquads.com/products/speedybee-f405-v4-bls-3-6s-30x30-stack-combo-f405-fc-8bit-55a-4in1-esc)."
+  },
+  "drone.vtx.tx800": {
+    "buy": "https://www.racedayquads.com/products/speedybee-tx800-20x20-25-800mw-5-8ghz-vtx-mmcx",
+    "pack_qty": 1,
+    "pack_usd": 51.99,
+    "checked": "2026-10-30",
+    "source": "https://www.racedayquads.com/products/speedybee-tx800-20x20-25-800mw-5-8ghz-vtx-mmcx",
+    "note": "RaceDayQuads 'SpeedyBee TX800 20x20 25-800mW 5.8GHz VTX - MMCX', $51.99 (from the page's price meta). The GetFPV page shows In Stock but no price."
+  },
+  "drone.props.5_1in": {
+    "buy": "https://www.racedayquads.com/products/gemfan-hurricane-mck-51466-3-v2-tri-blade-5-1-prop-4-pack-choose-color",
+    "pack_qty": 4,
+    "pack_usd": 4.99,
+    "checked": "2026-10-30",
+    "source": "https://www.racedayquads.com/products/gemfan-hurricane-mck-51466-3-v2-tri-blade-5-1-prop-4-pack-choose-color",
+    "note": "RaceDayQuads 'Gemfan Hurricane MCK 51466-3 V2 Tri-Blade 5.1\" Prop 4 Pack - Choose Color', 4 props for $4.99. This key was not in the requested list, but fpv_5in uses it."
+  },
+  "electronics.pads.battery_pad": {
+    "buy": "https://www.team-blacksheep.com/products/prod:grip_pads",
+    "pack_qty": 3,
+    "pack_usd": 5.95,
+    "checked": "2026-10-30",
+    "source": "https://www.team-blacksheep.com/products/prod:grip_pads",
+    "note": "TBS store 'Battery Anti-slip Pad (3pcs)', 100 x 50 x 2.5 mm, US$ 5.95 for 3, In Stock. The catalog's MyFPVStore 3-pack is $6.99 and out of stock."
+  },
+  "electronics.receivers.elrs_nano": {
+    "buy": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver",
+    "pack_qty": 1,
+    "pack_usd": 18.99,
+    "checked": "2026-10-30",
+    "source": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver",
+    "note": "RadioMaster store 'RP1 V2 ExpressLRS 2.4ghz Nano Receiver', FCC or LBT variant, $18.99 USD each."
+  },
+  "electronics.straps.strap_20x250": {
+    "buy": "https://www.myfpvstore.com/yxmk",
+    "pack_qty": 1,
+    "pack_usd": 2.99,
+    "checked": "2026-10-30",
+    "source": "https://www.myfpvstore.com/yxmk",
+    "note": "MyFPVStore 'Gemfan Anti-Slip Battery Strap 25×2 (Pick your Color)', 1 strap, 20 x 250 mm, $2.99, In stock (the same strap the catalog lists)."
+  },
+  "rods.cf_tube_5x3": {
+    "buy": "https://www.walmart.com/ip/4-Piece-5mm-x-3mm-x-1000mm-Carbon-Fiber-Tube-Pultruded-Round-Tube-Super-High-Strength-for-RC-Hobbies-Drones-Special-Projects/210800529",
+    "pack_qty": 4,
+    "pack_usd": 20.99,
+    "checked": "2026-10-30",
+    "source": "https://www.walmart.com/ip/4-Piece-5mm-x-3mm-x-1000mm-Carbon-Fiber-Tube-Pultruded-Round-Tube-Super-High-Strength-for-RC-Hobbies-Drones-Special-Projects/210800529",
+    "note": "Walmart 'KARBXON 4 Piece - 5mm x 3mm x 1000mm Carbon Fiber Tube - Pultruded Round Tube', $20.99 for 4. pack_qty 4, so the unit cost is ONE 1000 mm tube ($5.25), and one tube yields four 228 mm rods. The page does not state stock but shows Add to cart."
+  },
+  "dowel:3x16": {
+    "buy": "https://www.zoro.com/i/G3411725/",
+    "pack_qty": 10,
+    "pack_usd": 3.49,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/i/G3411725/",
+    "note": "Zoro Select 'Standard Dowel Pin, 3 mm Nominal Dia, 16 mm L, Stainless Steel, 10 PK', A4 stainless, DIN 7, $3.49 per 10. This pin is stainless but not hardened (not ISO 8734). The Bambu D3 3x16 20-pack (DA019) shows only 'From $1.43' for the whole range, with no price for the 3x16 size."
+  },
+  "dowel:3": {
+    "buy": "https://www.zoro.com/i/G3411725/",
+    "pack_qty": 10,
+    "pack_usd": 3.49,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/i/G3411725/",
+    "note": "Same pack as dowel:3x16: Zoro Select 3 x 16 mm A4 stainless dowel pin (DIN 7), 10 PK, $3.49."
+  },
+  "screw:M2:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m2-040-socket-head-cap-screw-socket-zinc-plated-steel-6-mm-length-100-pk-sc22020060-14-100p1/i/G1464452/",
+    "pack_qty": 100,
+    "pack_usd": 22.79,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m2-040-socket-head-cap-screw-socket-zinc-plated-steel-6-mm-length-100-pk-sc22020060-14-100p1/i/G1464452/",
+    "note": "Zoro Select 'M2-0.40 Socket Head Cap Screw, Socket, Zinc Plated Steel, 6 mm Length, 100 PK', class 12.9, DIN 912, $22.79/100. This is the cheapest M2 DIN 912 100-pack found; Newport M2x10 12.9 is $59.99/100."
+  },
+  "screw:M2.5:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m25-045-cylindrical-socket-head-cap-screw-6-mm-l-100-pk-m070000250006/i/G1272765/",
+    "pack_qty": 100,
+    "pack_usd": 4.25,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m25-045-cylindrical-socket-head-cap-screw-6-mm-l-100-pk-m070000250006/i/G1272765/",
+    "note": "Zoro Select 'M2.5-0.45 Socket Head Cap Screw, Socket, Black Oxide Steel, 6 mm Length, 100 PK', class 12.9, DIN 912, $4.25/100."
+  },
+  "screw:M3:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m3-050-cylindrical-socket-head-cap-screw-8-mm-l-100-pk-sc22030080-100p1/i/G2601365/",
+    "pack_qty": 100,
+    "pack_usd": 6.99,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m3-050-cylindrical-socket-head-cap-screw-8-mm-l-100-pk-sc22030080-100p1/i/G2601365/",
+    "note": "Zoro Select 'M3-0.50 Socket Head Cap Screw, Socket, Zinc Plated Steel, 8 mm Length, 100 PK', class 12.9, DIN 912, $6.99/100."
+  },
+  "screw:M3x8:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m3-050-cylindrical-socket-head-cap-screw-8-mm-l-100-pk-sc22030080-100p1/i/G2601365/",
+    "pack_qty": 100,
+    "pack_usd": 6.99,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m3-050-cylindrical-socket-head-cap-screw-8-mm-l-100-pk-sc22030080-100p1/i/G2601365/",
+    "note": "Exact size: Zoro Select M3-0.50 x 8 mm socket head cap screw, zinc plated steel, class 12.9, DIN 912, 100 PK, $6.99."
+  },
+  "screw:M3x10:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-socket-black-oxide-steel-10-mm-length-100-pk-m070000300010/i/G1830011/",
+    "pack_qty": 100,
+    "pack_usd": 6.19,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-socket-black-oxide-steel-10-mm-length-100-pk-m070000300010/i/G1830011/",
+    "note": "Exact size: Zoro Select 'M3-0.50 Socket Head Cap Screw, Socket, Black Oxide Steel, 10 mm Length, 100 PK', class 12.9, DIN 912, $6.19/100."
+  },
+  "screw:M4:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m4-070-socket-head-cap-screw-black-oxide-steel-8-mm-l-100-pk-m070000400008/i/G3152511/",
+    "pack_qty": 100,
+    "pack_usd": 3.29,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m4-070-socket-head-cap-screw-black-oxide-steel-8-mm-l-100-pk-m070000400008/i/G3152511/",
+    "note": "Zoro Select 'M4-0.70 Socket Head Cap Screw, Socket, Black Oxide Steel, 8 mm Length, 100 PK', class 12.9, DIN 912, $3.29/100."
+  },
+  "screw:M3:flat": {
+    "buy": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-flat-zinc-plated-steel-8-mm-length-100-pk-m074700300008/i/G2650466/",
+    "pack_qty": 100,
+    "pack_usd": 5.59,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-flat-zinc-plated-steel-8-mm-length-100-pk-m074700300008/i/G2650466/",
+    "note": "Zoro Select 'M3-0.50 Socket Head Cap Screw, Flat, Zinc Plated Steel, 8 mm Length, 100 PK', class 8.8, ISO 10642, $5.59/100."
+  },
+  "screw:M3x8:flat": {
+    "buy": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-flat-zinc-plated-steel-8-mm-length-100-pk-m074700300008/i/G2650466/",
+    "pack_qty": 100,
+    "pack_usd": 5.59,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-flat-zinc-plated-steel-8-mm-length-100-pk-m074700300008/i/G2650466/",
+    "note": "Exact size: the same Zoro Select M3 x 8 mm ISO 10642 countersunk pack, $5.59/100."
+  },
+  "insert:M2": {
+    "buy": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m2-standard",
+    "pack_qty": 100,
+    "pack_usd": 11.18,
+    "checked": "2026-10-30",
+    "source": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m2-standard",
+    "note": "3DJake 'CNC Kitchen Threaded Inserts M2 Standard, M2 x 3.0 (100 pieces)', $11.18 (USD shown on 3djake.com, excl. VAT and delivery; ships from Austria)."
+  },
+  "insert:M2.5": {
+    "buy": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m25-standard",
+    "pack_qty": 100,
+    "pack_usd": 11.18,
+    "checked": "2026-10-30",
+    "source": "https://www.3djake.com/cnc-kitchen/threaded-inserts-m25-standard?sai=15444",
+    "note": "3DJake 'CNC Kitchen Threaded Inserts M2.5 Standard, M2.5 x 4.0 (100 pieces)', $11.18 (excl. VAT and delivery)."
+  },
+  "insert:M3": {
+    "buy": "https://3djake.com/cnc-kitchen/threaded-inserts-m3-standard",
+    "pack_qty": 100,
+    "pack_usd": 11.16,
+    "checked": "2026-10-30",
+    "source": "https://3djake.com/cnc-kitchen/threaded-inserts-m3-standard",
+    "note": "3DJake 'CNC Kitchen Threaded Inserts M3 Standard, M3 x 5.7 (100 pieces)', $11.16 (excl. VAT and delivery). The ruthex M3x5.7 100-pack is $8.37 at https://3djake.com/ruthex/threaded-insert-m3-100-pieces."
+  },
+  "nut:M3": {
+    "buy": "https://www.zoro.com/zoro-select-hex-nut-m3-050-steel-class-8-zinc-plated-240-mm-ht-100-pk-m013000300001/i/G6083515/",
+    "pack_qty": 100,
+    "pack_usd": 3.39,
+    "checked": "2026-10-30",
+    "source": "https://zoro.com/kbmt/m3-hex-nut",
+    "note": "Zoro Select 'Hex Nut, M3-0.50, Steel, Class 8, Zinc Plated, 2.40 mm Ht, 100 PK' (Mfr M01300.030.0001), $3.39/100. The price was read from Zoro's M3 hex nut listing (https://zoro.com/kbmt/m3-hex-nut) because the product page itself could not be opened. The 2.4 mm height matches DIN 934, but the listing does not name the standard."
+  },
+  "nut:M4": {
+    "buy": "https://www.zoro.com/zoro-select-m4-070-class-88-plain-finish-carbon-steel-hex-nuts-100-pk-m011000400001/i/G9463517/",
+    "pack_qty": 100,
+    "pack_usd": 3.15,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m4-070-class-88-plain-finish-carbon-steel-hex-nuts-100-pk-m011000400001/i/G9463517/",
+    "note": "Zoro Select 'Hex Nut, M4-0.70, Steel, Class 8, Plain, 3.20 mm Ht, 100 PK', DIN 934, $3.15/100."
+  },
+  "washer:M3": {
+    "buy": "https://www.zoro.com/i/G3068694/",
+    "pack_qty": 100,
+    "pack_usd": 2.79,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/i/G3068694/",
+    "note": "Zoro Select 'Flat Washer, For Screw Size M3, Steel Zinc Plated Finish, 100 PK' (Mfr M38130.030.0001), DIN 125-1A, 3.38 ID x 7 OD x 0.5 mm, $2.79/100."
+  },
+  "material:PETG": {
+    "buy": "https://us.store.bambulab.com/products/petg-basic",
+    "pack_qty": 1000,
+    "pack_usd": 22.99,
+    "checked": "2026-10-30",
+    "source": "https://us.store.bambulab.com/products/petg-basic",
+    "note": "Bambu Lab US store 'PETG Basic', filament with Basic Reusable Spool (White 30100), $22.99 for a 1 kg spool; pack_qty is in grams. 4+ rolls are discounted. The store notes PETG Basic is discontinued. Shop3D lists 'Bambu Lab PETG Basic (1.75mm, 1kg)' at the same $22.99."
+  },
+  "material:CF-PETG": {
+    "buy": "https://us.store.bambulab.com/products/petg-cf",
+    "pack_qty": 1000,
+    "pack_usd": 34.99,
+    "checked": "2026-10-30",
+    "source": "https://us.store.bambulab.com/products/petg-cf",
+    "note": "Bambu Lab US store 'PETG-CF' (Carbon Fiber Reinforced PETG), filament with spool, $34.99; pack_qty is in grams. The 1 kg weight is confirmed by Shop3D's listing of the same 'PETG-CF ... (1.75mm, 1kg)' at $34.99 (https://shop3duniverse.com/collections/bambu-lab-filaments). Projects use the material name 'CF-PETG'."
+  },
+  "material:PLA": {
+    "buy": "https://shop3duniverse.com/collections/bambu-lab-filaments/products/bambu-lab-pla-basic-1-75mm-1kg",
+    "pack_qty": 1000,
+    "pack_usd": 22.99,
+    "checked": "2026-10-30",
+    "source": "https://shop3duniverse.com/collections/bambu-lab-filaments/products/bambu-lab-pla-basic-1-75mm-1kg",
+    "note": "Shop3D 'Bambu Lab PLA Basic (1.75mm, 1kg)', filament with spool, $22.99, in stock; pack_qty is in grams. The Bambu US store PLA Basic page could not be read with a price. STEMfinity lists Bambu PLA Basic at a sale price of $19.99 (regular $22.99)."
+  }
+}
