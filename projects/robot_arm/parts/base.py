@@ -28,7 +28,7 @@ def build(ctx):
     # window, tab tops pressed against the shelf's underside, 4 screws from below. Coming from below, the cable boss
     # (low on the output end) never has to pass the shelf, so the shelf is solid round all four tab holes.
     z_tabtop = p.z_shelf + d["tab_t"]
-    boss_x1 = xc + d["L"] / 2 + float(catalog.get(YAW)["cable_boss_protrusion"]) + 0.6
+    boss_x1 = xc + d["L"] / 2 + float(catalog.get(YAW)["cable_boss_protrusion"]) + 3.0   # room for the lead's bend
     cav_x0, cav_x1 = xc - d["span"] / 2 - 0.6, max(boss_x1, xc + d["span"] / 2 + 0.6)   # the tabs pass it on the way up
     hx0, hx1 = cav_x0 - 4.0, cav_x1 + 4.0
     hw = d["W"] / 2 + 0.5 + 4.0
@@ -75,9 +75,6 @@ def build(ctx):
     for sy in (-1, 1):
         body += Pos(-2.75, sy * (y0 + 1.6), p.base_floor - 0.01) * Box(45.5, 3.2, p.z_plat0 - 0.5 - p.base_floor + 0.01,
                                                                        align=(Align.CENTER, Align.CENTER, Align.MIN))
-    # cable hole through the guard ring's -Y side at floor level: the yaw servo lead leaves the housing's front exit,
-    # runs back along the housing inside the ring and out here
-    body -= Pos(-p.yaw_c, -(r_tip + 2.75), p.base_floor) * Box(12.0, 6.0, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # cable post on the rear pad, outside the circle the turntable sweeps (r ~68); the lead bundle spans from the
     # turntable's cable mast to here above the arm, so it never drapes near the gears
     post_top = 132.0                                            # level with the turntable's cable mast

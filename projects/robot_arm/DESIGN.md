@@ -192,8 +192,9 @@ non-conductive pad, not loose against the WAGO splices; screw the supply to the 
    window, tab tops against the shelf; 4 × M3 × 8 thread-forming screws from below (the two beside the cable boss
    need a ball-end key, tilted sideways in the widened part of the pocket). The tab holes sit 1–1.5 mm from the
    window edge (less than 1.5 d): the MG996R's own 49.5 × 10 hole pattern forces it, as on every servo bracket;
-   the shelf is solid all round them (holewall check). Lay the servo lead (plug first) down the pocket and along the
-   groove in the plate's underside to the −Y edge before the base goes on the desk. The shelf underside the tabs clamp
+   the shelf is solid all round them (holewall check). Pre-bend the servo lead downward right at the cable
+   boss (3 mm of room past it), lay it (plug first) down the pocket and along the groove in the plate's underside to the
+   −Y edge, and tape it in the groove while you turn the base over and onto the desk. The shelf underside the tabs clamp
    against prints on support: use a support interface layer and file the face flat before fitting the servo.
    Centre it (1500 µs), press the aluminium horn on and fit its centre screw; bolt the yaw gear on (4 × M3 × 8,
    counterbored: an M3 × 10 would reach the servo case under the horn).
