@@ -915,3 +915,9 @@ pushed for it and what I know:
   artifact (version 2). README results table regenerated; final summary at the top of this file and in README.
 - Left for others: the clean-clone double verify (claimed by 216d7672b4) and the Bambu real print (BLOCKED on
   Spencer). STATE stays IN PROGRESS until the verify item is checked; whoever checks it sets STATE: COMPLETE.
+## 2026-10-31 15:15 UTC — session 216d7672b4: clean-clone `kerf verify` (PLAN "Run kerf verify (full) twice")
+- Run 1: fresh `git clone` to /tmp/kf-clean at b45052d, `./setup.sh` (ALL OK), full `kerf verify` in 4134 s:
+  pytest, all six projects (check + build + sweeps + FEA), every eval PASS. Only failures: robot_arm review stale
+  (gripper foot change; re-reviewed PASS at 3dea877d2f86fff3 in 44505ff since) and PLAN.md unchecked items.
+- Run 2 (clone at 2c85982) in progress. Note: a full PASS needs every PLAN box checked, and "Bambu A2L handoff" waits
+  on one real print by Spencer (.claude/state/BLOCKED), so this item cannot honestly be checked until after that.
