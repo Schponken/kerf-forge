@@ -7,17 +7,17 @@ three splayed legs. Numbers below are from `kerf build tvc_drone` (out/report.js
 ## Requirements (numbers)
 | What | Target | Result |
 |---|---|---|
-| Thrust / weight (`twr`, `twr_sag`) | >= 2.0 at 22.2 V nominal (ENGINEERING.md s3), >= 1.8 sagged to 21 V | 2.18 / 1.95 (1899 g at 24 V and the 85 % motor output cap, x (V/24)^2; 745 g incl. wiring) |
-| CG on thrust axis (`cg_axis`) | <= 3 mm lateral, above pivot | 0.35 mm worst over gimbal corners, wiring mass included at its routed position; 139-140 mm above the pivot |
-| Stand on its own (`stand`) | >= 15 deg tip-over | 20.6 deg |
+| Thrust / weight (`twr`, `twr_sag`) | >= 2.0 at 22.2 V nominal (ENGINEERING.md s3), >= 1.8 sagged to 21 V | 2.12 / 1.90 (1899 g at 24 V and the 85 % motor output cap, x (V/24)^2; 765 g incl. tubes and wiring) |
+| CG on thrust axis (`cg_axis`) | <= 3 mm lateral, above pivot | 0.24 mm worst over gimbal corners, wiring mass included at its routed position; 141 mm above the pivot |
+| Stand on its own (`stand`) | >= 15 deg tip-over | 20.5 deg |
 | Gimbal travel | +/-15 deg each axis + 4 corners, collision-free | clear (sweeps + `gimbal_corners`) |
 | Prop clearance (`props`) | >= 3 mm to anything, >= 20 mm between discs | 5.7 mm (top prop to leg_1 at roll -15 / pitch 15) |
 | Gimbal hub strength (`gimbal_fea`) | 2 x max thrust = 66.1 N, SF 3 | 3.35 MPa vs 16 MPa allowable |
-| Roll ring / yoke / leg FEA | SF 3 (ENGINEERING.md s3) | 4.02 / 3.67 (Z-strength) / 3.13 MPa vs 16 / 13 / 16; leg case 729 g x 3 g |
-| Leg lug landing (`lug_fea`) | screws pull 160 N per leg, SF 3, Z-strength | 8.08 MPa vs 13 |
-| Mass | <= 750 g | 745 g incl. wire from the catalog g/m x cut lengths |
-| Power budget (`power`) | every rating at avg and peak | worst 0.73 of rating (battery 12.2 A hover, 43.8 A peak) |
-| Hover time (`flight_time`) | >= 2 min | 4.3 min on 80 % of 1100 mAh (momentum theory, coax kappa 1.281) |
+| Roll ring / yoke / leg FEA | SF 3 (ENGINEERING.md s3) | 4.02 / 3.58 (Z-strength) / 3.34 MPa vs 16 / 13 / 16; leg case 790 g x 3 g |
+| Leg lug landing (`lug_fea`) | screws pull 168 N per leg, SF 3, Z-strength | 8.05 MPa vs 13 (3 mm fillets where the lugs and bridges leave the disc; peak 11 MPa) |
+| Mass (`mass`) | <= 790 g (from twr: 1625 g / 2.0 = 812 g less ~20 g of unmodelled screws, inserts, dowels) | 765 g incl. tubes (density x section x length), XT60 and wire from the catalog g/m x cut lengths |
+| Power budget (`power`) | every rating at avg and peak | worst 0.73 of rating (battery 12.7 A hover, 43.8 A peak) |
+| Hover time (`flight_time`) | >= 2 min | 4.2 min on 80 % of 1100 mAh (momentum theory, coax kappa 1.281) |
 | Battery plug / USB (`plug_access`, `usb_access`) | reachable assembled | both clear |
 
 ## Architecture
@@ -52,7 +52,7 @@ and has flown. Differences from fd.iwth, and why:
 
 | RadioMaster RP1 ELRS receiver | electronics.receivers.elrs_nano | 5 V from the FC pad, CRSF to a free UART; tied under ring_mid |
 | Hobbywing UBEC 3 A (5 V) | electronics.becs.ubec_5v_3a | servos off the FC rail: 2 x 0.7 A stall = 1.4 A peak vs 3 A |
-| Amass XT60 male on a 14 AWG pigtail | drone.connectors.XT60 | 30 A continuous / 60 A instantaneous; hover 11.8 A, peak 36.6 A |
+| Amass XT60 male on a 14 AWG pigtail | drone.connectors.XT60 | 30 A continuous / 60 A instantaneous; hover 12.7 A, peak 43.8 A |
 | TBS anti-slip pad, cut 70 x 38 | electronics.pads.battery_pad | under the pack |
 | 20 x 250 mm strap | electronics.straps.strap_20x250 | over the pack across its width, through two ring_top slots |
 
@@ -74,9 +74,9 @@ directions and tune on a tether (Risks).
 - **Motor output limit 85 % (ArduPilot `MOT_SPIN_MAX = 0.85`, default 0.95) is required**: two motors at full
   output draw 2 x 35.08 A = 70 A, above the XT60's 60 A instantaneous rating. Prop power goes as speed^3, so 85 %
   output = 0.614 x 35.08 = 21.5 A per motor (43 A for the pair) and 72 % thrust: 1899 g at the motor table's 24 V,
-  1625 g at 22.2 V nominal (T/W 2.18) and 1454 g sagged to 21 V (1.95). Thrust scales with voltage squared.
-- Hover: 745 g on one coaxial 5.1" pair -> electrical power from momentum theory (FM 0.5, motor eff. 0.75, coax
-  1.281), 12.2 A at 22.2 V with FC, servos and receiver -> 4.3 min on 880 mAh usable.
+  1625 g at 22.2 V nominal (T/W 2.12) and 1454 g sagged to 21 V (1.90). Thrust scales with voltage squared.
+- Hover: 765 g on one coaxial 5.1" pair -> electrical power from momentum theory (FM 0.5, motor eff. 0.75, coax
+  1.281), 12.7 A at 22.2 V with FC, servos and receiver -> 4.2 min on 880 mAh usable.
 - Routes (every one is checked at home, at both ends of each gimbal axis and at the 4 gimbal corners: a tube of the
   wire's diameter must not enter any part or prop disc, and the cut length covers the worst pose + 15 %): down
   through the ring_mid wire pass at 30 deg, over the +Y edge of ring_low to the +X yoke, down beside the yoke plate
@@ -133,8 +133,8 @@ motor_plate -> motor_bottom -> prop_bottom. Coupled sweep `gimbal_corners` = the
 6. motor_hub onto horn_pitch (4 x M2; the two upper screws need a **ball-end 1.5 mm key**), then press the pitch
    dowel in from outside through gimbal_outer's -Y pad into the hub's -Y arm.
 7. motor_plate under the hub, 3 x M3 from below. Props on (top CCW, bottom CW per the ArduPilot CoaxCopter layout).
-8. Tubes into ring_low, ring_mid, ring_top; tighten the radial lock screws gently on filed flats (the tube wall is
-   1 mm: use nylon-tipped set screws or stop at first contact + 1/8 turn). Stack on its grommets (USB-C facing -X,
+8. Tubes into ring_low, ring_mid, ring_top; tighten the nylon-tip radial lock screws gently on filed flats (the tube
+   wall is 1 mm: stop at first contact + 1/8 turn; a drop of epoxy in each bore makes it permanent). Stack on its grommets (USB-C facing -X,
    4 x M2 x 18), pad, battery, strap, legs (2 x M3 x 10 each from below).
 9. Wiring (out/WIRING.md has every run, gauge and cut length): XT60 pigtail tied through the ring_top slots; UBEC and receiver tied under
    ring_mid; solder the pigtail, capacitor, motor extensions, UBEC input, servo and receiver leads, and tie them at the

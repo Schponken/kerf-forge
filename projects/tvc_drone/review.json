@@ -1,51 +1,16 @@
 {
-  "verdict": "PASS",
-  "fingerprint": "00af8263a5d0de73",
+  "verdict": "FAIL",
+  "fingerprint": "374db95cd53ce70b",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 2: every blocker and major finding from round 1 is fixed. Wire routes now follow the real load-free path (mast, ring_low +Y edge, down beside the +X yoke on two tie slots, across the roll pivot, along the ring top, across the pitch pivot, then the hub fork). They are machine-checked at home, at both ends of each gimbal axis and at the four corners against every part and prop disc. Cut lengths come from the worst pose, and the 66 g of wire is now counted in hover current, T/W (2.31) and mass (729 g). The rest is fixed too: the firmware path (ArduPilot CoaxCopter, PWM 1-2 motors / 3-4 servos in separate timer groups, MOT_SPIN_MAX 0.80) is stated with its residual risk; the dowels go in last from outside; the XT60 is on a grippable pigtail; the BOM additions (pad, capacitor, single 3 x 20 dowel row) are in. The mechanical side (sweeps, CG, tip-over, FEA load cases) is unchanged and sound; only minor documentation and BOM gaps remain. Re-confirmed for fingerprint 00af8263a5d0de73. project.yaml and parts/*.py are byte-identical to 4e8d44f. Of the 23 catalog entries in catalog_deps.json, only servo_horns.aluminum_micro_21T changed, and only its note text (spline_d is still 4.8). report.json requirement values and the route_check results are unchanged.",
+  "summary": "The audit fixes are real. The ring_low leg inserts now sit on the 22 mm lug's centre line with 9 mm of wall to each edge. A new landing FEA covers the lugs, and legs, hub and roll ring now print flat on the bed. Teardrops, grommets plus inserts, SF 3 and the voltage-derated T/W are all in place, and the gimbal, props and electrics check out. One major problem remains: the 'mass' requirement passes at 745.4 g against 750 g only because the three carbon tubes (catalog density 1.5, about 12.9 g together), the XT60 and every fastener, insert and dowel are counted as 0 g. The real all-up mass is about 765-770 g, which fails the declared limit, although T/W at 22.2 V stays at about 2.1.",
   "findings": [
-    {
-      "severity": "minor",
-      "part": "stack (drone.stacks.fc_20) / REFERENCES.md",
-      "issue": "The ArduPilot facts the flight depends on are only cited in DESIGN.md prose. They are not in the catalog entry or REFERENCES.md: board support, the PWM timer groups (1-2 / 3-4 / 5), CoaxCopter flap output functions 33/34 and motors 37/38, and MOT_SPIN_MAX. Whether the CoaxCopter flap mixer (which scales flap authority with throttle) steers a gimbal well is still unproven; it is correctly flagged as a risk.",
-      "fix": "Add an `ardupilot` block to drone.stacks.fc_20 with the hwdef/board-page URL and the timer groups. Add the CoaxCopter page to REFERENCES.md. Write the exact SERVOn_FUNCTION values (1=37, 2=38, 3/4=33/34 or as bench-verified) into WIRING.md."
-    },
-    {
-      "severity": "minor",
-      "part": "out/ASSEMBLY.md",
-      "issue": "The generated steps still say 'press the 3 x 20 mm dowel into ring_low / gimbal_outer' at the step where the part is fitted, without saying it goes in last and from outside. DESIGN.md steps 3 and 6 are correct, but a builder following ASSEMBLY.md alone could press the pin first and then be unable to hang the ring or hub.",
-      "fix": "Give pin sites an insert direction or order flag so ASSEMBLY.md says 'after the horn screws, press the dowel in from outside through <part>'. As a stopgap, add a note to the two steps."
-    },
-    {
-      "severity": "minor",
-      "part": "wiring (roll and pitch pivot crossings)",
-      "issue": "All the gimbal-bound conductors cross the roll pivot as a single short span of about 23 mm, roughly 20 mm off the axis: 2 x 3 x 18 AWG plus the pitch servo leads, a bundle of about 8 mm. This span flexes every control cycle and adds torque that the 1.8 kg cm MG90S has to overcome. The cut length covers the stretch, but no geometry forces a real service loop.",
-      "fix": "After wiring, measure servo current (or check free movement by hand) at the four corners, as DESIGN.md already says. Make the crossing a U-loop of 30-40 mm hanging outside the yoke, tied on both sides, so the flex is spread out. Twist the motor triplets."
-    },
-    {
-      "severity": "minor",
-      "part": "bom",
-      "issue": "Several electrical rows still have no buy link: AWG 14 and AWG 24 wire, the low-ESR capacitor, the cable ties and the UBEC price. The brief asks for a buy link on every wire, connector and electrical part.",
-      "fix": "Add catalog/prices entries (with sources) for 14 and 24 AWG silicone wire, a 35 V low-ESR capacitor and 2.5 mm cable ties."
-    },
-    {
-      "severity": "minor",
-      "part": "wiring bat_lead / ring_top",
-      "issue": "The pack's own XT60 lead must be at least 110 mm long, but CNHL does not publish its length. The mated XT60 pair also hangs free past the ring_top edge on a 14 AWG pigtail, so it will flop in flight and in a tip-over.",
-      "fix": "Measure the pack lead on arrival and record it in the catalog. Once plugged in, tuck the mated pair under the battery strap or tie it to the battery lead."
-    },
-    {
-      "severity": "minor",
-      "part": "motor_hub / ring_low / legs",
-      "issue": "The support warnings are unchanged: motor_hub 24 %, ring_low 17 %, gimbal_outer 18 %, legs 20 %. The two upper pitch-horn M2 screws still need a ball-end key.",
-      "fix": "Optional: add 45 deg chamfers under motor_hub's disc where it meets the arm roots, and under the leg feet, to cut support. Keep the ball-end key note in step 6."
-    },
-    {
-      "severity": "minor",
-      "part": "horn_roll / horn_pitch / servos",
-      "issue": "The micro 21T disc horn geometry is still an estimate, and the MG90S tab height has a 2.5 mm spread between sources. Both set the horn-face positions on gimbal_outer, motor_hub and ring_low.",
-      "fix": "Buy and measure the horn and servo before printing the three gimbal parts, update the catalog, and re-run kerf check."
-    }
+    {"severity": "major", "part": "rod_1..3 / xt60 / mass", "issue": "report.json purchased mass_g is 0.0 for rod_1, rod_2, rod_3 and xt60. kerf/checks.py item_mass_g only reads weight_g/mass_g, and rods.cf_tube_5x3 has only od/id/density: 3 x pi/4 x (5^2 - 3^2) x 228 mm x 1.5 g/cm3 = 12.9 g. The XT60 has no weight. Fasteners (about 30 screws, 13 heat-set inserts, 2 dowels, 9 set screws) are not counted either. 745.4 g (683.3 parts + 62.1 wiring) is really about 765-770 g, over the 750 g mass_max that the twr 'why' says it is sized at. twr then falls to about 2.11 and twr_sag to about 1.89, both still above their limits. leg_fea and lug_fea use 729 g.", "fix": "Engine (would hit every rod project): in item_mass_g, compute rod mass from catalog density x annulus area x the item's length, and add a test. Add a sourced weight_g to drone.connectors.XT60. Optionally add fastener mass from the fastener report. Then either trim mass or raise mass_max with the twr margin as the reason, and re-run cg/tip_over/twr/flight_time and the leg/lug load cases at the real mass."},
+    {"severity": "minor", "part": "ring_low", "issue": "DESIGN.md, STATUS.md and the ring_low docstring say the bosses, webs and lug ribs touch the bed. They do not. In print orientation only the four 4 mm yoke-bridge webs (18 tall) reach z 0: STL bed contact is 1464 mm². The tube-boss ends float 4 mm up (14 tall) and the lug ribs 8 mm up (10 tall), and the 7222 mm² plate face is 18 mm up on supports. A 124 g, 111 mm tall part standing on four thin strips is acceptable on textured PEI with supports, but marginal, and the documentation is wrong.", "fix": "Make the bed-contact features one height. Trim the bridge webs to 14 mm (flush with the bosses, then re-run yoke_fea) or raise the bosses to 18 mm (longer tube engagement). Do not raise the 30-degree rib to 18 mm: the ph_top/servo route point [26.8, 20, 100] passes about 4 mm from that rib's centre line at z 100. Correct the text."},
+    {"severity": "minor", "part": "ring_mid, ring_top, leg_1..3", "issue": "A-5 is only partly done. The radial M3 lock taps in ring_mid and ring_top are plain cylinders, horizontal in print with no teardrop (ring_low's have teardrops). The leg's two M3 clearance holes are horizontal in the on-its-side print (bolt_pattern without teardrop).", "fix": "Use iface.hole(..., teardrop=iface.print_up_deg(ctx, loc)) for the ring_mid/ring_top lock taps, and pass teardrop= to the leg bolt_pattern."},
+    {"severity": "minor", "part": "motor_hub, gimbal_outer, ring_low, all", "issue": "A-11 is only partly done. The leg root fillet is there. The hub fork/arm-to-disc roots, gimbal_outer pad-to-ring corners and ring_low gusset/lug roots have no fillets, and no part has outside-edge chamfers (ENGINEERING.md s5).", "fix": "Add 1.5-2 mm fillets at the hub arm and fork roots and the lug and bridge roots, plus 0.6 mm bed-edge chamfers (elephant foot)."},
+    {"severity": "minor", "part": "ring_low (lug_fea)", "issue": "lug_fea passes on p99.9 8.08 vs 13 MPa, but its volume peak is 21.70 MPa (1.7x the limit; surface peak 11.23) on a coarse 4935-element mesh of a 194 mm part. The peak location is not reported. In the render the hot zone is the disc and lug roots near the wire pass, which is the expected load path.", "fix": "Refine the mesh (or have the engine report peak_at like max_disp_at) and confirm the 21.7 MPa peak is a load-patch singularity, not the lug-to-disc root. Fillet that root (see above)."},
+    {"severity": "minor", "part": "ring_low, ring_mid, ring_top / rods", "issue": "The 5x3 pultruded CF tubes (1 mm wall) are held only by 9 cup-point set screws on filed flats. A point load on a 1 mm pultruded wall cracks it lengthwise, and 'stop at first contact + 1/8 turn' leaves the mast relying on that friction in a crash.", "fix": "Bond the tubes with epoxy in the bores (keep the set screws only for alignment while it cures), or use nylon-tip set screws as the default rather than the alternative."},
+    {"severity": "minor", "part": "DESIGN.md", "issue": "Stale numbers remain. The XT60 row says 'hover 11.8 A, peak 36.6 A' (report: 12.2 / 43.8 A). The mass row says 745 g, which leaves out the uncounted tubes and fasteners (see the major finding).", "fix": "Refresh from report.json after the mass fix."}
   ]
 }

@@ -1,12 +1,12 @@
 """ring_low: the root of the airframe. A spider plate under the mast with three tube bosses, three leg lugs, and two
 yoke arms hanging down to the gimbal: +X carries the roll servo (window + 2 tapped M2 tab holes), -X holds the roll
-pivot dowel (press fit). Printed upside down (print_rot [180, 0, 0]): the tube bosses, bridge webs and lug ribs stand
-on the bed with the yoke arms pointing up; the plate between them prints on supports (~15 %). Every horizontal hole is
+pivot dowel (press fit). Printed upside down (print_rot [180, 0, 0]): the tube bosses and bridge webs (both 18 mm)
+stand on the bed with the yoke arms pointing up; the plate and the 10 mm lug ribs print on supports (~15 %). Every horizontal hole is
 a teardrop pointing up in that orientation (iface.print_up_deg)."""
 import math
 
 from build123d import *
-from kerf import iface
+from kerf import features, iface
 
 SERVO = "servos.MG90S"
 PIN = "motion.pin_3mm"
@@ -35,12 +35,20 @@ def build(ctx):
     xp = p.roll_tab_x + yoke_t
     plate += Pos(xp / 2, (y_lo + y_hi) / 2, z0) * Box(xp, y_hi - y_lo, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
     xm = p.ring_r_out + gap + pin_t
-    plate += Pos(-xm / 2, 0, z0) * Box(xm, 18, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    plate += Pos(-xm / 2, 0, z0) * Box(xm, 26, t, align=(Align.CENTER, Align.CENTER, Align.MIN))   # wider than the
+    # 18 mm pin plate so its corners on the disc do not coincide with the 150 deg lug side (a sliver no fillet takes)
     # --- +X yoke: vertical plate in the YZ plane from the servo down to the plate
     zb = -p.servo_W / 2 - 4.0
     arm_p = Pos(p.roll_tab_x, y_lo, zb) * Box(yoke_t, y_hi - y_lo, z0 + t - zb, align=(Align.MIN, Align.MIN, Align.MIN))
     # --- -X yoke: pin plate
     arm_m = Pos(-xm, -9, -9) * Box(pin_t, 18, z0 + t + 9, align=(Align.MIN, Align.MIN, Align.MIN))
+    # 3 mm fillets in the inside corners where the lugs and yoke bridges leave the centre disc (lug_fea peak sat in a
+    # sharp one); vertical edges in the plate band between r 33 and 45 are exactly those corners
+    corners = plate.edges().filter_by(Axis.Z).filter_by(
+        lambda e: z0 < e.center().Z < z0 + t and 33 < math.hypot(e.center().X, e.center().Y) < 45)
+    plate, failed = features.safe_fillet(plate, [(corners, 3.0)])
+    if failed or len(corners) < 6:
+        raise ValueError(f"ring_low disc corner fillets: {len(corners)} edges, failed {failed}")
     body = plate + arm_p + arm_m
     # stiffening gussets between each yoke arm and the plate (inside corner of the load path)
     for x0, x1, sgn in ((p.roll_tab_x, p.roll_tab_x - 22, 1), (-xm + pin_t, -xm + pin_t + 22, -1)):
@@ -55,12 +63,13 @@ def build(ctx):
     # --- tube bosses (up), bores 5.5 (0.5 mm clearance on the 5 mm tube), radial M3 lock holes
     for a in p.rod_angles:
         c = (p.rod_r * math.cos(math.radians(a)), p.rod_r * math.sin(math.radians(a)))
-        body += Pos(c[0], c[1], z0 + t - 0.01) * Cylinder(6.0, 14.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        body += Pos(c[0], c[1], z0 + t - 0.01) * Cylinder(6.0, 18.0, align=(Align.CENTER, Align.CENTER, Align.MIN))  # = web height
     for a in p.rod_angles:
         c = (p.rod_r * math.cos(math.radians(a)), p.rod_r * math.sin(math.radians(a)))
         body -= Pos(c[0], c[1], p.rod_z0) * Cylinder(2.75, 40, align=(Align.CENTER, Align.CENTER, Align.MIN))
         lock = Pos(c[0], c[1], z0 + t + 7) * Rot(0, 0, a) * Rot(0, 90, 0) * Pos(0, 0, 14)   # +Z radially outward
-        body -= lock * iface.hole("M3", "tap", 14, teardrop=iface.print_up_deg(ctx, lock))[0]
+        up = iface.print_up_deg(ctx, lock)          # radial holes are always horizontal in these flat prints
+        body -= lock * features.teardrop_hole(iface.screw_spec("M3")["tap"], 14, 0.0 if up is None else up)
     body -= Cylinder(10, 400)                                            # wire pass + mass
     # two cable-tie slots through the +X yoke plate near its +Y edge: the motor and servo leads run down beside it
     for zt in (15.0, 40.0):

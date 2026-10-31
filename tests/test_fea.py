@@ -12,6 +12,7 @@ def test_cantilever_matches_beam_theory():
     assert r["max_disp_mm"] == pytest.approx(10 * 100 ** 3 / (3 * 2000 * I), rel=0.03)      # 2.0 mm
     assert r["max_vm_peak_mpa"] == pytest.approx(10 * 100 * 5 / I, rel=0.10)               # 6.0 MPa
     assert r["max_disp_at"][0] == pytest.approx(100, abs=0.5)                              # at the free tip
+    assert r["max_vm_peak_at"][0] < 20                                                     # peak bending at the root
 
 
 def test_axial_rod_stress():

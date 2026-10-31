@@ -5,7 +5,7 @@ the tube bosses up."""
 import math
 
 from build123d import *
-from kerf import iface
+from kerf import features, iface
 
 STACK = "drone.stacks.fc_20"
 BEC = "electronics.becs.ubec_5v_3a"
@@ -23,8 +23,9 @@ def build(ctx):
     for a in p.rod_angles:
         c = (p.rod_r * math.cos(math.radians(a)), p.rod_r * math.sin(math.radians(a)))
         body -= Pos(c[0], c[1], -20) * Cylinder(2.75, 40, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        body -= Pos(c[0], c[1], -5) * Rot(0, 0, a) * Rot(0, 90, 0) * Cylinder(
-            iface.screw_spec("M3")["tap"] / 2, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        lock = Pos(c[0], c[1], -5) * Rot(0, 0, a) * Rot(0, 90, 0) * Pos(0, 0, 14)   # radial M3 lock, +Z outward
+        up = iface.print_up_deg(ctx, lock)          # radial holes are always horizontal in these flat prints
+        body -= lock * features.teardrop_hole(iface.screw_spec("M3")["tap"], 14, 0.0 if up is None else up)
     # wire passes between the tubes (motor/servo leads up to the stack)
     for a in p.rod_angles:
         body -= Rot(0, 0, a + 60) * Pos(p.rod_r + 1, 0, -1) * Box(6, 12, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))

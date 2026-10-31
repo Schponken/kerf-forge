@@ -1,6 +1,8 @@
 """Per-part manufacturability checks for FDM printing, done on the part in its print orientation."""
 from __future__ import annotations
 
+import math
+
 import numpy as np
 from build123d import Location, Rot, Pos
 
@@ -158,7 +160,17 @@ def item_mass_g(item) -> float:
         if "mass_g" in item.spec:
             return float(item.spec["mass_g"])
         try:
-            return catalog.num(catalog.get(item.spec["catalog"]), "weight_g", "mass_g", "weight")
+            e = catalog.get(item.spec["catalog"])
         except Exception:
             return 0.0
+        try:
+            return catalog.num(e, "weight_g", "mass_g", "weight")
+        except Exception:
+            pass
+        # rods / tubes: catalog density (g/cm3) x cross-section x the item's length
+        L = item.spec.get("length", e.get("length"))
+        if e.get("density") and e.get("od") and L:
+            od, i_d = float(e["od"]), float(e.get("id") or 0.0)
+            return math.pi / 4 * (od ** 2 - i_d ** 2) * float(L) / 1000 * float(e["density"])
+        return 0.0
     return 0.0

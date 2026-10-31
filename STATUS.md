@@ -714,3 +714,12 @@ pushed for it and what I know:
   where the max deflection is (`max_disp_at`, test). Other projects re-checked: all still PASS.
 - tvc_drone: twr 2.18 at 22.2 V (>= 2.0, MOT_SPIN_MAX 0.85), twr_sag 1.95 at 21 V; CG 0.35 mm with wiring (battery
   trimmed to -24.5 / -10). `kerf build` PASS. Next: design-reviewer re-review, then mark AUDIT.md.
+## 2026-10-31 08:45 UTC — session 262017a2: tvc_drone review round 1 fixes
+- design-reviewer round 1 FAIL: mass under-reported (tubes and XT60 counted 0 g). Engine: `item_mass_g` now computes
+  rods/tubes from catalog density x section x length (test) and every massless purchased item gets a build warning
+  (seen now: dc_jack_5521_screw in pan_tilt/servo_link, iec_inlet in robot_arm — owners please add sourced weights).
+  Catalog XT60 weight 3.5 g (getfpv, opened) — this makes fpv_5in's review stale (its mass/CG changed; re-review in
+  the fpv audit item).
+- tvc_drone: mass budget 790 g derived from twr (1625 g / 2.0 less unmodelled hardware), landing cases at 790 g;
+  ring_low disc corner fillets (lug_fea peak 21.6 -> 11 MPa), bosses 18 mm like the webs, teardrop lock taps on all
+  rings and leg screw holes, nylon-tip set screws. FEA reports peak + max-deflection locations (test).

@@ -58,6 +58,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]
     for iid, it in proj.items.items():
+        if it.role == "purchased" and it.shape is not None and checks.item_mass_g(it) <= 0:
+            rep["warnings"].append(f"{iid}: no mass (catalog {it.spec.get('catalog')} has no weight_g and the item no mass_g): "
+                                   "mass, CG, tip-over and thrust/weight leave it out; add a sourced weight")
+    for iid, it in proj.items.items():
         if it.role == "purchased" and it.shape is not None:
             rep["purchased"][iid] = {"catalog": it.spec.get("catalog"), "qty": it.spec.get("qty", 1),
                                      "mass_g": round(checks.item_mass_g(it), 1)}

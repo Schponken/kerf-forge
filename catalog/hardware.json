@@ -1030,7 +1030,9 @@
     "confidence": "datasheet",
     "current_a": 30,
     "current_peak_a": 60,
-    "current_rating_note": "Holybro 'Connector & Wire Rating' (docs.holybro.com): XT60 on 12 AWG 30 A continuous (4 h, temperature rise < 60 C) and 60 A burst (1 minute, rise < 60 C). No shorter-time rating is published, so 60 A is the peak limit."
+    "current_rating_note": "Holybro 'Connector & Wire Rating' (docs.holybro.com): XT60 on 12 AWG 30 A continuous (4 h, temperature rise < 60 C) and 60 A burst (1 minute, rise < 60 C). No shorter-time rating is published, so 60 A is the peak limit.",
+    "weight_g": 3.5,
+    "weight_note": "getfpv lists the Amass XT60H at 3.50 g per piece (https://www.getfpv.com/amass-xt60h-power-connectors-male-female-5-sets-10-pcs.html, opened 2026-10-31); the plain XT60 has no published weight and is slightly lighter, so 3.5 g is conservative."
    }
   },
   "frames_reference": {

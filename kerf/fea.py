@@ -169,6 +169,7 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
             "max_vm_mpa": float(np.percentile(vm, 99.9)), "max_vm_peak_mpa": float(vm.max()), "median_vm_mpa": float(np.median(vm)),
             "max_disp_mm": float(np.linalg.norm(disp, axis=1).max()),
             "max_disp_at": mesh.p[:, int(np.argmax(np.linalg.norm(disp, axis=1)))].round(1).tolist(),
+            "max_vm_peak_at": mesh.p[:, mesh.t[:, int(np.argmax(vm.max(axis=1)))]].mean(axis=1).round(1).tolist(),
             "nodes": int(mesh.p.shape[1]), "elements": int(mesh.t.shape[1])}
 
 

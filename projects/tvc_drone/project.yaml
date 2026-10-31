@@ -64,7 +64,7 @@ bom_extra:
      note: "included with the stack (catalog drone.stacks.fc_20 includes); its voltage is not published: if it is marked under 35 V buy a 35 V 470-1000 uF low-ESR one"}
   - {type: hardware, item: M2 silicone grommets (stack), qty: 4, spec: "in the stack's 3.5 mm holes; soft-mount (ENGINEERING.md s9)",
      link: "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/", note: "included with the stack (no separate purchase)"}
-  - {type: fastener, item: "M3 x 6 mm cup-point set screw (ISO 4029)", qty: 9, spec: "radial rod locks, one per ring boss, 1.5 mm hex key; file a flat on the tube"}
+  - {type: fastener, item: "M3 x 6 mm nylon-tip set screw", qty: 9, spec: "radial rod locks, one per ring boss, 1.5 mm hex key; the nylon tip cannot split the 1 mm carbon tube wall: stop at contact + 1/8 turn. A drop of epoxy in each bore makes the joint permanent"}
   - {type: tool, item: 1.5 mm ball-end hex driver, qty: 1, spec: "the two pitch-horn M2 screws inside the hub fork (a straight key hits the fork)"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 14, spec: "2 at the yoke slots, 3 round the gimbal ring, 2 round the hub fork bar, 4 along the mast tube, 1 XT60 pigtail, 1 UBEC, 1 receiver"}
 assembly:
@@ -211,10 +211,10 @@ requirements:
     check: fea_static
     part: ring_low
     why: >-
-      hard landing pulls the leg screws out of the lug inserts. Per leg at 3 g on two legs (729 g x 3 x 9.81 / 2 =
-      10.7 N up, 5.4 N sideways at the foot, 78 mm out and 157 mm below the pad): 10.7 x 78 = 835 N mm about the
-      tangential axis over a ~26 mm lever from the pad's outer bearing edge to the screws = 32 N, plus 5.4 x 157 =
-      848 N mm about the radial axis over the 7 mm half-width of the pad = 121 N; 160 N per leg on its two inserts,
+      hard landing pulls the leg screws out of the lug inserts. Per leg at 3 g on two legs (790 g budget x 3 x 9.81 / 2
+      = 11.6 N up, 5.8 N sideways at the foot, 78 mm out and 160 mm below the pad): 11.6 x 78 = 905 N mm about the
+      tangential axis over a ~26 mm lever from the pad's outer bearing edge to the screws = 35 N, plus 5.8 x 160 =
+      928 N mm about the radial axis over the 7 mm half-width of the pad = 133 N; 168 N per leg on its two inserts,
       applied on all three legs at once, with the pad's bearing reaction at each lug end (conservative: only two legs land)
     direction: z             # the inserts pull across ring_low's layers
     sf: 3.0
@@ -223,21 +223,21 @@ requirements:
     fixed: {any: [{cylinder: {at: [0, rod_r, 0], dir: [0, 0, 1], r: 2.75}},
                   {cylinder: {at: [-0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}},
                   {cylinder: {at: [0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}}]}
-    loads:                   # per leg: screws pull 160 N down, the pad's outer end bears 170.7 N up (net = the 10.7 N foot load)
-      - {sites: leg, radius: 3.5, force_n: [0, 0, -480]}
-      - {near_joint: leg_1, radius: 9, force_n: [0, 0, 170.7]}
-      - {near_joint: leg_2, radius: 9, force_n: [0, 0, 170.7]}
-      - {near_joint: leg_3, radius: 9, force_n: [0, 0, 170.7]}
+    loads:                   # per leg: screws pull 168 N down, the pad's outer end bears 179.6 N up (net = the 11.6 N foot load)
+      - {sites: leg, radius: 3.5, force_n: [0, 0, -504]}
+      - {near_joint: leg_1, radius: 9, force_n: [0, 0, 179.6]}
+      - {near_joint: leg_2, radius: 9, force_n: [0, 0, 179.6]}
+      - {near_joint: leg_3, radius: 9, force_n: [0, 0, 179.6]}
   - id: leg_fea
     check: fea_static
     part: leg_1
-    why: "a hard landing on two legs at 3 g: 729 g (all-up, report mass) x 3 x 9.81 / 2 = 10.7 N up at each foot, plus a 5.4 N sideways (tangential) kick"
+    why: "a hard landing on two legs at 3 g: 790 g (the mass budget) x 3 x 9.81 / 2 = 11.6 N up at each foot, plus a 5.8 N sideways (tangential) kick"
     direction: xy            # printed on its side: the strut bends along the layers
     sf: 3.0                  # ENGINEERING.md s3: crash-exposed
     max_disp_mm: 3.0
     fixed: {any: [{sites: leg, radius: 4},                              # the two screw heads
                   {box: [[-5, -7.01, -0.01], [9.01, 7.01, 0.01]]}]}       # pad's outer end bearing up on the lug
-    loads: [{box: [[foot_r - leg_r0 - 11, -11, ground_z - ring_low_z - 0.01], [foot_r - leg_r0 + 11, 11, ground_z - ring_low_z + 0.01]], force_n: [0, 5.4, 10.7]}]
+    loads: [{box: [[foot_r - leg_r0 - 11, -11, ground_z - ring_low_z - 0.01], [foot_r - leg_r0 + 11, 11, ground_z - ring_low_z + 0.01]], force_n: [0, 5.8, 11.6]}]
   - {id: props, check: prop_clearance, min_mm: 3, min_between_mm: 20, joints: [],
      poses: [{gimbal_roll: 15}, {gimbal_roll: -15}, {gimbal_pitch: 15}, {gimbal_pitch: -15},
              {gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: 15, gimbal_pitch: -15},
@@ -247,4 +247,4 @@ requirements:
      why: "gravity alone must not load the roll servo past half stall"}
   - {id: pitch_torque, check: static_torque, joint: gimbal_pitch, actuator: servo_pitch, max_fraction: 0.5,
      why: "gravity alone must not load the pitch servo past half stall"}
-  - {id: mass, check: mass_max, max_g: 750, why: "the twr requirement is sized at this all-up mass; heavier eats the thrust margin"}
+  - {id: mass, check: mass_max, max_g: 790, why: "budget from twr: 1625 g thrust at 22.2 V / 2.0 = 812 g, less ~20 g for the screws, inserts, dowels and set screws that are not modelled; the landing FEA cases use this 790 g"}

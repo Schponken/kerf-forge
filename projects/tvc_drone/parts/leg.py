@@ -26,8 +26,9 @@ def build(ctx):
     if failed or not root:
         raise ValueError(f"leg root fillet failed: {failed or 'edge not found'}")
     # screws from below, inboard of the strut (a straight key reaches them), into ring_low's inserts
-    body -= iface.bolt_pattern(ctx, "leg", "M3", LEG_SCREWS, Location((0, 0, -6), (180, 0, 0)),
-                               kind="clearance", depth=6)
+    sloc = Location((0, 0, -6), (180, 0, 0))
+    body -= iface.bolt_pattern(ctx, "leg", "M3", LEG_SCREWS, sloc, kind="clearance", depth=6,
+                               teardrop=iface.print_up_deg(ctx, sloc))
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("foot", Location((dx, 0, dz)))
     return ctx.finish(body)
