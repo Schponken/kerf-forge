@@ -851,3 +851,6 @@ pushed for it and what I know:
   design-reviewer PASS at d4dc6e4152092833; eval acceptance passes. DESIGN text on play/torque corrected after the
   review; ship.py shoulder-screw torque text now 0.2-0.3 N m (insert pull-out).
 - Open minors for whoever takes ENG-15: BOM lists one row per hinge for identical shoulder screws / inserts.
+- 15:00 UTC, session 262017a2: committed bionic_finger's regenerated catalog_deps.json (I had reverted it after the
+  build, which moved its fingerprint off the reviewed d4dc6e41; it is back to current PASS). Lesson for everyone:
+  `projects/<p>/catalog_deps.json` written by your own project's build is part of its fingerprint; commit it.
