@@ -177,6 +177,9 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
         r = part_reports.get(iid, {})
         rows.append({"type": "printed", "item": iid, "qty": it.spec.get("qty", 1), "spec": it.spec.get("material", "PETG"),
                      "note": f"{r.get('mass_est_g', '?')} g each, {r.get('size_mm')}"})
+    for iid, it in proj.printed.items():      # bits a part's features need (ctx.bom_item, e.g. the tripod nut)
+        for b in getattr(it.shape, "kerf_bom", None) or []:
+            rows.append({**b, "qty": b["qty"] * it.spec.get("qty", 1), "note": f"{iid}: {b['note']}".rstrip(": ")})
     for iid, it in proj.items.items():
         if it.role == "purchased":
             from .wiring_out import link

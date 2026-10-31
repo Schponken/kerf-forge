@@ -139,6 +139,13 @@ def _hint(exc, d: Diagnosis, tail, own) -> str:
         if mx is None:
             return "no chamfer size works on this edge selection; select fewer edges (filter_by/group_by) or use features.safe_fillet(kind='chamfer')"
         return f"the largest chamfer these {len(edges)} edge(s) take is {mx:.2f} mm; use <= {_round_down(mx * 0.9):.1f}"
+    # ---- one part file importing another (parts are loaded by path, not as a package)
+    if (isinstance(exc, ModuleNotFoundError) and own is not None and exc.name
+            and (Path(own.f_code.co_filename).parent / f"{exc.name}.py").exists()):
+        d.feature = "import"
+        return (f"part files can't import each other ('{exc.name}' is a sibling in parts/). Put values two parts share "
+                f"in the layout module (project.yaml `layout: parts/layout.py`, its dict is added to every ctx.p) or "
+                f"in params/derived")
     # ---- unknown param / name / catalog key: nearest existing spelling
     if isinstance(exc, AttributeError):
         m = re.search(r"'(?:types\.)?SimpleNamespace' object has no attribute '(\w+)'", msg)

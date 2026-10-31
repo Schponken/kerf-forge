@@ -167,3 +167,15 @@ def test_after_edit_hook_feeds_the_fix_back(tmp_path):
     assert r.returncode == 2
     first = r.stderr.split("FIX THESE FIRST")[1][:600]
     assert "plate.py line" in first and "fix: the largest fillet" in first
+
+
+def test_part_importing_a_sibling_part_points_at_layout(tmp_path):
+    """Blind run 2 #5: `from deck import X` in a part file fails (parts load by path); the hint says where shared
+    values go."""
+    d = _proj(tmp_path, """
+        from sibling import W
+        return ctx.finish(Box(W, p.w, p.t))
+    """)
+    (d / "parts" / "sibling.py").write_text("W = 5\n")
+    diag, _ = _fail(d)
+    assert diag.feature == "import" and "layout" in diag.hint

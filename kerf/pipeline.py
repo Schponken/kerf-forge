@@ -14,6 +14,8 @@ RENDER = ROOT / "tools" / "render" / "render.mjs"
 
 def req_line(r):
     """One requirement result; a failure whose rounded value equals its limit says so (it misses by less than the rounding)."""
+    if not r['ok'] and r['value'] is None:     # the check could not be evaluated at all (e.g. a bad wiring run)
+        return "BAD not evaluated - the reason is in the PROBLEM lines below"
     t = f"{'ok ' if r['ok'] else 'BAD'} {r['value']} (limit {r['limit']})"
     if not r['ok'] and r['value'] == r['limit']:
         t += ' - misses the limit by less than the shown rounding; add margin'

@@ -31,7 +31,9 @@ that is expected, not a problem to chase.
 part-designer work yourself, following `.claude/agents/<name>.md`. The review must still come from a separate
 design-reviewer agent: run it headless with the prompt on stdin (`--allowedTools` takes several values and would
 swallow a prompt argument): `claude -p --agent design-reviewer --allowedTools "Read,Glob,Grep,Bash,Write" < prompt.txt`.
-Wait for it to finish; never leave one running in the background.
+A review takes ~10 min, the Bash tool's foreground limit, so start it with `nohup ... > review_out.txt 2>&1 &` and poll
+(`sleep 240; pgrep -f "agent design-reviewer"`) until it has exited and review.json is written. Never finish while
+it (or a `kerf verify` its session started) is still running.
 
 ## 0. Research first
 Read `references/INDEX.md` — the library of open designs already studied (dimensions, licenses, failure lessons per

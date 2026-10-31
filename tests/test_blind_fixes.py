@@ -71,7 +71,12 @@ def test_tripod_socket_cutter():
     from build123d import Box, Align, Location
     from kerf import iface
     blk = Box(30, 30, 12, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    cut = iface.tripod_socket(Location((0, 0, 0)), floor_t=1.5)
+    from kerf.ctx import Ctx
+    ctx = Ctx("base", {})
+    cut = iface.tripod_socket(ctx, Location((0, 0, 0)), floor_t=1.5)
+    assert len(ctx.bom) == 1 and "tripod_nut_1_4_20" in ctx.bom[0]["spec"]   # blind run 2 #4: the nut is in the BOM
+    with pytest.raises(TypeError, match="ctx first"):
+        iface.tripod_socket(Location((0, 0, 0)), Location((0, 0, 0)))
     out = blk - cut
     lo, hi = geom.bbox(cut)
     nut = catalog.get("tripod_nut_1_4_20")
@@ -164,3 +169,17 @@ def test_servo_flex_lead_counts_for_interference_not_tool_reach():
     assert (access._rigid_part(s) & probe).volume < 1e-6    # a hex key pushes it aside
     mg = proxies.build(Ctx("m", {}), {"catalog": "servos.MG996R", "proxy": "servo"})
     assert mg.kerf_flex == [] and access._rigid_part(mg) is mg   # a moulded boss stays rigid
+
+
+def test_kerf_new_runs_from_main(tmp_path, monkeypatch):
+    """Blind run 2 #1: `kerf new` crashed (UnboundLocalError: main() rebound the name `new`)."""
+    from kerf import cli
+    monkeypatch.setattr(cli, "ROOT", tmp_path)
+    assert cli.main(["new", "demo", "Demo thing"]) == 0
+    assert (tmp_path / "projects" / "demo" / "project.yaml").read_text().startswith("name: Demo thing")
+
+
+def test_req_line_unevaluated_check_points_at_problems():
+    """Blind run 2 #2: a check with no value printed 'BAD None (limit None) - misses ... rounding'."""
+    t = req_line({"ok": False, "value": None, "limit": None})
+    assert "not evaluated" in t and "rounding" not in t

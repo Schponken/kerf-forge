@@ -76,6 +76,7 @@ class Ctx:
         self.notes: list[str] = []
         self.pins: list[PinSite] = []
         self.mesh_cuts: list = []
+        self.bom: list = []
 
     # ---- joints (declare in the part's own frame) ----
     def rigid(self, label: str, loc: Location):
@@ -92,6 +93,10 @@ class Ctx:
 
     def pin_site(self, s: PinSite):
         self.pins.append(s)
+
+    def bom_item(self, item: str, qty: int = 1, spec: str = "", note: str = "", link: str = ""):
+        """A purchased bit a feature of this part needs (e.g. the captive tripod nut): one BOM row per part copy."""
+        self.bom.append({"type": "hardware", "item": item, "qty": qty, "spec": spec, "note": note, "link": link})
 
     def mesh_cut(self, solid):
         """`source: meshy` parts: a solid (part frame) cut through the generated shell too - holes, pockets, keep-outs.
@@ -122,4 +127,5 @@ class Ctx:
         shape.kerf_notes = list(self.notes)
         shape.kerf_pins = list(self.pins)
         shape.kerf_mesh_cuts = list(self.mesh_cuts)
+        shape.kerf_bom = list(self.bom)
         return shape

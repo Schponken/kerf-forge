@@ -252,8 +252,8 @@ def main(argv=None) -> int:
         except ValueError as e:
             _p(f"FAIL {e}")
             return 1
-        for key, (old, new) in changed.items():
-            _p(f"{key}: {old} -> {new} mm")
+        for key, (was, now) in changed.items():   # not `new`: that would shadow new() for the whole of main()
+            _p(f"{key}: {was} -> {now} mm")
         _p(f"saved {C.profile_path(printer).relative_to(ROOT)}" + ("" if changed else " (no change)")
            + "; rebuild projects to apply. Reprint the coupon to confirm anything that moved.")
         return 0
