@@ -1,7 +1,0 @@
-{
- "item": "Bambu A2L handoff: `kerf print <project>` auto-orients each part (min supports, load_axis aware), slices with the A2L profile (Bambu Studio / OrcaSlicer CLI) to .gcode.3mf, then sends over the printer's official LAN / developer mode (MQTT + FTPS; see wiki.bambulab.com third-party-integration and enable-developer-mode) and polls status. Fallback when LAN access is off: write the sliced file and open it in Bambu Studio for one-click send. Dry-run tested in CI; one real print verified with Spencer",
- "session": "c1f0cc8551",
- "since": 1793420832.3940127,
- "heartbeat": 1793420832.3940127,
- "since_utc": "2026-10-31 04:27"
-}
