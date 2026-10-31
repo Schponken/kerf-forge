@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import access, assembly as A, checks, electrical, export, pins, project as P, requirements, shanks, ship, viewer, wiring_out
+from . import access, assembly as A, checks, electrical, export, heads, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -63,6 +63,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep["assembly"]["fasteners"] = fj
             rep["problems"] += fprob
             rep["problems"] += shanks.check(asm, fj)
+            asm.heads = heads.build(asm, fj)                         # screw heads join interference + sweeps
+            for h in heads.interference(asm, None, A._allowed(asm)):
+                rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position")
             pinj, pprob, pwarn = pins.check(asm)
             rep["assembly"]["pins"] = pinj
             rep["problems"] += pprob

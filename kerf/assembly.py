@@ -43,6 +43,7 @@ class Assembly:
     edges: list
     by_child: dict = field(default_factory=dict)
     children: dict = field(default_factory=dict)
+    heads: list = field(default_factory=list)          # screw-head solids (kerf/heads.py), set after fasteners()
 
     @property
     def movable(self):
@@ -156,7 +157,8 @@ def interference(asm: Assembly, pairs=None) -> list:
     items = asm.proj.items
     allow = _allowed(asm)
     ids = [i for i, it in items.items() if it.shape is not None]
-    pairs = pairs if pairs is not None else itertools.combinations(ids, 2)
+    given = list(pairs) if pairs is not None else None
+    pairs = given if given is not None else itertools.combinations(ids, 2)
     hits = []
     for a, b in pairs:
         if items[a].role == "keepout" and items[b].role == "keepout":
@@ -165,7 +167,8 @@ def interference(asm: Assembly, pairs=None) -> list:
         lim, why = allow.get(frozenset((a, b)), (geom.OVERLAP_TOL_MM3, ""))
         if v > max(lim, geom.OVERLAP_TOL_MM3):
             hits.append({"a": a, "b": b, "volume_mm3": round(v, 3)})
-    return hits
+    from . import heads                     # screw heads fixed to their parts (set by pipeline after fasteners())
+    return hits + heads.interference(asm, given, allow)
 
 
 def sweeps(asm: Assembly, samples: int = 9) -> list:
