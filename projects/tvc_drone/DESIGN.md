@@ -7,14 +7,17 @@ three splayed legs. Numbers below are from `kerf build tvc_drone` (out/report.js
 ## Requirements (numbers)
 | What | Target | Result |
 |---|---|---|
-| Thrust / weight (`twr`) | >= 1.8 | 4.1 (2629 g / 641 g) |
+| Thrust / weight (`twr`) | >= 1.8 | 2.54 (1683 g at the 80 % motor output limit / 664 g) |
 | CG on thrust axis (`cg_axis`) | <= 3 mm lateral, above pivot | 0.45 mm worst over gimbal corners; 136 mm above the pivot |
 | Stand on its own (`stand`) | >= 15 deg tip-over | 20.9 deg |
 | Gimbal travel | +/-15 deg each axis + 4 corners, collision-free | clear (sweeps + `gimbal_corners`) |
 | Prop clearance (`props`) | >= 3 mm to anything, >= 20 mm between discs | 5.3 mm (bottom prop to the roll ring at pitch 15 deg) |
 | Gimbal hub strength (`gimbal_fea`) | 2 x max thrust = 66.1 N, SF 2 | 3.5 MPa vs 24 MPa allowable, 0.17 mm |
 | Roll ring / yoke / leg FEA | SF 2 | 3.2 / 3.5 (Z-strength) / 2.7 MPa vs 24 / 19.5 / 24 |
-| Mass | <= 750 g | 641 g |
+| Mass | <= 750 g | 664 g (wires not modelled: ~25-35 g more, hand estimate) |
+| Power budget (`power`) | every rating at avg and peak | worst 0.61 of rating (battery 10.3 A hover, 36.6 A peak) |
+| Hover time (`flight_time`) | >= 2 min | 5.1 min on 80 % of 1100 mAh (momentum theory, coax kappa 1.281) |
+| Battery plug / USB (`plug_access`, `usb_access`) | reachable assembled | both clear |
 
 ## Architecture
 Options: (a) coax pair on a 2-axis gimbal (fd.iwth, Mistral — flown); (b) single rotor + 4 vanes (Goose, Starkit) —
@@ -44,8 +47,24 @@ and has flown. Differences from fd.iwth, and why:
 | SpeedyBee F405 mini 20 x 20 stack | drone.stacks.fc_20 | FC + 35 A 4-in-1 ESC (2 channels used), drives the servos |
 | 2 x 3 x 16 mm steel dowel | motion.pin_3mm | pivots opposite each servo (press in one side, free in the other) |
 
-Electronics beyond these (receiver, BEC, XT60, strap, wiring, power budget, flight time) are part of the open PLAN
-item "Complete electronics + wiring"; this project gets them when that engine feature lands.
+| RadioMaster RP1 ELRS receiver | electronics.receivers.elrs_nano | 5 V from the FC pad, CRSF to a free UART; tied under ring_mid |
+| Hobbywing UBEC 3 A (5 V) | electronics.becs.ubec_5v_3a | servos off the FC rail: 2 x 0.7 A stall = 1.4 A peak vs 3 A |
+| Amass XT60 male | drone.connectors.XT60 | 30 A continuous / 60 A instantaneous; hover 10.3 A, peak 36.6 A |
+| 20 x 250 mm strap | electronics.straps.strap_20x250 | over the pack across its width, through two ring_top slots |
+
+## Electrical (project.yaml `electrical:` / `wiring:`; out/WIRING.md + wiring.svg)
+Power tree: 6S 1100 pack -> its own 12 AWG lead -> XT60 (under ring_top, pointing out at 30 deg) -> 14 AWG down the
+90 deg tube -> ESC battery pads (ring_mid). ESC channels 1-2 -> motors on 18 AWG 3-wire extensions through the
+30 deg wire pass and down a tube to the gimbal, with a service loop. ESC pads -> UBEC (5 V jumper) -> both servos
+(24 AWG); servo PWM from FC outputs S1/S2 (28 AWG). FC 5 V pad -> receiver; CRSF on a free UART.
+- **Motor output limit 80 % (Betaflight `motor_output_limit = 80`) is required**, not optional: two motors at full
+  throttle draw 2 x 35.08 A = 70 A, above the XT60's 60 A instantaneous rating. Prop power goes as speed^3, so 80 %
+  output = 0.512 x 35.08 = 18.0 A per motor and 64 % thrust: 1683 g, still T/W 2.54 >= 1.8. Without the limit the
+  `power` check fails on the XT60.
+- Hover: 664 g on one coaxial 5.1" pair -> 219 W electrical (FM 0.5, motor eff. 0.75, coax 1.281) = 10.3 A at
+  22.2 V; with FC 0.3 A + servos/receiver = 10.3 A -> 5.1 min on 880 mAh usable.
+- Wire heating at peak for 5 s: 18 AWG motor leads at 18 A stay < 60 K rise; 14 AWG main at 36.6 A ~10 K.
+- Fit the FC with its USB-C port facing -X (`usb_access`); +Y faces a tube.
 
 ## Parts (all PETG)
 | Part | Job | print_rot | load_axis |
@@ -54,8 +73,8 @@ item "Complete electronics + wiring"; this project gets them when that engine fe
 | gimbal_outer | roll ring: roll horn lug (+X), roll dowel pad (-X), pitch servo pad (+Y), pitch dowel pad (-Y) | flat | x, y |
 | motor_hub | pitch frame: top motor (counterbored M3 x 6), +Y fork to the pitch horn, -Y arm to the dowel, 3 M3 inserts | flat | y |
 | motor_plate | bottom motor (M3 x 6, counterbored), bolts under the hub | flat | — |
-| ring_mid | tubes through, radial locks, flight stack on 4 thread-formed M2 | flat | — |
-| ring_top | tube caps, battery tray with strap slots | upside down | — |
+| ring_mid | tubes through, radial locks, flight stack on 4 thread-formed M2; UBEC + receiver tied underneath | flat | — |
+| ring_top | tube caps, battery tray with strap slots beside the pack, XT60 tie slots + stop block underneath | upside down | — |
 | leg_1..3 | splayed legs to r = 150 mm, ground 85 mm under the pivot | on its side | x, z |
 
 ## Interfaces
@@ -72,6 +91,9 @@ item "Complete electronics + wiring"; this project gets them when that engine fe
 | motor_plate | motor_hub | 3 x M3, heat-set inserts in the hub | hub_plate |
 | ring_low | leg_i | 2 x M3 heat-set per leg | leg |
 | ring_mid | stack | `stack_mount` thread-formed M2 | mid_stack |
+| ring_mid | bec, receiver | one 2.5 mm cable tie each through two slots, under the ring | — |
+| ring_top | xt60 | cable tie through two slots + printed stop block behind it | — |
+| battery | strap | strap over the pack through two ring_top slots | — |
 
 ## Joint tree
 ring_low (root) -> rods, ring_mid -> stack, ring_top -> battery, legs, servo_roll -> horn_roll (**gimbal_roll**,
@@ -87,7 +109,11 @@ motor_plate -> motor_bottom -> prop_bottom. Coupled sweep `gimbal_corners` = the
 6. motor_hub: top motor on with 4 x M3 x 6 from below. Bench: bottom motor onto motor_plate (4 x M3 x 6 from the top).
 7. motor_hub onto the pitch dowel and horn_pitch (4 x M2; the two upper screws need a **ball-end 1.5 mm key**).
 8. motor_plate under the hub, 3 x M3 from below. Props on (top CW, bottom CCW or per FC mixer).
-9. Tubes into ring_low, ring_mid, ring_top; tighten the radial lock screws on filed flats. Stack, battery, legs.
+9. Tubes into ring_low, ring_mid, ring_top; tighten the radial lock screws on filed flats. Stack (USB-C facing -X),
+   battery, legs.
+10. Wiring (out/WIRING.md has every run, gauge and cut length): XT60 tied under ring_top; UBEC and receiver tied under
+   ring_mid; solder main lead, motor extensions (service loop at the gimbal), UBEC input, servo and receiver leads.
+   In Betaflight set `motor_output_limit = 80` before the first flight.
 
 ## Risks / measure first
 - Micro 21T horn geometry is an estimate (catalog note): measure OD, bolt circle and hub height; re-run `kerf check`.

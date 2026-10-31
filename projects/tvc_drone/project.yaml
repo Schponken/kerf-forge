@@ -43,15 +43,22 @@ purchased:
   rod_2: {catalog: rods.cf_tube_5x3, proxy: rod, length: 228}
   rod_3: {catalog: rods.cf_tube_5x3, proxy: rod, length: 228}
   stack: {catalog: drone.stacks.fc_20, proxy: stack, groups: {holes: mid_stack}}
-  battery: {catalog: drone.batteries.6S_1100, proxy: box, color: "#c8a400"}
+  battery: {catalog: drone.batteries.6S_1100, proxy: box, color: "#c8a400", joints: {strap: [5, 0, 31]}}
+  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 44, 1.8], color: "#404040",
+          note: "over the pack across its width, down through the two ring_top slots, under the plate; modelled as its top run"}
+  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000",
+         note: "male, cable-tied under ring_top pointing out between two tubes; the battery's XT60 plugs in from outside"}
+  bec: {catalog: electronics.becs.ubec_5v_3a, proxy: box, color: "#303060",
+        note: "servo supply (5 V jumper), cable-tied under ring_mid; fed from the ESC battery pads"}
+  receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020",
+             note: "heat-shrunk, cable-tied under ring_mid; T antenna along a tube, clear of the props"}
 keepouts:
   prop_top: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_top}
   prop_bottom: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_bottom}
 bom_extra:
   - {type: hardware, item: "3 x 16 mm hardened steel dowel pin (ISO 8734)", qty: 2, spec: "gimbal pivots opposite the servos"}
-  - {type: hardware, item: 20 mm battery strap (250 mm), qty: 1, spec: "through the two ring_top slots"}
   - {type: fastener, item: M3 x 6 mm set screw / short screw, qty: 9, spec: "radial rod locks, one per ring boss; file a flat on the tube"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 8, spec: "motor and servo leads along a mast tube"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 11, spec: "8 for motor and servo leads along a mast tube; 1 XT60, 1 UBEC, 1 receiver"}
 assembly:
   root: ring_low
   joints:
@@ -62,6 +69,10 @@ assembly:
     - {parent: ring_low.top_seat, child: ring_top.origin}
     - {parent: ring_mid.stack_seat, child: stack.bottom}
     - {parent: ring_top.battery_seat, child: battery.bottom}
+    - {parent: battery.strap, child: strap.bottom}
+    - {parent: ring_top.xt60_seat, child: xt60.bottom}
+    - {parent: ring_mid.bec_seat, child: bec.bottom}
+    - {parent: ring_mid.rx_seat, child: receiver.bottom}
     - {parent: ring_low.leg_1, child: leg_1.origin}
     - {parent: ring_low.leg_2, child: leg_2.origin}
     - {parent: ring_low.leg_3, child: leg_3.origin}
@@ -86,9 +97,46 @@ assembly:
   sweeps:
     - {name: gimbal_corners, poses: [{gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: 15, gimbal_pitch: -15},
                                      {gimbal_roll: -15, gimbal_pitch: 15}, {gimbal_roll: -15, gimbal_pitch: -15}]}
+electrical:
+  battery: battery
+  burst_s: 5                 # longest full-throttle climb; the ESC burst rating is 45 A for 5 s
+  limits:
+    motor_top: {peak_a: 17.96, why: "Betaflight motor_output_limit = 80: static prop power goes as speed^3 (P = C_P rho n^3 D^5) and motor speed follows the output, so peak current = 0.8^3 x 35.08 A = 17.96 A per motor (thrust 0.8^2 = 64 %). Keeps the pair inside the XT60's 60 A instantaneous rating."}
+    motor_bottom: {peak_a: 17.96, why: "same Betaflight motor_output_limit = 80 as motor_top"}
+wiring:      # cut lengths = routed + 15 %, rounded up; motor and servo runs add ~40 mm for the gimbal service loop.
+             # power runs are +/- pairs; route points in world mm (ring_low frame), via the ring_mid wire pass at 30 deg
+  - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, length_mm: 100,
+     route: [[27, 8, 318], [37, 21, 300]], note: "the pack's own XT60 lead"}
+  - {id: main, from: xt60, to: stack, v: 25.2, gauge: 14, color: red/black, length_mm: 160,
+     route: [[18, 10, 290], [4, 26, 280], [4, 26, 205], [0, 12, 200]]}
+  - {id: ph_top, from: stack.esc, to: motor_top, v: 25.2, gauge: 18, conductors: 3, length_mm: 280,
+     route: [[26.8, 15.5, 190], [26.8, 15.5, 80], [12, 8, 40]], note: "extend the motor leads; service loop at the gimbal"}
+  - {id: ph_bottom, from: stack.esc, to: motor_bottom, v: 25.2, gauge: 18, conductors: 3, length_mm: 340,
+     route: [[26.8, 15.5, 190], [26.8, 15.5, 80], [12, -8, 30], [12, -8, -10]]}
+  - {id: bec_in, from: stack.vbat, to: bec, v: 25.2, gauge: 24, color: red/black, length_mm: 40,
+     note: "UBEC input on the ESC battery pads"}
+  - {id: servo_roll_pwr, from: bec, to: servo_roll, v: 5.0, gauge: 24, color: red/brown, length_mm: 320,
+     route: [[26.8, 15.5, 180], [26.8, 15.5, 80], [80, 0, 20]]}
+  - {id: servo_pitch_pwr, from: bec, to: servo_pitch, v: 5.0, gauge: 24, color: red/brown, length_mm: 310,
+     route: [[-26.8, 15.5, 180], [-26.8, 15.5, 80], [0, 60, 20]]}
+  - {id: servo_roll_sig, from: stack, to: servo_roll, kind: signal, gauge: 28, color: orange, length_mm: 320,
+     route: [[26.8, 15.5, 190], [26.8, 15.5, 80], [80, 0, 20]], note: "FC servo output S1 (Betaflight servo_tilt / custom mixer)"}
+  - {id: servo_pitch_sig, from: stack, to: servo_pitch, kind: signal, gauge: 28, color: orange, length_mm: 310,
+     route: [[-26.8, 15.5, 190], [-26.8, 15.5, 80], [0, 60, 20]], note: "FC servo output S2"}
+  - {id: rx_pwr, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 40}
+  - {id: rx_crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: yellow/white, conductors: 2, length_mm: 40,
+     note: "CRSF TX/RX to a free FC UART"}
 requirements:
-  - {id: twr, check: thrust_to_weight, thrust_g_total: 2629, min_ratio: 1.8,
-     why: "2 x 1685 g (XING2 2207 + 51466 at 24 V) x 0.78 coax efficiency (MDPI Aerospace 3(4):32) must lift the drone with margin"}
+  - {id: twr, check: thrust_to_weight, thrust_g_total: 1683, min_ratio: 1.8,
+     why: "2 x 1685 g (XING2 2207 + 51466 at 24 V) x 0.78 coax efficiency (MDPI Aerospace 3(4):32) x 0.64 (thrust at the 80 % motor_output_limit, see electrical.limits) must lift the drone with margin"}
+  - {id: power, check: power_budget,
+     why: "battery C rating, XT60, ESC channels, FC 5 V pad, servo UBEC and every wire within rating at average (hover) and peak current"}
+  - {id: flight_time, check: flight_time, min_min: 2,
+     why: "the brief asks >= 2 min at hover on 80 % of the 1100 mAh pack"}
+  - {id: plug_access, check: connector_access, item: xt60, direction: [1, 0, 0], length_mm: 30,
+     why: "the battery's XT60 plugs in from outside with the drone assembled (plug body + fingers, 30 mm)"}
+  - {id: usb_access, check: connector_access, item: stack, direction: [-1, 0, 0], at: [0, 0, 11], length_mm: 45, size: [12, 7],
+     why: "fit the FC with its USB-C port facing -X (between the 90 and 210 deg tubes): a USB-C plug (12 x 7 mm) reaches it from the board centre out past the mast; +Y is blocked by a tube"}
   - {id: cg_axis, check: cg, point: [0, 0, 0], axis: [0, 0, 1], max_lateral_mm: 3, min_along_mm: 0,
      poses: [{gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: -15, gimbal_pitch: -15}],
      why: "the CG must sit on the thrust axis (within 3 mm) and above the gimbal pivot so thrust vectoring can balance it"}
