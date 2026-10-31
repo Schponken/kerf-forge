@@ -62,6 +62,8 @@ assembly:
                                 # its two parts goes on, so only parts installed by then can block its hex key
   allow_overlap:                # only with a physical reason
     - {pair: [servo, horn], max_mm3: 60, why: horn spline engages the servo output shaft}
+  key_access:                   # assembly order for the hex-key check: these items go on after the group's screws
+    - {group: hub_motor_top, before: [motor_plate, motor_bottom], why: top motor is screwed on before the bottom plate}
   sweeps:
     - {joint: swing, samples: 13}             # finer sweep for one joint
     - {name: curl, poses: [{mcp: 30, pip: 30}, {mcp: 80, pip: 80}]}   # coupled poses

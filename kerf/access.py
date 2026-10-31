@@ -6,6 +6,8 @@
 (b) insertion paths: an item declared with `insert: {direction: [x, y, z], distance: mm}` (direction = the way it moves
     as it goes IN, in the item's own frame) is slid in from `distance` away and must not hit anything on the way
     (its own subtree moves with it; allow_overlap allowances still apply).
+Assembly order: `assembly.key_access: [{group, before: [items], why}]` says those items are fitted after the group's
+screws are driven (e.g. the second motor of a coax pair covers the first motor's screw heads), so they don't block it.
 """
 from __future__ import annotations
 
@@ -61,6 +63,13 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
             if fs.role == "female":
                 female_items.setdefault(fs.group, set()).add(i)
     all_shapes = [(i, it.shape) for i, it in items.items() if it.shape is not None and it.role != "keepout"]
+    # sub-assemblies a linear order can't express: {group, before: [items], why} = those items go on after this
+    # group's screws are driven (e.g. each motor of a coax pair is screwed to its own plate before the plates join)
+    later = {}
+    for k in asm.proj.data["assembly"].get("key_access") or []:
+        if not k.get("why"):
+            raise ValueError(f"assembly.key_access for group '{k.get('group')}' needs a 'why' (the assembly order)")
+        later.setdefault(k["group"], set()).update(k["before"])
     results, problems, warnings = [], [], []
     for iid, it in items.items():
         if it.shape is None:
@@ -69,14 +78,14 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
             if s.role != "male":
                 continue
             when = max([step.get(iid, 0)] + [step.get(f, 0) for f in female_items.get(s.group, ())])
-            shapes = [(i, sh) for i, sh in all_shapes if step.get(i, 0) <= when]
+            present = [(i, sh) for i, sh in all_shapes if step.get(i, 0) <= when and i not in later.get(s.group, ())]
             w = it.shape.location * s.loc
             o = geom.world_point(w, (0, 0, 0))
             z = geom.world_dir(w, (0, 0, 1))
             k = key_spec(s.screw, s.kind)
             top = o + z * (screw_spec(s.screw)["head_h"] if s.kind in HEAD_ON_SURFACE else 0.0)
             start = top + z * 0.05           # the key tip sits in the socket; start just above the head
-            hits = _blocked(_rod(start, z, k["r"], k["reach"]), shapes)
+            hits = _blocked(_rod(start, z, k["r"], k["reach"]), present)
             res = {"item": iid, "group": s.group, "screw": s.screw, "key_mm": k["s"], "at": np.round(top, 2).tolist(),
                    "straight": not hits, "blocked_by": hits}
             if hits:
@@ -88,7 +97,7 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
                 for t in np.linspace(0, 2 * math.pi, n_azimuth, endpoint=False):
                     d = math.cos(a) * z + math.sin(a) * (math.cos(t) * ex + math.sin(t) * ey)
                     # the ball end sits in the socket, so the tilted shank starts one key radius up the axis
-                    if not _blocked(_rod(start + z * k["r"], d, k["r"], k["reach"]), shapes):
+                    if not _blocked(_rod(start + z * k["r"], d, k["r"], k["reach"]), present):
                         ok_dir = d
                         break
                 res["ball_end"] = ok_dir is not None

@@ -150,3 +150,21 @@ def test_assembly_order_lets_later_parts_cover_screws(tmp_path):
     asm = A.plan(proj)
     A.solve(asm)
     assert len(access.hex_key_reach(asm)[1]) == 2
+
+
+def test_key_access_order(tmp_path):
+    """A part fitted after the screws are driven (assembly.key_access) does not block them; 'why' is required."""
+    block = BOLT_BLOCK.replace('    ctx.rigid("top"', '    ctx.rigid("origin", Location((0, 0, 0)))\n    ctx.rigid("top"')
+    roof = ROOF.replace("RX", "0").replace("RZ", "30").replace("RW", "200")
+    for why, expect in (("roof goes on after the plate is screwed down", 0), ("", None)):
+        y = KEY_YAML + f"  key_access:\n    - {{group: g, before: [roof], why: '{why}'}}\n"
+        d = _write_project(tmp_path / f"order{bool(why)}", y, {"block": block, "plate": BOLT_PLATE, "roof": roof})
+        proj = P.build(P.load(str(d)))
+        asm = A.plan(proj)
+        A.solve(asm)
+        if expect is None:
+            with pytest.raises(ValueError, match="needs a 'why'"):
+                access.hex_key_reach(asm)
+        else:
+            res, problems, warnings = access.hex_key_reach(asm)
+            assert problems == [] and warnings == [] and all(r["straight"] for r in res)
