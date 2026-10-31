@@ -121,6 +121,16 @@ def test_current_limit_and_overrides_need_a_why(tmp_path):
     assert m["peak_a"] == pytest.approx(55, abs=1e-6)
     r = {x["id"]: x for x in requirements.run_all(proj, asm)}
     assert r["power"]["ok"], r["power"]["detail"]
+    # the cap is an instruction to the builder: WIRING.md and the assembly steps say to set it (review: a cap that
+    # only lives in project.yaml lets someone fly uncapped)
+    md = WO.wiring_md(proj, m)
+    assert "## Configure before the first power-up" in md and "ESC current limit set to 55 A" in md
+    assert any("Configure before the first power-up" in x and "55 A" in x for x in WO.steps(m))
+    # a cap on one motor shows in the Loads table as that motor's peak (catalog 15.84 A -> 10 A)
+    proj, asm = _proj(tmp_path, extra="  limits: {m1: {peak_a: 10, why: 'output limit'}}")
+    m = E.analyse(proj)
+    assert m["loads"]["m1"]["peak_a"] == 10 and "capped: output limit" in m["loads"]["m1"]["source"]
+    assert m["peak_a"] == pytest.approx(63.70 - 5.84, abs=0.01)
     proj, asm = _proj(tmp_path, extra="  limits: {stack: {peak_a: 55}}")
     with pytest.raises(E.ElectricalError, match="why"):
         E.analyse(proj)

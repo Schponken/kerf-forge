@@ -41,7 +41,7 @@ purchased:
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020",
              note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate; T antenna legs tied up and out in a V through the two slots at the roof front (behind the lens, out of its view)"}
   vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 20], color: "#20a0a0",
-            note: "5.8 GHz antenna, 95 mm tube: from the VTX rear corner outside the rear pillar, under the rear tab (one tie through the y -10.5 slot pair), out past the tab end and bent up; about 75 mm of tube path, head (11 mm, 20 mm envelope) above the tab end"}
+            note: "5.8 GHz antenna, 95 mm tube: from the VTX rear corner outside the rear pillar, outside the rear pillar on the +y side, under the rear tab (one tie through the y +10.5 slot pair), out past the tab end and bent up; about 75 mm of tube path, head (11 mm, 20 mm envelope) above the tab end"}
   pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 40, 3], color: "#303030",
         note: "anti-slip pad cut to 80 x 40 mm (the pack's footprint, so the strap's side runs pass beside it)"}
   strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 43.6, 1.8], color: "#404040",
@@ -51,13 +51,13 @@ electrical:
   burst_s: 5
   # Betaflight `set motor_output_limit = 74` clips every motor's final output to 74 %. Propeller law (static): rpm ~
   # output, thrust ~ rpm^2, shaft power ~ rpm^3, so the catalog full-output figures scale to 1685 x 0.74^2 = 923 g and
-  # 35.08 x 0.74^3 = 14.22 A per motor (motor efficiency rises at part load, so the current estimate is on the high
-  # side). 4 x 14.22 + FC/5 V = 57.4 A keeps the XT60 (60 A burst, Holybro) and its 12 AWG pigtail inside rating.
+  # 35.08 x 0.74^3 = 14.22 A per motor (a central estimate: at part load the motor speed falls slightly less than
+  # the output, so the real peak may reach ~60 A on a full pack; check it in Blackbox / OSD before freestyle). 4 x 14.22 + FC/5 V = 57.4 A keeps the XT60 (60 A burst, Holybro) and its 12 AWG pigtail inside rating.
   limits:
-    motor_1: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
-    motor_2: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
-    motor_3: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
-    motor_4: {peak_a: 14.22, why: "Betaflight motor_output_limit = 74 (%): 35.08 A x 0.74^3 (propeller power ~ rpm^3)"}
+    motor_1: {peak_a: 14.22, why: "Betaflight CLI: set motor_output_limit = 74, save (35.08 A x 0.74^3, propeller power ~ rpm^3; central estimate: confirm the Blackbox/OSD peak is <= 60 A on a full pack before freestyle)"}
+    motor_2: {peak_a: 14.22, why: "Betaflight CLI: set motor_output_limit = 74, save (35.08 A x 0.74^3, propeller power ~ rpm^3; central estimate: confirm the Blackbox/OSD peak is <= 60 A on a full pack before freestyle)"}
+    motor_3: {peak_a: 14.22, why: "Betaflight CLI: set motor_output_limit = 74, save (35.08 A x 0.74^3, propeller power ~ rpm^3; central estimate: confirm the Blackbox/OSD peak is <= 60 A on a full pack before freestyle)"}
+    motor_4: {peak_a: 14.22, why: "Betaflight CLI: set motor_output_limit = 74, save (35.08 A x 0.74^3, propeller power ~ rpm^3; central estimate: confirm the Blackbox/OSD peak is <= 60 A on a full pack before freestyle)"}
 wiring:
   # world waypoints [x, y, z] (body bottom z 0, body top 7, top-plate underside 45); arm points ride with the arm
   # battery side: the pack's own lead to the XT60 (plugs in from behind the tab), the XT60 pigtail to the ESC pads
@@ -67,7 +67,7 @@ wiring:
      note: "the pack's own lead (comes with the battery)"}
   - {id: main, from: xt60, to: stack, v: 25.2, gauge: 12, color: red/black, length_mm: 110,
      route: [[-44, 0, 37], [-43, -16, 34], [-25, -16, 30]],
-     note: "XT60 pigtail to the ESC battery pads; 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
+     note: "XT60 pigtail to the ESC battery pads; pre-bend the leads toward -y before soldering and use 8-10 mm heat-shrink on the XT60 cups (20 mm reaches the rear pillar); 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
   # motor phases: 3 wires each over the body top between the arm's two ribs, down onto the arm top past the body
   # corner, along the arm (2 ties through the arm slots) to the motor
   - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,

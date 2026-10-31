@@ -1,69 +1,57 @@
 {
   "verdict": "FAIL",
-  "fingerprint": "2ec72e25ff8ca0d9",
+  "fingerprint": "f0913986db61a9e1",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 3. The two round-2 majors are fixed and I probed both. The XT60 tie path at x -51, y +/-6.75 is clear of the plate, the cradle and the connector from the plate top to below the connector bottom (z 28.2). The top plate now has two FEA cases with real crash loads (7.74 and 8.68 vs 9.67 MPa), and the hot spots sit at the pillar feet and the strap slots, where the load path puts them. The mechanical frame is close to done. It still fails because the battery cannot be strapped on as designed: the strap's run under the plate between its two slots goes straight through the VTX bosses and spacers, and a 250 mm strap has no overlap left on that path. The electrical package has three more problems. The XT60 passes its check only because the new connector_burst_limit extrapolates a 1-minute rating down to 5 s at 3.25 times that rating, which is not sound. Neither antenna can reach the place it is modelled. The wires have no buy links.",
+  "summary": "Round 4. All four round-3 blocking findings are dealt with, and I probed each one. The width-wise strap loop (strap_under/l/r) overlaps nothing: it is 4.2 mm from the VTX and 14.2 mm above the stack, it closes at about 175 mm of the 250 mm strap, and the VTX sits clear at x -27.5..0.5. The connector extrapolation is gone: the XT60 is back at its plain 60 A rating. The 95 mm Lollipop reaches its head with about 18 mm spare (path about 77 mm). The receiver antenna V is at the roof front behind the lens. Every BOM row has a buy link. The cradle walls now start on the tab. It still fails on one major point. Betaflight motor_output_limit = 74 is a real, legitimate configured cap, but the `power` pass depends on it and the generated ASSEMBLY.md and WIRING.md never tell Spencer to set it (WIRING.md even lists 35 A motor peaks). It also has to be documented as a central estimate: by my calculation the real peak is about 60-61 A against 60 A, still physically safe because that rating is for 1 minute.",
   "findings": [
     {
-      "severity": "blocker",
-      "part": "top_plate",
-      "issue": "The battery strap cannot be fitted. The strap slots are 3 x 22 mm at x = +/-18. So the 20 mm strap has to come down one slot, run under the plate from x -18 to +18 and go up the other, and that under-run sits right where the VTX hangs. I probed a 36 x 20 x 1.8 mm strip under the plate (z 43.2-45): it overlaps the top_plate's own VTX bosses by 92 mm^3. The bosses are r 3 at (+/-10, +/-10), so they reach y +/-7..13, inside the strap's y +/-10. Below them sit the 6 mm nylon spacers and the VTX board (z 34-42), so the strap cannot drop under them either. There is about 2 mm to the stack below, and the VTX heatsink is in the way. The interference check missed this because the strap proxy models only the top run over the pack. Strap length is a second problem. The pack (82 mm long) covers both slots, so the strap must run lengthwise: 36 mm under the plate, 2 x 3 mm through the slots, 2 x 23 mm under the pad to the pack ends, 2 x 39 mm up the end faces and 82 mm over the top. That is about 248 mm, against a 250 mm strap that needs roughly 40-60 mm of overlap for its buckle and hook-and-loop. A girth strap does not work either: between the VTX (x <= 14) and the pillars (x >= 27) there is only 13 mm. The brief asks for the battery 'strapped on top'. As built, it cannot be strapped without removing the VTX.",
-      "fix": "Give the strap a clear under-run and enough length. Either (a) move the VTX off the strap path (for example lower and further back, or onto the body between the stack and the rear pillar) and keep the lengthwise strap but buy a 20 x 300 mm (or 330 mm) strap, or (b) re-cut the slots for a girth strap where nothing hangs under the plate (it needs a clear 20+ mm band in x across the full width), then a 250 mm strap closes with about 80 mm to spare. Model the whole strap loop as the proxy (or add a keep-out for the under-run) so the interference check covers it."
+      "severity": "major",
+      "part": "stack",
+      "issue": "The `power` pass depends on a Betaflight setting that the build package never tells Spencer to make. On the mechanism itself: Betaflight `motor_output_limit` is real. It is applied in the mixer to every motor's final output. On the BLHeli_S 55 A ESC there is no firmware current limit at all, so this output cap is the only cap available, and it is the same kind of cap tvc_drone uses (MOT_SPIN_MAX). I accept it as an honest configured cap under ENGINEERING.md 10b, with one condition: it has to actually be configured. Today `set motor_output_limit = 74` appears only in DESIGN.md (assembly step 9). The generated deliverables leave it out. ASSEMBLY.md has 13 steps and none mentions it. WIRING.md shows each motor at a 35.08 A peak in its Loads table, but 14.22 A on the phase wires and 57.44 A on the XT60, with no word about where the cap comes from. A builder who follows ASSEMBLY.md and WIRING.md flies at 100 % output, about 140 A through a connector the report says sees 57.4 A. The requirement then describes a different quad from the one that was built.",
+      "fix": "Engine (general, so tvc_drone gets it too): in wiring_out / ship, print every `electrical.limits` entry with its `why` as a 'Configure before the first flight' section in WIRING.md, plus a numbered final step in ASSEMBLY.md's electrical list (here: Betaflight CLI `set motor_output_limit = 74`, `save`, then check the Blackbox/OSD current peak on the first punch-out). In the WIRING.md Loads table, show the capped peak next to the catalog peak, with the limit as its source. Add a test that a project with `electrical.limits` gets the configure step in both files."
     },
     {
-      "severity": "major",
-      "part": "xt60",
-      "issue": "Engine change kerf/electrical.py connector_burst_limit: I judge this a loosened check, not sound engineering. (1) It fits one thermal time constant (tau = 209 s, the bulk heating of connector plus wire) to two long-time ratings (30 A for 4 h, 60 A for 1 min, both stated as '< 60 C rise', so neither is exactly at the limit). It then extrapolates 12 times shorter than the shortest published time, to 194.9 A: 3.25 times the highest rating anyone publishes and 6.5 times the continuous rating. Short-time heating of a contact is set by the small local mass of the contact spot and pin, not the 209 s bulk constant, so a one-pole fit is non-conservative exactly where it is being used. (2) The engine's own numbers contradict it. The 12 AWG leads soldered into both XT60 cups reach +59.7 K in the same 140.9 A, 5 s burst by the engine's own adiabatic wire model. The XT60 pins carry the same current plus contact-resistance heating (Amass: 0.55 mOhm per pole, about 10.9 W per pole at 140.9 A), so the connector cannot be cooler than the wire. Yet the report shows it at 72 % of its limit. A rough adiabatic estimate of the pin and socket (about 1.8 g of brass, 0.68 J/K per pole, no help from the equally hot wire) gives about 80 K rise in 5 s, and a 60 K-in-5 s limit of about 120 A, below the 140.9 A peak. (3) ENGINEERING.md 10b says ratings are compared, not re-derived upward, and the escape it offers is a real configured current limit (`electrical.limits` with a why). The new code instead raises the rating. In plain terms: the XT60 is the normal connector for 5-inch 6S quads, and 140 A punch-outs of 1-2 s are routine in practice. So the part choice is fine, but the 'power' requirement passes on a number that does not stand up.",
-      "fix": "Revert the extrapolation, or cap it at a conservative physical bound: never above the adiabatic limit of the contact pair (sourced contact resistance and pin mass), and never below the wire's own rise on the same run. Then make the design pass honestly, using one of: a cited realistic full-throttle burst length for 5-inch freestyle (from Blackbox logs or a published source) as `burst_s`; a real Betaflight motor_output_limit in `electrical.limits` with a why (as tvc_drone does); or an explicit documented exceedance that the requirement reports as such. Keep the hand-calc test, but add a case asserting the connector limit is never looser than the wire it is soldered to."
-    },
-    {
-      "severity": "major",
-      "part": "top_plate",
-      "issue": "Neither antenna can reach where it is modelled or described. VTX: the catalog Foxeer Lollipop 4 Plus is 60 mm from connector to tip, including a 17 mm head, so the head centre is at most about 51 mm from the MMCX. The TX800's nearest edge is at x = -14 (centred under the plate), and the modelled head centre is at (-71, -10.5, 56.5): 59 mm in a straight line. The described route (under the tab, tied, then up past the tab end at x -62) is about 65 mm or more. This 'tube' antenna is also stiff and is meant to stand straight off its MMCX, not be tied along a plate. Receiver: since the receiver moved under the camera roof (x 40-53), the BOM and project note still say its T antenna goes 'out through the rear-tab slots' (x -46/-58), about 95-105 mm away. The catalog lists the RP1 T antenna as 65 mm. Building it as drawn would need different antennas.",
-      "fix": "VTX: buy a longer MMCX Lollipop (Foxeer makes 90-150 mm versions; add the catalog entry with its source), or let the 60 mm tube stand straight off the VTX through a printed antenna-tube holder at the plate edge near the VTX, staying above the prop plane. Then move the vtx_ant proxy to where it really sits. Receiver: mount the T elements at the front (tie slots or a printed V-holder at the roof tongue's corners, angled 90 deg apart and clear of the front prop discs), or put the receiver back near the rear tab. Update the bom notes."
-    },
-    {
-      "severity": "major",
-      "part": "top_plate",
-      "issue": "The brief's graded line 'the BOM lists every wire, connector and electrical part with a buy link' is not met. All six silicone-wire rows (AWG 12/18/26/28) have an empty Buy column, because wiring_out.wire_link reads catalog/prices.json, which does not exist. The cable ties, nylon spacers, washers and grommets have no link either.",
-      "fix": "Add sourced buy links for each wire gauge (wherever wiring_out.wire_link looks, or a catalog `buy` field), plus the ties and spacers. Check that bom.md shows a link on every electrical row."
+      "severity": "minor",
+      "part": "stack",
+      "issue": "The cap's current estimate is slightly optimistic, and the comment calls it conservative. project.yaml and DESIGN.md say 35.08 x 0.74^3 = 14.22 A is 'on the high side' because motor efficiency rises at part load. The direction is wrong. At 74 % duty the I*R drop shrinks faster than the drive voltage, so loaded rpm falls by less than 26 %. With roughly 60 mOhm of motor + ESC resistance, rpm comes out near 0.756 of full rather than 0.74. Battery current = duty x motor current = 0.74 x 0.756^2 x 35.08, about 14.8 A per motor, so roughly 60-61 A total against the 60 A rating. A full pack (25.2 V against the 24.0 V test voltage) adds a few percent more. In physical terms this is fine: the XT60's 60 A rating is for 1 minute and the bursts are 5 s. But the 4 % margin on paper (0.957) is inside the model's error, and the T/W >= 6 requirement leaves no room to cut the limit to 72 %. The same correction makes the thrust estimate conservative (0.57 rather than 0.548 of full thrust), so `twr` is fine.",
+      "fix": "Correct the wording: the propeller-law current is a central estimate, not an upper bound. Make the first-flight Blackbox/OSD current check the gate (peak <= 60 A on a full pack, else lower the limit by 1-2 %). Optionally catalogue the iFlight throttle table (it lists current at 50/60/75 % throttle) and use the measured 75 % row instead of the scaling law."
     },
     {
       "severity": "minor",
       "part": "top_plate",
-      "issue": "XT60 retention against unplugging is friction only. The tie now wraps under the connector, which is correct, and holds it up. But nothing bears on the housing when the battery plug is pulled rearward through the open end, and the front stops still sit at the solder-cup tips, so the housing seats 5-7 mm inside the walls. In practice a hard-cinched tie usually holds, but it is the weak point when the pack is unplugged.",
-      "fix": "Add a 1 mm lip at the rear end above the housing's top edge, clear of the 8.1 x 16 mating face, or a tie groove or notch that bears on the housing step. Keep the probe that shows the tie path is clear."
+      "issue": "The XT60 pigtail has very little room to turn. The 12 AWG leads (3.6 mm OD, catalog wire.silicone) leave the cradle's front stops at x -44.55 on the centreline (pins stacked in z). They must be at |y| >= 14.3 (pillar half-width 12.5 + wire radius) by the rear pillar face at x -37.5. That is 14.3 mm sideways in 7 mm forward, about a 5 mm centreline bend radius (1.4 x OD), right at the solder cup. The BOM's '20 mm' heat-shrink over that joint would run past x -37.5 into the pillar. The route check passes because its tube model has no bend radius and no stiff joint section. It can be built with flexible silicone wire, but the bend sits right at the solder cups, and every battery plug-in loads those cups.",
+      "fix": "Either add a build note (solder the leads pre-bent at 90 deg towards -y, use 8-10 mm heat-shrink on the 12 AWG joints, and change the BOM line), or give the turn about 8 more mm: move the XT60 to x -67 with the tab to -80, or narrow the rear pillar's y extent on the lead side."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "The single battery strap sits 14.5 mm ahead of the pack's centre (band x 4.5..24.5 on a pack spanning x -41..41), because the VTX takes up x -27.5..0.5 underneath. The rear 55 mm of the pack is held only by the pad's friction and can lift or yaw about the strap in hard manoeuvres and crashes. I probed the strap loop itself and it is now correct (see summary).",
+      "fix": "Acceptable as is, with the anti-slip pad. If the pack shifts in testing, add a second strap band at x about -36 (the gap between the rear pillar and the tab), or move the VTX 6-8 mm further back so the band can sit closer to x 0."
+    },
+    {
+      "severity": "minor",
+      "part": "vtx_ant",
+      "issue": "The antenna head (x -83.5..-72.5, y -16..-5, z 48-68) and its tube bending up past the tab end (z about 43-48 at y -10.5) sit right where the fingers grip the battery's XT60 plug to plug it in and pull it out (plug at x -70..-79, |y| <= 4, z 29-45). The connector_access probe only sweeps the 8.1 x 16 mm connector section, not a hand. Each battery swap will catch the antenna. It is clear of the prop discs: 16.5 mm above prop_3.",
+      "fix": "Mirror the antenna to the +y side, or move its exit forward of the plug zone (up through a slot at about x -45, y -12), so that y -12..+12 behind the tab is free for fingers."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "Stale and missing numbers in the documents. DESIGN.md line 30 still reads '-> 12.6 (requirement >= 6)'. Line 115 says '73 %' where everything else says 74 %. The risks list says 'Flight time 13 min' where the report says 11.96. WIRING.md's headline 'hover time 11.96 min' still has no 'ideal hover-only estimate; freestyle about 3-5 min' caveat (round-3 fix; it reached only the requirement's `why`). XT60 mass is 0.0 g in the report (no weight_g in the catalog). The battery's own lead length (140 mm, `supplied`) is assumed, not catalogued. The motor phase lead gauge and length are still not catalogued (carried from round 3).",
+      "fix": "Fix the three DESIGN.md lines. Make wiring_out print the estimate caveat. Add XT60 weight_g (Amass, about 4 g per pair) and the CNHL lead length/gauge and the XING2 lead gauge/length to the catalog, each with a source."
     },
     {
       "severity": "minor",
       "part": "body",
-      "issue": "Camera field of view (estimate, Phoenix 2 at 155 deg diagonal on 4:3, roughly 124 x 93 deg). At 0 deg tilt the cheek tips (x 62-68, |y| 10) sit about 58 deg off the lens axis, inside the roughly 62 deg half-width, so they will show at the image sides at low tilt. At 35-40 deg tilt the roof tongue's front corners, (58, +/-12, 45), come about 60 deg off axis toward the top edge and may show in the top corners. At the 25 deg home tilt both are out of view. Protection from above is now partial: the roof stops 4-7 mm behind the lens front.",
-      "fix": "Check this on the bench with the camera fitted. If the cheeks show, chamfer their inner front edges to about 45 deg. If the roof corners show at max tilt, round the tongue's front corners with a larger radius."
+      "issue": "Carried from round 3, still to check on the bench: at 0 deg tilt the cheek tips may show at the image sides, and at 35-40 deg the roof tongue's front corners may show in the top corners. Both are out of view at the 25 deg home tilt.",
+      "fix": "Check with the camera fitted. Chamfer the cheek tips or round the roof corners if they show."
     },
     {
       "severity": "minor",
       "part": "arm_1",
-      "issue": "Phase-wire model. The runs are 18 AWG, 175 mm, 'the motor's own leads extended where needed', and the BOM buys 2.1 m of 18 AWG. The XING2's own lead gauge and length are not in the catalog. If they are 20 AWG (common on 2207s), the engine's own 60 K-in-5 s rule would fail on them, since rise scales with 1/A^2, giving about 150 K at 35 A. If they are long enough to reach the ESC (about 110 mm needed), no extension is needed at all. Also, bat_lead is 'the pack's own lead', but its 200 mm is still included in the 0.4 m of 12 AWG to buy.",
-      "fix": "Add the motor lead gauge and length to the catalog from the iFlight page. Model ph1-4 as the real leads (or keep 18 AWG extensions with solder joints, consistently). Exclude bat_lead from the wire purchase."
-    },
-    {
-      "severity": "minor",
-      "part": "top_plate",
-      "issue": "Flight time is reported as 13.08 min at hover, from momentum theory with FM 0.5 and eta 0.75 (93.5 W for 558 g). Thrust tables for 2207/5.1-inch on 6S suggest real hover is nearer 110-140 W, and freestyle is 3-5 min on a 1300 pack. The requirement (>= 3 min) passes either way, but 13 min will mislead Spencer.",
-      "fix": "Label it 'hover-only, ideal estimate' in WIRING.md and DESIGN, and give a freestyle expectation of 3-5 min, or catalogue the iFlight throttle table and use measured hover current."
-    },
-    {
-      "severity": "minor",
-      "part": "top_plate",
-      "issue": "Small craft issues. (1) The XT60 cradle walls run to x = -63.55 but the rear tab ends at -62, so 1.55 mm of each 1.6 mm wall starts in mid-air in the upside-down print (a small unsupported ledge). (2) bom_extra `item: M2 x 6 mm nylon spacer (round, 4 mm OD)` sits inside a YAML flow mapping, so the comma cuts it off: the BOM reads 'M2 x 6 mm nylon spacer (round' and '4 mm OD)' becomes a stray key.",
-      "fix": "Clip the cradle to the tab end, or extend the tab 2 mm. Quote the BOM item string."
-    },
-    {
-      "severity": "minor",
-      "part": "arm_1",
-      "issue": "Carried from rounds 1 and 2, acknowledged in DESIGN risks: the first arm bending mode is around 165 Hz, in the gyro noise band, and PETG-CF sits directly on a motor base that can reach 70-80 C.",
-      "fix": "Keep the hover and Blackbox test in the build notes. Consider a 0.5-1 mm standoff ring under the motor base."
+      "issue": "Carried: the first arm bending mode is about 165 Hz, in the gyro noise band, and PETG-CF sits directly on a motor base that can reach 70-80 C. Both are acknowledged in the DESIGN.md risks.",
+      "fix": "Keep the hover + Blackbox gyro check in the build notes. Consider a 0.5-1 mm standoff ring under the motor base."
     }
   ]
 }

@@ -26,8 +26,8 @@
   motors at full output draw 4 × 35.08 = 140 A. Betaflight `set motor_output_limit = 74` caps each motor: by the
   propeller law (thrust ~ rpm², power ~ rpm³) 1685 × 0.74² = 923 g and 35.08 × 0.74³ = 14.22 A per motor →
   3691 g / ~597 g all-up incl. wire = **6.18**, peak 57.4 A (the `power` requirement). Raise the limit only with a bigger
-  connector; the 74 % figure is an estimate — check the Blackbox current peak on the first flights.
-  → 12.6 (requirement ≥ 6).
+  connector. 14.22 A is a central estimate (motor speed falls a little less than the output at part load, so the
+  real peak may be ~60 A on a full pack): check the Blackbox/OSD current peak is ≤ 60 A on a full pack before freestyle.
 - Arm root bending (hand calc): crash load 2 × 1685 g = 33.1 N at r = 113 mm; outer arm screw at r = 52 mm → lever
   61 mm, M = 2017 N·mm; section 20 × 11 mm: Z = 403 mm³ → 5.0 MPa nominal. FEA (fixed at the two arm screws, load on
   the four motor-screw seats) gives 9.8 MPa (99.9th percentile) at the screw holes vs CF-PETG 35 MPa / SF 3 =
@@ -57,7 +57,7 @@
 | battery | top_plate | one 20 mm strap around the pack's width at x 4.5–24.5 (past 1 mm plate-edge notches, under the plate clear of the VTX) | – | – |
 | XT60 | top_plate | cradle under the rear tab: rear end open for the battery plug, 1 mm stops at the front; a cable tie through two vertical slots beside the cradle wraps under the connector (its lower 4 mm hangs below the walls) | – | – |
 | receiver | top_plate | under the camera roof, cable tie through two slots | – | – |
-| VTX antenna | top_plate | tube runs from the VTX rear corner outside the rear pillar, under the tab (tie through the y −10.5 slot pair), up behind the tab end | – | – |
+| VTX antenna | top_plate | tube runs from the VTX rear corner outside the rear pillar on the +y side (the XT60 pigtail takes −y), under the tab (tie through the y +10.5 slot pair), up behind the tab end, away from the fingers on the battery plug | – | – |
 | receiver antenna | top_plate | T legs tied up and out in a V through the two slots at the roof front (behind the lens) | – | – |
 
 ## Joint tree
@@ -82,7 +82,8 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 - Arm key ridges are 4.5 × 1.5 mm: a 33 N side hit bends the ridge root across one layer line at about 3 MPa.
 
 - Wiring (out/WIRING.md, every run swept against the parts by `kerf check`): XT60 sits at x −59 so its solder
-  cups end 9 mm behind the rear pillar; the 12 AWG pigtail turns out of the cradle front, passes the pillar at
+  cups end 9 mm behind the rear pillar; pre-bend the 12 AWG pigtail toward −y before soldering and use 8–10 mm
+  heat-shrink on the cups (20 mm would reach the pillar); it turns out of the cradle front, passes the pillar at
   y −16 under the VTX and drops to the ESC pads. Motor phases run over the body top between each arm's ribs and
   along the arm top (2 ties per arm). Camera and receiver leads pass the front pillar at y +15.
 
@@ -109,7 +110,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 - VTX height (8 mm incl. heatsink) is typical, not published: 2 mm stays above the stack screw heads.
 - Arm first bending mode is roughly in the gyro noise band (reviewer hand calc ~165 Hz) and PETG-CF softens near a
   hot motor: hover-test and check Blackbox gyro noise before freestyle.
-- Flight time 13 min is the ideal-hover estimate (momentum theory, figure of merit 0.5); real hover draws more and
+- Flight time 12 min is the ideal-hover estimate (momentum theory, figure of merit 0.5); real hover draws more and
   freestyle flying gives about 3–5 min on a 1300 mAh 6S pack.
 - Motor phase runs are modelled as 18 AWG extensions; the motors' own lead gauge/length is not in the catalog (with
-  the 73 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 14.22 A).
+  the 74 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 14.22 A).

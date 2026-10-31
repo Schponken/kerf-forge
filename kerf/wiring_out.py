@@ -69,12 +69,18 @@ def wiring_md(proj, model) -> str:
         L = [f"# Wiring — {proj.name}", "",
              f"Battery: **{model['battery']}** ({model['cells']}S, {model['capacity_ah'] * 1000:g} mAh, {model['v_bat']:g} V full). "
              f"Average draw {model['avg_a']} A, peak {model['peak_a']} A; "
-             + (f"hover time **{model['minutes']} min** ({model['usable']:.0%} of capacity)." if model["hover"]
+             + (f"hover time **{model['minutes']} min** ({model['usable']:.0%} of capacity; an ideal steady-hover "
+                f"estimate: real flying draws more and gives less)." if model["hover"]
                 else f"run time **{model['minutes']} min** ({model['usable']:.0%} of capacity)."), ""]
     if model["hover"]:
         h = model["hover"]
         L += [f"Hover power {h['power_w']} W for {h['mass_g']} g on {h['rotors']} x {h['prop_d_mm']:g} mm props "
               f"(momentum theory, figure of merit and motor efficiency in docs/ENGINEERING.md).", ""]
+    if model.get("limits"):
+        L += ["## Configure before the first power-up", "",
+              "These ratings only hold with the following caps set; the checks below assume them:", ""]
+        L += [f"- **{', '.join(ids)}**: {why} (peak {pk:g} A{' each' if len(ids) > 1 else ''})."
+              for (why, pk), ids in _limit_groups(model).items()] + [""]
     L += ["## Runs (cut each wire to the length shown; it includes 15 % slack over the routed path)", "",
           "| Run | From | To | Kind | V | AWG | Colour | Avg A | Peak A | Routed mm | Cut mm |", "|---|---|---|---|---|---|---|---|---|---|---|"]
     for w in model["wires"]:
@@ -90,6 +96,14 @@ def wiring_md(proj, model) -> str:
     return "\n".join(L) + "\n"
 
 
+def _limit_groups(model) -> dict:
+    """electrical.limits grouped by identical (why, peak) so one setting that caps four motors is one instruction."""
+    g = {}
+    for i, d in (model.get("limits") or {}).items():
+        g.setdefault((d["why"], d["peak_a"]), []).append(i)
+    return g
+
+
 def steps(model) -> list:
     out = []
     for w in model["wires"]:
@@ -103,6 +117,9 @@ def steps(model) -> list:
         out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**; slide heat-shrink on, "
                    f"solder {w['from']} -> {w['to']}, shrink. Route: {' -> '.join(str(p) for p in w['points'])}."
                    + (f" {w['note']}." if w.get("note") else ""))
+    for (why, pk), ids in _limit_groups(model).items():
+        out.append(f"Configure before the first power-up: **{', '.join(ids)}**: {why} (the wiring is rated for a {pk:g} A "
+                   f"peak{' each' if len(ids) > 1 else ''} only with this set).")
     out.append("Before the first battery: check every + to - pair for a short with a multimeter, then power up through "
                "a smoke stopper (fused lead)." if not model.get("mains") else
                "Before plugging in the adapter: check every + to - pair for a short with a multimeter.")

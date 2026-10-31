@@ -70,8 +70,8 @@ def build(ctx):
     s += cradle
     for sy in (1, -1):                           # XT60 tie: down outside one wall, under the connector, up the other
         s -= Pos(XT60_X, sy * (cw / 2 + 0.8), H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    for x in (-66.0, -54.0):                     # VTX antenna tie slots through the rear tab (y -10.5, clear of the cradle)
-        s -= Pos(x, -10.5, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for x in (-66.0, -54.0):                     # VTX antenna tie slots through the rear tab (y +10.5, clear of the cradle)
+        s -= Pos(x, 10.5, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for sy in (1, -1):                           # receiver T-antenna legs tied up and out in a V at the roof's front
         s -= Pos(52.0, sy * 9.0, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for x in (RX_X - 8.5, RX_X + 8.5):             # receiver tie slots either side of it
@@ -83,9 +83,9 @@ def build(ctx):
     ctx.rigid("xt60", Location((XT60_X, 0, H - xh)))
     ctx.rigid("vtx", Location((VTX_X, 0, H - BOSS_H), (180, 0, 0)))
     ctx.rigid("rx", Location((RX_X, RX_Y, H), (180, 0, 0)))
-    # VTX antenna (Lollipop 4+ 95 mm tube): from the VTX's rear corner outside the rear pillar (y -15), under the tab
-    # where one tie through the slot pair at y -10.5 holds it, out past the tab end and up; head above the tab end
-    ctx.rigid("vant", Location((ANT_X, -10.5, H + T)))
+    # VTX antenna (Lollipop 4+ 95 mm tube): from the VTX's rear corner outside the rear pillar (y +15; the XT60 pigtail
+    # takes -y), under the tab where one tie through the slot pair at y +10.5 holds it, out past the tab end and up; head above the tab end
+    ctx.rigid("vant", Location((ANT_X, 10.5, H + T)))
     # strap: under-run below the plate and the two side runs past the notched edges (keep-outs, owner strap)
     ctx.rigid("strap_u", Location(((STRAP_X0 + STRAP_X1) / 2, 0, H - STRAP_T)))
     for tag, sy in (("strap_l", 1), ("strap_r", -1)):

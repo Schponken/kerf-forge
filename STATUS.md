@@ -563,3 +563,12 @@ pushed for it and what I know:
   "Fingerprint and catalog_deps.json"). Each project gets a new fingerprint once, on its next build: owners, re-run
   `kerf build <p>`, commit catalog_deps.json and get one more review (or a re-confirm if nothing else changed).
 - tvc_drone: rebuilt, deps committed, reviewer re-confirmed PASS at 00af8263a5d0de73.
+
+## 2026-10-31 — session 01S68R6S: fpv_5in review round 4 fixes
+- Round 4 FAIL (1 major, 7 minor): the 74 % Betaflight output limit lived only in DESIGN.md. Engine fix for every
+  project: `electrical.limits` now print as "Configure before the first power-up" in WIRING.md and as an ASSEMBLY.md
+  step (grouped when one setting caps several items), and the Loads table shows the capped peak (test). WIRING.md
+  labels the hover time as an ideal steady-hover estimate.
+- fpv_5in: limit `why` carries the CLI command and the Blackbox/OSD <= 60 A gate (central estimate, not "high side");
+  VTX antenna mirrored to +y, away from the fingers on the battery plug and the XT60 pigtail; XT60 heat-shrink /
+  pre-bend note; stale DESIGN.md numbers fixed.

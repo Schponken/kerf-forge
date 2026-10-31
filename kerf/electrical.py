@@ -341,10 +341,18 @@ def analyse(proj, fm=None, eta=None) -> dict:
     return {"battery": bat, "mains": mains, "cells": cells, "v_bat": v_bat, "capacity_ah": ah, "usable": usable, "burst_s": burst_s,
             "avg_a": round(tot_avg, 3), "peak_a": round(tot_peak, 3), "hover": hover,
             "minutes": round(ah * usable / tot_avg * 60, 2) if tot_avg > 0 and not mains else None,
-            "loads": {i: dict(zip(("avg_a", "peak_a", "source"), own(i))) for i in memo},
+            "loads": {i: _capped(dict(zip(("avg_a", "peak_a", "source"), own(i))), limits.get(i)) for i in memo},
+            "limits": {i: {"peak_a": float(v["peak_a"]), "why": v["why"]} for i, v in limits.items()},
             "wires": [{k: w.get(k) for k in ("id", "from", "to", "kind", "v", "gauge", "color", "conductors", "length_mm", "avg_a",
                                              "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note")} for w in ws],
             "ratings": rows}
+
+
+def _capped(load: dict, lim) -> dict:
+    """A load's own peak as the configured cap leaves it (the tree above already uses the capped value)."""
+    if lim and float(lim["peak_a"]) < load["peak_a"]:
+        return {**load, "peak_a": float(lim["peak_a"]), "source": f"{load['source']}; capped: {lim['why']}"}
+    return load
 
 
 SLACK = 1.15
