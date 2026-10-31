@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import access, assembly as A, checks, electrical, export, heads, pins, project as P, requirements, shanks, ship, viewer, wiring_out
+from . import access, assembly as A, checks, electrical, export, heads, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -54,6 +54,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         r = checks.part_checks(it, printer, supports=it.spec.get("supports", supports))
         r["notes"] = list(getattr(it.shape, "kerf_notes", []))
         r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]
+        hp, hw, hres = holewall.check(it)                  # wall around every fastener hole (ENGINEERING.md s5/s7)
+        r["problems"] += hp
+        r["warnings"] += hw
+        r["hole_walls"] = hres
         rep["parts"][iid] = r
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]

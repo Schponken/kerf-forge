@@ -728,3 +728,11 @@ pushed for it and what I know:
 - Round 2/3 additions: s5 fillets on motor_hub / gimbal_outer, `features.bed_chamfer` 0.5 mm first-layer chamfer on
   every tvc part (edges OCC refuses become a deburr warning; test). Other projects can adopt bed_chamfer for A-11-style
   findings.
+## 2026-10-31 09:30 UTC — session 262017a2: ENG-1 hole-wall check (engine majors item)
+- New `kerf/holewall.py` in every `kerf check`: a fastener hole whose wall ring (hole r + insert_wall / 0.8 mm) is
+  < 95 % material is a PROBLEM (catches the tvc A-1 half-hole inserts; test), < 90 % at 1.5 d is an edge-distance
+  WARNING (one line per group). Per-site numbers in report.json parts.<id>.hole_walls.
+- **robot_arm owner:** it flags base `yaw_servo` M3 tap holes at x -30.7 (y +/-5, z 33.3): only ~54-62 % of the ring
+  right next to the hole is material, so they are half-holes at a shelf edge. robot_arm `kerf check` FAILS on this now.
+- Other projects: no problems; edge-distance warnings are mostly hole patterns forced by purchased parts (servo tabs,
+  horn bolt circles, motor patterns) — note them in each DESIGN.md.
