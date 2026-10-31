@@ -16,11 +16,11 @@ about 20 project majors, 6 engine majors.
 |---|---|---|---|---|
 | ENG-1 | major | No check of wall around inserts / hole edge distance (let A-1 through); wall check uses 2nd percentile so local thin walls pass | A-E1, B-E7, C-23 | open |
 | ENG-2 | major | `fea_static` accepts any safety factor; nothing requires an FEA/strength proof on each structural part or resolves the across-layers warning | A-E2, C-21 | open |
-| ENG-3 | major | `cg` leaves out declared wiring mass while mass / T/W include it | A-E3 | open |
-| ENG-4 | major | `thrust_to_weight` uses a hand-typed thrust, not derated from test voltage to nominal / sagged pack voltage | A-E4 | open |
+| ENG-3 | major | `cg` leaves out declared wiring mass while mass / T/W include it | A-E3 | fixed: req_balance.wiring_masses at each run's route centroid per pose; also rod/tube mass from catalog density and a warning for massless purchased items (found in review) — tests test_req_balance, test_item_mass |
+| ENG-4 | major | `thrust_to_weight` uses a hand-typed thrust, not derated from test voltage to nominal / sagged pack voltage | A-E4 | partly fixed: `test_v` / `pack_v` scale thrust by (V/test_V)^2 (test_twr); the thrust figure is still typed from the catalog table with its source in `why` |
 | ENG-5 | major | `fea_static` bearing loads on single-shear pivots ignore the lever moment (pins.py knows which band is fixed) | C-22 | open |
 | ENG-6 | major | Plate 3MFs carry no per-part infill / walls; FEA is solid vs 100%-infill strength and judged at the volume p99.9 | B-E1, B-E2 | open |
-| ENG-7 | minor | Horizontal holes: no warning without teardrop; `iface.pin_hole` has no teardrop; pilot size ignores hole axis | A-E5, C-26, B-E6 | open |
+| ENG-7 | minor | Horizontal holes: no warning without teardrop; `iface.pin_hole` has no teardrop; pilot size ignores hole axis | A-E5, C-26, B-E6 | partly: `iface.print_up_deg(ctx, loc)` gives the teardrop angle from print_rot, `servo_mount(teardrop=)` added (pin_hole already had it); warning and pilot size still open |
 | ENG-8 | minor | `load_axis` optional; FEA direction not cross-checked against it; warning persists after a direction-z proof | A-E8, B-E3, B-E4 | open |
 | ENG-9 | minor | No check that the largest flat face is on the bed | A-E6 | open |
 | ENG-10 | minor | Sweeps catch overlap only; 0.5 mm moving clearance unchecked unless opted in | A-E7 | open |
@@ -41,7 +41,7 @@ Each project's findings are listed in its appendix section with severity and a c
 
 | Project | Findings | Resolution |
 |---|---|---|
-| tvc_drone | A-1 (blocker), A-2..A-7 (major), A-9..A-14 (minor) | open |
+| tvc_drone | A-1 (blocker), A-2..A-7 (major), A-9..A-14 (minor) | **all resolved** — design-reviewer round 3 PASS at 435d517f3a37c360 (review.json has the per-finding table); 2 minors kept: 14 gimbal_outer first-layer edges deburred by hand, leg deflection 2.97 / 3.0 mm |
 | servo_link | A-8 (major), A-15..A-17 (minor) | open |
 | fpv_5in | B-F1, F1b, F2, F3 (major), F4..F10 (minor) | open |
 | pan_tilt | B-F11, F12 (major), F13..F18 (minor) | open |
@@ -471,4 +471,4 @@ I did not edit any project or review file.
 25. **minor / ENGINE / ship.py:** The shoulder-pivot line says "an insert left proud clamps it". That is backwards: the shoulder bottoms on the insert, so a proud insert only adds play. A recessed insert (by more than shoulder minus band) is what clamps. Out/ docs are not tied to the engine version, so a stale ASSEMBLY.md passes verify. **Fix:** correct the text and include an engine hash in the out/ fingerprint.
 26. **minor / ENGINE / iface.pin_hole:** It has no teardrop option, and no check flags round holes whose axis is parallel to the bed in print orientation. **Fix:** add a `teardrop=` argument and a check-level warning.
 27. **minor / ENGINE / missing checks:** (a) gear tooth bending (Lewis) for spur_pair at actuator stall; (b) tendon/line termination bearing stress; (c) desk/ground-plane keep-out in sweeps; (d) BOM dedupe between auto fasteners and bom_extra (M2x5 vs M2x8); (e) servo pigtail length in WIRING/BOM.
-
+- 2026-10-31 session 262017a2: tvc_drone A-1..A-14 fixed (commits 66cc038, cef68c2, 394d78d), review round 3 PASS. ENG-3 fixed, ENG-4 and ENG-7 partly (see table). New engine helpers on the way: FEA reports peak and max-deflection locations; `features.bed_chamfer` (ENGINEERING s5 first-layer chamfer); heat-set `relief`.

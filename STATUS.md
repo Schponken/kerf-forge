@@ -723,3 +723,8 @@ pushed for it and what I know:
 - tvc_drone: mass budget 790 g derived from twr (1625 g / 2.0 less unmodelled hardware), landing cases at 790 g;
   ring_low disc corner fillets (lug_fea peak 21.6 -> 11 MPa), bosses 18 mm like the webs, teardrop lock taps on all
   rings and leg screw holes, nylon-tip set screws. FEA reports peak + max-deflection locations (test).
+## 2026-10-31 10:20 UTC — session 262017a2: PLAN "Audit fixes: tvc_drone" DONE
+- design-reviewer round 3 PASS (fingerprint 435d517f3a37c360); eval acceptance passes; AUDIT.md table updated.
+- Round 2/3 additions: s5 fillets on motor_hub / gimbal_outer, `features.bed_chamfer` 0.5 mm first-layer chamfer on
+  every tvc part (edges OCC refuses become a deburr warning; test). Other projects can adopt bed_chamfer for A-11-style
+  findings.
