@@ -73,7 +73,7 @@ tested before handoff.
 
 ## Phase 4 — Spencer can see and use it
 - [x] Assembly viewer: `kerf build` also writes `projects/<p>/out/viewer.html` — a self-contained page (no network) showing the assembly with part list, explode slider, a slider per moving joint (uses joint axes from the report), part visibility toggles, BOM table and per-part print info
-- [ ] Publish one combined Kerf Forge gallery page as a claude.ai artifact (Artifact tool) with every eval project's viewer, renders and BOM; put the link in README.md
+- [x] Publish one combined Kerf Forge gallery page as a claude.ai artifact (Artifact tool) with every eval project's viewer, renders and BOM; put the link in README.md
 - [x] README.md: what it is, setup, how to ask for a design (`/kerf ...` in Claude Code), what it can and can't do, results table for every eval (pass/fail, parts, mass, print plates), links to renders
 
 ## Phase 4b — features from the competitor study (Zoo, AdamCAD, Leo AI, MakerWorld, Fusion; see docs/COMPETITORS.md)
@@ -97,4 +97,4 @@ tested before handoff.
   - [x] Audit fixes: robot_arm (C-10..C-20; coordinate with the E3 owner), re-review PASS
   - [x] Audit fixes: engine majors ENG-1..ENG-6 (each with a test), re-check every project
   - [x] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)
-- [ ] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project
+- [x] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project

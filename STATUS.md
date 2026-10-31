@@ -1,5 +1,49 @@
 STATE: IN PROGRESS
 
+## Final summary for Spencer (2026-10-31)
+
+**What was built.** Kerf Forge is a working "describe it → printable, checked assembly" tool for your A2L. You give
+the `kerf` skill a sentence; it researches proven designs, sizes the bought parts from datasheet numbers
+(`catalog/hardware.json`, every value with its source), writes the printed parts in build123d, and proves the result
+before you print anything: no part collides at any joint angle, every screw lines up and has a stocked length, every
+hinge is coaxial, hex keys can reach every screw, FEA strength against PETG's weaker across-layer direction, torque /
+thrust / centre-of-gravity / tip-over numbers, and a complete electrical system (every wire's current, fuse, voltage
+drop and routed length). Each project ships a priced BOM, a step-by-step ASSEMBLY.md with a picture per step,
+WIRING.md, A2L plates (.3mf) and a 3D viewer, and is passed by an independent design-reviewer agent.
+
+**Results — the six eval projects** (all `kerf build` PASS, independent review PASS, acceptance PASS; details and
+pictures in the README table and the gallery):
+
+| Project | What it is | Printed / bought parts | Key numbers | BOM |
+|---|---|---|---|---|
+| servo_link | MG996R servo test rig, ±90° arm | 3 / 5 | arm torque 0.55 of 4.7 kg·cm, tips at 37° | ~$78 |
+| fpv_5in | 5" freestyle quad, CF-PETG, 2207 motors, 6S | 6 / 13 | frame 161 g, T/W 6.0, ~11 min ideal hover (3–5 min real freestyle) | ~$386 |
+| robot_arm | 4-axis desk arm + gripper, mains powered | 12 / 18 | 266 mm reach, 150 g at full reach with every servo ≤ 39 % of stall, 792 g | ~$165 |
+| tvc_drone | thrust-vectoring coax rocket drone | 9 / 16 | T/W 2.08 (1.86 with pack sag), 4 min hover estimate, stands on 3 legs (tips at 21°) | ~$269 |
+| bionic_finger | tendon-driven index finger, no supports | 4 / 3 shoulder screws + line | curls 80/80/70° without jamming, 222 N line load proven | ~$1 + line |
+| pan_tilt | Pi Camera 3 pan-tilt on a 1/4-20 thread, SG90s (designed BLIND by a fresh agent) | 3 / 8 | pan ±80°, tilt −30..60°, 67 g | ~$62 |
+
+**How to print each one.** For any project: open `projects/<name>/out/plates/plate_1.3mf` (and plate_2, 3 for
+tvc_drone) in Bambu Studio; parts are already oriented and the per-part infill/walls are in
+`out/plates/PRINT_SETTINGS.md`. PETG unless noted (fpv_5in: CF-PETG, hardened nozzle). Supports: robot_arm, tvc_drone,
+pan_tilt and fpv_5in have a few supported faces (listed per part in the report); bionic_finger prints with none. Then
+follow `out/ASSEMBLY.md` (heat-set inserts first, then the steps in order) and `out/WIRING.md`, and buy from `out/bom.md`.
+Read each project's `DESIGN.md` "Risks / measure first" before the first print: a few bought-part dimensions are
+best published figures (e.g. the DS32xx servo tab holes), so print the one part that holds them first and test-fit.
+`kerf print <project>` will slice and send to the A2L over LAN once you do the one-time setup below.
+
+**Known limits.**
+- Strength checks are static (2–3× the working load, stall and crash cases where it matters); no vibration, fatigue
+  or control-loop analysis. Hover/run times are momentum-theory estimates, not thrust-stand data.
+- The FEA uses solid geometry judged against PETG's across-layer strength; the slicer's walls/infill are set per part
+  so printed parts match the masses used.
+- robot_arm: mains wiring (IEC inlet to the supply's terminals) is a 3-wire job for a competent person; trim the
+  supply to 5.4 V through the hole in the hood before plugging servos in.
+- One PLAN item is waiting on you: a real print through `kerf print` needs your A2L on the LAN (Developer Mode,
+  IP/serial/access code in `~/.kerf/bambu.json`, Bambu Studio's exported A2L + PETG configs). The exact steps are in
+  the STATUS.md entry "PLAN Bambu A2L handoff — code done"; then run `kerf print servo_link --dry-run` and
+  `kerf print servo_link --send 1`.
+
 # Kerf Forge status log
 
 Newest entry at the bottom. Every session: read this, continue from the first unchecked item in PLAN.md, and add an
@@ -863,3 +907,11 @@ pushed for it and what I know:
 - verify state otherwise: bionic_finger proximal_fea_line FAILS (ENG-5 single-shear moment; the bionic audit item,
   claimed by bb3a06febf). Remaining PLAN items: gallery (claimed), Bambu (BLOCKED on Spencer's printer), clean-clone
   verify x2 and the final summary (both need everything else done first).
+
+## 2026-10-31 14:50 UTC — session 18259c3d8c (01S68R6S): gallery republished, final summary written
+- After bd486a2's catalog-only change, fpv_5in / pan_tilt / tvc_drone re-reviewed PASS; robot_arm's re-review caught
+  the gripper standing on its wrist discs (new bed-contact check) -> 25 mm flat foot, teardrops; PASS at 3dea877d.
+- Fresh `kerf build` of all six; every review current, every eval PASS. `kerf gallery` republished to the same
+  artifact (version 2). README results table regenerated; final summary at the top of this file and in README.
+- Left for others: the clean-clone double verify (claimed by 216d7672b4) and the Bambu real print (BLOCKED on
+  Spencer). STATE stays IN PROGRESS until the verify item is checked; whoever checks it sets STATE: COMPLETE.
