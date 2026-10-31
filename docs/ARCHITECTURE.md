@@ -164,6 +164,8 @@ wiring:
   - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 20, conductors: 3, length_mm: 120, route: [arm_1.motor]}
   - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, length_mm: 60}
 ```
+- `supplied: <item>` marks a lead that comes with an item (an adapter's DC cord, a pack's own lead): rated and
+  length-checked like any run, but no wire or heat-shrink in the BOM and its step says connect, not cut.
 - A power run (`kind: power`, default) is the +/- pair (`conductors` overrides, e.g. 3 motor phases) and carries
   everything downstream of its `to` item. A run at a lower `v` than the item's feed is a regulator output and is
   referred back to the input at `bec_eff` (0.8). Each item has one feed; the tree starts at the battery.

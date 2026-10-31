@@ -340,7 +340,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
             "minutes": round(ah * usable / tot_avg * 60, 2) if tot_avg > 0 and not mains else None,
             "loads": {i: dict(zip(("avg_a", "peak_a", "source"), own(i))) for i in memo},
             "wires": [{k: w.get(k) for k in ("id", "from", "to", "kind", "v", "gauge", "color", "conductors", "length_mm", "avg_a",
-                                             "peak_a", "routed_mm", "cut_min_mm", "points")} for w in ws],
+                                             "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note")} for w in ws],
             "ratings": rows}
 
 

@@ -44,6 +44,8 @@ def bom_rows(model) -> list:
     wire = defaultdict(float)
     ends = Counter()
     for w in model["wires"]:
+        if w.get("supplied"):          # a lead that comes with an item (adapter cord, pack lead): nothing to buy or solder
+            continue
         n = _conductors(w)
         wire[(int(w["gauge"]), w.get("color") or ("red/black" if n == 2 else "any"))] += float(w["length_mm"]) * n
         ends[int(w["gauge"])] += 2 * n
@@ -92,11 +94,17 @@ def steps(model) -> list:
     out = []
     for w in model["wires"]:
         n = _conductors(w)
+        if w.get("supplied"):
+            who = w["supplied"] if isinstance(w["supplied"], str) else w["from"]
+            out.append(f"**{w['id']}** is the lead that comes with {who} ({w['length_mm']} mm): connect {w['from']} -> "
+                       f"{w['to']}, nothing to cut.")
+            continue
         what = w.get("color") or ("red (+) and black (-) pair" if n == 2 else f"{n} conductors")
         out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**; slide heat-shrink on, "
                    f"solder {w['from']} -> {w['to']}, shrink. Route: {' -> '.join(str(p) for p in w['points'])}.")
     out.append("Before the first battery: check every + to - pair for a short with a multimeter, then power up through "
-               "a smoke stopper (fused lead).")
+               "a smoke stopper (fused lead)." if not model.get("mains") else
+               "Before plugging in the adapter: check every + to - pair for a short with a multimeter.")
     return out
 
 

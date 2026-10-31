@@ -247,3 +247,18 @@ def test_connector_burst_limit_by_hand():
     assert lim == pytest.approx(194.9, abs=0.2) and "tau 209 s" in note
     assert E.connector_burst_limit(e, 60)[0] == 60 and E.connector_burst_limit(e, 120)[0] == 60   # never above at >= t_b
     assert E.connector_burst_limit({"current_a": 30, "current_peak_a": 60}, 5) == (60.0, "")       # no time base: as-is
+
+
+def test_supplied_lead_is_not_bought_or_cut():
+    """A run that comes with an item (an adapter's DC cord, a pack's own lead) is checked like any wire but adds no
+    wire or heat-shrink to the BOM and its step says to plug it in, not to cut and solder."""
+    wires = [{"id": "cord", "from": "psu", "to": "jack", "kind": "power", "gauge": 24, "length_mm": 1000, "color": None,
+              "supplied": "psu", "points": []},
+             {"id": "pwr", "from": "jack", "to": "servo", "kind": "power", "gauge": 22, "length_mm": 250, "color": "red/black",
+              "points": []}]
+    rows = WO.bom_rows({"wires": wires})
+    assert [r["item"] for r in rows if "metres" in r["item"]] == ["AWG 22 silicone stranded wire (red/black), metres"]
+    assert sum(r["qty"] for r in rows if "heat-shrink" in r["item"]) == 4
+    st = WO.steps({"wires": wires, "mains": True})
+    assert st[0].startswith("**cord** is the lead that comes with psu") and "Cut 2 x 250 mm" in st[1]
+    assert "adapter" in st[-1]

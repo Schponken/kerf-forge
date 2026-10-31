@@ -23,4 +23,9 @@ def build(ctx):
             plate -= c * Cylinder(m4["clearance"] / 2, p.base_t * 3, align=(Align.CENTER, Align.CENTER, Align.CENTER))
             plate -= c * Pos(0, 0, p.base_t - m4["head_h"] - 0.3) * Cylinder(m4["head_d"] / 2 + 0.3, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("bracket_seat", Location((0, p.bracket_y0, p.base_t)))
+    # desk spots for the off-rig electronics (z = 0 is the desk the plate stands on): 5 V adapter behind the rig,
+    # barrel-jack terminal adapter and Arduino Nano beside it, plugs facing +X away from the plate
+    ctx.rigid("desk_psu", Location((0, y_back - 45, 0)))
+    ctx.rigid("desk_jack", Location((L / 2 + 30, p.bracket_y0 - 40, 0)))
+    ctx.rigid("desk_nano", Location((L / 2 + 35, p.bracket_y0 + 10, 0)))
     return ctx.finish(plate)

@@ -466,7 +466,8 @@
    "tab_t": 2.5,
    "tab_z": 26.8,
    "shaft_offset": 10.0,
-   "shaft_h": 6.3,
+   "shaft_h": 5.7,
+   "source_shaft_h": "https://towerpro.com.tw/product/mg996r/ (TowerPro table: A 42.7 spline top minus C 37 case top = 5.7 mm of output boss + spline above the case; was 6.3 without a source until 2026-10-31)",
    "spline_d": 5.8,
    "spline_teeth": 25,
    "stall_torque_kgcm": 9.4,
@@ -1276,6 +1277,19 @@
   }
  },
  "electronics": {
+  "connectors": {
+   "dc_jack_5521_screw": {
+    "model": "SparkFun PRT-10288 DC barrel jack adapter, female 5.5 x 2.1 mm (centre positive) to 2 screw terminals",
+    "length": 35.4,
+    "width": 13.7,
+    "height": 11.7,
+    "current_a": 10,
+    "source": "https://www.sparkfun.com/dc-barrel-jack-adapter-female.html",
+    "source_dims": "https://www.printables.com/model/219774-21x55mm-dc-power-jack-plug-adapter-connector-to-he (CC-BY-NC CAD model of this common screw-terminal jack adapter, measured here with kerf find: 35.4 x 13.7 x 11.7 mm)",
+    "confidence": "vendor-page + community model",
+    "note": "SparkFun: 'the max current for this adapter is 10A', 5.5x2.1 mm centre-positive female jack, screw terminals; no dimensions or weight published (weight unknown, counted as 0 g). Size from a community CAD model of the same generic adapter, not a vendor drawing: it only sits on the desk next to a rig, so a few mm do not matter. Mates the 5.5 x 2.1 plug of electronics.supplies.meanwell_gst60a05 (element14: 'Barrel Plug Center Positive 2.1mm x 5.5mm x 11mm')."
+   }
+  },
   "supplies": {
    "meanwell_gst60a05": {
     "model": "MEAN WELL GST60A05-P1J desktop adapter, 5 V 6 A (30 W), 2.1 mm ID barrel plug",

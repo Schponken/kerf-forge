@@ -32,7 +32,7 @@ def build(ctx):
     back = Location((0, 0, p.pivot_h), (-90, 0, 0))          # on the back face; +Z points through the wall toward the arm
     seat = back * Location((0, 0, -p.servo_tab_t))            # servo frame origin (tab underside) sits behind the tabs
     # Servo tabs: thread-forming M3 into pilot holes (how servos are normally mounted). Heat-set inserts would leave
-    # only 2.1 mm of wall between the insert and the servo window (rule: 2.4 mm) and could bulge into it when melted.
+    # only 2.0 mm of wall between the insert and the servo window (rule: 2.4 mm) and could bulge into it when melted.
     body -= iface.servo_mount(ctx, "servos.MG996R", back, group="bracket_servo", plate_t=p.wall_t, kind="tap",
                               top_through=True)
     # Foot holes print horizontally (part +Y is up on the printer), so they are teardrops pointing +Y.

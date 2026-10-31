@@ -65,6 +65,15 @@ Foot screws sit outside the servo tab span so a hex key reaches them from above 
 ## Joint tree
 base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swing`, revolute ±90°) → arm (rigid).
 
+## Electrics
+- Power: MEAN WELL GST60A05 5 V 6 A desk adapter (catalog) -> SparkFun PRT-10288 barrel-jack screw-terminal adapter
+  (10 A) -> 22 AWG red/black to the servo's red/brown pins. 5 V is inside the MG996R's 4.8-7.2 V; its 2.5 A stall
+  (datasheet) is 42 % of the adapter's 6 A (`power` check, worst element). A USB port could not feed a stall.
+- Signal: Arduino Nano on USB, D9 -> servo signal (orange), Nano GND -> supply minus (common ground). Sweep sketch with
+  `servo.attach(9, 500, 2500)` so the pulse range reaches the full ±90° (a cheap servo tester stops at about ±60°).
+- The adapter sits behind the rig, the jack and Nano beside it on the desk (base `desk_*` spots), plugs facing away:
+  `plug_access` / `usb_access` prove 30 mm free in front of both. `kerf build` writes out/WIRING.md and wiring.svg.
+
 ## Assembly order
 1. Melt the 4 M3 inserts into the base.
 2. Screw the bracket foot to the base (4× M3 × 10).
@@ -79,7 +88,9 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
 5. Centre the servo electrically, press the horn on the spline pointing up, fit its centre screw.
 6. Bolt the arm to the horn (4× M3 × 8). The horn disc is only 2 mm thick: snug them (about 0.5 N·m) with medium
    threadlocker rather than torquing them down.
-7. Hang the 50 g test mass (calibration weight or sinker on a wire loop / S-hook) from the tip hole.
+7. Wire it (out/WIRING.md): jack + / - to the servo's red / brown, Nano D9 to orange, Nano GND to jack -; plug the
+   adapter into the jack and the Nano into USB.
+8. Hang the 50 g test mass (calibration weight or sinker on a wire loop / S-hook) from the tip hole.
 
 ## Use
 - Screw the base to the bench (4× M4 counterbored holes) or clamp it. Unclamped it only resists ~0.12 N·m of tipping
