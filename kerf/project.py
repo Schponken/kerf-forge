@@ -55,6 +55,7 @@ class Project:
         re-checks every project from scratch, so an engine change that breaks a design still fails verify.)"""
         h = hashlib.sha256()
         files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")), catalog.CATALOG,
+                 *sorted(p for p in (self.dir / "meshes").glob("*") if p.is_file()),     # Meshy shells
                  calibrate.profile_path(self.data.get("printer", calibrate.DEFAULT_PRINTER))]  # measured fits
         for f in files:
             if f.exists():
@@ -173,6 +174,9 @@ def build(proj: Project, only: list[str] | None = None) -> Project:
                 it.shape = proxies.build(ctx, it.spec)
             if it.shape is None or not hasattr(it.shape, "kerf_sites"):
                 raise ProjectError(f"{pid}: build must return ctx.finish(shape)")
+            if it.role == "printed" and it.spec.get("source") == "meshy":   # fuse the Meshy shell (kerf/meshy.py)
+                from . import meshy
+                meshy.apply(it, proj.dir)
         except Exception as e:  # noqa: BLE001 — report per part, keep building the rest
             import traceback
             from . import diagnose

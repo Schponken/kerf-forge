@@ -162,8 +162,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     g = proj.out(f"part_{iid}.glb")
                     s = checks.oriented(it.shape, it.spec.get("print_rot", [0, 0, 0]))
                     s.label = iid
-                    from build123d import export_gltf
-                    export_gltf(Compound(children=[s]), str(g), binary=True, linear_deflection=0.03, angular_deflection=0.2)
+                    from . import geom
+                    geom.write_glb([s], g, 0.03, 0.2, label=iid)       # mesh-aware (fused Meshy parts)
                     render_glb(g, out / f"part_{iid}", sheet=True)
         except P.ProjectError as e:
             rep["problems"].append(f"assembly: {e}")

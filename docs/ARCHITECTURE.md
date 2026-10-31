@@ -37,6 +37,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/electrical.py` | Complete electrical system from `electrical:` + `wiring:`: power tree, current per item and run (avg + peak), hover power (momentum theory), ratings (battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltage), routed wire lengths |
 | `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
 | `kerf/wiring_out.py` | `out/WIRING.md`, `out/wiring.svg`, the solder/wiring steps appended to `out/ASSEMBLY.md`, and the BOM rows for wire and heat-shrink; buy links from catalog sources |
+| `kerf/meshy.py` | Creative mode: a `source: meshy` part's cached Meshy model is scaled to `bounds`, repaired per connected piece (merge + fill holes, else voxel remesh) and unioned, then fused with the part's B-rep features and cut by its `ctx.mesh_cut` solids in mesh space (manifold3d), simplified at 10 um; the result rides on the shape as `kerf_mesh` and geom uses it for print checks, overlaps, bbox, volume, STL/3MF/plates and GLB, while joints, fastener/pin sites, FEA and STEP keep the exact features; a missing model reports the prompt and path to generate |
 | `kerf/ship.py` | Ship package: prices every BOM row from `catalog/prices.json` (dated snapshot: buy link, pack qty/price, source; keys = catalog path, `screw:M3x8:socket` -> `screw:M3:socket`, `insert:M3`, `nut:M3`, `dowel:3x16` -> `dowel:3`, `material:PETG` per gram, or a bom_extra row's `price_key`), adds buy / unit $ / total $ columns and the total to `bom.md`/`bom.csv`; writes `out/ASSEMBLY.md`: root first, then `assembly.order` (unnamed items right after their parent), per step the heat-set inserts to press first, pins, screws (driven when the later of their two parts goes on), bench sub-assemblies from `key_access`, and an iso render in `out/assembly_steps/` with the new part pulled back along its mating joint axis (or its `insert` path) |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM (with a buy / source link column) |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` |
@@ -181,6 +182,11 @@ wiring:
 - Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),
   `load_axis` (x / -y / [x, y, z] / list: main stress direction in the part frame; warned if > 30 deg across layers),
   `supports` (per-part override), `params` (per-part param overrides), `note` (shown in the BOM).
+- Creative mode (kerf/meshy.py): a printed part with `source: meshy`, `prompt` (what to ask Meshy text-to-3D for),
+  `mesh` (cached model, default `meshes/<part>.glb|stl|obj`), `bounds` [[x0,y0,z0],[x1,y1,z1]] (part frame; the
+  model is scaled to fill it) and `fit` (`stretch` default, or `uniform`) is fused with its exact features into one
+  body. Its part file builds the features as usual and calls `ctx.mesh_cut(solid)` for every hole, key-access bore
+  or pocket that must also go through the shell. Files in `meshes/` are part of the fingerprint.
 - Purchased items: `catalog`, `proxy`, `groups` (proxy site key -> fastener group), `qty`, `mass_g` (overrides the
   catalog mass), `note`, `color`, `tab_screws_from: bottom` (servo screws from behind the tabs, with
   `servo_mount(top_through=True)`), `tab_washers: true` (a flat washer under each tab screw head: catalog
@@ -221,6 +227,7 @@ def build(ctx):
     ctx.rigid("base", Location((0, 0, 0)))           # attachment frames other items connect to
     ctx.revolute("pivot", Axis((0, 0, 10), (1, 0, 0)), range=(-45, 45))  # moving joints live on the parent
     return ctx.finish(body)                          # must be ONE solid for a printed part
+    # source: meshy parts: ctx.mesh_cut(hole_solid) also cuts it through the generated shell (kerf/meshy.py)
 ```
 Frames: millimetres, Z up, in the part's own frame. `print_rot` in project.yaml rotates the part onto the bed for
 checks and print files; design geometry in whatever frame is clearest.

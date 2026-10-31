@@ -81,7 +81,22 @@ limit or edit the catalog to make a check pass unless the physics says so (write
 - Detail pass, re-checking after each change: fillets on every inside corner of a load path (`features.safe_fillet`
   reports edges it could not do), chamfered bed edges, teardrop horizontal holes, cable routes and zip-tie points,
   lightening `pockets` only where FEA shows margin, part name/version `label`, screw access confirmed in assembly
-  order. Organic/cosmetic surfaces CAD can't reasonably express: note them for Spencer to generate with Meshy.
+  order. Organic/cosmetic surfaces CAD can't reasonably express: use creative mode (below).
+
+### Creative mode (Meshy shells fused with exact features)
+For an organic or cosmetic part (a sculpted cover, a hand-shaped grip, a character shell), declare it `source: meshy`
+with a `prompt`, `bounds` (where the shell goes, part frame) and optionally `fit: uniform`. Its part file builds
+only the exact features (flanges, bosses, joints, `iface` fastener/pin sites) and calls `ctx.mesh_cut(...)` for
+every screw hole, a hex-key access bore above every screw head the shell would cover, cable holes and keep-out
+pockets. Keep the features reaching into the shell so the result is one body; the shell carries no structural load
+(FEA, fasteners and STEP use the features only). When `kerf check` reports the model missing:
+1. Check the Meshy credit balance, then run Meshy text-to-3D with the yaml `prompt` (preview, then refine for the
+   final texture-free mesh), poll the task until it succeeds, and download the model as GLB to the path the error
+   names (`meshes/<part>.glb`).
+2. Write `meshes/<part>.meshy.json`: task id(s), prompt, mode, date, so the shell can be regenerated or refined.
+3. `kerf check <p>`: the engine scales, repairs and fuses it (kerf/meshy.py) and the print checks, interference,
+   key access and exports all run on the fused body. Look at its part render; if the shell hides a feature or
+   looks wrong, change the prompt or bounds and regenerate.
 
 ## 6. Build and look
 `kerf build <p>`. Read the assembly sheet, exploded sheet, keep-out render, every joint pose (min/max) and every

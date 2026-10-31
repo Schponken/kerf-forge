@@ -233,7 +233,7 @@ def _explode_offset(proj, asm, iid, present) -> np.ndarray:
 
 
 def step_glb(proj, asm, present: list, new: list, path: Path):
-    from build123d import Color, Compound, Location, Pos, export_gltf
+    from build123d import Color, Location, Pos
     shapes = []
     for iid in present:
         it = proj.items[iid]
@@ -245,7 +245,7 @@ def step_glb(proj, asm, present: list, new: list, path: Path):
             s.color = Color(OLD)
         s.label = iid
         shapes.append(s)
-    export_gltf(Compound(children=shapes, label=proj.name), str(path), binary=True, linear_deflection=0.08, angular_deflection=0.3)
+    geom.write_glb(shapes, path, 0.08, 0.3, label=proj.name)
 
 
 def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:

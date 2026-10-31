@@ -43,6 +43,10 @@ def _b64(a: np.ndarray) -> str:
 def mesh(shape, tol=0.05, ang=0.25, face_starts=False):
     """World-space triangle mesh of a placed shape: (N x 3 float32 vertices, M x 3 uint32 triangles).
     face_starts=True also returns, for every face in shape.faces() order, the index of its first triangle."""
+    km = geom.kmesh(shape)
+    if km is not None:      # fused Meshy part: one mesh, treated as a single face for click-to-edit
+        v, t = np.asarray(km[0], np.float32), np.asarray(km[1], np.uint32)
+        return (v, t, np.zeros(1, np.uint32)) if face_starts else (v, t)
     vs, ts, starts = [], [], []
     off = ntri = 0
     for f in shape.faces():

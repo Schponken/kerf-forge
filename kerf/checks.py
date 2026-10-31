@@ -33,8 +33,8 @@ def density(material: str) -> float:
 def oriented(shape, rot) -> object:
     """Copy of the part rotated into print orientation and dropped onto the bed at the origin."""
     s = Rot(*rot) * shape.located(Location())
-    bb = s.bounding_box()
-    return Pos(-(bb.min.X + bb.max.X) / 2, -(bb.min.Y + bb.max.Y) / 2, -bb.min.Z) * s
+    lo, hi = geom.bbox(s)                     # mesh-aware: a fused Meshy part sits on the bed by its shell
+    return Pos(-(lo[0] + hi[0]) / 2, -(lo[1] + hi[1]) / 2, -lo[2]) * s
 
 
 def part_checks(item, printer: str, supports: str = "allowed") -> dict:
@@ -44,12 +44,14 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     s = oriented(shape, rot)
     problems, warnings = [], []
     sol = geom.solids(s)
+    if geom.kmesh(s) is not None:                       # fused Meshy part: the printed body is the merged mesh
+        sol = [None] * getattr(s, "kerf_mesh_info", {}).get("bodies", 1)
     if len(sol) != 1:
         problems.append(f"{item.id} is {len(sol)} separate solids; a printed part must be one piece")
     if not s.is_valid:
         problems.append(f"{item.id}: geometry is invalid (self-intersecting or broken faces)")
-    bb = s.bounding_box()
-    size = [bb.size.X, bb.size.Y, bb.size.Z]
+    lo_, hi_ = geom.bbox(s)
+    size = [float(x) for x in hi_ - lo_]
     X, Y, Z = PRINTERS[printer]
     a, b = sorted(size[:2], reverse=True)
     c, d = sorted((X, Y), reverse=True)
@@ -77,7 +79,8 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     vol = geom.volume(s)
     mat = spec.get("material", "PETG")
     rho = density(mat)
-    area = float(sum(fc.area for fc in s.faces()))
+    km = geom.kmesh(s)
+    area = float(sum(fc.area for fc in s.faces())) if km is None else float(__import__("trimesh").Trimesh(*km, process=False).area)
     shell = min(vol, area * 0.84)  # two 0.42 mm perimeters / top-bottom skins
     infill = float(spec.get("infill", 0.25))
     return {

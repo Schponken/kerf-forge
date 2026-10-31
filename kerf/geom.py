@@ -16,11 +16,37 @@ def solids(shape) -> list:
     return list(shape.solids())
 
 
+def kmesh(shape):
+    """World (V, F) of a `source: meshy` part's fused mesh (kerf/meshy.py), or None for an ordinary B-rep shape."""
+    km = getattr(shape, "kerf_mesh", None)
+    if km is None or isinstance(shape, (list, tuple, ShapeList)):
+        return None
+    t = shape.location.wrapped.Transformation()
+    M = np.array([[t.Value(r + 1, c + 1) for c in range(4)] for r in range(3)])
+    V, F = km
+    return V @ M[:, :3].T + M[:, 3], F
+
+
+def _manifold(shape):
+    from . import meshy
+    km = kmesh(shape)
+    if km is None:
+        return meshy.brep_manifold(shape, tol=0.02, ang=0.15)
+    import trimesh
+    return meshy.to_manifold(trimesh.Trimesh(km[0], km[1], process=False))
+
+
 def volume(shape) -> float:
+    km = kmesh(shape)
+    if km is not None:
+        return float(_manifold(shape).volume())
     return float(sum(s.volume for s in solids(shape)))
 
 
 def bbox(shape):
+    km = kmesh(shape)
+    if km is not None:
+        return km[0].min(axis=0), km[0].max(axis=0)
     b = shape.bounding_box()
     return np.array([b.min.X, b.min.Y, b.min.Z]), np.array([b.max.X, b.max.Y, b.max.Z])
 
@@ -35,6 +61,8 @@ def overlap(a, b) -> float:
     """Volume (mm^3) shared by two located shapes. 0 when they only touch."""
     if not bbox_overlap(a, b, pad=0.01):
         return 0.0
+    if kmesh(a) is not None or kmesh(b) is not None:     # a fused Meshy part: intersect in mesh space
+        return float((_manifold(a) ^ _manifold(b)).volume())
     try:
         r = a.intersect(b)
     except Exception:  # fall back to operator form on odd shape types
@@ -44,6 +72,9 @@ def overlap(a, b) -> float:
 
 def mesh(shape, tol: float = 0.02, ang: float = 0.15):
     """(vertices Nx3, faces Mx3) triangle mesh of a shape, in its current location."""
+    km = kmesh(shape)
+    if km is not None:
+        return km
     verts, tris = shape.tessellate(tol, ang)
     v = np.array([[p.X, p.Y, p.Z] for p in verts], dtype=float)
     f = np.array(tris, dtype=np.int64).reshape(-1, 3)
@@ -113,3 +144,23 @@ def world_dir(loc: Location, d) -> np.ndarray:
     t = world_point(loc, d)
     v = t - o
     return v / (np.linalg.norm(v) or 1)
+
+
+def write_glb(shapes, path, linear_deflection: float = 0.05, angular_deflection: float = 0.2, label: str = "assembly"):
+    """GLB of located, coloured shapes. Plain B-rep -> build123d's exporter; if any shape is a fused Meshy part
+    (kerf_mesh) every shape is written as a mesh with trimesh in the same convention (metres, Z-up -> Y-up)."""
+    from build123d import Compound, export_gltf
+    if not any(kmesh(s) is not None for s in shapes):
+        export_gltf(Compound(children=list(shapes), label=label), str(path), binary=True,
+                    linear_deflection=linear_deflection, angular_deflection=angular_deflection)
+        return
+    import trimesh
+    sc = trimesh.Scene()
+    for k, s in enumerate(shapes):
+        v, f = mesh(s, tol=linear_deflection, ang=angular_deflection)
+        m = trimesh.Trimesh(np.c_[v[:, 0], v[:, 2], -v[:, 1]] * 0.001, f, process=False)
+        c = getattr(s, "color", None)
+        rgba = [int(round(255 * x)) for x in (tuple(c) if c is not None else (0.6, 0.6, 0.6, 1.0))]
+        m.visual = trimesh.visual.ColorVisuals(m, face_colors=np.tile(rgba, (len(f), 1)))
+        sc.add_geometry(m, geom_name=f"{getattr(s, 'label', '') or 'part'}_{k}")
+    sc.export(str(path), file_type="glb")

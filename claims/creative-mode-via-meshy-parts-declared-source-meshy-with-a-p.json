@@ -2,6 +2,6 @@
  "item": "Creative mode via Meshy: parts declared `source: meshy` with a prompt are generated through the Meshy MCP tools for organic/cosmetic shells and fused with the exact mounting features into ONE printable body. Proven approach (docs/prototypes/mesh_merge.py, 2026-10-30): do the booleans in mesh space with `manifold3d` (0.2-1.6 s for 80k-330k triangles, watertight single body, M3 holes probed exact), NOT through the B-rep kernel (34 s at 20k triangles). Repair ladder per connected piece: merge verts + fill holes, else voxel remesh; then union the pieces (a broken mesh with a stray overlapping piece otherwise yields 2 bodies). Holes/bosses/keep-outs come from the part's build123d features, tessellated fine; scale the mesh to declared bounds first. Output STL/3MF for printing; STEP holds the mechanical features only. Fastener/interference checks use the merged mesh. Add manifold3d + networkx to setup. Test with a cached broken mesh so CI needs no Meshy call",
  "session": "12d9384eb7",
  "since": 1793411554.3834097,
- "heartbeat": 1793411554.3834097,
+ "heartbeat": 1793412683.6947658,
  "since_utc": "2026-10-31 01:52"
 }

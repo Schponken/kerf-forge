@@ -75,6 +75,7 @@ class Ctx:
         self.joints: list[JointSpec] = []
         self.notes: list[str] = []
         self.pins: list[PinSite] = []
+        self.mesh_cuts: list = []
 
     # ---- joints (declare in the part's own frame) ----
     def rigid(self, label: str, loc: Location):
@@ -91,6 +92,12 @@ class Ctx:
 
     def pin_site(self, s: PinSite):
         self.pins.append(s)
+
+    def mesh_cut(self, solid):
+        """`source: meshy` parts: a solid (part frame) cut through the generated shell too - holes, pockets, keep-outs.
+        Subtract it from your own features as usual; kerf/meshy.py also cuts it from the fused shell."""
+        self.mesh_cuts.append(solid)
+        return solid
 
     def finish(self, shape, color=None):
         """Attach label, joints and sites to the final solid and return it."""
@@ -114,4 +121,5 @@ class Ctx:
         shape.kerf_joints = list(self.joints)
         shape.kerf_notes = list(self.notes)
         shape.kerf_pins = list(self.pins)
+        shape.kerf_mesh_cuts = list(self.mesh_cuts)
         return shape

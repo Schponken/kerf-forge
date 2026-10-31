@@ -464,3 +464,24 @@ pushed for it and what I know:
   PASSes but its fingerprint changed (re-review needed).
 - Design-reviewer run via `claude -p --agent design-reviewer` (no agent-spawning tool in this session).
 - Open: no `electrical:` block in pan_tilt (warning), evals/pan_tilt/BLIND_RUN.md is written by the orchestrator.
+## 2026-10-31 03:40 UTC — session 12d9384eb7: PLAN "Creative mode via Meshy" done
+- `kerf/meshy.py`: a printed part with `source: meshy` + `prompt` + `bounds` (+ `mesh`, `fit`) is built as usual for
+  its exact features; `ctx.mesh_cut(solid)` registers holes / key-access bores / pockets. After build the cached
+  model is scaled to `bounds`, vertices merged, repaired per connected piece (fill holes, else voxel remesh), unioned,
+  fused with the features and cut in mesh space (manifold3d), then simplified at 10 um (boolean slivers otherwise fall
+  apart under the 1e-4 mm weld in geom.mesh_stats). The B-rep stays the item's shape (joints, sites, FEA, STEP); the
+  fused mesh rides on it as `kerf_mesh` (relative to the base geometry, so it moves with any placement).
+- geom is mesh-aware for such parts: `mesh`, `bbox`, `volume`, `overlap` (manifold intersection) and new
+  `write_glb` (trimesh in build123d's convention: metres, Z-up -> Y-up); checks (solids, size, area, bed placement),
+  export (STL/3MF per part via trimesh, plates, GLB), pipeline part renders, ship step renders and the viewer use it.
+  Fingerprint includes `meshes/`. A missing model is a build error that names the prompt and path to generate.
+  Deps: manifold3d, networkx, lxml (3MF export).
+- tests/test_meshy.py (8): a deliberately broken cached mesh (30 missing triangles + a stray overlapping cube) ->
+  one watertight body; fit stretch/uniform; holes and the cable bore open through flange + shell (point probes);
+  fasteners still align (4 screws), interference, mesh-space overlap volume agrees with point sampling; STL/3MF/
+  plates/GLB coordinates; missing-mesh message; fingerprint; whole pipeline. 334 tests pass.
+- Live check (Spencer's Meshy, 5 credits, meshy-6-lite, task 01a18fb8-30b9-7120-a961-983522faf9c5): the real GLB was
+  31k triangles in 670 open pieces; fused in 0.5 s into one watertight body with all holes open; the print checks
+  then flagged the draft shell's 0.31 mm ridges and 17 % overhang — real feedback, as intended.
+- Skill: "Creative mode" section (balance, text-to-3D, poll, download to the path the error names, record
+  meshes/<part>.meshy.json, rebuild, look). Downloading: the task's `model_urls` fetch from the cloud shell too.

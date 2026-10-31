@@ -45,8 +45,7 @@ def step_assembly(proj, path):
 
 
 def glb(proj, path, explode=0.0, include_keepouts=False):
-    comp = Compound(children=_placed_copies(proj, include_keepouts, explode), label=proj.name)
-    export_gltf(comp, str(path), binary=True, linear_deflection=0.05, angular_deflection=0.2)
+    geom.write_glb(_placed_copies(proj, include_keepouts, explode), path, 0.05, 0.2, label=proj.name)
 
 
 def part_files(proj, outdir):
@@ -55,6 +54,13 @@ def part_files(proj, outdir):
     for iid, it in proj.printed.items():
         s = checks.oriented(it.shape, it.spec.get("print_rot", [0, 0, 0]))
         stl = outdir / f"{iid}.stl"
+        if geom.kmesh(s) is not None:            # fused Meshy part: the printed body is the merged mesh
+            import trimesh
+            tm = trimesh.Trimesh(*geom.kmesh(s), process=False)
+            tm.export(str(stl))
+            (outdir / f"{iid}.3mf").write_bytes(trimesh.exchange.threemf.export_3MF(tm))
+            files[iid] = [stl.name, f"{iid}.3mf"]
+            continue
         export_stl(s, str(stl), tolerance=0.01, angular_tolerance=0.1)
         m = Mesher()
         m.add_shape(s, linear_deflection=0.01, angular_deflection=0.1, part_number=iid)
@@ -70,9 +76,9 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
     copies = []
     for iid, it in proj.printed.items():
         s = checks.oriented(it.shape, it.spec.get("print_rot", [0, 0, 0]))
-        bb = s.bounding_box()
+        lo, hi = geom.bbox(s)
         for n in range(int(it.spec.get("qty", 1))):
-            copies.append((iid, n, s, bb.size.X, bb.size.Y))
+            copies.append((iid, n, s, float(hi[0] - lo[0]), float(hi[1] - lo[1])))
     copies.sort(key=lambda c: -c[4])
     plates_, cur, x, y, row_h = [], [], gap, gap, 0.0
     for c in copies:
@@ -89,11 +95,18 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
         plates_.append(cur)
     out = []
     for k, plate in enumerate(plates_, 1):
-        m = Mesher()
-        for iid, n, s in plate:
-            m.add_shape(s, linear_deflection=0.01, angular_deflection=0.1, part_number=f"{iid}_{n + 1}")
         f = outdir / f"plate_{k}.3mf"
-        m.write(str(f))
+        if any(geom.kmesh(s) is not None for _, _, s in plate):   # a Meshy part on the plate: write meshes
+            import trimesh
+            sc = trimesh.Scene()
+            for iid, n, s in plate:
+                sc.add_geometry(trimesh.Trimesh(*geom.mesh(s, tol=0.01, ang=0.1), process=True), geom_name=f"{iid}_{n + 1}")
+            f.write_bytes(trimesh.exchange.threemf.export_3MF(sc))
+        else:
+            m = Mesher()
+            for iid, n, s in plate:
+                m.add_shape(s, linear_deflection=0.01, angular_deflection=0.1, part_number=f"{iid}_{n + 1}")
+            m.write(str(f))
         out.append({"file": f.name, "parts": [f"{iid} #{n + 1}" for iid, n, _ in plate]})
     return out
 
