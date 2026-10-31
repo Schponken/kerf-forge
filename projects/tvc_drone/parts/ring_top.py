@@ -27,7 +27,7 @@ def build(ctx):
         body -= Pos(c[0], c[1], -20) * Cylinder(2.75, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
         lock = Pos(c[0], c[1], -7) * Rot(0, 0, a) * Rot(0, 90, 0) * Pos(0, 0, 14)   # radial M3 lock, +Z outward
         up = iface.print_up_deg(ctx, lock)          # radial holes are always horizontal in these flat prints
-        body -= lock * features.teardrop_hole(iface.screw_spec("M3")["tap"], 14, 0.0 if up is None else up)
+        body -= lock * features.teardrop_hole(iface.screw_spec("M3", ctx.meta["spec"].get("material"))["tap_h"], 14, 0.0 if up is None else up)
     bw = ctx.cat.num(ctx.cat.get("drone.batteries.6S_1100"), "width")
     for sy in (-1, 1):  # 20 mm strap slots either side of the pack: the strap goes over it, across its width
         body -= Pos(p.batt_dx + STRAP_DX, p.batt_dy + sy * (bw / 2 + 2.5), -1) * Box(23, 3.5, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))

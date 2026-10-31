@@ -69,7 +69,7 @@ def build(ctx):
         body -= Pos(c[0], c[1], p.rod_z0) * Cylinder(2.75, 40, align=(Align.CENTER, Align.CENTER, Align.MIN))
         lock = Pos(c[0], c[1], z0 + t + 7) * Rot(0, 0, a) * Rot(0, 90, 0) * Pos(0, 0, 14)   # +Z radially outward
         up = iface.print_up_deg(ctx, lock)          # radial holes are always horizontal in these flat prints
-        body -= lock * features.teardrop_hole(iface.screw_spec("M3")["tap"], 14, 0.0 if up is None else up)
+        body -= lock * features.teardrop_hole(iface.screw_spec("M3", ctx.meta["spec"].get("material"))["tap_h"], 14, 0.0 if up is None else up)
     body -= Cylinder(10, 400)                                            # wire pass + mass
     # two cable-tie slots through the +X yoke plate near its +Y edge: the motor and servo leads run down beside it
     for zt in (15.0, 40.0):
