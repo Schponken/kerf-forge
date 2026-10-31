@@ -131,3 +131,57 @@ def test_progress_events_are_off_by_default_and_ordered_when_on(capsys, monkeypa
     assert ev[0]["k"] == "start" and ev[-1]["k"] == "done" and stages == ["build", "print", "fit", "requirements"]
     assert {e["id"] for e in ev if e["k"] == "part"} == set(ev[0]["parts"])
     assert [e["id"] for e in ev if e["k"] == "req"] == ev[0]["reqs"]
+
+
+def _start(tmp_env, *extra):
+    import os, socket, subprocess, sys, time
+    s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
+    p = subprocess.Popen([sys.executable, "-m", "kerf.cli", "studio", "--no-open", "--port", str(port), *extra],
+                         env={**os.environ, **tmp_env}, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    url = f"http://127.0.0.1:{port}"
+    for _ in range(80):
+        try:
+            urllib.request.urlopen(url + "/api/jobs", timeout=1); break
+        except Exception:
+            time.sleep(0.1)
+    return p, url
+
+
+def test_closing_the_last_window_stops_the_server():
+    import time
+    p, url = _start({"KERF_STUDIO_GRACE": "30"}, "--idle-exit", "60")
+    try:
+        urllib.request.urlopen(urllib.request.Request(url + "/api/bye", data=b"{}", method="POST"))
+        t0 = time.time()
+        p.wait(timeout=20)                               # goodbye + 6 s with no other window -> exits
+        assert time.time() - t0 < 15 and "closing" in p.stdout.read()
+    finally:
+        p.kill()
+
+
+def test_quit_asks_first_when_a_job_runs_and_stays_up_without_idle_limit():
+    import time
+    p, url = _start({})
+    try:
+        code, body = _post(url + "/api/run", {"project": "servo_link", "action": "quick"})
+        assert code == 200
+        code, body = _post(url + "/api/quit", {})
+        assert code == 409 and body["running"]           # a job is running: the page asks before quitting
+        code, body = _post(url + "/api/quit", {"force": True})
+        assert code == 200
+        p.wait(timeout=10)
+    finally:
+        p.kill()
+
+
+def test_a_window_still_open_cancels_the_goodbye():
+    import time
+    p, url = _start({"KERF_STUDIO_GRACE": "30"}, "--idle-exit", "60")
+    try:
+        urllib.request.urlopen(urllib.request.Request(url + "/api/bye", data=b"{}", method="POST"))
+        for _ in range(4):                                # another window keeps polling every ~3 s
+            time.sleep(3)
+            urllib.request.urlopen(url + "/api/jobs")
+        assert p.poll() is None                           # still running
+    finally:
+        p.kill()

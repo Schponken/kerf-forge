@@ -962,3 +962,9 @@ pushed for it and what I know:
   shown as an 8-phase timeline (research, plan, contract, parts, check, build, review, save) plus a live action feed;
   Checks tab with a pass ring and margin bars; toasts, a burst on PASS, shake on FAIL; reduced-motion respected.
   Verified with real browser runs (screenshots at 3/9/20/40 s of a live full check, done state), no page errors.
+- One-click open/close (same session): the Dock launcher starts the server when needed (git pull --ff-only first, setup
+  re-run only when pyproject/setup/package.json change), opens an app window; `kerf studio --idle-exit N` quits when
+  the last window says goodbye (sendBeacon on pagehide; 6 s, cancelled by any window still polling) or after N s with
+  no window, never while a job runs; ⏻ Quit asks first when something runs. Tests: 4 lifetime tests (goodbye exits,
+  open window cancels goodbye, quit with a running job -> 409 then force). Browser-verified: Quit shows the closed
+  screen and the server exits; navigating away sends the goodbye and the server exits.

@@ -6,6 +6,9 @@ REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 APP="$HOME/Applications/Kerf Studio.app"
 [ "$(uname)" = "Darwin" ] || { echo "This builds a macOS app; on other systems run: $REPO/.venv/bin/kerf studio"; exit 1; }
 [ -x "$REPO/.venv/bin/kerf" ] || "$REPO/setup.sh"
+# remember which dependency set is installed, so the launcher only re-runs setup when it changes
+mkdir -p "$HOME/Library/Application Support/KerfStudio"
+(cd "$REPO" && shasum pyproject.toml setup.sh tools/render/package.json | shasum | cut -c1-16) > "$HOME/Library/Application Support/KerfStudio/deps.sum"
 
 rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cat > "$APP/Contents/Info.plist" <<PLIST
@@ -23,20 +26,33 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </dict></plist>
 PLIST
 
-# launcher: start the local server if it isn't running, wait for it, open an app window
+# launcher: one click opens it. Starts the local server if it isn't running (pulling updates first, and re-running
+# setup when dependencies changed), waits for it, then opens an app window. Closing the window stops the server.
 cat > "$APP/Contents/MacOS/KerfStudio" <<LAUNCH
 #!/bin/bash
 REPO="$REPO"
 URL="http://127.0.0.1:8765/"
 LOG="\$HOME/Library/Logs/KerfStudio.log"
+STATE="\$HOME/Library/Application Support/KerfStudio"
+mkdir -p "\$STATE"
 export PATH="/opt/homebrew/bin:/usr/local/bin:\$HOME/.local/bin:\$HOME/.claude/local:\$HOME/.npm-global/bin:\$HOME/.homebrew/bin:\$PATH"
 if ! curl -fs "\${URL}api/projects" >/dev/null 2>&1; then
-  cd "\$REPO" && nohup .venv/bin/kerf studio --no-open --port 8765 >>"\$LOG" 2>&1 &
-  for i in \$(seq 1 60); do curl -fs "\${URL}api/projects" >/dev/null 2>&1 && break; sleep 0.25; done
+  osascript -e 'display notification "Starting Kerf Studio…" with title "Kerf Studio"' >/dev/null 2>&1 &
+  cd "\$REPO"
+  # updates: fast-forward only, never over local changes; skipped quietly when offline
+  if [ -z "\$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then
+    git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=10 pull -q --ff-only >>"\$LOG" 2>&1 || true
+  fi
+  SUM="\$(shasum pyproject.toml setup.sh tools/render/package.json 2>/dev/null | shasum | cut -c1-16)"
+  if [ "\$SUM" != "\$(cat "\$STATE/deps.sum" 2>/dev/null)" ] || [ ! -x .venv/bin/kerf ]; then
+    ./setup.sh >>"\$LOG" 2>&1 && echo "\$SUM" > "\$STATE/deps.sum"
+  fi
+  nohup .venv/bin/kerf studio --no-open --port 8765 --idle-exit 150 >>"\$LOG" 2>&1 &
+  for i in \$(seq 1 120); do curl -fs "\${URL}api/projects" >/dev/null 2>&1 && break; sleep 0.25; done
 fi
 for b in "Google Chrome" "Microsoft Edge" "Brave Browser" "Chromium"; do
   if [ -d "/Applications/\$b.app" ] || [ -d "\$HOME/Applications/\$b.app" ]; then
-    open -na "\$b" --args --app="\$URL" --window-size=1440,920 --user-data-dir="\$HOME/Library/Application Support/KerfStudio/browser"
+    open -na "\$b" --args --app="\$URL" --window-size=1440,920 --user-data-dir="\$STATE/browser"
     exit 0
   fi
 done

@@ -87,6 +87,23 @@ class Job:
 
 JOBS: dict[str, Job] = {}
 
+# Lifetime: with an idle limit the server quits on its own once no window has talked to it for that long (pages poll
+# every few seconds; a closing page says goodbye, which shortens the wait to a few seconds) and no job is running.
+LIFE = {"last": time.time(), "bye": None, "seen": False}
+
+
+def _alive():
+    """A window talked to us. A request landing right after a goodbye is usually the closing page's own last poll,
+    so it doesn't cancel the goodbye; a window that is really still open polls again within a few seconds."""
+    now = time.time()
+    LIFE.update(last=now, seen=True)
+    if LIFE["bye"] and now - LIFE["bye"] > 2.0:
+        LIFE["bye"] = None
+
+
+def busy() -> bool:
+    return any(j.state == "running" for j in JOBS.values())
+
 
 def start_job(*a, **k) -> Job:
     j = Job(*a, **k)
@@ -345,12 +362,15 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def _send(self, code: int, body: bytes, ctype: str):
-        self.send_response(code)
-        self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(code)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):   # the window closed mid-request: nothing to answer
+            pass
 
     def _json(self, obj, code=200):
         self._send(code, json.dumps(obj, default=str).encode(), "application/json")
@@ -360,6 +380,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         u = urlparse(self.path)
+        if u.path.startswith("/api/"):
+            _alive()
         parts = [p for p in u.path.split("/") if p]
         q = parse_qs(u.query)
         try:
@@ -393,6 +415,21 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         u = urlparse(self.path)
+        if u.path == "/api/bye":                       # a window is closing (sendBeacon); others keep it alive
+            LIFE["bye"] = time.time()
+            return self._json({"ok": True})
+        _alive()
+        if u.path == "/api/quit":
+            running = [j.label for j in JOBS.values() if j.state == "running"]
+            n = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(n) or b"{}")
+            if running and not body.get("force"):
+                return self._json({"running": running}, 409)
+            for j in JOBS.values():
+                j.stop()
+            self._json({"ok": True})
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+            return
         n = int(self.headers.get("Content-Length") or 0)
         try:
             body = json.loads(self.rfile.read(n) or b"{}")
@@ -471,7 +508,25 @@ def _buildall(names: list[str]) -> int:
     return 1 if bad else 0
 
 
-def serve(port: int = 8765, open_browser: bool = True) -> int:
+def _watchdog(srv, idle: float, grace: float, bye_wait: float = 6.0):
+    t0 = time.time()
+    while True:
+        time.sleep(1.0)
+        now = time.time()
+        if busy():
+            continue
+        quiet = now - LIFE["last"]
+        if LIFE["bye"] and now - LIFE["bye"] >= bye_wait:
+            break                                   # the last window said goodbye and nobody came back
+        if LIFE["seen"] and quiet >= idle:
+            break                                   # every window is gone (closed, crashed or the Mac slept)
+        if not LIFE["seen"] and now - t0 >= grace:
+            break                                   # started but never opened
+    print("Kerf Studio: no window open and nothing running; closing.", flush=True)
+    srv.shutdown()
+
+
+def serve(port: int = 8765, open_browser: bool = True, idle_exit: float | None = None) -> int:
     srv = None
     for p in range(port, port + 20):
         try:
@@ -485,6 +540,9 @@ def serve(port: int = 8765, open_browser: bool = True) -> int:
         return 1
     url = f"http://127.0.0.1:{port}/"
     print(f"Kerf Studio running at {url}  (Ctrl+C to stop)", flush=True)
+    if idle_exit:
+        grace = float(os.environ.get("KERF_STUDIO_GRACE", max(90.0, 3 * idle_exit)))
+        threading.Thread(target=_watchdog, args=(srv, float(idle_exit), grace), daemon=True).start()
     if open_browser:
         import webbrowser
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()

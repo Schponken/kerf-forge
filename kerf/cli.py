@@ -202,6 +202,7 @@ def main(argv=None) -> int:
     f = sub.add_parser("feedback"); f.add_argument("material"); f.add_argument("reports", nargs="+")
     f.add_argument("--printer", default=None)
     st = sub.add_parser("studio"); st.add_argument("--port", type=int, default=8765); st.add_argument("--no-open", action="store_true")
+    st.add_argument("--idle-exit", type=float, default=None, metavar="SECONDS", help="quit when no window is open and nothing runs")
     pr = sub.add_parser("print"); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
     pr.add_argument("--send", type=int, default=None, metavar="PLATE"); pr.add_argument("--open", action="store_true")
     fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
@@ -229,7 +230,7 @@ def main(argv=None) -> int:
         return status()
     if a.cmd == "studio":
         from . import studio
-        return studio.serve(a.port, open_browser=not a.no_open)
+        return studio.serve(a.port, open_browser=not a.no_open, idle_exit=a.idle_exit)
     if a.cmd == "print":
         from . import bambu
         try:

@@ -71,7 +71,7 @@ git clone https://github.com/Schponken/kerf-forge ~/kerf-forge 2>/dev/null || gi
 - **New design**: describe it in plain words; Claude Code (`claude`, installed and signed in on the Mac) runs the
   full /kerf workflow in the repo and its progress streams into the Activity panel.
 
-The server only listens on 127.0.0.1 (your computer). Log: ~/Library/Logs/KerfStudio.log.
+One click opens it: the Dock icon starts the local server if needed (pulling updates first and re-running setup only when dependencies changed) and opens its window. Closing the window, or the ⏻ button, shuts it down; it waits for a running job (asks first on ⏻). The server only listens on 127.0.0.1 (your computer). Log: ~/Library/Logs/KerfStudio.log.
 
 ## What it can and can't do
 

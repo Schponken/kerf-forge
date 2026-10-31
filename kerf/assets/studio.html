@@ -245,6 +245,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
     <div class="logo"><svg width="18" height="18" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 24V6m0 9 11-9m-7 6 9 12" stroke="#160a03" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <div><b>Kerf Studio</b><small>describe it → printable, checked parts</small></div>
     <button class="themebtn" id="themebtn" onclick="toggleTheme()" title="Light / dark">☀</button>
+    <button class="themebtn" onclick="quitApp()" title="Quit Kerf Studio" style="margin-left:4px">⏻</button>
   </div>
   <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
   <input id="search" placeholder="Search projects" oninput="renderList()">
@@ -267,7 +268,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 
 <script>
 const S = {projects: [], claude: false, platform: "", sel: null, detail: null, tab: "model", edits: {}, job: null, since: 0, esince: 0,
-           ev: [], lines: [], doc: null, newOpen: false, seenDone: new Set(), shown: new Set(), listed: false};
+           ev: [], lines: [], doc: null, newOpen: false, seenDone: new Set(), shown: new Set(), listed: false, fails: 0, closed: false};
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const api = async (path, body) => {
@@ -326,7 +327,8 @@ async function loadProjects() {
     S.projects = d.projects; S.claude = d.claude; S.platform = d.platform;
     renderList();
     if (!S.sel && S.projects.length && !S.newOpen) select(S.projects[0].name);
-  } catch (e) { console.error(e); }
+    S.fails = 0;
+  } catch (e) { if (++S.fails >= 3 && !S.closed) closedScreen(); }
 }
 function renderList() {
   const unbuilt = S.projects.filter(p => !p.built).length;
@@ -685,6 +687,25 @@ function autoname() {
 async function startNew() {
   try { const r = await api("/api/new", {name: $("#nname").value.trim(), description: $("#ndesc").value}); watch(r.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); }
   catch (e) { toast("Couldn't start", e.message, "bad"); }
+}
+
+/* ---------- lifetime: closing the window closes the tool (the server waits for running jobs) */
+addEventListener("pagehide", () => { try { navigator.sendBeacon("/api/bye", "{}"); } catch (e) {} });
+async function quitApp() {
+  let r = await fetch("/api/quit", {method: "POST", headers: {"Content-Type": "application/json"}, body: "{}"}).catch(() => null);
+  if (r && r.status === 409) {
+    const j = await r.json();
+    if (!confirm(`Still running:\n• ${j.running.join("\n• ")}\n\nStop ${j.running.length > 1 ? "them" : "it"} and quit?`)) return;
+    r = await fetch("/api/quit", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({force: true})}).catch(() => null);
+  }
+  closedScreen();
+}
+function closedScreen() {
+  S.closed = true;
+  document.body.innerHTML = `<div style="margin:auto;text-align:center;animation:fadeUp .4s both">
+    <div class="logo" style="width:64px;height:64px;margin:0 auto 18px;border-radius:18px"><svg width="32" height="32" viewBox="0 0 30 30"><path d="M8 24V6m0 9 11-9m-7 6 9 12" stroke="#160a03" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h2 style="margin:0 0 6px">Kerf Studio is closed</h2><p class="note">You can close this window. Click the Dock icon to open it again.</p></div>`;
+  setTimeout(() => window.close(), 400);
 }
 
 addEventListener("resize", moveUline);
