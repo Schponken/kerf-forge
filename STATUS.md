@@ -817,3 +817,12 @@ pushed for it and what I know:
 - pan_tilt audit F11-F18: fixed/justified (see the fork's entry and AUDIT.md); review PASS b13fdb08322fb884, eval [].
 - Still open from E6 (needs Spencer): the repo Stop hook runs a full `kerf verify` inside headless reviewer sessions
   (CLAUDE.md forbids touching the hook); kill any stray `kerf verify` such a reviewer leaves behind.
+
+## 2026-10-31 12:00 UTC — session 18259c3d8c (01S68R6S): E3 robot_arm DONE (review round 9 PASS, 359ef119bfeab419)
+- Rounds 6-8 (all fixed): yaw lead trapped by the widened pocket -> groove in the base underside; FEA loads were from
+  pre-ENG-6 masses -> recomputed (why texts show the arithmetic); base_fea bearing couple used 25 mm instead of the
+  real 20.5 mm -> written as 1860 / (z_bhi - z_blo); teardrops on the links' horizontal tab pilots and insert holes.
+- Eval acceptance PASS; PLAN E3 and "Audit fixes: robot_arm" checked; AUDIT.md log updated.
+- Open minors (review.json): the drawn yaw lead ends at the servo origin (engine: lead end at the cable boss), fuse
+  cold resistance not in the voltage drop, optional hood bridge chamfer, mast support, Nano loose on the desk.
+- Note for whoever re-reviews fpv_5in / servo_link: their reviews went stale from catalog edits only.

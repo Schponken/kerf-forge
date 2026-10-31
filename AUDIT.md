@@ -46,7 +46,7 @@ Each project's findings are listed in its appendix section with severity and a c
 | fpv_5in | B-F1, F1b, F2, F3 (major), F4..F10 (minor) | open |
 | pan_tilt | B-F11, F12 (major), F13..F18 (minor) | fixed (F11-F15, F17, F18); F16 justified -> ENG-12 (session dafdd49d) |
 | bionic_finger | C-1..C-3 (major), C-4..C-9 (minor) | open |
-| robot_arm | C-10..C-12 (major), C-13..C-20 (minor) | fixed (see log); review round 5 PASS (5b285dd83259e4c0) |
+| robot_arm | C-10..C-12 (major), C-13..C-20 (minor) | fixed (see log); review round 9 PASS (359ef119bfeab419) |
 
 ## Resolution log
 (append: `- <date> <session>: <IDs> fixed in <commit> / justified: <reason>`)

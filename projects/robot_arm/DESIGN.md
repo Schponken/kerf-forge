@@ -105,16 +105,16 @@ horn → gripper → grip servo → **grip** → horn → finger; yoke_l). `yaw_
 ## Strength (FEA, report.json)
 | Check | Load case | Result (p99.9, deflection) | Allowable |
 |---|---|---|---|
-| upper_arm_fea | 4.2 N at the elbow servo tabs + 4.2 N at the elbow pivot (2 × the 60 g elbow servo + 359 g beyond the elbow incl. payload, rounded up for leads) + 900 N·mm (2 × 4.46 kg·cm) as a pure couple on the tab screws; plate A held at the 4 shoulder-horn screws, plate B only at its pivot bore | 6.0 MPa (peak 8.4), 0.45 mm | 24 MPa (xy, SF 2), 0.85 mm |
-| forearm_fea | same pattern at the wrist (3.1 N × 2 sites = 2 × the 300 g wrist servo + beyond, 380 N·mm), held the same way at the elbow | 1.9 MPa (peak 3.1), 0.17 mm | 24 MPa, 0.8 mm |
+| upper_arm_fea | 4.2 N at the elbow servo tabs + 4.2 N at the elbow pivot (2 × the 60 g elbow servo + 359 g beyond the elbow incl. payload, rounded up for leads) + 900 N·mm (2 × 4.46 kg·cm) as a pure couple on the tab screws; plate A held at the 4 shoulder-horn screws, plate B only at its pivot bore | 6.0 MPa (peak 8.6), 0.45 mm | 24 MPa (xy, SF 2), 0.85 mm |
+| forearm_fea | same pattern at the wrist (3.1 N × 2 sites = 2 × the 300 g wrist servo + beyond, 380 N·mm), held the same way at the elbow | 1.9 MPa (peak 3.2), 0.17 mm | 24 MPa, 0.8 mm |
 | yoke_r_fea | shoulder servo **stall** 21 kg·cm (couple on the 4 tab screws) + 6.3 N down, feet bolted | 6.6 MPa (peak 17.7 at the cheek's base where the foot ends: a local corner value, under the 39 MPa z strength), 0.46 mm | 13 MPa (z, SF 3), 0.5 mm |
 | yoke_l_fea | 6.3 N on the pivot | 0.8 MPa | 13 MPa |
 | gripper_fea | grip **stall**: 18.4 N on the jaw tip, held at the servo tabs | 5.1 MPa (peak 14.6 at the jaw root's side corners, local: SF 2.7 on the 39 MPa across-layer strength), 0.30 mm | 13 MPa (z: the jaw post bends across layers, SF 3), 1.0 mm |
 | finger_fea | 18.4 N at the finger tip | 8.4 MPa (peak 13.9), 0.77 mm | 24 MPa, 1.0 mm |
-| base_fea | ±91 N bearing couple (2 × 0.93 N·m over the 20.5 mm between the bearing centres) + 34 N gear-mesh force on the upper seat, 13.8 N on the upper seat floor, yaw servo at stall (9.4 kg·cm couple + 34 N) on its tab screws; held at the 4 M4 holes | 1.0 MPa (peak 3.5), 0.11 mm | 13 MPa (z, SF 3), 0.3 mm |
-| upper_arm_stall_fea | fault case (crash): elbow servo at **stall** 19 kg·cm + 2 × the static loads | 13.4 MPa (peak 18.7), 1.03 mm | 16 MPa (xy, crash case SF 3); deflection not a criterion in a fault (2 mm cap) |
-| forearm_stall_fea | wrist servo at **stall** 9.4 kg·cm + 2 × the static loads | 5.3 MPa (peak 8.6), 0.49 mm | 16 MPa (crash, SF 3) |
-| turntable_fea | 2 × arm + payload 13.8 N on the yoke feet + 2 × 0.93 N·m tipping moment as two 1010 N·mm couples about Y (net ≈ 1.87 N·m: the 13.8 N acts behind the axis); spindle held only on the two bearing lands + collar | 3.9 MPa (peak 10.7 at the step), 0.23 mm | 13 MPa (z, SF 3), 0.3 mm |
+| base_fea | ±91 N bearing couple (2 × 0.93 N·m over the 20.5 mm between the bearing centres) + 34 N gear-mesh force on the upper seat, 13.8 N on the upper seat floor, yaw servo at stall (9.4 kg·cm couple + 34 N) on its tab screws; held at the 4 M4 holes | 1.2 MPa (peak 3.9), 0.13 mm | 13 MPa (z, SF 3), 0.3 mm |
+| upper_arm_stall_fea | fault case (crash): elbow servo at **stall** 19 kg·cm + 2 × the static loads | 13.3 MPa (peak 19.0), 1.03 mm | 16 MPa (xy, crash case SF 3); deflection not a criterion in a fault (2 mm cap) |
+| forearm_stall_fea | wrist servo at **stall** 9.4 kg·cm + 2 × the static loads | 5.3 MPa (peak 8.9), 0.49 mm | 16 MPa (crash, SF 3) |
+| turntable_fea | 2 × arm + payload 13.8 N on the yoke feet + 2 × 0.93 N·m tipping moment as two 1010 N·mm couples about Y (net ≈ 1.87 N·m: the 13.8 N acts behind the axis); spindle held only on the two bearing lands + collar | 4.1 MPa (peak 11.1 at the step), 0.24 mm | 13 MPa (z, SF 3), 0.3 mm |
 
 Applied resultants are checked in report.json (`applied_force_n`): torques are pure couples (engine fix in this
 round: a torque on screw sites off the axis used to add a spurious net force).
