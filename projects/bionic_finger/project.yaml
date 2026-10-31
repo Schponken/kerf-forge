@@ -1,0 +1,102 @@
+name: Bionic index finger
+description: >
+  One tendon-driven index finger for a bionic hand: a knuckle mount and three phalanges (adult index proportions,
+  44 / 25 / 21 mm) on 3 mm steel dowel pins. A flexor and an extensor line run in internal channels; pulling the
+  flexor curls the finger (mcp 0-80, pip 0-80, dip 0-70 deg), pulling the extensor straightens it. Every part prints
+  on its side with no supports: two-layer lap knuckles alternating sides, round pin holes, pointed-roof channels.
+printer: Bambu Lab A2L
+supports: avoid
+params:
+  L1: {value: 44, min: 40, max: 48, step: 0.5, label: Proximal segment (mcp axis to pip axis)}
+  L2: {value: 25, min: 22, max: 28, step: 0.5, label: Middle segment (pip axis to dip axis)}
+  L3: {value: 21, min: 18, max: 24, step: 0.5, label: Distal segment (dip axis to fingertip)}
+  base_len: {value: 30, min: 24, max: 40, step: 1, label: Knuckle mount length behind the mcp axis}
+  mount_u1: {value: -14, min: -20, max: -12, step: 0.5, label: First mounting hole (x from mcp axis)}
+  mount_u2: {value: -24, min: -34, max: -20, step: 0.5, label: Second mounting hole (x from mcp axis)}
+  mcp_max: {value: 80, min: 80, max: 90, step: 10, label: mcp flexion range (deg)}
+  pip_max: {value: 80, min: 80, max: 90, step: 10, label: pip flexion range (deg)}
+  dip_max: {value: 70, min: 70, max: 80, step: 10, label: dip flexion range (deg)}
+  flex_anchor_u: {value: 13, min: 11, max: 14, step: 0.5, label: Flexor knot pocket (x from dip axis)}
+  ext_anchor_u: {value: 12, min: 10, max: 13, step: 0.5, label: Extensor knot pocket (x from dip axis)}
+  knot_d: {value: 3.0, min: 2.5, max: 3.5, step: 0.1, label: Knot pocket diameter}
+parts:
+  base: {file: parts/base.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X}
+  proximal: {file: parts/proximal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
+  middle: {file: parts/middle.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X}
+  distal: {file: parts/distal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
+bom_extra:
+  - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 30 kg rated", qty: 1, spec: "about 0.5 m: one flexor and one extensor line"}
+  - {type: hardware, item: Thin CA glue, qty: 1, spec: "a drop on each fingertip knot in its pocket"}
+  - {type: fastener, item: "M3 screws + nuts to bolt the knuckle mount to the hand frame", qty: 2, spec: "length = 16 mm mount + frame thickness"}
+assembly:
+  root: base
+  joints:
+    - {parent: base.mcp, child: proximal.mcp, name: mcp, range: [0, 80], home: 0}
+    - {parent: proximal.pip, child: middle.pip, name: pip, range: [0, 80], home: 0}
+    - {parent: middle.dip, child: distal.dip, name: dip, range: [0, 70], home: 0}
+  sweeps:
+    - {joint: mcp, samples: 17}
+    - {joint: pip, samples: 17}
+    - {joint: dip, samples: 15}
+    - name: curl
+      poses:
+        - {mcp: 0, pip: 0, dip: 0}
+        - {mcp: 30, pip: 30, dip: 30}
+        - {mcp: 60, pip: 60, dip: 60}
+        - {mcp: 80, pip: 80, dip: 70}
+requirements:
+  - {id: len_proximal, check: distance, a: proximal.mcp, b: proximal.pip, min_mm: 40, max_mm: 48,
+     why: "adult index proximal phalanx ~40 mm bone (Buryanov & Kotiuk), Aero Hand 43 mm axis to axis"}
+  - {id: len_middle, check: distance, a: middle.pip, b: middle.dip, min_mm: 22, max_mm: 28, why: "adult middle phalanx ~22 mm"}
+  - {id: len_distal, check: distance, a: distal.dip, b: distal.tip, min_mm: 18, max_mm: 24, why: "adult distal phalanx ~16 mm bone + pad"}
+  - id: flexor_open
+    check: channel_clear
+    why: "the flexor line must run free from the mount to the fingertip knot at every curl angle"
+    diameter: 1.5
+    path:
+      - {item: base, at: [-base_len, 0, -4.0]}
+      - {item: base, at: [-4.5, 0, -4.0]}
+      - {item: proximal, at: [4.5, 0, -4.0]}
+      - {item: proximal, at: [L1 - 4.5, 0, -4.0]}
+      - {item: middle, at: [4.5, 0, -4.0]}
+      - {item: middle, at: [L2 - 4.5, 0, -4.0]}
+      - {item: distal, at: [4.5, 0, -4.0]}
+      - {item: distal, at: [flex_anchor_u, 0, -4.0]}
+    poses: &chanposes
+      - {mcp: 30, pip: 30, dip: 30}
+      - {mcp: 60, pip: 60, dip: 60}
+      - {mcp: 80, pip: 80, dip: 70}
+      - {mcp: 80, pip: 0, dip: 0}
+      - {mcp: 0, pip: 80, dip: 0}
+      - {mcp: 0, pip: 0, dip: 70}
+  - id: extensor_open
+    check: channel_clear
+    why: "the extensor line must run free over every knuckle at every curl angle"
+    diameter: 1.5
+    path:
+      - {item: base, at: [-base_len, 0, 4.981]}
+      - {item: base, at: [-5.0, 0, 4.981]}
+      - {item: base, at: [-0.4358, 0, 4.981]}
+      - {item: proximal, at: [0.4358, 0, 4.981]}
+      - {item: proximal, at: [5.0, 0, 4.981]}
+      - {item: proximal, at: [L1 - 5.0, 0, 4.981]}
+      - {item: proximal, at: [L1 - 0.4358, 0, 4.981]}
+      - {item: middle, at: [0.4358, 0, 4.981]}
+      - {item: middle, at: [5.0, 0, 4.981]}
+      - {item: middle, at: [L2 - 5.0, 0, 4.981]}
+      - {item: middle, at: [L2 - 0.4358, 0, 4.981]}
+      - {item: distal, at: [0.4358, 0, 4.981]}
+      - {item: distal, at: [5.0, 0, 4.981]}
+      - {item: distal, at: [ext_anchor_u, 0, 4.981]}
+    poses: *chanposes
+  - id: proximal_fea
+    check: fea_static
+    part: proximal
+    why: "15 N on the pip pin (fingertip pinch reaction) with the segment held on the mcp pin; prints on its side so the bending stress runs along the layers"
+    direction: auto
+    sf: 2.0
+    max_disp_mm: 0.44
+    fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.675, tol: 0.3}}
+    loads:
+      - {cylinder: {at: [L1, 0, 0], dir: [0, 1, 0], r: 1.525, tol: 0.3}, bearing_n: [0, 0, 15]}
+  - {id: finger_mass, check: mass_max, max_g: 40, why: "a light finger keeps the actuator load small"}
