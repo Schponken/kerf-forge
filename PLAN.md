@@ -87,7 +87,7 @@ tested before handoff.
 
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
-- [ ] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
+- [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
   - [x] Audit run: three design-reviewer subagents, AUDIT.md written (index + full reports)
   - [x] Audit fixes: tvc_drone (A-1 blocker, A-2..A-7, A-9..A-14 in AUDIT.md), re-review PASS
   - [x] Audit fixes: servo_link (A-8, A-15..A-17), re-review PASS
