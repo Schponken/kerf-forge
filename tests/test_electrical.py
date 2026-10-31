@@ -101,15 +101,22 @@ def test_quad_currents_and_flight_time(tmp_path):
     assert m["peak_a"] == pytest.approx(63.70, abs=0.01)
     # 1.5 Ah x 0.8 / 3.109 A = 23.2 min
     assert m["minutes"] == pytest.approx(23.2, abs=0.05)
-    rows = {(r["what"], r["kind"]): r for r in m["ratings"]}
-    # the XT60's 60 A instantaneous rating is exceeded by the 63.7 A punch-out; the 30 A continuous one is not
-    assert not rows[("connector xt60", "peak A vs peak rating")]["ok"]
+    rows = {(r["what"], r["kind"].split(" (")[0]): r for r in m["ratings"]}
+    # the XT60's 60 A rating is for 1 minute (Holybro); for the default 5 s burst the thermal model allows 194.9 A
+    # (test_connector_burst_limit_by_hand), so the 63.7 A punch-out is inside it
+    assert rows[("connector xt60", "peak A vs peak rating")]["limit"] == pytest.approx(194.9, abs=0.2)
+    assert rows[("connector xt60", "peak A vs peak rating")]["ok"]
     assert rows[("connector xt60", "avg A vs rated")]["ok"]
     assert rows[("stack.5v", "avg A vs rated")]["limit"] == 2.0          # SpeedyBee 5 V pad budget
     assert rows[("stack.esc -> m1", "peak A vs burst rating")]["limit"] == 45  # per-channel ESC burst
     r = {x["id"]: x for x in requirements.run_all(proj, asm)}
-    assert not r["power"]["ok"] and "connector xt60" in r["power"]["detail"]
+    assert r["power"]["ok"], r["power"]
     assert r["flight_time"]["ok"] and r["flight_time"]["value"] == pytest.approx(23.2, abs=0.05)
+    # a full-power burst as long as the rating's own minute: back to the plain 60 A, which 63.7 A exceeds
+    proj, asm = _proj(tmp_path / "long", extra="  burst_s: 60")
+    rows = {(r["what"], r["kind"]): r for r in E.analyse(proj)["ratings"]}
+    assert rows[("connector xt60", "peak A vs peak rating")]["limit"] == 60
+    assert not rows[("connector xt60", "peak A vs peak rating")]["ok"]
 
 
 def test_current_limit_and_overrides_need_a_why(tmp_path):
@@ -229,3 +236,14 @@ def test_mains_supply_servos(tmp_path):
     proj, asm = _servos(tmp_path, 3)
     r = {x["id"]: x for x in requirements.run_all(proj, asm)}
     assert not r["power"]["ok"] and "supply psu peak" in r["power"]["detail"]
+
+
+def test_connector_burst_limit_by_hand():
+    # Holybro XT60: 30 A for 4 h and 60 A for 60 s, both at the 60 K rise. First-order model: 1 - exp(-60 / tau) =
+    # (30 / 60)^2 = 0.25 -> tau = 60 / ln(4/3) = 208.56 s; a 5 s burst may then carry 30 / sqrt(1 - exp(-5 / 208.56))
+    # = 30 / sqrt(0.023690) = 194.9 A, which reaches the same 60 K rise.
+    e = {"current_a": 30, "current_peak_a": 60, "current_peak_s": 60}
+    lim, note = E.connector_burst_limit(e, 5)
+    assert lim == pytest.approx(194.9, abs=0.2) and "tau 209 s" in note
+    assert E.connector_burst_limit(e, 60)[0] == 60 and E.connector_burst_limit(e, 120)[0] == 60   # never above at >= t_b
+    assert E.connector_burst_limit({"current_a": 30, "current_peak_a": 60}, 5) == (60.0, "")       # no time base: as-is

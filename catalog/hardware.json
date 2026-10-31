@@ -798,7 +798,22 @@
     "weight_note": "FC 10.5 g + ESC 23.5 g.",
     "note": "4 mm holes take silicone grommets for M3 screws.",
     "source": "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "sources": [
+     "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/",
+     "https://www.getfpv.com/speedybee-f405-v4-stack-f4-v4-fc-55a-blheli-s-esc-30x30.html",
+     "https://www.kiwiquads.co.nz/product/speedybee-f405-v4-bls-55a-30x30-stack-2"
+    ],
+    "bec_5v_a": 3.0,
+    "bec_9v_a": 3.0,
+    "current_a": 0.3,
+    "esc_current_a": 55,
+    "esc_burst_a": 70,
+    "esc_burst_s": 10,
+    "input_v_min": 11.1,
+    "input_v_max": 25.2,
+    "capacitor": "1 x 35 V 1000 uF low-ESR capacitor included",
+    "electrical_note": "getfpv: ESC 55 A x 4 continuous, 70 A burst for 10 s, 3-6S input; FC 3.3 V up to 500 mA, 4.5 V up to 1 A, 9 x 5 V and 2 x 9 V pads (no current printed); kiwiquads: 5 V output max 3 A, 9 V output max 3 A; ships with a 35 V 1000 uF low-ESR capacitor. current_a (FC own draw) is NOT published: 0.3 A is the same UNVERIFIED typical estimate used for the F405 Mini (fc_20)."
    },
    "fc_20": {
     "model": "SpeedyBee F405 Mini + BLS 35A Mini V2 20x20 stack",
@@ -868,7 +883,15 @@
     "weight_g": 9,
     "source": "https://shop.runcam.com/runcam-phoenix-2/",
     "source_detail": "https://store-m8o52p.mybigcommerce.com/product_images/img_phoenix2/PHOENIX2_6.jpg",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "voltage_min": 5.0,
+    "voltage_max": 36.0,
+    "current_a": 0.2,
+    "current_note": "getfpv (Phoenix 2 SE): DC 5-36 V, 200 mA at 5 V, 80 mA at 12 V; 8.6 g net.",
+    "sources": [
+     "https://shop.runcam.com/runcam-phoenix-2/",
+     "https://www.getfpv.com/runcam-phoenix-2-fpv-camera-special-edition.html"
+    ]
    }
   },
   "batteries": {
@@ -925,11 +948,13 @@
     "width": 8.1,
     "height": 16.0,
     "note": "Length includes solder cups. Matching female: 20.5 x 8.1 x 16.0. Dimensions read from the Amass drawing published on the vendor page. XT60H (with rear housing) is longer; check before a tight pocket. Current: Amass XT60-F/M datasheet V1.2 (copy hosted by CMU MRSD) lists rated current 30 A, instantaneous 60 A, DC 500 V, contact resistance 0.55 mOhm. The thingbits page lists 35 A max (12 AWG, dT<=85 K) / 60 A peak; 30 A used as the conservative continuous figure.",
-    "source": "https://www.thingbits.in/products/amass-xt60-male-female-connector ; https://mrsdprojects.ri.cmu.edu/2025teamb/wp-content/uploads/sites/84/2025/05/xt60.pdf",
+    "source": "https://www.thingbits.in/products/amass-xt60-male-female-connector ; https://mrsdprojects.ri.cmu.edu/2025teamb/wp-content/uploads/sites/84/2025/05/xt60.pdf ; https://docs.holybro.com/power-module-and-pdb/power-module/connector-and-wire-rating",
     "source_detail": "https://images.thingbits.net/eyJidWNrZXQiOiJ0aGluZ2JpdHMtbmV0Iiwia2V5IjoiZGVzY3JpcHRpb24vYW1hc3MteHQ2MC1jb25uZWN0b3JfZHJhd2luZ180eC5qcGcifQo=",
     "confidence": "datasheet",
     "current_a": 30,
-    "current_peak_a": 60
+    "current_peak_a": 60,
+    "current_peak_s": 60,
+    "current_rating_note": "Holybro 'Connector & Wire Rating' (docs.holybro.com): XT60 on 12 AWG 30 A continuous (4 h, temperature rise < 60 C) and 60 A burst (1 minute, rise < 60 C); current_peak_s = 60 is that 1-minute base (kerf/electrical.py connector_burst_limit)."
    }
   },
   "frames_reference": {
@@ -970,7 +995,12 @@
     "weight_g": 5.6,
     "antenna": "MMCX",
     "source": "https://www.getfpv.com/speedybee-tx800-5-8ghz-vtx.html ; https://oscarliang.com/speedybee-tx800/",
-    "confidence": "multiple-vendors"
+    "confidence": "multiple-vendors",
+    "voltage_min": 3.7,
+    "voltage_max": 5.5,
+    "current_a": 0.75,
+    "current_note": "getfpv: input 3.7-5.5 V, working current 250-750 mA at 5 V (not split by power level): 0.75 A, the top of the range, is used for 800 mW.",
+    "antenna_weight_note": "5.6 g without antenna"
    }
   }
  },
@@ -1322,6 +1352,20 @@
     "source": "https://www.digikey.lt/en/products/detail/adam-tech/HST-04-BK-4/14651099",
     "confidence": "datasheet",
     "note": "Digi-Key: 'Heat Shrink Tubing, Flexible 0.118\" (3.00mm) 2 to 1'. d_mm is the expanded (as-supplied) ID; recovered_d_mm = 3.0/2 derived from the ratio (max fully-recovered ID, not separately published). Wall thickness not published on the page: UNVERIFIED."
+   }
+  },
+  "antennas": {
+   "lollipop4p_mmcx_60": {
+    "model": "Foxeer Lollipop 4 Plus 5.8 GHz 2.6 dBi, MMCX 90 deg, 60 mm",
+    "length": 60,
+    "head_d": 17,
+    "connector": "MMCX 90 deg",
+    "gain_dbi": 2.6,
+    "weight_g": 4.8,
+    "weight_note": "rotorama lists 4.8 g without saying per antenna or per 2-pack: used per antenna (upper bound).",
+    "note": "Total length 60 mm (connector to tip), protector head 17 mm diameter; RHCP or LHCP. Matches the TX800's MMCX socket.",
+    "source": "https://www.rotorama.com/product/foxeer-lollipop-4-plus-6cm-mmcx-tube-lhcp-rhcp-2-ks-2",
+    "confidence": "vendor"
    }
   }
  }

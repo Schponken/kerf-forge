@@ -22,6 +22,7 @@ XT60_X = -51.0
 VTX = "drone.vtx.tx800"
 BOSS_H = 3.0
 ROOF_X1 = 58.0   # camera roof front edge (lens front is at x 61.9-64.8 over the tilt range)
+ANT_X = -71.0    # VTX antenna head centre (tab ends at x -62)
 TAB_W = 28.0     # rear tab width: XT60 cradle + tie slots + antenna slots with >= 2.5 mm edge margin
 RX_X, RX_Y = 46.5, 0.0     # receiver (13 x 11 mm) under the camera roof: >= 5 mm above the camera at full tilt,
 #                            clear of the pillars, VTX and the strap's under-run
@@ -71,5 +72,8 @@ def build(ctx):
     ctx.rigid("battery", Location((0, 0, H + T)))
     ctx.rigid("xt60", Location((XT60_X, 0, H - xh)))
     ctx.rigid("vtx", Location((0, 0, H - BOSS_H), (180, 0, 0)))
-    ctx.rigid("rx", Location((RX_X, RX_Y, H), (180, 0, 0)))       # receiver tied flat under the plate
+    ctx.rigid("rx", Location((RX_X, RX_Y, H), (180, 0, 0)))
+    # VTX antenna: the MMCX lead is tied under the tab through the slot pair at y -10.5 (clear of the XT60 cradle),
+    # then bends up behind the tab; its 17 mm head stands above the tab end, 20 mm above the rear prop plane
+    ctx.rigid("vant", Location((ANT_X, -10.5, H + T)))       # receiver tied flat under the plate
     return ctx.finish(s, color="#2a2d31")

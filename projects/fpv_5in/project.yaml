@@ -40,10 +40,34 @@ purchased:
   vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020",
              note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate, T antenna out through the rear-tab slots"}
+  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_60, proxy: box, size: [17, 17, 17], color: "#20a0a0",
+            note: "5.8 GHz antenna head; its MMCX lead runs from the VTX under the rear tab (tied) and up behind it"}
   pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 42, 3], color: "#303030",
         note: "anti-slip pad cut to the 80 x 42 mm top plate"}
   strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [86, 20, 1.8], color: "#404040",
           note: "runs along the battery: up through one top-plate slot, over the pack, down the other; modelled as its top run"}
+electrical:
+  battery: battery
+  burst_s: 5
+wiring:
+  # battery side: the pack's own 12 AWG lead and the frame's XT60 pigtail to the ESC pads
+  - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, length_mm: 100,
+     note: "the pack's own lead (comes with the battery)"}
+  - {id: main, from: xt60, to: stack, v: 25.2, gauge: 12, color: red/black, length_mm: 100,
+     route: [top_plate.xt60, [-34, -16, 30], body.stack], note: "XT60 pigtail to the ESC battery pads; 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
+  # motor phases: 3 wires each, the motor's own leads extended where needed, tied under each arm
+  - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_1, arm_1.motor]}
+  - {id: ph2, from: stack.esc, to: motor_2, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_2, arm_2.motor]}
+  - {id: ph3, from: stack.esc, to: motor_3, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_3, arm_3.motor]}
+  - {id: ph4, from: stack.esc, to: motor_4, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175, route: [body.arm_4, arm_4.motor]}
+  # FC 5 V rail: VTX (0.75 A at 800 mW), camera (0.2 A), receiver (0.1 A) = 1.05 A of the 3 A BEC
+  - {id: vtx_5v, from: stack.5v, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 80, route: [top_plate.vtx]}
+  - {id: cam_5v, from: stack.5v, to: camera, v: 5.0, gauge: 28, color: red/black, length_mm: 90}
+  - {id: rx_5v, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 90, route: [top_plate.rx]}
+  # signals
+  - {id: cam_video, from: camera, to: stack, kind: signal, gauge: 28, color: yellow, length_mm: 90, note: "camera video into the FC (OSD)"}
+  - {id: vtx_video, from: stack, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 80, note: "FC video out + SmartAudio (UART) to the VTX"}
+  - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 90, route: [top_plate.rx], note: "CRSF TX/RX to an FC UART"}
 keepouts:
   prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1, h: 7}
   prop_2: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_2, h: 7}
@@ -78,8 +102,9 @@ assembly:
     - {parent: top_plate.rx, child: receiver.bottom}
     - {parent: top_plate.xt60, child: xt60.bottom}
     - {parent: top_plate.vtx, child: vtx.bottom}
+    - {parent: top_plate.vant, child: vtx_ant.bottom}
     - {parent: body.cam_tilt, child: camera.pivot, name: cam_tilt, range: [0, 40], home: 25}
-  order: [body, [arm_1, arm_2, arm_3, arm_4], [motor_1, motor_2, motor_3, motor_4], stack, camera, top_plate, vtx, receiver, xt60, pad, battery, strap]
+  order: [body, [arm_1, arm_2, arm_3, arm_4], [motor_1, motor_2, motor_3, motor_4], stack, camera, top_plate, vtx, vtx_ant, receiver, xt60, pad, battery, strap]
   key_access:
     - {group: vtx, before: [body, stack, camera, arm_1, arm_2, arm_3, arm_4], why: "the VTX is screwed under the top plate on the bench before the plate goes onto the frame"}
   sweeps:
@@ -140,3 +165,8 @@ requirements:
     loads:
       - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], force_n: [0, 112.8, 0]}
       - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], torque_nmm: 2369, axis: {at: [0, 0, post_h + top_t], dir: [-1, 0, 0]}}
+  - {id: power, check: power_budget,
+     why: "battery C rating, ESC channels, FC 5 V BEC, XT60 and every wire inside their ratings at hover and at full throttle"}
+  - {id: flight_time, check: flight_time, min_min: 3, why: "brief: at least 3 min at hover on 80 % of the 1300 mAh pack"}
+  - {id: xt60_plug, check: connector_access, item: xt60, direction: [-1, 0, 0], length_mm: 30,
+     why: "the battery plug goes straight into the XT60 from the rear with the frame assembled"}
