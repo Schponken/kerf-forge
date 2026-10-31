@@ -1,51 +1,57 @@
 {
   "verdict": "FAIL",
-  "fingerprint": "6a60cf8c9d852409",
+  "fingerprint": "4a7610667c9345ac",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Most round-1 findings are fixed. The bearing bore now clears the inner races, the FEA loads are real couples with the right resultants, the turntable is held at the bearing lands, the yoke and web fillets are in, grip is 0-65 deg, the gear sits 1.2 mm above the tower, and the accepted items (tapped servo screws, pivot wear, backlash, IK offset) are written up with reasons. The eval acceptance passes. It still fails on one blocker and one major. The four yaw-horn screw heads stand 3 mm proud of the yaw gear, and the turntable platform passes 0.5 mm above that gear once |yaw| is more than about 15 deg, so the arm cannot reach +/-90; the sweep misses this because screw heads are not modelled. The new cable route is a free loop tied to the gear guard. That tie point is inside the platform's swept area, the guard top makes a 0.5 mm shear gap with the platform, and the gear mesh is still open from both sides.",
+  "summary": "The mechanical round-2 findings are resolved. The yaw-horn screws are counterbored to 0.3 mm under the gear face (0.8 mm under the platform) and screw heads are now solids in the sweeps. The yaw lead runs at floor level, the mesh is walled in, the lead bundle crosses the yaw joint high up between the mast and the post (cable_loop, 7.0 mm open at 10 poses), and the fillets, load_axis, turntable moment and pivot note are fixed. Eval acceptance PASSES. It still fails for three reasons. The electrical system is missing parts a real build needs: a mains cord, a switch, a fuse and the Nano's USB cable. WIRING.md tells the builder to solder wires into screw terminals, and its per-servo instructions contradict the BOM's extension-lead plan. The new 'desk first' step 0 makes steps 1 and 3 impossible, because the bearing bore and the retainer screw are reached from under the base.",
   "findings": [
     {
-      "severity": "blocker",
-      "part": "yaw_gear",
-      "issue": "The yaw horn screws (yaw_horn group, 4 x M3x10, plain clearance holes) seat ON the yaw gear's top face at z 62.3 (report fasteners 'at' z 62.3, dir -Z), so the socket heads reach z 65.3. The turntable platform underside is z_plat0 = 62.8, only 0.5 mm above the gear top. At base_yaw = 0 the platform ends at x = -35 and misses the heads at x -40..-50, but it turns with the arm. I checked the yaw angles with the coupled yaw_drive rotation (-2/3) and the platform outline (x -35..15, y +/-58.7 in the turntable frame). It covers at least one screw head from |base_yaw| = 15 deg onward and covers the gear centre (-45, 0) from about 39 deg. The platform will hit the screw heads, so the arm can only turn about +/-15 deg instead of +/-90. The base_yaw sweep reports clear only because fastener heads are not solids in the sweep. This was already true in round 1 and I missed it then.",
-      "fix": "Counterbore the 4 horn screws into the yaw gear: iface.horn_mount(..., kind='counterbore') or bolt_pattern counterbore_depth >= head_h + 0.3 = 3.3 mm. That leaves 4.7 mm of gear under the head, and a shorter screw (M3x6 or M3x8, checked against the horn's thread depth and the spline) brings the head top below the gear face. The other option is to raise z_plat0 to >= 66.3 (gear top + 3 mm head + 1 mm), which still clears z_sh = 100. Keep >= 0.5 mm (ENGINEERING.md section 8) between the platform and anything on the rotating gear. Engine (general): add proud screw heads (male clearance sites: head_d x head_h on the seat face) as solids in the interference and sweep checks, so the next project cannot hide the same collision."
+      "severity": "major",
+      "part": "psu",
+      "issue": "The electrical system is not complete (ENGINEERING.md 10b: 'power connector, switch/fuse where needed'; Spencer's rule: every component needed to make it work). (1) The MEAN WELL LRS-100-5 has bare L/N/FG screw terminals (catalog 'terminals'), but there is no mains cord with a plug, no strain relief and no earth lead in the BOM or WIRING.md. The supply cannot be plugged in. (2) There is no power switch or e-stop, so the only way to stop a runaway arm is to pull the plug. (3) There is no fuse on the 5 V side. The LRS overload trips only at 110-150 % of rated power (about 20-27 A, catalog note), while every servo branch is 22 AWG (7 A chassis rating). A shorted or pinched servo lead in the moving bundle would carry up to about 20 A before the supply hiccups. (4) The Nano runs 'from the PC's USB' and usb_access is checked, but no USB cable is in the BOM (the A000005 is mini-B, which most people no longer have).",
+      "fix": "Add catalog entries with sources and BOM rows for each part: a 3-core mains cord with a moulded plug (or an IEC C14 fused and switched inlet in a small printed terminal cover plus a C13 cord), a cable-gland or clamp strain relief on the PSU end, and a rocker switch on the mains side or a DC switch rated >= 15 A on the arm bus. Add an inline blade fuse (for example 10 A for the 4-servo arm branch and 5 A for the yaw/driver branch) between the PSU +V and each WAGO bus, and include it in wiring: and power_budget. Add a USB mini-B data cable (>= 1 m). Note the earth (FG) connection in WIRING.md."
+    },
+    {
+      "severity": "major",
+      "part": "wiring",
+      "issue": "WIRING.md contradicts the BOM and gives unsafe terminations. (1) psu_arm/psu_yaw say 'solder to psu', but the LRS output is a screw terminal. A solder-tinned stranded end in a screw clamp cold-flows and loosens, and this one carries the 10.5 A peak arm current. (2) Every servo run says 'solder to sh_servo / solder to driver' with separate red/brown and orange loose wires (5 m of AWG 22 red/brown, 2.3 m of orange and 29 heat-shrinks bought). Yet DESIGN.md, the project.yaml notes and bom_extra say to use each servo's own lead plus a 300 mm Pololu extension, split at the post. A builder cannot tell which to do, and both are bought. (3) If the extensions are used, the grip run needs a 710 mm cut length (pwr_gr), more than an MG996R's own lead (about 300 mm, not in the catalog) plus one 300 mm extension. Servo lead length is not in the catalog, so none of the 14 cut lengths can be checked against the parts actually bought. (4) The PCA9685 signal ends are 'soldered to driver'. The Adafruit 815's channel outputs are 3-pin male headers, made for plugging in.",
+      "fix": "Choose one scheme and make the docs and BOM match it. Recommended: each servo lead plus an extension (a 500 mm extension for grip and wrist), cut 150 mm from the board end, red and brown into the WAGO, orange crimped into a 1-pin Dupont housing on the PCA9685 channel PWM pin. Remove the loose AWG 22 red/brown and orange wire and the servo-end heat-shrinks from wiring: (or mark those runs as part of the lead). Give the PSU and WAGO ends the right verbs: add terminal: screw to electronics.supplies.meanwell_lrs100_5 and terminal: header to boards.pca9685_adafruit, so the engine writes 'ferrule (or bare twisted strand) into the screw terminal' and 'plug onto header'. Add bootlace ferrules (0.5 mm2 / 1.5 mm2) to the BOM. Add lead_length_mm (sourced) to the servo catalog entries so cut length <= lead + extension is checked."
     },
     {
       "severity": "major",
       "part": "base",
-      "issue": "The cable path (round-1 major) is only partly fixed. (1) The service-loop anchor (tie slots on the guard's -Y side at about (-45, -30.3, 43.3)) is 54 mm from the yaw axis, inside the 68 mm radius the platform corners sweep. For base_yaw > about +40 deg the platform passes directly over the anchor and over the -Y guard arc. (2) The guard top is z_plat0 - 0.5 = 62.3, so the platform edge sweeps 0.5 mm over the guard's top edge. That makes a scissor at exactly the spot where the tied lead has to rise. (3) The guard is cut away for x > -25 (Rectangle 80 x 80 at -yaw_c + 60). Between each guard end and the turntable gear there is a window about 15-20 mm wide in the z 54-62 band, on both the +Y and -Y sides, that leads straight into the mesh nip. With +/-90 deg yaw each side is the in-running side at some point, and the -Y window is about 20 mm from the anchor. (4) No path is declared or checked: there is no keep-out and no channel_clear for the loop (ENGINEERING.md sections 10 and 11), and the loop runs from the +Y yoke_r back to an anchor on -Y, so it has to cross the base with nothing to guide it.",
-      "fix": "Put the loop anchor outside the platform's swept circle (r > 72 mm), for example tie slots on the rear clamp pad near x = -90. Take the leads from the back of yoke_r straight down outboard to that point. Close the mesh sides: extend each guard arc to meet the tower (or add a cover from the guard ends to the tower) so only the tooth passage stays open. Either keep the guard top at least 3 mm below the platform with the anchor out of the swept zone, or keep the 0.5 mm gap only where no cable can reach. Declare the loop as a keep-out or channel (about 6 mm for 3-4 leads) from the yoke_r tie slots to the anchor and check it at base_yaw -90/0/+90."
+      "issue": "DESIGN.md assembly step 0 (new this round) says to bolt or clamp the base to the desk first. But step 1 presses the lower 6001 'from below', and step 3 fits the retainer and its M3x8 'from below'. The bearing bore (bearing_seat at z = 0, open at the bottom, depth z_blo + B) and the retainer screw (head at z 17, pointing +Z) are only reachable through the underside of the base plate, and the desk covers that once the base is mounted. The order as written cannot be done. The round-2 problem it was fixing is real (the front M4 holes at (30, +/-40) sit under the upper arm), but desk-first is the wrong fix.",
+      "fix": "Reorder DESIGN.md: 1 bearings into the tower, 2 yaw servo + horn + gear, 3 turntable + retainer from below (base still loose), 4 'bolt/clamp the base to the desk now: the front M4 holes at x = 30 are still reachable because the platform ends at x = 15 and the yokes are not on yet', then yokes and the arm. Note that removing the turntable later means unbolting the base first."
     },
     {
       "severity": "minor",
-      "part": "yoke_r",
-      "issue": "yoke_r_fea: the hot spot in fea_yoke_r_fea.png is at the base of the cheek's inner face near the front foot screw and the foot's front end (x about 10-15, z about 71). That is where the cheek, which runs on to x = 44 past the foot's end at x = 14, cantilevers off the bolted foot. It is not 'at a tab-screw hole edge, where the load is applied' as DESIGN.md says (the tab screws are at z 95/105). The peak there is 17.5 MPa against the 13 MPa z-allowable, and the deflection is 0.494 mm against a 0.5 mm limit. It passes on p99.9 = 7.0 MPa, and most of that stress is in the cheek plane (along layers), but the margin is thin and the explanation is wrong.",
-      "fix": "Extend the foot (or add a third gusset) to the front end of the cheek with a 4th M3 into the platform, or at least fillet the vertical corner where the foot ends against the cheek (r >= 2). Correct the yoke_r_fea row in DESIGN.md."
-    },
-    {
-      "severity": "minor",
-      "part": "turntable",
-      "issue": "turntable_fea is now a sound load case (pure couples, held at the bearing lands, render matches report). Two remaining gaps. The applied moment is 1.55 N*m, not the 1.7 N*m in the 'why' text, because the 12.8 N weight is put on the foot-screw centroid at x = -11 (behind the axis) while the real arm CG is ahead of it. Both the collar face and the bearing lands are held in both directions, so the collar face can pull, which the real joint cannot do beyond the retainer preload. The retainer M3 preload also puts the printed 12 mm spindle in tension across layers, and nothing limits how tight it is made. FEA peak 9.4 MPa at the step against 13 MPa leaves room, so this is not a fail.",
-      "fix": "Put the 12.8 N at the arm's real CG x (or raise the couple so the net My is 1.7 N*m). In DESIGN.md assembly step 3 say: tighten the retainer screw only snug (about 0.3 N*m), enough to remove axial play, no preload."
-    },
-    {
-      "severity": "minor",
-      "part": "gripper",
-      "issue": "The fixed-jaw post still meets the palm at a sharp inside corner (part_gripper sheet). Round 1 asked for a fillet of at least 2 mm there, and ENGINEERING.md section 5 asks for at least 1 mm on a load path. This is the across-layer critical section of gripper_fea (peak 9.9 MPa). load_axis is still not declared on gripper, finger, turntable or base (section 4: every structural part).",
-      "fix": "Add a 2 mm fillet at the post-to-palm and post-to-jaw inside corners. Declare load_axis on gripper, finger, turntable and base."
+      "part": "cable_mast",
+      "issue": "The mast is a 61 mm column 8 x 10 mm on a 28 x 10 x 5 mm foot, held by 2 M3 that both lie on the y = 0 line. A sideways (+/-Y) pull on the bundle is reacted only over the 5 mm half-width of the foot, so a 20 N snag at the top (61 mm) puts about 240 N of prying into one insert. At |yaw| near 90 the bundle tension acts exactly in that direction, because the base post is then off to the side of the turntable. The column-to-foot inside corner is sharp (ENGINEERING.md section 5: >= 1 mm fillet on a load path).",
+      "fix": "Widen the foot to about 22 mm in Y and use 3-4 screws spread in both X and Y (or move the two screws to (-10, +/-8)). Add a 2 mm fillet or a small gusset where the column meets the foot."
     },
     {
       "severity": "minor",
       "part": "base",
-      "issue": "Desk mounting order: the front M4 holes at (30, +/-40) sit under the upper-arm plates at home, and DESIGN.md step 8 bolts the base down after the arm is built (step 7). Round 1 asked for this to be documented. The IK offset note was added, but the desk-screw note was not.",
-      "fix": "Move 'bolt/clamp the base to the desk' before step 3, or add 'swing the arm to yaw +/-90 to reach the front holes' to step 8."
+      "issue": "The cable post is a 126 mm upright cantilever (10 x 26 mm) printed with its layers across its bending direction. It has a sharp root at the plate and the PCA9685 is screwed to it. Stress from the bundle is low (about 1.5 MPa per 5 N), but a knock or a yank on the bundle bends it at the weakest across-layer section, a single sharp corner. DESIGN.md part list says the base is 88 g; report.json says 130.5 g (ENGINEERING.md section 11 requires the mass budget within 10 %).",
+      "fix": "Add a 3-4 mm root fillet or two small triangular gussets at the post foot (front and back). Update the part-list masses from report.json."
     },
     {
       "severity": "minor",
-      "part": "yoke_l",
-      "issue": "The pivot-wear risk is accepted in DESIGN.md with a bearing-pressure estimate, which is fine. But the BOM still lists a generic 'M3 x 14 mm socket head screw (pivot)', so the buyer will get fully threaded screws.",
-      "fix": "In bom_extra / the pin spec, call for partially threaded M3x14 (DIN 912 with a plain shank of at least 8 mm) or ISO 7379 shoulder screws for the three pivots."
+      "part": "nano",
+      "issue": "The Nano (bare board, pins down), the four WAGO splices and the 90 W supply are 'off the base, on the desk' as loose items with flying leads. A bare Nano on a desk next to 5 V/18 A lever connectors can short against them. The supply has M3 mounting holes that are not used.",
+      "fix": "Add a small printed tray on the base's rear pad, or a separate electronics plate, with the Nano on M1.6 posts or in a snap pocket and a clip for the WAGO splices. Or at least state in DESIGN.md to put the Nano in a case and screw the PSU to the desk or to a plate."
+    },
+    {
+      "severity": "minor",
+      "part": "yaw_gear",
+      "issue": "DESIGN.md is out of step with the geometry in places. Assembly step 2 says to bolt the yaw gear on with 4 x M3x10, but the counterbored joint is checked with M3x8 (report fasteners yaw_horn length_mm 8, grip 4.7). An M3x10 leaves only about 0.9 mm between the screw tips and the MG996R case top under the horn. Step 3 lists '3 + 3 yoke inserts and the spindle insert' but leaves out the 2 cable-mast inserts.",
+      "fix": "Change step 2 to M3x8 and step 3 to include the 2 mast inserts. List the insert count per part (turntable 9, links 1 each)."
+    },
+    {
+      "severity": "minor",
+      "part": "yoke_r",
+      "issue": "Accepted, recorded for the record. yoke_r_fea volume peak is 15.0 MPa and gripper_fea is 14.56 MPa, both above the 13 MPa z-allowable. Both are local corner singularities, and p99.9 is 6.6 and 5.1 MPa. The FEA renders put the hot spots where the load paths say they should be: the cheek root where the foot ends, and the jaw root. DESIGN.md now describes them correctly. Pivot screws: a partly threaded M3x14 does not exist as DIN 912, and the reasoning is written up. Accepted.",
+      "fix": "None required. Re-check the corners on a test print of yoke_r together with the DS32xx tab-hole check DESIGN.md already asks for."
     }
   ]
 }
