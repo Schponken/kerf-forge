@@ -111,9 +111,9 @@ horn → gripper → grip servo → **grip** → horn → finger; yoke_l). `yaw_
 | yoke_l_fea | 5.9 N on the pivot | 0.8 MPa | 13 MPa |
 | gripper_fea | grip **stall**: 18.4 N on the jaw tip, held at the servo tabs | 5.1 MPa (peak 14.6 at the jaw root's side corners, local: SF 2.7 on the 39 MPa across-layer strength), 0.30 mm | 13 MPa (z: the jaw post bends across layers, SF 3), 1.0 mm |
 | finger_fea | 18.4 N at the finger tip | 8.4 MPa (peak 13.9), 0.77 mm | 24 MPa, 1.0 mm |
-| base_fea | ±68 N bearing couple (2 × 0.85 N·m over the 25 mm seat spacing) + 34 N gear-mesh force on the upper seat, 12.8 N on the upper seat floor, yaw servo at stall (9.4 kg·cm couple + 34 N) on its tab screws; held at the 4 M4 holes | 1.2 MPa (peak 4.8), 0.12 mm | 13 MPa (z, SF 3), 0.3 mm |
-| upper_arm_stall_fea | fault case (crash): elbow servo at **stall** 19 kg·cm + 2 × the static loads | 13.4 MPa (peak 18.8), 1.03 mm | 24 MPa (xy, SF 2); deflection not a criterion in a fault (2 mm cap) |
-| forearm_stall_fea | wrist servo at **stall** 9.4 kg·cm + 2 × the static loads | 5.3 MPa (peak 8.6), 0.50 mm | 24 MPa |
+| base_fea | ±68 N bearing couple (2 × 0.85 N·m over the 25 mm seat spacing) + 34 N gear-mesh force on the upper seat, 12.8 N on the upper seat floor, yaw servo at stall (9.4 kg·cm couple + 34 N) on its tab screws; held at the 4 M4 holes | 0.95 MPa (peak 3.3), 0.11 mm | 13 MPa (z, SF 3), 0.3 mm |
+| upper_arm_stall_fea | fault case (crash): elbow servo at **stall** 19 kg·cm + 2 × the static loads | 13.4 MPa (peak 18.8), 1.03 mm | 16 MPa (xy, crash case SF 3); deflection not a criterion in a fault (2 mm cap) |
+| forearm_stall_fea | wrist servo at **stall** 9.4 kg·cm + 2 × the static loads | 5.3 MPa (peak 8.6), 0.50 mm | 16 MPa (crash, SF 3) |
 | turntable_fea | 2 × arm weight 12.8 N on the yoke feet + 2 × 0.85 N·m tipping moment (net 1.70 N·m about Y in report.json: the couples are 920 N·mm each because the 12.8 N acts behind the axis); spindle held only on the two bearing lands + collar | 3.7 MPa (peak 10.1 at the step), 0.21 mm | 13 MPa (z, SF 3), 0.3 mm |
 
 Applied resultants are checked in report.json (`applied_force_n`): torques are pure couples (engine fix in this

@@ -743,3 +743,13 @@ pushed for it and what I know:
 - A part whose load_axis runs across layers with no direction z/auto strength check is now a PROBLEM (was a warning
   that stayed forever); with a proof the warning is dropped. All projects re-checked: only robot_arm fails (the
   ENG-1 yaw_servo half-holes, see the entry above).
+
+## 2026-10-31 09:20 UTC — session 18259c3d8c (01S68R6S): E3 robot_arm — review round 5 PASS, then re-opened by ENG-1/2
+- Round 4 FAIL (hood covered the LRS SVR1 pot) fixed: pot/LED positions in the catalog (scaled, sourced), hood holes,
+  side vent window, floor tie bridge, supply trimmed to 5.4 V; round 5 PASS (5b285dd8).
+- Then the new ENG-1 holewall check flagged the yaw servo's two output-end tab holes (half-open into the cable-boss
+  slot: a real defect). Fix: the yaw servo now goes in from BELOW (servo_mount top_through, open-bottomed pocket, solid
+  shelf round all four holes, widened key pocket, lead exit on -Y). ENG-2: the stall FEA cases are `case: crash`, SF 3.
+- PLAN: E3 and "Audit fixes: robot_arm" checked; a fresh build + design-reviewer pass on the new fingerprint follows
+  in this session. Other sessions: fpv_5in and servo_link reviews went stale from catalog edits (XT60 by the tvc
+  session, MG996R lead_length_mm by ecf0d5e); they need a re-review (no geometry change).
