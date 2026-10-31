@@ -14,6 +14,7 @@ POSTS = [(31.5, 5), (31.5, -5), (-31.5, 5), (-31.5, -5)]   # must match parts/bo
 XT60_X = -51.0
 VTX = "drone.vtx.tx800"
 BOSS_H = 3.0
+RX_X, RX_Y = -27.0, 15.5   # receiver (13 x 11 mm) under the plate, clear of the posts, VTX and strap slots
 
 
 def build(ctx):
@@ -42,6 +43,8 @@ def build(ctx):
     for x in (-58.0, -46.0):                     # antenna / receiver lead tie slots through the rear tab
         for sy in (1, -1):
             s -= Pos(x, sy * 8.0, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for x in (RX_X - 8.5, RX_X + 8.5):             # receiver tie slots either side of it
+        s -= Pos(x, RX_Y, H - 1) * Box(1.6, 3, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for x in (-18, 18):                            # battery strap slots (20 mm strap)
         s -= Pos(x, 0, H - 1) * Box(3, 22, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     s -= iface.bolt_pattern(ctx, "posts", "M3", [(x, -y) for x, y in POSTS], Location((0, 0, 0), (180, 0, 0)),
@@ -50,4 +53,5 @@ def build(ctx):
     ctx.rigid("battery", Location((0, 0, H + T)))
     ctx.rigid("xt60", Location((XT60_X, 0, H - xh)))
     ctx.rigid("vtx", Location((0, 0, H - BOSS_H), (180, 0, 0)))
+    ctx.rigid("rx", Location((RX_X, RX_Y, H), (180, 0, 0)))       # receiver tied flat under the plate
     return ctx.finish(s, color="#2a2d31")

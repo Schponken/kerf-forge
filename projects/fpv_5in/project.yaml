@@ -38,6 +38,12 @@ purchased:
   battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400"}
   xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000"}
   vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
+  receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020",
+             note: "heat-shrunk, cable-tied under the top plate (two tie slots); T antenna out through the rear-tab slots"}
+  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 42, 3], color: "#303030",
+        note: "anti-slip pad cut to the 80 x 42 mm top plate"}
+  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [86, 20, 1.8], color: "#404040",
+          note: "runs along the battery: up through one top-plate slot, over the pack, down the other; modelled as its top run"}
 keepouts:
   prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1, h: 7}
   prop_2: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_2, h: 7}
@@ -45,9 +51,7 @@ keepouts:
   prop_4: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_4, h: 7}
 bom_extra:
   - {type: fastener, item: M2 x 6 mm button head screw, qty: 2, spec: ISO 7380, note: "camera side pivots; ~2.5 mm into the camera's own threads"}
-  - {type: hardware, item: ELRS nano receiver (heat-shrunk), qty: 1, spec: "cable-tied under the top-plate rear tab; antenna through the tab tie slots"}
   - {type: hardware, item: M2 flat washer, qty: 4, spec: "under the VTX screw heads (its holes take M3)"}
-  - {type: hardware, item: 20 mm battery strap (250 mm), qty: 1, spec: "through the two top-plate slots"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 9, spec: "2 per arm for motor wires, 1 for the XT60 in its cradle"}
   - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount"}
 assembly:
@@ -67,11 +71,14 @@ assembly:
     - {parent: motor_4.prop, child: prop_4.hub}
     - {parent: body.stack, child: stack.bottom}
     - {parent: body.top, child: top_plate.base}
-    - {parent: top_plate.battery, child: battery.bottom}
+    - {parent: top_plate.battery, child: pad.bottom}
+    - {parent: pad.top, child: battery.bottom}
+    - {parent: battery.top, child: strap.bottom}
+    - {parent: top_plate.rx, child: receiver.bottom}
     - {parent: top_plate.xt60, child: xt60.bottom}
     - {parent: top_plate.vtx, child: vtx.bottom}
     - {parent: body.cam_tilt, child: camera.pivot, name: cam_tilt, range: [0, 40], home: 25}
-  order: [body, [arm_1, arm_2, arm_3, arm_4], [motor_1, motor_2, motor_3, motor_4], stack, camera, top_plate, vtx, xt60, battery]
+  order: [body, [arm_1, arm_2, arm_3, arm_4], [motor_1, motor_2, motor_3, motor_4], stack, camera, top_plate, vtx, receiver, xt60, pad, battery, strap]
   key_access:
     - {group: vtx, before: [body, stack, camera, arm_1, arm_2, arm_3, arm_4], why: "the VTX is screwed under the top plate on the bench before the plate goes onto the frame"}
   sweeps:
