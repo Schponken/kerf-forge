@@ -47,6 +47,9 @@ def test_price_bom_totals():
     assert s["unpriced"] == ["unobtainium"]
     assert rows[2]["price_key"] == "screw:M3x8:socket" and rows[2]["unit_usd"] == 0.1
     assert rows[3]["price_key"] == "screw:M3:socket" and rows[3]["total_usd"] == 0.4
+    # the fallback is flagged on the row (its link is another length) and listed; exact matches are not
+    assert "PRICE FROM A DIFFERENT PACK (screw:M3:socket)" in rows[3]["note"] and s["approximate"] == ["M3 x 12 mm socket head screw", "3 x 16 mm steel dowel pin"]
+    assert "DIFFERENT PACK" not in rows[2].get("note", "")
     assert rows[0]["unit_usd"] == 0.5 and rows[0]["buy"] == "https://shop/petg"
 
 

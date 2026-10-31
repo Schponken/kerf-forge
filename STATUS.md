@@ -640,3 +640,8 @@ pushed for it and what I know:
 - Engine: `kerf/heads.py` — socket screw heads are solids in interference + sweeps (test); board proxy keeps its
   mounting holes clear of the component block (test). All 6 projects still pass `kerf check` with the head solids.
 - Next: robot_arm build + design-reviewer round 3.
+## 2026-10-31 — session 01S68R6S: fpv_5in review round 7 fixes
+- Round 7 FAIL (1 major): M3 x 12 / M2 x 12 BOM rows silently linked to M3 x 8 / M2 x 6 packs (size-only price
+  fallback). Engine (kerf/ship.py, test): a fallback price is flagged on the row ("PRICE FROM A DIFFERENT PACK ...
+  buy <item>") and listed under the BOM total. prices.json: exact screw:M3x12:socket (Zoro) and screw:M2x12:socket.
+- fpv_5in: camera powered from the FC 9 V pad (5 V lead drop took it to 4.99 V < its 5.0 V minimum); DESIGN numbers.

@@ -34,7 +34,7 @@
   11.7 MPa, deflection ~1 mm (crash case; ~0.2 mm at hover thrust).
 - Body (the part that must outlive the arms): the same crash reaches it as a lever couple on the arm screws — arm as
   a beam on supports at r 38 / 52 with 33.06 N at r 113 → inner nut pulls the body down 144.0 N, the arm presses up
-  on the underside round the outer screw with 177.1 N. FEA held at the four post feet: 9.6 MPa vs 11.7 MPa
+  on the underside round the outer screw with 177.1 N. FEA held at the four post feet: 10.2 MPa vs 11.7 MPa (load at the sunk nut seat)
   (needed a 7 mm plate plus 3 × 5 mm ribs either side of each arm's screws; 5 mm plain plate gave 22 MPa).
 - Mass: printed parts 149.5 g (limit 250); all-up about 597 g including wire.
 
@@ -42,7 +42,7 @@
 | Part | Job | Print orientation | load_axis | Envelope |
 |---|---|---|---|---|
 | body | 7 mm centre plate + ribs, stack, arm clamps with key grooves, camera cage, post seats | flat, cheeks and ribs up | both diagonals | 114 × 92 × 25 |
-| arm_1..4 | carry each motor to the body; key ridges on top | flat, top face up | x (along the arm) | 102 × 32 × 12.5 |
+| arm_1..4 | carry each motor to the body; key ridges on top | flat, top face up | x (along the arm) | 103 × 32 × 12.5 |
 | top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm) | upside down (plate on bed) | – | 130 × 42 × 41 |
 
 ## Interfaces

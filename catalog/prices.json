@@ -476,5 +476,21 @@
     "checked": "2026-10-31",
     "source": "https://www.walmart.com/ip/THREADLOCKER-243-6ML/48869713",
     "note": "Walmart 'Loctite Threadlocker 243 Blue Oil Resistant Threadlocker', 6 mL tube, medium strength, $10.99 (third-party seller R/A Hoerr)."
+  },
+  "screw:M3x12:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-socket-zinc-plated-steel-12-mm-length-100-pk-m071600300012/i/G2650999/",
+    "pack_qty": 100,
+    "pack_usd": 7.69,
+    "checked": "2026-10-31",
+    "source": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-socket-zinc-plated-steel-12-mm-length-100-pk-m071600300012/i/G2650999/",
+    "note": "Zoro Select 'M3-0.50 Socket Head Cap Screw, Socket, Zinc Plated Steel, 12 mm Length, 100 PK', DIN 912, $7.69/100."
+  },
+  "screw:M2x12:socket": {
+    "buy": "https://www.walmart.com/ip/48405331",
+    "pack_qty": 20,
+    "pack_usd": 8.38,
+    "checked": "2026-10-31",
+    "source": "https://www.walmart.com/ip/48405331",
+    "note": "Walmart 'Unique Bargains M2 x 12mm 12.9 Alloy Steel Machine Bolt Hex Socket Head Cap Screws Black 20pcs', $8.38/20 (page also lists 14 mm total length = 12 mm shank + 2 mm head)."
   }
 }

@@ -78,9 +78,10 @@ wiring:
      route: [{item: arm_3, at: [24, 0, 9]}, {item: arm_3, at: [64, 0, 9]}, {item: arm_3, at: [70, 0, 1.5]}, {item: arm_3, at: [96, 0, 1.5]}]}
   - {id: ph4, from: stack.esc, to: motor_4, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
      route: [{item: arm_4, at: [24, 0, 9]}, {item: arm_4, at: [64, 0, 9]}, {item: arm_4, at: [70, 0, 1.5]}, {item: arm_4, at: [96, 0, 1.5]}]}
-  # FC 5 V rail: VTX (0.75 A at 800 mW), camera (0.2 A), receiver (0.1 A) = 1.05 A of the 3 A BEC
+  # FC 5 V rail: VTX (0.75 A at 800 mW) + receiver (0.1 A) of the 3 A BEC; camera (5-36 V) on the 9 V pad, so the
+  # lead's voltage drop can't take it under its 5 V minimum
   - {id: vtx_5v, from: stack.5v, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 80}
-  - {id: cam_5v, from: stack.5v, to: camera, v: 5.0, gauge: 28, color: red/black, length_mm: 110,
+  - {id: cam_9v, from: stack.9v, to: camera, v: 9.0, gauge: 28, color: red/black, length_mm: 110,
      route: [[20, 15, 20], [37, 15, 20], [38, 11, 20]]}
   - {id: rx_5v, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 110,
      route: [[20, 15, 32], [38, 15, 40]]}

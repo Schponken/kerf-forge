@@ -71,7 +71,7 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
     """Adds buy / unit_usd / total_usd / price_key to every row in place. Printed rows are priced as filament
     (estimated mass x material price per gram). Returns the summary."""
     part_reports = part_reports or {}
-    total, unpriced = 0.0, []
+    total, unpriced, approx = 0.0, [], []
     for r in rows:
         cands = price_key(r)                      # before clearing: a bom_extra row may carry its own price_key
         r.update(buy=r.get("link", ""), unit_usd="", total_usd="", price_key="")   # unpriced rows keep the catalog link
@@ -94,8 +94,14 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
         e = prices[key]
         unit = float(e["pack_usd"]) / float(e["pack_qty"])
         r.update(buy=e["buy"], unit_usd=round(unit, 2), total_usd=round(unit * qty, 2), price_key=key)
+        if key != cands[0]:
+            # size-only fallback (e.g. screw:M3:socket for an M3 x 12): the price is indicative, the link is for another
+            # length; say so on the row so a wrong length is never bought silently
+            r["note"] = (f"{r.get('note') or ''} " if r.get("note") else "") + \
+                f"PRICE FROM A DIFFERENT PACK ({key}): the link is not this length, buy {r['item']}"
+            approx.append(r["item"])
         total += unit * qty
-    return {"total_usd": round(total, 2), "unpriced": unpriced, "rows": len(rows)}
+    return {"total_usd": round(total, 2), "unpriced": unpriced, "approximate": approx, "rows": len(rows)}
 
 
 def write_bom(rows: list[dict], summary: dict, outdir: Path):
@@ -111,6 +117,8 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
     md.append("")
     md.append(f"**Total: ${summary['total_usd']:.2f}**"
               + (f" — {len(summary['unpriced'])} row(s) not priced: {', '.join(summary['unpriced'])}" if summary["unpriced"] else "")
+              + (f" — {len(summary['approximate'])} row(s) priced from a different pack (see their notes): "
+                 f"{', '.join(summary['approximate'])}" if summary.get("approximate") else "")
               + ". Fasteners are priced per piece from assortment packs; printed parts as filament only. Prices are a "
                 "dated snapshot (catalog/prices.json), shipping and tax excluded.")
     (outdir / "bom.md").write_text("\n".join(md) + "\n", encoding="utf-8")
