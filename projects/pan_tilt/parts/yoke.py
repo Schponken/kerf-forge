@@ -20,14 +20,15 @@ def build(ctx):
     p = ctx.p
     t = p.yoke_t
     win_hw = (p.servo_W + 0.6) / 2
-    wall_hw = win_hw + 4.3                                     # >= 4 mm beside the servo window
+    wall_hw = win_hw + 5.6                                     # 5.6 mm beside the servo window (wall stiffness)
     hole_top = p.tilt_body_z + p.servo_hx / 2                   # upper tab screw height
     ledge = p.wall_out + 14.0
 
     # plate: from the pivot wall to under the tilt servo; narrow in X so the camera clears it when tilted down
-    plate = _block(-12.0, 12.0, p.pin_wall_out, p.wall_out, 0, t)
+    plate = _block(-12.0, 12.0, p.pin_wall_out - 6.5, p.wall_out, 0, t)      # -Y end carries the pivot-wall gussets
+    plate += _block(-15.0, 15.0, p.horn_y + 3.0, p.wall_out, 0, t)            # wider outside the camera view
     plate += _block(-wall_hw, wall_hw, p.wall_out - 1, ledge, 0, t)
-    corners = plate.edges().filter_by(Axis.Z).filter_by(lambda e: abs(e.center().Y - p.wall_out) > 1.5)
+    corners = plate.edges().filter_by(Axis.Z).filter_by(lambda e: abs(e.center().Y - p.wall_out) > 1.5 and abs(e.center().Y - p.horn_y - 3.0) > 0.5)
     body, bad = features.safe_fillet(plate, [(corners, 2.5)])
     ctx.notes += [f"plate corner fillet skipped: {b}" for b in bad]
 
@@ -40,6 +41,11 @@ def build(ctx):
     pw = _block(-pw_hw, pw_hw, p.pin_wall_out, p.pin_wall_in, 0, p.tilt_h)
     pw += Pos(0, p.pin_wall_in, p.tilt_h) * Rot(90, 0, 0) * Cylinder(pw_hw, p.wall_t, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body += pw
+    # inside corners where the walls meet the plate: the whole tilt load path runs through them
+    roots = body.edges().filter_by(Axis.X).filter_by(
+        lambda e: abs(e.center().Z - t) < 0.05 and min(abs(e.center().Y - y) for y in (p.wall_in, p.pin_wall_in, p.pin_wall_out)) < 0.05)   # not wall_out: the servo tab ends sit 0.6 mm above the plate there
+    body, bad = features.safe_fillet(body, [(roots, 1.5)])
+    ctx.notes += [f"wall root fillet skipped: {b}" for b in bad]
 
     # gussets: both sides of the +Y wall, outside of the -Y wall (its inside is where the bracket swings), all standing on the plate (print without support)
     for sx in (-1, 1):

@@ -32,9 +32,23 @@ def _teardrop_y(r, y0, y1, x, z):
     a = r / math.sqrt(2)
     with BuildSketch(Plane.XZ) as sk:
         Circle(r)
-        Polygon((-a, -a), (a, -a), (0, -r * math.sqrt(2)), align=None)
+        Polygon((-a, -a), (a, -a), (0, -1.6 * r), align=None)   # 52 deg flanks: clearly self-supporting
     s = extrude(sk.sketch, amount=y1 - y0)            # Plane.XZ normal is -Y: extrudes toward -Y
     return Pos(x, y1, z) * s
+
+
+def _standoff(r, x0, x1, y, z):
+    """Round standoff along +X with a 45-degree point underneath (prints without support on a vertical plate)."""
+    a = r / math.sqrt(2)
+    with BuildSketch(Plane.YZ) as sk:
+        Circle(r)
+        Polygon((-a, -a), (a, -a), (0, -1.6 * r), align=None)   # 52 deg flanks: clearly self-supporting
+    return Pos(x0, y, z) * extrude(sk.sketch, amount=x1 - x0)
+
+
+def _out_minus_y(x, y, z):
+    """Hole frame on a face whose outward normal is -Y: +Z = -Y, local X = bracket +Z (up when printed)."""
+    return Location(Plane(origin=(x, y, z), x_dir=(0, 0, 1), z_dir=(0, -1, 0)))
 
 
 def build(ctx):
@@ -51,8 +65,8 @@ def build(ctx):
     seat = Location(Plane(origin=(p.cam_seat_x, 0, p.cam_zc), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))
     holes = [tuple(h) for h in cam["holes"]]
     for (bx, by) in holes:
-        boss = _teardrop_y(2.4, 0, p.standoff + 0.5, 0, 0)                   # along Y, then turn to X
-        body += Pos(xf - 0.5, bx, p.cam_zc + by) * Rot(0, 0, -90) * Pos(0, -(p.standoff + 0.5), 0) * boss
+        so = _standoff(2.4, xf - 0.5, p.cam_seat_x, bx, p.cam_zc + by)
+        body += so & Pos(0, 0, zb) * Box(200, 200, 200, align=(Align.CENTER, Align.CENTER, Align.MIN))  # point clipped at the bed
     body += _teardrop_y(4.4, -yo, p.knuckle_y, 0, 0)                          # pivot knuckle on the -Y arm
 
     # inside corners where the plate meets the arms (load path of the camera into the hubs)
@@ -66,11 +80,13 @@ def build(ctx):
     body -= iface.horn_mount(ctx, HORN, hm, group="bracket_tilt", plate_t=p.arm_t)
     # hex-key access through the -Y arm, coaxial with each horn screw
     for (u, v) in iface.circle(4, p.horn_bc, 45.0):
-        body -= Pos(-v, -yo - 1, u) * Rot(-90, 0, 0) * Cylinder(1.2, yo - yi + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        body -= _out_minus_y(-v, -yo, u) * features.teardrop_hole(2.4, yo - yi + 1, up_deg=0)
     # M3 pivot thread (screw held here, turns in the yoke wall), entering from the -Y outer face
     ploc = Location(Plane(origin=(0, -yo, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
     body -= iface.pin_hole(ctx, "M3", ploc, group="tilt_pivot", depth=p.knuckle_len, fit="tap")
-    body -= Pos(0, -yo - 1, 0) * Rot(-90, 0, 0) * Cylinder(1.2, p.knuckle_len + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= _out_minus_y(0, -yo, 0) * features.teardrop_hole(2.4, p.knuckle_len + 1, up_deg=0)
+    # 45-degree roof over the horn centre-screw access hole (horizontal hole as printed)
+    body -= _out_minus_y(0, yi, 0) * features.teardrop_hole(2 * (iface.screw_spec("M2")["head_d"] / 2 + 0.75), p.arm_t + 1, up_deg=0)
 
     # camera: M2 pilots through standoff + plate
     body -= iface.bolt_pattern(ctx, "cam_mount", "M2", holes, seat, kind="tap", depth=p.standoff + p.cam_plate_t)

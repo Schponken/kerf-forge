@@ -11,7 +11,7 @@ params:
   floor_t: {value: 1.5, min: 1.2, max: 3, step: 0.1, label: Floor under the tripod nut}
   base_margin: {value: 4.0, min: 3, max: 8, step: 0.5, label: Base length beyond the servo tabs (each end)}
   base_side: {value: 7.0, min: 5, max: 12, step: 0.5, label: Base wall beside the servo body (each side)}
-  yoke_t: {value: 4.0, min: 3.5, max: 6, step: 0.5, label: Yoke plate thickness}
+  yoke_t: {value: 6.0, min: 3.5, max: 8, step: 0.5, label: Yoke plate thickness}
   wall_t: {value: 5.0, min: 5.0, max: 6, step: 0.1, label: Yoke side-wall thickness}
   tilt_h: {value: 28.0, min: 24, max: 36, step: 0.5, label: Tilt axis above the yoke underside}
   cam_gap: {value: 27.0, min: 26, max: 32, step: 0.5, label: Space between the bracket arms (camera board 25 wide)}
@@ -78,3 +78,47 @@ requirements:
      why: "the bracket never rubs the yoke over the whole tilt range (ENGINEERING.md section 6)"}
   - {id: cam_clear_base, check: clearance_min, a: camera, b: yoke, min_mm: 1.0, joints: [tilt], samples: 19,
      why: "the camera board never touches the yoke plate when tilted down"}
+  - id: bracket_fea
+    check: fea_static
+    part: bracket
+    why: "camera jammed (hand or obstacle) while the tilt servo pushes at full stall torque; the torque enters at the horn face and leaves through the camera standoffs"
+    direction: z            # the arms print standing, so their in-plane bending crosses layers
+    sf: 3.0                 # docs/ENGINEERING.md section 3: static load across layers
+    max_disp_mm: 0.3
+    fixed: {box: [[cam_seat_x - 0.6, -50, -50], [cam_seat_x + 0.01, 50, 50]]}          # standoff tops (camera held)
+    loads:
+      - {box: [[-7, horn_y - 0.01, -7], [7, horn_y + 0.01, 7]], torque_nmm: servo_stall_nmm, axis: {at: [0, 0, 0], dir: [0, -1, 0]}}
+  - id: yoke_fea
+    check: fea_static
+    part: yoke
+    why: "the tilt servo's stall-torque reaction goes through its two tab screws into the +Y wall and down to the pan horn screws; plus 5 N pushed down on the pivot (hand on the camera)"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 0.3
+    fixed: {sites: yoke_pan, radius: 2.0}
+    loads:
+      - {sites: yoke_tilt, radius: 2.0, torque_nmm: servo_stall_nmm, axis: {at: [0, wall_out, tilt_h], dir: [0, 1, 0]}}
+      - {cylinder: {at: [0, pin_wall_in, tilt_h], dir: [0, -1, 0], r: 1.68, tol: 0.3, span: [0, wall_t]}, bearing_n: [0, 0, -5.0]}
+  - id: base_fea
+    check: fea_static
+    part: base
+    why: "the pan servo's stall-torque reaction at its two tab screws, plus a 10 N sideways knock on the head carried into the deck"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 0.2
+    fixed: {box: [[-100, -100, -0.01], [100, 100, 0.01]]}                               # bottom face on the tripod plate
+    loads:
+      - {sites: base_pan, radius: 2.0, torque_nmm: servo_stall_nmm, axis: {at: [pan_x, 0, 0], dir: [0, 0, 1]}}
+      - {sites: base_pan, radius: 2.0, force_n: [0, 10.0, 0]}
+  - id: bracket_arm
+    check: cantilever_stress
+    part: bracket
+    section: {name: arms ahead of the hubs, at: [5.5, 0, 0], normal: [1, 0, 0]}
+    loads: [{at: cam_seat, force_n: [0, 0, "-servo_stall_nmm / cam_seat_x"]}]
+    load_case: stall torque reacted at the camera seat
+    sf: 3.0
+    kt: 1.5
+    direction: z
+  - {id: head_cg, check: cg, ref: yoke.horn_mount, max_lateral_mm: 20, include: [yoke, tilt_servo, tilt_horn, bracket, camera],
+     poses: [{tilt: -35}, {tilt: 65}],
+     why: "the turning head's centre of gravity stays near the pan axis, so the pan servo's output bearing sees only a small overturning moment (moment = mass x lateral offset, in DESIGN.md)"}
