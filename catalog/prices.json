@@ -468,5 +468,13 @@
     "checked": "2026-10-31",
     "source": "https://www.jameco.com/z/10W1-01206-SH-Jameco-ValuePro-Power-Cord-NEMA-5-15P-to-C13-Plug-6-Feet-AWG-18-3-SVT-Black-Detachable-Shielded_161761.html",
     "note": "Jameco ValuePro NEMA 5-15P (US) to C13, 6 ft, 18 AWG, $4.95. Outside the US buy the local-plug C13 cord."
+  },
+  "threadlocker:blue": {
+    "buy": "https://www.walmart.com/ip/THREADLOCKER-243-6ML/48869713",
+    "pack_qty": 1,
+    "pack_usd": 10.99,
+    "checked": "2026-10-31",
+    "source": "https://www.walmart.com/ip/THREADLOCKER-243-6ML/48869713",
+    "note": "Walmart 'Loctite Threadlocker 243 Blue Oil Resistant Threadlocker', 6 mL tube, medium strength, $10.99 (third-party seller R/A Hoerr)."
   }
 }

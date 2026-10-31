@@ -617,3 +617,12 @@ pushed for it and what I know:
   (`proximal_fea_line`, 222 N); crimp sleeve line stop; groove ridges quantified (line never touches them; 5 deg
   steps crack the tessellation); tendon cuts subtracted in chunks (2.4 GB -> 0.5 GB, 2x faster). check PASS.
 - Not mine, seen: tests/test_meshy.py needed `./setup.sh` again (manifold3d/networkx) on this clone.
+## 2026-10-31 — session 01S68R6S: fpv_5in review round 6 fix + engine
+- Round 5 PASS went stale when catalog_deps.json appeared; round 6 found a real miss: the M3 x 14 arm-screw tips
+  stood 1 mm proud of the body top, right under the motor phase leads. Engine: `iface` nut traps take `nut_recess`
+  (nut sunk below the far face, min engagement follows; test), and `electrical.route_check` now tests every wire
+  tube against every screw shank + head (`kerf/shanks.py build`, `asm.screws`) of joints not involving the run's two
+  items (test). fpv_5in: arm nuts sunk 1 mm -> M3 x 12, tips under the top face; body FEA 10.15 / 11.67.
+- Also: blue threadlocker in the BOM (priced), counterbore-bridging print note, XT60 "hold when unplugging" in the
+  wiring note, DESIGN.md numbers. Note for the hard_stop owner: tests/test_kerf_skill.py fails until `hard_stop` is
+  listed in the kerf skill's toolbox (from 51c543e, not touched here).

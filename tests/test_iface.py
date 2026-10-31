@@ -84,6 +84,21 @@ def test_nut_trap_refuses_thick_block():
         iface.hole("M3", "nut_trap", 25)
 
 
+def test_nut_trap_recess_sinks_the_nut():
+    # 7 mm plate: the plain pocket is nut_h + 0.3 deep from the far face, the recessed one 1 mm deeper; the minimum
+    # engagement (screw must reach 90 % through the nut) drops by the same 1 mm, so a 1 mm shorter screw fills it and
+    # its tip ends 1 mm below the far face instead of level with the pocket top
+    sp = iface.screw_spec("M3")
+    c0, _, _, mn0 = iface.hole("M3", "nut_trap", 7)
+    c1, _, _, mn1 = iface.hole("M3", "nut_trap", 7, nut_recess=1.0)
+    assert mn0 - mn1 == pytest.approx(1.0)
+    assert mn1 == pytest.approx(7 - 1.0 - (sp["nut_h"] + 0.3) + 0.9 * sp["nut_h"])
+    assert c1.volume > c0.volume                                 # the pocket is deeper
+    assert c1.bounding_box().min.Z == pytest.approx(c0.bounding_box().min.Z)   # opens on the same far face
+    with pytest.raises(ValueError):
+        iface.hole("M3", "nut_trap", 4, nut_recess=1.0)           # < 1 mm of plate would be left under the nut
+
+
 SERVO_YAML = """
 name: t
 parts:

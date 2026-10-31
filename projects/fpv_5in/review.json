@@ -1,57 +1,75 @@
 {
-  "verdict": "PASS",
-  "fingerprint": "21e481f9eb38c33d",
+  "verdict": "FAIL",
+  "fingerprint": "32e19ec5a2764998",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 5. The round-4 major is fixed. WIRING.md now has a 'Configure before the first power-up' section, and both WIRING.md and ASSEMBLY.md have step 13 with the exact Betaflight CLI command (set motor_output_limit = 74, save) and a gate: Blackbox/OSD peak <= 60 A on a full pack. The Loads table shows the 14.22 A capped peak and names its source. The limit is described as a central estimate. The VTX antenna is on +y, with its head (z >= 48) about 3 mm above the battery plug's top (z 45), and the pigtail pre-bend / 8-10 mm heat-shrink note is in both build documents. Every check passes. The FEA hot spots are where the load path puts them (arm root screws, the body around arm_1's screws, top-plate pillar feet and the deck-to-pillar joints), and each load is applied where the real load enters. What remains is minor: some documents disagree with each other, one XT60 retention concern, and items carried from earlier rounds that need checking on the bench.",
+  "summary": "Round 6. Since round 5 only documentation changed (docstring screw lengths, DESIGN.md numbers and notes, the new catalog_deps.json). The geometry, checks, requirements, FEA and renders match what round 5 passed: twr 6.18, frame 149.5 g, prop gap 3.45 mm, all four FEA cases inside their limits with the hot spots where the load enters, cam_tilt sweep clear. A closer look at the wiring finds a problem the route check cannot see, because it does not model screw shanks: every arm's motor phase bundle is routed straight across the tips of that arm's two M3 x 14 screws, which stand 1 mm proud of the body top. That is a chafe-and-short risk on 24 V phase leads, so the verdict is FAIL until it is fixed.",
   "findings": [
     {
+      "severity": "major",
+      "part": "body",
+      "issue": "The motor phase wires rest on the arm screw tips. Each arm's two M3 x 14 screws seat at z -6 (arm counterbore) and end at z +8. The nut pocket is 2.7 mm deep from the body top (nut at z 4.3-6.7), so each thread end stands 1.0 mm above the body top (z 7) at r 38 and r 52, on the arm centreline. The wiring routes ph1-ph4 along exactly that line, at z 9 between the two ribs (local [24,0,9] -> [64,0,9]). With 18 AWG silicone (2.1 mm OD), the bottom of the bundle is at z 7.95, so the middle conductor lies on both cut thread ends of every arm, 8 contact points in all. The cable ties at the arm pull the bundle down over the body edge and onto them. Silicone insulation is soft and wears through quickly on a thread end under motor vibration. A phase-to-screw short (the screw is a conductor shared with the other arm screw in the same bundle) kills the ESC channel mid-flight. kerf check misses this because electrical.route_check tests the wire tube only against items, not against screw shanks.",
+      "fix": "Geometry fix, preferred: in body.py, deepen the 8 arm nut pockets by 1.0 mm (hex from z 3.3 to 7; 3.3 mm of plate stays under the nut) and drop to M3 x 12. The tip then ends at z 6, 0.3 mm past the nut and 1 mm below the top face. Re-run body_strength, because the inner-nut pull-down is the body's load case. Alternatives: cover the screw tips with a 2 mm printed saddle or raised wire bed between the ribs, or put a 25 mm length of heat-shrink or Kapton over each phase bundle where it crosses the body and add that to the BOM and build steps. Engine (general): add screw shanks (fastener tip positions) to the obstacles in route_check, so a wire lying on a thread end fails the check."
+    },
+    {
       "severity": "minor",
-      "part": "top_plate",
-      "issue": "The 8-10 mm heat-shrink note for the XT60 pigtail is in WIRING.md, ASSEMBLY.md and DESIGN.md, but the generated BOM still lists 'heat-shrink for AWG 12 joints, 20 mm pieces' (row 35). That is the length the note says reaches the rear pillar. The turn itself is still tight: the leads pass the front stops at x -44.85 and must be at |y| >= about 12-14 by the pillar's rounded end at x -37.5..-33, which means two 90 deg bends of about 5 mm radius in 12 AWG silicone. It is buildable with the pre-bend, and the pillar's rounded ends give a little room.",
-      "fix": "Make the AWG 12 heat-shrink BOM row 10 mm (a bom_extra override or a per-run heat-shrink length in the wiring entry), so the shopping list matches the instruction."
+      "part": "arm_1",
+      "issue": "The build documents never call for a thread-locker. The motor screws are steel into the motor's aluminium base and the arm screws use plain M3 nuts, on a vibrating airframe. Motor screws backing out is a classic 5-inch failure.",
+      "fix": "Add 'blue (medium) thread-locker on the 16 motor screws; nylon-insert or thread-locked nuts on the arm screws' to the build notes and the BOM. Keep thread-locker off the plastic and away from the nylon VTX spacers."
+    },
+    {
+      "severity": "minor",
+      "part": "arm_1",
+      "issue": "The arm prints top-up, so the M3 counterbores (motor: 3.5 mm deep; arm root: 5 mm) open on the bed face. Each counterbore ceiling is an unsupported 6 mm annulus round the 3.4 mm hole, where the screw head seats. It prints, but it droops unless it is bridged properly.",
+      "fix": "Turn on the slicer's hole-bridging or sacrificial-layer option, or add a 0.2 mm sacrificial layer at the counterbore ceiling in the part and drill it out. Check that the screw heads seat flat."
     },
     {
       "severity": "minor",
       "part": "top_plate",
-      "issue": "Nothing positively stops the XT60 from pulling out rearward. The front stops take the plugging-in force, but against the 20-40 N it takes to unplug an XT60, only the cable tie's friction holds the male connector (the cradle is open at the rear). Unplugging the battery every flight can walk the connector out of the cradle and load the pigtail's solder joints at the ESC pads.",
-      "fix": "Add a 0.8-1 mm lip at the cradle's rear edge that clips behind the housing's mating face (the plug only needs the 8.1 x 16 mm opening), or a second tie through slots at x about -66. At the least, add a build note: hold the XT60 body when unplugging."
+      "issue": "Carried from round 5 and only half fixed. DESIGN.md now says to cut the XT60 cup heat-shrink to 8-10 mm, but the generated BOM still lists 'heat-shrink for AWG 12 joints, 20 mm pieces'. The pigtail turn past the front stops and round the rear pillar is still two tight bends in 12 AWG.",
+      "fix": "Make the AWG 12 heat-shrink BOM row 10 mm (per-run heat-shrink length or a bom_extra override), so the shopping list matches the instruction."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "Carried from round 5. The XT60 is held against rearward pull-out only by the cable tie's friction (the cradle is open at the rear). The new 'hold the XT60 when unplugging' note is only in DESIGN.md, not in the generated ASSEMBLY.md or WIRING.md that the builder follows.",
+      "fix": "Add a 0.8-1 mm lip at the cradle's rear edge that clips behind the housing's mating face, or a second tie. At the least, put the hold-when-unplugging note into the main wiring entry's note so it reaches WIRING.md and ASSEMBLY.md."
     },
     {
       "severity": "minor",
       "part": "body",
-      "issue": "The generated ASSEMBLY.md never says to drop the 12 M3 nuts into the arm and stack nut pockets, or to tape the stack nuts, whose pockets open downward. It also puts every soldering step after the top plate, battery and strap are on. DESIGN.md has the correct order (nuts in step 2, solder in step 5 before the top plate). The source docstrings are stale: arm.py says the arm screws are M3 x 12 (BOM and fastener check: M3 x 14), and body.py says the post screws are M3 x 6 (BOM: M3 x 8).",
-      "fix": "Engine: for nut_trap receivers, add a 'press N nuts into <part> pockets' line before the step that drives the screws (and say so when a pocket opens downward). Let a project put the electrical steps before a named mechanical step (here, before top_plate). Fix the two docstrings."
+      "issue": "Carried from round 5. The generated ASSEMBLY.md still never says to drop the 12 M3 nuts into their pockets, or to tape the 4 stack nuts whose pockets open downward. It still puts all soldering after the top plate, battery and strap are on. DESIGN.md has the right order. The two stale docstrings are now fixed.",
+      "fix": "Engine: emit a 'press N nuts into <part> pockets' line for nut_trap receivers before the step that drives their screws (and say so when a pocket opens downward). Let a project put the electrical steps before a named mechanical step (here, before top_plate)."
     },
     {
       "severity": "minor",
       "part": "top_plate",
-      "issue": "Some DESIGN.md numbers no longer match report.json. Printed mass is given as 145 g (report: 149.5 g). The FEA results are given as arm 9.8, body 9.8 and top plate 7.7 / 8.7 MPa (report: 9.50, 9.61, 7.03, 8.86). Gaps carried from round 4: the XT60 has no weight_g in the catalog, so the report counts it as 0.0 g; the battery's 140 mm lead (`supplied`) and the motor phase lead gauge/length are assumed, not catalogued.",
-      "fix": "Update the DESIGN.md numbers. Add XT60 weight_g (about 4 g for a pair, Amass), plus the CNHL lead length/gauge and the XING2 lead gauge/length, each with a source."
+      "issue": "DESIGN.md now matches report.json on mass and FEA. Remaining gaps: the top_plate envelope is given as 122 x 42 x 41, but the part is 130 x 42 x 41 (the roof tongue to x 58 plus the tab to x -72). The XT60 still has no weight_g in the catalog (it counts as 0 g). The battery lead (140 mm, `supplied`) and the motor lead gauge and length are still assumed rather than catalogued.",
+      "fix": "Correct the envelope to 130 x 42 x 41. Add XT60 weight_g (Amass, about 4 g for a pair), the CNHL lead length and gauge, and the XING2 lead gauge and length to the catalog, each with a source."
     },
     {
       "severity": "minor",
       "part": "stack",
-      "issue": "Carried, now handled in the documents: the 14.22 A per motor under the cap is a central propeller-law estimate. With rpm falling by less than duty at part load and the full pack at 25.2 V instead of 24 V, the real peak could be about 60-66 A against the XT60's 60 A rating, which Holybro gives for 1 minute. The 5 s bursts make this physically fine, and step 13 now gates first flights on the Blackbox/OSD peak.",
-      "fix": "None needed beyond the documented gate. If the measured peak is over 60 A, lower motor_output_limit by 1-2 % and re-check twr (6.18 leaves about 3 % margin)."
+      "issue": "Carried, and handled by the documented gate. The 14.22 A per motor under the 74 % cap is a central estimate, so the real full-pack peak may reach about 60-66 A against the XT60's 60 A rating (a 1-minute rating). Step 13 gates first flights on a Blackbox/OSD peak of 60 A or less.",
+      "fix": "None beyond the gate. If the measured peak is over 60 A, lower motor_output_limit by 1-2 % and re-check twr (6.18 leaves about 3 % margin)."
     },
     {
       "severity": "minor",
       "part": "top_plate",
-      "issue": "Carried: the single strap band sits 14.5 mm ahead of the pack's centre (x 4.5..24.5), because the VTX takes x -27.5..0.5. The rear of the pack is held only by the anti-slip pad.",
-      "fix": "Acceptable with the pad. If the pack shifts in testing, add a second band at about x -36, or move the VTX back."
+      "issue": "Carried. The single strap band sits 14.5 mm ahead of the pack centre (x 4.5..24.5), because the VTX takes x -27.5..0.5. The rear of the pack is held only by the anti-slip pad.",
+      "fix": "Acceptable with the pad. If the pack shifts in testing, add a second band at about x -36 or move the VTX back."
     },
     {
       "severity": "minor",
       "part": "body",
-      "issue": "Carried: at 0 deg tilt the cheek tips, and at 35-40 deg the roof tongue's front corners, may show at the edges of the camera image. Both are clear at the 25 deg home tilt.",
+      "issue": "Carried. At 0 deg tilt the cheek tips, and at 35-40 deg the roof tongue's front corners, may show at the edges of the 155 deg camera image. Both are clear at the 25 deg home tilt.",
       "fix": "Check with the camera fitted. Chamfer the cheek tips or round the roof corners if they show."
     },
     {
       "severity": "minor",
       "part": "arm_1",
-      "issue": "Carried: the first arm bending mode is about 165 Hz, in the gyro noise band, and the PETG-CF arm sits directly under a motor base that can reach 70-80 C. Both are listed in the DESIGN.md risks.",
-      "fix": "Hover test plus a Blackbox gyro-noise check before freestyle. Consider a 0.5-1 mm standoff ring or washer stack under each motor."
+      "issue": "Carried. The first arm bending mode is about 165 Hz, in the gyro noise band, and the PETG-CF arm sits directly under a motor base that can reach 70-80 C. Both are listed in the DESIGN.md risks.",
+      "fix": "Hover test plus a Blackbox gyro-noise check before freestyle. Consider a 0.5-1 mm standoff ring under each motor."
     }
   ]
 }

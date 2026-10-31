@@ -443,7 +443,8 @@ def length_problems(model) -> list:
 def route_check(proj, asm, model) -> tuple[list, list]:
     """Every run at home and at both ends of every moving joint: (a) its routed length + 15 % must fit the cut length
     (runs that cross a moving joint need the slack the worst pose asks for); (b) a tube of the wire's outer diameter
-    along the route must not pass through any item other than the two it connects, nor through a spinning prop disc.
+    along the route must not pass through any item other than the two it connects, nor through a spinning prop disc,
+    nor through a screw (shank or head, `asm.screws`) of a joint that does not involve those two items.
     Returns (per-run results, problems)."""
     from . import assembly as A
     from .requirements import _tube
@@ -470,6 +471,13 @@ def route_check(proj, asm, model) -> tuple[list, list]:
                     if it.role == "keepout" and it.spec.get("proxy") != "prop_disc":
                         continue
                     v = geom.overlap(tube, it.shape)
+                    if v > geom.OVERLAP_TOL_MM3 and (j, name) not in {(h[0], h[1]) for h in r["hits"]}:
+                        r["hits"].append((j, name, round(v, 1)))
+                for sc in getattr(asm, "screws", None) or []:      # screw shanks and heads (kerf/shanks.py build)
+                    if sc["male"] in skip or sc["female"] in skip:
+                        continue
+                    v = geom.overlap(tube, proj.items[sc["male"]].shape.location * sc["local"])
+                    j = f"a {sc['screw']} screw ({sc['group']}: {sc['male']} -> {sc['female']})"
                     if v > geom.OVERLAP_TOL_MM3 and (j, name) not in {(h[0], h[1]) for h in r["hits"]}:
                         r["hits"].append((j, name, round(v, 1)))
     finally:

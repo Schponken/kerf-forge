@@ -67,7 +67,7 @@ wiring:
      note: "the pack's own lead (comes with the battery)"}
   - {id: main, from: xt60, to: stack, v: 25.2, gauge: 12, color: red/black, length_mm: 110,
      route: [[-44, 0, 37], [-43, -16, 34], [-25, -16, 30]],
-     note: "XT60 pigtail to the ESC battery pads; pre-bend the leads toward -y before soldering and use 8-10 mm heat-shrink on the XT60 cups (20 mm reaches the rear pillar); 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
+     note: "XT60 pigtail to the ESC battery pads; hold the XT60 with a finger when unplugging the pack (a cable tie is all that holds it rearward); pre-bend the leads toward -y before soldering and use 8-10 mm heat-shrink on the XT60 cups (20 mm reaches the rear pillar); 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
   # motor phases: 3 wires each over the body top between the arm's two ribs, down onto the arm top past the body
   # corner, along the arm (2 ties through the arm slots) to the motor
   - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
@@ -103,6 +103,7 @@ bom_extra:
   - {type: hardware, item: M2 flat washer, qty: 4, spec: "under the VTX screw heads (its holes take M3)"}
   - {type: hardware, item: "M2 x 6 mm nylon spacer, round, 4 mm OD", qty: 4, price_key: "spacer:M2x6:nylon", spec: "between the top-plate bosses and the VTX PCB: the 1.6 mm board + 6 mm spacer + washer fill the 8 mm VTX envelope, so the M2 x 12 clamps 3.9 mm into the boss"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 12, price_key: "tie:2.5mm", spec: "2 per arm for motor wires, 1 wrapped under the XT60 through the two slots beside its cradle, 1 for the VTX antenna under the tab, 2 for the receiver and its antenna legs"}
+  - {type: hardware, item: medium-strength (blue) threadlocker, qty: 1, price_key: "threadlocker:blue", spec: "Loctite 243 or equal", note: "one drop on each of the 16 motor screws (steel into the aluminium base) and the 8 arm screws at their nuts"}
   - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount", link: "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/", note: "included with the stack (no separate purchase)"}
 assembly:
   root: body
@@ -166,7 +167,7 @@ requirements:
     loads:
       # lever on the arm (supports at r 38 / 52, 33.06 N at r 113): inner nut pulls the body down 144.0 N,
       # the arm top presses up on the body underside around the outer screw with 177.1 N
-      - {box: [[23.8, 23.8, body_t - 2.71], [29.9, 29.9, body_t - 2.69]], force_n: [0, 0, -144.0]}
+      - {box: [[23.8, 23.8, body_t - 3.71], [29.9, 29.9, body_t - 3.69]], force_n: [0, 0, -144.0]}   # nut seat (nut sunk 1 mm)
       - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
   # top plate: posts print upright, so post bending runs across the layers (direction z). Crash case: a 50 g hit on
   # battery + pad + strap (215 g CNHL pack + ~15 g) = 0.23 kg x 50 x 9.81 = 112.8 N, applied at the pack CG 21 mm above

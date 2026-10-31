@@ -1,6 +1,6 @@
 """Body plate: the centre of the frame. z = 0 bottom (arms clamp underneath), z = body_t top (stack sits on top).
 
-- 4 arms along the diagonals (3 x 5 mm ribs on the top either side of each arm's screws stiffen the plate), each held by two M3 screws from below into nut traps whose hex pockets open on the top,
+- 4 arms along the diagonals (3 x 5 mm ribs on the top either side of each arm's screws stiffen the plate), each held by two M3 screws from below into nut traps whose hex pockets open on the top (nuts 1 mm below it),
   and keyed by their two top ridges in 1.7 mm grooves in the underside (side hits go into the groove walls).
 - 30.5 mm stack on M3 x 30 from the top into nut traps whose pockets open underneath, inside the arm-free centre.
 - 4 posts of the top plate land on the top face; M3 x 8 from below (counterbored) into heat-set inserts in the posts.
@@ -48,7 +48,10 @@ def build(ctx):
     for k in range(4):
         th = 45 + 90 * k
         loc = Rot(0, 0, th) * Location((0, 0, 0), (180, 0, 0))
-        body -= iface.bolt_pattern(ctx, f"arm_{k + 1}", "M3", [(p.arm_hole_1, 0), (p.arm_hole_2, 0)], loc, "nut_trap", depth=t)
+        # nuts sunk 1 mm below the top face, so the M3 thread ends stop under it: the motor phase leads run over this
+        # line between the ribs and must not lie on screw tips (review round 6)
+        body -= iface.bolt_pattern(ctx, f"arm_{k + 1}", "M3", [(p.arm_hole_1, 0), (p.arm_hole_2, 0)], loc, "nut_trap",
+                                   depth=t, nut_recess=1.0)
         for sy in (1, -1):                       # key grooves for the arm ridges, 0.2 mm clearance all round
             g = Pos(p.arm_r0 - 0.2, sy * (p.arm_w / 2 - RIDGE_W / 2), -1) * \
                 Box(RIDGE_R1 - p.arm_r0 + 0.4 + 10, RIDGE_W + 0.4, RIDGE_H + 0.2 + 1, align=(Align.MIN, Align.CENTER, Align.MIN))

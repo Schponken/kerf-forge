@@ -30,3 +30,25 @@ def check(asm, joints) -> list:
                 problems.append(f"fastener group '{j['group']}': the {j['screw']} x {j['length_mm']:g} screw from {j['male']} "
                                 f"into {j['female']} runs into {iid} ({v:.1f} mm3; tip at {tip})")
     return problems
+
+
+def build(asm, joints) -> list:
+    """Each sized screw as one solid (shank cylinder from the seat to the tip, 0.8 d, plus the head where it has one),
+    in the male part's own frame so it moves with that part; electrical.route_check keeps wires off them (a phase
+    lead lying on a thread end that stands proud of a nut wears through)."""
+    from .iface import screw_spec
+
+    items = asm.proj.items
+    out = []
+    for j in joints:
+        if j.get("length_mm") is None or "at" not in j:
+            continue
+        d = float(j["screw"].lstrip("M"))
+        o, z = np.array(j["at"], dtype=float), np.array(j["dir"], dtype=float)
+        world = Solid.make_cylinder(SHANK_FRAC * d / 2, float(j["length_mm"]), Plane(origin=Vector(*o), z_dir=Vector(*z)))
+        sp = screw_spec(j["screw"])
+        if j.get("head") != "countersink" and sp.get("head_d") and sp.get("head_h"):
+            world = world + Solid.make_cylinder(sp["head_d"] / 2, sp["head_h"], Plane(origin=Vector(*o), z_dir=Vector(*(-z))))
+        out.append({"male": j["male"], "female": j["female"], "group": j["group"], "screw": j["screw"],
+                    "local": items[j["male"]].shape.location.inverse() * world})
+    return out

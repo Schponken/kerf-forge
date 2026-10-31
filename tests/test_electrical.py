@@ -304,6 +304,19 @@ def test_route_check_slack_and_collisions(tmp_path):
     # the second run goes straight through the purchased block; the first never touches it
     assert any("'thru' runs through blk" in p for p in problems)
     assert not any("'hinge' runs through" in p for p in problems)
+    # a screw standing in the hinge run's path (an M3 thread end proud of a nut, here on the base->blk joint) is a
+    # hit: the run passes (0, 2.77, 20) on its way from (0, 0, 5) to (0, 12, 70). The screw is modelled on a joint
+    # between two items the run does not connect (blk -> blk stands in for any such pair)
+    from build123d import Solid, Plane, Vector
+    rod = Solid.make_cylinder(1.2, 10, Plane(origin=Vector(0, 2.77, 15), z_dir=Vector(0, 0, 1)))
+    asm.screws = [{"male": "blk", "female": "blk", "group": "g", "screw": "M3",
+                   "local": proj.items["blk"].shape.location.inverse() * rod}]
+    res, problems = E.route_check(proj, asm, model)
+    assert any("'hinge' runs through a M3 screw (g: blk -> blk)" in p for p in problems)
+    # ...but not when the screw belongs to an item the run connects to (its own terminal screws)
+    asm.screws[0]["female"] = "arm"
+    res, problems = E.route_check(proj, asm, model)
+    assert not any("'hinge' runs through a M3" in p for p in problems)
 
 
 def test_supplied_lead_is_not_bought_or_weighed():

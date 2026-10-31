@@ -111,9 +111,11 @@ def _teardrop(r, z0, z1, up_deg):
 
 
 def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = None, teardrop: float | None = None,
-         material: str | None = None):
+         material: str | None = None, nut_recess: float = 0.0):
     """Cutter for one hole at the origin, axis Z, surface at z=0, material at z<0. Returns (solid, grip, engage, min_engage).
-    teardrop: for holes that print horizontally, the direction (deg, in the hole's XY plane) that is UP on the printer."""
+    teardrop: for holes that print horizontally, the direction (deg, in the hole's XY plane) that is UP on the printer.
+    nut_recess (nut_trap): sink the nut this far below the far face, so the shortest screw that fills the nut ends
+    below that face instead of standing proud of it (nothing lying on the face meets a thread end)."""
     sp = screw_spec(screw, material)
     if kind == "clearance":
         if teardrop is not None:
@@ -151,20 +153,22 @@ def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = 
         nh = sp["nut_h"] + 0.3
         if depth > 3 * sp["d"] + nh + 2:
             raise ValueError(f"{screw} nut trap in {depth:.1f} mm of material needs a very long screw; use kind='heatset' or a thinner flange")
-        s = _cyl(sp["clearance"] / 2, -depth - EXTRA, EXTRA) + _hex(af, -depth - EXTRA, -depth + nh)
-        return s, 0.0, depth + 4.0, depth - nh + sp["nut_h"] * 0.9
+        if nut_recess and depth - nut_recess - nh < 1.0:
+            raise ValueError(f"{screw} nut recessed {nut_recess} mm leaves less than 1 mm of a {depth} mm plate under the nut")
+        s = _cyl(sp["clearance"] / 2, -depth - EXTRA, EXTRA) + _hex(af, -depth - EXTRA, -depth + nh + nut_recess)
+        return s, 0.0, depth + 4.0, depth - nut_recess - nh + sp["nut_h"] * 0.9
     raise ValueError(f"unknown hole kind '{kind}' (use {KINDS_MALE + KINDS_FEMALE})")
 
 
 def bolt_pattern(ctx, group: str, screw: str, points, loc: Location, kind: str, depth: float,
-                 counterbore_depth: float | None = None, teardrop: float | None = None):
+                 counterbore_depth: float | None = None, teardrop: float | None = None, nut_recess: float = 0.0):
     """Holes at `points` (in loc's XY plane) through/into `depth` mm of material below loc.
     Registers one site per hole: male for clearance/counterbore/countersink, female for heatset/tap/nut_trap."""
     role = "male" if kind in KINDS_MALE else "female"
     cut = None
     for (x, y) in points:
         mat = (getattr(ctx, "meta", None) or {}).get("spec", {}).get("material") if ctx is not None else None
-        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth, teardrop, mat)
+        c, grip, engage, mn = hole(screw, kind, depth, counterbore_depth, teardrop, mat, nut_recess)
         hl = loc * Location((x, y, 0))
         placed = hl * c
         cut = placed if cut is None else cut + placed

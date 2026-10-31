@@ -66,6 +66,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep["problems"] += fprob
             rep["problems"] += shanks.check(asm, fj)
             asm.heads = heads.build(asm, fj)                         # screw heads join interference + sweeps
+            asm.screws = shanks.build(asm, fj)                       # whole screws: wire routes stay off them
             for h in heads.interference(asm, None, A._allowed(asm)):
                 rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position")
             pinj, pprob, pwarn = pins.check(asm)

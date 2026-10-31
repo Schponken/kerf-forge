@@ -43,12 +43,12 @@
 |---|---|---|---|---|
 | body | 7 mm centre plate + ribs, stack, arm clamps with key grooves, camera cage, post seats | flat, cheeks and ribs up | both diagonals | 114 × 92 × 25 |
 | arm_1..4 | carry each motor to the body; key ridges on top | flat, top face up | x (along the arm) | 102 × 32 × 12.5 |
-| top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm) | upside down (plate on bed) | – | 122 × 42 × 41 |
+| top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm) | upside down (plate on bed) | – | 130 × 42 × 41 |
 
 ## Interfaces
 | A | B | How | Group | Screws |
 |---|---|---|---|---|
-| arm_N | body | M3 counterbored from below into nut traps (pockets open on the body top); 2 ridges in 2 grooves take side loads | arm_N | 2 × M3 × 14 per arm |
+| arm_N | body | M3 counterbored from below into nut traps (pockets open on the body top); 2 ridges in 2 grooves take side loads | arm_N | 2 × M3 × 12 per arm (nuts sunk 1 mm so the tips stay under the body top) |
 | motor_N | arm_N | M3 from below (counterbored, 7.5 mm grip: 2.5 mm into the 3 mm motor thread) | motor_N | 4 × M3 × 10 per motor |
 | stack | body | M3 from the stack top through grommets into nut traps (pockets open underneath) | stack | 4 × M3 × 30 |
 | top_plate | body | M3 counterbored from below into heat-set inserts in the post feet | posts | 4 × M3 × 8 + 4 inserts |
@@ -92,7 +92,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
    washers and 6 mm nylon spacers) — on the bench, before the plate goes on.
 2. Put 8 M3 nuts into the arm nut pockets on the body top and 4 M3 nuts into the stack pockets underneath (those
    open downward: hold each with a strip of tape or a dab of CA until its screw has started).
-3. Bolt each arm under the body, ridges in the grooves: 2 × M3 × 14 from below.
+3. Bolt each arm under the body, ridges in the grooves: 2 × M3 × 12 from below (a drop of blue threadlocker each).
 4. Bolt each motor onto its arm: 4 × M3 × 10 from below (2.5 mm into the motor; never longer: windings).
 5. Stack on the grommets: 4 × M3 × 30 from the top into the stack nuts. Solder motors / XT60 lead.
 6. Camera between the cheeks: 2 × M2 × 6 into its side holes; set the tilt, snug the screws.
@@ -116,3 +116,9 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   the 74 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 14.22 A).
 - XT60 retention is the cable tie wrapped under it (friction); hold the XT60 with a finger when unplugging the pack.
 - Heat-shrink: the BOM lists 20 mm pieces; cut the ones for the four XT60 solder cups to 8–10 mm (see wiring note).
+- Threadlocker: blue (medium) on the 16 motor screws and the 8 arm screws (BOM).
+- Printing: the arm and top-plate counterbores open on the bed face, so each screw-seat ceiling is a ring printed
+  in mid-air: turn on the slicer's hole bridging (Bambu Studio / Orca "bridge holes" / sacrificial layer) or accept a
+  light drill-out of the seat.
+- Motor phase leads run over the body top on each arm's screw line; the arm nuts are sunk 1 mm so the M3 × 12 tips
+  stop under the top face (kerf's wire-route check now also tests every screw, review round 6).

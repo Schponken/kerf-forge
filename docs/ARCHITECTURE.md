@@ -189,7 +189,8 @@ wiring:
 - `length_mm` is the cut length: it must be >= the routed 3D length (ends + waypoints) + 15 % at home and, in the full
   check, at both ends of every moving joint and every named sweep pose (`electrical.route_check`). The full check also
   sweeps a tube of the wire's outer diameter (catalog `wire.silicone`) along each route at those poses: it must not
-  pass through any item but the two it connects, nor through a prop disc (problems).
+  pass through any item but the two it connects, nor through a prop disc, nor through a screw shank or head of a joint
+  not involving those two items (`asm.screws`, kerf/shanks.py; problems).
 - Wire mass (catalog `wire.silicone` g/m x cut length x conductors) is added to hover power, `thrust_to_weight` and
   the all-up `mass_max`.
 - `kerf build` writes `out/WIRING.md` (runs, loads, ratings, solder steps), `out/wiring.svg`, the electrical steps of `out/ASSEMBLY.md`, and
