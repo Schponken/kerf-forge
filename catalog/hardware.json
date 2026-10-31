@@ -445,7 +445,12 @@
    "weight_g": 13.4,
    "source": "https://www.towerpro.com.tw/product/mg90s-3/",
    "confidence": "typical",
-   "note": "TowerPro page table: A 32.5 (tab span), B 22.8 (body L), C 28.4 (height), D 12.4 (width), E 32.1 (height incl. spline -> shaft_h 3.7), F 18.5 (taken as tab underside, same convention as the SG90 drawings where '16' matches the CAD 15.6 underside). Letters are not labelled on the page, so the mapping is inferred. Here body_h 28.4 is housing incl. boss (MG90S boss not separately dimensioned). Electronicoscaldas TowerPro-derived drawing (https://www.electronicoscaldas.com/datasheet/MG90S_Tower-Pro.pdf): body 22.5, width 12 (11 in another view), tab span 32.5, 21 to tab, 35.5 to horn top. Waveshare (https://www.waveshare.com/MG90S-Servo.htm): 22.8 x 12.2 x 28.5, 2.0 kg*cm @4.8 V, 2.8 @6 V. SPREAD: tab_z 18.5 vs 21 (2.5 mm!), width 11-12.4. UNVERIFIED (copied from SG90 CAD, same TowerPro micro tab layout): hole_spacing_l, hole_d, tab_t, shaft_offset (~6.3 scaled from electronicoscaldas drawing), spline 21T/4.8. MEASURE tab height before printing. 2.2 kg*cm @6 V."
+   "note": "TowerPro page table: A 32.5 (tab span), B 22.8 (body L), C 28.4 (height), D 12.4 (width), E 32.1 (height incl. spline -> shaft_h 3.7), F 18.5 (taken as tab underside, same convention as the SG90 drawings where '16' matches the CAD 15.6 underside). Letters are not labelled on the page, so the mapping is inferred. Here body_h 28.4 is housing incl. boss (MG90S boss not separately dimensioned). Electronicoscaldas TowerPro-derived drawing (https://www.electronicoscaldas.com/datasheet/MG90S_Tower-Pro.pdf): body 22.5, width 12 (11 in another view), tab span 32.5, 21 to tab, 35.5 to horn top. Waveshare (https://www.waveshare.com/MG90S-Servo.htm): 22.8 x 12.2 x 28.5, 2.0 kg*cm @4.8 V, 2.8 @6 V. SPREAD: tab_z 18.5 vs 21 (2.5 mm!), width 11-12.4. UNVERIFIED (copied from SG90 CAD, same TowerPro micro tab layout): hole_spacing_l, hole_d, tab_t, shaft_offset (~6.3 scaled from electronicoscaldas drawing), spline 21T/4.8. MEASURE tab height before printing. 2.2 kg*cm @6 V.",
+   "stall_current_a": 0.7,
+   "idle_current_a": 0.01,
+   "running_current_a": 0.25,
+   "current_note": "TowerPro publishes no current figures. From ProtoSupplies' own tests (https://protosupplies.com/product/servo-motor-micro-mg90s/): stall 700 mA (labelled measured), idle ~10 mA typical, 120-250 mA while moving; 4.8-6 V. Reseller-measured, confidence typical; stall rises at 6 V. Size a BEC for stall x servo count when servos can be loaded simultaneously.",
+   "source_current": "https://protosupplies.com/product/servo-motor-micro-mg90s/"
   },
   "MG996R": {
    "body_l": 40.9,
@@ -627,7 +632,9 @@
     "note": "Max thrust 1685 g with Gemfan 51466 at 24.0 V, 100% throttle, 35.08 A (iFlight test report). With 5140 prop: 1436 g. Weight includes wire. Bearings 9x4x4 NSK. Drawing dims: body 19.1+/-0.2, shaft protrusion 13.5.",
     "source": "https://shop.iflight.com/xing2-2207-4s-6s-fpv-motor-unibell-pro1464",
     "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING2-2207-1855KV.png",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "max_current_a": 35.08,
+    "max_current_note": "Peak Current 35.08 A (1855KV) on the iFlight page and test report (Gemfan 51466, 24 V, 100%)."
    },
    "2306_1755kv_6s": {
     "model": "iFlight XING2 2306 1755KV (6S)",
@@ -652,7 +659,9 @@
     "thrust_g_max_note": "iFlight page publishes no thrust table for the 2306 (only Max Watt 869 W at 24 V, peak 36.21 A). Not filled rather than guessed; for sizing use the 2207 1855KV figure (1685 g on 51466 @ 24 V) as the nearest published reference.",
     "note": "Page dimension 'phi30*32.2mm' is overall incl. shaft; body_h = 32.2 - 13.5 shaft = 18.7, which matches the retailer listing '30*18.7mm' (progressiverc.com). Weight includes short wire.",
     "source": "https://shop.iflight.com/xing2-2306-4s-6s-fpv-motor-unibell-pro1465",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "max_current_a": 36.21,
+    "max_current_note": "iFlight page 'Peak Current: 36.21A / 51.3A' listed in KV order; 36.21 A taken as the 1755KV value (page does not label which KV, mapping inferred)."
    },
    "1404_3800kv_3in": {
     "model": "iFlight XING2 1404 3800KV (3-4S)",
@@ -677,7 +686,9 @@
     "note": "Max thrust 512 g with 4030 prop at 16 V (4S), 100% throttle, 15.84 A (iFlight test report). Drawing: 13.5 mount face to bell top, 4 mm shaft above bell, 18.4 overall. Bearings 5x2x2.",
     "source": "https://shop.iflight.com/xing2-1404-toothpick-ultralight-build-unibell-pro1482",
     "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING2-1404-3800KV.png",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "max_current_a": 15.84,
+    "max_current_note": "iFlight page 'Peak Current: 13.8A / 15.84A / 17.99A' for 3000/3800/4600KV; matches the test report (4030 prop, 16 V, 100%)."
    },
    "2806_5_1300kv_7in": {
     "model": "iFlight XING 2806.5 1300KV (6S, 7in)",
@@ -702,7 +713,9 @@
     "note": "Max thrust 2319 g with HQ 7x4x3 at 23.42 V, 100% throttle, 42.33 A; with HQ 8x4x3: 2510 g; with Gemfan 7040: 2058 g (iFlight test report). Holes at 45 deg on O19 per drawing. Weight includes 265 mm 18AWG leads. Bearings 11x5x5.",
     "source": "https://shop.iflight.com/xing-x2806-5-fpv-nextgen-motor-pro1001",
     "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING-2806.5-1300KV.png",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "max_current_a": 48.33,
+    "max_current_note": "iFlight page lists Peak Current 48.33 A for 1300KV (pair with 72.3 A for 1800KV). The test report's HQ 7x4x3 point is 42.33 A; the page figure (likely the larger 8in prop) is used as the worst case."
    }
   },
   "props": {
@@ -793,7 +806,14 @@
     "weight_note": "FC 9.6 g + ESC 7.2 g. SpeedyBee's stack summary lists 13.5 g, which is lower than the sum of its own per-board figures; use 16.8 g as the conservative value.",
     "note": "3.5 mm holes accept M2 or M3 screws / silicone grommets; M2 with grommets is the usual choice. Stack height 14.2 mm from SpeedyBee's assembled-stack dimension.",
     "source": "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "bec_5v_a": 2.0,
+    "bec_9v_a": 3.0,
+    "current_a": 0.3,
+    "esc_current_a": 35,
+    "esc_burst_a": 45,
+    "esc_burst_s": 5,
+    "electrical_note": "SpeedyBee page: 5 V output (three +5V pads + BZ+) 'total current load is 2A'; 9 V pad 'total current load is 3A' (for VTX/camera); 3.3 V up to 500 mA; 4.5 V up to 1 A (USB/RX rail). ESC 35 A x4 continuous, 45 A burst (5 s), 3-6S. current_a (FC own draw) is NOT published: 0.3 A is an UNVERIFIED typical estimate for an F405 FC with gyro/OSD/LEDs off, excluding what it supplies to peripherals."
    },
    "aio_25_5": {
     "model": "TuneRC Poly F405 20A 2-4S AIO v1.3",
@@ -838,9 +858,13 @@
     "height": 31,
     "weight_g": 197.5,
     "connector": "XT60",
-    "note": "Manufacturer says approx. weight; 'manual measurement may result in slight size differences'.",
+    "note": "Manufacturer says approx. weight; 'manual measurement may result in slight size differences'. Capacity 1100 mAh, 6S, 130C continuous / 260C burst per the CNHL page (manufacturer C ratings are optimistic; treat as an upper bound).",
     "source": "https://chinahobbyline.com/products/cnhl-black-series-1100mah-22-2v-6s-130c-lipo-battery-with-xt60-plug",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "capacity_mah": 1100,
+    "cells": 6,
+    "c_rating": 130,
+    "c_burst": 260
    },
    "6S_1300": {
     "model": "CNHL Black Series V2.0 1300mAh 6S 130C",
@@ -849,9 +873,13 @@
     "height": 36,
     "weight_g": 215,
     "connector": "XT60",
-    "note": "Approx. weight per pack (manufacturer).",
+    "note": "Approx. weight per pack (manufacturer). Capacity 1300 mAh, 6S, 130C continuous / 260C burst per the CNHL page (manufacturer C ratings are optimistic; treat as an upper bound).",
     "source": "https://chinahobbyline.com/products/2-packs-cnhl-black-series-v2-0-1300mah-22-2v-6s-130c-lipo-battery-with-xt60-plug",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "capacity_mah": 1300,
+    "cells": 6,
+    "c_rating": 130,
+    "c_burst": 260
    },
    "4S_1500": {
     "model": "CNHL Black Series V2.0 1500mAh 4S 130C",
@@ -860,9 +888,13 @@
     "height": 28,
     "weight_g": 164,
     "connector": "XT60",
-    "note": "Manufacturer lists 'Size (1-5mm difference): 39x28x80mm', weight +/-5 g.",
+    "note": "Manufacturer lists 'Size (1-5mm difference): 39x28x80mm', weight +/-5 g. Capacity 1500 mAh, 4S, 130C continuous / 260C burst per the CNHL page (manufacturer C ratings are optimistic; treat as an upper bound).",
     "source": "https://chinahobbyline.com/products/2-packs-cnhl-black-series-v2-0-1500mah-14-8v-4s-130c-lipo-battery-with-xt60-plug",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "capacity_mah": 1500,
+    "cells": 4,
+    "c_rating": 130,
+    "c_burst": 260
    }
   },
   "connectors": {
@@ -871,10 +903,12 @@
     "length": 21.3,
     "width": 8.1,
     "height": 16.0,
-    "note": "Length includes solder cups. Matching female: 20.5 x 8.1 x 16.0. Dimensions read from the Amass drawing published on the vendor page. XT60H (with rear housing) is longer; check before a tight pocket.",
-    "source": "https://www.thingbits.in/products/amass-xt60-male-female-connector",
+    "note": "Length includes solder cups. Matching female: 20.5 x 8.1 x 16.0. Dimensions read from the Amass drawing published on the vendor page. XT60H (with rear housing) is longer; check before a tight pocket. Current: Amass XT60-F/M datasheet V1.2 (copy hosted by CMU MRSD) lists rated current 30 A, instantaneous 60 A, DC 500 V, contact resistance 0.55 mOhm. The thingbits page lists 35 A max (12 AWG, dT<=85 K) / 60 A peak; 30 A used as the conservative continuous figure.",
+    "source": "https://www.thingbits.in/products/amass-xt60-male-female-connector ; https://mrsdprojects.ri.cmu.edu/2025teamb/wp-content/uploads/sites/84/2025/05/xt60.pdf",
     "source_detail": "https://images.thingbits.net/eyJidWNrZXQiOiJ0aGluZ2JpdHMtbmV0Iiwia2V5IjoiZGVzY3JpcHRpb24vYW1hc3MteHQ2MC1jb25uZWN0b3JfZHJhd2luZ180eC5qcGcifQo=",
-    "confidence": "datasheet"
+    "confidence": "datasheet",
+    "current_a": 30,
+    "current_peak_a": 60
    }
   },
   "frames_reference": {
@@ -1131,6 +1165,108 @@
    "source": "https://fasten.it/norms/norm/din_en_iso_4762 ; https://fasten.it/en/Norms/Norm/DIN EN ISO 10642 ; https://www.mcmaster.com/products/l-keys/specifications-met~iso-2936/ ; https://www.dillonsupply.com/Product/bondhus-10903",
    "confidence": "standard",
    "note": "Hex socket size s: ISO 4762 socket head cap screws, ISO 10642 countersunk (M2/M2.5 are not in ISO 10642; use the SHCS key size). long_arm_mm = ISO 2936 'short' series L-key long arm from McMaster (1 11/16, 1 7/8, 2 1/16, 2 5/16, 2 5/8, 3 in): the straight reach a plain L-key gives. ball_end_max_deg: Bondhus ball-end keys drive at up to 25 deg off the screw axis. Key envelope for clearance = across-corners s / cos 30."
+  }
+ },
+ "wire": {
+  "awg": {
+   "ampacity_a": {
+    "10": 55,
+    "12": 41,
+    "14": 32,
+    "16": 22,
+    "18": 16,
+    "20": 11,
+    "22": 7,
+    "24": 3.5,
+    "26": 2.2,
+    "28": 1.4,
+    "30": 0.86
+   },
+   "diameter_mm": {
+    "10": 2.58826,
+    "12": 2.05232,
+    "14": 1.62814,
+    "16": 1.29032,
+    "18": 1.02362,
+    "20": 0.8128,
+    "22": 0.64516,
+    "24": 0.51054,
+    "26": 0.40386,
+    "28": 0.32004,
+    "30": 0.254
+   },
+   "source": "https://www.powerstream.com/Wire_Size.htm",
+   "confidence": "typical",
+   "note": "PowerStream 'Max Amps for Chassis Wiring' column; diameter_mm is the bare solid-conductor diameter (stranded wire is slightly larger; insulation not included). The page says the chassis rating is 'meant for wiring in air, and not in a bundle' (i.e. single conductor in free air); it gives no ambient/insulation temperature assumption and calls these rules of thumb. Derate for bundles/enclosed runs (the same page's 'power transmission' column is ~4-6x lower: 12 AWG 9.3 A, 18 AWG 2.3 A, 22 AWG 0.92 A). FPV practice runs short silicone leads (200 C insulation) above these figures for seconds-long bursts; this table is the conservative continuous limit. mass_g_per_m omitted: no manufacturer silicone-wire mass table was found and opened."
+  }
+ },
+ "electronics": {
+  "receivers": {
+   "elrs_nano": {
+    "model": "RadioMaster RP1 V2 ExpressLRS 2.4 GHz nano receiver",
+    "length": 13,
+    "width": 11,
+    "height": 3,
+    "weight_g": 2.2,
+    "voltage_min": 5.0,
+    "voltage_max": 5.0,
+    "current_a": 0.1,
+    "antenna": "2.4 GHz T antenna, 65 mm, on U.FL socket (included); weight 2.2 g includes antenna",
+    "source": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver",
+    "confidence": "datasheet",
+    "note": "Dims 13 x 11 x 3 mm and 2.2 g (incl. antenna) per RadioMaster page, same on ca.wrekd.com and rotorvillage.ca. RadioMaster publishes only '5V' operating voltage, no range: voltage_min/max both 5.0 (feed from a 5 V rail). current_a UNVERIFIED for the RP1: not published by RadioMaster, BetaFPV or Happymodel; 0.1 A is the conservative bound from the same-class Matek ELRS-R24-S (ESP8285+SX1280), which publishes 40-45 mA unbound, 60-65 mA binding, 90-95 mA WiFi mode, 4-9 V input (https://www.progressiverc.com/products/matek-elrs-2-4ghz-receiver). Alternative: BetaFPV ELRS Nano 12 x 19 mm, 0.7 g, 5 V (https://betafpv.com/products/elrs-nano-receiver)."
+   }
+  },
+  "becs": {
+   "ubec_5v_3a": {
+    "model": "Hobbywing UBEC 3A (2-6S)",
+    "length": 43,
+    "width": 17,
+    "height": 7,
+    "weight_g": 11,
+    "input_v_min": 5.5,
+    "input_v_max": 26,
+    "output_v": 5.0,
+    "current_a": 3.0,
+    "source": "https://www.hobbywing.com/en/products/ubec-3a-2-6s99.html",
+    "confidence": "datasheet",
+    "note": "Hobbywing page: input 5.5-26 V (2-6S LiPo / 5-18 NiMH), output 5 V or 6 V by jumper, 3 A continuous, 43 x 17 x 7 mm, 11 g. No burst/peak current published, so current_peak_a omitted. Size excludes the input/output leads."
+   }
+  },
+  "straps": {
+   "strap_20x250": {
+    "model": "Gemfan anti-slip battery strap 250 x 20 mm",
+    "width": 20,
+    "length": 250,
+    "thickness": 1.8,
+    "weight_g": 8.5,
+    "source": "https://www.myfpvstore.com/yxmk",
+    "confidence": "multiple-vendors",
+    "note": "Width 20 / length 250 from the Gemfan listing; weight 8.5 g is the listing's '.01875 lbs' item weight, likely packaged, so UNVERIFIED as bare-strap weight (conservative high). thickness 1.8 mm from the Foxeer 250x20 silicone strap listing (https://rcdrone.top/products/src-foxeer-362-foxeer-1-8mm-thickness-silicon-battery-strap-3pcs-250-20mm); Gemfan does not publish thickness. Buckle adds local thickness (not published)."
+   }
+  },
+  "pads": {
+   "battery_pad": {
+    "model": "TBS anti-slip LiPo battery pad",
+    "length": 100,
+    "width": 50,
+    "height": 3,
+    "weight_g": 4.3,
+    "source": "https://www.myfpvstore.com/extras-and-hardware/tbs-fpv-lipo-battery-anti-slip-pad-3pcs",
+    "confidence": "datasheet",
+    "note": "100 x 50 x 3 mm per pad (listing spec). weight_g derived: listing gives 0.02875 lb (13 g) for the 3-pack -> ~4.3 g per pad, UNVERIFIED (may include packaging). Pads are usually cut to the battery footprint."
+   }
+  },
+  "wire_misc": {
+   "heatshrink_3mm": {
+    "model": "Adam Tech HST-04-BK-4, 3.0 mm 2:1 heat-shrink",
+    "d_mm": 3.0,
+    "shrink_ratio": 2.0,
+    "recovered_d_mm": 1.5,
+    "source": "https://www.digikey.lt/en/products/detail/adam-tech/HST-04-BK-4/14651099",
+    "confidence": "datasheet",
+    "note": "Digi-Key: 'Heat Shrink Tubing, Flexible 0.118\" (3.00mm) 2 to 1'. d_mm is the expanded (as-supplied) ID; recovered_d_mm = 3.0/2 derived from the ratio (max fully-recovered ID, not separately published). Wall thickness not published on the page: UNVERIFIED."
+   }
   }
  }
 }
