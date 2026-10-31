@@ -1,7 +1,7 @@
 """One bolt-on arm (arm_1..arm_4 share this file; the item id picks the fastener groups).
 
 Frame: X along the arm from the frame centre, arm TOP face at z = 0 (it sits under the body plate), bottom at
-z = -arm_t. The root is clamped under the body by two M3 x 12 from below into nut traps in the body; two 1.5 mm
+z = -arm_t. The root is clamped under the body by two M3 x 12 from below into nut traps in the body; two 4.5 x 1.5 mm
 ridges on the top edges sit in grooves in the body underside, so side hits load the ridges, not the two screws.
 The motor sits on the top face at r = motor_r on four M3 x 10 (counterbored for a 7.5 mm grip: 2.5 mm into the
 motor's ~3 mm deep threads, a screw-length tolerance short of the bottom). Prints flat, top up: bending runs along
@@ -11,7 +11,8 @@ from build123d import *
 from kerf import iface, features as F
 
 MOTOR = "drone.motors.2207_1855kv_6s"
-RIDGE_W, RIDGE_H, RIDGE_R1 = 3.0, 1.5, 58.0     # key ridges: width, height, outer end radius
+RIDGE_W, RIDGE_H, RIDGE_R1 = 4.5, 1.5, 58.0     # key ridges: width, height, outer end radius (4.5 wide: a 33 N side
+#                                                 hit bends the ridge root across one layer line at ~3 MPa, review round 2)
 
 
 def build(ctx):

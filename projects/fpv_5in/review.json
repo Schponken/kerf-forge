@@ -1,81 +1,69 @@
 {
   "verdict": "FAIL",
-  "fingerprint": "2f0d94a4fdffb177",
+  "fingerprint": "9dc00f0bd83c850c",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The architecture is sound: replaceable bolt-on arms, battery on a top plate, and every numeric requirement passes (226 mm diagonal, 5.7 mm prop gap, T/W 13, 125 g frame). Two things stop it being put together and used. The stack screws drive into the arm roots, and the XT60 cradle walls off both ends of the connector so the battery cannot be plugged in. On top of that, the arm-to-body joint, camera protection, motor-screw depth, body strength proof and missing VTX/antenna provision are not ready for freestyle crashes.",
+  "summary": "Round 2. Six of the seven round-1 blockers and majors are fixed in the geometry, and probes confirm it: no arm material under the stack screw axis, the arms are keyed by ridges in grooves with 0.2 mm clearance, motor screws reach 2.5 mm into the motor, the cheeks reach x = 68 against the lens front at 64.75, the body has FEA at 9.78/11.67 MPa, and the VTX is mounted. Two problems still stop a PASS. The XT60 'mount' still cannot hold the connector: its only retention is a cable-tie slot that passes straight through the connector body, so the tie cannot be fitted, and the cradle is open at the bottom and at the plug end. The top plate is the structural part that carries the battery (about 260 g sitting on 38 mm posts printed upright, so post bending runs across the layers), and it has no strength check.",
   "findings": [
     {
-      "severity": "blocker",
-      "part": "arm_1",
-      "issue": "The stack holes (15.25, 15.25) sit at r = 21.57 mm on the arm diagonals, inside the arm's rounded root (centre r = 31, radius 10, so solid from r = 21.0). The M3 x 30 stack screw (22 mm stack + 5 mm body = 27 mm) sticks out 3 mm below the body bottom straight into the arm top. A probe confirms arm material on the screw axis at z = -0.5 to -2.9 and 15.3 mm^3 of overlap with the screw tip. Arms go on before the stack (DESIGN step 3 before step 5), so the stack screws hit the arm before they clamp. M3 x 25 would only catch about 0.4 mm of the nut. Same on all four arms. The interference check misses it because screw shanks are not modelled, and the nut-trap length rule allows up to 4 mm of protrusion without checking what is behind it.",
-      "fix": "Move the arm root clear of the stack nuts: arm_r0 >= 35 (root edge at r >= 25, beyond the nut pocket at r = 24.9) and re-run the arm FEA. Alternatively, cut a 4 mm dia x 4 mm deep relief in each arm root top at x = 21.57. Separately, the engine should check the protruding screw tip against neighbouring items."
-    },
-    {
-      "severity": "blocker",
+      "severity": "major",
       "part": "top_plate",
-      "issue": "The XT60 cradle closes both ends of the connector. The front end wall (x = -40.35 to -38.45) is solid. The rear end wall (x = -63.55 to -61.95) has only a 6.1 mm slot (|y| < 3.05) for an 8.1 mm wide connector, confirmed by point probes at the cradle mid-height. An XT60 mates along its length, so the battery lead's plug cannot reach the mating face from either end. The solder-cup side is also walled off, so the leads can only leave through the open bottom.",
-      "fix": "Open the mating end of the cradle fully (no end wall across the 8.1 x 16 face). Hold the connector against unplugging pull with a full-width stop behind its housing shoulder, or with the cable tie plus a rear lip that sits only above or below the housing. Leave the solder-cup end open toward the ESC. Then add a check (insert path or keep-out box) for the mating plug's approach along -x."
-    },
-    {
-      "severity": "major",
-      "part": "body",
-      "issue": "Each arm is held against yaw only by two M3 screws in a line along the arm, 14 mm apart, in printed plastic. A side hit on a motor (the most common freestyle crash: a gate, branch or pole) puts about F x 68 / 14 = 4.9 F of bearing load on each screw. That load goes into the 5 mm body hole and nut pocket, with only 2.3 mm of plastic under the nut. Bearing in that hole crushes at roughly 100 N side load. Friction from screws clamped into plastic drops as the PETG creeps. The damage lands in the body, the part that is not meant to be replaceable, instead of in the arm.",
-      "fix": "Key each arm root into the body: a 1.5-2 mm deep pocket in the body underside shaped like the arm root (or two printed ribs either side), so side loads go into a shoulder and not the screws. If space allows, also spread the screws across the arm (two side by side plus one on the axis) rather than in a line."
-    },
-    {
-      "severity": "major",
-      "part": "arm_1",
-      "issue": "Motor screws are M3 x 10 with a 7.0 mm grip, so 3.0 mm goes into the motor. That is exactly the catalog max_screw_depth of 3.0 mm, which is itself only 'typical' (unpublished). There is zero margin for screw length tolerance (ISO 4762 L = 10 is +/-0.29 mm), the printed counterbore floor tolerance, or a slightly shallower flange. A screw touching the stator windings shorts a phase and kills the motor or ESC. Applies to all four arms.",
-      "fix": "Sink the heads 0.5 mm deeper (counterbore_depth = t - 7.5, so 2.5 mm into the motor, matching iFlight's stock M3 x 8 on 5-6 mm arms), or keep 7 mm and specify M3 x 9. Also make the fastener check reject engagement above max_screw_depth minus a tolerance margin."
-    },
-    {
-      "severity": "major",
-      "part": "body",
-      "issue": "The camera is unprotected in a crash. The pivot is at x = 48 and the lens sits 13.9 mm ahead of it, about x = 60-62 depending on tilt. The nose and cheeks end at x = 55, so the lens is the first thing to hit in a frontal crash. The cheeks are 3 x 14 mm walls, 18 mm tall, printed upright with no root fillet. A frontal hit bends them across the layer lines (z strength ~29 MPa, no SF check), right at the body-to-cheek layer seam.",
-      "fix": "Extend the cheeks (or a separate bumper) at least 3 mm past the lens front over the whole 0-40 deg range. Thicken the cheeks to 4 mm with r >= 2 mm root fillets into the body, or make the camera cage a separate TPU part, as Source One does."
-    },
-    {
-      "severity": "major",
-      "part": "body",
-      "issue": "The body has no fea_static requirement, although it carries all four arm moments and is the part the design says must outlive the arms (ENGINEERING.md section 3b: every structural part). Hand checks show it is no better off than the arm. At the inner arm screw (r = 38), the section across the diagonal is about 40 x 5 mm net (Z ~ 167 mm^3), giving about 33 N x 75 mm / 167 = 15 MPa if the body carries the moment alone, against an allowable of 35/3 = 11.7 MPa. Composite action with the arm reduces that, but nothing proves it. The outer arm screw at r = 52 is 5.5 mm from the body corner, below the section 7 edge distance of 1.5 d + wall ~ 6.1 mm. Its nut pocket leaves 2.2 mm of wall at the corner that the arm levers against under upward thrust. The arm FEA fixes the arm rigidly at its two bolt sites, so it ignores that fulcrum.",
-      "fix": "Add an fea_static requirement on the body: arm_1 crash moment entering at the arm_1 bolt sites, fixed or balanced at the opposite arm or posts, SF 3. Move arm_hole_2 inward to <= 49, or raise body_half to 46, so the outer screw has >= 6 mm edge distance. The arm should be the weakest link by margin."
+      "issue": "The XT60 has no working retention, so round-1 blocker 2 is only half fixed. The plug end is now open, which is correct. But the DESIGN and the BOM say the connector is held 'with a cable tie through the side slot', and that slot (x = -47, z = 39 world, 1.6 x 3 mm through both cradle walls) sits inside the connector. The XT60 proxy fills x -61.65..-40.35, |y| <= 4.05, z 29..45, and a probe across the slot hits connector solid from y = -4.0 to +4.0. A tie through it would have to pass through the XT60 housing, so it cannot be fitted. Everything else leaves the connector free. The cradle is open at the bottom: in flight the connector hangs under the plate, held only by 0.3 mm clearance friction, and 4 mm of it sticks out below the 12 mm cradle. The rear (plug) end is fully open. So unplugging the battery (XT60 pull-apart is tens of N) simply drags the connector out of the cradle, and vibration can drop it out of the bottom. Also, the 1.3 mm front 'stops' sit at the solder-cup end (x = -40.35). The real housing shoulder is several mm behind the cups (the 21.3 mm catalog length includes the cups), so the cups pass between the stops and the housing slides forward until its shoulder lands. That still works as a push stop, but the mating face then sits about 5-7 mm inside the side walls. The brief asks for 'an XT60 mount', and this one does not hold the connector.",
+      "fix": "Give the tie a path around the connector instead of through it. Put two vertical tie slots through the rear tab deck either side of the cradle (outside the 1.6 mm walls, at x of about -47) so the tie wraps under the connector's exposed bottom face and pulls it up into the cradle, or add a short closed floor/lip under the housing. Against unplugging pull, add a stop that bears on the housing's rear shoulder (or a lip above/below the housing at the plug end, leaving the 8.1 x 16 mating face clear). Place the front stops at the housing shoulder (catalog length minus the solder-cup length), not at the cup tips. Then confirm with a probe that the tie path is clear of the xt60 proxy."
     },
     {
       "severity": "major",
       "part": "top_plate",
-      "issue": "There is no provision for a video transmitter, receiver or antenna mount. The brief's analog 19 mm micro camera is useless without a VTX, and a real build needs a VTX (usually a 20x20 M2 or 30.5 stack layer, 4-6 mm) plus an SMA/U.FL antenna holder at the rear and a receiver and antenna tubes. The space under the top plate cannot take a VTX on the stack: stack top at z = 27, M3 heads to ~30, strap under the plate at ~30.5, plate underside at 32.",
-      "fix": "Budget a VTX (catalog entry plus proxy) as a stack layer or a 20x20 mount on the top-plate underside, with raised post_h if needed. Props clear the plate by radius, so height costs no prop margin. Add a rear antenna mount (SMA bulkhead or printed antenna tube holder) and a receiver pocket and cable path."
-    },
-    {
-      "severity": "minor",
-      "part": "arm_1",
-      "issue": "The FEA render is inconsistent with the report. The render title says peak 13.93 MPa, but report.json says peak 24.77 MPa with p99.9 at 10.39 MPa against 11.67, an 11% margin. Magenta over-limit spots show at the outer bolt seat. Either the render is stale or the two come from different runs.",
-      "fix": "Regenerate the render from the same solve. After the arm_r0 change, re-check the margin; the outer-screw fulcrum load is not modelled (see the body finding)."
-    },
-    {
-      "severity": "minor",
-      "part": "arm_1",
-      "issue": "Each arm has only one motor-wire tie slot (the loop iterates over a single x), but the BOM and DESIGN say 2 per arm. With one tie, the motor leads flap near the prop over the outer ~45 mm of the arm.",
-      "fix": "Add a second tie slot near the motor pad (e.g. r = motor_r - 20), or correct the BOM to match."
+      "issue": "The top plate has no strength verification, although it is a structural part (ENGINEERING.md section 3b: every structural part gets fea_static). It carries the heaviest item, the 215 g battery plus pad, strap, VTX, receiver and XT60 (about 260 g with the plate), with the battery CG about 24 mm above the plate. All of that sits on four 9 mm posts 38 mm tall, printed upright, so any sideways or fore-aft crash load bends the posts across their layer lines (z strength 29 MPa, SF 3, giving 9.7 MPa). Each foot is held by a single M3 into a heat-set insert with a 6.75 mm deep insert bore at the most stressed section. The posts stand in two pairs only 10 mm apart in y, which gives little roll resistance. Hand check for a y-direction battery hit: posts as fixed-fixed columns, M = V*H/2 per post, insert-bored foot section Z of about 65 mm^3, plus overturning tension from the battery CG over the 10 mm pair spacing. 33 N (the project's own 2x-thrust crash size) gives about 3-6 MPa, which is fine. A 40-50 g side impact on a 0.26 kg mass (100-130 N) gives about 11-17 MPa, over the allowable. Battery-first and battery-side impacts are the most common freestyle crashes, and nothing in the project bounds this case. The weakest crash link should be the replaceable arm, not the deck that holds the battery.",
+      "fix": "Add `top_strength: fea_static` on top_plate, direction z (posts load across layers), sf 3. Fix it at the 4 post feet (posts group), with a lateral load (y and, as a second case, x) at the battery deck of at least the battery+deck mass x a stated crash acceleration, sized at least like the arm case (2x thrust = 33 N) and ideally 30-50 g. Cheap ways to stiffen the posts if it fails: join each post pair into one 19 x 9 mm stadium pillar or add a 3 mm web between them (much bigger section for y-bending, and it does not cross the ESC), add r >= 2 mm fillets where the posts meet the deck, or raise the infill to 100% in the posts."
     },
     {
       "severity": "minor",
       "part": "body",
-      "issue": "The top-plate post counterbores (30, +/-12) sit right against the arm edges. The 5.5 mm screw head passes within about 0.05 mm of the arm root side, and the counterbore (r = 3.05) overlaps the arm footprint by about 0.35 mm, so the arm edge forms part of the counterbore wall. Putting in or swapping these screws with the arms fitted will be fiddly.",
-      "fix": "Move the posts to |y| = 11 or |x| = 28 (both still clear the 45.6 mm ESC) so the head clears the arm by >= 1 mm."
+      "issue": "Camera screw engagement was not actually improved. The cheeks were thickened from 3 to 4 mm while the screw grew from M2 x 5 to M2 x 6, so engagement is still 6 - 4 - 0.5 gap = 1.5 mm (0.75 d), the same as round 1. The bom_extra note '~2.5 mm into the camera's own threads' is wrong.",
+      "fix": "Use M2 x 7 (about 2.5 mm engagement) or M2 x 8 if the RunCam side threads are deep enough (measure; the catalog has no thread depth). Correct the BOM note."
     },
     {
       "severity": "minor",
       "part": "body",
-      "issue": "Camera M2 x 5 pivot screws pass through 3 mm of cheek plus a 0.5 mm gap, leaving about 1.5 mm (0.75 d) of thread in the camera housing. That is thin for a joint that has to hold tilt through crashes.",
-      "fix": "Use M2 x 6 (about 2.5 mm engagement; confirm the camera's thread depth), or reduce the side gap and use thinner cheek bosses at the screw."
+      "issue": "The lens is protected front-on but not from above. The cheek tops slope from z = 25 (x <= 56) down to 18 at x = 68 to clear the props. At home tilt (25 deg) the lens centre is at about (60.6, 24.9), and at 40 deg about (58.6, 27.9) plus the barrel radius, while the cheek top there is about 22-23.5. So the upper half of the lens, and at max tilt all of it, stands above the cage. A flat frontal wall hits the cheeks first (good), but a branch, pole or gate edge above about 23 mm hits the lens. In nose-down forward flight the leading edge is the nose bottom, so this mainly matters for climbing hits.",
+      "fix": "Add a short cross-bar or brow between the cheek tops at about x 60-64, above the lens sweep and clear of the prop discs (the prop discs are outboard, at |y| > 30 near x = 60), or run the cheeks higher behind x = 56 and shape the slope to stay 3 mm from the discs while covering the lens at 40 deg."
     },
     {
       "severity": "minor",
       "part": "arm_1",
-      "issue": "Flight stiffness and heat are not verified. A hand calc gives the first arm bending mode at about 165 Hz (EI = 2460 x 2218 N mm^2, 36 g tip mass, 75 mm free length), before allowing for clamp compliance. That sits in the gyro noise band. PETG-CF softens around 70-80 C, close to the temperature of a hard-run 2207 motor sitting directly on the pad.",
-      "fix": "Note it in the build notes (DESIGN already asks for a hover test and Blackbox check). Consider a 1 mm air gap or standoff ring under the motor base, and a stiffer arm section (taller I or rib) if Blackbox shows a resonance around 150 Hz."
+      "issue": "The yaw-key ridges (3 x 1.5 mm, 22 mm long, printed on the arm top) take side loads by bending and shear at their root, which is a layer interface. For a 33 N side hit at the motor (lever about 66 mm to the ridge centre), the linear-bearing distribution gives about 13.5 N/mm peak per ridge: bending about 6.8 MPa plus shear about 4.5 MPa at the root, against 29/3 = 9.7 MPa across layers. The margin is thin, and the arm's in-plane strength is not used.",
+      "fix": "Make the ridges 4 mm wide with a 0.5 mm root fillet, or better, sink the whole arm root 1.5 mm into a body-underside pocket shaped like the arm, so the arm's full 11 mm side faces bear in-plane and the screws stay pure clamp. Either change keeps the arm the replaceable weak link."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "The VTX screw length does not match the hardware. The fastener check sizes M2 x 12 for an 8 mm grip because the TX800 proxy is an 8 mm solid block. The real board is a single PCB (about 1.6 mm) with a heatsink that does not cover the 20 x 20 corner holes, so an M2 x 12 head would sit about 6 mm below the PCB and clamp nothing unless 6 mm spacers are fitted. Spacers are not in the BOM.",
+      "fix": "Either list 4 x M2 x 6 mm nylon spacers in bom_extra, or keep the 8 mm grip and add the spacers explicitly. Alternatively, size the screw for PCB + washer + boss (M2 x 6 into the 6 mm pilot)."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "Wire path: the rear post pair (x = -31.5, y = +/-5, 9 mm dia with a 1 mm gap, z 7-45) stands directly between the XT60 solder cups (x = -40.35, y = 0) and the ESC battery pads at the rear-centre of the ESC (x = -22.8). The 12 AWG power leads, and the usual low-ESR capacitor, must detour about 10 mm sideways around the pair. The antenna/receiver tie slots in the rear tab leave only 1.2 mm of material to the tab edge. There is no real antenna mount (only tie slots), so a crash will load the VTX's MMCX socket. (The engine wiring section that would check routing is pending in another session.)",
+      "fix": "Leave a lead channel: drop the rear pair to y = +/-7.5 so a 6 mm gap opens on the centreline (still clear of the 45.6 mm ESC and the arms), or join the pair into one pillar off-centre. Move the antenna slots inboard to |y| = 7 and add a printed MMCX/antenna-tube clip at the rear tab."
+    },
+    {
+      "severity": "minor",
+      "part": "body",
+      "issue": "Assembly convenience: the stack nut pockets open on the underside, so the 4 nuts fall out while the M3 x 30 screws are started from the top. The arms do not cover them (arm root starts at r = 26 vs the pockets at r = 21.6 + 3.3).",
+      "fix": "Add a note to step 5 of the DESIGN ('hold nuts with tape or a finger from below'), or flip those traps so the hex pockets open on the top under the grommets."
+    },
+    {
+      "severity": "minor",
+      "part": "arm_1",
+      "issue": "Carried from round 1, still open and acknowledged in DESIGN risks: the first arm bending mode is in the gyro noise band (about 165 Hz), and PETG-CF sits directly on a 2207 motor base that can reach 70-80 C.",
+      "fix": "Keep the hover and Blackbox test in the build notes. Consider a 0.5-1 mm standoff ring under the motor base."
+    },
+    {
+      "severity": "minor",
+      "part": "top_plate",
+      "issue": "Not graded on mechanics here, but missing for the brief's 'Complete electronics' section, which depends on the wiring engine another session is building: no `wiring:` section, no `power` or `flight_time` requirements, no out/WIRING.md or wiring.svg, no VTX antenna, no camera or receiver antenna as catalog items, no ESC low-ESR capacitor, no wire gauges or lengths, and the BOM has no buy links for wires and connectors.",
+      "fix": "Add these once the wiring/power_budget engine lands (6S 1300 at 4 x 35 A peak = 140 A vs the XT60's 60 A peak rating needs an explicit judgement there)."
     }
   ]
 }

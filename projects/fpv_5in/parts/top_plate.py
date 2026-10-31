@@ -5,16 +5,26 @@ so no supports. Posts take M3 heat-set inserts from the feet.
 
 XT60 (mates along its length, x): the rear end of the cradle is fully open for the battery plug, the front end has
 a 1 mm stop each side that the housing pushes against when plugging in, with the solder cups and the lead to the
-ESC passing through the gap between them; a cable tie through the side slot holds it in.
+ESC passing through the gap between them. The cradle walls are shorter than the connector, so its lower 4 mm hangs
+out; a cable tie goes down through a vertical slot just outside one wall, under the connector and up the other slot,
+so it holds the connector up into the cradle and against pull-out by friction (review round 2: the old side slot ran
+through the connector itself).
+
+Each post pair (16 mm apart) is filled in to one solid 9 x 25 mm stadium pillar, so a side hit on the battery bends
+two pillars instead of four thin posts (the posts print upright: that bending runs across the layers; checked by
+the top_plate_x / top_plate_y FEA cases). Leads pass outside the pillars (|y| > 12.5 mm; the plate is 42 mm wide).
 """
 from build123d import *
 from kerf import iface
 
-POSTS = [(31.5, 5), (31.5, -5), (-31.5, 5), (-31.5, -5)]   # must match parts/body.py
+POSTS = [(31.5, 8), (31.5, -8), (-31.5, 8), (-31.5, -8)]   # must match parts/body.py
 XT60_X = -51.0
 VTX = "drone.vtx.tx800"
 BOSS_H = 3.0
-RX_X, RX_Y = -27.0, 15.5   # receiver (13 x 11 mm) under the plate, clear of the posts, VTX and strap slots
+ROOF_X1 = 58.0   # camera roof front edge (lens front is at x 61.9-64.8 over the tilt range)
+TAB_W = 28.0     # rear tab width: XT60 cradle + tie slots + antenna slots with >= 2.5 mm edge margin
+RX_X, RX_Y = 46.5, 0.0     # receiver (13 x 11 mm) under the camera roof: >= 5 mm above the camera at full tilt,
+#                            clear of the pillars, VTX and the strap's under-run
 
 
 def build(ctx):
@@ -23,10 +33,17 @@ def build(ctx):
     xl, xw, xh = [ctx.cat.num(ctx.cat.get("drone.connectors.XT60"), k) for k in ("length", "width", "height")]
     plate = Pos(0, 0, H) * Box(80, 42, T, align=(Align.CENTER, Align.CENTER, Align.MIN))
     plate = plate.fillet(4.0, plate.edges().filter_by(Axis.Z))
-    tab = Pos(-40 - 22 / 2 + 2, 0, H) * Box(22 + 4, 20, T, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    s = plate + tab
+    tab = Pos(-40 - 22 / 2 + 2, 0, H) * Box(22 + 4, TAB_W, T, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # camera roof: a 24 mm wide tongue of the plate reaching forward over the camera (top of the camera at 40 deg tilt
+    # is z 35.2 above the body bottom = 28 here, the roof underside is at 38), ending 4 mm behind the lens front, so
+    # a pole or branch coming from above hits the roof, not the camera (review round 2)
+    roof = Pos(38, 0, H) * Box(ROOF_X1 - 38, 24, T, align=(Align.MIN, Align.CENTER, Align.MIN))
+    roof = roof.fillet(4.0, roof.edges().filter_by(Axis.Z).filter_by_position(Axis.X, ROOF_X1 - 1, ROOF_X1 + 1))
+    s = plate + tab + roof
     for (x, y) in POSTS:
         s += Pos(x, y, 0) * Cylinder(4.5, H, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for x in sorted({x for x, _ in POSTS}):         # web each post pair into one pillar
+        s += Pos(x, 0, 0) * Box(9.0, 16.0, H, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # VTX bosses under the plate, M2 pilot holes (light part, rarely removed: ENGINEERING.md section 7)
     sp = ctx.cat.num(ctx.cat.get(VTX), "spacing")
     for (x, y) in iface.square(sp):
@@ -39,10 +56,11 @@ def build(ctx):
     cradle -= Pos(XT60_X - cl / 2, 0, H - 13) * Box(4, xw + 0.6, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))  # rear: open
     cradle -= Pos(XT60_X + cl / 2, 0, H - 13) * Box(4, xw - 2, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))   # front: stops
     s += cradle
-    s -= Pos(XT60_X + 4, 0, H - 6) * Box(3, cw + 2, 1.6, align=(Align.CENTER, Align.CENTER, Align.CENTER))  # tie slot
+    for sy in (1, -1):                           # XT60 tie: down outside one wall, under the connector, up the other
+        s -= Pos(XT60_X, sy * (cw / 2 + 0.8), H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for x in (-58.0, -46.0):                     # antenna / receiver lead tie slots through the rear tab
         for sy in (1, -1):
-            s -= Pos(x, sy * 8.0, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            s -= Pos(x, sy * 10.5, H - 1) * Box(3, 1.6, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for x in (RX_X - 8.5, RX_X + 8.5):             # receiver tie slots either side of it
         s -= Pos(x, RX_Y, H - 1) * Box(1.6, 3, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for x in (-18, 18):                            # battery strap slots (20 mm strap)

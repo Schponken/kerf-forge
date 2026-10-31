@@ -39,7 +39,7 @@ purchased:
   xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000"}
   vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020",
-             note: "heat-shrunk, cable-tied under the top plate (two tie slots); T antenna out through the rear-tab slots"}
+             note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate, T antenna out through the rear-tab slots"}
   pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 42, 3], color: "#303030",
         note: "anti-slip pad cut to the 80 x 42 mm top plate"}
   strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [86, 20, 1.8], color: "#404040",
@@ -50,9 +50,10 @@ keepouts:
   prop_3: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_3, h: 7}
   prop_4: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_4, h: 7}
 bom_extra:
-  - {type: fastener, item: M2 x 6 mm button head screw, qty: 2, spec: ISO 7380, note: "camera side pivots; ~2.5 mm into the camera's own threads"}
+  - {type: fastener, item: M2 x 6 mm button head screw, qty: 2, spec: ISO 7380, note: "camera side pivots; heads sit in 1 mm cheek recesses, so 3.5 mm grip leaves 2.5 mm in the camera's own threads"}
   - {type: hardware, item: M2 flat washer, qty: 4, spec: "under the VTX screw heads (its holes take M3)"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 9, spec: "2 per arm for motor wires, 1 for the XT60 in its cradle"}
+  - {type: hardware, item: M2 x 6 mm nylon spacer (round, 4 mm OD), qty: 4, spec: "between the top-plate bosses and the VTX PCB: the 1.6 mm board + 6 mm spacer + washer fill the 8 mm VTX envelope, so the M2 x 12 clamps 3.9 mm into the boss"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 9, spec: "2 per arm for motor wires, 1 wrapped under the XT60 through the two slots beside its cradle"}
   - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount"}
 assembly:
   root: body
@@ -114,4 +115,28 @@ requirements:
       # the arm top presses up on the body underside around the outer screw with 177.1 N
       - {box: [[23.8, 23.8, body_t - 2.71], [29.9, 29.9, body_t - 2.69]], force_n: [0, 0, -144.0]}
       - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
-
+  # top plate: posts print upright, so post bending runs across the layers (direction z). Crash case: a 50 g hit on
+  # battery + pad + strap (215 g CNHL pack + ~15 g) = 0.23 kg x 50 x 9.81 = 112.8 N, applied at the pack CG 21 mm above
+  # the plate top (3 mm pad + half the 36 mm pack): force on the plate top + its 112.8 x 21 = 2369 N*mm tipping couple.
+  - id: top_plate_x
+    check: fea_static
+    part: top_plate
+    why: "battery takes a 50 g front/rear crash hit; the webbed post pillars bend across their 9 mm side"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 1.5
+    fixed: {sites: posts, radius: 4.5}
+    loads:
+      - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], force_n: [112.8, 0, 0]}
+      - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], torque_nmm: 2369, axis: {at: [0, 0, post_h + top_t], dir: [0, 1, 0]}}
+  - id: top_plate_y
+    check: fea_static
+    part: top_plate
+    why: "battery takes a 50 g side crash hit"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 1.5
+    fixed: {sites: posts, radius: 4.5}
+    loads:
+      - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], force_n: [0, 112.8, 0]}
+      - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], torque_nmm: 2369, axis: {at: [0, 0, post_h + top_t], dir: [-1, 0, 0]}}

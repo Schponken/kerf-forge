@@ -10,10 +10,11 @@
 from build123d import *
 from kerf import iface, features as F
 
-POSTS = [(31.5, 5), (31.5, -5), (-31.5, 5), (-31.5, -5)]
-RIDGE_W, RIDGE_H, RIDGE_R1 = 3.0, 1.5, 58.0     # must match parts/arm.py
+POSTS = [(31.5, 8), (31.5, -8), (-31.5, 8), (-31.5, -8)]
+RIDGE_W, RIDGE_H, RIDGE_R1 = 4.5, 1.5, 58.0     # must match parts/arm.py
 CHEEK_T, CHEEK_Y0 = 4.0, 10.0                    # cheek thickness; inner face (19 mm camera + 0.5 mm each side)
 CAGE_X1 = 68.0
+CAM_RECESS = 1.0                                  # M2 button-head recess (ISO 7380 M2 head 3.5 mm; 4.4 mm bore)
 RIB_R0, RIB_R1, RIB_Y, RIB_W, RIB_H = 34.0, 64.0, 6.0, 3.0, 5.0   # top ribs: start/end radius, offset, width, height
 
 
@@ -41,6 +42,9 @@ def build(ctx):
     cam_d = iface.screw_spec("M2")["clearance"]
     body -= Location((p.cam_x, CHEEK_Y0 + CHEEK_T + 1, p.cam_z), (-90, 0, 0)) * \
         F.teardrop_hole(cam_d, 2 * (CHEEK_Y0 + CHEEK_T) + 2, up_deg=270)
+    for sy in (1, -1):   # 1 mm head recess on each cheek's outside: grip 3.5 mm, so M2 x 6 puts 2.5 mm into the camera
+        body -= Location((p.cam_x, sy * (CHEEK_Y0 + CHEEK_T - CAM_RECESS / 2), p.cam_z), (90, 0, 0)) * \
+            Cylinder(4.4 / 2, CAM_RECESS + 0.02)
     for k in range(4):
         th = 45 + 90 * k
         loc = Rot(0, 0, th) * Location((0, 0, 0), (180, 0, 0))

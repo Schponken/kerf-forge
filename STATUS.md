@@ -360,3 +360,16 @@ pushed for it and what I know:
 - Seen, not mine: servo_link review is stale (fingerprint changed by the MG996R catalog update); needs a fresh
   design-reviewer pass before final verify.
 
+## 2026-10-31 — session 01S68R6S: E2 fpv_5in, review round 2 fixes
+- Round 2 review (design-reviewer): FAIL, 0 blockers, 2 major, 8 minor; all round-1 fixes confirmed in geometry except
+  XT60 retention and camera screw engagement.
+- Fixed: XT60 tie now wraps under the connector through two vertical slots beside the cradle (old slot ran through
+  the connector); top plate gets FEA (`top_plate_x` / `top_plate_y`, 50 g battery hit with its tipping couple, z
+  strength / 3): post pairs filled into 9 x 25 mm pillars (posts y +/-5 -> +/-8, body counterbores follow) -> 7.7 /
+  8.7 vs 9.67 MPa; camera screw heads in 1 mm cheek recesses (M2 x 6 -> 2.5 mm thread); camera roof tongue on the top
+  plate (9.8 mm over the camera at 40 deg; a brow on the cheeks could not clear the camera's rise to z 35); arm key
+  ridges 3 -> 4.5 mm wide; VTX 6 mm nylon spacers in the BOM; antenna slots 2.7 mm from the tab edge; receiver moved
+  under the camera roof; stack-nut tape note in DESIGN.md assembly order. `kerf check fpv_5in` PASS, 148.7 g frame.
+- Engine: FEA render title now prints the report's checked p99.9 / peak (render colours are surface element means).
+- Still open for fpv_5in: the complete-electronics section (wiring, power, flight_time, WIRING.md) waits on the engine
+  item claimed by session c1f0cc8551; then round 3 review.

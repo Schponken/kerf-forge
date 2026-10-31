@@ -38,7 +38,7 @@
 |---|---|---|---|---|
 | body | 7 mm centre plate + ribs, stack, arm clamps with key grooves, camera cage, post seats | flat, cheeks and ribs up | both diagonals | 114 × 92 × 25 |
 | arm_1..4 | carry each motor to the body; key ridges on top | flat, top face up | x (along the arm) | 102 × 32 × 12.5 |
-| top_plate | battery deck, VTX bosses, XT60 cradle, antenna tie slots, 4 posts | upside down (plate on bed) | – | 104 × 42 × 41 |
+| top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm) | upside down (plate on bed) | – | 122 × 42 × 41 |
 
 ## Interfaces
 | A | B | How | Group | Screws |
@@ -47,11 +47,12 @@
 | motor_N | arm_N | M3 from below (counterbored, 7.5 mm grip: 2.5 mm into the 3 mm motor thread) | motor_N | 4 × M3 × 10 per motor |
 | stack | body | M3 from the stack top through grommets into nut traps (pockets open underneath) | stack | 4 × M3 × 30 |
 | top_plate | body | M3 counterbored from below into heat-set inserts in the post feet | posts | 4 × M3 × 8 + 4 inserts |
-| vtx | top_plate | M2 through the VTX (washers: its holes take M3) into pilot holes in 3 mm bosses | vtx | 4 × M2 × 12 |
-| camera | body | side M2 screws through the cheek teardrop holes into the camera (pivot, friction) | – | 2 × M2 × 6 |
+| vtx | top_plate | M2 through the VTX (washers: its holes take M3) and 6 mm nylon spacers into pilot holes in 3 mm bosses | vtx | 4 × M2 × 12 |
+| camera | body | side M2 screws through the cheek teardrop holes (heads in 1 mm recesses) into the camera, 2.5 mm thread (pivot, friction) | – | 2 × M2 × 6 |
 | battery | top_plate | 20 mm strap through two slots | – | – |
-| XT60 | top_plate | cradle under the rear tab: rear end open for the battery plug, 1 mm stops at the front, cable tie | – | – |
-| receiver, antennas | top_plate | cable ties through the rear-tab slots | – | – |
+| XT60 | top_plate | cradle under the rear tab: rear end open for the battery plug, 1 mm stops at the front; a cable tie through two vertical slots beside the cradle wraps under the connector (its lower 4 mm hangs below the walls) | – | – |
+| receiver | top_plate | under the camera roof, cable tie through two slots | – | – |
+| antennas | top_plate | cable ties through the rear-tab slots | – | – |
 
 ## Joint tree
 body (root) → arm_1..4 (rigid, along the diagonals) → motor_N → prop_N keep-out; body → stack; body → top_plate →
@@ -68,16 +69,24 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   tilt range (swept). The 4 mm cheeks run to x = 68, 3 mm past the lens front at its furthest (x 64.8 at 34°),
   gusseted to the nose; their tops slope down at the front to keep 3 mm from the front prop discs.
 
+- Top plate (review round 2): each post pair is filled into one 9 × 25 mm pillar (posts at y ±8) so a 50 g battery
+  hit (112.8 N + its 2369 N·mm tipping couple, posts bent across the layers) stays inside CF-PETG z strength / 3:
+  FEA 7.7 (front/back) and 8.7 (side) vs 9.67 MPa. A 24 mm roof tongue reaches over the camera to x 58 (lens front
+  61.9-64.8), 9.8 mm above the camera top at full tilt, so a hit from above lands on the roof.
+- Arm key ridges are 4.5 × 1.5 mm: a 33 N side hit bends the ridge root across one layer line at about 3 MPa.
+
 ## Assembly order
 1. Press 4 M3 heat-set inserts into the top-plate post feet; screw the VTX under the top plate (4 × M2 × 12 with
-   washers) — on the bench, before the plate goes on.
-2. Put 8 M3 nuts into the arm nut pockets on the body top and 4 M3 nuts into the stack pockets underneath.
+   washers and 6 mm nylon spacers) — on the bench, before the plate goes on.
+2. Put 8 M3 nuts into the arm nut pockets on the body top and 4 M3 nuts into the stack pockets underneath (those
+   open downward: hold each with a strip of tape or a dab of CA until its screw has started).
 3. Bolt each arm under the body, ridges in the grooves: 2 × M3 × 14 from below.
 4. Bolt each motor onto its arm: 4 × M3 × 10 from below (2.5 mm into the motor; never longer: windings).
 5. Stack on the grommets: 4 × M3 × 30 from the top into the stack nuts. Solder motors / XT60 lead.
 6. Camera between the cheeks: 2 × M2 × 6 into its side holes; set the tilt, snug the screws.
 7. Top plate: 4 × M3 × 8 up through the body into the post inserts; XT60 into the cradle (solder cups forward)
-   with a cable tie; receiver and antennas tied through the rear-tab slots.
+   with a cable tie wrapped under it through the two slots beside the cradle; receiver tied under the camera roof;
+   antennas tied through the rear-tab slots. XT60 leads run outside the post pillars (|y| > 12.5 mm).
 8. Battery on top with the strap through both slots.
 
 ## Risks / measure first
