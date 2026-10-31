@@ -1,7 +1,7 @@
 # Bionic index finger (E5) — design
 
 One tendon-driven index finger for a bionic hand: a knuckle mount (`base`) and three phalanges (`proximal`,
-`middle`, `distal`) on 3 mm steel dowel pins. Pull the flexor line and it curls; pull the extensor and it straightens.
+`middle`, `distal`) on M3 screw pivots (head on the moving part, heat-set insert in the other). Pull the flexor line and it curls; pull the extensor and it straightens.
 References and the evidence behind each choice: REFERENCES.md.
 
 ## 1. Requirements (numbers)
@@ -29,14 +29,25 @@ Chosen: L1 = 44, L2 = 25, L3 = 21 mm (middle of each band, close to Aero Hand's 
 How a lap knuckle works (`parts/fingerlib.py`): each part is three Y layers — a bottom band (y side `b`, on the bed),
 a 0.3 mm gap layer and a top band. At a joint the parent's round knuckle disc (R 7.5) sits in band `s` and the
 child's in band `-s`; each disc turns inside a pocket of radius 7.9 (0.4 mm clearance) in the other part. Away from
-the axis the child keeps palmar material only beyond x = 8.5 mm and dorsal material anywhere ahead of the axis, which
-is exactly what stays clear of the parent at 80 deg (the sweep check proves it). The knuckle side alternates
+the axis the child's knuckle band is full depth (it carries the segment's largest bending moment) and the parent's
+other band is cut away where that band swings over the joint range (`fingerlib.swept`: the strip at 0, the strip at
+full flexion and the wedge between). The child's other band keeps all material the rotation allows: dorsal ahead of
+the axis, palmar where x sin(theta) + |z| cos(theta) >= 7.9 (clear of the parent's palmar face at full flexion
+theta). Pockets are widened to |x| <= 5.1 so the pocket circle leaves no knife edge (>= 1.5 mm) at the faces. The
+sweep checks prove all of it. The knuckle side alternates
 (mcp -1, pip +1, dip -1) so every part has both of its knuckle discs in its bottom band: base and middle print with
 -Y down, proximal and distal with +Y down. The gap layer and top band of a part are always a subset of its bottom
 band's footprint, so nothing overhangs.
 
-Side play: the two 7.85 mm lap faces bear on each other over the whole 15 mm disc, the pin is a hardened m6 dowel
-pressed into the parent for its full 7.85 mm, and the 0.3 mm gap is the only axial play. Expect a slight sideways
+Axial hold: a lap joint has nothing that keeps the two bands together along the pin (a dowel pressed in one band
+would let the other slide off its free end - found by the research pass). So each pivot is an M3 x 14 socket head
+screw: head on the child's outer face, shank turning in the child's 3.35 mm hole, thread in a heat-set insert pressed
+into the parent's band from its gap face (open on the printer). Medium threadlocker, screw backed off ~1/8 turn so the
+head does not clamp (kerf's pin check warns the same). The heads stand 3 mm proud on alternating sides (proximal and
+distal +Y, middle -Y); leave that room to the neighbouring finger.
+
+Side play: the two 7.85 mm lap faces bear on each other over the whole 15 mm disc and the 0.3 mm gap is the only axial
+play. Expect a slight sideways
 rock under a hard side push; a thin PTFE/nylon washer is not needed at 0.3 mm (the open designs run 0.15-0.25 mm
 per side, REFERENCES.md).
 
@@ -44,8 +55,9 @@ per side, REFERENCES.md).
 
 | Item | Catalog | Qty | Why |
 |---|---|---|---|
-| 3 x 16 mm hardened dowel (ISO 8734 m6) | `motion.pin_3mm`, length 16 | 3 | stocked length = finger width = pin span; InMoov / Raptor use 3 mm pins |
-| Braided PE line 0.5-0.8 mm, >= 30 kg | bom_extra | 0.5 m | flexor + extensor; InMoov/Yale: braided line, >= 0.4 mm so it does not saw the plastic |
+| M3 x 14 socket head screw (ISO 4762) | `screws.M3` (pin = "M3"), length from the pin check | 3 | joint pivots; the head holds the lap joint together |
+| M3 heat-set insert, 5.7 mm (CNC Kitchen standard) | `fdm_holes.M3` | 3 | thread in the parent's knuckle band |
+| Braided PE line 0.5-0.8 mm, >= 100 lb (445 N) | bom_extra | 0.5 m | flexor + extensor; InMoov/Yale: braided line, >= 0.4 mm so it does not saw the plastic |
 | CA glue | bom_extra | - | locks the fingertip knots |
 | 2 x M3 screw + nut | bom_extra | 2 | knuckle mount to the hand frame (16 mm through-holes along Y, 3.4 mm clearance from catalog) |
 
@@ -53,22 +65,23 @@ per side, REFERENCES.md).
 
 | Part | Job | Material | print_rot | Bed side | Envelope (mm) |
 |---|---|---|---|---|---|
-| base | knuckle mount, mcp pin pressed, both tendons exit the back face | PETG 40 % | [90,0,0] | -Y | 37.5 x 16 x 15 |
-| proximal | mcp free / pip pressed | PETG 40 % | [-90,0,0] | +Y | 59 x 16 x 15 |
-| middle | pip free / dip pressed | PETG 40 % | [90,0,0] | -Y | 40 x 16 x 15 |
+| base | knuckle mount, mcp insert, both tendons exit the back face | PETG 40 % | [90,0,0] | -Y | 37.5 x 16 x 15 |
+| proximal | mcp free / pip insert | PETG 40 % | [-90,0,0] | +Y | 59 x 16 x 15 |
+| middle | pip free / dip insert | PETG 40 % | [90,0,0] | -Y | 40 x 16 x 15 |
 | distal | dip free, fingertip, two knot pockets | PETG 40 % | [-90,0,0] | +Y | 28.5 x 16 x 15 |
 
 `load_axis: X` on every part: the segment bends in the XZ plane, which is in the layer plane when printed on the side.
 
 ## 5. Interfaces
 
-| Joint | Parent (press, band) | Child (free, band) | Group | Pin |
+| Joint | Parent (insert, band) | Child (free + head, band) | Group | Pivot |
 |---|---|---|---|---|
-| mcp | base, -Y | proximal, +Y | pin_mcp | 3 x 16 dowel |
-| pip | proximal, +Y | middle, -Y | pin_pip | 3 x 16 dowel |
-| dip | middle, -Y | distal, +Y | pin_dip | 3 x 16 dowel |
+| mcp | base, -Y | proximal, +Y | pin_mcp | M3 x 14 SHCS |
+| pip | proximal, +Y | middle, -Y | pin_pip | M3 x 14 SHCS |
+| dip | middle, -Y | distal, +Y | pin_dip | M3 x 14 SHCS |
 
-Holes come from `iface.pin_hole` (press = d + 0.05, free = d + 0.35 from `fdm_fits.pin`), vertical on the printer.
+Holes come from `iface.pin_hole` (heatset = 4.0 x 6.7 mm insert bore from the gap face, free = d + 0.35 from
+`fdm_fits.pin`), vertical on the printer; `kerf/pins.py` proves them coaxial and picks the 14 mm length.
 
 ## 6. Joint tree
 
@@ -87,8 +100,11 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
 - Channels are 2.2 mm with a 55 deg pointed roof (no supports). Clear diameter across a joint = 0.3 gap + 2 x 0.95
   groove = 2.2 mm.
 - Moment arms at home: flexor 4.0 mm, growing as the joint bends (the chord moves away from the axis); extensor ~5 mm.
-  Holding a 15 N tip force at full reach (60 mm from mcp, 21 from dip) needs roughly 15 x 21 / 4 ~ 80 N flexor
-  tension at the dip alone — braided line >= 30 kg (~295 N) gives > 3x.
+  With the finger straight the flexor must balance the tip force about the mcp: T = F x 90 / 4 = 22.5 F (dip 5.3 F,
+  pip 11.5 F). A >= 100 lb (445 N) braid at SF 2 therefore rates ~10 N at a straight fingertip, more as the finger
+  curls (the arms grow). Do not use the common 30 kg line (~1x at 12 N).
+- Travel: full curl takes up ~16 mm of flexor (4 mm x 4.0 rad) but pays out ~20 mm of extensor (5 mm wrap). One servo
+  wheel driving both lines would go slack or bind: use two take-ups, or a spring/elastic on the extensor.
 - Termination: both lines end in 3 mm knot pockets in the distal, open to the top face — tie a stopper knot, pull it
   into the pocket, wick CA in. Lines leave the base through its back face toward the actuator.
 
@@ -103,12 +119,14 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
   knuckle band for 8 mm ahead of the axis; that neck let the pip end move 0.72 mm. Now the child's knuckle band is
   full depth and the parent's other band is cut where it swings (`fingerlib.swept`), which meets the 1 %-of-length
   limit of ENGINEERING.md (0.44 mm).
-- Pin: 3 mm steel in single shear, 15 N -> 2 MPa; irrelevant.
+- Pivot: M3 steel screw in single shear, 15 N -> 2 MPa; irrelevant. Insert pull-out is not loaded (no axial load).
 
 ## 9. Assembly order
 
-1. Press a dowel into the base knuckle (vise or a gentle tap; the hole is d + 0.05) until flush with the outer face.
-2. Slide the proximal's knuckle onto the protruding pin end; check it swings freely.
+1. Heat-set an M3 insert into the gap face of the base, proximal and middle knuckle bands (soldering iron at
+   ~230 C for PETG), flush with the face.
+2. Put the proximal's knuckle over the base's, push an M3 x 14 SHCS through the proximal's outer face into the base's
+   insert with a drop of medium threadlocker; snug it, then back off ~1/8 turn so the joint swings freely.
 3. Same for proximal -> middle and middle -> distal.
 4. Thread the flexor from the base's back face through the palmar channel to the distal pocket; knot, pull in, CA.
    Same for the extensor along the dorsal channel.
@@ -116,8 +134,7 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
 
 ## 10. Risks / measure first
 
-- Pin fits: print one knuckle pair first. If the dowel will not press in, ream the parent hole with a 3.0 mm drill;
-  if the free hole binds, run a 3.2 mm drill through it.
-- Thin spots: the extensor's swept groove passes 0.8-0.9 mm from the pin hole on the knuckle faces only (0.95 mm
-  deep); the rest of the 7.85 mm hole is full bearing. Watch for wear there.
+- Pivot fit: print one knuckle pair first. If the free hole binds on the screw, run a 3.4 mm drill through it.
+- Thin spots: the tendon grooves (0.95 mm deep, only at the knuckle faces) graze the knuckle rims; the wall check
+  reports p2 >= 1.1 mm on every part.
 - Single-shear joints rock slightly sideways under a hard side load (see section 2).

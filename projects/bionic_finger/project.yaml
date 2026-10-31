@@ -1,7 +1,7 @@
 name: Bionic index finger
 description: >
   One tendon-driven index finger for a bionic hand: a knuckle mount and three phalanges (adult index proportions,
-  44 / 25 / 21 mm) on 3 mm steel dowel pins. A flexor and an extensor line run in internal channels; pulling the
+  44 / 25 / 21 mm) on M3 screw pivots (heads on the moving parts, heat-set inserts). A flexor and an extensor line run in internal channels; pulling the
   flexor curls the finger (mcp 0-80, pip 0-80, dip 0-70 deg), pulling the extensor straightens it. Every part prints
   on its side with no supports: two-layer lap knuckles alternating sides, round pin holes, pointed-roof channels.
 printer: Bambu Lab A2L
@@ -25,7 +25,8 @@ parts:
   middle: {file: parts/middle.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X}
   distal: {file: parts/distal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
 bom_extra:
-  - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 30 kg rated", qty: 1, spec: "about 0.5 m: one flexor and one extensor line"}
+  - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 100 lb (445 N) rated", qty: 1, spec: "about 0.5 m: one flexor and one extensor line"}
+  - {type: hardware, item: Medium threadlocker (blue), qty: 1, spec: "a drop on each M3 pivot screw thread"}
   - {type: hardware, item: Thin CA glue, qty: 1, spec: "a drop on each fingertip knot in its pocket"}
   - {type: fastener, item: "M3 screws + nuts to bolt the knuckle mount to the hand frame", qty: 2, spec: "length = 16 mm mount + frame thickness"}
 assembly:
@@ -98,5 +99,5 @@ requirements:
     max_disp_mm: 0.44       # 1 % of L1 (ENGINEERING.md s2); met since the child knuckle band is full depth
     fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.675, tol: 0.3}}
     loads:
-      - {cylinder: {at: [L1, 0, 0], dir: [0, 1, 0], r: 1.525, tol: 0.3}, bearing_n: [0, 0, 15]}
+      - {cylinder: {at: [L1, 0, 0], dir: [0, 1, 0], r: 2.0, tol: 0.3}, bearing_n: [0, 0, 15]}   # pip heat-set insert bore
   - {id: finger_mass, check: mass_max, max_g: 40, why: "a light finger keeps the actuator load small"}

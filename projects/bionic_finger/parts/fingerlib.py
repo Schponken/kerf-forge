@@ -28,7 +28,7 @@ RK = 7.5          # knuckle disc radius (= H, full-depth round knuckle)
 CLR = 0.4         # radial clearance between a disc and the pocket it turns in
 RH = RK + CLR     # pocket radius
 XC = 8.5          # child keeps palmar / far-side material only beyond this distance from the axis
-PIN = "motion.pin_3mm"
+PIN = "M3"         # screw pivot: ISO 4762 M3 SHCS, free in the child, into a heat-set insert in the parent
 SIDES = {"mcp": -1, "pip": +1, "dip": -1}      # band that holds the PARENT's knuckle at each joint
 FLEX = 4.0        # flexor line distance below the axis (moment arm at home)
 FLEX_A = 4.5      # flexor channel exits this far either side of an axis
@@ -39,6 +39,9 @@ ROOF = 55.0       # channel roof slope (deg from horizontal on the printer) - no
 STEP = 10.0       # joint sampling for swept tendon cuts (deg)
 XE = RH + 1.5     # each tendon run is also cut out of the neighbouring part's knuckle out to this distance from the axis
 BAND_T = W / 2 - GAP / 2
+MIN_EDGE = 1.5    # the pocket circle meets the top/bottom faces at a grazing angle: cut the band back to where the
+                  # wedge between them is this thick (no knife edges)
+XT = math.sqrt(RH ** 2 - (H - MIN_EDGE) ** 2)
 # A child's joint frame: Z along the pin (+Y) and X toward +Z, because a build123d RevoluteJoint about +Y measures
 # angle 0 from the parent's +Z. With this frame the child lies straight along +X at angle 0 and positive angles flex.
 CHILD_FRAME = Location(Plane(origin=(0, 0, 0), x_dir=(0, 0, 1), z_dir=(0, 1, 0)))
@@ -150,17 +153,17 @@ def cut_all(part, cutters):
 
 
 def pin_holes(ctx, lj: float, joint: str, role: str):
-    """The dowel hole of one joint: pressed in the parent's knuckle band, free in the child's."""
+    """The pivot of one joint: an M3 screw whose head sits on the child's outer face, turning free in the child's
+    knuckle band, threaded into a heat-set insert in the parent's knuckle band (pressed in from the gap face, which is
+    open on the printer). The head is what holds a lap joint together along the pin: a dowel pressed in one band
+    would let the other band slide off its free end."""
     from kerf import iface
     s = SIDES[joint]
-    if role == "parent":
-        y, fit, sign = s * W / 2, "press", s
-        u = lj
-    else:
-        y, fit, sign = -s * W / 2, "free", -s
-        u = 0.0
-    loc = Location((u, y, 0), (-90 if sign > 0 else 90, 0, 0))   # +Z of the hole frame points out of the face
-    return iface.pin_hole(ctx, PIN, loc, group=f"pin_{joint}", depth=BAND_T, fit=fit)
+    if role == "parent":    # insert hole opens on the gap face of the parent's band (out of the material = -s)
+        loc = Location((lj, s * GAP / 2, 0), (-90 if -s > 0 else 90, 0, 0))
+        return iface.pin_hole(ctx, PIN, loc, group=f"pin_{joint}", depth=BAND_T, fit="heatset")
+    loc = Location((0.0, -s * W / 2, 0), (-90 if -s > 0 else 90, 0, 0))   # +Z of the hole frame points out of the face
+    return iface.pin_hole(ctx, PIN, loc, group=f"pin_{joint}", depth=BAND_T, fit="free")
 
 
 def child_end(body: Sketch, theta: float = 80.0):
@@ -176,7 +179,7 @@ def child_end(body: Sketch, theta: float = 80.0):
     x0, x1 = RH / s, (RH + zb * c) / s
     # one simple polygon (a union of two touching shapes split along z = 0 non-deterministically in OCC)
     allowed = Polygon((0, H + 1), (200, H + 1), (200, zb), (x1, zb), (x0, 0), (0, 0), align=None)
-    return body + disc(0, RK), (body & allowed) - disc(0, RH)
+    return body + disc(0, RK), (body & allowed) - pocket(0)
 
 
 def swept(theta: float, R: float = 80.0):
@@ -194,4 +197,9 @@ def swept(theta: float, R: float = 80.0):
 def parent_end(bottom: Sketch, top: Sketch, lj: float, theta: float = 80.0):
     """Distal end of a segment (parent side of the joint at u = lj, range [0, theta]): knuckle disc on the bottom;
     on top the pocket the child's disc turns in, and the region the child's full-depth knuckle band sweeps."""
-    return bottom + disc(lj, RK), top - disc(lj, RH) - Pos(lj, 0) * swept(theta)
+    return bottom + disc(lj, RK), top - pocket(lj) - Pos(lj, 0) * swept(theta)
+
+
+def pocket(u):
+    """Where the other part's knuckle disc turns (r <= RH), widened to |x - u| <= XT so no knife edge is left."""
+    return disc(u, RH) + rect(u - XT, u + XT, -H - 1, H + 1)

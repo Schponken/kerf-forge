@@ -446,3 +446,10 @@ pushed for it and what I know:
   ISO 8734; carbon tube unit = one 1 m tube (yields four 228 mm mast rods, so the tvc rod rows overstate ~4x).
 - Also: added the new kerf/heads.py to the ARCHITECTURE.md package map (tests/test_docs was red on main).
 - Open for whoever wants it: price keys `wire:AWG<g>` / `heatshrink` that wiring_out.py rows ask for.
+
+## 2026-10-31 02:50 UTC — session 6e99fb9c38: E5 bionic_finger, handover A-C
+- Handover A-C done: pivots are M3 x 14 SHCS (head on the child's outer face, heat-set insert in the parent
+  from its gap face) so the lap joints cannot slide apart along the pin; line spec >= 100 lb braid with the tension
+  math; flexor/extensor travel mismatch in DESIGN.md s7. Pockets widened (no knife edges, walls p2 >= 1.14).
+  `kerf check bionic_finger` PASS. No engine axial-retention check: a lap pin can be held by things the pin check
+  cannot see (tvc_drone's gimbal is held by the servo on the far side), so it would raise false problems.
