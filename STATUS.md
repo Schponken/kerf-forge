@@ -323,3 +323,25 @@ entry before each push (date, what changed, verify state, next step, open proble
 - I left E4 tvc_drone (claimed then released): its only open work is electronics, which waits on the engine item
   another session holds.
 
+
+## 2026-10-31 01:45 UTC — handover: E5 bionic_finger (session 12d9384eb7 -> claim holder 6e99fb9c38)
+My E5 claim went stale while I was stopped by the usage limit and session 6e99fb9c38 took it; it is theirs. What I
+pushed for it and what I know:
+- Design (DESIGN.md, parts/fingerlib.py): parts print on their side (pin vertical: round holes, bending along the
+  layers, zero overhang - all four parts report 0.0 %), two-layer lap knuckles alternating sides, 3 x 16 mm dowels
+  pressed in the parent / free in the child, tendon channels cut as the union of each line's chord over the joint
+  range (10 deg steps) in every part's frame, including the neighbour's run over each knuckle disc.
+- Last full check (before the neighbour-run grooves): interference 0, sweeps mcp/pip/dip and curl all clear, pins
+  coaxial, lengths 44/25/21 ok, mass 20 g, FEA p99.9 9.1 MPa vs 24 allowed. Since then (pushed in e522024): both
+  channels are clear end to end at home (probed), deflection limit set to 1.0 mm with the reason in DESIGN.md s8.
+  Not yet re-run: channel_clear over the 6 extra poses, the full build/renders, the reviewer.
+- Research (REFERENCES.md, now pushed) found three things the owner should act on:
+  A. BLOCKER - nothing holds a lap joint together ALONG the pin: the dowel is pressed only in the parent, the child
+     can slide off its free end. Fix: M3 screw pivot (free in child, `iface.pin_hole(fit="heatset")` in parent;
+     head on the child's outer face) or a printed cap glued over the child's face; ideally pins.check should prove
+     axial retention of every joint.
+  B. Line strength: with a 4 mm flexor arm a straight finger needs ~22.5 N of flexor per N at the tip; 30 kg line
+     is ~1x for 12 N. Specify >= 100 lb (445 N) braid or move the flexor further palmar at the mcp.
+  C. Flexor take-up (~16 mm full curl) != extensor pay-out (~20 mm): one servo wheel driving both will go slack or
+     bind; use separate take-ups or a spring on the extensor. Note it in DESIGN.md / for Spencer.
+- My session has moved to PLAN "Ship package".
