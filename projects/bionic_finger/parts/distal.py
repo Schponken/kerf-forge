@@ -18,7 +18,7 @@ def build(ctx):
     b = -F.SIDES["dip"]
     body = Polygon((0, -F.H), (L - r_tip - 2, -F.H), (L - r_tip, -r_tip), (L - r_tip, r_tip), (L - r_tip - 2, F.H), (0, F.H),
                    align=None) + F.disc(L - r_tip, r_tip)
-    bottom, top = F.child_end(body)
+    bottom, top = F.child_end(body, p.dip_max)
     part = F.assemble(bottom, top, b)
     part -= F.pin_holes(ctx, 0.0, "dip", "child")
     up = -b

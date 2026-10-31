@@ -36,8 +36,8 @@ EXT = 5.0         # extensor line above the axis and wrap radius
 EXT_A = 5.0
 TUBE_D = 2.2      # tendon channel diameter (requirement: >= 1.5 clear; line 0.5-0.8 mm)
 ROOF = 55.0       # channel roof slope (deg from horizontal on the printer) - no supports
-REACH = RK + 1.0  # how far from an axis a neighbour's run is swept over this part's knuckle
 STEP = 10.0       # joint sampling for swept tendon cuts (deg)
+XE = RH + 1.5     # each tendon run is also cut out of the neighbouring part's knuckle out to this distance from the axis
 BAND_T = W / 2 - GAP / 2
 # A child's joint frame: Z along the pin (+Y) and X toward +Z, because a build123d RevoluteJoint about +Y measures
 # angle 0 from the parent's +Z. With this frame the child lies straight along +X at angle 0 and positive angles flex.
@@ -98,27 +98,37 @@ def joint_points(lj: float):
     return {
         "flex_p": (lj - FLEX_A, 0, -FLEX), "flex_c": (FLEX_A, 0, -FLEX),
         "ext_p": (lj - EXT_A, 0, wp[2]), "ext_wp": wp, "ext_wc": wc, "ext_c": (EXT_A, 0, wc[2]),
+        # run ends far enough from the axis to be clear of the other part's knuckle disc
+        "flex_pp": (lj - XE, 0, -FLEX), "flex_cc": (XE, 0, -FLEX), "ext_pp": (lj - XE, 0, wp[2]), "ext_cc": (XE, 0, wc[2]),
     }
 
 
 def crossing_cuts(lj: float, rng: float, role: str, up: int):
-    """Swept cutters for both tendons across one joint, in the parent ('parent') or child ('child') frame."""
+    """Swept cutters for both tendons across one joint, in the parent ('parent') or child ('child') frame: the chord
+    between the two parts' waypoints, plus the other part's straight runs near the axis (they pass through this
+    part's knuckle disc in the 0.3 mm lap gap), each at every STEP over the joint's range."""
     j = joint_points(lj)
     out = []
     n = int(round(rng / STEP))
+
+    def to_parent(th, q):    # child-frame point -> parent frame at joint angle th
+        r = _rot(th, q)
+        return (r[0] + lj, 0, r[2])
+
+    def to_child(th, q):     # parent-frame point -> child frame at joint angle th
+        return _rot(-th, (q[0] - lj, 0, q[2]))
+
     for k in range(n + 1):
         th = rng * k / n
         if role == "parent":   # child points move with the joint
-            m = lambda q: (lambda r: (r[0] + lj, 0, r[2]))(_rot(th, q))  # noqa: E731
-            fc, wc = m(j["flex_c"]), m(j["ext_wc"])
+            fc, wc = to_parent(th, j["flex_c"]), to_parent(th, j["ext_wc"])
             out += [_tube(j["flex_p"], fc, up), _tube(j["ext_wp"], wc, up),
-                    # the child's own runs pass over this part's knuckle disc: groove the disc face for them too
-                    _tube(fc, m((REACH, 0, -FLEX)), up), _tube(wc, m((REACH, 0, j["ext_wc"][2])), up)]
+                    _tube(fc, to_parent(th, j["flex_cc"]), up),
+                    _tube(wc, to_parent(th, j["ext_c"]), up), _tube(to_parent(th, j["ext_c"]), to_parent(th, j["ext_cc"]), up)]
         else:                  # parent points seen from the child: inverse rotation about the child axis (u = 0)
-            m = lambda q: _rot(-th, (q[0] - lj, 0, q[2]))  # noqa: E731
-            fp, wp = m(j["flex_p"]), m(j["ext_wp"])
+            fp, wp = to_child(th, j["flex_p"]), to_child(th, j["ext_wp"])
             out += [_tube(fp, j["flex_c"], up), _tube(wp, j["ext_wc"], up),
-                    _tube(fp, m((lj - REACH, 0, -FLEX)), up), _tube(wp, m((lj - REACH, 0, j["ext_wp"][2])), up)]
+                    _tube(to_child(th, j["flex_pp"]), fp, up), _tube(to_child(th, j["ext_pp"]), wp, up)]
     return [s for s in out if s is not None]
 
 
@@ -153,13 +163,35 @@ def pin_holes(ctx, lj: float, joint: str, role: str):
     return iface.pin_hole(ctx, PIN, loc, group=f"pin_{joint}", depth=BAND_T, fit=fit)
 
 
-def child_end(body: Sketch):
-    """Proximal end of a segment (child side of its proximal joint): returns (bottom, top) profiles."""
-    keep_bottom = rect(0, XC, 0, H) + rect(XC, 1e3, -H, H)
-    keep_top = rect(XC, 1e3, -H, H)
-    return (body & keep_bottom) + disc(0, RK), body & keep_top
+def child_end(body: Sketch, theta: float = 80.0):
+    """Proximal end of a segment (child side of its proximal joint, range [0, theta] deg): returns (bottom, top).
+    Bottom (knuckle) band: the full body plus the knuckle disc; this is where the segment's bending moment is largest,
+    so it keeps its whole depth, and the parent's top band is cut away where it swings (`swept`, see parent_end).
+    Top band: faces the parent's knuckle band, which holds material behind the axis (x < 0) within |z| <= H and the
+    disc (r <= RK). A child point at radius r >= RH and angle a below the X axis reaches |z| = r sin(a + theta) at full
+    flexion, so palmar material is kept where x sin(theta) + |z| cos(theta) >= RH (clear of the parent's palmar face
+    by CLR); dorsal material ahead of the axis only swings forward; everything stays outside r = RH."""
+    s, c = math.sin(math.radians(theta)), math.cos(math.radians(theta))
+    zb = -H - 1
+    x0, x1 = RH / s, (RH + zb * c) / s
+    # one simple polygon (a union of two touching shapes split along z = 0 non-deterministically in OCC)
+    allowed = Polygon((0, H + 1), (200, H + 1), (200, zb), (x1, zb), (x0, 0), (0, 0), align=None)
+    return body + disc(0, RK), (body & allowed) - disc(0, RH)
 
 
-def parent_end(bottom: Sketch, top: Sketch, lj: float):
-    """Distal end of a segment (parent side of the joint at u = lj): knuckle disc on the bottom, pocket on top."""
-    return bottom + disc(lj, RK), top - disc(lj, RH)
+def swept(theta: float, R: float = 80.0):
+    """Region a child's full-depth knuckle band (half-strip x >= 0, |z| <= H + CLR) sweeps over flexion [0, theta],
+    in the joint frame: the strip at 0, the strip at theta and the wedge between them (one convex polygon)."""
+    h = H + CLR
+    s, c = math.sin(math.radians(theta)), math.cos(math.radians(theta))
+    n = (s, c)                                           # the rotated strip's dorsal normal
+    arc = [(R * math.cos(math.radians(-a)), R * math.sin(math.radians(-a))) for a in range(0, int(theta) + 1, 5)]
+    d = (c, -s)
+    pts = [(0, h), (R, h)] + arc + [(R * d[0] - n[0] * h, R * d[1] - n[1] * h), (-n[0] * h, -n[1] * h)]
+    return Polygon(*pts, align=None)
+
+
+def parent_end(bottom: Sketch, top: Sketch, lj: float, theta: float = 80.0):
+    """Distal end of a segment (parent side of the joint at u = lj, range [0, theta]): knuckle disc on the bottom;
+    on top the pocket the child's disc turns in, and the region the child's full-depth knuckle band sweeps."""
+    return bottom + disc(lj, RK), top - disc(lj, RH) - Pos(lj, 0) * swept(theta)

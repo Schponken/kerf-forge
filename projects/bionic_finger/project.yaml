@@ -95,7 +95,7 @@ requirements:
     why: "15 N on the pip pin (fingertip pinch reaction) with the segment held on the mcp pin; prints on its side so the bending stress runs along the layers"
     direction: auto
     sf: 2.0
-    max_disp_mm: 1.0        # fingertip-position limit under a 15 N pinch (DESIGN.md s8: the clamped-pin model carries the whole moment the flexor really takes)
+    max_disp_mm: 0.44       # 1 % of L1 (ENGINEERING.md s2); met since the child knuckle band is full depth
     fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.675, tol: 0.3}}
     loads:
       - {cylinder: {at: [L1, 0, 0], dir: [0, 1, 0], r: 1.525, tol: 0.3}, bearing_n: [0, 0, 15]}

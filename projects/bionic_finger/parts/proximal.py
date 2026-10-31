@@ -17,8 +17,8 @@ def build(ctx):
     b = -F.SIDES["mcp"]
     assert b == F.SIDES["pip"], "knuckle sides must alternate so both knuckles print on the bed"
     body = F.rect(0, L, -F.H, F.H)
-    bottom, top = F.child_end(body)
-    bottom, top = F.parent_end(bottom, top, L)
+    bottom, top = F.child_end(body, p.mcp_max)
+    bottom, top = F.parent_end(bottom, top, L, p.pip_max)
     part = F.assemble(bottom, top, b)
     part -= F.pin_holes(ctx, 0.0, "mcp", "child")
     part -= F.pin_holes(ctx, L, "pip", "parent")

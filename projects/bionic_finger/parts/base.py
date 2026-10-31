@@ -16,7 +16,7 @@ def build(ctx):
     p = ctx.p
     b = F.SIDES["mcp"]                                     # base is the parent at mcp: knuckle band = bottom
     body = F.rect(-p.base_len, 0, -F.H, F.H)
-    bottom, top = F.parent_end(body, body, 0.0)
+    bottom, top = F.parent_end(body, body, 0.0, p.mcp_max)
     part = F.assemble(bottom, top, b)
     part -= F.pin_holes(ctx, 0.0, "mcp", "parent")
     m3 = iface.screw_spec("M3")

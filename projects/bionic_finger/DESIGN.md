@@ -98,11 +98,11 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
   pin bearing 15 / (3 x 7.85) = 0.64 MPa. PETG XY strength / SF 2 is an order of magnitude above. FEA
   (`proximal_fea`) is the proof; result in the report.
 - FEA model (as the brief specifies): fixed on the mcp pin bore, 15 N bearing load on the pip bore. Clamping the whole
-  660 N mm moment on one 3 mm bore is harsher than the real finger, where the flexor tension carries most of that
-  moment; it concentrates stress at the bore (peak ~17 MPa, p99.9 ~9 MPa vs 24 MPa allowed) and lets the segment
-  rotate ~0.016 rad about it, so the pip end moves ~0.7 mm. Beam bending alone is ~0.05 mm. Deflection limit 1.0 mm:
-  fingertip position under a hard pinch, absorbed by any fingertip pad; the 1 %-of-length rule in ENGINEERING.md is
-  for load-carrying arms whose tip position matters.
+  660 N mm moment on one 3 mm bore is harsher than the real finger (the flexor carries most of it) and most of the
+  deflection is the segment rotating about that bore. The first layout kept only the dorsal half of the child's
+  knuckle band for 8 mm ahead of the axis; that neck let the pip end move 0.72 mm. Now the child's knuckle band is
+  full depth and the parent's other band is cut where it swings (`fingerlib.swept`), which meets the 1 %-of-length
+  limit of ENGINEERING.md (0.44 mm).
 - Pin: 3 mm steel in single shear, 15 N -> 2 MPa; irrelevant.
 
 ## 9. Assembly order

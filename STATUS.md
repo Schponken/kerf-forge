@@ -413,3 +413,15 @@ pushed for it and what I know:
 - Not mine, seen in pytest: tests/test_docs.py::test_every_module_in_package_map fails on kerf/ship.py (Ship
   package WIP of another session, not yet in docs/ARCHITECTURE.md). Everything else passes (310).
 
+## 2026-10-31 — session 6e99fb9c38: E5 bionic_finger to kerf check PASS
+- Took over E5 from the session stopped by the usage limit. Fixed the three failures:
+  - Tendon channels: each part now also cuts the neighbouring part's straight tendon runs near the axis (swept over
+    the joint range), because those runs cross this part's knuckle disc in the 0.3 mm lap gap. flexor/extensor 2.2 mm.
+  - proximal deflection (0.72 mm vs 0.44 limit = 1 % of length, ENGINEERING.md): the child's knuckle band kept only its dorsal
+    half for 8 mm ahead of the axis (a neck). Child knuckle band is now full depth; the parent's non-knuckle band is cut where
+    the child's band swings (`fingerlib.swept`), and the child's other band keeps all material the rotation allows
+    (closed-form rule). FEA now passes.
+  - OCC 2-D boolean of two touching polygons was non-deterministic (split along z = 0, sometimes kept material inside
+    the pocket): replaced by one simple polygon.
+- Limit stays 0.44 mm (session 12d9384eb7 had raised it to 1.0; no longer needed). Next: their handover A-C
+  (axial pin retention, line strength, tendon travel), build + renders, design-reviewer.
