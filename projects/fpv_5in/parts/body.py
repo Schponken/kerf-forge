@@ -3,7 +3,7 @@
 - 4 arms along the diagonals (3 x 5 mm ribs on the top either side of each arm's screws stiffen the plate), each held by two M3 screws from below into nut traps whose hex pockets open on the top,
   and keyed by their two top ridges in 1.7 mm grooves in the underside (side hits go into the groove walls).
 - 30.5 mm stack on M3 x 30 from the top into nut traps whose pockets open underneath, inside the arm-free centre.
-- 4 posts of the top plate land on the top face; M3 x 6 from below (counterbored) into heat-set inserts in the posts.
+- 4 posts of the top plate land on the top face; M3 x 8 from below (counterbored) into heat-set inserts in the posts.
 - Camera cage at the front nose: 4 mm cheeks reaching 3 mm past the lens at any tilt, gusseted to the nose; the
   camera pivots on its two side M2 screws (teardrop holes, cheeks print upright).
 """

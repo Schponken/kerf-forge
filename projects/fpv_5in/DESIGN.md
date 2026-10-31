@@ -30,13 +30,13 @@
   real peak may be ~60 A on a full pack): check the Blackbox/OSD current peak is ≤ 60 A on a full pack before freestyle.
 - Arm root bending (hand calc): crash load 2 × 1685 g = 33.1 N at r = 113 mm; outer arm screw at r = 52 mm → lever
   61 mm, M = 2017 N·mm; section 20 × 11 mm: Z = 403 mm³ → 5.0 MPa nominal. FEA (fixed at the two arm screws, load on
-  the four motor-screw seats) gives 9.8 MPa (99.9th percentile) at the screw holes vs CF-PETG 35 MPa / SF 3 =
+  the four motor-screw seats) gives 9.5 MPa (99.9th percentile) at the screw holes vs CF-PETG 35 MPa / SF 3 =
   11.7 MPa, deflection ~1 mm (crash case; ~0.2 mm at hover thrust).
 - Body (the part that must outlive the arms): the same crash reaches it as a lever couple on the arm screws — arm as
   a beam on supports at r 38 / 52 with 33.06 N at r 113 → inner nut pulls the body down 144.0 N, the arm presses up
-  on the underside round the outer screw with 177.1 N. FEA held at the four post feet: 9.8 MPa vs 11.7 MPa
+  on the underside round the outer screw with 177.1 N. FEA held at the four post feet: 9.6 MPa vs 11.7 MPa
   (needed a 7 mm plate plus 3 × 5 mm ribs either side of each arm's screws; 5 mm plain plate gave 22 MPa).
-- Mass: printed parts 145 g (limit 250).
+- Mass: printed parts 149.5 g (limit 250); all-up about 597 g including wire.
 
 ## Parts (all CF-PETG, hardened nozzle, ≥ 4 walls)
 | Part | Job | Print orientation | load_axis | Envelope |
@@ -77,7 +77,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 
 - Top plate (review round 2): each post pair is filled into one 9 × 25 mm pillar (posts at x ±33, y ±8) so a 50 g battery
   hit (112.8 N + its 2369 N·mm tipping couple, posts bent across the layers) stays inside CF-PETG z strength / 3:
-  FEA 7.7 (front/back) and 8.7 (side) vs 9.67 MPa. A 24 mm roof tongue reaches over the camera to x 58 (lens front
+  FEA 7.0 (front/back) and 8.9 (side) vs 9.67 MPa. A 24 mm roof tongue reaches over the camera to x 58 (lens front
   61.9-64.8), 9.8 mm above the camera top at full tilt, so a hit from above lands on the roof.
 - Arm key ridges are 4.5 × 1.5 mm: a 33 N side hit bends the ridge root across one layer line at about 3 MPa.
 
@@ -114,3 +114,5 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   freestyle flying gives about 3–5 min on a 1300 mAh 6S pack.
 - Motor phase runs are modelled as 18 AWG extensions; the motors' own lead gauge/length is not in the catalog (with
   the 74 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 14.22 A).
+- XT60 retention is the cable tie wrapped under it (friction); hold the XT60 with a finger when unplugging the pack.
+- Heat-shrink: the BOM lists 20 mm pieces; cut the ones for the four XT60 solder cups to 8–10 mm (see wiring note).

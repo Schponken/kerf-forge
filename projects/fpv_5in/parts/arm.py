@@ -1,7 +1,7 @@
 """One bolt-on arm (arm_1..arm_4 share this file; the item id picks the fastener groups).
 
 Frame: X along the arm from the frame centre, arm TOP face at z = 0 (it sits under the body plate), bottom at
-z = -arm_t. The root is clamped under the body by two M3 x 12 from below into nut traps in the body; two 4.5 x 1.5 mm
+z = -arm_t. The root is clamped under the body by two M3 x 14 from below into nut traps in the body; two 4.5 x 1.5 mm
 ridges on the top edges sit in grooves in the body underside, so side hits load the ridges, not the two screws.
 The motor sits on the top face at r = motor_r on four M3 x 10 (counterbored for a 7.5 mm grip: 2.5 mm into the
 motor's ~3 mm deep threads, a screw-length tolerance short of the bottom). Prints flat, top up: bending runs along
@@ -32,7 +32,7 @@ def build(ctx):
                                                                   align=(Align.MIN, Align.CENTER, Align.MIN))
     under = Location((0, 0, -t), (180, 0, 0))       # bottom face, +Z toward the screw heads (down)
     body -= iface.bolt_pattern(ctx, f"arm_{n}", "M3", [(p.arm_hole_1, 0), (p.arm_hole_2, 0)], under, "counterbore",
-                               depth=t, counterbore_depth=t - 6.0)  # grip 6 -> M3 x 12 into the body nut
+                               depth=t, counterbore_depth=t - 6.0)  # grip 6 -> M3 x 14 through the body nut (BOM sizes it)
     body -= iface.motor_mount(ctx, MOTOR, Location((p.motor_r, 0, -t), (180, 0, 0)), f"motor_{n}", plate_t=t,
                               kind="counterbore", counterbore_depth=t - 7.5)  # grip 7.5 -> M3 x 10, 2.5 mm in the motor
     for x in (p.arm_r0 + 0.4 * L, p.arm_r0 + 0.75 * L):  # two motor-wire tie slots through the arm (2.5 mm ties)
