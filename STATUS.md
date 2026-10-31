@@ -555,3 +555,11 @@ pushed for it and what I know:
 - Process note: once I fetched a datasheet PDF with curl after WebFetch's permission request for it timed out; I
   deleted it unread. No data from it is used anywhere.
 
+
+## 2026-10-31 04:20 UTC — session 01S68R6RW: per-project catalog fingerprint
+- Every review in the repo was stale because any catalog edit (by any parallel session) changed every project's
+  fingerprint. Now each check/build records the catalog paths it read into projects/<p>/catalog_deps.json (union,
+  committed) and the fingerprint hashes only those entries (tests/test_catalog_deps.py; docs/ARCHITECTURE.md
+  "Fingerprint and catalog_deps.json"). Each project gets a new fingerprint once, on its next build: owners, re-run
+  `kerf build <p>`, commit catalog_deps.json and get one more review (or a re-confirm if nothing else changed).
+- tvc_drone: rebuilt, deps committed, reviewer re-confirmed PASS at 00af8263a5d0de73.
