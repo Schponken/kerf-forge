@@ -36,6 +36,8 @@ parts:
   gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
   finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: X}
   cable_mast: {file: parts/cable_mast.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: Z}
+  psu_hood: {file: parts/psu_hood.py, material: PETG, print_rot: [0, -90, 0], infill: 0.3,
+             assembly_note: "press the two M3 inserts into the bosses behind the end wall before fitting the inlet; the inlet's flange screws take at most 0.5 N*m (SCHURTER)"}
 purchased:
   brg_lo: {catalog: bearings.6001, proxy: bearing}
   brg_hi: {catalog: bearings.6001, proxy: bearing}
@@ -53,17 +55,24 @@ purchased:
   # Arduino Nano on USB -> I2C -> PCA9685 driver on the base post -> every servo's signal (orange)
   driver: {catalog: boards.pca9685_adafruit, proxy: board, groups: {holes: driver}}
   nano: {catalog: boards.arduino_nano, proxy: board}
+  # supply frame (box proxy, origin at the bottom centre): the terminal-block end is at x = -64.5 (catalog datum x = 0),
+  # the datasheet y = 0 side (tapped side holes) at y = -48.5; DC pins 4-7 sit at datum y 23.5-52 (y -25..3.5 here)
   psu: {catalog: electronics.supplies.meanwell_lrs100_5, proxy: box, color: "#9aa0a6",
-        note: "mains wiring (L, N, earth) to its screw terminals by a competent person, with the terminal cover fitted"}
+        joints: {term_end: [-64.5, 0, 0], dc: [-57.2, -11, 25]},
+        sites: [{group: psu_side, screw: M3, at: [-32.5, -48.5, 15], dir: [0, -1, 0], engage: 5.0, min_engage: 3.0}],
+        note: "screw it to the desk or a board through its base holes; the hood closes its terminal end"}
+  # catalog panel range 2.5-8 mm; flange holes d3.4 on 56 mm -> M3
+  iec_inlet: {catalog: electronics.connectors.iec_inlet_fused_switched_schurter_dd11, proxy: panel_module, screw: M3,
+              groups: {holes: inlet}, note: "fused (2 x T3.15 A) and switched mains inlet in the PSU hood's end wall"}
   bus_arm: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8",
             note: "two splices (+5 V and GND): supply in, shoulder/elbow/wrist/grip servo red (or brown) out"}
   bus_yaw: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8",
             note: "two splices (+5 V and GND): supply in, yaw servo out, PCA9685 GND reference out"}
 bom_extra:
   - {type: fastener, item: "M4 screws or 4 mm wood screws (desk mounting), or two small C-clamps on the rear pad", qty: 4, spec: "length = 6 mm base + desk; the base holes are 4.5 mm"}
-  - {type: hardware, item: Medium-strength threadlocker, qty: 1, spec: "on the three M3 pivot screws (they turn with the link)"}
-  - {type: hardware, item: "Servo extension lead 300 mm (Pololu #2184 or any JR/Futaba 22 AWG)", qty: 5, spec: "one per servo; the leads are split at the base post: red/brown to the WAGO buses, orange to the PCA9685 (lengths in WIRING.md)"}
-  - {type: hardware, item: "M2 x 8 screw", qty: 4, spec: "PCA9685 board to the base post bosses (thread-forming into PETG)"}
+  - {type: hardware, item: Medium-strength threadlocker, qty: 1, spec: "a small drop on the thread TIP of the three M3 pivot screws only, where it sits in the brass insert; keep it off the printed bores (anaerobic threadlocker can stress-crack PETG)"}
+  - {type: hardware, item: "M3 flat washer (ISO 7089, 3.2 x 7 x 0.5)", qty: 9, spec: "up to 3 per pivot, between the fork and the link, to take up the 1.5 mm side gap", price_key: "washer:M3"}
+  - {type: hardware, item: "USB-A to mini-B cable 1.8 m (SparkFun CAB-11301)", qty: 1, spec: "PC to the Arduino Nano (A000005 is mini-B)", price_key: electronics.cables.usb_mini_b_6ft_sparkfun_cab11301}
   - {type: hardware, item: "Cable ties 2.5 mm", qty: 10, spec: "lead bundle at the cable mast, base post, link slot pairs"}
 assembly:
   root: base
@@ -81,6 +90,8 @@ assembly:
     - {parent: base.driver_seat, child: driver.bottom}
     - {parent: base.desk_nano, child: nano.bottom}
     - {parent: base.desk_psu, child: psu.bottom}
+    - {parent: psu.term_end, child: psu_hood.origin}
+    - {parent: psu_hood.inlet, child: iec_inlet.panel}
     - {parent: base.desk_bus_arm, child: bus_arm.bottom}
     - {parent: base.desk_bus_yaw, child: bus_yaw.bottom}
     - {parent: yoke_r.servo_seat, child: sh_servo.tabs}
@@ -102,39 +113,46 @@ assembly:
 electrical:
   supply: psu                # mains supply: rated by its 18 A, no run time
   burst_s: 5                 # all five servos stalled together for 5 s (worst case), for wire heating
-wiring:      # cut lengths >= routed + 15 % (checked); arm leads also carry extra for the yaw loop (span 68-95 mm) and joints
-  - {id: psu_arm, from: psu, to: bus_arm, v: 5.0, gauge: 16, color: red/black, length_mm: 200,
-     note: "supply +V/-V screw terminals to the arm bus splices; silicone wire"}
-  - {id: psu_yaw, from: psu, to: bus_yaw, v: 5.0, gauge: 20, color: red/black, length_mm: 200,
-     note: "second +V/-V terminal pair to the yaw bus splices"}
-  - {id: pwr_sh, from: bus_arm, to: sh_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 440,
-     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top],
-     note: "servo lead red + brown (servo's own lead + 300 mm extension): up behind the driver, over the post top to the mast, outside the upper arm's plate A"}
-  - {id: pwr_el, from: bus_arm, to: el_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 520,
-     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2], note: "tied through the upper arm's slot pair"}
-  - {id: pwr_wr, from: bus_arm, to: wr_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 600,
-     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_2], note: "tied through the upper arm and forearm slot pairs"}
-  - {id: pwr_gr, from: bus_arm, to: gr_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 710,
-     route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2], note: "tied through the upper arm and forearm slot pairs"}
-  - {id: pwr_yaw, from: bus_yaw, to: yaw_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 210,
-     route: [[-112, -37, 15], [-100, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]],
+  supply_v: 5.3              # LRS output trimmed up with its SVR pot (4.5-5.5 V): covers the lead drop at stall
+  mains: {inlet: iec_inlet, fuse: electronics.fuses.littelfuse_215_t3_15a, cord: electronics.cords.iec_c13_cord_us_18awg,
+          wire: electronics.wire_misc.mains_wire_18awg_ul1015, tab_receptacle: electronics.connectors.fdisc_187_insulated_18awg,
+          jumper_mm: 100, input_v: 115}
+wiring:      # servo runs are each servo's own 300 mm lead + an extension (lead:), length-checked at every joint pose
+  # supply DC (+V/-V screw pins, ferrules) out of the hood to the two WAGO bus pairs; the hood ties the bundle to its floor
+  - {id: psu_arm, from: psu.dc, to: bus_arm, v: 5.3, gauge: 16, color: red/black, length_mm: 380, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4]],
+     note: "supply +V/-V (one pin pair) to the arm bus splices"}
+  - {id: psu_yaw, from: psu.dc, to: bus_yaw, v: 5.3, gauge: 16, color: red/black, length_mm: 360, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4]],
+     note: "second +V/-V pin pair to the yaw bus splices"}
+  # each servo: red + brown from the bus (5 A blade fuse in the red at the bus), orange on to the PCA9685 channel pin
+  - {id: pwr_sh, from: bus_arm, to: sh_servo, v: 5.3, gauge: 22, color: red/brown, lead: [sh_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+     ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top],
+     note: "up behind the driver, over the post top to the mast, outside the upper arm's plate A"}
+  - {id: pwr_el, from: bus_arm, to: el_servo, v: 5.3, gauge: 22, color: red/brown, lead: [el_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+     ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2], note: "tied through the upper arm's slot pair"}
+  - {id: pwr_wr, from: bus_arm, to: wr_servo, v: 5.3, gauge: 22, color: red/brown, lead: [wr_servo, electronics.wire_misc.servo_ext_600_pololu2185], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+     ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_2], note: "tied through the upper arm and forearm slot pairs"}
+  - {id: pwr_gr, from: bus_arm, to: gr_servo, v: 5.3, gauge: 22, color: red/brown, lead: [gr_servo, electronics.wire_misc.servo_ext_600_pololu2185], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+     ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2],
+     note: "tied through the upper arm and forearm slot pairs"}
+  - {id: pwr_yaw, from: bus_yaw, to: yaw_servo, v: 5.3, gauge: 22, color: red/brown, lead: [yaw_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
+     ends: {from: lever, to: plug}, route: [[-112, -37, 15], [-100, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]],
      note: "out of the housing's front exit, back along the housing inside the gear guard, out of the guard's floor-level hole"}
-  - {id: sig_sh, from: driver, to: sh_servo, kind: signal, gauge: 22, color: orange, length_mm: 350,
-     route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top], note: "orange wire of the same lead to PCA9685 channel 1 (signal pin)"}
-  - {id: sig_el, from: driver, to: el_servo, kind: signal, gauge: 22, color: orange, length_mm: 440,
+  - {id: sig_sh, from: driver, to: sh_servo, kind: signal, gauge: 22, color: orange, lead: pwr_sh, ends: {from: crimp, to: plug},
+     route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top], note: "PCA9685 channel 1, signal (PWM) pin; the housing's V+ and GND slots stay empty"}
+  - {id: sig_el, from: driver, to: el_servo, kind: signal, gauge: 22, color: orange, lead: pwr_el, ends: {from: crimp, to: plug},
      route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2], note: "channel 2"}
-  - {id: sig_wr, from: driver, to: wr_servo, kind: signal, gauge: 22, color: orange, length_mm: 510,
+  - {id: sig_wr, from: driver, to: wr_servo, kind: signal, gauge: 22, color: orange, lead: pwr_wr, ends: {from: crimp, to: plug},
      route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_2], note: "channel 3"}
-  - {id: sig_gr, from: driver, to: gr_servo, kind: signal, gauge: 22, color: orange, length_mm: 620,
+  - {id: sig_gr, from: driver, to: gr_servo, kind: signal, gauge: 22, color: orange, lead: pwr_gr, ends: {from: crimp, to: plug},
      route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2], note: "channel 4"}
-  - {id: sig_yaw, from: driver, to: yaw_servo, kind: signal, gauge: 22, color: orange, length_mm: 320,
+  - {id: sig_yaw, from: driver, to: yaw_servo, kind: signal, gauge: 22, color: orange, lead: pwr_yaw, ends: {from: crimp, to: plug},
      route: [[-114, -20, 95], [-114, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]], note: "channel 0"}
-  - {id: gnd_ref, from: bus_yaw, to: driver, kind: signal, gauge: 22, color: black, length_mm: 150,
+  - {id: gnd_ref, from: bus_yaw, to: driver, kind: signal, gauge: 22, color: black, length_mm: 150, ends: {from: lever, to: crimp},
      route: [[-112, -37, 15], [-114, -20, 30], [-114, -20, 95]],
-     note: "supply GND to the PCA9685 GND pin: the servo signals need a common ground (the driver's V+ terminal stays unused)"}
+     note: "supply GND to a GND pin of the PCA9685 (channel 15's GND): the servo signals need a common ground (the driver's V+ terminal stays unused)"}
   - {id: i2c, from: nano, to: driver, kind: signal, gauge: 26, conductors: 4, color: red/black/blue/yellow, length_mm: 150,
-     route: [[-125, 40, 12], [-114, 20, 30], [-114, 20, 95]],
-     note: "Nano 5V/GND/A4 (SDA)/A5 (SCL) to the PCA9685 VCC/GND/SDA/SCL header; the Nano runs from the PC's USB"}
+     ends: {from: crimp, to: crimp}, route: [[-125, 40, 12], [-114, 20, 30], [-114, 20, 95]],
+     note: "Nano 5V/GND/A4 (SDA)/A5 (SCL) to the PCA9685 side header VCC/GND/SDA/SCL (two 1x3 housings: GND-OE-SCL and SDA-VCC-V+, OE and V+ empty); the Nano runs from the PC's USB"}
 requirements:
   - {id: torque_shoulder, check: static_torque, joint: shoulder, actuator: sh_servo, payload_g: 150, payload_at: gripper.tcp,
      max_fraction: 0.5, poses: [{}, {shoulder: -60}, {shoulder: -30}, {shoulder: 30}, {shoulder: 60}, {elbow: 60}, {elbow: -60}],
@@ -247,4 +265,6 @@ requirements:
   - {id: power, check: power_budget, why: "supply, buses and every wire within rating with all five servos stalled together"}
   - {id: usb_access, check: connector_access, item: nano, direction: [1, 0, 0], length_mm: 30,
      why: "the USB cable reaches the Nano to load the sketch"}
+  - {id: mains_access, check: connector_access, item: iec_inlet, direction: [0, 0, 1], length_mm: 50,
+     why: "the C13 cord plugs into the inlet (plug + cord bend) with the hood on the supply"}
   - {id: arm_mass, check: mass_max, max_g: 900, include: [base, turntable, retainer, yaw_gear, yoke_r, yoke_l, upper_arm, forearm, gripper, finger, cable_mast, brg_lo, brg_hi, yaw_servo, yaw_horn, sh_servo, sh_horn, el_servo, el_horn, wr_servo, wr_horn, gr_servo, gr_horn, driver], why: "the arm on its base (the supply, buses and Nano sit on the desk); also the torque budget"}

@@ -178,6 +178,22 @@ wiring:
   counted only for soldered ends. `power_budget` also checks voltage drop: each load's input after the IR drop of
   every +/- pair back to its source or regulator, at average current (40 C wire, must be >= its voltage_min) and at
   peak (100 C wire, reported as a brief sag, not failed); skipped where the catalog gives one nominal voltage.
+- `ends` also takes `crimp` (a female 0.1 in crimp pin per conductor in a 1x3 housing, pushed onto a male header;
+  pins + housings go in the BOM). `screw` ends get a bootlace ferrule per conductor (catalog
+  `electronics.wire_misc.ferrule_*` of that AWG, BOM row; a missing gauge is flagged in the BOM).
+- `lead: [item, catalog.path, ...]`: the run is a ready-made lead, e.g. a servo's own pigtail (catalog
+  `lead_length_mm`) plus extension cables (catalog `length`) plugged in series. Its length is their sum (a given
+  `length_mm` may not exceed it), nothing is cut from a reel, the extensions are BOM rows. `lead: <run id>`: another
+  conductor of that run's lead (a servo's signal wire whose +/- pair is the power run): same length, no BOM.
+- `fuse: <catalog fuse>` (+ `fuse_holder: <catalog holder>`) on a power run: rows check avg <= derate x rating
+  (catalog `derate`, Littelfuse 75 %), peak <= rating, rating <= the smallest chassis ampacity of the run and every
+  power run downstream of it (the fuse protects those wires), holder current/voltage; BOM fuse (+1 spare) + holder.
+- `electrical.supply_v`: an adjustable mains supply trimmed to this voltage (must be inside catalog
+  `output_v_adj_min..max`); runs from it then carry that `v`.
+- `electrical.mains: {inlet: <item>, fuse, cord, wire, tab_receptacle, jumper_mm, input_v}`: the AC side. The
+  supply's catalog `input_current_a_<input_v>vac` must fit the inlet (`current_a`, UL figure if lower), the derated
+  inlet fuse, the cord and the jumper wire (ampacity, and `voltage_max` >= input_v); BOM cord, fuses (+1 spare),
+  jumper wire, ferrules and tab receptacles; WIRING/ASSEMBLY get the L/N/earth step.
 - `supplied: <item>` marks a lead that comes with an item (an adapter's DC cord, a pack's own lead): rated and
   length-checked like any run, but no wire or heat-shrink in the BOM and its step says connect, not cut.
 - A power run (`kind: power`, default) is the +/- pair (`conductors` overrides, e.g. 3 motor phases) and carries
@@ -234,7 +250,8 @@ wiring:
 | stepper | steppers.* | face, shaft (revolute) | face: female threaded holes |
 | rod | rods.* + `length` | end_a, end_b, mid | – |
 | board | boards.* | bottom | holes: male screws through the board |
-| box | `size` or catalog L/W/H | bottom, top, + `joints:` | – |
+| box | `size` or catalog L/W/H | bottom, top, + `joints:` | `sites:` [{group, screw, at, dir, kind: threaded (female, `engage`, `min_engage`) or clearance (male, `grip`)}] — holes in the bought part's own case (positions from its catalog drawing) |
+| panel_module | panel_cutout_w/h(+corner_r), flange_w/h/t, body_w/h, depth_behind_flange, front_protrusion, screw_hole_spacing/_d (+ spec `screw`) | panel (flange rear face, +Z out of the front) | holes: male screws through the flange |
 | step | any catalog entry + `base:` proxy kind + `model:` file in catalog/models (`model_rot`, `model_pos` into the base frame) | the base proxy's | the base proxy's; refused unless the STEP bbox is within 0.5 mm of the base proxy's and every site has a real hole (kerf/vendor.py) |
 | pulley | motion.GT2_*_pulley (envelope: flange OD x length) | bore, top | – |
 | belt | `center`, `teeth: [z1, z2]`, `width` (keep-out; `owner:` pulley 1, allow_overlap pulley 2) | axis1 | – |

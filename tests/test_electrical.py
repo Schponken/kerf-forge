@@ -362,10 +362,15 @@ def test_steps_pick_the_verb_per_end():
              {"id": "g", "from": "nano", "to": "jack", "kind": "signal", "gauge": 26, "length_mm": 110, "color": "black",
               "points": [], "terms": {"from": "plug", "to": "screw"}}]
     st = WO.steps({"wires": wires, "mains": True})
-    assert "clamp under jack's screw terminal, solder to the pin header servo's plug pushes onto; heat-shrink" in st[0]
-    assert "plug into nano, clamp under jack's screw terminal." in st[1] and "heat-shrink" not in st[1]
+    assert ("crimp a bootlace ferrule on each conductor and clamp it in jack's screw terminal, solder to the pin header "
+            "servo's plug pushes onto; heat-shrink") in st[0]
+    assert "plug into nano, crimp a bootlace ferrule on each conductor and clamp it in jack's screw terminal." in st[1]
+    assert "heat-shrink" not in st[1]
     rows = WO.bom_rows({"wires": wires})
     assert sum(r["qty"] for r in rows if "heat-shrink" in r["item"]) == 2          # only the 2 header ends are soldered
+    # screw ends get ferrules of their gauge: 2 x AWG 22 (p) + 1 x AWG 26 (g, none catalogued -> flagged row)
+    fr = {r["spec"] or r["item"]: r["qty"] for r in rows if "ferrule" in r["item"].lower() or "ferrule" in r["spec"]}
+    assert fr == {"electronics.wire_misc.ferrule_wago_216_322_22awg": 2, "bootlace ferrule for AWG 26": 1}
 
 
 def test_feed_at_the_minimum_is_reported_not_failed(tmp_path):
@@ -374,3 +379,113 @@ def test_feed_at_the_minimum_is_reported_not_failed(tmp_path):
     proj.data["wiring"][0]["v"] = 4.8                     # MG996R voltage_min 4.8
     rows = [r for r in E.analyse(proj)["ratings"] if r["kind"].startswith("voltage after")]
     assert rows and all(r["soft"] and not r["ok"] for r in rows)
+
+
+def _servo_run(tmp_path, n, extra):
+    """_servos with extra keys merged into run w0's yaml."""
+    proj, asm = _servos(tmp_path, n)
+    proj.data["wiring"][0].update(extra)
+    return proj, asm
+
+
+def test_fuse_must_carry_the_load_and_protect_the_wire(tmp_path):
+    # MG996R 0.9 A running / 2.5 A stall. 5 A ATO (derate 0.75 -> 3.75 A) carries it and protects AWG 20 (11 A).
+    proj, asm = _servo_run(tmp_path, 1, {"fuse": "electronics.fuses.ato_5a_littelfuse_257005",
+                                         "fuse_holder": "electronics.fuses.ato_holder_littelfuse_fhac0001zxj"})
+    m = E.analyse(proj)
+    rows = [r for r in m["ratings"] if r["what"].startswith("fuse")]
+    assert rows and all(r["ok"] for r in rows), rows
+    # a 10 A fuse cannot protect AWG 24 (3.5 A chassis): the protection row fails
+    proj.data["wiring"][0].update(gauge=24, fuse="electronics.fuses.ato_10a_littelfuse_257010")
+    m = E.analyse(proj)
+    bad = [r for r in m["ratings"] if r["what"].startswith("fuse") and not r["ok"]]
+    assert any("smallest protected wire" in r["kind"] for r in bad)
+    # BOM: fuse fitted + 1 spare, one holder; the step tells where it goes
+    rows = WO.bom_rows(m)
+    q = {r["spec"]: r["qty"] for r in rows if r["type"] == "purchased"}
+    assert q["electronics.fuses.ato_10a_littelfuse_257010"] == 2 and q["electronics.fuses.ato_holder_littelfuse_fhac0001zxj"] == 1
+    assert any(s.startswith("Fuse **w0**") for s in WO.steps(m))
+
+
+def test_fuse_on_a_signal_run_is_refused(tmp_path):
+    proj, asm = _servo_run(tmp_path, 1, {"kind": "signal", "fuse": "electronics.fuses.ato_5a_littelfuse_257005"})
+    proj.data["wiring"].append({"id": "p", "from": "psu", "to": "s0", "v": 5.0, "gauge": 20, "length_mm": 400})
+    proj.data["wiring"][0]["to"] = "s0"
+    with pytest.raises(E.ElectricalError, match="fuse goes in a power run"):
+        E.analyse(proj)
+
+
+def test_ready_made_lead_length_and_bom(tmp_path):
+    """lead: [servo, extension]: length = servo lead_length_mm (300) + extension length (300); no reel wire; a
+    second run sharing the lead gets the same length and no extra BOM."""
+    proj, asm = _servo_run(tmp_path, 1, {"lead": ["s0", "electronics.wire_misc.servo_ext_300_pololu2184"], "gauge": 22})
+    del proj.data["wiring"][0]["length_mm"]
+    proj.data["wiring"].append({"id": "sig", "from": "psu", "to": "s0", "kind": "signal", "gauge": 22, "lead": "w0",
+                                "ends": {"from": "crimp", "to": "plug"}})
+    m = E.analyse(proj)
+    w = {x["id"]: x for x in m["wires"]}
+    assert w["w0"]["length_mm"] == 600 and w["sig"]["length_mm"] == 600 and w["sig"]["lead_of"] == "w0"
+    rows = WO.bom_rows(m)
+    assert not [r for r in rows if "metres" in r["item"]]                      # nothing cut from a reel
+    q = {r["spec"]: r["qty"] for r in rows if r["type"] == "purchased"}
+    assert q == {"electronics.wire_misc.servo_ext_300_pololu2184": 1, "electronics.connectors.crimp_pin_female_pololu1930": 1,
+                 "electronics.connectors.servo_housing_1x3_pololu1902": 1}
+    st = WO.steps(m)
+    assert "ready-made lead" in st[0] and "peel it off" in st[1] and "crimp a female 0.1 in pin" in st[1]
+    # claiming more than the pieces give is refused
+    proj.data["wiring"][0]["length_mm"] = 700
+    with pytest.raises(E.ElectricalError, match="longer than its lead pieces"):
+        E.analyse(proj)
+
+
+def test_mains_side_rows_and_bom(tmp_path):
+    proj, asm = _servos(tmp_path, 1)
+    proj.data["electrical"]["mains"] = {"fuse": "electronics.fuses.littelfuse_215_t3_15a",
+                                        "cord": "electronics.cords.iec_c13_cord_us_18awg",
+                                        "wire": "electronics.wire_misc.mains_wire_18awg_ul1015", "input_v": 115,
+                                        "tab_receptacle": "electronics.connectors.fdisc_187_insulated_18awg", "jumper_mm": 100}
+    # the GST60A05 test adapter has no input current in the catalog: the mains side refuses to guess
+    with pytest.raises(E.ElectricalError, match="input_current_a_115vac"):
+        E.analyse(proj)
+    proj.items["psu"].spec["catalog"] = "electronics.supplies.meanwell_lrs100_5"
+    m = E.analyse(proj)
+    rows = [r for r in m["ratings"] if r["what"].startswith("mains")]
+    # LRS-100-5: 1.9 A at 115 VAC; T3.15 A x 0.75 = 2.36 A; cord 10 A; AWG 18 16 A
+    assert len(rows) == 3 and all(r["ok"] for r in rows) and rows[0]["value"] == 1.9
+    q = {r["spec"]: r["qty"] for r in WO.bom_rows(m) if r["type"] == "purchased"}
+    assert q["electronics.cords.iec_c13_cord_us_18awg"] == 1 and q["electronics.connectors.fdisc_187_insulated_18awg"] == 3
+    assert q["electronics.wire_misc.mains_wire_18awg_ul1015"] == 0.3 and q["electronics.wire_misc.ferrule_wago_216_203_18awg"] == 3
+    assert any(s.startswith("Mains side") and "earth" in s for s in WO.steps(m))
+
+
+def test_adjustable_supply_voltage(tmp_path):
+    """electrical.supply_v trims an adjustable supply inside its catalog output_v_adj range; outside it is refused."""
+    proj, asm = _servos(tmp_path, 1)
+    proj.items["psu"].spec["catalog"] = "electronics.supplies.meanwell_lrs100_5"     # 4.5-5.5 V adjustable
+    proj.data["electrical"]["supply_v"] = 5.3
+    proj.data["wiring"][0]["v"] = 5.3
+    m = E.analyse(proj)
+    assert m["v_bat"] == 5.3 and all(r["ok"] for r in m["ratings"] if r["kind"] == "voltage")
+    proj.data["electrical"]["supply_v"] = 6.0
+    with pytest.raises(E.ElectricalError, match="not adjustable"):
+        E.analyse(proj)
+
+
+def test_box_sites_and_panel_module():
+    """box proxy `sites:` puts a female threaded hole in the bought part's case; panel_module gives two male flange
+    screws on the catalog spacing and a body that fills the cut-out's rounded corners."""
+    from kerf import proxies
+    from kerf.ctx import Ctx
+    c = Ctx("psu", {})
+    proxies.build(c, {"proxy": "box", "size": [129, 97, 30],
+                      "sites": [{"group": "g", "screw": "M3", "at": [-32.5, -48.5, 15], "dir": [0, -1, 0], "engage": 5, "min_engage": 3}]})
+    (st,) = c.sites
+    assert st.role == "female" and st.kind == "threaded" and st.engage == 5 and st.min_engage == 3
+    import numpy as np
+    from kerf import geom
+    assert np.allclose(geom.world_dir(st.loc, (0, 0, 1)), (0, -1, 0), atol=1e-9)
+    c = Ctx("inlet", {})
+    proxies.build(c, {"proxy": "panel_module", "catalog": "electronics.connectors.iec_inlet_fused_switched_schurter_dd11",
+                      "screw": "M3", "groups": {"holes": "inlet"}})
+    xs = sorted(round(s.loc.position.X, 3) for s in c.sites)
+    assert xs == [-28.0, 28.0] and all(s.role == "male" and s.grip == 2.5 for s in c.sites)

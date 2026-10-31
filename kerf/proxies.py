@@ -155,7 +155,55 @@ def box(ctx, spec):
     ctx.rigid("top", Location((0, 0, z)))
     for lab, p in (spec.get("joints") or {}).items():
         ctx.rigid(lab, Location(tuple(p)))
+    for st in spec.get("sites") or []:
+        ctx.site(_box_site(st))
     return ctx.finish(s, color=spec.get("color", "#2b2f33"))
+
+
+def _box_site(st: dict) -> Site:
+    """A fastener hole in a box proxy's own surface, from project.yaml (the catalog gives its position, e.g. a supply's
+    tapped case holes): {group, screw, at: [x, y, z] on the surface, dir: [dx, dy, dz] out of the surface,
+    kind: threaded (female, default) | clearance (male), engage: max screw depth past the surface,
+    min_engage: thread that holds (sheet-metal case: about its thickness), grip: male clamped thickness}."""
+    from build123d import Plane
+    loc = Plane(origin=tuple(float(v) for v in st["at"]), z_dir=tuple(float(v) for v in st["dir"])).location
+    kind = st.get("kind", "threaded")
+    if kind == "threaded":
+        return Site(st["group"], "female", st["screw"], "threaded", loc, engage=float(st["engage"]),
+                    min_engage=float(st.get("min_engage", 0.0)))
+    return Site(st["group"], "male", st["screw"], kind, loc, grip=float(st.get("grip", 0.0)))
+
+
+@proxy("panel_module")
+def panel_module(ctx, spec):
+    """Front-mounted panel module (IEC inlet, switch, fuse holder) from the catalog: panel_cutout_w/h, flange_w/h/t,
+    body_w/h, depth_behind_flange, front_protrusion, screw_hole_spacing (two screws on the cut-out's horizontal centre
+    line). Frame: origin at the centre of the flange's rear face (= the panel's front surface), +Z out of the front,
+    X along the flange width. Joints: panel (origin). Sites: group[holes] male screws (spec `screw`, e.g. M3) through
+    the flange from the front, grip = flange thickness."""
+    e = catalog.get(spec["catalog"])
+    fw, fh, ft = (catalog.num(e, k) for k in ("flange_w", "flange_h", "flange_t"))
+    bw, bh = catalog.num(e, "body_w"), catalog.num(e, "body_h")
+    dep, fr = catalog.num(e, "depth_behind_flange"), catalog.num(e, "front_protrusion", default=0.0)
+    sp = catalog.num(e, "screw_hole_spacing")
+    r = catalog.num(e, "panel_cutout_corner_r", default=0.0)     # the body fills the cut-out's rounded corners
+    if r > 0:
+        from build123d import RectangleRounded, extrude
+        body = Pos(0, 0, -dep) * extrude(RectangleRounded(bw, bh, r), dep)
+    else:
+        body = _box(bw, bh, dep, z0=-dep)
+    s = body + _box(fw, fh, ft)
+    if fr > 0:
+        s += _box(bw, bh, fr, z0=ft)
+    screw = spec.get("screw")
+    if screw is None:
+        raise ValueError(f"{ctx.id}: panel_module needs `screw:` (the size that passes the catalog screw_hole_d)")
+    for x in (-sp / 2, sp / 2):
+        s -= Pos(x, 0, -1) * Cylinder(catalog.num(e, "screw_hole_d") / 2, ft + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        if _g(spec, "holes"):
+            ctx.site(Site(_g(spec, "holes"), "male", screw, "clearance", Location((x, 0, ft)), grip=ft))
+    ctx.rigid("panel", Location((0, 0, 0)))
+    return ctx.finish(s, color=spec.get("color", "#222222"))
 
 
 @proxy("view_cone")

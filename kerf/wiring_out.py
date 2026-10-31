@@ -44,19 +44,58 @@ SOLDERED = {"solder", "header"}      # ends that get a solder joint and a heat-s
 
 def join(term: str, item: str) -> str:
     """The action for one wire end, by how it joins the item (electrical.TERMINALS)."""
-    return {"solder": f"solder to {item}", "screw": f"clamp under {item}'s screw terminal",
-            "lever": f"push into {item}'s lever connector", "plug": f"plug into {item}",
-            "header": f"solder to the pin header {item}'s plug pushes onto"}[term]
+    return {"solder": f"solder to {item}",
+            "screw": f"crimp a bootlace ferrule on each conductor and clamp it in {item}'s screw terminal",
+            "lever": f"strip 11 mm and push into {item}'s lever connector", "plug": f"plug into {item}",
+            "header": f"solder to the pin header {item}'s plug pushes onto",
+            "crimp": f"crimp a female 0.1 in pin on each conductor, click it into a housing and push it onto {item}'s header pin"}[term]
+
+
+def ferrule_for(gauge) -> str:
+    """Catalog path of the bootlace ferrule for this AWG (electronics.wire_misc.ferrule_*), '' if none is catalogued."""
+    for k, e in (catalog.get("electronics.wire_misc") or {}).items():
+        if k.startswith("ferrule") and isinstance(e, dict) and int(e.get("wire_awg", -1)) == int(gauge):
+            return f"electronics.wire_misc.{k}"
+    return ""
+
+
+def _item_name(path: str) -> str:
+    e = catalog.get(path)
+    return str(e.get("model") or e.get("name") or path.split(".")[-1])
+
+
+def _buy(rows, path, qty, note):
+    rows.append({"type": "purchased", "item": _item_name(path), "qty": qty, "spec": path, "link": link(path), "note": note})
 
 
 def bom_rows(model) -> list:
     rows = []
     wire = defaultdict(float)
     ends = Counter()
+    ferrules, crimps, housings = Counter(), 0, Counter()
+    leads, fuses, holders = Counter(), Counter(), Counter()
     for w in model["wires"]:
         if w.get("supplied"):          # a lead that comes with an item (adapter cord, pack lead): nothing to buy or solder
             continue
         n = _conductors(w)
+        terms = w.get("terms") or {"from": "solder", "to": "solder"}
+        for side, t in terms.items():
+            if t == "screw":
+                ferrules[int(w["gauge"])] += n
+            if t == "crimp":
+                crimps += n
+                housings[w.get("crimp_housing") or "electronics.connectors.servo_housing_1x3_pololu1902"] += 1 if n <= 3 else math.ceil(n / 3)
+        if w.get("fuse"):
+            fuses[w["fuse"]] += 1
+            if w.get("fuse_holder"):
+                holders[w["fuse_holder"]] += 1
+                ends[int(catalog.get(w["fuse_holder"]).get("wire_awg", w["gauge"]))] += 1   # holder lead soldered to the + wire
+        if w.get("lead_parts") or w.get("lead_of"):    # ready-made lead: nothing cut from a reel
+            for x in w.get("lead_parts") or []:
+                if "." in x:
+                    leads[x] += 1
+            ends[int(w["gauge"])] += n * sum(1 for t in terms.values() if t in SOLDERED)
+            continue
         wire[(int(w["gauge"]), w.get("color") or ("red/black" if n == 2 else "any"))] += float(w["length_mm"]) * n
         terms = w.get("terms") or {"from": "solder", "to": "solder"}
         ends[int(w["gauge"])] += n * sum(1 for t in terms.values() if t in SOLDERED)
@@ -69,6 +108,40 @@ def bom_rows(model) -> list:
         rows.append({"type": "wire", "item": f"heat-shrink for AWG {g} joints, {HEATSHRINK_MM} mm pieces", "qty": n,
                      "spec": f"2:1, expanded ID >= {max(1.5, round(d * 2.2 + 0.5, 1)):g} mm", "link": link("electronics.wire_misc.heatshrink_3mm"), "price_key": "heatshrink",
                      "note": "one per soldered conductor end"})
+    for x, q in sorted(leads.items()):
+        _buy(rows, x, q, "ready-made lead pieces (WIRING.md: runs with a lead)")
+    for x, q in sorted(fuses.items()):
+        _buy(rows, x, q + 1, f"{q} fitted + 1 spare")
+    for x, q in sorted(holders.items()):
+        _buy(rows, x, q, "inline, in the + conductor at the feeding end of each fused run")
+    for g, q in sorted(ferrules.items()):
+        f = ferrule_for(g)
+        if f:
+            _buy(rows, f, q, f"AWG {g} conductor ends into screw terminals")
+        else:
+            rows.append({"type": "hardware", "item": f"bootlace ferrule for AWG {g}", "qty": q, "spec": "", "link": "",
+                         "note": "no ferrule for this gauge in the catalog: add one with a source"})
+    if crimps:
+        _buy(rows, "electronics.connectors.crimp_pin_female_pololu1930", crimps, "female 0.1 in crimp pins, one per crimped conductor")
+    for x, q in sorted(housings.items()):
+        _buy(rows, x, q, "housings for the crimped pins (unused positions stay empty)")
+    m = model.get("mains_side")
+    if m:
+        if m.get("cord"):
+            _buy(rows, m["cord"], 1, "mains cord")
+        if m.get("fuse"):
+            inl = m.get("inlet_catalog")
+            n = int(catalog.get(inl).get("fuses_per_inlet", 1)) if inl else 1
+            _buy(rows, m["fuse"], n + 1, f"{n} in the inlet's fuse drawer + 1 spare")
+        if m.get("wire"):
+            mm = 3 * float(m.get("jumper_mm", 120))
+            _buy(rows, m["wire"], round(mm / 1000, 2), f"3 x {m.get('jumper_mm', 120)} mm jumpers inlet -> supply (L, N, PE), metres")
+            g = int(catalog.get(m["wire"])["gauge"])
+            f = ferrule_for(g)
+            if f:
+                _buy(rows, f, 3, "mains jumpers into the supply's L, N and FG screw terminals")
+        if m.get("tab_receptacle"):
+            _buy(rows, m["tab_receptacle"], 3, "insulated receptacles on the inlet's L, N and PE tabs")
     return rows
 
 
@@ -127,13 +200,41 @@ def steps(model) -> list:
         what = w.get("color") or ("red (+) and black (-) pair" if n == 2 else f"{n} conductors")
         terms = w.get("terms") or {"from": "solder", "to": "solder"}
         shrink = "; heat-shrink each soldered end" if any(t in SOLDERED for t in terms.values()) else ""
-        out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**: "
-                   f"{join(terms['from'], w['from'])}, {join(terms['to'], w['to'])}{shrink}. "
-                   f"Route: {' -> '.join(str(p) for p in w['points'])}."
-                   + (f" {w['note']}." if w.get("note") else ""))
+        if w.get("lead_parts") or w.get("lead_of"):
+            if w.get("lead_parts"):
+                pieces = " + ".join(f"{x}'s own lead" if "." not in x else _item_name(x) for x in w["lead_parts"])
+                head = (f"**{w['id']}** is a ready-made lead, {pieces} plugged together ({w['length_mm']:g} mm; the route "
+                        f"needs {w['cut_min_mm']:g} mm incl. 15 % slack). Cut the plug off its {w['from']} end")
+            else:
+                head = f"**{w['id']}** is the {what} conductor of {w['lead_of']}'s lead: peel it off at the {w['from']} end"
+            out.append(f"{head}; {w.get('color') or what} ({n} conductor{'s' if n > 1 else ''}): {join(terms['from'], w['from'])}"
+                       + (f", {join(terms['to'], w['to'])}" if terms["to"] != "plug" else f"; the other end plugs into {w['to']}")
+                       + f"{shrink}. Route: {' -> '.join(str(p) for p in w['points'])}." + (f" {w['note']}." if w.get("note") else ""))
+        else:
+            out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**: "
+                       f"{join(terms['from'], w['from'])}, {join(terms['to'], w['to'])}{shrink}. "
+                       f"Route: {' -> '.join(str(p) for p in w['points'])}."
+                       + (f" {w['note']}." if w.get("note") else ""))
+        if w.get("fuse"):
+            f = catalog.get(w["fuse"])
+            hold = _item_name(w["fuse_holder"]) if w.get("fuse_holder") else "an inline fuse holder"
+            out.append(f"Fuse **{w['id']}**: fit {hold} in its + conductor at the {w['from']} end (the holder's input lead "
+                       f"goes where the + conductor went; solder its output lead to the + conductor and heat-shrink it), "
+                       f"then plug in a {f['current_a']:g} A {_item_name(w['fuse'])}.")
     for (why, pk), ids in _limit_groups(model).items():
         out.append(f"Configure before the first power-up: **{', '.join(ids)}**: {why} (the wiring is rated for a {pk:g} A "
                    f"peak{' each' if len(ids) > 1 else ''} only with this set).")
+    m = model.get("mains_side")
+    if m:
+        jm = m.get("jumper_mm", 120)
+        out.append(f"Mains side (a competent person, unplugged): crimp an insulated 4.8 mm receptacle on one end of three "
+                   f"{jm} mm jumpers ({_item_name(m['wire']) if m.get('wire') else 'mains-rated wire'}: black = L, white = N, "
+                   f"green = earth), push them onto the inlet {m.get('inlet', '')}'s L, N and PE tabs; crimp a ferrule on "
+                   f"the other ends and clamp them in the supply's AC/L, AC/N and FG (earth) screw terminals at the rated torque. "
+                   f"The earth jumper is not optional: it bonds the supply's metal case to the cord's earth pin. Fit the fuses "
+                   f"in the inlet drawer"
+                   + (f" ({catalog.get(m['fuse'])['current_a']:g} A {_item_name(m['fuse'])})" if m.get("fuse") else "")
+                   + ", close the cover over the terminals before plugging in the cord.")
     out.append("Before the first battery: check every + to - pair for a short with a multimeter, then power up through "
                "a smoke stopper (fused lead)." if not model.get("mains") else
                "Before plugging in the adapter: check every + to - pair for a short with a multimeter.")

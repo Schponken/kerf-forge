@@ -44,7 +44,10 @@ BEC_EFF_DEFAULT = 0.8        # switching regulator efficiency, conservative (no 
 
 
 # how a wire end joins an item: run `ends: {from: screw, to: header}` or the item's catalog `terminal`; default solder
-TERMINALS = {"solder", "screw", "lever", "header", "plug"}
+TERMINALS = {"solder", "screw", "lever", "header", "plug", "crimp"}
+# crimp: a female 0.1 in crimp pin on each conductor, clicked into a housing that pushes onto the item's male header
+CRIMP_PIN = "electronics.connectors.crimp_pin_female_pololu1930"
+CRIMP_HOUSING = "electronics.connectors.servo_housing_1x3_pololu1902"
 
 
 class ElectricalError(ValueError):
@@ -149,7 +152,17 @@ def wire_mass_g(w) -> float:
 
 def wiring_mass_g(proj) -> float:
     """Mass of every declared run (silicone wire g/m x cut length x conductors); 0 without `wiring:`."""
-    return sum(wire_mass_g(w) for w in proj.data.get("wiring") or [] if not w.get("supplied"))   # supplied leads: in the item
+    tot = 0.0
+    for w in proj.data.get("wiring") or []:
+        if w.get("supplied") or isinstance(w.get("lead"), str):    # supplied leads: in the item; shared lead: counted once
+            continue
+        if w.get("lead"):                                          # ready-made lead: an item's pigtail is in its own mass
+            n = int(w.get("conductors") or 3)
+            mm = sum(_lead_len(proj, x) for x in w["lead"] if x not in proj.items)
+            tot += _silicone("g_per_m", w["gauge"]) * mm / 1000 * n
+            continue
+        tot += wire_mass_g(w)
+    return tot
 
 
 def total_mass_g(proj) -> float:
@@ -171,6 +184,12 @@ def analyse(proj, fm=None, eta=None) -> dict:
     mains = "cells" not in bcat and "output_v" in bcat      # a wall adapter / bench supply: no run time
     if mains:
         cells, v_bat = 0, float(bcat["output_v"])
+        if el.get("supply_v") is not None:          # an adjustable supply trimmed to another voltage (its SVR pot)
+            lo, hi = bcat.get("output_v_adj_min"), bcat.get("output_v_adj_max")
+            if lo is None or hi is None or not float(lo) <= float(el["supply_v"]) <= float(hi):
+                raise ElectricalError(f"electrical.supply_v {el['supply_v']} V: {bpath} is not adjustable to that "
+                                      f"(catalog output_v_adj_min/max {lo}..{hi})")
+            v_bat = float(el["supply_v"])
     else:
         for k in ("cells", "capacity_mah", "c_rating"):
             if k not in bcat:
@@ -191,7 +210,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
     ws = []
     for i, w in enumerate(wires):
         wid = w.get("id", f"w{i + 1}")
-        for k in ("from", "to", "gauge", "length_mm"):
+        for k in ("from", "to", "gauge") + (() if w.get("lead") else ("length_mm",)):
             if k not in w:
                 raise ElectricalError(f"wiring '{wid}' needs '{k}'")
         (fi, fp), (ti, tp) = _ref(w["from"]), _ref(w["to"])
@@ -213,6 +232,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
                 raise ElectricalError(f"wiring '{wid}': {side} end '{t}' is not one of {sorted(TERMINALS)}")
             terms[side] = t
         ws.append({**w, "id": wid, "fi": fi, "fp": fp, "ti": ti, "tp": tp, "kind": kind, "terms": terms})
+    _leads(proj, ws)
     power = [w for w in ws if w["kind"] == "power"]
     feed = {}
     for w in power:
@@ -322,6 +342,8 @@ def analyse(proj, fm=None, eta=None) -> dict:
             a, p = memo.get(i, (0, 0))
             row(f"connector {i}", "avg A vs rated", a, float(e["current_a"]), path)
             row(f"connector {i}", "peak A vs peak rating", p, float(e.get("current_peak_a", e["current_a"])), path)
+    rows += fuse_rows(ws, power, feed)
+    rows += mains_rows(proj, el, bat)
     # output pins and regulators
     outs = {}
     for w in power:
@@ -388,7 +410,9 @@ def analyse(proj, fm=None, eta=None) -> dict:
             "loads": {i: _capped(dict(zip(("avg_a", "peak_a", "source"), own(i))), limits.get(i)) for i in memo},
             "limits": {i: {"peak_a": float(v["peak_a"]), "why": v["why"]} for i, v in limits.items()},
             "wires": [{k: w.get(k) for k in ("id", "from", "to", "kind", "v", "gauge", "color", "conductors", "length_mm", "avg_a",
-                                             "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note", "terms")} for w in ws],
+                                             "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note", "terms", "fuse",
+                                             "fuse_holder", "lead_parts", "lead_of", "crimp_housing")} for w in ws],
+            "mains_side": mains_spec(proj, el) if mains else None,
             "ratings": rows}
 
 
@@ -502,3 +526,144 @@ def _spec(proj, wid):
         if w.get("id", f"w{k + 1}") == wid:
             return w
     raise ElectricalError(f"wiring '{wid}' not found")
+
+
+# --- leads, fuses and the mains side ----------------------------------------------------------------------------------
+def _lead_len(proj, ref) -> float:
+    """Length of one piece of a lead: an item's own lead (catalog lead_length_mm) or a catalog cable (length)."""
+    if ref in proj.items:
+        e = _cat(proj, ref)[1]
+        if "lead_length_mm" not in e:
+            raise ElectricalError(f"lead piece '{ref}': its catalog entry has no lead_length_mm (add it with a source)")
+        return float(e["lead_length_mm"])
+    try:
+        e = catalog.get(ref)
+    except Exception as ex:  # noqa: BLE001
+        raise ElectricalError(f"lead piece '{ref}' is neither an item nor a catalog path") from ex
+    return float(catalog.num(e, "length"))
+
+
+def _leads(proj, ws):
+    """`lead: [item, catalog.path, ...]`: the run is a ready-made lead (an item's own pigtail plus extension cables
+    plugged in series), so its length is the sum of the pieces and nothing is cut from a reel. `lead: <run id>`: the
+    run is another conductor of that run's lead (e.g. the signal wire of a servo lead whose +/- pair is the power run).
+    A given length_mm must not exceed what the pieces provide."""
+    by = {w["id"]: w for w in ws}
+    for w in ws:
+        ld = w.get("lead")
+        if not ld or isinstance(ld, str):
+            continue
+        parts = [str(x) for x in ld]
+        avail = sum(_lead_len(proj, x) for x in parts)
+        w["lead_parts"] = parts
+        _set_len(w, avail)
+    for w in ws:
+        ld = w.get("lead")
+        if isinstance(ld, str):
+            o = by.get(ld)
+            if o is None or not o.get("lead_parts"):
+                raise ElectricalError(f"wiring '{w['id']}': lead '{ld}' is not a run with lead pieces")
+            w["lead_of"] = ld
+            _set_len(w, float(o["length_mm"]))
+
+
+def _set_len(w, avail):
+    if "length_mm" in w and float(w["length_mm"]) > avail + 1e-6:
+        raise ElectricalError(f"wiring '{w['id']}': length_mm {w['length_mm']} is longer than its lead pieces ({avail:g} mm)")
+    w["length_mm"] = avail
+
+
+FUSE_DERATE_DEFAULT = 0.75   # Littelfuse Fuseology Design Guide: derate 25 % at 25 C (catalog fuses carry source_derate)
+
+
+def fuse_rows(ws, power, feed) -> list:
+    """A run with `fuse: <catalog fuse>` (and optionally `fuse_holder: <catalog holder>`): the fuse must carry the run's
+    current without opening (avg <= derate x rating, peak <= rating) and must protect the wire it is in and every
+    power run downstream of it (rating <= the smallest chassis ampacity, so a short in any of them opens the fuse
+    before the wire overheats); the holder must be rated for the fuse and the voltage."""
+    rows = []
+
+    def row(what, kind, value, limit, note=""):
+        rows.append({"what": what, "kind": kind, "value": round(float(value), 3), "limit": round(float(limit), 3),
+                     "ok": float(value) <= float(limit) + 1e-9, "note": note})
+    for w in ws:
+        if not w.get("fuse"):
+            continue
+        if w["kind"] != "power":
+            raise ElectricalError(f"wiring '{w['id']}': a fuse goes in a power run")
+        f = catalog.get(w["fuse"])
+        r = float(f["current_a"])
+        der = float(f.get("derate", FUSE_DERATE_DEFAULT))
+        name = f"fuse {w['id']} ({r:g} A)"
+        row(name, f"avg A vs {der:.0%} of rating", w["avg_a"], der * r, f.get("source_derate", w["fuse"]))
+        row(name, "peak A vs rating (must not open)", w["peak_a"], r, w["fuse"])
+        down, todo = [w], [w["ti"]]
+        while todo:
+            i = todo.pop()
+            for x in power:
+                if x["fi"] == i and x not in down:
+                    down.append(x)
+                    todo.append(x["ti"])
+        g = min(down, key=lambda x: ampacity(x["gauge"]))
+        row(name, f"rating vs smallest protected wire ({g['id']} AWG {g['gauge']})", r, ampacity(g["gauge"]), "catalog wire.awg")
+        if "voltage_max" in f:
+            row(name, "run V vs fuse voltage", w["v"], f["voltage_max"], w["fuse"])
+        if w.get("fuse_holder"):
+            h = catalog.get(w["fuse_holder"])
+            row(f"fuse holder {w['id']}", "fuse rating vs holder rating", r, h["current_a"], w["fuse_holder"])
+            if "voltage_max" in h:
+                row(f"fuse holder {w['id']}", "run V vs holder voltage", w["v"], h["voltage_max"], w["fuse_holder"])
+    return rows
+
+
+def mains_spec(proj, el) -> dict | None:
+    m = el.get("mains")
+    if not m:
+        return None
+    m = dict(m)
+    if m.get("inlet") in proj.items:
+        m["inlet_catalog"] = _cat(proj, m["inlet"])[0]
+    return m
+
+
+def mains_rows(proj, el, bat) -> list:
+    """`electrical.mains: {inlet: <item>, fuse: <catalog>, cord: <catalog>, wire: <catalog>, input_v: 115}`: the AC side
+    of a mains supply (catalog input_current_a_<v>vac): inlet, cord, inlet fuse (derated) and the inlet-to-supply
+    jumper wire must all carry the supply's input current at that line voltage."""
+    m = el.get("mains")
+    if not m:
+        return []
+    _, s = _cat(proj, bat)
+    v = int(m.get("input_v", 115))
+    key = f"input_current_a_{v}vac"
+    if key not in s:
+        raise ElectricalError(f"electrical.mains: supply '{bat}' has no catalog '{key}'")
+    i_in = float(s[key])
+    rows = []
+
+    def row(what, kind, limit, note):
+        rows.append({"what": what, "kind": kind, "value": round(i_in, 3), "limit": round(float(limit), 3),
+                     "ok": i_in <= float(limit) + 1e-9, "note": note})
+    if m.get("inlet"):
+        if m["inlet"] not in proj.items:
+            raise ElectricalError(f"electrical.mains.inlet '{m['inlet']}' is not an item")
+        p, e = _cat(proj, m["inlet"])
+        row(f"mains inlet {m['inlet']}", f"input A at {v} VAC vs rated", min(float(e["current_a"]), float(e.get("current_a_ul", 1e9))), p)
+        if float(e.get("voltage_max", 1e9)) < v:
+            raise ElectricalError(f"electrical.mains: inlet rated {e['voltage_max']} V < {v} V")
+    if m.get("fuse"):
+        f = catalog.get(m["fuse"])
+        der = float(f.get("derate", FUSE_DERATE_DEFAULT))
+        row(f"mains fuse ({f['current_a']} A)", f"input A at {v} VAC vs {der:.0%} of rating", der * float(f["current_a"]),
+            f.get("source_derate", m["fuse"]))
+    if m.get("cord"):
+        c = catalog.get(m["cord"])
+        row("mains cord", f"input A at {v} VAC vs rated", c["current_a"], m["cord"])
+        if float(c.get("voltage_max", 1e9)) < v:
+            raise ElectricalError(f"electrical.mains: cord rated {c['voltage_max']} V < {v} V")
+    if m.get("wire"):
+        w = catalog.get(m["wire"])
+        if float(w.get("voltage_max", 0)) < v:
+            raise ElectricalError(f"electrical.mains: jumper wire {m['wire']} is not rated for {v} V (catalog voltage_max)")
+        row(f"mains jumpers AWG {w['gauge']}", f"input A at {v} VAC vs chassis ampacity", ampacity(w["gauge"]), m["wire"])
+    return rows
