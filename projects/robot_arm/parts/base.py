@@ -1,4 +1,4 @@
-"""Base: desk plate, bearing tower for the turntable spindle (two 6001 bearings, 25 mm apart, so the arm's tipping
+"""Base: desk plate, bearing tower for the turntable spindle (two 6001 bearings, centres 20.5 mm apart, so the arm's tipping
 moment never reaches the servo), and the open-bottomed pocket the yaw servo (MG996R) is pushed up into from below,
 output up, 45 mm behind the yaw axis (it goes in before the base is bolted to the desk).
 Origin: yaw axis on the desk (underside of the plate); z up; the arm points +X at home.

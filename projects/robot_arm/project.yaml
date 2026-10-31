@@ -176,7 +176,7 @@ requirements:
   - id: upper_arm_fea
     check: fea_static
     part: upper_arm
-    why: "2x the worst static load at the elbow (report masses after ENG-6: 359 g beyond the elbow incl. the 150 g payload, 2x = 7.0 N, rounded up for the leads/screws to 8.4 N = 4.2 N on the servo tabs + 4.2 N on the pivot, and 2 x 4.46 kg*cm torque_elbow = 875 -> 900 N*mm) with the shoulder end held; tip deflection <= 1% of L1"
+    why: "2x the worst static load at the elbow (report masses after ENG-6: the 60 g elbow servo on the far end + 359 g beyond the elbow incl. the 150 g payload = 419 g, 2x = 8.2 N, rounded up for the leads to 8.4 N = 4.2 N on the servo tabs + 4.2 N on the pivot, and 2 x 4.46 kg*cm torque_elbow = 875 -> 900 N*mm) with the shoulder end held; tip deflection <= 1% of L1"
     direction: xy            # printed on edge: the plates' bending stress runs along the layers
     sf: 2.0
     max_disp_mm: 0.85
@@ -191,7 +191,7 @@ requirements:
   - id: forearm_fea
     check: fea_static
     part: forearm
-    why: "2x the worst static load at the wrist (245 g beyond it incl. the payload, 2x = 4.8 N, rounded up to 6.0 N = 3.0 N on each of the two sites, and 2 x 1.91 kg*cm torque_wrist = 375 -> 380 N*mm) with the elbow end held; deflection <= 1% of L2"
+    why: "2x the worst static load at the wrist (the 55 g wrist servo + 245 g beyond the wrist incl. the payload = 300 g, 2x = 5.9 N, rounded up for the leads to 6.2 N = 3.1 N on each of the two sites, and 2 x 1.91 kg*cm torque_wrist = 375 -> 380 N*mm) with the elbow end held; deflection <= 1% of L2"
     direction: xy
     sf: 2.0
     max_disp_mm: 0.8
@@ -200,13 +200,13 @@ requirements:
         - {sites: el_horn, radius: 4.0}
         - {cylinder: {at: [0, 0, "w_f"], dir: [0, 0, -1], r: 2.0, tol: 0.3, span: [0, "plate_t + 3"]}}
     loads:
-      - {sites: wr_servo, radius: 4.0, force_n: [0, -3.0, 0]}
-      - {box: [["L2 - 4", -4, "w_f - plate_t - 0.1"], ["L2 + 4", 4, "w_f + 0.1"]], force_n: [0, -3.0, 0]}
+      - {sites: wr_servo, radius: 4.0, force_n: [0, -3.1, 0]}
+      - {box: [["L2 - 4", -4, "w_f - plate_t - 0.1"], ["L2 + 4", 4, "w_f + 0.1"]], force_n: [0, -3.1, 0]}
       - {sites: wr_servo, radius: 4.0, torque_nmm: 380, axis: {at: ["L2", 0, 0], dir: [0, 0, 1]}}
   - id: yoke_r_fea
     check: fea_static
     part: yoke_r
-    why: "the shoulder servo stalls (21 kg*cm reaction through its four tab screws) while carrying half of 2x the arm + payload weight (487 g beyond the shoulder incl. the payload: half of 2x = 4.8 N, rounded up to 6.3 N per yoke); feet bolted"
+    why: "the shoulder servo stalls (21 kg*cm reaction through its four tab screws) while carrying half of 2x the arm + payload weight (487 g beyond the shoulder incl. the payload + the 60 g shoulder servo on yoke_r: half of 2x the 547 g = 5.4 N, rounded up for the leads to 6.3 N per yoke); feet bolted"
     direction: z             # the foot prints standing up: judge the cheek-foot corner against layer strength
     sf: 3.0
     max_disp_mm: 0.5
@@ -247,7 +247,7 @@ requirements:
   - id: turntable_fea
     check: fea_static
     part: turntable
-    why: "2x the arm + payload (602 g on the turntable incl. the 150 g payload: 2x = 11.8 N, rounded up to 13.8 N for the leads, screws and cable bundle; 6.9 N per yoke foot group) and 2x its tipping moment (8.21 kg*cm torque_shoulder + the arm weight 2.5 cm behind it ~ 0.90 N*m static -> 1.8 N*m) about Y as 2 x 980 N*mm couples (the 13.8 N acting at the foot-screw centroid x = -11 takes ~150 N*mm back off, so the net is ~1.8 N*m); spindle held only where the two bearings touch it"
+    why: "2x the arm + payload (602 g on the turntable incl. the 150 g payload: 2x = 11.8 N, rounded up to 13.8 N for the leads, screws and cable bundle; 6.9 N per yoke foot group) and 2x its tipping moment (805 N*mm shoulder torque + the 487 g beyond the shoulder acting at the shoulder axis 25 mm AHEAD of the yaw axis ~ 0.93 N*m static -> 1.86 N*m) about Y as 2 x 1010 N*mm couples (the 13.8 N acting at the foot-screw centroid x = -11 takes ~150 N*mm back off, so the net is ~1.87 N*m); spindle held only where the two bearings touch it"
     direction: z             # the spindle prints vertically: its bending stress runs across layers
     sf: 3.0
     max_disp_mm: 0.3
@@ -259,12 +259,12 @@ requirements:
     loads:
       - {sites: yoke_r_foot, radius: 4.0, force_n: [0, 0, -6.9]}
       - {sites: yoke_l_foot, radius: 4.0, force_n: [0, 0, -6.9]}
-      - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 980, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
-      - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 980, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+      - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 1010, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+      - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 1010, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
   - id: base_fea
     check: fea_static
     part: base
-    why: "the bearing tower carries 2x the arm's tipping moment (1.8 N*m) as a +-72 N couple on the two 6001 seats 25 mm apart, 2x the arm weight (13.8 N) on the upper seat's floor, and the yaw servo at stall: its 9.4 kg*cm reacted through the 4 tab screws plus the 34 N gear-mesh force (922 N*mm / 27 mm pitch radius) on the shelf and on the upper bearing; base bolted down at its 4 M4 holes"
+    why: "the bearing tower carries 2x the arm's tipping moment (2 x 0.93 N*m = 1.86 N*m: 805 N*mm shoulder torque + the 487 g beyond the shoulder acting 25 mm ahead of the axis) as a +-1860 / (z_bhi - z_blo) = +-91 N couple on the two 6001 seats (centres 20.5 mm apart), 2x the arm weight (13.8 N) on the upper seat's floor, and the yaw servo at stall: its 9.4 kg*cm reacted through the 4 tab screws plus the 34 N gear-mesh force (922 N*mm / 27 mm pitch radius) on the shelf and on the upper bearing; base bolted down at its 4 M4 holes"
     direction: z             # the tower prints upright: its bending stress runs across layers
     sf: 3.0
     max_disp_mm: 0.3
@@ -276,8 +276,8 @@ requirements:
         - {box: [[24, -46, -0.01], [36, -34, 0.01]]}
         - {box: [[24, 34, -0.01], [36, 46, 0.01]]}
     loads:
-      - {cylinder: {at: [0, 0, "z_bhi"], dir: [0, 0, 1], r: "brg_D / 2", tol: 0.3, span: [0, "brg_B"]}, bearing_n: [72, -34, 0]}
-      - {cylinder: {at: [0, 0, "z_blo"], dir: [0, 0, 1], r: "brg_D / 2", tol: 0.3, span: [0, "brg_B"]}, bearing_n: [-72, 0, 0]}
+      - {cylinder: {at: [0, 0, "z_bhi"], dir: [0, 0, 1], r: "brg_D / 2", tol: 0.3, span: [0, "brg_B"]}, bearing_n: ["1860 / (z_bhi - z_blo)", -34, 0]}
+      - {cylinder: {at: [0, 0, "z_blo"], dir: [0, 0, 1], r: "brg_D / 2", tol: 0.3, span: [0, "brg_B"]}, bearing_n: ["-1860 / (z_bhi - z_blo)", 0, 0]}
       - {box: [["-brg_D / 2", "-brg_D / 2", "z_bhi - 0.05"], ["brg_D / 2", "brg_D / 2", "z_bhi + 0.05"]], force_n: [0, 0, -13.8]}
       - {sites: yaw_servo, radius: 4.0, torque_nmm: "yaw_stall_nmm", axis: {at: ["-yaw_c", 0, 0], dir: [0, 0, 1]}}
       - {sites: yaw_servo, radius: 4.0, force_n: [0, 34, 0]}
@@ -310,8 +310,8 @@ requirements:
         - {sites: el_horn, radius: 4.0}
         - {cylinder: {at: [0, 0, "w_f"], dir: [0, 0, -1], r: 2.0, tol: 0.3, span: [0, "plate_t + 3"]}}
     loads:
-      - {sites: wr_servo, radius: 4.0, force_n: [0, -3.0, 0]}
-      - {box: [["L2 - 4", -4, "w_f - plate_t - 0.1"], ["L2 + 4", 4, "w_f + 0.1"]], force_n: [0, -3.0, 0]}
+      - {sites: wr_servo, radius: 4.0, force_n: [0, -3.1, 0]}
+      - {box: [["L2 - 4", -4, "w_f - plate_t - 0.1"], ["L2 + 4", 4, "w_f + 0.1"]], force_n: [0, -3.1, 0]}
       - {sites: wr_servo, radius: 4.0, torque_nmm: "mg_stall_nmm", axis: {at: ["L2", 0, 0], dir: [0, 0, 1]}}
   - id: cable_loop
     check: channel_clear

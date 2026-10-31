@@ -1,63 +1,69 @@
 {
   "verdict": "FAIL",
-  "fingerprint": "e201ca9707a26fc9",
+  "fingerprint": "8d5cbf34c733eca3",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "The round-6 blocker is fixed. I probed the base STL: a 7 x 3 mm groove in the underside (x -37.7..-30.7, z 0..3) runs from the widened open pocket (y -22) out past the -Y plate edge. The lead is laid in from below, so the plug never passes a hole, and base_fea shows the groove region cold (hot spots are on the tower and a front bolt foot, p99.9 0.96 MPa against 13). The cable-boss value is now read from the catalog. However, the engine's new perimeter-aware masses made the printed links 15-45 % heavier (arm 791 g, not 693 g). All hand-entered FEA loads still use the old masses, so upper_arm_fea now applies about 1.88x the static elbow load where the brief's contract requires 2x, and the DESIGN.md numbers are stale.",
+  "summary": "All of the round-7 items are fixed. upper_arm_fea now applies 8.4 N and 900 N*mm. That covers the brief's 2x requirement: from the report masses, 2 x 418.8 g = 8.22 N, and 2 x torque_elbow 4.46 kg*cm = 875 N*mm. The guard hole is gone, and the pocket end wall is now 3 mm past the cable-boss envelope (x -25 vs -28). The forearm, yoke and turntable loads also cover 2x within rounding. One FEA case is still wrong, though. base_fea's 'why' (and DESIGN.md) put the two 6001 bearings 25 mm apart, but in the geometry their centres are 20.5 mm apart (z_blo 20, z_bhi 40.5, B 8). So the +-72 N couple applies only 1.48 N*m (report My 1463 N*mm), not the claimed 1.8 N*m, and 2x the real static tipping moment (~0.93 N*m) is 1.86 N*m. The result would not flip (0.99 vs 13 MPa), but the check does not prove what it says. That is the same class of problem round 7 failed.",
   "findings": [
     {
       "severity": "major",
+      "part": "base",
+      "issue": "base_fea applies about 80 % of its stated tipping-moment load. Both the why text and DESIGN.md (Architecture: 'two 6001 bearings 25 mm apart'; yaw-bearing hand check '~25 mm spacing'; Strength table '+-72 N bearing couple (2 x 0.90 N*m over the 25 mm seat spacing)'; base.py docstring) assume 25 mm between the bearings. layout.py actually gives z_blo = 20 and z_bhi = z_tt - B = 40.5. The bearing centres are at z 24 and 44.5, so they are 20.5 mm apart. The base_fea cylinders sit on exactly those seats. +-72 N x 20.5 mm = 1476 N*mm, and the report shows applied_moment_nmm My = 1463. The static moment about the yaw axis is torque_shoulder 8.21 kg*cm = 805 N*mm, plus the 486.6 g beyond the shoulder (report masses) acting at x_sh = +25 mm (+119 N*mm), plus the shoulder servo (~+9 N*mm). That is about 0.93 N*m, so 2x = 1.86 N*m, and the check applies about 1.59x. The 13.8 N on the upper seat floor and the 34 N mesh force are fine. Stress is very low (p99.9 0.99 vs 13 MPa), so the part itself is not at risk. But the project's stated acceptance basis is 2x the static load, and this check misses it by 20 %, which is a bigger shortfall than the round-7 major. The true bearing reaction at 2x is +-91 N, still negligible against C0 2.4 kN.",
+      "fix": "In base_fea set bearing_n to [91, -34, 0] on the upper seat and [-91, 0, 0] on the lower (1.86 N*m / 20.5 mm). Better, write it as an expression: 2 x the tipping moment / (z_bhi - z_blo). Correct the spacing to 20.5 mm in the why text, in DESIGN.md (Architecture, the hand check giving +-45 N static per bearing, the Strength table) and in the base.py docstring. Rebuild and update the base_fea row."
+    },
+    {
+      "severity": "minor",
+      "part": "turntable",
+      "issue": "The tipping-moment arithmetic is slightly low, and its wording is wrong. The turntable_fea why says 'the arm weight 2.5 cm behind it', but the shoulder axis is 25 mm AHEAD of the yaw axis (x_sh = +25), which is why that term adds to the moment. DESIGN's hand check gives '8.2 kg*cm + 0.6 kg x 2.5 cm ~ 0.90 N*m', but that sum is 0.95 N*m. The correct figure (0.487 kg beyond the shoulder) is ~0.93 N*m. So 2x = 1.86 N*m, while the net applied moment is 1.805 N*m (report My), which is 1.94x. Not material at 3.9 vs 13 MPa.",
+      "fix": "Use 2 x 0.93 N*m: couples of ~1010 N*mm each, giving a net of ~1.86 N*m after the 13.8 N at x -11. Change 'behind' to 'ahead' and fix the DESIGN hand-check arithmetic. The same 0.93 N*m feeds the base_fea fix above."
+    },
+    {
+      "severity": "minor",
       "part": "upper_arm",
-      "issue": "The FEA load cases are no longer 2x the real static loads. After the ENG-6 perimeter-aware mass change, report.json and bom.md give upper_arm 64.8 g (was 47), forearm 55.4 (40), gripper 29.4 (22), finger 5.0 (4), base 175 (134), and arm_mass 791 g (DESIGN says 693). The upper_arm_fea 'why' says 3.87 N is everything beyond the elbow plus 150 g. With the current masses that is el_servo 60 + el_horn 3 + forearm 55.4 + wr_servo 55 + wr_horn 3 + gripper 29.4 + gr_servo 55 + gr_horn 3 + finger 5 + payload 150 = 418.8 g = 4.11 N. 2x is 8.21 N, but 7.74 N is applied. The elbow torque is 2 x 4.46 kg*cm = 875 N*mm (torque_elbow now reports 4.46), but 841 is applied. The brief's grading contract requires upper_arm_fea at '2x the worst static load at the elbow incl. payload', and it currently runs at about 1.88-1.96x. The other hand-entered loads are low by 3-7 % for the same reason: forearm 2.86 N (now 2.95), yoke 5.9 N, turntable/base 12.8 N (about 13.7 now) and the 0.85 N*m tipping moment (the shoulder torque is now 8.21 kg*cm, not 7.80). None of the results would flip, since the margins are large and the stall cases are dominated by the unchanged stall torques. Even so, the checks no longer prove what their 'why' text and the brief say.",
-      "fix": "Recompute every hand-entered load in project.yaml from the current report masses. Use upper_arm_fea 2 x 4.11 N and 2 x 4.46 kg*cm = 875 N*mm, forearm 2 x 2.95 N and 2 x 1.91 kg*cm, the yoke and turntable weight from the current turntable-borne mass, and the tipping moment from the current shoulder torque. Better still, derive them in layout.py or an expression from the masses so they cannot go stale again. Update the 'why' strings and the DESIGN.md tables to match: the sizing table (shoulder 8.21 = 39 %, elbow 4.46 = 23 %), the hand check, the part-list masses, the 693 g figure and the Strength table. Then rebuild."
+      "issue": "The load 'why' texts leave out the servo body that hangs on each link's far end. The 'rounded up for leads/screws' margin silently absorbs it. Upper arm: 359 g beyond the elbow + the el_servo's 60 g on the upper arm's tabs = 418.8 g, so 2x = 8.22 N against 8.4 applied, which leaves ~18 g for leads and screws. Forearm: 245.4 g + wr_servo 55 g = 300.4 g, so 2x = 5.89 N against 6.0 applied, which leaves ~5 g, less than the wrist and grip leads that run beyond the wrist. Yokes: 486.6 g + the 60 g shoulder servo on yoke_r. Every case still covers 2x of the hardware plus the payload, but the stated derivation is incomplete, and the lead allowance on the forearm is thin.",
+      "fix": "Restate each why as (servo on the link + everything beyond the joint + payload) x 2 x g, plus an explicit lead allowance. Raise the forearm to 3.1 N per site (6.2 N) so that ~10 g of lead is covered."
     },
     {
       "severity": "minor",
-      "part": "base",
-      "issue": "Stale cut. The old yaw-lead hole through the gear guard ring is still there: base.py lines 78-80, Box 12 x 6 x 10 at (-45, -31.25, z 6..16). I confirmed it in the STL at x -50..-38, and it is visible in part_base_sheet.png FRONT. Nothing uses it now. It is an open 12 x 10 mm hole into the guard, whose stated job is to keep cable loops out, and its comment describes a route that no longer exists.",
-      "fix": "Delete the guard-hole cut and its comment so the ring is closed at the bottom."
-    },
-    {
-      "severity": "minor",
-      "part": "base",
-      "issue": "The yaw lead bends hard at the grommet. The pocket's +X end wall is at x -27.4 (STL), only 0.6 mm past the catalog's 7.0 mm cable-boss envelope (case end -35.0, envelope tip -28.0). The real MG996R wires leave the boss heading +X, so they must turn down against that wall almost at the grommet, and during the push-up from below they drag along it. The route still works because the pocket is open below and the wires are thin, but it is a kink point at the strain relief. Also, nothing holds the lead in the groove while the base is turned over onto the desk.",
-      "fix": "Give the end wall 2-3 mm more clearance at boss height, or chamfer the wall's lower inside edge. In DESIGN.md step 2, say to pre-bend the lead downward at the boss before pushing the servo up, and to hold the lead in the groove with a strip of tape while turning the base over."
+      "part": "upper_arm",
+      "issue": "Several holes print horizontally but are cut round without compensation (ENGINEERING.md s4: 'Horizontal holes print oval: use teardrop or add +0.2 mm'). upper_arm, forearm and gripper print on edge (print_rot [90,0,0]), so every hole along the link's Z axis is horizontal on the bed. The free pivot holes have teardrops, but the servo-tab self-tap pilots (servo_mount kind='tap', no teardrop) are the 2.6 mm vertical PETG pilot rather than the catalog's horizontal pilot, which is +0.18 mm. The heat-set pivot insert holes (pin_hole fit='heatset': sh_pivot in upper_arm, el_pivot in forearm, wr_pivot in gripper) are 4.0 mm round. The engine's new tap_h path only applies when teardrop is passed. A sagging insert hole can set the pivot insert crooked, and the tight pilots sit 1-1.5 mm from the window edge.",
+      "fix": "Pass teardrop=<print-up direction> (iface.print_up_deg) to servo_mount and to the heat-set pin_hole calls in upper_arm.py, forearm.py and gripper.py, as yoke_r/yoke_l already do for their foot holes."
     },
     {
       "severity": "minor",
       "part": "wiring",
-      "issue": "Round-6 route item, only partly fixed. pwr_yaw and sig_yaw now pass base.yaw_boss (-30.4, 0, 13), but the engine still adds the servo origin (-55.2, 0, 27.8) as the last point, so the drawn lead still ends inside the MG996R case (report.json electrical.wires points).",
-      "fix": "Engine: end a lead at the servo's cable-boss point (a 'lead' joint on the servo proxy) instead of its origin. This is general and would fix every project."
+      "issue": "Carried over: the pwr_yaw and sig_yaw routes now pass base.yaw_boss (-28, 0, 13), but the engine still appends the servo origin (-55.2, 0, 27.8) as the last point, so the drawn lead ends inside the MG996R case.",
+      "fix": "Engine: end a lead at the servo's cable-boss point instead of its origin (general fix)."
     },
     {
       "severity": "minor",
       "part": "psu_hood",
-      "issue": "Carried over: the optional 45 degree chamfer under the floor bridge's -X side was not done, so the 6 x 5 mm overhang will sag slightly.",
-      "fix": "Optional: chamfer the bridge block's -X underside at 45 degrees."
+      "issue": "Carried over: the optional 45 degree chamfer under the floor tie bridge's overhanging side was not done.",
+      "fix": "Optional: chamfer the bridge block's underside at 45 degrees."
     },
     {
       "severity": "minor",
       "part": "wiring",
-      "issue": "Carried over: kerf/electrical.py still leaves out the ATO fuse's cold resistance (about 45 mV at 2.5 A) and the holder's lead, and the servo entries have no sourced lead gauge. Margin is still positive (worst stall row about 151 mV above 4.8 V; the yaw run shows 5.16 V peak).",
-      "fix": "Engine: add the fuse cold resistance and the holder lead to each run's loop resistance; add a sourced lead gauge to the servo entries."
+      "issue": "Carried over: kerf/electrical.py still leaves out the ATO fuse's cold resistance and the holder's lead in each run's loop resistance. The margin is still positive.",
+      "fix": "Engine: add the fuse cold resistance and the holder lead to each fused run."
     },
     {
       "severity": "minor",
       "part": "cable_mast",
-      "issue": "Carried over: 12.6 % of the surface prints on support. Cosmetic.",
-      "fix": "Optional: set the column flush with one long side of the foot so it prints without support."
+      "issue": "Carried over: 12.6 % of the surface prints on support (cosmetic). Gripper is at 15.9 %, already accepted in DESIGN.md.",
+      "fix": "Optional: set the column flush with one side of the foot."
     },
     {
       "severity": "minor",
       "part": "nano",
       "issue": "Carried over and accepted: the Nano, the WAGO splices and the fuse holders sit loose on the desk.",
-      "fix": "None required; a printed electronics tray on the rear pad would be tidier and short-proof."
+      "fix": "None required; an electronics tray on the rear pad would be tidier."
     },
     {
       "severity": "minor",
       "part": "upper_arm",
-      "issue": "For the record: upper_arm_stall_fea p99.9 is 13.42 MPa against 16 MPa (margin 1.19). The peak of 18.76 MPa is at the elbow servo window frame in plate A, on the load path in the render. This is the thinnest margin on the arm. It will drop slightly once the static part of the load is corrected (see the major finding), but the 19 kg*cm stall couple dominates. The DS32xx tab holes are still UNVERIFIED in the catalog.",
-      "fix": "None required beyond rerunning it after the load update; test-fit the real DS3225/DS3218 before printing the rest."
+      "issue": "For the record: upper_arm_stall_fea p99.9 is 13.36 MPa against 16 MPa (margin 1.20), with the peak of 18.67 MPa at the elbow servo window frame in plate A. That is on the load path, and fea_upper_arm_fea.png shows the hot spot there. This is the thinnest margin on the arm. The DS32xx tab holes are still UNVERIFIED in the catalog.",
+      "fix": "Test-fit a real DS3225/DS3218 in a printed yoke_r before printing the rest."
     }
   ]
 }

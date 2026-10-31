@@ -63,8 +63,10 @@ def build(ctx):
         raise ValueError(f"jaw post fillets: {len(base_edges)} edges, failed {failed}")
     body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="wr_horn", plate_t=t)
     loc = Location((g["x_gs"], 0, g["z_c"]), (-90, 0, 0))   # palm underside; +Z up through the palm
-    body -= iface.servo_mount(ctx, SERVO, loc, group="gr_servo", plate_t=PALM_T, kind="tap", top_through=True)
-    body -= iface.pin_hole(ctx, "M3", Location((0, 0, W)), "wr_pivot", depth=t + 3.0, fit="heatset")
+    body -= iface.servo_mount(ctx, SERVO, loc, group="gr_servo", plate_t=PALM_T, kind="tap", top_through=True,
+                              teardrop=iface.print_up_deg(ctx, loc))   # tab pilots print horizontal
+    body -= iface.pin_hole(ctx, "M3", Location((0, 0, W)), "wr_pivot", depth=t + 3.0, fit="heatset",
+                           teardrop=iface.print_up_deg(ctx, Location((0, 0, W))))
     for (hx, hy) in iface.circle(4, iface.horn_dims(HORN)["bc"], 45.0):     # hex-key access to the horn screws
         body -= Pos(hx, hy, W - t - 4) * Cylinder(2.0, t + 5, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("horn_mount", Location((0, 0, 0)))

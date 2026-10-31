@@ -18,7 +18,7 @@ Options considered: (a) servos directly on each joint, cantilevered on the servo
 "servos at their limit", wobble); (b) parallel four-bar with servos in the base (EEZYbot — light, but the brief wants
 4 independent axes and the four-bar limits wrist range); (c) **serial arm, servo per joint, every joint a fork**:
 servo on one plate, coaxial M3 screw pivot on the other, so the servo output carries torque only
-(ENGINEERING.md §8). Picked (c). The turntable runs on **two 6001 bearings 25 mm apart on a 12 mm printed spindle**
+(ENGINEERING.md §8). Picked (c). The turntable runs on **two 6001 bearings (centres 20.5 mm apart) on a 12 mm printed spindle**
 (Moveo/Thor lesson: the yaw motor never carries the tipping moment); the yaw servo drives it through a **36:24
 module-1.5 gear pair** (`kerf.drives.spur_pair`, 0.3 mm backlash), which also turns the MG996R's standard ±60° into
 ±90° at the turntable.
@@ -33,17 +33,17 @@ Masses from the catalog and from the part geometry (report.json); torque = Σ m�
 
 | Joint | Servo (catalog) | Stall kg·cm | Worst need kg·cm | Use | Margin |
 |---|---|---|---|---|---|
-| shoulder | DS3225 | 21.0 @5 V | 7.80 | 37 % | ask ≤ 50 % ✓ |
-| elbow | DS3218 | 19.0 @5 V | 4.30 | 23 % | ✓ |
-| wrist | MG996R | 9.4 @4.8 V | 1.87 | 20 % | ✓ |
+| shoulder | DS3225 | 21.0 @5 V | 8.21 | 39 % | ask ≤ 50 % ✓ |
+| elbow | DS3218 | 19.0 @5 V | 4.46 | 23 % | ✓ |
+| wrist | MG996R | 9.4 @4.8 V | 1.91 | 20 % | ✓ |
 | grip | MG996R | 9.4 | grip force 18.4 N at the 50 mm finger tip | — | jaw and finger FEA at stall |
 | base yaw | MG996R + 36:24 gears | 9.4 → 6.3 at the turntable | no gravity torque (vertical axis) | — | — |
 
-Hand check (shoulder): payload 0.15 kg × 26.6 cm = 4.0 kg·cm; the rest of the arm ≈ 0.49 kg at ≈ 7.8 cm ≈ 3.8 kg·cm;
-total ≈ 7.8 — matches the check.
+Hand check (shoulder): payload 0.15 kg × 26.6 cm = 4.0 kg·cm; the rest of the arm beyond the shoulder ≈ 0.34 kg (report masses) at
+≈ 12.5 cm ≈ 4.2 kg·cm; total ≈ 8.2 — matches the check.
 
-Yaw bearings (2 × 6001, C0 ≈ 2.4 kN): tipping moment ≈ 7.8 kg·cm about the shoulder + 0.45 kg × 2.5 cm ≈ 0.85 N·m
-→ ±34 N on each bearing over the ~25 mm spacing; negligible.
+Yaw bearings (2 × 6001, C0 ≈ 2.4 kN): tipping moment about the yaw axis ≈ 805 N·mm shoulder torque + 0.49 kg acting at the shoulder axis
+2.5 cm ahead of it ≈ 0.93 N·m → ±45 N on each bearing over the 20.5 mm between their centres; negligible.
 
 Servo travel: the wrist needs ±75° = 150°: drive the MG996R with 500–2500 µs pulses (catalog note: ~180° there,
 ~120° at 1000–2000 µs). Yaw ±90° needs only ±60° at the servo. Grip uses 0–65° (round 2: at 55° a 40 mm object only fit at the finger tips).
@@ -54,19 +54,19 @@ MEAN WELL LRS-100-5 (5 V, 18 A).
 ## Part list
 | Part | Job | Material | Print orientation | Approx. |
 |---|---|---|---|---|
-| base | desk plate, bearing tower, open-bottomed yaw-servo pocket, cable post | PETG 30 % | upright, supports under shelf/bore ceiling | 134 g |
-| turntable | spindle, 24 T gear, platform | PETG 40 % | upside down (platform on bed) | 37 g |
+| base | desk plate, bearing tower, open-bottomed yaw-servo pocket, cable post, lead groove underneath | PETG 30 % | upright, supports under shelf/bore ceiling | 176 g |
+| turntable | spindle, 24 T gear, platform | PETG 40 % | upside down (platform on bed) | 41 g |
 | retainer | washer under the lower inner race | PETG 100 % | flat | 1 g |
 | yaw_gear | 36 T gear on the yaw horn | PETG 50 % | flat | 15 g |
-| yoke_r / yoke_l | shoulder cheeks (servo / pivot) | PETG 40 % | on the cheek's outer face | 20 / 22 g |
-| upper_arm | fork L1 = 85 | PETG 30 % | on edge (print_rot [90,0,0]); free pivot hole teardrop | 47 g |
-| forearm | fork L2 = 80 | PETG 30 % | on edge; free pivot hole teardrop | 40 g |
-| gripper | fork + palm + fixed jaw | PETG 30 % | on edge, supports under the jaw | 22 g |
-| finger | moving finger | PETG 40 % | flat | 4 g |
+| yoke_r / yoke_l | shoulder cheeks (servo / pivot) | PETG 40 % | on the cheek's outer face | 23 / 25 g |
+| upper_arm | fork L1 = 85 | PETG 30 % | on edge (print_rot [90,0,0]); free pivot hole teardrop | 65 g |
+| forearm | fork L2 = 80 | PETG 30 % | on edge; free pivot hole teardrop | 55 g |
+| gripper | fork + palm + fixed jaw | PETG 30 % | on edge, supports under the jaw | 29 g |
+| finger | moving finger | PETG 40 % | flat | 5 g |
 | cable_mast | post on the platform the lead bundle is tied across (foot 34 × 26, 4 screws) | PETG 30 % | on its side, support under the column (it is centred on the wider foot) | 7 g |
 | psu_hood | closes the supply's terminal end, carries the IEC inlet | PETG 30 % | standing on its end wall (inserts vertical) | 61 g |
 
-Masses are report.json's (all within 10 %); the arm on its base is 693 g (`arm_mass`, limit 900).
+Masses are report.json's (with the slicer's walls + infill, ENG-6); the arm on its base is 792 g (`arm_mass`, limit 900).
 
 ## Interfaces
 | A | B | Call | Group | Hardware |
@@ -105,16 +105,16 @@ horn → gripper → grip servo → **grip** → horn → finger; yoke_l). `yaw_
 ## Strength (FEA, report.json)
 | Check | Load case | Result (p99.9, deflection) | Allowable |
 |---|---|---|---|
-| upper_arm_fea | 2 × (3.87 N at the elbow servo tabs + 3.87 N at the elbow pivot) + 2 × 4.31 kg·cm elbow torque as a pure couple on the tab screws; plate A held at the 4 shoulder-horn screws, plate B only at its pivot bore, so plate B's share goes through the webs | 5.65 MPa (peak 7.9), 0.42 mm | 24 MPa (xy, SF 2), 0.85 mm |
-| forearm_fea | same pattern at the wrist (2.86 N ×2 sites, 1.87 kg·cm ×2), held the same way at the elbow | 1.8 MPa (peak 3.0), 0.16 mm | 24 MPa, 0.8 mm |
-| yoke_r_fea | shoulder servo **stall** 21 kg·cm (couple on the 4 tab screws) + 5.9 N down, feet bolted | 6.6 MPa (peak 17.7 at the cheek's base where the foot ends: a local corner value, under the 39 MPa z strength), 0.46 mm | 13 MPa (z, SF 3), 0.5 mm |
-| yoke_l_fea | 5.9 N on the pivot | 0.8 MPa | 13 MPa |
+| upper_arm_fea | 4.2 N at the elbow servo tabs + 4.2 N at the elbow pivot (2 × the 60 g elbow servo + 359 g beyond the elbow incl. payload, rounded up for leads) + 900 N·mm (2 × 4.46 kg·cm) as a pure couple on the tab screws; plate A held at the 4 shoulder-horn screws, plate B only at its pivot bore | 6.0 MPa (peak 8.4), 0.45 mm | 24 MPa (xy, SF 2), 0.85 mm |
+| forearm_fea | same pattern at the wrist (3.1 N × 2 sites = 2 × the 300 g wrist servo + beyond, 380 N·mm), held the same way at the elbow | 1.9 MPa (peak 3.1), 0.17 mm | 24 MPa, 0.8 mm |
+| yoke_r_fea | shoulder servo **stall** 21 kg·cm (couple on the 4 tab screws) + 6.3 N down, feet bolted | 6.6 MPa (peak 17.7 at the cheek's base where the foot ends: a local corner value, under the 39 MPa z strength), 0.46 mm | 13 MPa (z, SF 3), 0.5 mm |
+| yoke_l_fea | 6.3 N on the pivot | 0.8 MPa | 13 MPa |
 | gripper_fea | grip **stall**: 18.4 N on the jaw tip, held at the servo tabs | 5.1 MPa (peak 14.6 at the jaw root's side corners, local: SF 2.7 on the 39 MPa across-layer strength), 0.30 mm | 13 MPa (z: the jaw post bends across layers, SF 3), 1.0 mm |
 | finger_fea | 18.4 N at the finger tip | 8.4 MPa (peak 13.9), 0.77 mm | 24 MPa, 1.0 mm |
-| base_fea | ±68 N bearing couple (2 × 0.85 N·m over the 25 mm seat spacing) + 34 N gear-mesh force on the upper seat, 12.8 N on the upper seat floor, yaw servo at stall (9.4 kg·cm couple + 34 N) on its tab screws; held at the 4 M4 holes | 0.95 MPa (peak 3.3), 0.11 mm | 13 MPa (z, SF 3), 0.3 mm |
-| upper_arm_stall_fea | fault case (crash): elbow servo at **stall** 19 kg·cm + 2 × the static loads | 13.4 MPa (peak 18.8), 1.03 mm | 16 MPa (xy, crash case SF 3); deflection not a criterion in a fault (2 mm cap) |
-| forearm_stall_fea | wrist servo at **stall** 9.4 kg·cm + 2 × the static loads | 5.3 MPa (peak 8.6), 0.50 mm | 16 MPa (crash, SF 3) |
-| turntable_fea | 2 × arm weight 12.8 N on the yoke feet + 2 × 0.85 N·m tipping moment (net 1.70 N·m about Y in report.json: the couples are 920 N·mm each because the 12.8 N acts behind the axis); spindle held only on the two bearing lands + collar | 3.7 MPa (peak 10.1 at the step), 0.21 mm | 13 MPa (z, SF 3), 0.3 mm |
+| base_fea | ±91 N bearing couple (2 × 0.93 N·m over the 20.5 mm between the bearing centres) + 34 N gear-mesh force on the upper seat, 13.8 N on the upper seat floor, yaw servo at stall (9.4 kg·cm couple + 34 N) on its tab screws; held at the 4 M4 holes | 1.0 MPa (peak 3.5), 0.11 mm | 13 MPa (z, SF 3), 0.3 mm |
+| upper_arm_stall_fea | fault case (crash): elbow servo at **stall** 19 kg·cm + 2 × the static loads | 13.4 MPa (peak 18.7), 1.03 mm | 16 MPa (xy, crash case SF 3); deflection not a criterion in a fault (2 mm cap) |
+| forearm_stall_fea | wrist servo at **stall** 9.4 kg·cm + 2 × the static loads | 5.3 MPa (peak 8.6), 0.49 mm | 16 MPa (crash, SF 3) |
+| turntable_fea | 2 × arm + payload 13.8 N on the yoke feet + 2 × 0.93 N·m tipping moment as two 1010 N·mm couples about Y (net ≈ 1.87 N·m: the 13.8 N acts behind the axis); spindle held only on the two bearing lands + collar | 3.9 MPa (peak 10.7 at the step), 0.23 mm | 13 MPa (z, SF 3), 0.3 mm |
 
 Applied resultants are checked in report.json (`applied_force_n`): torques are pure couples (engine fix in this
 round: a torque on screw sites off the axis used to add a spurious net force).
