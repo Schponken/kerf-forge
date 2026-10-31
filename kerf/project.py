@@ -59,7 +59,7 @@ class Project:
         h = hashlib.sha256()
         deps = self.dir / DEPS
         if deps.exists():       # only the catalog entries this project reads (recorded by check/build)
-            h.update(catalog.deps_hash(json.loads(deps.read_text())).encode())
+            h.update(catalog.deps_hash(json.loads(deps.read_text(encoding="utf-8"))).encode())
         files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")),
                  *([] if deps.exists() else [catalog.CATALOG]),
                  *sorted(p for p in (self.dir / "meshes").glob("*") if p.is_file()),     # Meshy shells
@@ -206,7 +206,7 @@ def record_deps(proj: Project) -> None:
     """Add the catalog paths read since catalog.track() to projects/<p>/catalog_deps.json (union: a quick check never
     drops what a full build needed; an extra path only makes the fingerprint more sensitive)."""
     f = proj.dir / DEPS
-    old = set(json.loads(f.read_text())) if f.exists() else set()
+    old = set(json.loads(f.read_text(encoding="utf-8"))) if f.exists() else set()
     new = old | catalog.used()
     if new != old or not f.exists():
-        f.write_text(json.dumps(sorted(new), indent=1) + "\n")
+        f.write_text(json.dumps(sorted(new), indent=1) + "\n", encoding="utf-8")

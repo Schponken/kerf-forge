@@ -854,3 +854,12 @@ pushed for it and what I know:
 - 15:00 UTC, session 262017a2: committed bionic_finger's regenerated catalog_deps.json (I had reverted it after the
   build, which moved its fingerprint off the reviewed d4dc6e41; it is back to current PASS). Lesson for everyone:
   `projects/<p>/catalog_deps.json` written by your own project's build is part of its fingerprint; commit it.
+## 2026-10-31 13:50 UTC — session dafdd49d: fpv_5in audit done (fork), UTF-8 I/O fix
+- fpv_5in audit F1-F10 done by this session's fork (see its entry): review round 9 PASS 0fffc865b90f4c37.
+- A full `kerf verify` started from the Stop hook under a C/POSIX locale failed EVERY build (viewer.html and
+  prices.json read as ASCII -> UnicodeDecodeError) and the unit tests (bare read_text in tests). Engine text I/O now
+  names utf-8 everywhere (tests/test_utf8_io.py guards it, incl. a C-locale subprocess), and `kerf verify` runs pytest
+  with PYTHONUTF8=1. `kerf build servo_link` passes under LC_ALL=C.
+- verify state otherwise: bionic_finger proximal_fea_line FAILS (ENG-5 single-shear moment; the bionic audit item,
+  claimed by bb3a06febf). Remaining PLAN items: gallery (claimed), Bambu (BLOCKED on Spencer's printer), clean-clone
+  verify x2 and the final summary (both need everything else done first).

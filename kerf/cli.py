@@ -11,6 +11,7 @@
 """
 from __future__ import annotations
 
+import os
 import argparse
 import json
 import subprocess
@@ -119,8 +120,9 @@ def verify(fast=False) -> int:
     """The definition of done. Exit 0 only when everything passes."""
     t0 = time.time()
     results, fails = {}, []
+    # tests read/write UTF-8 text without naming it; a C/POSIX locale (hooks, cron, nohup) would make that ASCII
     r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "--no-header", "-p", "no:cacheprovider"], cwd=ROOT,
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
     results["tests"] = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:]
     if r.returncode != 0:
         fails.append(f"unit tests: {results['tests']}")
@@ -180,7 +182,7 @@ def new(name, title) -> int:
         _p(f"projects/{name} already exists")
         return 1
     (d / "parts").mkdir(parents=True)
-    (d / "project.yaml").write_text(f"name: {title}\nprinter: Bambu Lab A2L\nparams: {{}}\nparts: {{}}\npurchased: {{}}\nassembly:\n  root: TODO\n  joints: []\nrequirements: []\n")
+    (d / "project.yaml").write_text(f"name: {title}\nprinter: Bambu Lab A2L\nparams: {{}}\nparts: {{}}\npurchased: {{}}\nassembly:\n  root: TODO\n  joints: []\nrequirements: []\n", encoding="utf-8")
     _p(f"created projects/{name}")
     return 0
 

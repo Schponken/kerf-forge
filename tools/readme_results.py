@@ -24,7 +24,7 @@ def rows():
         if not rep_f.exists():
             out.append(f"| {pid} | not built | — | — | | | | | |")
             continue
-        rep = json.loads(rep_f.read_text())
+        rep = json.loads(rep_f.read_text(encoding="utf-8"))
         rs = cli.review_status(pid) if hasattr(cli, "review_status") else {"ok": False}
         try:
             fails = importlib.import_module(f"evals.{pid}.acceptance").accept(rep, ROOT / "projects" / pid)

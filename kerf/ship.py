@@ -38,7 +38,7 @@ def load_prices(path: Path | None = None) -> dict:
     p = Path(path or PRICES)
     if not p.exists():
         return {}
-    return {k: v for k, v in json.loads(p.read_text()).items() if not k.startswith("_")}
+    return {k: v for k, v in json.loads(p.read_text(encoding="utf-8")).items() if not k.startswith("_")}
 
 
 def price_key(row: dict) -> list[str]:
@@ -106,7 +106,7 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
 
 def write_bom(rows: list[dict], summary: dict, outdir: Path):
     fields = ["type", "item", "qty", "spec", "note", "buy", "unit_usd", "total_usd"]
-    with open(outdir / "bom.csv", "w", newline="") as fh:
+    with open(outdir / "bom.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)

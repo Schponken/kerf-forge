@@ -267,7 +267,7 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
                      "note": x.get("note", ""), "link": x.get("link", "")})
     for r in rows:
         r.setdefault("link", "")
-    with open(outdir / "bom.csv", "w", newline="") as fh:
+    with open(outdir / "bom.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["type", "item", "qty", "spec", "note", "link"], extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)

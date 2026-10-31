@@ -130,7 +130,7 @@ def write_plates(proj, rots: dict, outdir: Path, printer: str) -> list:
 
 def load_config(path: str | None = None) -> dict:
     p = Path(path or os.environ.get("KERF_BAMBU_CONFIG") or Path.home() / ".kerf" / "bambu.json")
-    return json.loads(p.read_text()) if p.exists() else {}
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
 def find_slicer(cfg: dict) -> str | None:

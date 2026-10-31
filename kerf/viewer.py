@@ -171,8 +171,8 @@ def _attr_compact(a, nfaces):
 
 
 def html(d: dict) -> str:
-    page = (ASSETS / "viewer.html").read_text()
-    lib = (ASSETS / "viewer3d.js").read_text()
+    page = (ASSETS / "viewer.html").read_text(encoding="utf-8")
+    lib = (ASSETS / "viewer3d.js").read_text(encoding="utf-8")
     js = json.dumps(d, separators=(",", ":"), default=str).replace("</", "<\\/")
     title = (d["report"].get("project") or "Kerf assembly").replace("<", "&lt;")
     # str.replace takes the replacement literally; each placeholder occurs once in the template
@@ -183,5 +183,5 @@ def html(d: dict) -> str:
 
 def write(proj, asm, rep: dict, path) -> Path:
     path = Path(path)
-    path.write_text(html(data(proj, asm, rep)))
+    path.write_text(html(data(proj, asm, rep)), encoding="utf-8")
     return path

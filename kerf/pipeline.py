@@ -276,7 +276,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         rep["fingerprint"] = proj.fingerprint()
     rep["ok"] = not rep["problems"]
     rep["seconds"] = round(time.time() - t0, 1)
-    proj.out("report.json").write_text(json.dumps(rep, indent=1, default=str))
+    proj.out("report.json").write_text(json.dumps(rep, indent=1, default=str), encoding="utf-8")
     return rep
 
 
