@@ -29,6 +29,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/vendor.py` | `proxy: step` vendor CAD models: loads catalog/models STEP, keeps the base proxy's joints and sites, refuses a model whose bbox or holes disagree with the catalog |
 | `kerf/viewer.py` | Writes the self-contained `out/viewer.html` (meshes, joint sliders from the engine's own kinematics, explode, BOM, print info) |
 | `kerf/attribution.py` | Face → part-file line and project param that produced it (viewer click-to-edit) |
+| `kerf/diagnose.py` | Self-correcting build errors: an exception from part code becomes part + file line + operation (fillet, chamfer, sweep, iface.*, ctx.p, catalog) + a computed `fix:` hint (largest fillet/chamfer the same edges take, nearest param/name/catalog key, the material a heat-set or pilot hole needs); in the PROBLEM line, report.json `diagnoses{}`, and fed first by the after-edit hook |
 | `kerf/shanks.py` | Screw bodies: after fastener sizing, each screw (head seat to tip, 0.8 d cylinder) must not run into any item but the two it joins (a tip poking out of a nut into a neighbour, a screw reaching a prop disc) |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` |
@@ -197,7 +198,7 @@ slides along it) with the pin held on one side only, and a stocked length that r
 ## report.json (out/report.json, written by check/build)
 `ok`, `problems[]`, `warnings[]`, `fingerprint`, `parts{id: print checks}`, `purchased{}`,
 `assembly{interference[], fasteners[], pins[], sweeps[], joints[], positions{}, joint_origins{}}`, `requirements[]`,
-`files{parts, plates}`, `bom[]`. Evals read this file; reviews are tied to `fingerprint`.
+`files{parts, plates}`, `bom[]`, `diagnoses{item: {part, file, line, code, feature, error, hint}}` for items that failed to build. Evals read this file; reviews are tied to `fingerprint`.
 
 ## Definition of done (`kerf verify`)
 pytest passes; every project builds with `ok: true`; every project has a design-reviewer `review.json` with verdict

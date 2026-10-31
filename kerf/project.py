@@ -29,6 +29,7 @@ class Item:
     shape: object = None
     build_ms: int = 0
     error: str | None = None
+    diag: object = None       # kerf.diagnose.Diagnosis when the build failed
 
 
 @dataclass
@@ -142,13 +143,18 @@ def build(proj: Project, only: list[str] | None = None) -> Project:
     try:
         proj.params = {**proj.params, **shared_layout(proj)}
     except Exception as e:  # noqa: BLE001
+        from . import diagnose
+        lf = proj.data.get("layout")
+        d = diagnose.explain(e, "layout", proj.dir / lf if lf and (proj.dir / lf).exists() else None)
         for it in proj.items.values():
-            it.error = f"layout failed: {type(e).__name__}: {e}"
+            it.error = f"layout failed: {d.message()}"
+            it.diag = d
         return proj
     for pid, it in proj.items.items():
         if only and pid not in only:
             continue
         t0 = time.time()
+        f = None
         try:
             params = {**proj.params, **{k: (v["value"] if isinstance(v, dict) else v) for k, v in (it.spec.get("params") or {}).items()}}
             ctx = Ctx(pid, params, {"project": proj.name, "spec": it.spec})
@@ -166,7 +172,9 @@ def build(proj: Project, only: list[str] | None = None) -> Project:
                 raise ProjectError(f"{pid}: build must return ctx.finish(shape)")
         except Exception as e:  # noqa: BLE001 — report per part, keep building the rest
             import traceback
-            it.error = f"{type(e).__name__}: {e}"
+            from . import diagnose
+            it.diag = diagnose.explain(e, pid, f if f is not None and f.exists() else None)
+            it.error = it.diag.message()
             it.trace = traceback.format_exc(limit=6)
         it.build_ms = int((time.time() - t0) * 1000)
     return proj

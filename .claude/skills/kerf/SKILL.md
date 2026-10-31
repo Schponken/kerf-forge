@@ -62,7 +62,7 @@ orientation, material, and which other parts it must clear. Parts that depend on
 same subagent. Every mating feature comes from `kerf/iface.py` with the same group on both sides.
 
 ## 4. Integrate
-`kerf check <p>` until PASS. Fix every problem at the part that owns it. Never widen an allowed overlap, loosen a
+`kerf check <p>` until PASS. A part that fails to build reports its file line, the operation and a `fix:` line (e.g. the largest fillet those edges take): apply the fix and re-check before anything else. Fix every problem at the part that owns it. Never widen an allowed overlap, loosen a
 limit or edit the catalog to make a check pass unless the physics says so (write why in DESIGN.md, with a source).
 
 ## 5. Strength, then detail

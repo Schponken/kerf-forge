@@ -17,5 +17,6 @@ Rules:
 - Fillet inside corners on load paths (r >= 1 mm), keep walls >= 1.6 mm on structural parts, follow the print
   orientation in the contract and design for it (chamfers instead of flat overhangs, no unsupported ceilings).
 - Run `.venv/bin/kerf check <p> --quick` until your part has no problems, then `kerf check <p>` for sweeps.
+- Self-correct: when a build fails, the check output (and the after-edit hook, under "FIX THESE FIRST") gives `<part>.py line N `code` [feature]: error` and a `fix:` hint computed from your own call (largest fillet/chamfer that works, nearest param or catalog key, material a hole needs). Apply the hint at that line and re-check, automatically, up to 5 rounds. Only if the same failure survives 5 rounds, or the fix would break the contract (e.g. a wall below ENGINEERING.md minimums), stop and report it.
   If a problem is caused by ANOTHER part or the contract, do not hack around it: report it back precisely.
 - Final message: what you built, the key dimensions, the check result, and any contract issues.

@@ -309,3 +309,17 @@ entry before each push (date, what changed, verify state, next step, open proble
   `assembly.order` for hex-key access; motor_mount counterbore_depth; stack proxy uses the largest board. Tests.
 - Reviewer engine notes not yet done: arm FEA render peak (13.9) differed from report peak (24.8) in round 1 —
   check kerf/fea_render.py uses the same solve.
+
+## 2026-10-31 01:30 UTC — session (self-correcting errors)
+- Done: PLAN 4b "Self-correcting errors". New `kerf/diagnose.py`: any exception from part code (or the layout module)
+  becomes `<part>.py line N `code` [feature]: error` + `fix:` hint. Hints are computed from the failing call itself:
+  fillet/chamfer -> largest size OCC accepts on those same edges (bisection), `use <= 0.9 x` that; unknown ctx.p
+  param / Python name / catalog key -> nearest spellings; iface heat-set/pilot holes -> material needed; feature
+  minimums -> the limit; sweep/shell/loft/boolean/missing ctx.finish -> what to change. In PROBLEM lines, report.json
+  `diagnoses{}`, and the after-edit hook prints them first ("FIX THESE FIRST"); part-designer.md + kerf skill: apply
+  the hint and re-check automatically, up to 5 rounds.
+- tests/test_diagnose.py: 10 deliberately broken parts; the fillet and chamfer tests apply the hint and the part
+  then builds (the retry loop without the LLM); one test runs the real hook. 287 tests pass.
+- I left E4 tvc_drone (claimed then released): its only open work is electronics, which waits on the engine item
+  another session holds.
+

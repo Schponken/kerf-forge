@@ -33,6 +33,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         if it.error:
             rep["problems"].append(f"{iid} failed to build: {it.error}")
             rep.setdefault("traces", {})[iid] = getattr(it, "trace", "")
+            if it.diag is not None:
+                rep.setdefault("diagnoses", {})[iid] = it.diag.as_dict()
     for iid, it in proj.printed.items():
         if it.shape is None:
             continue

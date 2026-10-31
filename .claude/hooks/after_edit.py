@@ -31,8 +31,14 @@ if rel == os.path.join("catalog", "hardware.json"):
 m = re.match(r"projects/([^/]+)/(parts/[^/]+\.py|project\.yaml)$", rel)
 if not m or not os.path.exists(kerf):
     sys.exit(0)
-r = subprocess.run([kerf, "check", m.group(1), "--quick"], cwd=root, capture_output=True, text=True, timeout=880)
+r = subprocess.run([kerf, "check", os.path.join("projects", m.group(1)), "--quick"], cwd=root, capture_output=True,
+                   text=True, timeout=880)
 if r.returncode != 0:
-    print(f"kerf check {m.group(1)} --quick FAILED after your edit:\n{r.stdout[-4000:]}{r.stderr[-1500:]}", file=sys.stderr)
+    # build failures carry "fix:" hints (kerf/diagnose.py); put them first so a long traceback can't push them out
+    lines = r.stdout.splitlines()
+    fixes = [f"{lines[i - 1].strip()}\n  {l.strip()}" for i, l in enumerate(lines) if l.strip().startswith("fix:") and i]
+    head = ("FIX THESE FIRST (apply the hint, then re-check):\n" + "\n".join(fixes) + "\n\n") if fixes else ""
+    print(f"kerf check {m.group(1)} --quick FAILED after your edit:\n{head}{r.stdout[-4000:]}{r.stderr[-1500:]}",
+          file=sys.stderr)
     sys.exit(2)
 sys.exit(0)
