@@ -97,6 +97,12 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
 - Proximal hand check: 15 N at 44 mm -> M = 660 N mm; section 16 x 15 minus two channels ~ Z 550 mm3 -> 1.2 MPa,
   pin bearing 15 / (3 x 7.85) = 0.64 MPa. PETG XY strength / SF 2 is an order of magnitude above. FEA
   (`proximal_fea`) is the proof; result in the report.
+- FEA model (as the brief specifies): fixed on the mcp pin bore, 15 N bearing load on the pip bore. Clamping the whole
+  660 N mm moment on one 3 mm bore is harsher than the real finger, where the flexor tension carries most of that
+  moment; it concentrates stress at the bore (peak ~17 MPa, p99.9 ~9 MPa vs 24 MPa allowed) and lets the segment
+  rotate ~0.016 rad about it, so the pip end moves ~0.7 mm. Beam bending alone is ~0.05 mm. Deflection limit 1.0 mm:
+  fingertip position under a hard pinch, absorbed by any fingertip pad; the 1 %-of-length rule in ENGINEERING.md is
+  for load-carrying arms whose tip position matters.
 - Pin: 3 mm steel in single shear, 15 N -> 2 MPa; irrelevant.
 
 ## 9. Assembly order

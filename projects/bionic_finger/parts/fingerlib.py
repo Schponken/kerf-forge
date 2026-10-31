@@ -36,6 +36,7 @@ EXT = 5.0         # extensor line above the axis and wrap radius
 EXT_A = 5.0
 TUBE_D = 2.2      # tendon channel diameter (requirement: >= 1.5 clear; line 0.5-0.8 mm)
 ROOF = 55.0       # channel roof slope (deg from horizontal on the printer) - no supports
+REACH = RK + 1.0  # how far from an axis a neighbour's run is swept over this part's knuckle
 STEP = 10.0       # joint sampling for swept tendon cuts (deg)
 BAND_T = W / 2 - GAP / 2
 # A child's joint frame: Z along the pin (+Y) and X toward +Z, because a build123d RevoluteJoint about +Y measures
@@ -108,13 +109,16 @@ def crossing_cuts(lj: float, rng: float, role: str, up: int):
     for k in range(n + 1):
         th = rng * k / n
         if role == "parent":   # child points move with the joint
-            fc = _rot(th, j["flex_c"]); fc = (fc[0] + lj, 0, fc[2])
-            wc = _rot(th, j["ext_wc"]); wc = (wc[0] + lj, 0, wc[2])
-            out += [_tube(j["flex_p"], fc, up), _tube(j["ext_wp"], wc, up)]
+            m = lambda q: (lambda r: (r[0] + lj, 0, r[2]))(_rot(th, q))  # noqa: E731
+            fc, wc = m(j["flex_c"]), m(j["ext_wc"])
+            out += [_tube(j["flex_p"], fc, up), _tube(j["ext_wp"], wc, up),
+                    # the child's own runs pass over this part's knuckle disc: groove the disc face for them too
+                    _tube(fc, m((REACH, 0, -FLEX)), up), _tube(wc, m((REACH, 0, j["ext_wc"][2])), up)]
         else:                  # parent points seen from the child: inverse rotation about the child axis (u = 0)
-            fp = _rot(-th, (j["flex_p"][0] - lj, 0, j["flex_p"][2]))
-            wp = _rot(-th, (j["ext_wp"][0] - lj, 0, j["ext_wp"][2]))
-            out += [_tube(fp, j["flex_c"], up), _tube(wp, j["ext_wc"], up)]
+            m = lambda q: _rot(-th, (q[0] - lj, 0, q[2]))  # noqa: E731
+            fp, wp = m(j["flex_p"]), m(j["ext_wp"])
+            out += [_tube(fp, j["flex_c"], up), _tube(wp, j["ext_wc"], up),
+                    _tube(fp, m((lj - REACH, 0, -FLEX)), up), _tube(wp, m((lj - REACH, 0, j["ext_wp"][2])), up)]
     return [s for s in out if s is not None]
 
 
