@@ -7,17 +7,17 @@ three splayed legs. Numbers below are from `kerf build tvc_drone` (out/report.js
 ## Requirements (numbers)
 | What | Target | Result |
 |---|---|---|
-| Thrust / weight (`twr`, `twr_sag`) | >= 2.0 at 22.2 V nominal (ENGINEERING.md s3), >= 1.8 sagged to 21 V | 2.11 / 1.89 (catalog 2 x 1685 g at 24 V x 0.78 x 0.85^2 = 1899 g, x (V/24)^2; 770 g incl. tubes, wiring and 4-perimeter shells) |
-| CG on thrust axis (`cg_axis`) | <= 3 mm lateral, above pivot | 0.30 mm worst over gimbal corners, wiring mass included at its routed position; 141 mm above the pivot |
-| Stand on its own (`stand`) | >= 15 deg tip-over | 20.5 deg |
+| Thrust / weight (`twr`, `twr_sag`) | >= 2.0 at 22.2 V nominal (ENGINEERING.md s3), >= 1.8 sagged to 21 V | 2.08 / 1.86 (catalog 2 x 1685 g at 24 V x 0.78 x 0.85^2 = 1899 g, x (V/24)^2; 781 g incl. tubes, wiring and 4-perimeter shells) |
+| CG on thrust axis (`cg_axis`) | <= 3 mm lateral, above pivot | 0.40 mm worst over gimbal corners, wiring mass included at its routed position; 141 mm above the pivot |
+| Stand on its own (`stand`) | >= 15 deg tip-over | 20.6 deg |
 | Gimbal travel | +/-15 deg each axis + 4 corners, collision-free | clear (sweeps + `gimbal_corners`) |
 | Prop clearance (`props`) | >= 3 mm to anything, >= 20 mm between discs | 5.7 mm (top prop to leg_1 at roll -15 / pitch 15) |
 | Gimbal hub strength (`gimbal_fea`) | 2 x max thrust = 66.1 N, SF 3 | 3.97 MPa vs 16 MPa allowable |
 | Roll ring / yoke / leg FEA | SF 3 (ENGINEERING.md s3) | 4.06 / 3.06 (Z-strength, incl. the single-shear roll-pin moment) / 3.37 MPa vs 16 / 13 / 16; leg case 790 g x 3 g (leg tip deflects 2.97 mm, limit 3) |
 | Leg lug landing (`lug_fea`) | screws pull 168 N per leg, SF 3, Z-strength | 7.88 MPa vs 13 (3 mm fillets where the lugs and bridges leave the disc; peak 11 MPa) |
-| Mass (`mass`) | <= 790 g (from twr: 1625 g / 2.0 = 812 g less ~20 g of unmodelled screws, inserts, dowels) | 770 g incl. tubes (density x section x length), XT60 and wire from the catalog g/m x cut lengths |
-| Power budget (`power`) | every rating at avg and peak | worst 0.73 of rating (battery 12.7 A hover, 43.8 A peak) |
-| Hover time (`flight_time`) | >= 2 min | 4.1 min on 80 % of 1100 mAh (momentum theory, coax kappa 1.281) |
+| Mass (`mass`) | <= 790 g (from twr: 1625 g / 2.0 = 812 g less ~20 g of unmodelled screws, inserts, dowels) | 781 g incl. tubes (density x section x length), XT60 and wire from the catalog g/m x cut lengths |
+| Power budget (`power`) | every rating at avg and peak | worst 0.73 of rating (battery 13.0 A hover, 43.8 A peak) |
+| Hover time (`flight_time`) | >= 2 min | 4.0 min on 80 % of 1100 mAh (momentum theory, coax kappa 1.281) |
 | Battery plug / USB (`plug_access`, `usb_access`) | reachable assembled | both clear |
 
 ## Architecture
@@ -52,7 +52,7 @@ and has flown. Differences from fd.iwth, and why:
 
 | RadioMaster RP1 ELRS receiver | electronics.receivers.elrs_nano | 5 V from the FC pad, CRSF to a free UART; tied under ring_mid |
 | Hobbywing UBEC 3 A (5 V) | electronics.becs.ubec_5v_3a | servos off the FC rail: 2 x 0.7 A stall = 1.4 A peak vs 3 A |
-| Amass XT60 male on a 14 AWG pigtail | drone.connectors.XT60 | 30 A continuous / 60 A instantaneous; hover 12.7 A, peak 43.8 A |
+| Amass XT60 male on a 14 AWG pigtail | drone.connectors.XT60 | 30 A continuous / 60 A instantaneous; hover 13.0 A, peak 43.8 A |
 | TBS anti-slip pad, cut 70 x 38 | electronics.pads.battery_pad | under the pack |
 | 20 x 250 mm strap | electronics.straps.strap_20x250 | over the pack across its width, through two ring_top slots |
 
@@ -74,9 +74,9 @@ directions and tune on a tether (Risks).
 - **Motor output limit 85 % (ArduPilot `MOT_SPIN_MAX = 0.85`, default 0.95) is required**: two motors at full
   output draw 2 x 35.08 A = 70 A, above the XT60's 60 A instantaneous rating. Prop power goes as speed^3, so 85 %
   output = 0.614 x 35.08 = 21.5 A per motor (43 A for the pair) and 72 % thrust: 1899 g at the motor table's 24 V,
-  1625 g at 22.2 V nominal (T/W 2.11) and 1454 g sagged to 21 V (1.89). Thrust scales with voltage squared.
-- Hover: 770 g on one coaxial 5.1" pair -> electrical power from momentum theory (FM 0.5, motor eff. 0.75, coax
-  1.281), 12.7 A at 22.2 V with FC, servos and receiver -> 4.1 min on 880 mAh usable.
+  1625 g at 22.2 V nominal (T/W 2.08) and 1454 g sagged to 21 V (1.86). Thrust scales with voltage squared.
+- Hover: 781 g on one coaxial 5.1" pair -> electrical power from momentum theory (FM 0.5, motor eff. 0.75, coax
+  1.281), 13.0 A at 22.2 V with FC, servos and receiver -> 4.0 min on 880 mAh usable.
 - Routes (every one is checked at home, at both ends of each gimbal axis and at the 4 gimbal corners: a tube of the
   wire's diameter must not enter any part or prop disc, and the cut length covers the worst pose + 15 %): down
   through the ring_mid wire pass at 30 deg, over the +Y edge of ring_low to the +X yoke, down beside the yoke plate
@@ -107,7 +107,12 @@ leg root.
 
 Print settings (out/plates/PRINT_SETTINGS.md, also inside the plate 3MFs): the strength-checked parts (ring_low,
 gimbal_outer, motor_hub, legs) print with 4 wall loops, so the stressed surface and the 1.6 mm wall round every
-insert are solid perimeter; infill 20 % (ring_low, gimbal_outer), 25 % (legs), 50 % (hub, plate), 30 % (rings).
+insert are solid perimeter; infill 30 % (ring_low: lug_fea is the tightest case), 20 % (gimbal_outer, 4.06 of 16
+MPa), 25 % (legs), 50 % (hub, plate), 30 % (rings).
+
+Edge distance (holewall warnings, ENGINEERING.md s7): the MG90S tab taps sit 1.5 d from the servo window edge and the
+motor M3 counterbores 1.5 d from the motor's centre hole; both spacings are set by the purchased parts' hole patterns,
+and the walls round them still meet the minimum (no holewall problems).
 
 ## Interfaces
 | A | B | How | Group |

@@ -23,7 +23,7 @@ params:
   batt_dy: {value: -10, min: -15, max: 15, step: 0.5, label: Battery offset y (CG trim)}
 layout: parts/layout.py
 parts:
-  ring_low: {file: parts/ring_low.py, material: PETG, print_rot: [180, 0, 0], infill: 0.2, load_axis: z}
+  ring_low: {file: parts/ring_low.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3, load_axis: z}
   gimbal_outer: {file: parts/gimbal_outer.py, material: PETG, print_rot: [0, 0, 0], infill: 0.2, load_axis: [x, y]}
   motor_hub: {file: parts/motor_hub.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, load_axis: y}
   motor_plate: {file: parts/motor_plate.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: [x, y]}
