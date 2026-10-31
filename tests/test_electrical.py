@@ -3,7 +3,7 @@ import math
 
 import pytest
 
-from kerf import assembly as A, electrical as E, project as P, requirements
+from kerf import assembly as A, electrical as E, project as P, requirements, wiring_out as WO
 from test_engine import _write_project
 
 # A 3" quad reduced to its electrical parts. Masses are fixed with mass_g so the hover numbers are hand-checkable:
@@ -165,8 +165,20 @@ def test_outputs_written(tmp_path):
     assert "hover time" in (out / "WIRING.md").read_text() and "<svg" in (out / "wiring.svg").read_text()
     wires = [r for r in rep["bom"] if r["type"] == "wire"]
     # power runs are pairs: lead 2 x 200 + main 2 x 200 = 800 mm of AWG 14 red/black -> 0.8 m
-    assert any(r["item"].startswith("AWG 14") and r["qty"] == 0.8 and r["price_key"] == "wire:AWG14" for r in wires)
+    assert any(r["item"].startswith("AWG 14") and r["qty"] == 0.8 for r in wires)
     assert not [p for p in rep["problems"] if "ship" in p or "electrical" in p]
     assert any("heat-shrink" in r["item"] for r in wires)
     assert all(r["link"] for r in rep["bom"] if r["type"] == "purchased")
     assert rep["electrical"]["minutes"] > 20
+
+
+def test_wire_rows_carry_price_keys():
+    rows = WO.bom_rows({"wires": [{"kind": "power", "gauge": 14, "length_mm": 120, "color": None},
+                                  {"kind": "power", "gauge": 20, "length_mm": 100, "conductors": 3},
+                                  {"kind": "signal", "gauge": 28, "length_mm": 55}]})
+    wire = {r["item"]: r for r in rows if "metres" in r["item"]}
+    # 2 x 120 = 240 mm -> 0.3 m; 3 x 100 = 300 mm -> 0.3 m; 55 mm -> 0.1 m
+    assert [w["qty"] for w in wire.values()] == [0.3, 0.3, 0.1]
+    assert {w["price_key"] for w in wire.values()} == {"wire:AWG14", "wire:AWG20", "wire:AWG28"}
+    shrink = [r for r in rows if "heat-shrink" in r["item"]]
+    assert sum(r["qty"] for r in shrink) == 2 * 2 + 2 * 3 + 2 * 1     # one piece per conductor end
