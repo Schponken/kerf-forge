@@ -958,8 +958,7 @@
     "confidence": "datasheet",
     "current_a": 30,
     "current_peak_a": 60,
-    "current_peak_s": 60,
-    "current_rating_note": "Holybro 'Connector & Wire Rating' (docs.holybro.com): XT60 on 12 AWG 30 A continuous (4 h, temperature rise < 60 C) and 60 A burst (1 minute, rise < 60 C); current_peak_s = 60 is that 1-minute base (kerf/electrical.py connector_burst_limit)."
+    "current_rating_note": "Holybro 'Connector & Wire Rating' (docs.holybro.com): XT60 on 12 AWG 30 A continuous (4 h, temperature rise < 60 C) and 60 A burst (1 minute, rise < 60 C). No shorter-time rating is published, so 60 A is the peak limit."
    }
   },
   "frames_reference": {
@@ -1381,16 +1380,20 @@
    }
   },
   "antennas": {
-   "lollipop4p_mmcx_60": {
-    "model": "Foxeer Lollipop 4 Plus 5.8 GHz 2.6 dBi, MMCX 90 deg, 60 mm",
-    "length": 60,
-    "head_d": 17,
+   "lollipop4p_mmcx_95": {
+    "model": "Foxeer Lollipop 4 Plus 5.8 GHz 2.6 dBi, right-angle MMCX, Tube Short 95 mm",
+    "length": 95,
+    "head_d": 11,
     "connector": "MMCX 90 deg",
     "gain_dbi": 2.6,
     "weight_g": 4.8,
-    "weight_note": "rotorama lists 4.8 g without saying per antenna or per 2-pack: used per antenna (upper bound).",
-    "note": "Total length 60 mm (connector to tip), protector head 17 mm diameter; RHCP or LHCP. Matches the TX800's MMCX socket.",
-    "source": "https://www.rotorama.com/product/foxeer-lollipop-4-plus-6cm-mmcx-tube-lhcp-rhcp-2-ks-2",
+    "head_length_note": "Head length is not published; projects model the head as an 11 x 11 x 20 mm envelope.",
+    "note": "Kiwiquads lists three sizes: 60 mm angle-MMCX (11 mm head, 4.5 g), 95 mm Tube Short (11 mm, 4.8 g), 165 mm Tube Long (11 mm, 6.8 g). Length is overall, connector to tip. RHCP or LHCP. Fits the TX800's MMCX socket.",
+    "source": "https://kiwiquads.co.nz/product/foxeer-lollipop-4-5-8ghz-lhcp-mmcx-90-antenna-2pcs-3-sizes/",
+    "sources": [
+     "https://kiwiquads.co.nz/product/foxeer-lollipop-4-5-8ghz-lhcp-mmcx-90-antenna-2pcs-3-sizes/",
+     "https://pyrodrone.com/collections/foxeer-antennas/products/foxeer-5-8g-lollipop-4-plus-2-6dbi-omni-antenna-2pcs-right-angle-mmcx-95mm-rhcp-teal"
+    ],
     "confidence": "vendor"
    }
   }

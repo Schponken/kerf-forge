@@ -316,5 +316,101 @@
     "checked": "2026-10-30",
     "source": "https://shop3duniverse.com/collections/bambu-lab-filaments/products/bambu-lab-pla-basic-1-75mm-1kg",
     "note": "Shop3D 'Bambu Lab PLA Basic (1.75mm, 1kg)', filament with spool, $22.99, in stock; pack_qty is in grams. The Bambu US store PLA Basic page could not be read with a price. STEMfinity lists Bambu PLA Basic at a sale price of $19.99 (regular $22.99)."
+  },
+  "wire:AWG12": {
+    "buy": "https://pyrodrone.com/products/1ft-silicone-wire-choose-color-and-gauge",
+    "pack_qty": 2,
+    "pack_usd": 9.99,
+    "checked": "2026-10-31",
+    "source": "https://pyrodrone.com/products/1ft-silicone-wire-choose-color-and-gauge",
+    "note": "Pyrodrone 'Silicone Wire (1M. Red, 1M. Black) - Choose Your Gauge', 12 AWG variant $9.99, in stock; package is 1 m red + 1 m black = 2 m. UNIT = METRES (BOM wire qty is metres), so pack_qty 2."
+  },
+  "wire:AWG18": {
+    "buy": "https://pyrodrone.com/products/1ft-silicone-wire-choose-color-and-gauge",
+    "pack_qty": 2,
+    "pack_usd": 6.99,
+    "checked": "2026-10-31",
+    "source": "https://pyrodrone.com/products/1ft-silicone-wire-choose-color-and-gauge",
+    "note": "Pyrodrone 'Silicone Wire (1M. Red, 1M. Black) - Choose Your Gauge', 18 AWG variant $6.99, in stock; package is 1 m red + 1 m black = 2 m. UNIT = METRES (BOM wire qty is metres), so pack_qty 2."
+  },
+  "wire:AWG26": {
+    "buy": "https://www.getfpv.com/silicone-wire-26awg-1mtr.html",
+    "pack_qty": 0.914,
+    "pack_usd": 1.09,
+    "checked": "2026-10-31",
+    "source": "https://www.getfpv.com/silicone-wire-26awg-1mtr.html",
+    "note": "GetFPV 'Silicone Wire 26AWG (3ft) - Black/Red/White/Yellow', $1.09 per 3 ft (0.914 m), in stock. UNIT = METRES (BOM wire qty is metres), so pack_qty 0.914."
+  },
+  "wire:AWG28": {
+    "buy": "https://www.getfpv.com/accessories-390/tools/lumenier-silicone-wire-6-roll-build-kit-28awg.html",
+    "pack_qty": 60,
+    "pack_usd": 17.99,
+    "checked": "2026-10-31",
+    "source": "https://www.getfpv.com/accessories-390/tools/lumenier-silicone-wire-6-roll-build-kit-28awg.html",
+    "note": "GetFPV 'Lumenier Silicone Wire 6 Roll Build Kit - 28AWG', $17.99, 6 rolls x 10 m = 60 m, in stock. Smallest 28 AWG listing found at the preferred FPV stores. UNIT = METRES (BOM wire qty is metres), so pack_qty 60."
+  },
+  "heatshrink": {
+    "buy": "https://pyrodrone.com/products/148-piece-heat-shrink-tubing-set-with-assorted-sizes",
+    "pack_qty": 148,
+    "pack_usd": 9.99,
+    "checked": "2026-10-31",
+    "source": "https://pyrodrone.com/products/148-piece-heat-shrink-tubing-set-with-assorted-sizes",
+    "note": "Pyrodrone '148-Piece Heat Shrink Tubing Set with Assorted Sizes' (SKU K4-5725), $9.99, in stock: 2.0x30 mm x40, 2.5x60 mm x40, 3.5x60 mm x20, 5.5x60 x15, 6.0x60 x10, 8.0x100 x8, 13x100 x15; shrink ratio not stated on page. UNIT = one 20 mm piece (BOM heatshrink qty counts 20 mm pieces); conservatively one piece per tube, so pack_qty 148."
+  },
+  "electronics.antennas.lollipop4p_mmcx_95": {
+    "buy": "https://pyrodrone.com/collections/foxeer-antennas/products/foxeer-5-8g-lollipop-4-plus-2-6dbi-omni-antenna-2pcs-right-angle-mmcx-95mm-rhcp-teal",
+    "pack_qty": 2,
+    "pack_usd": 38.99,
+    "checked": "2026-10-31",
+    "source": "https://pyrodrone.com/collections/foxeer-antennas/products/foxeer-5-8g-lollipop-4-plus-2-6dbi-omni-antenna-2pcs-right-angle-mmcx-95mm-rhcp-teal",
+    "note": "Pyrodrone 'Foxeer 5.8G Lollipop 4 Plus 2.6dBi Omni Antenna 2pcs - Right Angle MMCX 95mm RHCP Teal', $38.99 per 2-pack, 95 mm overall; marked SOLD OUT on 2026-10-31 (LHCP 95 mm variant also sold out). Alternative: myfpvstore Lollipop 4+ 2-pack $36.99 in stock but the page does not confirm a 95 mm length."
+  },
+  "screw:M2:button": {
+    "buy": "https://www.zoro.com/zoro-select-m2-040-socket-head-cap-screw-button-black-oxide-steel-6-mm-length-10-pk-bhs7002006-010p1/i/G1179324/",
+    "pack_qty": 10,
+    "pack_usd": 5.55,
+    "checked": "2026-10-31",
+    "source": "https://www.zoro.com/zoro-select-m2-040-socket-head-cap-screw-button-black-oxide-steel-6-mm-length-10-pk-bhs7002006-010p1/i/G1179324/",
+    "note": "Zoro Select 'M2-0.40 Socket Head Cap Screw, Button, Black Oxide Steel, 6 mm Length, 10 PK' (BHS7002006-010P1), ISO 7380, class 10.9, $5.55/10."
+  },
+  "screw:M3x14:socket": {
+    "buy": "https://www.zoro.com/fabory-m3-050-cylindrical-socket-head-cap-screw-14-mm-l-100-pk-m070000300014/i/G2846645/",
+    "pack_qty": 100,
+    "pack_usd": 3.15,
+    "checked": "2026-10-31",
+    "source": "https://www.zoro.com/fabory-m3-050-cylindrical-socket-head-cap-screw-14-mm-l-100-pk-m070000300014/i/G2846645/",
+    "note": "Zoro Select 'M3-0.50 Socket Head Cap Screw, Socket, Black Oxide Steel, 14 mm Length, 100 PK' (M07000.030.0014), DIN 912 (= ISO 4762), class 12.9, $3.15/100."
+  },
+  "screw:M3x30:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-socket-plain-18-8-stainless-steel-30-mm-length-50-pk-m510500300030/i/G5346275/",
+    "pack_qty": 50,
+    "pack_usd": 2.19,
+    "checked": "2026-10-31",
+    "source": "https://www.zoro.com/zoro-select-m3-050-socket-head-cap-screw-socket-plain-18-8-stainless-steel-30-mm-length-50-pk-m510500300030/i/G5346275/",
+    "note": "Zoro Select 'M3-0.50 Socket Head Cap Screw, Socket, Plain 18-8 Stainless Steel, 30 mm Length, 50 PK' (M51050.030.0030), DIN 912 (= ISO 4762), A2 stainless, $2.19/50."
+  },
+  "washer:M2": {
+    "buy": "https://www.zoro.com/zoro-select-flat-washer-for-screw-size-m2-steel-zinc-plated-finish-100-pk-m382500200001/i/G2646878/",
+    "pack_qty": 100,
+    "pack_usd": 2.59,
+    "checked": "2026-10-31",
+    "source": "https://www.zoro.com/zoro-select-flat-washer-for-screw-size-m2-steel-zinc-plated-finish-100-pk-m382500200001/i/G2646878/",
+    "note": "Zoro Select 'Flat Washer, For Screw Size M2, Steel Zinc Plated Finish, 100 PK' (M38250.020.0001), $2.59/100. NOTE: this is DIN 433 small-OD (2.34 ID x 4.5 OD x 0.25-0.35 mm), not DIN 125 (2.2 x 5.0 x 0.3); no fetchable US DIN 125 M2 retail pack was found (Bolt Depot pages failed to load, Accu shows no USD price, Aspen sells 3100+ boxes). Price is representative; check the 4.5 mm OD suits the joint."
+  },
+  "spacer:M2x6:nylon": {
+    "buy": "https://pololu.com/product/1972",
+    "pack_qty": 50,
+    "pack_usd": 3.33,
+    "checked": "2026-10-31",
+    "source": "https://pololu.com/product/1972",
+    "note": "Pololu 'Nylon Spacer: 6mm Length, 4mm OD, 2.7mm ID (50-Pack)' (#1972), for #2 and M2 screws, plain round spacer, $3.33 per 50-pack (backorders allowed)."
+  },
+  "tie:2.5mm": {
+    "buy": "https://www.zoro.com/kable-kontrol-cable-zip-ties-4-inch-long-uv-resistant-nylon-18-lbs-tensile-strength-100-pc-pack-ct242/i/G203161758/",
+    "pack_qty": 100,
+    "pack_usd": 0.71,
+    "checked": "2026-10-31",
+    "source": "https://www.zoro.com/kable-kontrol-cable-zip-ties-4-inch-long-uv-resistant-nylon-18-lbs-tensile-strength-100-pc-pack-ct242/i/G203161758/",
+    "note": "Kable Kontrol CT242 'Cable Tie, 4 in L, 1 in Max Bundle Dia., Black, Nylon 6/6, 18 lb Strength, 100 PK', 2.5 mm wide x 4 in (~100 mm), $0.71/100; Zoro sells it in multiples of 16 packs ($11.36 minimum order)."
   }
 }

@@ -10,7 +10,7 @@
 from build123d import *
 from kerf import iface, features as F
 
-POSTS = [(31.5, 8), (31.5, -8), (-31.5, 8), (-31.5, -8)]
+POSTS = [(33.0, 8), (33.0, -8), (-33.0, 8), (-33.0, -8)]
 RIDGE_W, RIDGE_H, RIDGE_R1 = 4.5, 1.5, 58.0     # must match parts/arm.py
 CHEEK_T, CHEEK_Y0 = 4.0, 10.0                    # cheek thickness; inner face (19 mm camera + 0.5 mm each side)
 CAGE_X1 = 68.0

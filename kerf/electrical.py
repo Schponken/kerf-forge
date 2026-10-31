@@ -64,25 +64,6 @@ def burst_rise_k(current_a: float, gauge, seconds: float) -> float:
     return j * j * rho * seconds / CU_CV
 
 
-def connector_burst_limit(e: dict, burst_s: float) -> tuple[float, str]:
-    """Peak current a connector may carry for a `burst_s` burst.
-
-    Catalog `current_peak_a` alone is used as-is. When the catalog also gives the time base of both ratings
-    (`current_peak_s`: burst duration, e.g. Holybro's XT60 table: 30 A for 4 h and 60 A for 1 min, both at < 60 K rise)
-    and the burst is shorter, a first-order thermal model is identified from the two ratings, each taken as exactly at
-    the rise limit: steady rise ~ I^2, so 60 A for 60 s reaching the 30 A steady rise gives
-    1 - exp(-t_b / tau) = (I_c / I_b)^2; the allowed peak for burst_s is then I_c / sqrt(1 - exp(-burst_s / tau)).
-    Returns (limit_a, note for the rating row)."""
-    ic = float(e["current_a"])
-    ib = float(e.get("current_peak_a", ic))
-    tb = e.get("current_peak_s")
-    if not tb or burst_s >= float(tb) or ib <= ic:
-        return ib, ""
-    tau = -float(tb) / math.log(1 - (ic / ib) ** 2)
-    lim = ic / math.sqrt(1 - math.exp(-burst_s / tau))
-    return lim, f" ({ib:g} A for {float(tb):g} s -> {burst_s:g} s burst, thermal tau {tau:.0f} s)"
-
-
 def hover_power_w(mass_g: float, prop_d_mm: float, groups: list, fm=FM_DEFAULT, eta=ETA_MOTOR_DEFAULT) -> float:
     """Electrical hover power (W) from momentum theory. `groups` = number of rotors per coaxial group, e.g. [1,1,1,1]
     for a quad, [2] for a coax pair. Thrust is shared equally by all rotors; a coaxial pair pays COAX_KAPPA."""
@@ -320,8 +301,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
         if _is_connector(path) and i in feed:
             a, p = memo.get(i, (0, 0))
             row(f"connector {i}", "avg A vs rated", a, float(e["current_a"]), path)
-            lim, how = connector_burst_limit(e, burst_s)
-            row(f"connector {i}", f"peak A vs peak rating{how}", p, lim, path)
+            row(f"connector {i}", "peak A vs peak rating", p, float(e.get("current_peak_a", e["current_a"])), path)
     # output pins and regulators
     outs = {}
     for w in power:

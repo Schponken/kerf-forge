@@ -35,20 +35,29 @@ purchased:
   stack: {catalog: drone.stacks.fc_30_5, proxy: stack, groups: {holes: stack}}
   camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], joints: {pivot: [0, -4.4, 9.5]},
            note: "RunCam Phoenix 2; frame: local Z = tilt axis, local +Y = lens; side M2 holes 5.1 mm from the back face"}
-  battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400"}
+  battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400", joints: {strap: [14.5, 0, 36]}}
   xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000"}
   vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020",
-             note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate, T antenna out through the rear-tab slots"}
-  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_60, proxy: box, size: [17, 17, 17], color: "#20a0a0",
-            note: "5.8 GHz antenna head; its MMCX lead runs from the VTX under the rear tab (tied) and up behind it"}
-  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 42, 3], color: "#303030",
-        note: "anti-slip pad cut to the 80 x 42 mm top plate"}
-  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [86, 20, 1.8], color: "#404040",
-          note: "runs along the battery: up through one top-plate slot, over the pack, down the other; modelled as its top run"}
+             note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate; T antenna legs tied up and out in a V through the two slots at the roof front (behind the lens, out of its view)"}
+  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 20], color: "#20a0a0",
+            note: "5.8 GHz antenna, 95 mm tube: from the VTX rear corner outside the rear pillar, under the rear tab (one tie through the y -10.5 slot pair), out past the tab end and bent up; about 75 mm of tube path, head (11 mm, 20 mm envelope) above the tab end"}
+  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 40, 3], color: "#303030",
+        note: "anti-slip pad cut to 80 x 40 mm (the pack's footprint, so the strap's side runs pass beside it)"}
+  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 43.6, 1.8], color: "#404040",
+          note: "one loop around the pack's width at x 4.5..24.5: over the pack, down its sides past the plate-edge notches, under the plate (about 170 mm of a 250 mm strap); top run modelled here, side and under runs are keep-outs strap_under / strap_l / strap_r"}
 electrical:
   battery: battery
   burst_s: 5
+  # Betaflight `set motor_output_limit = 73` clips every motor's final output to 73 %. Propeller law (static): rpm ~
+  # output, thrust ~ rpm^2, shaft power ~ rpm^3, so the catalog full-output figures scale to 1685 x 0.73^2 = 898 g and
+  # 35.08 x 0.73^3 = 13.65 A per motor (motor efficiency rises at part load, so the current estimate is on the high
+  # side). 4 x 13.65 + FC/5 V = 55.1 A keeps the XT60 (60 A burst, Holybro) and its 12 AWG pigtail inside rating.
+  limits:
+    motor_1: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
+    motor_2: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
+    motor_3: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
+    motor_4: {peak_a: 13.65, why: "Betaflight motor_output_limit = 73 (%): 35.08 A x 0.73^3 (propeller power ~ rpm^3)"}
 wiring:
   # battery side: the pack's own 12 AWG lead and the frame's XT60 pigtail to the ESC pads
   - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, length_mm: 100,
@@ -69,16 +78,19 @@ wiring:
   - {id: vtx_video, from: stack, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 80, note: "FC video out + SmartAudio (UART) to the VTX"}
   - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 90, route: [top_plate.rx], note: "CRSF TX/RX to an FC UART"}
 keepouts:
+  strap_under: {proxy: box, size: [20, 43.6, 1.8], owner: strap, note: "strap run under the top plate"}
+  strap_l: {proxy: box, size: [20, 1.8, 45.6], owner: strap, note: "strap side run, plate underside to pack top"}
+  strap_r: {proxy: box, size: [20, 1.8, 45.6], owner: strap, note: "strap side run"}
   prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1, h: 7}
   prop_2: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_2, h: 7}
   prop_3: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_3, h: 7}
   prop_4: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_4, h: 7}
 bom_extra:
-  - {type: fastener, item: M2 x 6 mm button head screw, qty: 2, spec: ISO 7380, note: "camera side pivots; heads sit in 1 mm cheek recesses, so 3.5 mm grip leaves 2.5 mm in the camera's own threads"}
+  - {type: fastener, item: M2 x 6 mm button head screw, qty: 2, spec: ISO 7380, price_key: "screw:M2:button", note: "camera side pivots; heads sit in 1 mm cheek recesses, so 3.5 mm grip leaves 2.5 mm in the camera's own threads"}
   - {type: hardware, item: M2 flat washer, qty: 4, spec: "under the VTX screw heads (its holes take M3)"}
-  - {type: hardware, item: M2 x 6 mm nylon spacer (round, 4 mm OD), qty: 4, spec: "between the top-plate bosses and the VTX PCB: the 1.6 mm board + 6 mm spacer + washer fill the 8 mm VTX envelope, so the M2 x 12 clamps 3.9 mm into the boss"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 9, spec: "2 per arm for motor wires, 1 wrapped under the XT60 through the two slots beside its cradle"}
-  - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount"}
+  - {type: hardware, item: "M2 x 6 mm nylon spacer, round, 4 mm OD", qty: 4, price_key: "spacer:M2x6:nylon", spec: "between the top-plate bosses and the VTX PCB: the 1.6 mm board + 6 mm spacer + washer fill the 8 mm VTX envelope, so the M2 x 12 clamps 3.9 mm into the boss"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 12, price_key: "tie:2.5mm", spec: "2 per arm for motor wires, 1 wrapped under the XT60 through the two slots beside its cradle, 1 for the VTX antenna under the tab, 2 for the receiver and its antenna legs"}
+  - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount", link: "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/", note: "included with the stack (no separate purchase)"}
 assembly:
   root: body
   joints:
@@ -98,7 +110,10 @@ assembly:
     - {parent: body.top, child: top_plate.base}
     - {parent: top_plate.battery, child: pad.bottom}
     - {parent: pad.top, child: battery.bottom}
-    - {parent: battery.top, child: strap.bottom}
+    - {parent: battery.strap, child: strap.bottom}
+    - {parent: top_plate.strap_u, child: strap_under.bottom}
+    - {parent: top_plate.strap_l, child: strap_l.bottom}
+    - {parent: top_plate.strap_r, child: strap_r.bottom}
     - {parent: top_plate.rx, child: receiver.bottom}
     - {parent: top_plate.xt60, child: xt60.bottom}
     - {parent: top_plate.vtx, child: vtx.bottom}
@@ -112,8 +127,8 @@ assembly:
 requirements:
   - {id: prop_gap, check: prop_clearance, min_mm: 3, min_between_mm: 4, joints: [cam_tilt],
      why: "spinning props must clear each other by 4 mm and everything else by 3 mm, also while the camera tilts"}
-  - {id: twr, check: thrust_to_weight, thrust_g_total: 6740, min_ratio: 6,
-     why: "freestyle needs >= 6:1; catalog XING2 2207 max thrust 1685 g x 4 motors = 6740 g"}
+  - {id: twr, check: thrust_to_weight, thrust_g_total: 3592, min_ratio: 6,
+     why: "freestyle needs >= 6:1; catalog XING2 2207 max thrust 1685 g at full output, x 0.73^2 for the 73 % Betaflight motor_output_limit that keeps the XT60 in rating = 898 g x 4 motors = 3592 g"}
   - {id: frame_mass, check: mass_max, max_g: 250, include: [body, arm_1, arm_2, arm_3, arm_4, top_plate],
      why: "printed frame no heavier than 250 g"}
   - {id: cg_center, check: cg, point: [0, 0, 0], max_lateral_mm: 5,
@@ -167,6 +182,6 @@ requirements:
       - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], torque_nmm: 2369, axis: {at: [0, 0, post_h + top_t], dir: [-1, 0, 0]}}
   - {id: power, check: power_budget,
      why: "battery C rating, ESC channels, FC 5 V BEC, XT60 and every wire inside their ratings at hover and at full throttle"}
-  - {id: flight_time, check: flight_time, min_min: 3, why: "brief: at least 3 min at hover on 80 % of the 1300 mAh pack"}
+  - {id: flight_time, check: flight_time, min_min: 3, why: "brief: at least 3 min at hover on 80 % of the 1300 mAh pack. Ideal-hover estimate (momentum theory, FM 0.5): real hover draws more, and freestyle flying gives about 3-5 min"}
   - {id: xt60_plug, check: connector_access, item: xt60, direction: [-1, 0, 0], length_mm: 30,
      why: "the battery plug goes straight into the XT60 from the rear with the frame assembled"}

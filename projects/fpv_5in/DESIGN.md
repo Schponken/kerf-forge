@@ -20,8 +20,13 @@
 | camera | drone.cameras.micro_19mm | 9 g | tilt about the side M2 screws |
 | battery | drone.batteries.6S_1300 | 215 g | 82 × 40 × 36 mm |
 | XT60 | drone.connectors.XT60 | (not catalogued) | battery plug end open to the rear |
-| VTX | drone.vtx.tx800 | 5.6 g | 28 × 28 mm, 20 × 20 M2, hangs under the top plate |
-- Thrust/weight: 4 × 1685 = 6740 g / ~535 g all-up (frame 145 g + the parts above; props, screws, wires ~40 g more)
+| VTX | drone.vtx.tx800 | 5.6 g | 28 × 28 mm, 20 × 20 M2, hangs under the rear half of the top plate (centre x −13.5) |
+| VTX antenna | electronics.antennas.lollipop4p_mmcx_95 | 4.8 g | 95 mm tube, MMCX 90°, head above the rear tab end |
+- Thrust/weight: 4 × 1685 = 6740 g at full output, but the XT60 is rated 60 A burst (Holybro: 1 minute) and four
+  motors at full output draw 4 × 35.08 = 140 A. Betaflight `set motor_output_limit = 73` caps each motor: by the
+  propeller law (thrust ~ rpm², power ~ rpm³) 1685 × 0.73² = 898 g and 35.08 × 0.73³ = 13.65 A per motor →
+  3592 g / 558.5 g all-up = **6.43**, peak 55.1 A (the `power` requirement). Raise the limit only with a bigger
+  connector; the 73 % figure is an estimate — check the Blackbox current peak on the first flights.
   → 12.6 (requirement ≥ 6).
 - Arm root bending (hand calc): crash load 2 × 1685 g = 33.1 N at r = 113 mm; outer arm screw at r = 52 mm → lever
   61 mm, M = 2017 N·mm; section 20 × 11 mm: Z = 403 mm³ → 5.0 MPa nominal. FEA (fixed at the two arm screws, load on
@@ -49,10 +54,11 @@
 | top_plate | body | M3 counterbored from below into heat-set inserts in the post feet | posts | 4 × M3 × 8 + 4 inserts |
 | vtx | top_plate | M2 through the VTX (washers: its holes take M3) and 6 mm nylon spacers into pilot holes in 3 mm bosses | vtx | 4 × M2 × 12 |
 | camera | body | side M2 screws through the cheek teardrop holes (heads in 1 mm recesses) into the camera, 2.5 mm thread (pivot, friction) | – | 2 × M2 × 6 |
-| battery | top_plate | 20 mm strap through two slots | – | – |
+| battery | top_plate | one 20 mm strap around the pack's width at x 4.5–24.5 (past 1 mm plate-edge notches, under the plate clear of the VTX) | – | – |
 | XT60 | top_plate | cradle under the rear tab: rear end open for the battery plug, 1 mm stops at the front; a cable tie through two vertical slots beside the cradle wraps under the connector (its lower 4 mm hangs below the walls) | – | – |
 | receiver | top_plate | under the camera roof, cable tie through two slots | – | – |
-| antennas | top_plate | cable ties through the rear-tab slots | – | – |
+| VTX antenna | top_plate | tube runs from the VTX rear corner outside the rear pillar, under the tab (tie through the y −10.5 slot pair), up behind the tab end | – | – |
+| receiver antenna | top_plate | T legs tied up and out in a V through the two slots at the roof front (behind the lens) | – | – |
 
 ## Joint tree
 body (root) → arm_1..4 (rigid, along the diagonals) → motor_N → prop_N keep-out; body → stack; body → top_plate →
@@ -69,7 +75,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   tilt range (swept). The 4 mm cheeks run to x = 68, 3 mm past the lens front at its furthest (x 64.8 at 34°),
   gusseted to the nose; their tops slope down at the front to keep 3 mm from the front prop discs.
 
-- Top plate (review round 2): each post pair is filled into one 9 × 25 mm pillar (posts at y ±8) so a 50 g battery
+- Top plate (review round 2): each post pair is filled into one 9 × 25 mm pillar (posts at x ±33, y ±8) so a 50 g battery
   hit (112.8 N + its 2369 N·mm tipping couple, posts bent across the layers) stays inside CF-PETG z strength / 3:
   FEA 7.7 (front/back) and 8.7 (side) vs 9.67 MPa. A 24 mm roof tongue reaches over the camera to x 58 (lens front
   61.9-64.8), 9.8 mm above the camera top at full tilt, so a hit from above lands on the roof.
@@ -86,8 +92,10 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 6. Camera between the cheeks: 2 × M2 × 6 into its side holes; set the tilt, snug the screws.
 7. Top plate: 4 × M3 × 8 up through the body into the post inserts; XT60 into the cradle (solder cups forward)
    with a cable tie wrapped under it through the two slots beside the cradle; receiver tied under the camera roof;
-   antennas tied through the rear-tab slots. XT60 leads run outside the post pillars (|y| > 12.5 mm).
-8. Battery on top with the strap through both slots.
+   VTX antenna tube tied under the tab and bent up behind it; receiver antenna legs tied in a V at the roof front. XT60 leads run outside the post pillars (|y| > 12.5 mm).
+8. Battery on the pad; strap around the pack's width in the plate-edge notches, under the plate (between the VTX
+   and the front pillar).
+9. Betaflight: `set motor_output_limit = 73`, `save` (keeps the XT60 inside its 60 A rating; see sizing).
 
 ## Risks / measure first
 - Camera side-hole position (catalog note: scaled from a drawing) and the 22 mm stack height (typical, not published).
@@ -96,3 +104,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 - VTX height (8 mm incl. heatsink) is typical, not published: 2 mm stays above the stack screw heads.
 - Arm first bending mode is roughly in the gyro noise band (reviewer hand calc ~165 Hz) and PETG-CF softens near a
   hot motor: hover-test and check Blackbox gyro noise before freestyle.
+- Flight time 13 min is the ideal-hover estimate (momentum theory, figure of merit 0.5); real hover draws more and
+  freestyle flying gives about 3–5 min on a 1300 mAh 6S pack.
+- Motor phase runs are modelled as 18 AWG extensions; the motors' own lead gauge/length is not in the catalog (with
+  the 73 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 13.65 A).

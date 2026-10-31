@@ -485,3 +485,15 @@ pushed for it and what I know:
   then flagged the draft shell's 0.31 mm ridges and 17 % overhang — real feedback, as intended.
 - Skill: "Creative mode" section (balance, text-to-3D, poll, download to the path the error names, record
   meshes/<part>.meshy.json, rebuild, look). Downloading: the task's `model_urls` fetch from the cloud shell too.
+## 2026-10-31 — session 01S68R6S: E2 fpv_5in, review round 3 fixes
+- Round 3 (FAIL, 1 blocker, 3 major): fixed. Battery strap now loops around the pack's width at x 4.5..24.5 past
+  plate-edge notches, under the plate clear of the VTX (VTX moved to x -13.5, posts to x +/-33); the strap's side
+  and under runs are keep-outs so interference covers the whole loop. VTX antenna -> Lollipop 4+ 95 mm tube (catalog,
+  sourced), routed outside the rear pillar and up behind the tab; receiver antenna legs tied at the roof front.
+  Tab extended to x -64 so the XT60 cradle walls start on the plate.
+- Reverted my connector burst-limit extrapolation (reviewer: loosened check; agreed). The XT60 stays at its 60 A
+  1-minute rating (Holybro, cited in the catalog); the quad passes `power` honestly with Betaflight
+  `motor_output_limit = 73` as `electrical.limits` (propeller law: 13.65 A, 898 g per motor) and `twr` uses the
+  limited thrust (6.43 >= 6). Peak 55.1 A.
+- catalog/prices.json: wire AWG12/18/26/28, heat-shrink, antenna, M2 button/washer, M3x14/x30, M2 nylon spacer,
+  cable ties (all read 2026-10-31); every fpv_5in BOM row has a buy link, total $373.76.
