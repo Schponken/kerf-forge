@@ -788,3 +788,11 @@ pushed for it and what I know:
   `static_torque` takes `gravity: [x, y, z]` (test) -> pan_tilt `torque_pan` (head on its side); F17 BOM; F16
   justified (ENG-12). AUDIT.md rows marked. Off-head electrics `render: false`.
 - Note for the ENG-5/6 owner: tests/test_docs.py fails (`single_shear`, `walls` not in ARCHITECTURE.md).
+## 2026-10-31 11:40 UTC — session 262017a2: PLAN "Audit fixes: engine majors" DONE
+- ENG-1..6 in, each with a test (see AUDIT.md). tvc_drone re-reviewed after them: round 6 PASS at 8aedf000a3cf1767
+  (4-wall shells, catalog-derived T/W 2.08 / 1.86, 780.5 g / 790).
+- Now failing on real findings, for their audit items: **fpv_5in** twr 5.94 < 6 (4-perimeter mass on arms/body/top
+  plate, B-F3: trim mass or the twr basis), **bionic_finger** proximal_fea_line 26.5 > 24 MPa (single-shear pip moment, C-2).
+- Note for the ENG-7 / pan_tilt owner (reviewer minor): `tap_h` (horizontal pilot 2.10 for M2) is also applied to
+  TEARDROP taps, where the teardrop already removes the droop it compensates; the screws may have little bite. Decide
+  whether teardrop taps should keep the vertical pilot, and print a coupon.
