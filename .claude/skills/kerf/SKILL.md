@@ -92,7 +92,7 @@ PASS. `kerf review-status <p>` must be ok (the review is tied to the geometry fi
 
 ## 8. Deliver
 Commit and push. Tell Spencer in plain words: what it is and how it works; the key numbers with margins (mass,
-reach/thrust, torque used vs stall, FEA safety factors); the shopping list (`out/bom.md`); what to print
+reach/thrust, torque used vs stall, FEA safety factors); the shopping list with links and cost (`out/bom.md`, priced from `catalog/prices.json`; add a dated, sourced price for any row it lists as unpriced); the step-by-step build (`out/ASSEMBLY.md`); what to print
 (`out/plates/*.3mf`, open in Bambu Studio; material, orientation); the assembly steps; numbers to measure on real
 hardware first; known limits. If `catalog/printers/` has no profile for his printer + the project's material yet, tell him to print the fit coupon first (`kerf calibrate --material <m>`, then `kerf feedback ...`) and rebuild: holes then fit his printer, not a textbook one.
 
