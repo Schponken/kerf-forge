@@ -2,6 +2,6 @@
  "item": "servo_link review follow-ups (review of fingerprint 43b35f19, all minor): `access.insertion_paths` skips subtree items that `assembly.order` installs later (test), then declare the servo's top-first insert + order in servo_link; horn proxy seats ON the spline instead of sliding over it (~4 mm too far out) \u2014 add a spline-engagement value to the horn catalog entry (sourced) and use it in the proxy; FEA render titles show surface peak, volume peak and the p99.9 value used for pass/fail; project.yaml bom_extra washer text says 4.2 mm holes (now 4.5 mm keyhole slots); count the washer in tab-screw grip; then rebuild servo_link and get a fresh PASS review",
  "session": "9a8926925c",
  "since": 1793410427.431494,
- "heartbeat": 1793413830.6110969,
+ "heartbeat": 1793414065.4629617,
  "since_utc": "2026-10-31 01:33"
 }

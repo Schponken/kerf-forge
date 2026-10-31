@@ -122,3 +122,18 @@ def test_battery_box(key):
     s = proxies.build(Ctx(key, {}), {"catalog": f"drone.batteries.{key}", "proxy": "box"})
     e = catalog.get(f"drone.batteries.{key}")
     assert s.bounding_box().size.X == pytest.approx(catalog.num(e, "length"), abs=0.01)
+
+
+def test_no_duplicate_keys():
+    """A repeated key in hardware.json silently drops the earlier value (two sessions each adding a 'connectors'
+    section lost one of them), so the file must not contain any."""
+    import json
+    from kerf import catalog
+    dups = []
+
+    def hook(pairs):
+        keys = [k for k, _ in pairs]
+        dups.extend(sorted({k for k in keys if keys.count(k) > 1}))
+        return dict(pairs)
+    json.loads(catalog.CATALOG.read_text(encoding="utf-8"), object_pairs_hook=hook)
+    assert not dups, f"duplicate keys in catalog/hardware.json: {dups}"
