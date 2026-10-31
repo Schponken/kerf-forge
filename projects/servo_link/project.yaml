@@ -33,6 +33,10 @@ bom_extra:
   - {type: fastener, item: M3 flat washer (DIN 125), qty: 4, spec: "under the servo tab screw heads (the tab holes are 4.5 mm keyhole slots); counted in the screw grip"}
   - {type: hardware, item: 50 g calibration weight or fishing sinker on a wire loop or S-hook, qty: 1, spec: "hangs from the arm tip hole"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 1, spec: "servo lead strain relief"}
+  - {type: electrical, item: "IEC C13 mains cord (country plug)", qty: 1, spec: "the MEAN WELL adapter ships without one (element14: mains lead sold separately)"}
+  - {type: electrical, item: USB Mini-B cable, qty: 1, spec: "programs and powers the Arduino Nano A000005 (Mini-B, PiShop page)"}
+  - {type: electrical, item: "2.54 mm male pin header, 3 pins", qty: 1, spec: "servo plug pushes onto it; solder servo_pwr red/black and servo_sig orange to its pins, heat-shrink each"}
+  - {type: tool, item: 2.5 mm ball-end hex driver, qty: 1, spec: "the two servo tab screws next to the cable boss (a straight key grazes the boss)"}
 assembly:
   root: base
   order: [base, bracket, servo, horn, arm]   # servo in from behind before the horn and arm go on its spline
@@ -54,11 +58,14 @@ wiring:      # ends = item centres; cut lengths = routed + 15 %, rounded up. Wor
      route: [[62.5, -109.3, 15], [111.7, -63, 6]],
      note: "the adapter's own 1 m DC cord (Jameco: 3.28 ft) with its 5.5 x 2.1 plug; MEAN WELL does not publish its gauge here, so it is checked as 24 AWG, the thinnest wire a 6 A-rated cord could plausibly use (a real cord is thicker)"}
   - {id: servo_pwr, from: jack, to: servo, v: 5.0, gauge: 22, color: red/black, length_mm: 250,
-     route: [[76.3, -63, 6], [40, -30, 8], [5, -24, 66], [31, -46, 80]],
-     note: "jack screw terminals (+ / -) to the servo plug's red and brown pins (a 3-pin header or servo extension); tie the lead through the wall's cable-tie slots"}
-  - {id: servo_sig, from: nano, to: servo, kind: signal, gauge: 26, conductors: 2, color: orange/brown, length_mm: 240,
-     route: [[78, -13, 3], [40, -30, 8], [5, -24, 66], [31, -46, 80]],
-     note: "Nano D9 to the servo signal pin, Nano GND to the supply minus (common ground); Nano powered from USB"}
+     route: [[76.3, -63, 6], [70, -63, 13], [40, -30, 12], [5, -24, 66], [31, -46, 80]],
+     note: "jack screw terminals (+ / -) to the 3-pin male header's middle (red) and outer (brown) pins; the servo's own plug pushes onto the header; tie the lead through the wall's cable-tie slots"}
+  - {id: servo_sig, from: nano, to: servo, kind: signal, gauge: 26, color: orange, length_mm: 240,
+     route: [[78, -13, 3], [70, -13, 13], [40, -30, 12], [5, -24, 66], [31, -46, 80]],
+     note: "Nano D9 to the header's signal pin (servo orange); Nano powered from USB"}
+  - {id: gnd_common, from: nano, to: jack, kind: signal, gauge: 26, color: black, length_mm: 110,
+     route: [[78, -13, 3], [76.3, -63, 6]],
+     note: "Nano GND into the jack's minus screw terminal (common ground), next to the servo_pwr black wire"}
 requirements:
   - {id: arm_torque, check: static_torque, joint: swing, actuator: servo, payload_g: 50, payload_at: arm.tip, max_fraction: 0.5,
      why: "the servo must hold the arm and a 50 g weight anywhere in its range using at most half its stall torque"}

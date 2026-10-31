@@ -69,7 +69,12 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
 - Power: MEAN WELL GST60A05 5 V 6 A desk adapter (catalog) -> SparkFun PRT-10288 barrel-jack screw-terminal adapter
   (10 A) -> 22 AWG red/black to the servo's red/brown pins. 5 V is inside the MG996R's 4.8-7.2 V; its 2.5 A stall
   (datasheet) is 42 % of the adapter's 6 A (`power` check, worst element). A USB port could not feed a stall.
-- Signal: Arduino Nano on USB, D9 -> servo signal (orange), Nano GND -> supply minus (common ground). Sweep sketch with
+- The servo's own female plug pushes onto a 3-pin 2.54 mm male header: jack + / - to its red / brown pins, Nano D9
+  to orange. The adapter needs a separate IEC C13 mains cord; the Nano a USB Mini-B cable (both in the BOM).
+- Not checked by Kerf yet: voltage drop. At the 2.5 A stall the 1 m adapter cord (gauge not published; 24 AWG would
+  drop ~0.4 V) can pull the servo below 4.8 V for the moment it stalls; at the 0.9 A running current it stays above.
+  Harmless here (the arm needs 11 % of stall torque).
+- Signal: Arduino Nano on USB, D9 -> servo signal (orange), Nano GND -> jack minus (common ground). Sweep sketch with
   `servo.attach(9, 500, 2500)` so the pulse range reaches the full ±90° (a cheap servo tester stops at about ±60°).
 - The adapter sits behind the rig, the jack and Nano beside it on the desk (base `desk_*` spots), plugs facing away:
   `plug_access` / `usb_access` prove 30 mm free in front of both. `kerf build` writes out/WIRING.md and wiring.svg.
@@ -88,8 +93,9 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
 5. Centre the servo electrically, press the horn on the spline pointing up, fit its centre screw.
 6. Bolt the arm to the horn (4× M3 × 8). The horn disc is only 2 mm thick: snug them (about 0.5 N·m) with medium
    threadlocker rather than torquing them down.
-7. Wire it (out/WIRING.md): jack + / - to the servo's red / brown, Nano D9 to orange, Nano GND to jack -; plug the
-   adapter into the jack and the Nano into USB.
+7. Wire it (out/WIRING.md): solder the 3-pin header (red/black from the jack, orange from Nano D9), Nano GND into
+   the jack's minus terminal; push the servo plug onto the header (brown to black); plug in the adapter (with its
+   mains cord) and the Nano's USB cable.
 8. Hang the 50 g test mass (calibration weight or sinker on a wire loop / S-hook) from the tip hole.
 
 ## Use
@@ -99,5 +105,6 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
   (catalog `sources`): hole pattern 49.5 × 10 mm, 4.5 mm keyhole slots, tab 2.5 mm and shaft offset 10 mm are confirmed.
   The tab height above the case bottom is not (TowerPro 26.6-26.8, models 26.5-30.2); the review rebuilt the rig at
   26.5 and 30.2 and it still fits, sweeps and keeps key access. The cable boss is a keep-out envelope covering every
-  source (7.0 proud, 2.5-10.5 up, 8 wide). Optional: measure the tab height on a real servo. If it differs, correct `catalog/hardware.json` with the
+  source (7.0 proud, 2.5-10.5 up, 8 wide). Measure the tab height on a real servo before printing: at the 30.2 mm extreme the 20 mm horn disc sits 0.5 mm
+  inside the 20.6 mm window with ~0.3 mm to its edges (still clear, small margin). If it differs, correct `catalog/hardware.json` with the
   measured value and a note, and rebuild — every dependent hole moves with it.

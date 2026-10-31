@@ -101,7 +101,8 @@ def steps(model) -> list:
             continue
         what = w.get("color") or ("red (+) and black (-) pair" if n == 2 else f"{n} conductors")
         out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**; slide heat-shrink on, "
-                   f"solder {w['from']} -> {w['to']}, shrink. Route: {' -> '.join(str(p) for p in w['points'])}.")
+                   f"solder {w['from']} -> {w['to']}, shrink. Route: {' -> '.join(str(p) for p in w['points'])}."
+                   + (f" {w['note']}." if w.get("note") else ""))
     out.append("Before the first battery: check every + to - pair for a short with a multimeter, then power up through "
                "a smoke stopper (fused lead)." if not model.get("mains") else
                "Before plugging in the adapter: check every + to - pair for a short with a multimeter.")
