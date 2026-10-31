@@ -1,7 +1,7 @@
 name: Bionic index finger
 description: >
   One tendon-driven index finger for a bionic hand: a knuckle mount and three phalanges (adult index proportions,
-  44 / 25 / 21 mm) on M3 screw pivots (heads on the moving parts, heat-set inserts). A flexor and an extensor line run in internal channels; pulling the
+  44 / 25 / 21 mm) on 4 mm shoulder-screw pivots (M3 thread into heat-set inserts), with a hard stop at straight. A flexor and an extensor line run in internal channels; pulling the
   flexor curls the finger (mcp 0-80, pip 0-80, dip 0-70 deg), pulling the extensor straightens it. Every part prints
   on its side with no supports: two-layer lap knuckles alternating sides, round pin holes, pointed-roof channels.
 printer: Bambu Lab A2L
@@ -26,7 +26,7 @@ parts:
   distal: {file: parts/distal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
 bom_extra:
   - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 100 lb (445 N) rated", qty: 1, spec: "about 0.5 m: one flexor and one extensor line"}
-  - {type: hardware, item: Medium threadlocker (blue), qty: 1, spec: "a drop on each M3 pivot screw thread"}
+  - {type: hardware, item: "Line stop: crimp sleeve or bead, 2.5-2.9 mm OD", qty: 2, spec: "on each line end inside its 3 mm fingertip pocket, so the line cannot pull into the 2.2 mm channel"}
   - {type: hardware, item: Thin CA glue, qty: 1, spec: "a drop on each fingertip knot in its pocket"}
   - {type: fastener, item: "M3 screws + nuts to bolt the knuckle mount to the hand frame", qty: 2, spec: "length = 16 mm mount + frame thickness"}
 assembly:
@@ -97,7 +97,19 @@ requirements:
     direction: auto
     sf: 2.0
     max_disp_mm: 0.44       # 1 % of L1 (ENGINEERING.md s2); met since the child knuckle band is full depth
-    fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.675, tol: 0.3}}
+    fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 2.175, tol: 0.3}}   # mcp shoulder bore (4 + 0.35)
     loads:
       - {cylinder: {at: [L1, 0, 0], dir: [0, 1, 0], r: 2.0, tol: 0.3}, bearing_n: [0, 0, 15]}   # pip heat-set insert bore
+  - id: proximal_fea_line
+    check: fea_static
+    part: proximal
+    why: "the flexor at its rated tension (222 N = 100 lb braid / SF 2, enough for ~10 N at a straight fingertip) presses the segment against the mcp pivot through the pip pivot, plus the 10 N tip load"
+    direction: auto
+    sf: 2.0
+    fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 2.175, tol: 0.3}}
+    loads:
+      - {cylinder: {at: [L1, 0, 0], dir: [0, 1, 0], r: 2.0, tol: 0.3}, bearing_n: [-222, 0, 10]}
+  - {id: stop_mcp, check: hard_stop, joint: mcp, beyond: -5, why: "the finger must stop at straight: pulling the extensor may not bend it backward"}
+  - {id: stop_pip, check: hard_stop, joint: pip, beyond: -5, why: "stop at straight (see stop_mcp)"}
+  - {id: stop_dip, check: hard_stop, joint: dip, beyond: -5, why: "stop at straight (see stop_mcp)"}
   - {id: finger_mass, check: mass_max, max_g: 40, why: "a light finger keeps the actuator load small"}

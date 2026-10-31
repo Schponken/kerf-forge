@@ -609,3 +609,11 @@ pushed for it and what I know:
   `kerf verify` and keeps the reviewer alive after it has written review.json (load on the box; it may also push
   the reviewer to keep working). Several such processes from this session were still running at hand-off.
 - Not done here (per the brief to this session): evals/pan_tilt/BLIND_RUN.md, PLAN.md box for E6.
+## 2026-10-31 03:30 UTC — session 6e99fb9c38: E5 bionic_finger review round 1 fixes
+- Review round 1 FAIL (1 blocker, 1 major, 7 minor). Fixed: hard stop at straight (dorsal lugs on every knuckle,
+  new engine requirement `hard_stop` proves a joint moved 5 deg past its range collides); pivots are 4 x 8 mm shoulder
+  screws (new sourced catalog `motion.shoulder_4_m3`, engine support in iface/pins/BOM/ASSEMBLY.md: shoulder length
+  chosen so the head never clamps; finger now 15.4 wide to fit the 8 mm shoulder); flexor-line FEA case
+  (`proximal_fea_line`, 222 N); crimp sleeve line stop; groove ridges quantified (line never touches them; 5 deg
+  steps crack the tessellation); tendon cuts subtracted in chunks (2.4 GB -> 0.5 GB, 2x faster). check PASS.
+- Not mine, seen: tests/test_meshy.py needed `./setup.sh` again (manifold3d/networkx) on this clone.

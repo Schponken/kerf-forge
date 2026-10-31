@@ -20,7 +20,8 @@ import math
 from build123d import Box, Circle, Cylinder, Location, Plane, Polygon, Pos, Rectangle, Rot, Sketch, extrude, Align, Solid, Compound
 
 # ---- fixed design numbers (DESIGN.md explains each) ----
-W = 16.0          # finger width (Y); = the stocked 16 mm dowel length
+W = 15.4          # finger width (Y): a knuckle band (7.55) + the gap (0.3) = 7.85, under the 8 mm shoulder of the pivot
+                  # screw with 0.15 mm play (adult index ~16-18 mm, Aero Hand 16.4)
 D = 15.0          # depth (Z) at the knuckles
 H = D / 2         # half depth
 GAP = 0.3         # axial gap between the two lap layers (0.15 per face)
@@ -28,7 +29,7 @@ RK = 7.5          # knuckle disc radius (= H, full-depth round knuckle)
 CLR = 0.4         # radial clearance between a disc and the pocket it turns in
 RH = RK + CLR     # pocket radius
 XC = 8.5          # child keeps palmar / far-side material only beyond this distance from the axis
-PIN = "M3"         # screw pivot: ISO 4762 M3 SHCS, free in the child, into a heat-set insert in the parent
+PIN = "motion.shoulder_4_m3"   # pivot: 4 mm shoulder screw, shoulder turns in the child, M3 thread in a heat-set insert in the parent
 SIDES = {"mcp": -1, "pip": +1, "dip": -1}      # band that holds the PARENT's knuckle at each joint
 FLEX = 4.0        # flexor line distance below the axis (moment arm at home)
 FLEX_A = 4.5      # flexor channel exits this far either side of an axis
@@ -36,12 +37,20 @@ EXT = 5.0         # extensor line above the axis and wrap radius
 EXT_A = 5.0
 TUBE_D = 2.2      # tendon channel diameter (requirement: >= 1.5 clear; line 0.5-0.8 mm)
 ROOF = 55.0       # channel roof slope (deg from horizontal on the printer) - no supports
-STEP = 10.0       # joint sampling for swept tendon cuts (deg)
+STEP = 10.0       # joint sampling for swept tendon cuts (deg). Between two steps the line lies between two tube axes at
+                  # most 1.6 mm apart (9 mm from the axis), so <= 0.8 mm off the nearer axis: inside its 1.1 mm radius
+                  # with the 0.25 mm line radius to spare, i.e. the line never touches the ridges between the tubes.
+                  # (5 deg steps make OCC tessellate the groove floors with cracks.)
 XE = RH + 1.5     # each tendon run is also cut out of the neighbouring part's knuckle out to this distance from the axis
 BAND_T = W / 2 - GAP / 2
 MIN_EDGE = 1.5    # the pocket circle meets the top/bottom faces at a grazing angle: cut the band back to where the
                   # wedge between them is this thick (no knife edges)
 XT = math.sqrt(RH ** 2 - (H - MIN_EDGE) ** 2)
+# Hard stop at straight: a dorsal lug on each side of every knuckle (above the finger's back, z in [H, H + LUG_H]).
+# The child's lug (both bands, outside the pocket radius in its top band) meets the parent's lug (its knuckle band
+# only) when the joint is bent backward: STOP_GAP apart at 0 deg, touching at about -2 deg (hard_stop proves it).
+LUG_H = 2.0
+STOP_GAP = 0.3
 # A child's joint frame: Z along the pin (+Y) and X toward +Z, because a build123d RevoluteJoint about +Y measures
 # angle 0 from the parent's +Z. With this frame the child lies straight along +X at angle 0 and positive angles flex.
 CHILD_FRAME = Location(Plane(origin=(0, 0, 0), x_dir=(0, 0, 1), z_dir=(0, 1, 0)))
@@ -146,10 +155,11 @@ def runs(points_list, up):
     return out
 
 
-def cut_all(part, cutters):
-    if not cutters:
-        return part
-    return part - Compound(children=cutters)
+def cut_all(part, cutters, chunk: int = 12):
+    """Subtract the cutters in chunks: one boolean with ~100 overlapping tools runs out of memory."""
+    for i in range(0, len(cutters), chunk):
+        part = part - Compound(children=cutters[i:i + chunk])
+    return part
 
 
 def pin_holes(ctx, lj: float, joint: str, role: str):
@@ -179,7 +189,8 @@ def child_end(body: Sketch, theta: float = 80.0):
     x0, x1 = RH / s, (RH + zb * c) / s
     # one simple polygon (a union of two touching shapes split along z = 0 non-deterministically in OCC)
     allowed = Polygon((0, H + 1), (200, H + 1), (200, zb), (x1, zb), (x0, 0), (0, 0), align=None)
-    return body + disc(0, RK), (body & allowed) - pocket(0)
+    lug = rect(STOP_GAP / 2, XT + 2, H - 0.5, H + LUG_H)       # overlaps the body by 0.5: no near-coincident faces
+    return body + disc(0, RK) + lug, ((body & allowed) - pocket(0)) + (lug - disc(0, RH))
 
 
 def swept(theta: float, R: float = 80.0):
@@ -197,7 +208,8 @@ def swept(theta: float, R: float = 80.0):
 def parent_end(bottom: Sketch, top: Sketch, lj: float, theta: float = 80.0):
     """Distal end of a segment (parent side of the joint at u = lj, range [0, theta]): knuckle disc on the bottom;
     on top the pocket the child's disc turns in, and the region the child's full-depth knuckle band sweeps."""
-    return bottom + disc(lj, RK), top - pocket(lj) - Pos(lj, 0) * swept(theta)
+    lug = rect(lj - XT - 2, lj - STOP_GAP / 2, H - 0.5, H + LUG_H)
+    return bottom + disc(lj, RK) + lug, top - pocket(lj) - Pos(lj, 0) * swept(theta)
 
 
 def pocket(u):
