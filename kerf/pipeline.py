@@ -22,6 +22,8 @@ def render_glb(glb: Path, prefix: Path, views="iso,front,right,top", sheet=True)
 
 def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9) -> dict:
     t0 = time.time()
+    from . import catalog
+    catalog.track()
     proj = P.load(name, overrides)
     P.build(proj)
     printer = proj.data.get("printer", "Bambu Lab A2L")
@@ -174,6 +176,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             import traceback
             rep["problems"].append(f"assembly step crashed: {type(e).__name__}: {e}")
             rep.setdefault("traces", {})["assembly"] = traceback.format_exc(limit=8)
+    if not overrides:           # record what this build read from the catalog, then the fingerprint that depends on it
+        P.record_deps(proj)
+        rep["fingerprint"] = proj.fingerprint()
     rep["ok"] = not rep["problems"]
     rep["seconds"] = round(time.time() - t0, 1)
     proj.out("report.json").write_text(json.dumps(rep, indent=1, default=str))

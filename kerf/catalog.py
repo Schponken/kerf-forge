@@ -19,9 +19,43 @@ def load() -> dict:
     return json.loads(CATALOG.read_text(encoding="utf-8"))
 
 
+_USED: set | None = None
+
+
+def track():
+    """Start recording every path passed to get() (project builds: the project's catalog dependencies)."""
+    global _USED
+    _USED = set()
+
+
+def used() -> set:
+    return set(_USED or ())
+
+
+def deps_hash(paths) -> str:
+    """Hash of just these catalog entries (a missing entry hashes as missing), so an edit elsewhere in the catalog
+    does not change a project's fingerprint."""
+    import hashlib
+    h = hashlib.sha256()
+    for p in sorted(paths):
+        try:
+            v = _get(p)
+        except CatalogError:
+            v = "<missing>"
+        h.update(p.encode())
+        h.update(json.dumps(v, sort_keys=True, default=str).encode())
+    return h.hexdigest()
+
+
 def get(path: str) -> dict:
     """get("servos.MG996R") -> the entry dict. Keys may contain dots ("screws.M2.5"): the longest matching key wins.
     Raises CatalogError with the options available at the failing level."""
+    if _USED is not None:
+        _USED.add(path)
+    return _get(path)
+
+
+def _get(path: str) -> dict:
     node, parts, i = load(), path.split("."), 0
     while i < len(parts):
         if not isinstance(node, dict):

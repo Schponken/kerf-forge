@@ -258,6 +258,13 @@ from the catalog) or a screw size (`M3`) used as a pivot; `fit` is `free` (turns
 slides along it) with the pin held on one side only, and a stocked length that reaches every hole by min(hole,
 1.5 d). Screw pivots get a threadlocker warning; pins, pivot screws and inserts go into the BOM.
 
+## Fingerprint and catalog_deps.json
+`kerf review-status` ties a review to the project's fingerprint: project.yaml, parts/*.py, meshes, the printer
+calibration profile, and the catalog entries the project reads. Every check/build records the catalog paths it read
+into `projects/<p>/catalog_deps.json` (a growing union; commit it), so an edit to a catalog entry the project does
+not use leaves its review current, and an edit to one it uses makes it stale. Without that file the whole catalog
+file is hashed.
+
 ## report.json (out/report.json, written by check/build)
 `ok`, `problems[]`, `warnings[]`, `fingerprint`, `parts{id: print checks}`, `purchased{}`,
 `assembly{interference[], fasteners[], pins[], sweeps[], joints[], positions{}, joint_origins{}}`, `requirements[]`,

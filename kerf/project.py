@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import importlib.util
 import sys
 import time
@@ -15,6 +16,7 @@ from .ctx import Ctx
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
+DEPS = "catalog_deps.json"     # catalog paths a project's build read; keeps unrelated catalog edits out of its fingerprint
 
 
 class ProjectError(ValueError):
@@ -50,11 +52,16 @@ class Project:
         return d.joinpath(*p)
 
     def fingerprint(self) -> str:
-        """Hash of the project's own design inputs: project.yaml, part sources and the catalog.
+        """Hash of the project's own design inputs: project.yaml, part sources and the catalog entries it uses
+        (`catalog_deps.json`, written by every check/build; the whole catalog when that file does not exist yet).
         (Engine code is excluded so engine improvements don't invalidate every review; `kerf verify` rebuilds and
         re-checks every project from scratch, so an engine change that breaks a design still fails verify.)"""
         h = hashlib.sha256()
-        files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")), catalog.CATALOG,
+        deps = self.dir / DEPS
+        if deps.exists():       # only the catalog entries this project reads (recorded by check/build)
+            h.update(catalog.deps_hash(json.loads(deps.read_text())).encode())
+        files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")),
+                 *([] if deps.exists() else [catalog.CATALOG]),
                  *sorted(p for p in (self.dir / "meshes").glob("*") if p.is_file()),     # Meshy shells
                  calibrate.profile_path(self.data.get("printer", calibrate.DEFAULT_PRINTER))]  # measured fits
         for f in files:
@@ -185,3 +192,13 @@ def build(proj: Project, only: list[str] | None = None) -> Project:
             it.trace = traceback.format_exc(limit=6)
         it.build_ms = int((time.time() - t0) * 1000)
     return proj
+
+
+def record_deps(proj: Project) -> None:
+    """Add the catalog paths read since catalog.track() to projects/<p>/catalog_deps.json (union: a quick check never
+    drops what a full build needed; an extra path only makes the fingerprint more sensitive)."""
+    f = proj.dir / DEPS
+    old = set(json.loads(f.read_text())) if f.exists() else set()
+    new = old | catalog.used()
+    if new != old or not f.exists():
+        f.write_text(json.dumps(sorted(new), indent=1) + "\n")
