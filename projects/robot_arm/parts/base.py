@@ -93,7 +93,8 @@ def build(ctx):
     drv = Location((-100.0, 0, DRV_Z), (0, -90, 0))              # boss faces at x = -100; +Z (board up) = world -X
     for (hx, hy) in DRV_HOLES:
         body += drv * Pos(hx, hy, -0.01) * Cylinder(3.0, 3.02, align=(Align.CENTER, Align.CENTER, Align.MAX))
-    body -= iface.bolt_pattern(ctx, "driver", "M2", DRV_HOLES, drv, kind="tap", depth=7.0)
+    body -= iface.bolt_pattern(ctx, "driver", "M2", DRV_HOLES, drv, kind="tap", depth=7.0,
+                               teardrop=iface.print_up_deg(ctx, drv))   # bosses on the post: pilots print horizontal
     for sy in (-5.0, 5.0):                                       # tie slots through the post (front to back)
         body -= Pos(-92.0, sy, post_top - 5.0) * Box(12.0, 1.8, 3.2)
     # desk mounting: 4 x M4 through-holes (bolt or wood-screw down) at the corners; the rear 20 mm is a clamp pad

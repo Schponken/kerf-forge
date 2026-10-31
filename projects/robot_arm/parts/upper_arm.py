@@ -42,7 +42,8 @@ def build(ctx):
     if failed or len(corners) != 8:
         raise ValueError(f"web fillets: {len(corners)} edges found, failed {failed}")
     body += Pos(0, 0, W - t - 3.0) * Cylinder(6.5, 3.01, align=(Align.CENTER, Align.CENTER, Align.MIN))   # pivot boss
-    body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="sh_horn", plate_t=t)
+    body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="sh_horn", plate_t=t,
+                               teardrop=iface.print_up_deg(ctx, Location((0, 0, t))))
     # cable-tie slot pair: servo leads run along the outside of plate A
     for sy in (-6.0, 6.0):
         body -= Pos(35.0, sy, t / 2) * Box(1.8, 3.2, t + 2)

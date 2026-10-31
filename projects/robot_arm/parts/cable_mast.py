@@ -31,7 +31,8 @@ def build(ctx):
     body, failed = safe_fillet(body, [(root, 2.0)])
     if failed or len(root) != 4:
         raise ValueError(f"mast root fillet: {failed or f'{len(root)} edges'}")
-    body -= iface.bolt_pattern(ctx, "cable_mast", "M3", SCREWS, Location((0, 0, z0 + FOOT_T)), kind="clearance", depth=FOOT_T)
+    body -= iface.bolt_pattern(ctx, "cable_mast", "M3", SCREWS, Location((0, 0, z0 + FOOT_T)), kind="clearance", depth=FOOT_T,
+                               teardrop=iface.print_up_deg(ctx, Location((0, 0, z0 + FOOT_T))))
     for sy in (-2.5, 2.5):                                   # tie slots under the top, front to back
         body -= Pos(X_COL, sy, TOP - 6.0) * Box(10.0, 1.8, 3.2)
     ctx.rigid("origin", Location((0, 0, 0)))

@@ -61,7 +61,7 @@ MEAN WELL LRS-100-5 (5 V, 18 A).
 | yoke_r / yoke_l | shoulder cheeks (servo / pivot) | PETG 40 % | on the cheek's outer face | 23 / 25 g |
 | upper_arm | fork L1 = 85 | PETG 30 % | on edge (print_rot [90,0,0]); free pivot hole teardrop | 65 g |
 | forearm | fork L2 = 80 | PETG 30 % | on edge; free pivot hole teardrop | 55 g |
-| gripper | fork + palm + fixed jaw | PETG 30 % | on edge, supports under the jaw | 29 g |
+| gripper | fork + palm + fixed jaw | PETG 30 % | on the plates' flat lower edges (25 mm flat foot under the wrist discs), supports under the palm and jaw | 31 g |
 | finger | moving finger | PETG 40 % | flat | 5 g |
 | cable_mast | post on the platform the lead bundle is tied across (foot 34 × 26, 4 screws) | PETG 30 % | on its side, support under the column (it is centred on the wider foot) | 7 g |
 | psu_hood | closes the supply's terminal end, carries the IEC inlet | PETG 30 % | standing on its end wall (inserts vertical) | 61 g |
@@ -115,6 +115,10 @@ horn → gripper → grip servo → **grip** → horn → finger; yoke_l). `yaw_
 | upper_arm_stall_fea | fault case (crash): elbow servo at **stall** 19 kg·cm + 2 × the static loads | 13.3 MPa (peak 19.0), 1.03 mm | 16 MPa (xy, crash case SF 3); deflection not a criterion in a fault (2 mm cap) |
 | forearm_stall_fea | wrist servo at **stall** 9.4 kg·cm + 2 × the static loads | 5.3 MPa (peak 8.9), 0.49 mm | 16 MPa (crash, SF 3) |
 | turntable_fea | 2 × arm + payload 13.8 N on the yoke feet + 2 × 0.93 N·m tipping moment as two 1010 N·mm couples about Y (net ≈ 1.87 N·m: the 13.8 N acts behind the axis); spindle held only on the two bearing lands + collar | 4.1 MPa (peak 11.1 at the step), 0.24 mm | 13 MPa (z, SF 3), 0.3 mm |
+
+The engine's note that base_fea's fixed boxes hold none of the base's fastener sites is expected: the boxes are the
+4 M4 desk-bolt footprints, which are plain through-holes (iface.hole), not fastener groups, because the desk screws
+have no printed mate.
 
 Applied resultants are checked in report.json (`applied_force_n`): torques are pure couples (engine fix in this
 round: a torque on screw sites off the axis used to add a spurious net force).

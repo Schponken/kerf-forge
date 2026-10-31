@@ -57,7 +57,8 @@ def build(ctx):
     body -= iface.bolt_pattern(ctx, "inlet", "M3", [(-sp / 2, 0), (sp / 2, 0)], panel, kind="heatset", depth=T + boss_l)
     # side screw into the supply's tapped hole
     side = Plane(origin=(SCREW_HOLE[0], Y_IN_N - T, SCREW_HOLE[1]), x_dir=(1, 0, 0), z_dir=(0, -1, 0)).location
-    body -= iface.bolt_pattern(ctx, "psu_side", "M3", [(0, 0)], side, kind="clearance", depth=T)
+    body -= iface.bolt_pattern(ctx, "psu_side", "M3", [(0, 0)], side, kind="clearance", depth=T,
+                               teardrop=iface.print_up_deg(ctx, side))
     # DC exit (teardrop, roof toward +X) and the tie slots in the floor beside it
     exit_frame = Plane(origin=(X_EXIT, Y_IN_N, Z_EXIT), x_dir=(1, 0, 0), z_dir=(0, -1, 0)).location
     body -= exit_frame * iface._teardrop(R_EXIT, -1.0, T + 1.0, 0.0)

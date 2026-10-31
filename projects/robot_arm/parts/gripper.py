@@ -2,13 +2,15 @@
 a palm the grip servo (MG996R) hangs under (inserted top-first from below), and the fixed finger.
 Frame: wrist horn face on the wrist axis; X forward, Y up (home), Z across (world -Y). The moving finger turns about
 the grip servo's axis (vertical at home) and closes against the fixed finger's jaw.
-Printed standing on its lower edges (print_rot [90,0,0]); the fixed finger's jaw needs a little support."""
+Printed standing on the plates' flat lower edges (print_rot [90,0,0]; a 25 mm flat foot at y = -r under the wrist
+discs, then a 45-degree rise); the palm and the fixed finger's jaw print on support."""
 from build123d import *
 from kerf import iface
 from kerf.features import safe_fillet
 
 HORN = "servo_horns.aluminum_25T"
 SERVO = "servos.MG996R"
+FOOT_L = 25.0                                      # flat bed edge of the side plates, from the wrist axis
 PALM_T = 7.0                                       # = plate_t: 7 mm gives the M3 pilot holes an 8 mm screw
 
 
@@ -30,6 +32,9 @@ def build(ctx):
         Circle(r)
         with Locations((x_end / 2, 0)):
             Rectangle(x_end, 12.0)
+        # flat foot: the plates' lower edge runs at y = -r for the first FOOT_L mm and rises at 45 deg to y = -6, so
+        # the part stands on two flat 7 mm edges (print_rot [90,0,0]), not on the round bottoms of the wrist discs
+        Polygon((0, -r), (FOOT_L, -r), (FOOT_L + r - 6.0, -6.0), (0, -6.0), align=None)
     pa = extrude(sk.sketch, t)
     body = pa + Pos(0, 0, W - t) * pa
     body += Pos((14.0 + x_end) / 2, PALM_T / 2, W / 2) * Box(x_end - 14.0, PALM_T, W)
@@ -61,7 +66,8 @@ def build(ctx):
     body += extrude(wedge.sketch, zj1 - zj0)
     if failed or len(base_edges) != 4:
         raise ValueError(f"jaw post fillets: {len(base_edges)} edges, failed {failed}")
-    body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="wr_horn", plate_t=t)
+    body -= iface.horn_mount(ctx, HORN, Location((0, 0, t)), group="wr_horn", plate_t=t,
+                               teardrop=iface.print_up_deg(ctx, Location((0, 0, t))))
     loc = Location((g["x_gs"], 0, g["z_c"]), (-90, 0, 0))   # palm underside; +Z up through the palm
     body -= iface.servo_mount(ctx, SERVO, loc, group="gr_servo", plate_t=PALM_T, kind="tap", top_through=True,
                               teardrop=iface.print_up_deg(ctx, loc))   # tab pilots print horizontal
