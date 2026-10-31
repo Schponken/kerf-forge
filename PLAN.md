@@ -90,7 +90,7 @@ tested before handoff.
 - [ ] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
   - [x] Audit run: three design-reviewer subagents, AUDIT.md written (index + full reports)
   - [x] Audit fixes: tvc_drone (A-1 blocker, A-2..A-7, A-9..A-14 in AUDIT.md), re-review PASS
-  - [ ] Audit fixes: servo_link (A-8, A-15..A-17), re-review PASS
+  - [x] Audit fixes: servo_link (A-8, A-15..A-17), re-review PASS
   - [ ] Audit fixes: fpv_5in (B-F1..F10), re-review PASS
   - [ ] Audit fixes: pan_tilt (B-F11..F18), re-review PASS
   - [ ] Audit fixes: bionic_finger (C-1..C-9), re-review PASS

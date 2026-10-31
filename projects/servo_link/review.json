@@ -1,33 +1,33 @@
 {
   "verdict": "PASS",
-  "fingerprint": "a4eacf651775531c",
+  "fingerprint": "46118d7a3ecd48d5",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Since eff1d257 (commit 35c8a10), only project.yaml changed: the assembly order now fits the electrics before the horn, the horn has an assembly_note to centre the servo at 1500 us first, and the arm has the 0.5 N*m / threadlocker note. Both notes appear in ASSEMBLY.md steps 5 and 6, which closes the last round's horn-centring minor. I re-ran the full pipeline in memory (13-sample sweep, FEA, electrical, with file writes redirected to my scratchpad) and nothing else moved: item positions are the same, there is no interference, the sweep is clear at 0 mm3, insertion is clear, arm_torque is 0.54, bracket_fea 0.56, arm_fea 4.59, mass 188.5 g, and power 0.417.",
+  "summary": "Re-review after the fixes for the two minors from the 5179b836 round; only project.yaml and DESIGN.md changed, and no part code. The bench screw is now an M4 x 20 socket head (ISO 4762, 7.0 mm head, 4.0 mm tall), which seats in the base's 7.6 mm x 4.3 mm counterbore; the alternative is a wood screw with a head of 7 mm or less. This shows in the BOM row, DESIGN step 0 and the requirements row. `stand` is now min_deg 15 (ENGINEERING s10) and passes at 37.1 deg. The rebuilt report.json is a full build at this fingerprint (147 s, no problems), and every other result is unchanged: arm_torque 0.55/4.7, bracket_fea 0.64/13, arm_fea 4.59/24, mass 198.3/250, power 0.417. Audit findings A-8, A-15, A-16 and A-17 remain resolved.",
   "findings": [
     {
       "severity": "minor",
-      "part": "project",
-      "issue": "out/report.json (written 03:09:43) is newer than the build outputs (bom.md 03:09:00, renders and ASSEMBLY.md at 03:09:12). It holds 'seconds: 4.6', has no assembly.sweeps key, and the FEA requirements have value null. So a `kerf check --quick` overwrote the full build report after the build. The fingerprint is correct, and my own full run passes with the numbers above, but anything that reads the sweep or FEA results from out/report.json (viewer, README results, evals) sees a partial report.",
-      "fix": "Re-run `kerf build servo_link` last, so out/report.json is the full build report. Optionally, have quick checks write their report somewhere else or keep the last full results."
-    },
-    {
-      "severity": "minor",
-      "part": "catalog",
-      "issue": "The adapter's DC cord gauge is still assumed (AWG 22), not sourced. The result does not depend on it: a 24 AWG cord gives 4.81 V running.",
-      "fix": "Cite the GST60A datasheet's DC cable specification, or measure the cord."
+      "part": "jack",
+      "issue": "The catalog entry electronics.connectors.dc_jack_5521_screw has no weight_g (kerf warning). The jack sits on the desk, not on the rig, so it does not affect rig_mass or stand.",
+      "fix": "Add a sourced weight to the catalog entry when one is available."
     },
     {
       "severity": "minor",
       "part": "bracket",
-      "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its edges. DESIGN.md says to measure before printing.",
-      "fix": "Measure tab_z on the real servo and catalogue it. Optionally make the window about 1 mm taller."
+      "issue": "Carried over: tab_z is still unconfirmed (26.5 to 30.2 across sources). At 30.2 the horn disc has about 0.3 mm to the edges of the 20.56 mm window. DESIGN.md says to measure it before printing.",
+      "fix": "Measure the tab height on the real servo and catalogue it. Optionally make the window about 1 mm taller."
     },
     {
       "severity": "minor",
-      "part": "servo",
-      "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented in DESIGN.md, in ASSEMBLY.md and in the BOM.",
-      "fix": "None."
+      "part": "catalog",
+      "issue": "Carried over: the adapter's DC cord gauge is assumed to be 22 AWG, not sourced. The result does not depend on it.",
+      "fix": "Cite the GST60A datasheet's cable specification, or measure the cord."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket / arm",
+      "issue": "The servo tab pilot holes and the arm's horn holes are under the 1.5 d edge distance (88 % ring material), because the purchased parts' hole patterns force it. DESIGN.md 'Edge distance' records the deviation and the FEA margin covers it.",
+      "fix": "None (documented deviation)."
     }
   ]
 }

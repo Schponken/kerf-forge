@@ -42,7 +42,7 @@ Each project's findings are listed in its appendix section with severity and a c
 | Project | Findings | Resolution |
 |---|---|---|
 | tvc_drone | A-1 (blocker), A-2..A-7 (major), A-9..A-14 (minor) | **all resolved** — design-reviewer round 3 PASS at 435d517f3a37c360 (review.json has the per-finding table); 2 minors kept: 14 gimbal_outer first-layer edges deburred by hand, leg deflection 2.97 / 3.0 mm |
-| servo_link | A-8 (major), A-15..A-17 (minor) | open |
+| servo_link | A-8 (major), A-15..A-17 (minor) | **all resolved** — design-reviewer PASS at 46118d7a3ecd48d5 (bench screws + `stand` tip_over with new `include:`, bracket_fea at the screw heads, load_axis, DESIGN mass/edge/electrics) |
 | fpv_5in | B-F1, F1b, F2, F3 (major), F4..F10 (minor) | open |
 | pan_tilt | B-F11, F12 (major), F13..F18 (minor) | fixed (F11-F15, F17, F18); F16 justified -> ENG-12 (session dafdd49d) |
 | bionic_finger | C-1..C-3 (major), C-4..C-9 (minor) | open |

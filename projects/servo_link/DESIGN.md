@@ -11,7 +11,7 @@ Forge mechanism (catalog-backed mounts on both sides, joint tree, sweep, fastene
 | Arm swing | ±90° from vertical, collision-free | sweep `swing` |
 | Holding torque | arm + 50 g at 100 mm, <= 50% of MG996R stall (9.4 kg·cm at 4.8 V) | `arm_torque` |
 | Bracket strength | full stall-torque reaction at the four tab screws, SF 3 on layer-direction strength, deflection <= 0.3 mm; held only at its 4 foot screw heads (the foot may lift: conservative) | `bracket_fea` (0.64 of 13 MPa) |
-| Stays put | screwed to the bench through the base's 4 counterbored M4 holes (stall reaction 0.92 N m vs 0.12 N m from its own weight); free-standing it must survive a 10 deg knock with the 50 g weight at either end of the swing | `stand` (37.1 deg), BOM: 4 x M4 wood screws |
+| Stays put | screwed to the bench through the base's 4 counterbored M4 holes (stall reaction 0.92 N m vs 0.12 N m from its own weight); free-standing it must survive a 15 deg tilt with the 50 g weight at either end of the swing | `stand` (37.1 deg), BOM: 4 x M4 x 20 socket-head screws (the 7.6 mm counterbores take a 7 mm head) |
 | Arm strength | stall torque driving the arm into an obstacle (9.2 N at the tip), SF 2 in-plane, tip deflection <= 1 mm | `arm_fea` |
 | Mass | <= 250 g assembled | `rig_mass` |
 | Printability | every part fits the A2L, no supports needed | print checks |
@@ -98,7 +98,7 @@ base → bracket (rigid) → servo (rigid, tabs on the wall face) → horn (`swi
   `plug_access` / `usb_access` prove 30 mm free in front of both. `kerf build` writes out/WIRING.md and wiring.svg.
 
 ## Assembly order
-0. Screw the base to the bench through its 4 counterbored M4 holes (4 x M4 x 20 wood screws, or bolts through).
+0. Screw the base to the bench through its 4 counterbored M4 holes (4 x M4 x 20 socket-head screws into T-nuts or bolted through; a pan head or washer does not fit the 7.6 mm counterbore).
 1. Melt the 4 M3 inserts into the base.
 2. Screw the bracket foot to the base (4× M3 × 10).
 3. Remove the servo's rubber grommets (the screws are sized for bare tabs; with grommets in, use M3 × 12).
