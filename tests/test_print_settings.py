@@ -19,10 +19,12 @@ def test_plate_3mf_carries_settings(tmp_path):
     from build123d import Mesher
     f = tmp_path / "p.3mf"
     m = Mesher()
-    m.add_shape(Box(10, 10, 10), part_number="arm_1")
+    from build123d import Sphere
+    m.add_shape(Sphere(30), part_number="arm_1", linear_deflection=0.005)      # a big mesh first (> 200 kB of XML)
     m.add_shape(Box(5, 5, 5), part_number="base_1")
     m.write(str(f))
     export._write_part_settings(f, {"arm_1": {"infill": 0.4, "walls": 4}, "base_1": {"infill": 0.25}})
+    assert len(zipfile.ZipFile(f).read("3D/3dmodel.model")) > 300000
     cfg = zipfile.ZipFile(f).read("Metadata/model_settings.config").decode()
     assert cfg.count("<object") == 2 and 'value="40%"' in cfg and 'key="wall_loops" value="4"' in cfg
     assert 'value="25%"' in cfg and 'key="wall_loops" value="2"' in cfg

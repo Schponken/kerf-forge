@@ -148,7 +148,7 @@ def _write_part_settings(path, specs: dict):
     model = next((n for n in files if n.lower().endswith("3dmodel.model")), None)
     if model is None:
         return
-    head = files[model][:200000].decode("utf-8", "ignore")
+    head = files[model].decode("utf-8", "ignore")             # whole model: object tags follow large meshes
     objs = []
     for tag in re.findall(r"<object\s[^>]*>", head):
         oid = re.search(r'\sid="(\d+)"', tag)
