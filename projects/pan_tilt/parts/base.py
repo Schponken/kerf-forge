@@ -55,4 +55,9 @@ def build(ctx):
 
     ctx.rigid("pan_seat", seat)
     ctx.rigid("tripod", Location((0, 0, 0)))
+    # off-head electrics, modelled hanging/strapped 150 mm below the head (on the tripod centre column or the desk):
+    # 5 V adapter, barrel-jack terminal adapter, Raspberry Pi Zero 2 W (DESIGN.md 'Electrics')
+    ctx.rigid("below_jack", Location((-40, 0, -150)))
+    ctx.rigid("below_pi", Location((-40, 50, -150)))
+    ctx.rigid("below_psu", Location((-40, -110, -175)))
     return ctx.finish(body)

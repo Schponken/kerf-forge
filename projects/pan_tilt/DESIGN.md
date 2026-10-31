@@ -137,6 +137,20 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
 10. Tie the tilt servo lead to the yoke ledge (2.5 mm tie through the two slots), leave a loop down to the base.
 11. Screw the base onto the tripod.
 
+## 8b. Electrics (`electrical:` + `wiring:` in project.yaml)
+- Supply: MEAN WELL GST60A05 5 V 6 A desktop adapter (catalog `electronics.supplies.meanwell_gst60a05`) → SparkFun
+  5.5 x 2.1 barrel-jack screw-terminal adapter (`electronics.connectors.dc_jack_5521_screw`, 10 A) → both servos'
+  V+/GND. A 470-1000 µF capacitor across the jack terminals (BOM) buffers servo start-up current (INDEX lesson).
+- Load: 2 x SG90, stall 0.36 A each (catalog, ProtoSupplies measured), so the adapter runs at 14% of its rating at
+  double stall (`power` = power_budget 0.143). Wires: the servos' own leads + 300 mm 22 AWG servo extensions.
+- Control: Raspberry Pi Zero 2 W (`boards.rpi_zero_2w`) on its own USB supply drives the servo signals (GPIO18 /
+  GPIO19 hardware PWM, 50 Hz, 500-2500 µs for the full travel) with its GND tied to the supply minus, and reads the
+  camera over a ≥ 300 mm FPC. The adapter, jack and Pi are modelled 150 mm below the head (strapped to the tripod
+  column or on the desk); `mass` counts only the head.
+- Routes (route_check, worst pose): pan lead out of the base's -X slot, 190 mm routed (cut ≥ 219); tilt lead tied on
+  the yoke ledge and then a free loop to the column, 248 mm routed at pan -90° (cut ≥ 286): a 300 mm extension on
+  each servo covers both.
+
 ## 9. Review history
 - Round 1 (design-reviewer, FAIL, 1 blocker): the 21T horn catalog entry had no `spline_engage`, so the horn proxy
   sat on the spline tip and every horn-derived position was 3.2 mm off. Fixed in the catalog (sourced spline length);
@@ -144,7 +158,8 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
   base pocket 0.5 mm/side and 4.7 mm lead slot, pivot gap 0.9 mm (cam_clear ≥ 0.8), tripod protrusion range (A2).
   After a concurrent engine change (kerf now models screw heads) the camera touched a pan-horn screw head at
   tilt -35°: the tilt axis went up 1.5 mm (`tilt_h` 29.5), camera-to-yoke clearance now 3.3 mm.
-  Not done: an `electrical:` block (kerf warns; servo current/supply is A6, owned by the electronics PLAN item).
+- Round 3 (FAIL, 1 major): ENGINEERING.md 10b (added by another session during this run) now requires the electrical
+  system: added §8b (supply, jack, Pi, four routed runs, power_budget), SG90 currents in the catalog.
 
 ## 10. Risks / numbers to measure before the final print
 - Horn (A3): measure bolt circle, thread and hub height of the horns you buy; if they differ, the catalog entry and

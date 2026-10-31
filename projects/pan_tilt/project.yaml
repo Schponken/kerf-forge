@@ -36,6 +36,11 @@ purchased:
   tilt_horn: {catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {holes: bracket_tilt}}
   # component_height 0: the board proxy's generic component block (90% of the board) would cover the mounting holes;
   # the real parts on the front are the 10.8 mm lens housing only, modelled as the cam_lens keep-out below
+  # electrics, off the head (strapped to the tripod column / on the desk): 5 V adapter -> barrel-jack screw terminals
+  # -> both servo V+/GND; a Pi Zero 2 W (own USB supply) makes the servo pulses and runs the camera
+  psu: {catalog: electronics.supplies.meanwell_gst60a05, proxy: box}
+  jack: {catalog: electronics.connectors.dc_jack_5521_screw, proxy: box}
+  pi: {catalog: boards.rpi_zero_2w, proxy: board}
   camera: {catalog: boards.rpi_camera_module_3, proxy: board, groups: {holes: cam_mount}, component_height: 0}
 keepouts:
   cam_lens: {proxy: box, size: [10.8, 10.8, 6.98], owner: camera,
@@ -50,7 +55,9 @@ bom_extra:
   - {type: hardware, item: 1/4-20 UNC hex nut (ASME B18.2.2, 7/16 in AF), qty: 1, spec: "catalog tripod_nut_1_4_20; captive in the base, pulled down onto the 1.5 mm floor by the tripod screw"}
   - {type: fastener, item: M3 flat washer (ISO 7089), qty: 1, spec: "under the head of the M3 tilt-pivot screw (screw length in the pivot row); medium threadlocker, back off 1/8 turn"}
   - {type: hardware, item: Raspberry Pi camera FPC cable >= 300 mm (15-pin; 22-pin to 15-pin on Pi 5/Zero), qty: 1, spec: "through the yoke's front notch, then a >= 60 mm slack loop for pan and tilt"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 2, spec: "servo leads to the base and yoke tie slots"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 2, spec: "tilt servo lead to the yoke ledge tie slots; leads to the tripod column"}
+  - {type: electronics, item: 470-1000 uF 10 V electrolytic capacitor, qty: 1, spec: "across the jack's + / - screw terminals (servo brownout buffer, INDEX lesson)"}
+  - {type: electronics, item: "USB power supply for the Pi Zero 2 W (5 V, 2.5 A, micro-USB)", qty: 1, spec: "the Pi is not fed from the servo supply"}
 assembly:
   root: base
   joints:
@@ -61,6 +68,9 @@ assembly:
     - {parent: tilt_servo.output, child: tilt_horn.spline, name: tilt, range: [-35, 65], home: 0}
     - {parent: tilt_horn.face, child: bracket.horn_mount}
     - {parent: bracket.cam_seat, child: camera.bottom}
+    - {parent: base.below_jack, child: jack.bottom}
+    - {parent: base.below_pi, child: pi.bottom}
+    - {parent: base.below_psu, child: psu.bottom}
     - {parent: bracket.cam_seat, child: cam_rear.top}
     - {parent: bracket.lens_base, child: cam_lens.bottom}
     - {parent: bracket.lens_front, child: cam_view.bottom}
@@ -73,10 +83,32 @@ assembly:
     - {joint: pan, samples: 13}
     - {joint: tilt, samples: 13}
     - {name: corners, poses: [{pan: -90, tilt: -35}, {pan: -90, tilt: 65}, {pan: 90, tilt: -35}, {pan: 90, tilt: 65}]}
+electrical:
+  supply: psu                # mains adapter: rated by its 6 A, no run time
+  burst_s: 5                 # both servos stalled for 5 s (wire heating)
+wiring:      # ends = item centres; tie points move with their item; cut lengths >= worst-pose routed length + 15 %
+             # yoke tie points: [0, wall_out + 18, yoke_t + 1] and [0, wall_out + 10, yoke_t + 1] = beyond the ledge and on it
+             # (numbers, because route `at` does not evaluate param expressions)
+  - {id: psu_cord, from: psu, to: jack, v: 5.0, gauge: 24, color: black/white, length_mm: 1000, supplied: psu,
+     note: "the adapter's own 1 m DC cord with its 5.5 x 2.1 plug (checked as 24 AWG, the thinnest plausible)"}
+  - {id: pan_pwr, from: jack, to: pan_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
+     route: [{item: base, at: [-27, 4.5, 14]}, {item: base, at: [-14, 4.5, 14]}],
+     note: "the SG90's own lead out of the base's -X slot plus a 300 mm servo extension; red/brown to the jack terminals"}
+  - {id: pan_sig, from: pi, to: pan_servo, kind: signal, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
+     route: [{item: base, at: [-27, 4.5, 14]}, {item: base, at: [-14, 4.5, 14]}],
+     note: "Pi GPIO18 (PWM0) to the pan servo signal, Pi GND to the supply minus (common ground)"}
+  - {id: tilt_pwr, from: jack, to: tilt_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
+     route: [{item: yoke, at: [0, 47.5, 7]}, {item: yoke, at: [0, 39.5, 7]}],
+     note: "tilt SG90 lead tied on the yoke ledge, then a free loop down to the tripod column (it swings with pan)"}
+  - {id: tilt_sig, from: pi, to: tilt_servo, kind: signal, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
+     route: [{item: yoke, at: [0, 47.5, 7]}, {item: yoke, at: [0, 39.5, 7]}],
+     note: "Pi GPIO19 (PWM1) to the tilt servo signal"}
 requirements:
+  - {id: power, check: power_budget, why: "adapter, jack and every wire within rating with both servos stalled"}
   - {id: torque_tilt, check: static_torque, joint: tilt, actuator: tilt_servo, payload_g: 10, payload_at: bracket.cam_seat, max_fraction: 0.5,
      why: "the tilt servo holds camera + bracket + 10 g of camera-cable drag anywhere in its range at <= half its stall torque"}
-  - {id: mass, check: mass_max, max_g: 90, why: "light head for a small tripod or a desk clamp"}
+  - {id: mass, check: mass_max, max_g: 90, include: [base, yoke, bracket, pan_servo, pan_horn, tilt_servo, tilt_horn, camera],
+     why: "light head for a small tripod or a desk clamp (the adapter, jack and Pi are off the head)"}
   - {id: cam_clear, check: clearance_min, a: bracket, b: yoke, min_mm: 0.8, joints: [tilt], samples: 19,
      why: "the bracket never rubs the yoke over the whole tilt range (ENGINEERING.md section 6 asks 0.5; 0.8 leaves room for print error)"}
   - {id: cam_clear_base, check: clearance_min, a: camera, b: yoke, min_mm: 1.0, joints: [tilt], samples: 19,
