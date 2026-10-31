@@ -424,6 +424,11 @@
    "stall_voltage": 4.8,
    "speed_s_per_60": 0.1,
    "weight_g": 9,
+   "stall_current_a": 0.36,
+   "idle_current_a": 0.01,
+   "running_current_a": 0.25,
+   "source_current": "https://protosupplies.com/product/servo-motor-micro-sg90/",
+   "current_note": "ProtoSupplies SG90 page (opened 2026-10-31): stall 360 mA (labelled measured), idle 10 mA typical, 100-250 mA typical while moving, 4.8-6 V (5 V typical). Reseller figures, not TowerPro; clones vary, so size a supply with margin (the MG90S on the same site stalls at 700 mA).",
    "source": "https://docs.baud-dance.com/assets/files/%E8%88%B5%E6%9C%BASG90%E8%A7%84%E6%A0%BC%E4%B9%A6-a814e35ca5db3b0d4da2ff7ae3dc3d01.pdf",
    "confidence": "multiple-vendors",
    "note": "Geometry from the baud-dance SG90 CAD drawing (p.2): body 22.5 (top view) / 22.61 (side view), width 12.2, hole spacing 27.85, tab underside 15.6, tab 2.4 thick, rectangular case top 22.1, round gear boss top 26.5 (boss is ~14 mm lobed shape over the output end, so keep clearance above the top face there). shaft_h 7.6 = boss 4.4 + spline 3.2 (spline length 3.1 scaled from CAD, 3.2 per Tinytronics https://www.tinytronics.nl/en/mechanics-and-actuators/motors/servomotors/sg90-mini-servo). shaft_offset 6.0 and hole_d 2.2 SCALED from the CAD top view (not dimensioned); hole is open slot to tab end, for M2 self-tappers. Cross-check TowerPro drawings (https://www.electronicoscaldas.com/datasheet/SG90_Tower-Pro.pdf and https://static.rapidonline.com/pdf/37-1330t.pdf): body 22.2 x 11.8, tab span 32.2, 16 to tab, 31 to horn top. SPREAD: body_l 22.2-22.61 (vendor overall L up to 23), body_w 11.8-12.2, torque 1.2-1.8 kg*cm (baud-dance clone 1.3), speed 0.09-0.12. Spline: 21T per Tinytronics; Pololu 21T micro spline = 4.8 mm (https://pololu.com/product/4909/specs); baud-dance clone states 20T, 4.9 mm."
@@ -587,9 +592,8 @@
    "thickness": 2.0,
    "hub_height": 4.0,
    "spline_engage": 3.2,
-   "spline_d": 4.8,
    "source_spline": "https://www.tinytronics.nl/en/mechanics-and-actuators/motors/servomotors/sg90-mini-servo (SG90 spline 3.2 mm long, as in servos.SG90) ; https://pololu.com/product/4909/specs (21T micro spline 4.8 mm)",
-   "note_spline": "spline_engage = the whole SG90/MG90S 21T spline length (3.2 mm, servos.SG90 note) slides up into the hub, as for aluminum_25T; the 4.0 mm hub_height is an ESTIMATE, so the disc face sits 0.8 mm above the spline top in the model. spline_d = the 21T micro spline OD (4.8, servos.SG90). Added 2026-10-31 (pan_tilt review): without it the horn proxy sat on the spline tip. Measure your horn's hub depth.",
+   "note_spline": "spline_engage = the whole SG90/MG90S 21T spline length (3.2 mm, servos.SG90 note) slides up into the hub, as for aluminum_25T; the 4.0 mm hub_height is an ESTIMATE, so the disc face sits 0.8 mm above the spline top in the model. spline_d (already in this entry) = the 21T micro spline OD (4.8, servos.SG90). Added 2026-10-31 (pan_tilt review): without it the horn proxy sat on the spline tip. Measure your horn's hub depth.",
    "hub_d": 7.0,
    "bolt_circle_d": 12.0,
    "hole_count": 4,
@@ -1357,6 +1361,23 @@
     "source_dims": "https://www.printables.com/model/219774-21x55mm-dc-power-jack-plug-adapter-connector-to-he (CC-BY-NC CAD model of this common screw-terminal jack adapter, measured here with kerf find: 35.4 x 13.7 x 11.7 mm)",
     "confidence": "vendor-page + community model",
     "note": "SparkFun: 'the max current for this adapter is 10A', 5.5x2.1 mm centre-positive female jack, screw terminals; no dimensions or weight published (weight unknown, counted as 0 g). Size from a community CAD model of the same generic adapter, not a vendor drawing: it only sits on the desk next to a rig, so a few mm do not matter. Mates the 5.5 x 2.1 plug of electronics.supplies.meanwell_gst60a05 (element14: 'Barrel Plug Center Positive 2.1mm x 5.5mm x 11mm')."
+   },
+   "wago_221_415": {
+    "model": "WAGO 221-415 5-conductor lever splicing connector (servo V+/GND bus)",
+    "length": 18.6,
+    "width": 29.9,
+    "height": 8.3,
+    "weight_g": 4.048,
+    "positions": 5,
+    "current_a": 32,
+    "voltage_max": 450,
+    "wire_awg_min": 24,
+    "wire_awg_max": 12,
+    "strip_length": 11,
+    "source": "https://www.rlocman.es/datasheet/data.html?di=537187",
+    "source_listing": "https://nz.element14.com/wago/221-415/terminal-block-pluggable-5pos/dp/2534734",
+    "confidence": "datasheet",
+    "note": "WAGO data (rlocman datasheet page, opened 2026-10-31): rated current 32 A, rated voltage 450 V (II/2), conductors 0.14-4 mm2 fine-stranded / 0.2-4 mm2 solid and stranded = 24-12 AWG, strip length 11 mm, width 29.9 x height 8.3 x depth 18.6 mm, 4.048 g; element14 listing agrees (32 A, 450 V AC, 24-12 AWG, 0.004 kg). No burst rating published, so current_peak_a omitted. Use: the MEAN WELL LRS-100-5 has screw terminals (no plug), so its +V and -V leads each land in one 221-415 and fan out to the servos' red/brown wires (one +V and one GND splice; 1 input + 4 outputs each - five servos need a second splice or a 221-413 chained, or one servo on the PCA9685 V+). The 32 A rating is the IEC figure for the connector itself; the wires are rated separately (wire.awg). For a disconnectable supply lead, drone.connectors.XT60 (30 A) is already in the catalog."
    }
   },
   "supplies": {
@@ -1491,25 +1512,6 @@
      "https://pyrodrone.com/collections/foxeer-antennas/products/foxeer-5-8g-lollipop-4-plus-2-6dbi-omni-antenna-2pcs-right-angle-mmcx-95mm-rhcp-teal"
     ],
     "confidence": "vendor"
-   }
-  },
-  "connectors": {
-   "wago_221_415": {
-    "model": "WAGO 221-415 5-conductor lever splicing connector (servo V+/GND bus)",
-    "length": 18.6,
-    "width": 29.9,
-    "height": 8.3,
-    "weight_g": 4.048,
-    "positions": 5,
-    "current_a": 32,
-    "voltage_max": 450,
-    "wire_awg_min": 24,
-    "wire_awg_max": 12,
-    "strip_length": 11,
-    "source": "https://www.rlocman.es/datasheet/data.html?di=537187",
-    "source_listing": "https://nz.element14.com/wago/221-415/terminal-block-pluggable-5pos/dp/2534734",
-    "confidence": "datasheet",
-    "note": "WAGO data (rlocman datasheet page, opened 2026-10-31): rated current 32 A, rated voltage 450 V (II/2), conductors 0.14-4 mm2 fine-stranded / 0.2-4 mm2 solid and stranded = 24-12 AWG, strip length 11 mm, width 29.9 x height 8.3 x depth 18.6 mm, 4.048 g; element14 listing agrees (32 A, 450 V AC, 24-12 AWG, 0.004 kg). No burst rating published, so current_peak_a omitted. Use: the MEAN WELL LRS-100-5 has screw terminals (no plug), so its +V and -V leads each land in one 221-415 and fan out to the servos' red/brown wires (one +V and one GND splice; 1 input + 4 outputs each - five servos need a second splice or a 221-413 chained, or one servo on the PCA9685 V+). The 32 A rating is the IEC figure for the connector itself; the wires are rated separately (wire.awg). For a disconnectable supply lead, drone.connectors.XT60 (30 A) is already in the catalog."
    }
   }
  }
