@@ -809,3 +809,11 @@ pushed for it and what I know:
 - A-8/15/16/17 fixed; design-reviewer PASS at 46118d7a3ecd48d5; eval acceptance passes. Engine: `tip_over` takes
   `include:` (only those items' mass; e.g. leave out a desk adapter beside the device), test.
 >>>>>>> Stashed changes
+## 2026-10-31 11:40 UTC — session dafdd49d: PLAN E6 and "Audit fixes: pan_tilt" DONE
+- E6: blind run 2 (fresh subagent, brief only) reached PASS on its own in ~50 min with one review round (run 1:
+  2.3 h, 5 rounds). Its 6 stumbles are fixed with tests (kerf new crash, unevaluated-requirement text, tripod nut in
+  the BOM via `ctx.bom_item` — `tripod_socket(ctx, loc, ...)` now takes ctx first, sibling-import hint, headless
+  reviewer nohup+poll in SKILL.md). Record: evals/pan_tilt/BLIND_RUN.md. Scratch project not committed.
+- pan_tilt audit F11-F18: fixed/justified (see the fork's entry and AUDIT.md); review PASS b13fdb08322fb884, eval [].
+- Still open from E6 (needs Spencer): the repo Stop hook runs a full `kerf verify` inside headless reviewer sessions
+  (CLAUDE.md forbids touching the hook); kill any stray `kerf verify` such a reviewer leaves behind.
