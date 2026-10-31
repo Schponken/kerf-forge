@@ -68,6 +68,7 @@ DESIGN.md says why.
 | Sliding printed-on-printed | 0.3–0.4 gap per side |
 | Heat-set insert | catalog hole size exactly |
 Clearances between moving printed parts: >= 0.5 mm everywhere over the full motion range.
+These are textbook starting points. Spencer's real printer + material wins: `kerf calibrate` prints a fit coupon, `kerf feedback` stores measured offsets in `catalog/printers/`, and kerf/iface.py applies them to every screw hole, insert hole, bearing seat, servo window and pin hole it cuts (kerf/calibrate.py).
 
 ## 7. Fasteners
 - Metric only, from the catalog. Prefer M3 (Spencer's workshop standard), M2/M2.5 for electronics, M4/M5 for big loads.

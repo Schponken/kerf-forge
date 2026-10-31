@@ -10,7 +10,7 @@ from pathlib import Path
 
 import yaml
 
-from . import catalog
+from . import calibrate, catalog
 from .ctx import Ctx
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,7 +54,8 @@ class Project:
         (Engine code is excluded so engine improvements don't invalidate every review; `kerf verify` rebuilds and
         re-checks every project from scratch, so an engine change that breaks a design still fails verify.)"""
         h = hashlib.sha256()
-        files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")), catalog.CATALOG]
+        files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")), catalog.CATALOG,
+                 calibrate.profile_path(self.data.get("printer", calibrate.DEFAULT_PRINTER))]  # measured fits
         for f in files:
             if f.exists():
                 h.update(f.name.encode())
@@ -157,7 +158,8 @@ def build(proj: Project, only: list[str] | None = None) -> Project:
         f = None
         try:
             params = {**proj.params, **{k: (v["value"] if isinstance(v, dict) else v) for k, v in (it.spec.get("params") or {}).items()}}
-            ctx = Ctx(pid, params, {"project": proj.name, "spec": it.spec})
+            printer = proj.data.get("printer", calibrate.DEFAULT_PRINTER)
+            ctx = Ctx(pid, params, {"project": proj.name, "spec": it.spec, "printer": printer})
             if it.role == "printed":
                 f = proj.dir / it.spec.get("file", f"parts/{pid}.py")
                 if not f.exists():
@@ -165,7 +167,8 @@ def build(proj: Project, only: list[str] | None = None) -> Project:
                 mod = _load_module(f)
                 if not hasattr(mod, "build"):
                     raise ProjectError(f"{f.name} has no build(ctx) function")
-                it.shape = mod.build(ctx)
+                with calibrate.active(printer, it.spec.get("material")):   # this printer's measured fits
+                    it.shape = mod.build(ctx)
             else:
                 it.shape = proxies.build(ctx, it.spec)
             if it.shape is None or not hasattr(it.shape, "kerf_sites"):

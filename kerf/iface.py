@@ -13,7 +13,7 @@ import math
 
 from build123d import Align, Box, Cylinder, Location, Part, Pos, RegularPolygon, Rot, extrude, Plane
 
-from . import catalog
+from . import calibrate, catalog
 from .ctx import PinSite, Site
 
 EXTRA = 1.0  # cutters overshoot the surface by this much so faces never coincide
@@ -56,6 +56,11 @@ def screw_spec(size: str, material: str | None = None) -> dict:
         out["insert_len"] = _first(f, "heatset_length", "insert_length", "heat_set_length", default=0) or None
         out["insert_depth"] = _first(f, "heatset_min_depth", "insert_min_hole_depth", "heat_set_min_depth", default=0) or None
         out["insert_wall"] = _first(f, "heatset_min_wall", "insert_min_wall", default=0) or None
+    # the printer's measured fit (kerf calibrate / kerf feedback); 0 unless a profile is active for this part
+    out["clearance"] += calibrate.offset("hole", size)
+    out["tap"] += calibrate.offset("tap", size)
+    if out.get("insert_hole"):
+        out["insert_hole"] += calibrate.offset("insert", size)
     return out
 
 
@@ -206,6 +211,7 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
       absorbs elephant's foot when that face prints on the bed. 0 disables it. It is reduced (see servo_lead_in) so the
       wall between the widened window and every tab screw hole keeps docs/ENGINEERING.md section 5's minimum."""
     d = servo_dims(servo)
+    clearance += calibrate.offset("servo_window")
     wx, wy = d["L"] + clearance, d["W"] + clearance
     z0 = -plate_t - EXTRA if not top_through else -EXTRA
     pocket = Pos(0, 0, z0) * Box(wx, wy, plate_t + 2 * EXTRA, align=(Align.CENTER, Align.CENTER, Align.MIN))
@@ -303,7 +309,7 @@ def bearing_seat(ctx, bearing: str, loc: Location, fit: str = "press", depth: fl
     loc: on the face the bearing enters from, +Z out of the material, origin on the bearing axis."""
     b = bearing_dims(bearing)
     dep = depth if depth is not None else b["B"]
-    cut = loc * _cyl((b["D"] + FIT[fit]) / 2, -dep, EXTRA)
+    cut = loc * _cyl((b["D"] + FIT[fit] + calibrate.offset("bearing", bearing.split(".")[-1])) / 2, -dep, EXTRA)
     if through > 0:
         cut += loc * _cyl(b["d"] / 2 + shaft_clear, -dep - through - EXTRA, 0)
     return cut
@@ -411,7 +417,7 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
     if fit == "press" and pd["screw"]:
         raise ValueError("a screw cannot be pressed in; use fit='heatset' or 'tap' for a screw pivot")
     f = catalog.get("fdm_fits.pin")
-    r = (pd["d"] + _first(f, f"{fit}_allowance_d")) / 2
+    r = (pd["d"] + calibrate.pin_allowance(fit, _first(f, f"{fit}_allowance_d"))) / 2
     z1 = -depth - (EXTRA if through else 0.0)
     c = _teardrop(r, z1, EXTRA, teardrop) if teardrop is not None else _cyl(r, z1, EXTRA)
     ctx.pin_site(PinSite(group, pin, fit, loc, depth, pd["d"]))

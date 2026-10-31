@@ -180,6 +180,9 @@ def main(argv=None) -> int:
     r = sub.add_parser("review-status"); r.add_argument("project")
     n = sub.add_parser("new"); n.add_argument("name"); n.add_argument("title")
     sub.add_parser("status")
+    k = sub.add_parser("calibrate"); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
+    f = sub.add_parser("feedback"); f.add_argument("material"); f.add_argument("reports", nargs="+")
+    f.add_argument("--printer", default=None)
     a = ap.parse_args(argv)
     sys.path.insert(0, str(ROOT))
     if a.cmd == "doctor":
@@ -198,6 +201,23 @@ def main(argv=None) -> int:
         return new(a.name, a.title)
     if a.cmd == "status":
         return status()
+    if a.cmd in ("calibrate", "feedback"):
+        from . import calibrate as C
+        printer = a.printer or C.DEFAULT_PRINTER
+        if a.cmd == "calibrate":
+            out = C.write_coupon(a.material, printer)
+            _p(f"coupon for {printer} / {C.mat_key(a.material)}: {out}/coupon.3mf — print it, then follow {out}/CARD.md")
+            return 0
+        try:
+            changed = C.feedback(a.material, C.parse_reports(a.reports), printer)
+        except ValueError as e:
+            _p(f"FAIL {e}")
+            return 1
+        for key, (old, new) in changed.items():
+            _p(f"{key}: {old} -> {new} mm")
+        _p(f"saved {C.profile_path(printer).relative_to(ROOT)}" + ("" if changed else " (no change)")
+           + "; rebuild projects to apply. Reprint the coupon to confirm anything that moved.")
+        return 0
     return 2
 
 

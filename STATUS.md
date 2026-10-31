@@ -345,3 +345,18 @@ pushed for it and what I know:
   C. Flexor take-up (~16 mm full curl) != extensor pay-out (~20 mm): one servo wheel driving both will go slack or
      bind; use separate take-ups or a spring on the extensor. Note it in DESIGN.md / for Spencer.
 - My session has moved to PLAN "Ship package".
+
+## 2026-10-31 01:55 UTC — session (print-truth loop)
+- Done: PLAN 4b "Print-truth loop". `kerf calibrate --material PETG` writes out/calibration/<printer>_<material>/
+  coupon.3mf/.stl + CARD.md (96 x 62 x 8 mm, labelled: M2/M2.5/M3 clearance, pilot and heat-set holes, 608 + 623
+  pockets, 3 mm dowel holes at 0.2/0.3/0.4 slip + 1 press, MG90S window; render checked). `kerf feedback PETG
+  hole_M3=tight pin_0.3=ok ...` stores diameter offsets per printer + material with dated history in
+  catalog/printers/<printer>.json (steps 0.1 hole/insert, 0.05 pilot/bearing, 0.2 servo window; > 0.6 mm refused:
+  fix the printer first). kerf/iface.py applies them while a part builds (project.build activates the project's
+  printer + the part's material): screw clearance/pilot/insert holes, bearing seats (nearest calibrated outer
+  diameter for other bearings), servo windows, free/press pin allowances. The profile joins the project fingerprint
+  only when it exists, so current reviews are untouched. No profile is committed: Spencer has to print the coupon.
+- tests/test_calibrate.py (9 tests, synthetic feedback, tmp profile dir). 296 tests pass.
+- Seen, not mine: servo_link review is stale (fingerprint changed by the MG996R catalog update); needs a fresh
+  design-reviewer pass before final verify.
+
