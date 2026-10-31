@@ -7,6 +7,7 @@
   kerf review-status <proj>   is the visual review current for this geometry?
   kerf new <name> "<title>"   scaffold a project
   kerf status                 one-screen overview: plan progress, every project, review and eval state
+  kerf print <project>        orient + plate + slice (Bambu Studio CLI) [--send N: start plate N over LAN] [--dry-run] [--open]
 """
 from __future__ import annotations
 
@@ -183,6 +184,8 @@ def main(argv=None) -> int:
     k = sub.add_parser("calibrate"); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
     f = sub.add_parser("feedback"); f.add_argument("material"); f.add_argument("reports", nargs="+")
     f.add_argument("--printer", default=None)
+    pr = sub.add_parser("print"); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
+    pr.add_argument("--send", type=int, default=None, metavar="PLATE"); pr.add_argument("--open", action="store_true")
     fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
     fd.add_argument("--limit", type=int, default=8); fd.add_argument("--measure", type=int, default=4)
     for k in ("--add", "--title", "--license", "--dims", "--source"):
@@ -205,6 +208,17 @@ def main(argv=None) -> int:
         return new(a.name, a.title)
     if a.cmd == "status":
         return status()
+    if a.cmd == "print":
+        from . import bambu
+        try:
+            r = bambu.run(a.project, dry_run=a.dry_run, send_plate=a.send, open_ui=a.open, say=_p)
+        except (ValueError, RuntimeError) as e:
+            _p(f"FAIL {e}")
+            return 1
+        if r["sent"] is not None and not r["sent"]["started"]:
+            _p(f"FAIL the printer did not report the job started: {r['sent']['status']}")
+            return 1
+        return 0
     if a.cmd == "find":
         from . import find as F, project as P
         pdir = P.resolve_dir(a.project) if a.project else None

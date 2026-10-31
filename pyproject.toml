@@ -12,6 +12,7 @@ dependencies = [
   "manifold3d>=3.0",
   "networkx>=3.0",
   "lxml>=5",
+  "paho-mqtt>=2.0",
   "rtree>=1.2",
   "scipy>=1.11",
   "gmsh>=4.13",

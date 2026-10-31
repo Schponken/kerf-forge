@@ -497,3 +497,24 @@ pushed for it and what I know:
   limited thrust (6.43 >= 6). Peak 55.1 A.
 - catalog/prices.json: wire AWG12/18/26/28, heat-shrink, antenna, M2 button/washer, M3x14/x30, M2 nylon spacer,
   cable ties (all read 2026-10-31); every fpv_5in BOM row has a buy link, total $373.76.
+
+## 2026-10-31 04:30 UTC — session 12d9384eb7: PLAN "Bambu A2L handoff" — code done, waiting on one real print
+- `kerf print <p>` (kerf/bambu.py): orientation chooser (24 rotations, bed fit, load_axis <= 30 deg from the layers,
+  least support, then height; keeps the designed print_rot unless another needs >= max(5 mm2, 10 %) less support;
+  changes reported) -> plates in out/print/ -> Bambu Studio / OrcaSlicer CLI slice to .gcode.3mf -> `--send N`:
+  FTPS implicit-TLS upload (990) + MQTT `print.project_file` (TLS 8883) on device/<serial>/request, polling
+  `pushall` reports until gcode_state PREPARE/RUNNING (or FAILED / print_error). `--dry-run` prints every command and
+  payload with the access code masked; `--open` hands plates to Bambu Studio when no slicer config exists.
+  Protocol sources: Bambu Studio CLI wiki, OpenBambuAPI mqtt.md/ftp.md, wiki.bambulab.com third-party-integration
+  (Developer Mode needed: 2025 firmware rejects unsigned commands in normal LAN mode). Dep: paho-mqtt.
+- tests/test_bambu.py (9): orientation (removes 1200 mm2 of support, respects load_axis, keeps a good choice),
+  exact slicer command, payload fields, Bambu Connect URL, send/poll with fake FTPS/MQTT (start, failure, merged
+  partial reports, missing credentials), run() fallback / dry run / with a fake slicer. 343 tests pass.
+- NOT DONE (needs Spencer, so the PLAN box stays open): one real print. His one-time setup on the Mac:
+  1. Printer: enable LAN only + Developer Mode; note IP, serial and the 8-digit access code.
+  2. Bambu Studio: select A2L + PETG + the process preset, then export FULL configs (machine/process/filament
+     JSON, e.g. via `--export-settings` on a saved project) somewhere stable.
+  3. ~/.kerf/bambu.json (not in the repo): {"printer": {"host", "serial", "access_code"},
+     "slicer": {"bin", "machine", "process", "filaments": {"PETG": ...}}}.
+  4. `kerf print servo_link --dry-run`, then `kerf print servo_link --send 1` and watch it start.
+  Untested against hardware: the implicit-TLS FTPS wrapper and the paho MQTT link (both follow the protocol docs).
