@@ -453,3 +453,14 @@ pushed for it and what I know:
   math; flexor/extensor travel mismatch in DESIGN.md s7. Pockets widened (no knife edges, walls p2 >= 1.14).
   `kerf check bionic_finger` PASS. No engine axial-retention check: a lap pin can be held by things the pin check
   cannot see (tvc_drone's gimbal is held by the servo on the far side), so it would raise false problems.
+
+## 2026-10-31 — session 01S68R6REX (E6 pan_tilt blind run)
+- New project `pan_tilt`: SG90 pan in a base with a captive 1/4-20 nut, yoke with the tilt SG90 mounted from outside
+  its +Y wall, camera bracket carried by the horn and an M3 screw pivot; Camera Module 3 lens on the tilt axis.
+  kerf check/build PASS (59 g, tilt torque 2% of stall, FEA SF 3 on Z strength, all sweeps clear).
+- Catalog: `boards.rpi_camera_module_3` + hfov/vfov (Joy-IT page) + rear_clearance; `servo_horns.aluminum_micro_21T`
+  + spline_engage 3.2 / spline_d 4.8 (review round 1 blocker: the horn sat on the spline tip). NOTE for the
+  tvc_drone session: that horn change moves your horns 3.2 mm down the spline; `kerf check tvc_drone --quick` still
+  PASSes but its fingerprint changed (re-review needed).
+- Design-reviewer run via `claude -p --agent design-reviewer` (no agent-spawning tool in this session).
+- Open: no `electrical:` block in pan_tilt (warning), evals/pan_tilt/BLIND_RUN.md is written by the orchestrator.

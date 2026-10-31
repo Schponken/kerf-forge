@@ -17,7 +17,7 @@ params:
   cam_gap: {value: 27.0, min: 26, max: 32, step: 0.5, label: Space between the bracket arms (camera board 25 wide)}
   arm_t: {value: 3.5, min: 3, max: 5, step: 0.5, label: Bracket arm thickness}
   knuckle_len: {value: 8.0, min: 6, max: 10, step: 0.5, label: Pivot knuckle length (M3 thread depth)}
-  pivot_gap: {value: 0.6, min: 0.5, max: 1, step: 0.1, label: Axial gap knuckle to pivot wall}
+  pivot_gap: {value: 0.9, min: 0.5, max: 1, step: 0.1, label: Axial gap knuckle to pivot wall}
   cam_plate_x: {value: 7.0, min: 6.5, max: 12, step: 0.5, label: Camera plate back face ahead of the tilt axis}
   cam_plate_t: {value: 3.0, min: 2.5, max: 5, step: 0.5, label: Camera plate thickness}
   arm_bottom: {value: 15.0, min: 14, max: 18, step: 0.5, label: Bracket flat bottom below the tilt axis}
@@ -42,12 +42,14 @@ keepouts:
              note: "lens housing (catalog lens_housing_square x component_height)"}
   cam_rear: {proxy: box, size: [16, 22, 3.2], owner: camera,
              note: "parts behind the camera PCB (FPC connector), catalog rear_clearance 3.2"}
-  cam_view: {proxy: box, size: [38, 22, 30], owner: camera,
-             note: "camera field of view 66 x 41 deg (catalog hfov/vfov) out to 30 mm"}
+  # camera field of view (catalog hfov 66 / vfov 41 deg) from the 5.75 mm lens out to 30 mm, as two stepped boxes that
+  # each contain the view cone over their depth: half-size = 2.9 + d * tan(fov / 2) at their far face
+  cam_view: {proxy: box, size: [21.6, 14.8, 12], owner: camera, note: "view cone 0-12 mm"}
+  cam_view_far: {proxy: box, size: [44.8, 28.2, 18], owner: camera, note: "view cone 12-30 mm"}
 bom_extra:
   - {type: hardware, item: 1/4-20 UNC hex nut (ASME B18.2.2, 7/16 in AF), qty: 1, spec: "catalog tripod_nut_1_4_20; captive in the base, pulled down onto the 1.5 mm floor by the tripod screw"}
-  - {type: fastener, item: M3 x 10 socket head cap screw + M3 washer, qty: 1, spec: "tilt pivot: through the -Y yoke wall, threads into the bracket knuckle; medium threadlocker, back off 1/8 turn"}
-  - {type: hardware, item: Raspberry Pi camera FPC cable 200-300 mm (15-pin, 22-pin on Pi 5/Zero), qty: 1, spec: "leave a slack loop for pan and tilt"}
+  - {type: fastener, item: M3 flat washer (ISO 7089), qty: 1, spec: "under the head of the M3 tilt-pivot screw (screw length in the pivot row); medium threadlocker, back off 1/8 turn"}
+  - {type: hardware, item: Raspberry Pi camera FPC cable >= 300 mm (15-pin; 22-pin to 15-pin on Pi 5/Zero), qty: 1, spec: "through the yoke's front notch, then a >= 60 mm slack loop for pan and tilt"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 2, spec: "servo leads to the base and yoke tie slots"}
 assembly:
   root: base
@@ -62,6 +64,7 @@ assembly:
     - {parent: bracket.cam_seat, child: cam_rear.top}
     - {parent: bracket.lens_base, child: cam_lens.bottom}
     - {parent: bracket.lens_front, child: cam_view.bottom}
+    - {parent: bracket.lens_view12, child: cam_view_far.bottom}
   # bench sub-assembly first: the tilt horn is screwed to the bracket before the bracket goes on the servo
   order: [[tilt_horn, bracket], base, pan_servo, pan_horn, yoke, tilt_servo, camera]
   key_access:
@@ -74,8 +77,8 @@ requirements:
   - {id: torque_tilt, check: static_torque, joint: tilt, actuator: tilt_servo, payload_g: 10, payload_at: bracket.cam_seat, max_fraction: 0.5,
      why: "the tilt servo holds camera + bracket + 10 g of camera-cable drag anywhere in its range at <= half its stall torque"}
   - {id: mass, check: mass_max, max_g: 90, why: "light head for a small tripod or a desk clamp"}
-  - {id: cam_clear, check: clearance_min, a: bracket, b: yoke, min_mm: 0.5, joints: [tilt], samples: 19,
-     why: "the bracket never rubs the yoke over the whole tilt range (ENGINEERING.md section 6)"}
+  - {id: cam_clear, check: clearance_min, a: bracket, b: yoke, min_mm: 0.8, joints: [tilt], samples: 19,
+     why: "the bracket never rubs the yoke over the whole tilt range (ENGINEERING.md section 6 asks 0.5; 0.8 leaves room for print error)"}
   - {id: cam_clear_base, check: clearance_min, a: camera, b: yoke, min_mm: 1.0, joints: [tilt], samples: 19,
      why: "the camera board never touches the yoke plate when tilted down"}
   - id: bracket_fea

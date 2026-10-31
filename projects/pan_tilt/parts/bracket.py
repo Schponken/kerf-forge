@@ -99,4 +99,5 @@ def build(ctx):
     t = ctx.cat.num(cam, "thickness")
     ctx.rigid("lens_base", seat * Location((lens["x"], lens["y"], t)))
     ctx.rigid("lens_front", seat * Location((lens["x"], lens["y"], t + ctx.cat.num(cam, "component_height"))))
+    ctx.rigid("lens_view12", seat * Location((lens["x"], lens["y"], t + ctx.cat.num(cam, "component_height") + 12.0)))
     return ctx.finish(body)

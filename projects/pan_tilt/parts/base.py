@@ -13,6 +13,7 @@ from build123d import *
 from kerf import iface, features
 
 SERVO = "servos.SG90"
+CLEAR = 1.0   # 0.5 mm per side: drop-in fit for the SG90 width spread (11.8-12.2, catalog note) and FDM shrinkage
 
 
 def build(ctx):
@@ -27,9 +28,9 @@ def build(ctx):
     # servo: window + two M2 pilot holes (servo body centre over the nut axis; output on the pan axis at +pan_x)
     seat = Location((0, 0, H))
     deck = H - p.servo_floor_z                                  # material the tab pilots go into
-    body -= iface.servo_mount(ctx, SERVO, seat, group="base_pan", plate_t=deck, kind="tap")
+    body -= iface.servo_mount(ctx, SERVO, seat, group="base_pan", plate_t=deck, kind="tap", clearance=CLEAR)
     # body pocket below the window, down to the nut pocket (same footprint as the window)
-    wx, wy = p.servo_L + 0.6, p.servo_W + 0.6
+    wx, wy = p.servo_L + CLEAR, p.servo_W + CLEAR
     nut_top = p.floor_t + p.nut_h + 0.3
     body -= Pos(0, 0, nut_top) * Box(wx, wy, H, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for sx in (-1, 1):
@@ -44,8 +45,8 @@ def build(ctx):
     body -= Pos(0, 0, -0.01) * Cone(3.45 + 0.8, 3.45, 0.8, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
     # servo-lead slot through the -X end, open to the top, offset in Y so it clears the end tab screw
-    sl_y0, sl_y1 = 2.8, wy / 2
-    slot = Pos(-(L / 2 + wx / 2) / 2 - 0.5, (sl_y0 + sl_y1) / 2, p.servo_floor_z + 2.0) * Box(
+    sl_y0, sl_y1 = 2.2, wy / 2                                  # 4.7 mm wide, 1.3 mm wall to the tab pilot
+    slot = Pos(-(L / 2 + wx / 2) / 2 - 0.5, (sl_y0 + sl_y1) / 2, p.servo_floor_z) * Box(
         L / 2 - wx / 2 + 3.0, sl_y1 - sl_y0, H, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body -= slot
 

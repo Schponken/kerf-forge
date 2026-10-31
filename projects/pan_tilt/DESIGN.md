@@ -23,11 +23,14 @@ project.yaml params where a param exists.
 
 Assumptions:
 - **A1** "Down-ish -30°" = camera optical axis 30° below horizontal; positive tilt = up. Pan 0 = camera looking +X.
-- **A2** The tripod's 1/4-20 screw protrudes at most 8 mm above its plate (typical quick-release plates are 4.5-7 mm;
-  no standard value was found - see REFERENCES.md). The pan servo body sits 10 mm above the base underside
+- **A2** Supported tripod-screw protrusion: 5.5-8 mm above the tripod plate (typical quick-release plates are
+  4.5-7 mm; no standard value was found - see REFERENCES.md). Below ~5.5 mm the screw engages fewer than 3 threads
+  of the nut (the nut sits on a 1.5 mm floor, top 7.24 mm above the underside). The pan servo body sits 10 mm above the base underside
   (`servo_floor_z`), leaving ≥ 2 mm over an 8 mm screw tip. A longer screw would hit the pan servo: check yours.
 - **A3** Horns: a 21T CNC aluminium micro disc horn on each servo (catalog `servo_horns.aluminum_micro_21T`). Its
-  bolt circle (12 mm), M2 thread and 4 mm height are catalog ESTIMATES; the plastic arm horns that come with an SG90
+  bolt circle (12 mm), M2 thread and 4 mm hub height are catalog ESTIMATES; the hub slides the full 3.2 mm SG90
+  spline length over the spline (catalog `spline_engage`, added after review round 1), so each horn face sits 0.8 mm
+  above its spline top; the plastic arm horns that come with an SG90
   are not used (they cannot be bolted, and glued horns are not serviceable).
 - **A4** Camera cable: the standard FPC hangs from the bottom edge of the camera; ~10 g of cable drag at the camera
   seat is added to the tilt torque case.
@@ -54,16 +57,16 @@ position), so tilting keeps the image centre in place and the tilt servo carries
 | Disc horn 21T, 4 x M2 | `servo_horns.aluminum_micro_21T` | 2 | estimate geometry (A3); pan: 4 x M2 x 8 from the yoke top; tilt: 4 x M2 x 6 from the bracket inside |
 | Camera Module 3 | `boards.rpi_camera_module_3` | 1 | 4 g; 4 x M2 x 5 into standoff pilots |
 | 1/4-20 hex nut | `tripod_nut_1_4_20` | 1 | ASME B18.2.2, 11.13 AF / 5.74 max; pocket +0.2 on AF |
-| M3 x 12 SHCS + washer | screws.M3 | 1 | tilt pivot (length picked by kerf/pins.py: span 12.3 mm, 6.4 mm of thread in the knuckle ≥ 1.5 d) |
+| M3 x 12 SHCS + washer | screws.M3 | 1 | tilt pivot (length picked by kerf/pins.py: span 12.6 mm = 5 wall + 0.9 gap + 6.7 thread; 6.1 mm of thread in the knuckle ≥ 1.5 d) |
 | M2 screws | screws.M2 | 2+2+4+4+4 | lengths picked by the fastener check (out/bom.md): servo tabs M2 x 6, horns M2 x 8 / x 6, camera M2 x 5 |
 
-Mass: 59.7 g complete (report.json), printed parts base 14.4 g, yoke 13.3 g, bracket 6.0 g.
+Mass: 59.1 g complete (report.json), printed parts base 14.2 g, yoke 12.8 g, bracket 6.0 g (40% infill estimate).
 
 ## 4. Printed parts
 | Part | Job | Material | print_rot | load_axis | Envelope |
 |---|---|---|---|---|---|
-| base | screws onto the tripod; holds the pan servo; captive 1/4-20 nut | PETG, 40% | [0,0,0] (bottom on bed) | Z | 40.2 x 26.2 x 25.6 |
-| yoke | pan-horn plate; +Y wall carries the tilt servo (mounted from outside); -Y wall carries the M3 pivot | PETG, 40% | [0,0,0] (plate on bed) | Z, X | 30 x 75.8 x 40.6 |
+| base | screws onto the tripod; holds the pan servo (pocket 0.5 mm per side); captive 1/4-20 nut; 4.7 mm lead slot | PETG, 40% | [0,0,0] (bottom on bed) | Z | 40.2 x 26.2 x 25.6 |
+| yoke | pan-horn plate (front notch for the camera FPC); +Y wall carries the tilt servo (mounted from outside); -Y wall carries the M3 pivot | PETG, 40% | [0,0,0] (plate on bed) | Z, X | 30 x 72.8 x 40.6 |
 | bracket | U that holds the camera; +Y arm on the tilt horn, -Y arm knuckle on the pivot | PETG, 40% | [0,0,0] (flat bottom on bed) | X, Z | 24.5 x 34 x 26 |
 
 Orientation notes: every part prints as assembled. The base pocket and lead slot open upward (no bridges). The yoke's
@@ -88,11 +91,12 @@ judged against PETG's Z strength (39 MPa) with SF 3 (ENGINEERING.md §3, across 
 ## 6. Joint tree
 base → pan_servo (rigid, `base.pan_seat`) → **pan** (revolute, servo output, -90..+90, home 0) → pan_horn → yoke
 (rigid) → tilt_servo (rigid, `yoke.tilt_seat`) → **tilt** (revolute about -Y so + = up, -35..+65, home 0) → tilt_horn →
-bracket (rigid) → camera (+ keep-outs `cam_lens`, `cam_rear`, `cam_view` owned by the camera).
+bracket (rigid) → camera (+ keep-outs `cam_lens`, `cam_rear`, `cam_view` + `cam_view_far` owned by the camera; the two
+view boxes contain the 66 x 41° view cone from the 5.75 mm lens out to 30 mm).
 Coupled poses swept: all four pan/tilt corners (`corners` sweep).
 
 ## 7. Requirements in project.yaml
-`torque_tilt` (static_torque, 50% stall), `mass` (≤ 90 g), `cam_clear` (bracket-yoke ≥ 0.5 mm over tilt),
+`torque_tilt` (static_torque, 50% stall), `mass` (≤ 90 g), `cam_clear` (bracket-yoke ≥ 0.8 mm over tilt; measured 0.9 = the pivot gap),
 `cam_clear_base` (camera-yoke ≥ 1 mm), `bracket_fea`, `yoke_fea`, `base_fea` (SF 3, Z strength), `bracket_arm`
 (cantilever sizing check), `head_cg` (turning head CG ≤ 20 mm from the pan axis).
 
@@ -100,8 +104,8 @@ FEA load cases (all SF 3 on PETG Z strength 39 MPa → allowable 13 MPa):
 | Check | Fixed | Load | Result |
 |---|---|---|---|
 | bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 2.2 MPa p99.9, 0.05 mm |
-| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the pivot bore | 2.6 MPa, 0.23 mm (limit 0.3) |
-| base_fea | underside on the tripod plate | 176.5 N·mm pan stall reaction + 10 N sideways at the tab screws | 1.2 MPa, 0.006 mm |
+| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the pivot bore | 2.5 MPa, 0.21 mm (limit 0.3) |
+| base_fea | underside on the tripod plate | 176.5 N·mm pan stall reaction + 10 N sideways at the tab screws | 1.1 MPa, 0.006 mm |
 | bracket_arm | section 5.5 mm ahead of the tilt axis | 13 N at the camera seat (stall torque / 13.5 mm), kt 1.5 | 0.2 MPa |
 The yoke first failed its stiffness limit (0.56 mm, the 4 mm plate twisting under the tilt-servo reaction); the plate
 went to 6 mm and widened to ±15 mm outside the camera's view: 0.23 mm.
@@ -126,13 +130,21 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
 7. Drive the tilt horn's centre screw with a 1.5 mm key through the -Y wall's pivot hole and the 2.4 mm hole in the
    knuckle floor.
 8. M3 x 12 + washer through the -Y wall into the knuckle with medium threadlocker; snug, then back off 1/8 turn so
-   the head does not clamp the wall (kerf pin warning).
-9. Camera: 4 x M2 x 5 into the standoffs, FPC connector at the bottom; let the FPC hang down with a slack loop that
-   allows ±90° pan.
+   the head does not clamp the wall (kerf pin warning). The 0.9 mm gap between knuckle and wall is the axial play.
+9. Camera: 4 x M2 x 5 into the standoffs, FPC connector at the bottom. Run the FPC down through the notch in the
+   front edge of the yoke plate (outside the pan horn) and leave a ≥ 60 mm slack loop below it for ±90° pan before it
+   goes to the Pi (use a ≥ 300 mm FPC).
 10. Tie the tilt servo lead to the yoke ledge (2.5 mm tie through the two slots), leave a loop down to the base.
 11. Screw the base onto the tripod.
 
-## 9. Risks / numbers to measure before the final print
+## 9. Review history
+- Round 1 (design-reviewer, FAIL, 1 blocker): the 21T horn catalog entry had no `spline_engage`, so the horn proxy
+  sat on the spline tip and every horn-derived position was 3.2 mm off. Fixed in the catalog (sourced spline length);
+  the layout follows automatically. Minors fixed: duplicate pivot screw in bom_extra, FPC notch + loop length,
+  base pocket 0.5 mm/side and 4.7 mm lead slot, pivot gap 0.9 mm (cam_clear ≥ 0.8), tripod protrusion range (A2).
+  Not done: an `electrical:` block (kerf warns; servo current/supply is A6, owned by the electronics PLAN item).
+
+## 10. Risks / numbers to measure before the final print
 - Horn (A3): measure bolt circle, thread and hub height of the horns you buy; if they differ, the catalog entry and
   both horn mounts change.
 - SG90 tab hole and output offset were scaled from a drawing (catalog note) — print the base first and test-fit.
