@@ -29,7 +29,7 @@ cat > "$APP/Contents/MacOS/KerfStudio" <<LAUNCH
 REPO="$REPO"
 URL="http://127.0.0.1:8765/"
 LOG="\$HOME/Library/Logs/KerfStudio.log"
-export PATH="/opt/homebrew/bin:/usr/local/bin:\$HOME/.local/bin:\$HOME/.homebrew/bin:\$PATH"
+export PATH="/opt/homebrew/bin:/usr/local/bin:\$HOME/.local/bin:\$HOME/.claude/local:\$HOME/.npm-global/bin:\$HOME/.homebrew/bin:\$PATH"
 if ! curl -fs "\${URL}api/projects" >/dev/null 2>&1; then
   cd "\$REPO" && nohup .venv/bin/kerf studio --no-open --port 8765 >>"\$LOG" 2>&1 &
   for i in \$(seq 1 60); do curl -fs "\${URL}api/projects" >/dev/null 2>&1 && break; sleep 0.25; done
