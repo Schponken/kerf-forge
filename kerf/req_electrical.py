@@ -26,6 +26,9 @@ def power_budget(proj, asm, fm=None, eta=None):
 
 def _time(proj, min_min, fm, eta, label):
     m = E.analyse(proj, fm=fm, eta=eta)
+    if m["mains"]:
+        return {"ok": False, "value": None, "limit": min_min,
+                "detail": f"{label}: '{m['battery']}' is a mains supply (no capacity); remove this requirement or use a battery"}
     t = m["minutes"]
     h = m["hover"]
     how = (f"hover: {h['power_w']} W for {h['mass_g']} g on {h['rotors']} x {h['prop_d_mm']:g} mm props" if h

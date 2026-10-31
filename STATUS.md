@@ -360,6 +360,7 @@ pushed for it and what I know:
 - Seen, not mine: servo_link review is stale (fingerprint changed by the MG996R catalog update); needs a fresh
   design-reviewer pass before final verify.
 
+<<<<<<< Updated upstream
 ## 2026-10-31 — session 01S68R6S: E2 fpv_5in, review round 2 fixes
 - Round 2 review (design-reviewer): FAIL, 0 blockers, 2 major, 8 minor; all round-1 fixes confirmed in geometry except
   XT60 retention and camera screw engagement.
@@ -373,3 +374,32 @@ pushed for it and what I know:
 - Engine: FEA render title now prints the report's checked p99.9 / peak (render colours are surface element means).
 - Still open for fpv_5in: the complete-electronics section (wiring, power, flight_time, WIRING.md) waits on the engine
   item claimed by session c1f0cc8551; then round 3 review.
+=======
+
+## 2026-10-31 02:20 UTC — session 01S68R6RW: PLAN "Complete electronics + wiring" (engine) done
+- kerf/electrical.py: `electrical:` (battery or mains `supply`, burst_s, draw/limits overrides that need a `why`) +
+  `wiring:` runs (from/to item[.pin], kind, v, gauge, colour, conductors, length_mm, route waypoints). Power tree from
+  the battery; current per item and run at average and peak (motors: momentum-theory hover share when prop discs
+  exist, FM 0.5 / motor eta 0.75 / coax kappa 1.281, all cited in ENGINEERING.md 10b; servos running/stall; others
+  current_a); regulator outputs referred back at 0.8 efficiency. Ratings: battery C/C_burst, supply current, output
+  pins (`<pin>_current_a`/`_burst_a` per run, `bec_<pin>_a` summed), connectors, wire chassis ampacity (avg) and
+  adiabatic copper rise <= 60 K over the burst (peak), input voltage ranges. Cut length must be >= routed 3D length
+  + 15 % (check problem).
+- Checks: `power_budget`, `flight_time`, `run_time`, `connector_access`; tests/test_electrical.py (10 tests, hand
+  calcs: hover power, burst heating, a 3" quad's avg/peak/minutes, current limit, routing slack, plug access, mains
+  servo supply). Outputs: out/WIRING.md, out/wiring.svg, electrical steps appended to the ship package's ASSEMBLY.md,
+  BOM wire rows (metres per gauge/colour, price_key `wire:AWG<g>`) + heat-shrink (`heatshrink`), purchased rows
+  get a catalog source link (`link`, used as `buy` when unpriced).
+- Catalog: MG996R currents (datasheet: 0.9 A running at 6 V, 2.5 A stall, 4.8-7.2 V), MEAN WELL GST60A05 5 V 6 A
+  adapter. (These change the catalog fingerprint: reviews need a refresh anyway after the other catalog edits today.)
+- For the eval owners: fpv_5in/tvc_drone acceptance grade this. Findings worth knowing: the XT60's 60 A instantaneous
+  rating is below a 4-motor punch-out (e.g. 4 x 35 A); either an XT90 or a real configured ESC/FC current limit
+  (`electrical.limits` with a why) is needed — the check will not pass on wishful ratings. Motor leads at 22 AWG fail
+  burst heating at 15.8 A x 5 s (77 K); 20 AWG passes. A project with servos/motors/boards and no `wiring:` now gets a
+  warning; robot_arm, pan_tilt, bionic_finger and servo_link should add their electrical system (mains supply is fine
+  for desk devices).
+- For the ship-package session: wire shop pages found (not yet in prices.json): Out of Darts silicone red+black pair
+  $0.59/ft, 14/16/18/22 AWG (https://www.outofdarts.com/products/18-awg-hobby-wire-fine-strand-5-red-and-5-black);
+  Rotorama 5-colour set 22-30 AWG EUR 16.39 (https://www.rotorama.com/product/silicone-cable-set).
+  tests/test_kerf_skill.py and test_docs currently fail on your WIP (catalog/prices.json missing).
+>>>>>>> Stashed changes

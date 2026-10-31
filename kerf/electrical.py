@@ -128,15 +128,19 @@ def analyse(proj, fm=None, eta=None) -> dict:
     wires = data.get("wiring") or []
     if not wires:
         raise ElectricalError("project.yaml has no `wiring:` section")
-    bat = el.get("battery")
+    bat = el.get("battery") or el.get("supply")
     if bat not in proj.items:
-        raise ElectricalError(f"electrical.battery '{bat}' is not an item")
+        raise ElectricalError(f"electrical.battery / electrical.supply '{bat}' is not an item")
     bpath, bcat = _cat(proj, bat)
-    for k in ("cells", "capacity_mah", "c_rating"):
-        if k not in bcat:
-            raise ElectricalError(f"battery catalog entry {bpath} has no '{k}'")
-    cells = int(bcat["cells"])
-    v_bat = cells * LIPO_V_MAX
+    mains = "cells" not in bcat and "output_v" in bcat      # a wall adapter / bench supply: no run time
+    if mains:
+        cells, v_bat = 0, float(bcat["output_v"])
+    else:
+        for k in ("cells", "capacity_mah", "c_rating"):
+            if k not in bcat:
+                raise ElectricalError(f"battery catalog entry {bpath} has no '{k}' (a mains supply needs output_v + current_a)")
+        cells = int(bcat["cells"])
+        v_bat = cells * LIPO_V_MAX
     draw_over = el.get("draw") or {}
     limits = el.get("limits") or {}
     for d in (draw_over, limits):
@@ -179,6 +183,8 @@ def analyse(proj, fm=None, eta=None) -> dict:
     mass = total_mass_g(proj)
     hover = None
     motors = [i for i in proj.items if "max_current_a" in _cat(proj, i)[1] and proj.items[i].role == "purchased"]
+    if discs and mains:
+        raise ElectricalError("prop discs on a mains supply (tethered flight) are not modelled; use a battery")
     if discs:
         dset = {d[3] for d in discs}
         if len(dset) > 1:
@@ -255,10 +261,14 @@ def analyse(proj, fm=None, eta=None) -> dict:
         rows.append({"what": what, "kind": kind, "value": round(value, 3), "limit": round(limit, 3),
                      "ok": value <= limit + 1e-9, "note": note})
 
-    ah = float(bcat["capacity_mah"]) / 1000
-    row(f"battery {bat}", "avg A vs C rating", tot_avg, ah * float(bcat["c_rating"]), f"{bcat['capacity_mah']} mAh x {bcat['c_rating']}C")
-    row(f"battery {bat}", "peak A vs burst C", tot_peak, ah * float(bcat.get("c_burst", bcat["c_rating"])),
-        f"{bcat['capacity_mah']} mAh x {bcat.get('c_burst', bcat['c_rating'])}C")
+    ah = 0.0 if mains else float(bcat["capacity_mah"]) / 1000
+    if mains:
+        row(f"supply {bat}", "avg A vs rated", tot_avg, float(bcat["current_a"]), bpath)
+        row(f"supply {bat}", "peak A vs peak rating", tot_peak, float(bcat.get("current_peak_a", bcat["current_a"])), bpath)
+    else:
+        row(f"battery {bat}", "avg A vs C rating", tot_avg, ah * float(bcat["c_rating"]), f"{bcat['capacity_mah']} mAh x {bcat['c_rating']}C")
+        row(f"battery {bat}", "peak A vs burst C", tot_peak, ah * float(bcat.get("c_burst", bcat["c_rating"])),
+            f"{bcat['capacity_mah']} mAh x {bcat.get('c_burst', bcat['c_rating'])}C")
     for w in power:
         row(f"wire {w['id']} AWG {w['gauge']}", "avg A vs chassis ampacity", w["avg_a"], ampacity(w["gauge"]), "catalog wire.awg")
         row(f"wire {w['id']} AWG {w['gauge']}", f"burst rise K ({w['peak_a']:.1f} A, {burst_s:g} s)",
@@ -299,15 +309,15 @@ def analyse(proj, fm=None, eta=None) -> dict:
         hi = e.get("voltage_max", e.get("input_v_max"))
         if w["fi"] == bat and abs(float(w["v"]) - v_bat) > 0.05:
             rows.append({"what": f"wire {w['id']}", "kind": "voltage", "value": w["v"], "limit": v_bat, "ok": False,
-                         "note": f"battery runs carry the full-charge pack voltage {v_bat:g} V"})
+                         "note": f"runs from the source carry its full voltage {v_bat:g} V"})
         if lo is not None and hi is not None:
             ok = float(lo) - 1e-9 <= float(w["v"]) <= float(hi) + 1e-9
             rows.append({"what": f"{w['ti']} input", "kind": "voltage", "value": w["v"], "limit": [lo, hi], "ok": ok, "note": ""})
 
     usable = float(el.get("usable", USABLE_DEFAULT))
-    return {"battery": bat, "cells": cells, "v_bat": v_bat, "capacity_ah": ah, "usable": usable, "burst_s": burst_s,
+    return {"battery": bat, "mains": mains, "cells": cells, "v_bat": v_bat, "capacity_ah": ah, "usable": usable, "burst_s": burst_s,
             "avg_a": round(tot_avg, 3), "peak_a": round(tot_peak, 3), "hover": hover,
-            "minutes": round(ah * usable / tot_avg * 60, 2) if tot_avg > 0 else None,
+            "minutes": round(ah * usable / tot_avg * 60, 2) if tot_avg > 0 and not mains else None,
             "loads": {i: dict(zip(("avg_a", "peak_a", "source"), own(i))) for i in memo},
             "wires": [{k: w.get(k) for k in ("id", "from", "to", "kind", "v", "gauge", "color", "conductors", "length_mm", "avg_a",
                                              "peak_a", "routed_mm", "cut_min_mm", "points")} for w in ws],

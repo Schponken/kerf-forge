@@ -88,6 +88,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                                                 for iid, it in proj.items.items() if it.shape is not None
                                                 for lab, j in it.shape.joints.items()}
             emodel = None
+            powered = [i for i, it in proj.items.items() if it.role == "purchased"
+                       and any(k in str(it.spec.get("catalog", "")) for k in ("servos.", "motors", "steppers", "boards."))]
+            if powered and not proj.data.get("wiring"):
+                rep["warnings"].append(f"no electrical system: {', '.join(powered[:4])} need power and signal, but project.yaml "
+                                       f"has no `electrical:` / `wiring:` (docs/ARCHITECTURE.md 'Electrical')")
             if proj.data.get("wiring") or proj.data.get("electrical"):     # complete electrical system (kerf/electrical.py)
                 try:
                     emodel = electrical.analyse(proj)

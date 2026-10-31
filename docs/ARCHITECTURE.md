@@ -148,6 +148,7 @@ battery, connector, strap is a catalog-backed purchased item, and every connecti
 ```yaml
 electrical:
   battery: battery            # the pack item (catalog cells, capacity_mah, c_rating, c_burst)
+  # supply: psu               # ...or a mains adapter (catalog output_v, current_a): rated by current, no run time
   burst_s: 5                  # longest full-power burst (s) for wire heating; default 5
   usable: 0.8                 # usable capacity fraction (80 % rule); fm / eta / bec_eff override the defaults
   draw: {rx: {avg_a: 0.1, peak_a: 0.1, why: "..."}}         # only where the catalog has no current figure

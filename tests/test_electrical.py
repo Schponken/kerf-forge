@@ -182,3 +182,50 @@ def test_wire_rows_carry_price_keys():
     assert {w["price_key"] for w in wire.values()} == {"wire:AWG14", "wire:AWG20", "wire:AWG28"}
     shrink = [r for r in rows if "heat-shrink" in r["item"]]
     assert sum(r["qty"] for r in shrink) == 2 * 2 + 2 * 3 + 2 * 1     # one piece per conductor end
+
+
+SERVO_YAML = """
+name: Servo psu test
+params: {{}}
+parts: {{}}
+purchased:
+  psu: {{catalog: electronics.supplies.meanwell_gst60a05, proxy: box, joints: {{{joints}}}}}
+{servos}
+assembly:
+  root: psu
+  joints:
+{tree}
+electrical:
+  supply: psu
+wiring:
+{wires}
+requirements:
+  - {{id: power, check: power_budget}}
+  - {{id: rt, check: run_time, min_min: 10}}
+"""
+
+
+def _servos(tmp_path, n):
+    servos = "\n".join(f"  s{k}: {{catalog: servos.MG996R, proxy: box, size: [40, 20, 37]}}" for k in range(n))
+    joints = ", ".join(f"j{k}: [{k * 50}, 0, 40]" for k in range(n))
+    tree = "\n".join(f"    - {{parent: psu.j{k}, child: s{k}.bottom}}" for k in range(n))
+    wires = "\n".join(f"  - {{id: w{k}, from: psu, to: s{k}, v: 5.0, gauge: 20, length_mm: 400}}" for k in range(n))
+    d = _write_project(tmp_path / f"psu{n}", SERVO_YAML.format(servos=servos, joints=joints, tree=tree, wires=wires), {})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    return proj, asm
+
+
+def test_mains_supply_servos(tmp_path):
+    # MG996R datasheet: 0.9 A running, 2.5 A stall (6 V). Two servos on the 5 V 6 A adapter: 1.8 A avg, 5.0 A peak -> ok
+    proj, asm = _servos(tmp_path, 2)
+    m = E.analyse(proj)
+    assert m["mains"] and m["avg_a"] == pytest.approx(1.8) and m["peak_a"] == pytest.approx(5.0)
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert r["power"]["ok"], r["power"]["detail"]
+    assert not r["rt"]["ok"] and "mains" in r["rt"]["detail"]          # no capacity -> no run time claim
+    # three servos can stall together: 7.5 A > 6 A rated
+    proj, asm = _servos(tmp_path, 3)
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert not r["power"]["ok"] and "supply psu peak" in r["power"]["detail"]

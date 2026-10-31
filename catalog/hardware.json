@@ -468,6 +468,12 @@
    "spline_teeth": 25,
    "stall_torque_kgcm": 9.4,
    "stall_voltage": 4.8,
+   "stall_current_a": 2.5,
+   "running_current_a": 0.9,
+   "voltage_min": 4.8,
+   "voltage_max": 7.2,
+   "source_current": "https://people.ece.cornell.edu/land/courses/ece4760/FinalProjects/f2017/kmv48_rp625/kmv48_rp625/kmv48_rp625/MG996RTowerPro.pdf",
+   "current_note": "TowerPro MG996R datasheet: operating voltage 4.8-7.2 V, running current 500-900 mA (900 mA at 6 V), stall current 2.5 A (6 V). running_current_a takes the 6 V upper figure (conservative for run time and BEC sizing); size a BEC for stall x servos that can stall together.",
    "speed_s_per_60": 0.17,
    "weight_g": 55,
    "source": "https://towerpro.com.tw/product/mg996r/",
@@ -1229,6 +1235,21 @@
   }
  },
  "electronics": {
+  "supplies": {
+   "meanwell_gst60a05": {
+    "model": "MEAN WELL GST60A05-P1J desktop adapter, 5 V 6 A (30 W), 2.1 mm ID barrel plug",
+    "length": 125,
+    "width": 50,
+    "height": 31.5,
+    "weight_g": 310,
+    "output_v": 5.0,
+    "current_a": 6.0,
+    "plug": "2.1 mm ID barrel, tuning-fork type (outer diameter not stated on the page)",
+    "source": "https://www.power-supplies-australia.com.au/MEAN-WELL-GST60A05-P1J",
+    "confidence": "datasheet",
+    "note": "Distributor page (opened 2026-10-31): 5 V DC, 6 A rated, 30 W, 125 x 50 x 31.5 mm, 0.31 kg. No peak/overload current published, so current_peak_a omitted (the rated 6 A is used for peaks too). Mains bench supply for desk servo projects: MG996R runs 4.8-7.2 V."
+   }
+  },
   "receivers": {
    "elrs_nano": {
     "model": "RadioMaster RP1 V2 ExpressLRS 2.4 GHz nano receiver",

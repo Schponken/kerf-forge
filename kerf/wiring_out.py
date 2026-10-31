@@ -60,11 +60,15 @@ def bom_rows(model) -> list:
 
 
 def wiring_md(proj, model) -> str:
-    L = [f"# Wiring — {proj.name}", "",
-         f"Battery: **{model['battery']}** ({model['cells']}S, {model['capacity_ah'] * 1000:g} mAh, {model['v_bat']:g} V full). "
-         f"Average draw {model['avg_a']} A, peak {model['peak_a']} A; "
-         + (f"hover time **{model['minutes']} min** ({model['usable']:.0%} of capacity)." if model["hover"]
-            else f"run time **{model['minutes']} min** ({model['usable']:.0%} of capacity)."), ""]
+    if model.get("mains"):
+        L = [f"# Wiring — {proj.name}", "", f"Supply: **{model['battery']}** ({model['v_bat']:g} V, mains adapter). "
+             f"Average draw {model['avg_a']} A, peak {model['peak_a']} A.", ""]
+    else:
+        L = [f"# Wiring — {proj.name}", "",
+             f"Battery: **{model['battery']}** ({model['cells']}S, {model['capacity_ah'] * 1000:g} mAh, {model['v_bat']:g} V full). "
+             f"Average draw {model['avg_a']} A, peak {model['peak_a']} A; "
+             + (f"hover time **{model['minutes']} min** ({model['usable']:.0%} of capacity)." if model["hover"]
+                else f"run time **{model['minutes']} min** ({model['usable']:.0%} of capacity)."), ""]
     if model["hover"]:
         h = model["hover"]
         L += [f"Hover power {h['power_w']} W for {h['mass_g']} g on {h['rotors']} x {h['prop_d_mm']:g} mm props "

@@ -48,7 +48,7 @@ tested before handoff.
 - [x] `kerf` skill (`.claude/skills/kerf/SKILL.md`) drives the full workflow from a one-paragraph description: design-researcher (REFERENCES.md) → DESIGN.md with spec-driven sizing and trade-offs → project.yaml → parallel part-designer subagents → integrate → FEA on structural parts → detail pass → build → design-reviewer → summary for Spencer
 - [x] docs/ARCHITECTURE.md and docs/ENGINEERING.md complete and accurate for everything the engine now does
 
-- [ ] Complete electronics + wiring for EVERY project that moves or powers anything (engine feature, applies to all
+- [x] Complete electronics + wiring for EVERY project that moves or powers anything (engine feature, applies to all
   evals): the `kerf` skill derives the full electrical system from the description, never only the parts the brief
   names. (a) Every component is a catalog-backed purchased item with a source: controller/flight controller, ESCs or
   motor drivers, receiver + antenna(s), video TX + antenna + camera where FPV, BEC/regulator for servos and logic,
