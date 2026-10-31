@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import access, assembly as A, checks, export, pins, project as P, requirements, shanks, viewer
+from . import access, assembly as A, checks, export, pins, project as P, requirements, shanks, ship, viewer
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -108,6 +108,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     viewer.write(proj, asm, rep, out / "viewer.html")
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"viewer.html could not be written: {type(e).__name__}: {e}")
+                try:  # ship package (kerf/ship.py): priced BOM + ASSEMBLY.md with a render per step when rendering
+                    rnd = (lambda g, pre: render_glb(g, pre, views="iso", sheet=False)) if do_render else None
+                    rep["files"]["ship"] = ship.write(proj, asm, rep, out, render=rnd)
+                except Exception as e:  # noqa: BLE001
+                    rep["problems"].append(f"ship package (priced BOM / ASSEMBLY.md) could not be written: {type(e).__name__}: {e}")
             if do_render:
                 out = proj.out("renders")
                 out.mkdir(exist_ok=True)
