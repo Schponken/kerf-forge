@@ -626,3 +626,17 @@ pushed for it and what I know:
 - Also: blue threadlocker in the BOM (priced), counterbore-bridging print note, XT60 "hold when unplugging" in the
   wiring note, DESIGN.md numbers. Note for the hard_stop owner: tests/test_kerf_skill.py fails until `hard_stop` is
   listed in the kerf skill's toolbox (from 51c543e, not touched here).
+
+## 2026-10-31 — session 01S68R6Q: E3 robot_arm review round 2 fixes + complete electrics
+- Round-2 review (FAIL: 1 blocker, 1 major) fixed: yaw-horn screw heads counterbored into the yaw gear (the platform
+  swept over them); cable path rebuilt: lead bundle crosses the yaw joint above the arm, cable mast on the platform
+  (new part) -> 132 mm cable post on the base rear pad, `cable_loop` channel_clear at 10 poses; gear mesh enclosed
+  (side walls), yaw lead out through a floor-level hole in the guard. Minor: fillets (yoke foot end, jaw post, web
+  to plate), jaw 10 mm, load_axis on every part, turntable FEA net moment 1.70 N*m, assembly order, pivot-screw note.
+- Complete electrics (Spencer's rule): MEAN WELL LRS-100-5 (5 V 18 A; 5 servos stalled = 13.0 A), 2 x 2 WAGO 221-415
+  buses, Adafruit PCA9685 on bosses on the cable post (signal only), Nano on USB; 14 routed runs pass the route check
+  at both ends of every joint; power_budget 0.72; usb_access. Catalog: DS3218/DS3225 currents, PCA9685, LRS-100-5,
+  WAGO 221-415, Pololu servo lead (sourced).
+- Engine: `kerf/heads.py` — socket screw heads are solids in interference + sweeps (test); board proxy keeps its
+  mounting holes clear of the component block (test). All 6 projects still pass `kerf check` with the head solids.
+- Next: robot_arm build + design-reviewer round 3.
