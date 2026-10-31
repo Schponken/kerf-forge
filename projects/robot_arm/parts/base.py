@@ -2,6 +2,8 @@
 moment never reaches the servo), and the pocket the yaw servo (MG996R) hangs in, output up, 45 mm behind the yaw axis.
 Origin: yaw axis on the desk (underside of the plate); z up; the arm points +X at home.
 Printed upright; the servo shelf and the bearing-bore ceiling need supports (supports: allowed)."""
+import math
+
 from build123d import *
 from kerf import iface
 
@@ -52,9 +54,18 @@ def build(ctx):
             Rectangle(30, 30, mode=Mode.SUBTRACT)          # behind: the servo case itself closes that side
     guard = extrude(gs.sketch, p.z_plat0 - 0.5 - p.base_floor + 0.01)
     body += guard
-    # cable-tie slots in the guard's -Y side: anchor point for the servo-lead service loop
-    for sx in (-4.0, 4.0):
-        body -= Pos(-p.yaw_c + sx, -(r_tip + 2.75), p.z_shelf + 10.0) * Box(1.8, 6.0, 3.2)
+    # side walls from the guard's open ends past the turntable gear, so the mesh can't be reached from +-Y
+    # (they clear the 24 T tip circle by ~2.9 mm and the 36 T one by >= 1.2 mm; tops 0.5 mm under the platform)
+    y0 = math.sqrt((r_tip + 1.5) ** 2 - 20.0 ** 2) + 0.05      # ring inner face where the guard is cut (20 mm ahead of its centre)
+    for sy in (-1, 1):
+        body += Pos(-2.75, sy * (y0 + 1.6), p.base_floor - 0.01) * Box(45.5, 3.2, p.z_plat0 - 0.5 - p.base_floor + 0.01,
+                                                                       align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # cable post on the rear pad, outside the circle the turntable sweeps (r ~68); the lead bundle spans from the
+    # turntable's cable mast to here above the arm, so it never drapes near the gears
+    post_top = 132.0                                            # level with the turntable's cable mast
+    body += Pos(-92.0, 0, p.base_floor - 0.01) * Box(10.0, 16.0, post_top - p.base_floor, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for sy in (-5.0, 5.0):                                       # tie slots through the post (front to back)
+        body -= Pos(-92.0, sy, post_top - 5.0) * Box(12.0, 1.8, 3.2)
     # desk mounting: 4 x M4 through-holes (bolt or wood-screw down) at the corners; the rear 20 mm is a clamp pad
     for x in (-88.0, 30.0):
         for y in (-40.0, 40.0):
@@ -64,4 +75,5 @@ def build(ctx):
     ctx.rigid("brg_lo", Location((0, 0, p.z_blo)))
     ctx.rigid("brg_hi", Location((0, 0, p.z_bhi)))
     ctx.rigid("yaw_servo_seat", Location((xc, 0, p.z_shelf)))
+    ctx.rigid("cable_post", Location((-92.0, 0, post_top + 3.5)))   # bundle tied across the post top
     return ctx.finish(body)

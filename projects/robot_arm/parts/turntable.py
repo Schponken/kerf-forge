@@ -35,6 +35,9 @@ def build(ctx):
     for side, grp in ((1, "yoke_r_foot"), (-1, "yoke_l_foot")):
         pts = [(x, side * foot_y(p)) for x in FOOT_X]
         body -= iface.bolt_pattern(ctx, grp, "M3", pts, Location((0, 0, p.z_plat1)), kind="heatset", depth=p.plat_t)
+    # cable mast: 2 x M3 heat-set inserts from the platform top (parts/cable_mast.py)
+    body -= iface.bolt_pattern(ctx, "cable_mast", "M3", [(-19.0, 0.0), (-1.0, 0.0)], Location((0, 0, p.z_plat1)), kind="heatset",
+                               depth=p.plat_t)
     # spindle end: heat-set insert for the retainer screw (screw comes up from below)
     body -= iface.bolt_pattern(ctx, "retainer", "M3", [(0, 0)], Location((0, 0, p.z_blo + 0.2), (180, 0, 0)), kind="heatset",
                                depth=p.z_tt - p.z_blo)
@@ -42,4 +45,5 @@ def build(ctx):
     ctx.rigid("retainer_seat", Location((0, 0, p.z_blo)))
     ctx.rigid("yoke_r_seat", Location((0, 0, 0)))
     ctx.rigid("yoke_l_seat", Location((0, 0, 0)))
+    ctx.rigid("mast_seat", Location((0, 0, 0)))
     return ctx.finish(body)

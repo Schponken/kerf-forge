@@ -35,6 +35,7 @@ parts:
   forearm: {file: parts/forearm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
   gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3}
   finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}
+  cable_mast: {file: parts/cable_mast.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: Z}
 purchased:
   brg_lo: {catalog: bearings.6001, proxy: bearing}
   brg_hi: {catalog: bearings.6001, proxy: bearing}
@@ -65,6 +66,7 @@ assembly:
     - {parent: turntable.retainer_seat, child: retainer.origin}
     - {parent: turntable.yoke_r_seat, child: yoke_r.origin}
     - {parent: turntable.yoke_l_seat, child: yoke_l.origin}
+    - {parent: turntable.mast_seat, child: cable_mast.origin}
     - {parent: yoke_r.servo_seat, child: sh_servo.tabs}
     - {parent: sh_servo.output, child: sh_horn.spline, name: shoulder, range: [-60, 60]}
     - {parent: sh_horn.face, child: upper_arm.horn_mount}
@@ -183,4 +185,11 @@ requirements:
       - {sites: yoke_l_foot, radius: 4.0, force_n: [0, 0, -6.4]}
       - {sites: yoke_r_foot, radius: 4.0, torque_nmm: 850, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
       - {sites: yoke_l_foot, radius: 4.0, torque_nmm: 850, axis: {at: [0, 0, "z_plat1"], dir: [0, 1, 0]}}
+  - id: cable_loop
+    check: channel_clear
+    path: [{item: cable_mast, at: cable_top}, {item: base, at: cable_post}]
+    diameter: 5.0
+    poses: [{base_yaw: -90}, {base_yaw: -45}, {base_yaw: 45}, {base_yaw: 90}, {base_yaw: -90, shoulder: -60}, {base_yaw: 90, shoulder: -60},
+            {base_yaw: -90, shoulder: 60}, {base_yaw: 90, shoulder: 60}, {shoulder: -60, elbow: -60}]
+    why: "the servo-lead bundle (4 leads, ~5 mm incl. clearance) from the turntable's cable mast to the base cable post stays clear of every part over the full yaw range, with the arm stretched out or raised"
   - {id: arm_mass, check: mass_max, max_g: 900, why: "a desk arm two hobby-servo supplies can move around; also the torque budget"}
