@@ -126,7 +126,7 @@ Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each funct
 | `size_max` | `max_mm` [x, y, z] | assembled bounding box at home |
 | `distance` | `a`, `b` (item.joint), `min_mm`/`max_mm`, `pose` | joint-origin distance (mm) |
 | `clearance_min` | `a`, `b`, `min_mm`, `joints`, `samples` | smallest gap over the sweeps |
-| `static_torque` | `joint`, `actuator` or `stall_kgcm`, `max_fraction`, `payload_g`, `payload_at`, `poses` | worst gravity torque (kg·cm) |
+| `static_torque` | `joint`, `actuator` or `stall_kgcm`, `max_fraction`, `payload_g`, `payload_at`, `poses`, `gravity` (direction, default [0, 0, -1]; e.g. a device used on its side) | worst gravity torque (kg·cm) |
 | `thrust_to_weight` | `thrust_g_total`, `min_ratio` | thrust / all-up mass |
 | `fea_static` | `part`, `fixed`, `loads`, `sf`, `direction`, `max_disp_mm` | stress / deflection (FEA) |
 | `cantilever_stress` | `part`, `section`, `loads`, `sf`, `kt`, `direction` | beam-theory stress at a section |

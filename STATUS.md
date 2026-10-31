@@ -777,3 +777,14 @@ pushed for it and what I know:
 - #20 `insert:` items: subtree children installed in an EARLIER order step stay put and block (servo slid in last onto
   a mounted horn). Horn centre screws are now key-reach checked when the horn goes on (straight / ball-end / problem).
   Tests. All six projects still pass `kerf check --quick` with unchanged fingerprints (except pan_tilt).
+## 2026-10-31 12:10 UTC — session dafdd49d (fork): pan_tilt audit F11-F18 (in progress: review next)
+- F11 tilt pivot = 4 x 6 shoulder screw, M3 heat-set insert in the knuckle, no threadlocker; F13 yoke wall +1 mm;
+  F14 **engine:** a teardrop tap hole (prints horizontal) now gets the catalog `self_tap_pilot_horizontal` (Bambu table
+  delta, test) — this changes the geometry of every project with teardrop tap holes (servo_link feet, robot_arm
+  yoke_r/l, tvc ring_low/gimbal_outer): their fingerprints moved (reviews were already stale for servo_link and
+  robot_arm; **tvc_drone review is now stale too** and tvc_drone `kerf check` currently FAILS mass 814 / 790 g +
+  twr 2.0 — that mass rise comes from ENG-6's perimeter-aware mass, not from the pilots).
+- F15 base_fea with a 30 N knock at the camera (+ moment on the tab contact), yoke_pan_stall crash case; F18
+  `static_torque` takes `gravity: [x, y, z]` (test) -> pan_tilt `torque_pan` (head on its side); F17 BOM; F16
+  justified (ENG-12). AUDIT.md rows marked. Off-head electrics `render: false`.
+- Note for the ENG-5/6 owner: tests/test_docs.py fails (`single_shear`, `walls` not in ARCHITECTURE.md).

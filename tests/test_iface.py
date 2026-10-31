@@ -305,3 +305,15 @@ def test_servo_window_lead_in(top_through):
                               top_through=top_through, lead_in=0)
     assert plain.volume < cut.volume
     assert iface.servo_lead_in("servos.MG996R", "clearance", 8, 0.5) == 0.0
+
+
+def test_horizontal_tap_pilot_is_larger():
+    """A teardrop tap hole prints horizontal: it gets the catalog horizontal pilot (Bambu table: M2 2.10 vs 1.84)."""
+    sp = iface.screw_spec("M2")
+    assert sp["tap_h"] == pytest.approx(2.10) and sp["tap"] == pytest.approx(1.84)
+    v, *_ = iface.hole("M2", "tap", 8)
+    h, *_ = iface.hole("M2", "tap", 8, teardrop=90)
+    assert v.bounding_box().size.X == pytest.approx(1.84, abs=0.01)
+    assert h.bounding_box().size.X == pytest.approx(2.10, abs=0.01)   # roof points +Y, so X is the round width
+    m3 = iface.screw_spec("M3", "PETG")                                  # material pilot + the table's difference
+    assert m3["tap_h"] == pytest.approx(2.6 + 2.9 - 2.72)

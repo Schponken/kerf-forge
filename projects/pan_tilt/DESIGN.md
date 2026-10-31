@@ -15,8 +15,8 @@ project.yaml params where a param exists.
 | R3 | Camera | Raspberry Pi Camera Module 3 (standard lens), 4 x M2 on 21 x 12.5 | `cam_mount` fastener group |
 | R4 | Mount | female 1/4-20 UNC tripod thread in the base | captive ASME 1/4-20 hex nut (catalog `tripod_nut_1_4_20`) |
 | R5 | Actuators | 2 x SG90 (catalog `servos.SG90`, 1.8 kg·cm stall @ 4.8 V) | purchased items |
-| R6 | Holding torque | gravity torque on tilt ≤ 50% of stall (ENGINEERING.md §3) | `torque_tilt` |
-| R7 | Strength | stall-torque reactions and handling loads with SF 3 across layers | `bracket_fea`, `yoke_fea`, `base_fea`, `bracket_arm` |
+| R6 | Holding torque | gravity torque on tilt, and on pan with the head tipped on its side, ≤ 50% of stall (ENGINEERING.md §3) | `torque_tilt`, `torque_pan` (gravity [0, 1, 0]) |
+| R7 | Strength | stall-torque reactions and handling loads with SF 3 across layers | `bracket_fea`, `yoke_fea`, `yoke_pan_stall`, `base_fea`, `bracket_arm` |
 | R8 | Stiffness | ≤ 0.3 mm deflection of the yoke/bracket at full stall (image stability) | FEA `max_disp_mm` |
 | R9 | Mass | ≤ 90 g complete (small tripods, desk clamps) | `mass` |
 | R10 | Moving clearance | ≥ 0.5 mm printed-to-printed over the whole range, camera ≥ 1 mm from the yoke | `cam_clear`, `cam_clear_base`, sweeps |
@@ -57,7 +57,7 @@ position), so tilting keeps the image centre in place and the tilt servo carries
 | Disc horn 21T, 4 x M2 | `servo_horns.aluminum_micro_21T` | 2 | estimate geometry (A3); pan: 4 x M2 x 8 from the yoke top; tilt: 4 x M2 x 6 from the bracket inside |
 | Camera Module 3 | `boards.rpi_camera_module_3` | 1 | 4 g; 4 x M2 x 5 into standoff pilots |
 | 1/4-20 hex nut | `tripod_nut_1_4_20` | 1 | ASME B18.2.2, 11.13 AF / 5.74 max; pocket +0.2 on AF |
-| M3 x 12 SHCS + washer | screws.M3 | 1 | tilt pivot (length picked by kerf/pins.py: span 12.6 mm = 5 wall + 0.9 gap + 6.7 thread; 6.1 mm of thread in the knuckle ≥ 1.5 d) |
+| 4 x 6 mm shoulder screw, M3 thread + M3 heat-set insert | `motion.shoulder_4_m3`, fdm_holes.M3 insert | 1 + 1 | tilt pivot (audit F11). The ground 4 mm shoulder turns in the yoke's -Y wall (free fit); the M3 thread goes into a CNC Kitchen M3 insert in the bracket knuckle and the shoulder end bottoms on it, so the screw is locked by its own seat, never clamps the wall (shoulder 6 = 5 wall + 0.9 gap + 0.1 play; picked by kerf/pins.py) and needs no threadlocker (anaerobic lockers crack PETG, Henkel 243 TDS). |
 | M2 screws | screws.M2 | 2+2+4+4+4 | lengths picked by the fastener check (out/bom.md): servo tabs M2 x 6, horns M2 x 8 / x 6, camera M2 x 5 |
 
 Mass: 59.3 g complete (report.json), printed parts base 14.2 g, yoke 12.8 g, bracket 6.0 g (40% infill estimate).
@@ -83,10 +83,10 @@ judged against PETG's Z strength (39 MPa) with SF 3 (ENGINEERING.md §3, across 
 |---|---|---|---|---|
 | base | pan_servo tabs | `iface.servo_mount(kind="tap", top_through=True)`, servo slides in from -Y, tab tops under the deck | `base_pan` | 2 x M2 x 6 from below into deck pilots |
 | yoke plate | pan_horn face | `iface.horn_mount` (clearance + centre-screw access) | `yoke_pan` | 4 x M2 x 8 |
-| yoke +Y wall | tilt_servo tabs | `iface.servo_mount(kind="tap", top_through=True)`, `tab_screws_from: bottom` | `yoke_tilt` | 2 x M2 x 6 from outside |
+| yoke +Y wall | tilt_servo tabs | `iface.servo_mount(kind="tap", top_through=True, teardrop=print_up_deg)` (horizontal pilots, F14), `tab_screws_from: bottom`; wall top 5 mm above the upper pilot (F13) | `yoke_tilt` | 2 x M2 x 6 from outside |
 | bracket +Y arm | tilt_horn face | `iface.horn_mount` | `bracket_tilt` | 4 x M2 x 6 |
-| bracket -Y knuckle | yoke -Y wall | `iface.pin_hole("M3")`: `tap` in the knuckle, `free` + teardrop in the wall | `tilt_pivot` (pin) | M3 x 12 SHCS + washer |
-| bracket standoffs | camera | `iface.bolt_pattern(kind="tap")` on the catalog hole list | `cam_mount` | 4 x M2 x 5 |
+| bracket -Y knuckle | yoke -Y wall | `iface.pin_hole("motion.shoulder_4_m3")`: `heatset` (+ teardrop) in the knuckle, `free` + teardrop in the wall | `tilt_pivot` (pin) | 4 x 6 shoulder screw, M3 insert |
+| bracket standoffs | camera | `iface.bolt_pattern(kind="tap", teardrop=print_up_deg)` on the catalog hole list: horizontal pilots get the horizontal pilot size (catalog `self_tap_pilot_horizontal`, audit F14); standoffs r 2.8, trimmed where they would enter the camera rear-parts zone | `cam_mount` | 4 x M2 x 5 |
 | base | tripod | hex pocket on a 1.5 mm floor + 6.9 mm clearance hole | — | the tripod's own 1/4-20 screw |
 
 ## 6. Joint tree
@@ -97,16 +97,17 @@ view boxes contain the 66 x 41° view cone from the 5.75 mm lens out to 30 mm).
 Coupled poses swept: all four pan/tilt corners (`corners` sweep).
 
 ## 7. Requirements in project.yaml
-`torque_tilt` (static_torque, 50% stall), `mass` (≤ 90 g), `cam_clear` (bracket-yoke ≥ 0.8 mm over tilt; measured 0.9 = the pivot gap),
+`torque_tilt` (static_torque, 50% stall), `torque_pan` (static_torque with gravity across the pan axis: the head tipped on its side), `yoke_pan_stall` (FEA), `mass` (≤ 90 g), `cam_clear` (bracket-yoke ≥ 0.8 mm over tilt; measured 0.9 = the pivot gap),
 `cam_clear_base` (camera-yoke ≥ 1 mm), `bracket_fea`, `yoke_fea`, `base_fea` (SF 3, Z strength), `bracket_arm`
 (cantilever sizing check), `head_cg` (turning head CG ≤ 20 mm from the pan axis).
 
 FEA load cases (all SF 3 on PETG Z strength 39 MPa → allowable 13 MPa):
 | Check | Fixed | Load | Result |
 |---|---|---|---|
-| bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 2.2 MPa p99.9, 0.05 mm |
-| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the pivot bore | 2.6 MPa, 0.2 mm (limit 0.3) |
-| base_fea | underside on the tripod plate | 176.5 N·mm pan stall reaction + 10 N sideways at the tab screws | 1.1 MPa, 0.006 mm |
+| bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 1.99 MPa p99.9 (peak 3.6), 0.04 mm |
+| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the 4 mm shoulder bore (+ the engine's single-shear lever moment, 32 N·mm) | 2.44 MPa (peak 4.0), 0.22 mm (limit 0.3) |
+| yoke_pan_stall (crash case) | tilt tab screws + pivot bore (head blocked) | 176.5 N·mm pan stall torque at the pan-horn screws | 0.86 MPa, 0.03 mm |
+| base_fea | underside on the tripod plate | 176.5 N·mm pan stall at the tab screws; a 30 N sideways knock **at the camera** (IEC 62368-1 external-force level, UL tech brief; 100 N is for hand-held equipment) = 30 N at the tab screws + 30 N × 42.0 mm lever (deck to tilt axis) as a moment on the tab-top contact under the deck | 6.08 MPa p99.9 (peak 9.1 at a pilot), 0.12 mm (limit 0.2) |
 | bracket_arm | section 5.5 mm ahead of the tilt axis | 13 N at the camera seat (stall torque / 13.5 mm), kt 1.5 | 0.2 MPa |
 The yoke first failed its stiffness limit (0.56 mm, the 4 mm plate twisting under the tilt-servo reaction); the plate
 went to 6 mm and widened to ±15 mm outside the camera's view: 0.23 mm.
@@ -132,8 +133,10 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
    slid onto a spline already in place.)
 7. Drive the tilt horn's centre screw with a 1.5 mm key through the -Y wall's pivot hole and the 2.4 mm hole in the
    knuckle floor.
-8. M3 x 12 + washer through the -Y wall into the knuckle with medium threadlocker; snug, then back off 1/8 turn so
-   the head does not clamp the wall (kerf pin warning). The 0.9 mm gap between knuckle and wall is the axial play.
+8. Shoulder screw (4 x 6, M3 thread) through the -Y wall into the knuckle's heat-set insert (press the insert in
+   at the bench before step 4); tighten until the shoulder end bottoms on the insert. The shoulder is 0.1 mm longer
+   than wall + gap, so the head never clamps the wall; the 0.9 mm knuckle-to-wall gap is the axial play. No
+   threadlocker (anaerobic lockers stress-crack PETG).
 9. Camera: 4 x M2 x 5 into the standoffs, FPC connector at the bottom. Run the FPC down through the notch in the
    front edge of the yoke plate (outside the pan horn) and leave a ≥ 60 mm slack loop below it for ±90° pan before it
    goes to the Pi (use a ≥ 300 mm FPC).

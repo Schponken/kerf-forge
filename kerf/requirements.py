@@ -90,9 +90,15 @@ def clearance_min(proj, asm, a, b, min_mm, joints=None, samples=9):
 
 @check("static_torque")
 def static_torque(proj, asm, joint, actuator=None, stall_kgcm=None, max_fraction=0.5, payload_g=0.0,
-                  payload_at=None, poses=None):
+                  payload_at=None, poses=None, gravity=None):
     """Worst gravity torque on a revolute joint from everything downstream of it plus a payload,
-    compared with the actuator's stall torque. max_fraction 0.5 = never ask more than half of stall."""
+    compared with the actuator's stall torque. max_fraction 0.5 = never ask more than half of stall.
+    gravity: direction of gravity in the assembly frame (default [0, 0, -1]); e.g. [0, 1, 0] for a device mounted
+    on its side (a tripod head tipped 90 deg), which loads a vertical pan axis that sees no torque upright."""
+    g = np.array(gravity if gravity is not None else (0.0, 0.0, -1.0), float)
+    if not np.linalg.norm(g):
+        raise ValueError("static_torque: gravity must be a non-zero direction")
+    g = g / np.linalg.norm(g)
     e = next((e for e in asm.edges if e.name == joint), None)
     if e is None or e.kind != "revolute":
         raise ValueError(f"static_torque: '{joint}' is not a revolute joint")
@@ -110,10 +116,10 @@ def static_torque(proj, asm, joint, actuator=None, stall_kgcm=None, max_fraction
         for i in downstream:
             m = item_mass_g(proj.items[i]) / 1000
             r = _com(proj.items[i]) - o
-            tau += float(np.dot(np.cross(r, np.array([0, 0, -m * G])), d))
+            tau += float(np.dot(np.cross(r, g * m * G), d))
         if payload_g and payload_at:
             p, _ = _joint_world(proj, payload_at)
-            tau += float(np.dot(np.cross(p - o, np.array([0, 0, -payload_g / 1000 * G])), d))
+            tau += float(np.dot(np.cross(p - o, g * payload_g / 1000 * G), d))
         if abs(tau) > abs(worst):
             worst, worst_pose = tau, pose
     A.solve(asm)

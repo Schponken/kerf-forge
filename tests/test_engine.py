@@ -147,3 +147,21 @@ def test_fastener_misalignment_detected(tmp_path):
     A.solve(asm)
     _, problems = A.fasteners(asm)
     assert len(problems) >= 2
+
+
+def test_static_torque_gravity_direction(tmp_path):
+    """gravity along the hinge axis (Y) gives no torque; along X it loads only at the poses where the arm is upright."""
+    y = HINGE_YAML.replace("payload_at: arm.tip}", "payload_at: arm.tip, gravity: [0, 1, 0]}")
+    d = _write_project(tmp_path / "hg", y, {"base": HINGE_BASE, "arm": HINGE_ARM})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    assert requirements.run_all(proj, asm)[0]["value"] == pytest.approx(0.0, abs=1e-6)
+    y = HINGE_YAML.replace("payload_at: arm.tip}", "payload_at: arm.tip, gravity: [-1, 0, 0]}")
+    d = _write_project(tmp_path / "hx", y, {"base": HINGE_BASE, "arm": HINGE_ARM})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    arm_mass = requirements.item_mass_g(proj.items["arm"])
+    # arm swung to +-90 points along -/+Z: gravity along X then has the full lever (payload 60, arm ~30)
+    assert requirements.run_all(proj, asm)[0]["value"] == pytest.approx((0.1 * 60 + arm_mass / 1000 * 30) / 10, rel=0.05)

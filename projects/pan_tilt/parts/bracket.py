@@ -1,6 +1,7 @@
 """Camera bracket: a U that turns about the tilt axis, carried on both sides.
 - +Y arm: bolts to the tilt servo's metal horn (4 x M2 from the inside) with an access hole for the horn's centre screw.
-- -Y arm: a knuckle with an M3 pilot; the M3 pivot screw comes through the yoke's -Y wall and threads in here.
+- -Y arm: a knuckle with an M3 heat-set insert; a 4 mm shoulder screw comes through the yoke's -Y wall (the shoulder
+  turns there) and its thread goes into the insert, the shoulder end bottoming on it (audit F11).
   Four 2.4 mm holes on the horn bolt circle let a 1.5 mm hex key reach the horn screws straight through this arm, and a
   2.4 mm hole through the knuckle floor lets the key reach the horn's centre screw (before the pivot screw goes in).
 - Front plate: four printed standoffs (3.5 mm, clearing the parts behind the camera PCB) with M2 pilots for the camera.
@@ -16,6 +17,7 @@ from kerf import iface, features
 
 HORN = "servo_horns.aluminum_micro_21T"
 CAM = "boards.rpi_camera_module_3"
+PIN = "motion.shoulder_4_m3"
 
 
 def _slab(x0, x1, z0, z1, y0, y1):
@@ -65,8 +67,12 @@ def build(ctx):
     seat = Location(Plane(origin=(p.cam_seat_x, 0, p.cam_zc), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))
     holes = [tuple(h) for h in cam["holes"]]
     for (bx, by) in holes:
-        so = _standoff(2.4, xf - 0.5, p.cam_seat_x, bx, p.cam_zc + by)
+        so = _standoff(2.8, xf - 0.5, p.cam_seat_x, bx, p.cam_zc + by)        # r 2.8: wall round the 2.1 mm horizontal pilot (audit F14)
         body += so & Pos(0, 0, zb) * Box(200, 200, 200, align=(Align.CENTER, Align.CENTER, Align.MIN))  # point clipped at the bed
+    # keep the parts behind the camera PCB clear (catalog rear_clearance zone + 0.3): trims the inner side of the
+    # r 2.8 standoffs only, never the plate (the zone ends at the plate face)
+    body -= seat * Pos(0, 0, -p.standoff + 0.01) * Box(16.6, 22.6, p.standoff + 1,
+                                                      align=(Align.CENTER, Align.CENTER, Align.MIN))
     body += _teardrop_y(4.4, -yo, p.knuckle_y, 0, 0)                          # pivot knuckle on the -Y arm
 
     # inside corners where the plate meets the arms (load path of the camera into the hubs)
@@ -81,15 +87,17 @@ def build(ctx):
     # hex-key access through the -Y arm, coaxial with each horn screw
     for (u, v) in iface.circle(4, p.horn_bc, 45.0):
         body -= _out_minus_y(-v, -yo, u) * features.teardrop_hole(2.4, yo - yi + 1, up_deg=0)
-    # M3 pivot thread (screw held here, turns in the yoke wall), entering from the -Y outer face
+    # pivot: M3 heat-set insert (shoulder screw's thread; its shoulder end bottoms on the insert, its 4 mm shoulder
+    # turns in the yoke wall), entering from the -Y outer face; teardrop roof (horizontal hole as printed)
     ploc = Location(Plane(origin=(0, -yo, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
-    body -= iface.pin_hole(ctx, "M3", ploc, group="tilt_pivot", depth=p.knuckle_len, fit="tap")
+    body -= iface.pin_hole(ctx, PIN, ploc, group="tilt_pivot", depth=p.knuckle_len, fit="heatset", teardrop=0)
     body -= _out_minus_y(0, -yo, 0) * features.teardrop_hole(2.4, p.knuckle_len + 1, up_deg=0)
     # 45-degree roof over the horn centre-screw access hole (horizontal hole as printed)
     body -= _out_minus_y(0, yi, 0) * features.teardrop_hole(2 * (iface.screw_spec("M2")["head_d"] / 2 + 0.75), p.arm_t + 1, up_deg=0)
 
     # camera: M2 pilots through standoff + plate
-    body -= iface.bolt_pattern(ctx, "cam_mount", "M2", holes, seat, kind="tap", depth=p.standoff + p.cam_plate_t)
+    body -= iface.bolt_pattern(ctx, "cam_mount", "M2", holes, seat, kind="tap", depth=p.standoff + p.cam_plate_t,
+                               teardrop=iface.print_up_deg(ctx, seat))   # horizontal pilots (audit F14)
 
     body = chamfer(body.edges().group_by(Axis.Z)[0], 0.4)                   # bed edges
 

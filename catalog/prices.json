@@ -191,6 +191,14 @@
     "source": "https://www.zoro.com/zoro-select-m2-040-socket-head-cap-screw-socket-zinc-plated-steel-6-mm-length-100-pk-sc22020060-14-100p1/i/G1464452/",
     "note": "Zoro Select 'M2-0.40 Socket Head Cap Screw, Socket, Zinc Plated Steel, 6 mm Length, 100 PK', class 12.9, DIN 912, $22.79/100. This is the cheapest M2 DIN 912 100-pack found; Newport M2x10 12.9 is $59.99/100."
   },
+  "screw:M2x6:socket": {
+    "buy": "https://www.zoro.com/zoro-select-m2-040-socket-head-cap-screw-socket-zinc-plated-steel-6-mm-length-100-pk-sc22020060-14-100p1/i/G1464452/",
+    "pack_qty": 100,
+    "pack_usd": 22.79,
+    "checked": "2026-10-30",
+    "source": "https://www.zoro.com/zoro-select-m2-040-socket-head-cap-screw-socket-zinc-plated-steel-6-mm-length-100-pk-sc22020060-14-100p1/i/G1464452/",
+    "note": "Same Zoro Select M2 x 6 DIN 912 100-pack as screw:M2:socket (that entry IS the 6 mm length), keyed by length so M2 x 6 rows are not flagged as a different pack."
+  },
   "screw:M2.5:socket": {
     "buy": "https://www.zoro.com/zoro-select-m25-045-cylindrical-socket-head-cap-screw-6-mm-l-100-pk-m070000250006/i/G1272765/",
     "pack_qty": 100,

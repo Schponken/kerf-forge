@@ -50,6 +50,11 @@ def screw_spec(size: str, material: str | None = None) -> dict:
             if key and key in f:
                 out["tap"] = float(f[key])
                 break
+    # horizontal printed pilot (hole axis in the layer plane, e.g. a teardrop): the same Bambu table gives a larger
+    # pilot there (stair-stepped round); applied as the table's horizontal - vertical difference to the pilot above
+    out["tap_h"] = out["tap"]
+    if f and "self_tap_pilot_horizontal" in f:
+        out["tap_h"] = out["tap"] + float(f["self_tap_pilot_horizontal"]) - float(f["self_tap_pilot"])
     if f:
         out["nut_pocket_af"] = _first(f, "nut_pocket_af", "nut_trap_af", "captive_nut_af", default=out["nut_af"] + 0.3)
         out["insert_hole"] = _first(f, "heatset_hole_d", "insert_hole_d", "heat_set_hole_d", default=0) or None
@@ -59,6 +64,7 @@ def screw_spec(size: str, material: str | None = None) -> dict:
     # the printer's measured fit (kerf calibrate / kerf feedback); 0 unless a profile is active for this part
     out["clearance"] += calibrate.offset("hole", size)
     out["tap"] += calibrate.offset("tap", size)
+    out["tap_h"] += calibrate.offset("tap", size)
     if out.get("insert_hole"):
         out["insert_hole"] += calibrate.offset("insert", size)
     return out
@@ -167,7 +173,8 @@ def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = 
         hd = min(depth - 0.8, 2.5 * sp["d"] + 1.0)
         if hd < sp["min_engage"] + 0.5:
             raise ValueError(f"{screw} pilot hole needs {sp['min_engage'] + 1.3:.1f} mm of material; only {depth:.1f} mm")
-        c = _cyl(sp["tap"] / 2, -hd, EXTRA) if teardrop is None else _teardrop(sp["tap"] / 2, -hd, EXTRA, teardrop)
+        # a teardrop = the hole prints horizontal: use the horizontal pilot (catalog self_tap_pilot_horizontal)
+        c = _cyl(sp["tap"] / 2, -hd, EXTRA) if teardrop is None else _teardrop(sp["tap_h"] / 2, -hd, EXTRA, teardrop)
         return c, 0.0, hd - 0.5, sp["min_engage"]
     if kind == "nut_trap":
         # clearance through the plate, hex pocket open to the far face, nut pushed in from the far side.

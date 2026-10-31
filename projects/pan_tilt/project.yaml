@@ -41,9 +41,9 @@ purchased:
   # the real parts on the front are the 10.8 mm lens housing only, modelled as the cam_lens keep-out below
   # electrics, off the head (strapped to the tripod column / on the desk): 5 V adapter -> barrel-jack screw terminals
   # -> both servo V+/GND; a Pi Zero 2 W (own USB supply) makes the servo pulses and runs the camera
-  psu: {catalog: electronics.supplies.meanwell_gst60a05, proxy: box}
-  jack: {catalog: electronics.connectors.dc_jack_5521_screw, proxy: box}
-  pi: {catalog: boards.rpi_zero_2w, proxy: board}
+  psu: {catalog: electronics.supplies.meanwell_gst60a05, render: false, proxy: box}
+  jack: {catalog: electronics.connectors.dc_jack_5521_screw, render: false, proxy: box}
+  pi: {catalog: boards.rpi_zero_2w, render: false, proxy: board}
   camera: {catalog: boards.rpi_camera_module_3, proxy: board, groups: {holes: cam_mount}, component_height: 0}
 keepouts:
   cam_lens: {proxy: box, size: [10.8, 10.8, 6.98], owner: camera,
@@ -55,8 +55,8 @@ keepouts:
   cam_view: {proxy: box, size: [21.6, 14.8, 12], owner: camera, note: "view cone 0-12 mm"}
   cam_view_far: {proxy: box, size: [44.8, 28.2, 18], owner: camera, note: "view cone 12-30 mm"}
 bom_extra:
-  - {type: hardware, item: 1/4-20 UNC hex nut (ASME B18.2.2, 7/16 in AF), qty: 1, spec: "catalog tripod_nut_1_4_20; captive in the base, pulled down onto the 1.5 mm floor by the tripod screw"}
-  - {type: fastener, item: M3 flat washer (ISO 7089), qty: 1, spec: "under the head of the M3 tilt-pivot screw (screw length in the pivot row); medium threadlocker, back off 1/8 turn"}
+  - {type: hardware, item: "1/4-20 UNC hex nut (ASME B18.2.2, 7/16 in AF)", qty: 1, spec: "catalog tripod_nut_1_4_20; captive in the base, pulled down onto the 1.5 mm floor by the tripod screw"}
+  - {type: fastener, item: "M2 horn centre screw", qty: 2, spec: "one per horn, holds it on the servo spline; use the screw that comes with the horn (or the SG90 accessory bag); it is key-checked when the horn goes on"}
   - {type: hardware, item: Raspberry Pi camera FPC cable >= 300 mm (15-pin; 22-pin to 15-pin on Pi 5/Zero), qty: 1, spec: "through the yoke's front notch, then a >= 60 mm slack loop for pan and tilt"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 2, spec: "tilt servo lead to the yoke ledge tie slots; leads to the tripod column"}
   - {type: electronics, item: 470-1000 uF 10 V electrolytic capacitor, qty: 1, spec: "across the jack's + / - screw terminals (servo brownout buffer, INDEX lesson)"}
@@ -95,10 +95,10 @@ wiring:      # ends = item centres; tie points move with their item; cut lengths
   - {id: psu_cord, from: psu, to: jack, v: 5.0, gauge: 24, color: black/white, length_mm: 1000, supplied: psu,
      note: "the adapter's own 1 m DC cord with its 5.5 x 2.1 plug (checked as 24 AWG, the thinnest plausible)"}
   - {id: pan_pwr, from: jack, to: pan_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
-     route: [{item: base, at: [14, -4, 14]}, {item: base, at: [14, -20, 14]}],
+     route: [{item: base, at: [14, -20, 14]}, {item: base, at: [14, -4, 14]}],
      note: "the SG90's own lead (it leaves the servo's output end) out of the base's open -Y side, plus a 300 mm servo extension; red/brown to the jack terminals"}
   - {id: pan_sig, from: pi, to: pan_servo, kind: signal, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
-     route: [{item: base, at: [14, -4, 14]}, {item: base, at: [14, -20, 14]}],
+     route: [{item: base, at: [14, -20, 14]}, {item: base, at: [14, -4, 14]}],
      note: "Pi GPIO18 (PWM0) to the pan servo signal, Pi GND to the supply minus (common ground)"}
   - {id: tilt_pwr, from: jack, to: tilt_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
      route: [{item: yoke, at: [0, 47.5, 7]}, {item: yoke, at: [0, 39.5, 7]}],
@@ -110,6 +110,9 @@ requirements:
   - {id: power, check: power_budget, why: "adapter, jack and every wire within rating with both servos stalled"}
   - {id: torque_tilt, check: static_torque, joint: tilt, actuator: tilt_servo, payload_g: 10, payload_at: bracket.cam_seat, max_fraction: 0.5,
      why: "the tilt servo holds camera + bracket + 10 g of camera-cable drag anywhere in its range at <= half its stall torque"}
+  - {id: torque_pan, check: static_torque, joint: pan, actuator: pan_servo, payload_g: 10, payload_at: bracket.cam_seat, max_fraction: 0.5,
+     gravity: [0, 1, 0], poses: [{pan: -90, tilt: -35}, {pan: -90, tilt: 65}, {pan: 0, tilt: -35}, {pan: 0, tilt: 65}, {pan: 90, tilt: -35}, {pan: 90, tilt: 65}, {pan: 45, tilt: 0}, {pan: -45, tilt: 0}],
+     why: "tripod head tipped 90 deg (camera on its side, a common portrait / overhead set-up): gravity then lies across the pan axis, so the pan servo holds the whole head's offset mass + 10 g of cable drag; <= half its stall torque in every pan/tilt corner"}
   - {id: mass, check: mass_max, max_g: 90, include: [base, yoke, bracket, pan_servo, pan_horn, tilt_servo, tilt_horn, camera],
      why: "light head for a small tripod or a desk clamp (the adapter, jack and Pi are off the head)"}
   - {id: cam_clear, check: clearance_min, a: bracket, b: yoke, min_mm: 0.8, joints: [tilt], samples: 19,
@@ -136,21 +139,43 @@ requirements:
     fixed: {sites: yoke_pan, radius: 2.0}
     loads:
       - {sites: yoke_tilt, radius: 2.0, torque_nmm: servo_stall_nmm, axis: {at: [0, wall_out, tilt_h], dir: [0, 1, 0]}}
-      - {cylinder: {at: [0, pin_wall_in, tilt_h], dir: [0, -1, 0], r: 1.68, tol: 0.3, span: [0, wall_t]}, bearing_n: [0, 0, -5.0]}
+      - {cylinder: {at: [0, pin_wall_in, tilt_h], dir: [0, -1, 0], r: 2.175, tol: 0.3, span: [0, wall_t]}, bearing_n: [0, 0, -5.0]}   # 4 mm shoulder bore (4 + 0.35)
   - id: base_fea
     check: fea_static
     part: base
-    why: "the pan servo's stall-torque reaction at its two tab screws, plus a 10 N sideways knock on the head carried into the deck"
+    why: >-
+      the pan servo's stall-torque reaction at its two tab screws, plus a 30 N sideways knock AT THE CAMERA (the IEC
+      62368-1 external-force levels are 10 / 30 / 100 / 250 N, UL tech brief https://japan.ul.com/wp-content/uploads/sites/27/2014/06/1_techbrief_safeguardrobustness.pdf;
+      100 N is for hand-held equipment, this head sits on a tripod), carried down the servo into the deck as 30 N plus
+      its moment over the lever from the deck to the tilt axis
     direction: z
     sf: 3.0
     max_disp_mm: 0.2
     fixed: {box: [[-100, -100, -0.01], [100, 100, 0.01]]}                               # bottom face on the tripod plate
     loads:
       - {sites: base_pan, radius: 2.0, torque_nmm: servo_stall_nmm, axis: {at: [pan_x, 0, 0], dir: [0, 0, 1]}}
-      - {sites: base_pan, radius: 2.0, force_n: [0, 10.0, 0]}
+      - {sites: base_pan, radius: 2.0, force_n: [0, 30.0, 0]}
+      # the knock's moment rolls the servo about its long axis: the tab tops bear on the deck underside (both tab
+      # footprints, outside the window), so it goes in there, not at the two screw rings
+      - {box: [["-servo_span / 2 - 0.1", "-servo_W / 2", "tab_z + servo_tab_t - 0.01"], ["servo_span / 2 + 0.1", "servo_W / 2", "tab_z + servo_tab_t + 0.01"]],
+         torque_nmm: "30.0 * (horn_face_z + tilt_h - tab_z - servo_tab_t)",
+         axis: {at: [0, 0, "tab_z + servo_tab_t"], dir: [-1, 0, 0]}}                       # +Y force above the deck
+  - id: yoke_pan_stall
+    check: fea_static
+    part: yoke
+    case: crash
+    why: "the head is blocked (hand, obstacle, cable snag) while the pan servo pushes at full stall torque: the torque enters at the pan-horn screws and is held at the tilt servo tabs and the pivot wall"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 0.3
+    fixed: {any: [{sites: yoke_tilt, radius: 2.0},
+                  {cylinder: {at: [0, pin_wall_in, tilt_h], dir: [0, -1, 0], r: 2.175, tol: 0.3, span: [0, wall_t]}}]}
+    loads:
+      - {sites: yoke_pan, radius: 2.0, torque_nmm: servo_stall_nmm, axis: {at: [0, 0, 0], dir: [0, 0, 1]}}
   - id: bracket_arm
     check: cantilever_stress
     part: bracket
+    why: "hand check of the bracket arms just ahead of the hubs (the section the FEA's peak sits near): the tilt servo's stall torque reacted as a force at the camera seat, SF 3 across layers with a 1.5 notch factor"
     section: {name: arms ahead of the hubs, at: [5.5, 0, 0], normal: [1, 0, 0]}
     loads: [{at: cam_seat, force_n: [0, 0, "-servo_stall_nmm / cam_seat_x"]}]
     load_case: stall torque reacted at the camera seat

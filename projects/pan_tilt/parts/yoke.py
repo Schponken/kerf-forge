@@ -1,7 +1,8 @@
 """Yoke: the part the pan servo turns. A plate screwed to the pan horn (4 x M2) with two side walls:
 - +Y wall: the tilt SG90 bolts to its OUTER face from outside (top_through: only the case top passes the window, the
   tab tops press on the wall, two M2 screws from outside into pilot holes). Output points -Y, toward the camera.
-- -Y wall: the M3 pivot hole on the tilt axis (free fit); the screw threads into the bracket knuckle.
+- -Y wall: the pivot hole on the tilt axis: a 4 mm shoulder screw's shoulder turns in it; its M3 thread goes into an
+  insert in the bracket knuckle.
 A ledge under the tilt servo stiffens the +Y wall and carries a cable-tie point for the servo lead.
 Origin: pan axis on the plate underside (the pan-horn face). Printed on the plate, as assembled.
 """
@@ -33,7 +34,7 @@ def build(ctx):
     ctx.notes += [f"plate corner fillet skipped: {b}" for b in bad]
 
     # +Y wall (tilt servo)
-    wall = _block(-wall_hw, wall_hw, p.wall_in, p.wall_out, 0, hole_top + 4.0)
+    wall = _block(-wall_hw, wall_hw, p.wall_in, p.wall_out, 0, hole_top + 5.0)   # 1.5 d + wall above the pilot (audit F13)
     wall = fillet(wall.edges().filter_by(Axis.Y).group_by(Axis.Z)[-1], 3.0)
     body += wall
     # -Y wall (pivot), round top around the pivot
@@ -58,14 +59,15 @@ def build(ctx):
 
     # tilt servo from outside: window + 2 pilot holes in the +Y wall
     loc = Location(Plane(origin=(0, p.wall_out, p.tilt_body_z), x_dir=(0, 0, 1), z_dir=(0, -1, 0)))
-    body -= iface.servo_mount(ctx, SERVO, loc, group="yoke_tilt", plate_t=p.wall_t, kind="tap", top_through=True)
+    body -= iface.servo_mount(ctx, SERVO, loc, group="yoke_tilt", plate_t=p.wall_t, kind="tap", top_through=True,
+                              teardrop=iface.print_up_deg(ctx, loc))     # pilots print horizontal: horizontal size + roof
     # relief for the SG90's round gear boss (~14 mm, catalog note) where the case top sits just inside the window
     case_top = p.wall_out - (p.servo_top - p.servo_tab_t)
     body -= Pos(0, p.wall_in - 1.0, p.tilt_h) * Rot(-90, 0, 0) * Cylinder(7.0, case_top + 0.3 - p.wall_in + 1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
-    # tilt pivot: M3 screw, free fit in this wall (head outside); horizontal hole -> teardrop pointing up (+Z)
+    # tilt pivot: the 4 mm shoulder of a shoulder screw turns in this wall (head outside); teardrop roof up (+Z)
     ploc = Location(Plane(origin=(0, p.pin_wall_out, p.tilt_h), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
-    body -= iface.pin_hole(ctx, "M3", ploc, group="tilt_pivot", depth=p.wall_t, fit="free", teardrop=90)
+    body -= iface.pin_hole(ctx, "motion.shoulder_4_m3", ploc, group="tilt_pivot", depth=p.wall_t, fit="free", teardrop=90)
 
     # FPC notch in the plate's front edge, outside the pan horn (r 10): the camera ribbon drops through it to its loop
     body -= Pos(12.0, 0, -1) * Box(3.0, 18.0, t + 2)

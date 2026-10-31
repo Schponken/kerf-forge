@@ -102,6 +102,7 @@
   "M2": {
    "clearance_hole": 2.5,
    "self_tap_pilot": 1.84,
+   "self_tap_pilot_horizontal": 2.10,
    "nut_pocket_af": 4.2,
    "heatset_hole_d": 3.2,
    "heatset_length": 3.0,
@@ -114,6 +115,7 @@
   "M2.5": {
    "clearance_hole": 3.0,
    "self_tap_pilot": 2.3,
+   "self_tap_pilot_horizontal": 2.5,
    "nut_pocket_af": 5.2,
    "heatset_hole_d": 4.0,
    "heatset_length": 4.0,
@@ -126,6 +128,7 @@
   "M3": {
    "clearance_hole": 3.5,
    "self_tap_pilot": 2.72,
+   "self_tap_pilot_horizontal": 2.9,
    "nut_pocket_af": 5.7,
    "heatset_hole_d": 4.0,
    "heatset_length": 5.7,
@@ -139,6 +142,7 @@
   "M4": {
    "clearance_hole": 4.6,
    "self_tap_pilot": 3.55,
+   "self_tap_pilot_horizontal": 3.75,
    "nut_pocket_af": 7.2,
    "heatset_hole_d": 5.6,
    "heatset_length": 8.1,
