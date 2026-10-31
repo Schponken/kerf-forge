@@ -762,3 +762,18 @@ pushed for it and what I know:
   perimeters vs top/bottom skin by face orientation (checks.shell_volume, test), plate 3MFs carry per-object
   infill + wall loops (Bambu/Orca Metadata/model_settings.config; not yet confirmed in Bambu Studio) and
   out/plates/PRINT_SETTINGS.md lists them (test). ENGINEERING.md s5 documents it.
+## 2026-10-31 10:45 UTC — session dafdd49d: E6 open stumbles fixed (#8, #19, #20), blind re-run next
+- #19 SG90 proxy: `gear_boss_d/h` + `aux_boss_*` (measured from the FreeCAD-library SG-90 STEP, CC-BY-SA) and the lead
+  exit as a keep-out (`cable_boss_*`, newscrewdriver.com: it leaves the OUTPUT end, place varies by batch) with
+  `cable_boss_flex` (loose wires: interference yes, hex-key reach no). `servo_mount` (drop-in) clears the lead zone and
+  refuses loudly when an end-tab hole would break into it (use top_through). Tests.
+- pan_tilt base reworked for it: the servo slides in from the open -Y side and hangs from a 5 mm deck by its tab tops
+  (screws from below through floor key holes); lead out of the open side (also settles audit F12). Re-review needed.
+- MG90S has the same lead rule (same source) but NOT added yet: it makes tvc_drone ring_low / gimbal_outer collide
+  with the leads (86 / 306 mm3). **tvc_drone owner:** add the MG90S envelope (copy SG90's cable_boss_* with tab_z
+  18.5 -> cable_boss_h 14.5) and lead slots, then re-review.
+- #8 stock SG90 arm horns `servo_horns.sg90_arm_1/2/4` (FreeCAD-library STEPs measured): horn proxy draws arms
+  (catalog `arms`), `iface.horn_holes` / `horn_mount(use=, start_deg=)`; test vs the CAD volume.
+- #20 `insert:` items: subtree children installed in an EARLIER order step stay put and block (servo slid in last onto
+  a mounted horn). Horn centre screws are now key-reach checked when the horn goes on (straight / ball-end / problem).
+  Tests. All six projects still pass `kerf check --quick` with unchanged fingerprints (except pan_tilt).

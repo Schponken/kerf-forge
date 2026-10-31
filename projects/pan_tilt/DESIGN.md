@@ -65,11 +65,12 @@ Mass: 59.3 g complete (report.json), printed parts base 14.2 g, yoke 12.8 g, bra
 ## 4. Printed parts
 | Part | Job | Material | print_rot | load_axis | Envelope |
 |---|---|---|---|---|---|
-| base | screws onto the tripod; holds the pan servo (pocket 0.5 mm per side); captive 1/4-20 nut; 4.7 mm lead slot | PETG, 40% | [0,0,0] (bottom on bed) | Z | 40.2 x 26.2 x 25.6 |
+| base | screws onto the tripod; holds the pan servo hung from a 5 mm deck by its tabs (slides in from the open -Y side, 0.5 mm per side); captive 1/4-20 nut | PETG, 40% | [0,0,0] (bottom on bed) | Z | 40.2 x 26.2 x 33.0 |
 | yoke | pan-horn plate (front notch for the camera FPC); +Y wall carries the tilt servo (mounted from outside); -Y wall carries the M3 pivot | PETG, 40% | [0,0,0] (plate on bed) | Z, X | 30 x 72.8 x 40.6 |
 | bracket | U that holds the camera; +Y arm on the tilt horn, -Y arm knuckle on the pivot | PETG, 40% | [0,0,0] (flat bottom on bed) | X, Z | 24.5 x 34 x 26 |
 
-Orientation notes: every part prints as assembled. The base pocket and lead slot open upward (no bridges). The yoke's
+Orientation notes: every part prints as assembled. The base deck legs over the servo cavity are 4.5 mm ledges
+off the end and back walls (short bridges; a little sag only lowers the tab seat). The yoke's
 horizontal holes are teardrops (pivot) or small (M2 pilots); its servo window top is a 12.8 mm bridge. The bracket's
 knuckle and camera standoffs are teardrop prisms pointing down (52° flanks) and the horizontal key/centre-screw holes
 have 45° roofs. kerf reports 3.5% "overhang" on the bracket: it is the exact-45° chamfer and teardrop faces plus the
@@ -80,7 +81,7 @@ judged against PETG's Z strength (39 MPa) with SF 3 (ENGINEERING.md §3, across 
 ## 5. Interfaces
 | Part A | Part B | Interface | Group | Fasteners |
 |---|---|---|---|---|
-| base | pan_servo tabs | `iface.servo_mount(kind="tap")`, body drops in from the top | `base_pan` | 2 x M2 x 6 into printed pilots |
+| base | pan_servo tabs | `iface.servo_mount(kind="tap", top_through=True)`, servo slides in from -Y, tab tops under the deck | `base_pan` | 2 x M2 x 6 from below into deck pilots |
 | yoke plate | pan_horn face | `iface.horn_mount` (clearance + centre-screw access) | `yoke_pan` | 4 x M2 x 8 |
 | yoke +Y wall | tilt_servo tabs | `iface.servo_mount(kind="tap", top_through=True)`, `tab_screws_from: bottom` | `yoke_tilt` | 2 x M2 x 6 from outside |
 | bracket +Y arm | tilt_horn face | `iface.horn_mount` | `bracket_tilt` | 4 x M2 x 6 |
@@ -114,9 +115,11 @@ Hand check, tripod nut floor: tightening a tripod screw by hand to ~300 N clamps
 tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 mm² → 5 MPa vs 39 MPa.
 
 ## 8. Assembly order
-1. **Base**: drop the 1/4-20 nut down the servo pocket into its hex pocket (flats across the narrow width).
-2. Thread the pan servo lead down the pocket and out of the slot in the -X end; lower the pan servo in, output end
-   toward +X; 2 x M2 x 6 through the tabs into the pilot holes (1.5 mm key from above).
+1. **Base**: slide the 1/4-20 nut in through the open -Y side and drop it into its floor pocket (flats across Y).
+2. Slide the pan servo in from the open -Y side, output end toward +X, its case top into the deck slot, tab tops up
+   against the deck; the lead (it leaves the servo's output end below the tabs) hangs out of the open side.
+   2 x M2 x 6 from below through the tabs into the deck pilots: the 1.5 mm key goes up through the two holes in the
+   floor.
 3. Centre both servos electrically (1500 µs) before fitting horns.
 4. **Bench**: screw the tilt horn to the bracket's +Y arm, 4 x M2 x 6 from the inside; the 1.5 mm key reaches them
    straight through the four access holes in the -Y arm. Screw the pan horn under the yoke plate, 4 x M2 x 8 from
@@ -147,7 +150,7 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
   GPIO19 hardware PWM, 50 Hz, 500-2500 µs for the full travel) with its GND tied to the supply minus, and reads the
   camera over a ≥ 300 mm FPC. The adapter, jack and Pi are modelled 150 mm below the head (strapped to the tripod
   column or on the desk); `mass` counts only the head.
-- Routes (route_check, worst pose): pan lead out of the base's -X slot, 190 mm routed (cut ≥ 219); tilt lead tied on
+- Routes (route_check, worst pose): pan lead out of the base's open -Y side, 190 mm routed (cut ≥ 219); tilt lead tied on
   the yoke ledge and then a free loop to the column, 248 mm routed at pan -90° (cut ≥ 286): a 300 mm extension on
   each servo covers both.
 
@@ -165,8 +168,11 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
 - Horn (A3): measure bolt circle, thread and hub height of the horns you buy; if they differ, the catalog entry and
   both horn mounts change.
 - SG90 tab hole and output offset were scaled from a drawing (catalog note) — print the base first and test-fit.
-- SG90 gear boss (~14 mm, catalog note): the yoke window has a 14 mm, 1.2 mm deep relief for it; if your servo's
-  boss is larger, the tilt servo will not sit flat.
+- SG90 gear boss (catalog gear_boss_d / aux_boss_*, measured from a CAD model): the yoke window has a 14 mm, 1.2 mm
+  deep relief for it; if your servo's boss is larger, the tilt servo will not sit flat.
+- SG90 lead exit (catalog cable_boss_*, keep-out envelope): the lead leaves the output end below the tabs at a
+  place that varies between batches, right under the output-end tab screw. So the pan servo hangs from the base deck
+  by its tab tops (screws from below) and the lead leaves through the open side: no wall or screw near it.
 - Camera rear-parts depth 3.2 mm is approximate: the standoffs give 3.5 mm.
 - Tripod screw protrusion ≤ 8 mm (A2).
 - Printed-pilot M2 threads wear: the servo tab screws are meant to go in a few times only.

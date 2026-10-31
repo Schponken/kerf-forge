@@ -215,3 +215,84 @@ def test_insertion_skips_subtree_items_installed_later(tmp_path):
     # the lip fitted after the peg: it is not there yet either
     res, problems = _insert_with_child(tmp_path, "  order: [base, peg, bar, lip]")
     assert problems == []
+
+
+@pytest.mark.parametrize("order,blocked", [(None, False), ("[peg, lip]", False), ("[lip, peg]", True)])
+def test_insert_onto_child_already_in_place(tmp_path, order, blocked):
+    """A child of the inserted item that is installed in an EARLIER step stays put and blocks (servo slid in last onto
+    a mounted horn); one in the same or a later step rides along / is not there yet."""
+    y = f"""
+name: Insert onto placed child
+params: {{}}
+parts:
+  base: {{file: parts/base.py}}
+  peg: {{file: parts/peg.py, insert: {{direction: [0, 0, -1], distance: 25}}}}
+  lip: {{file: parts/lip.py}}
+assembly:
+  root: base
+  joints:
+    - {{parent: base.seat, child: peg.foot}}
+    - {{parent: peg.foot, child: lip.origin}}
+{f"  order: {order}" if order else ""}
+"""
+    d = _write_project(tmp_path / f"child{order}".replace(" ", "").replace(",", "_"), y, {"base": BASE, "peg": PEG, "lip": LIP})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    _, problems = access.insertion_paths(asm)
+    assert bool(problems) == blocked
+    if blocked:
+        assert "peg hits lip" in problems[0]
+
+
+HOLDER = """
+from build123d import *
+from kerf import iface
+def build(ctx):
+    s = Box(60, 30, 6, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    s -= iface.servo_mount(ctx, "servos.SG90", Location((0, 0, 0)), group="t", plate_t=6, kind="tap", top_through=True)
+    ctx.rigid("seat", Location((0, 0, -2.4)))   # SG90 tab_t: tab tops against the plate underside
+    return ctx.finish(s)
+"""
+CAP = """
+from build123d import *
+from kerf import iface
+def build(ctx):
+    t = 3.0
+    s = Pos(0, 0, 0) * Box(24, 24, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    if ctx.p.hole:
+        s -= iface.horn_mount(ctx, "servo_horns.aluminum_micro_21T", Location((0, 0, t)), group="h", plate_t=t)
+    else:   # same screw holes, no centre access hole
+        s -= iface.bolt_pattern(ctx, "h", "M2", iface.horn_holes("servo_horns.aluminum_micro_21T"), Location((0, 0, t)), "clearance", t)
+    ctx.rigid("on_horn", Location((0, 0, 0)))
+    return ctx.finish(s)
+"""
+
+
+@pytest.mark.parametrize("hole,order,ok", [(1, None, True), (0, None, False), (0, "[holder, servo, horn, cap]", True)])
+def test_horn_centre_screw_reach(tmp_path, hole, order, ok):
+    y = f"""
+name: Horn screw
+params: {{hole: {hole}}}
+parts:
+  holder: {{file: parts/holder.py}}
+  cap: {{file: parts/cap.py}}
+purchased:
+  servo: {{catalog: servos.SG90, proxy: servo, groups: {{tabs: t}}, tab_screws_from: bottom}}
+  horn: {{catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {{holes: h}}}}
+assembly:
+  root: holder
+  joints:
+    - {{parent: holder.seat, child: servo.tabs}}
+    - {{parent: servo.output, child: horn.spline, name: j, range: [-90, 90]}}
+    - {{parent: horn.face, child: cap.on_horn}}
+{f"  order: {order}" if order else ""}
+"""
+    d = _write_project(tmp_path / f"h{hole}{bool(order)}", y, {"holder": HOLDER, "cap": CAP})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    res, problems, _ = access.hex_key_reach(asm)
+    centre = [r for r in res if r["group"] == "horn centre screw"]
+    assert len(centre) == 1 and centre[0]["screw"] == "M2"
+    assert (not any("horn centre screw" in p for p in problems)) == ok

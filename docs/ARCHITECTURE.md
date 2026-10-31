@@ -79,7 +79,9 @@ assembly:
     - {parent: base.bracket_seat, child: bracket.base}
     - {parent: servo.output, child: horn.spline, name: swing, range: [-90, 90], home: 0}
   order: [base, bracket, servo, horn, arm]   # optional build sequence (ids or [ids]); a screw is driven when the later of
-                                # its two parts goes on, so only parts installed by then can block its hex key
+                                # its two parts goes on, so only parts installed by then can block its hex key; an
+                                # `insert:` item's children installed EARLIER stay put and block it (servo in last
+                                # onto a mounted horn), same-step children ride along
   allow_overlap:                # only with a physical reason
     - {pair: [servo, horn], max_mm3: 60, why: horn spline engages the servo output shaft}  # horn proxies with
       # catalog spline_engage get a spline bore and sit that far down over the spline, so need no allowance
@@ -232,7 +234,7 @@ wiring:
   catalog mass), `note`, `color`, `tab_screws_from: bottom` (servo screws from behind the tabs, with
   `servo_mount(top_through=True)`), `tab_washers: true` (a flat washer under each tab screw head: catalog
   `washer_h` added to the grip), proxy-specific sizes (`length` rod, `size` box, `h` prop-disc thickness,
-  `diameter` prop disc, `hole_start_deg` horn holes, `component_height` board, `model`/`model_rot`/`model_pos`/
+  `diameter` prop disc, `hole_start_deg` / `use_holes` horn holes, `component_height` board, `model`/`model_rot`/`model_pos`/
   `models_dir`/`base` vendor STEP, `center`/`teeth`/`width` belt).
 - Keep-outs: as purchased, plus `owner` (the item the volume belongs to; never an interference with it).
 - Project level: `name`, `printer`, `supports`, `params` (`value`, `min`, `max`, `step`, `label`), `derived`, `layout`,
@@ -243,8 +245,8 @@ wiring:
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs
 | proxy | from catalog | joints | fastener sites (`groups:` key) |
 |---|---|---|---|
-| servo | servos.* | tabs, output (revolute), output_base | tabs: male screws through the tab holes |
-| horn | servo_horns.* | spline, face | holes: female threaded holes on the face |
+| servo | servos.* (catalog `gear_boss_*` output-gear housing; `cable_boss_*` lead exit, `cable_boss_flex`: loose wires = interference but not tool reach) | tabs, output (revolute), output_base | tabs: male screws through the tab holes |
+| horn | servo_horns.* (disc, or arm horn with catalog `arms`: stock SG90 1/2/4-arm) | spline, face | holes: female threaded holes on the face (arm horns: `use_holes: ends` (default, innermost + outermost per arm) or `all`; match `horn_mount(use=...)`); the centre screw is key-checked when the horn goes on |
 | bearing | bearings.* | face, top, spin (revolute) | – |
 | motor | drone motor entry | base, prop | mount: female threaded holes in the base |
 | prop_disc | drone prop entry or `diameter` | hub | – (keep-out, set `owner:`) |

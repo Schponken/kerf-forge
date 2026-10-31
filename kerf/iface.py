@@ -229,7 +229,8 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
 
     Default (top_through=False): the body drops through the window from the TOP and the tabs rest ON the plate.
       loc: on the face the tab undersides rest on, +Z toward the servo top; material below loc (z < 0).
-      Matches the servo proxy's 'tabs' joint directly.
+      Matches the servo proxy's 'tabs' joint directly. A catalog lead exit (cable_boss_*) below the tabs is cleared
+      where the plate reaches it (SG90: from 3 mm under the tabs on the output end; route the lead out from there).
     top_through=True: the servo goes in top-first from BEHIND; only the case top (above the tabs) passes the window and
       the tab tops press against the plate. Use this when the body has bumps low down (MG996R cable boss).
       loc: on the face the tab TOPS press against, +Z toward the servo top; material above loc (0 < z < plate_t).
@@ -257,6 +258,25 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
         g = lead_in + EXTRA
         cone = Pos(0, 0, -EXTRA) * extrude(Rectangle(wx + 2 * g, wy + 2 * g), amount=g, taper=45)
         pocket += cone if top_through else Rot(180, 0, 0) * cone
+    e = catalog.get(servo)
+    if not top_through and "cable_boss_protrusion" in e:
+        # the lead exit (catalog cable_boss_*, on one end face below the tabs): clear it with the window clearance
+        # wherever the plate reaches down that far, so the plate never traps the lead
+        bp, bh, bz, bw = (catalog.num(e, k) for k in ("cable_boss_protrusion", "cable_boss_h", "cable_boss_z0", "cable_boss_w"))
+        lo, hi = max(-d["tab_z"] + bz - clearance / 2, -plate_t - EXTRA), min(-d["tab_z"] + bz + bh + clearance / 2, 0.0)
+        if hi > lo:
+            sx = 1 if e.get("cable_boss_end", "output") == "output" else -1
+            ledge = -hi                                      # plate left between the tabs and the lead exit
+            mat = (getattr(ctx, "meta", None) or {}).get("spec", {}).get("material") if ctx is not None else None
+            hole_depth = -hole(d["screw"], kind, plate_t, material=mat)[0].bounding_box().min.Z
+            if any(sx * x > d["L"] / 2 for x, _ in d["holes"]) and hole_depth > ledge + 1e-6:
+                raise ValueError(
+                    f"servo_mount({servo}): the lead leaves the {'output' if sx > 0 else 'far'} end {ledge:.1f} mm under "
+                    f"the tabs (catalog cable_boss_*), but a {kind} {d['screw']} hole there is {hole_depth:.1f} mm deep and "
+                    f"would break into it. Use top_through=True (tabs against the plate's far face), a plate <= "
+                    f"{ledge:.1f} mm thick at that end, or kind='tap' with a hole no deeper than the ledge")
+            pocket += Pos(sx * (d["L"] / 2 + (bp + clearance / 2) / 2), 0, lo) * Box(
+                bp + clearance / 2 + 0.02, bw + clearance, hi - lo, align=(Align.CENTER, Align.CENTER, Align.MIN))
     cut = loc * pocket
     if not top_through:
         cut += bolt_pattern(ctx, group, d["screw"], d["holes"], loc, kind, plate_t, teardrop=teardrop)
@@ -306,27 +326,52 @@ def horn_dims(path: str) -> dict:
     e = catalog.get(path)
     total = _first(e, "hub_height", "hub_h", "total_height", default=0.0)
     engage = _first(e, "spline_engage", default=0.0)
+    arms = e.get("arms")          # arm horns (stock plastic SG90 horns): no disc, no bolt circle
+    reach = max(catalog.num(a, "tip_r") + catalog.num(a, "tip_w") / 2 for a in arms) if arms else 0.0
     return {
-        "od": _first(e, "outer_d", "od", "outer_diameter", "diameter"),
+        "od": 2 * reach if arms else _first(e, "outer_d", "od", "outer_diameter", "diameter"),
         "t": _first(e, "thickness", "disc_thickness", "plate_thickness"),
         "hub_total": total, "engage": engage, "spline_d": _first(e, "spline_d", default=0.0),
         "hub_h": total - engage,
         "hub_d": _first(e, "hub_d", "hub_diameter", default=0.0),
-        "bc": _first(e, "bolt_circle_d", "hole_circle_d", "bolt_circle_diameter", "pcd"),
-        "n": int(_first(e, "hole_count", "holes", "n_holes", "number_of_holes")),
+        "arms": arms, "hole_d": _first(e, "hole_d", default=0.0),
+        "bc": 0.0 if arms else _first(e, "bolt_circle_d", "hole_circle_d", "bolt_circle_diameter", "pcd"),
+        "n": sum(len(a["hole_r"]) for a in arms) if arms else int(_first(e, "hole_count", "holes", "n_holes", "number_of_holes")),
         "screw": str(e.get("hole_thread", e.get("thread", "M3"))).split("x")[0].split("-")[0].strip() or "M3",
         "center_screw": str(e.get("center_screw", "M3")).split("x")[0].split("-")[0].strip(),
     }
 
 
-def horn_mount(ctx, horn: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", start_deg: float = 45.0,
-               teardrop: float | None = None):
+def horn_holes(horn: str, start_deg: float | None = None, use: str = "ends", all_holes: bool = False):
+    """Screw-hole centres on a horn face (servo axis at the origin).
+    Disc horns: hole_count holes on the bolt circle, the first at start_deg (default 45).
+    Arm horns (catalog `arms`: [{deg, tip_r, tip_w, hole_r: [...]}]): every arm is turned by start_deg (default 0);
+    use='ends' (default) screws through the innermost and outermost hole of each arm, 'all' through every hole.
+    all_holes=True returns every hole regardless of `use` (the proxy cuts them all)."""
+    h = horn_dims(horn)
+    if not h["arms"]:
+        return circle(h["n"], h["bc"], 45.0 if start_deg is None else start_deg)
+    if use not in ("ends", "all"):
+        raise ValueError(f"horn_holes: use must be 'ends' or 'all', not {use!r}")
+    pts = []
+    for a in h["arms"]:
+        ang = math.radians(catalog.num(a, "deg") + (start_deg or 0.0))
+        rs = [float(r) for r in a["hole_r"]]
+        if not all_holes and use == "ends":
+            rs = sorted({min(rs), max(rs)})
+        pts += [(r * math.cos(ang), r * math.sin(ang)) for r in rs]
+    return pts
+
+
+def horn_mount(ctx, horn: str, loc: Location, group: str, plate_t: float, kind: str = "clearance",
+               start_deg: float | None = None, teardrop: float | None = None, use: str = "ends"):
     """Holes in a printed link that bolts flat onto a servo horn face, plus an access hole for the horn's centre screw.
     loc: on the link's OUTER face (the screw-head side, away from the horn), +Z away from the horn, origin on the
     servo axis. plate_t: link thickness at the hub. teardrop: for a link printed with the horn axis horizontal, the
-    direction (deg, in loc's XY plane) that is UP on the printer; every hole gets a 45-degree roof."""
+    direction (deg, in loc's XY plane) that is UP on the printer; every hole gets a 45-degree roof.
+    start_deg / use: which horn holes (see horn_holes); give the horn item the same `hole_start_deg` / `use_holes`."""
     h = horn_dims(horn)
-    pts = circle(h["n"], h["bc"], start_deg)
+    pts = horn_holes(horn, start_deg, use)
     cut = bolt_pattern(ctx, group, h["screw"], pts, loc, kind, plate_t, teardrop=teardrop)
     cs = screw_spec(h["center_screw"])
     r = cs["head_d"] / 2 + 0.75                                            # driver + head access to the centre screw

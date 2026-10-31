@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 
-from build123d import Align, Axis, Box, Cylinder, Location, Pos, Rot
+from build123d import Align, Axis, Box, Circle, Cylinder, Location, Pos, Rot, extrude, make_face, make_hull
 
 from . import catalog, iface
 from .ctx import Site
@@ -59,10 +59,21 @@ def servo(ctx, spec):
         tabs -= Pos(x, y, -1) * Cylinder(d["hole_d"] / 2, d["tab_t"] + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     s = body + tabs + shaft
     e = catalog.get(spec["catalog"])
+    if "gear_boss_d" in e:  # round output-gear housing on the case top, around the output axis (+ optional idler lobe)
+        gh = catalog.num(e, "gear_boss_h")
+        s += Pos(d["out_x"], 0, 0) * _cyl(catalog.num(e, "gear_boss_d") / 2, gh, z0=d["top"] - 0.01)
+        if "aux_boss_d" in e:  # smaller lobe toward the body centre (intermediate gear)
+            s += Pos(d["out_x"] - catalog.num(e, "aux_boss_offset"), 0, 0) * _cyl(catalog.num(e, "aux_boss_d") / 2, gh, z0=d["top"] - 0.01)
     if "cable_boss_protrusion" in e:  # cable strain-relief boss on an end face, near the bottom
         bp, bh, bz, bw = (catalog.num(e, k) for k in ("cable_boss_protrusion", "cable_boss_h", "cable_boss_z0", "cable_boss_w"))
         sx = 1 if e.get("cable_boss_end", "output") == "output" else -1
-        s += Pos(sx * (d["L"] / 2 + bp / 2 - 0.01), 0, -d["tab_z"] + bz) * Box(bp + 0.02, bw, bh, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        lead = Pos(sx * (d["L"] / 2 + bp / 2 - 0.01), 0, -d["tab_z"] + bz) * Box(bp + 0.02, bw, bh, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        s += lead
+        # cable_boss_flex: the envelope is loose wires (no moulded boss), so a hex key can push them aside: it still
+        # counts for interference, but not for tool reach (kerf/access.py drops kerf_flex solids)
+        flex = [lead] if e.get("cable_boss_flex") else []
+    else:
+        flex = []
     if _g(spec, "tabs"):
         from_bottom = spec.get("tab_screws_from", "top") == "bottom"
         # tab_washers: a flat washer under each head (big keyhole tab slots); it adds its thickness to the grip and
@@ -76,7 +87,9 @@ def servo(ctx, spec):
     rng = tuple(spec.get("range", (-90, 90)))
     ctx.revolute("output", Axis((d["out_x"], 0, top), (0, 0, 1)), range=rng)
     ctx.rigid("output_base", Location((d["out_x"], 0, d["top"])))
-    return ctx.finish(s, color="#30343a")
+    out = ctx.finish(s, color="#30343a")
+    out.kerf_flex = flex
+    return out
 
 
 @proxy("horn")
@@ -91,7 +104,17 @@ def horn(ctx, spec):
     hub_d = h["hub_d"] or h["od"] * 0.45
     z0 = -h["engage"]
     disc_z = z0 + max(hub_total - h["t"], 0.0)
-    s = _cyl(h["od"] / 2, h["t"], z0=disc_z)
+    if h["arms"]:   # arm horn: each arm is the hull of the hub circle and its round tip, turned by hole_start_deg
+        rot = spec.get("hole_start_deg") or 0.0
+        s = None
+        for a in h["arms"]:
+            ang = math.radians(catalog.num(a, "deg") + rot)
+            tr, tw = catalog.num(a, "tip_r"), catalog.num(a, "tip_w")
+            sk = make_hull(Circle(hub_d / 2).edges() + (Pos(tr * math.cos(ang), tr * math.sin(ang)) * Circle(tw / 2)).edges())
+            arm = Pos(0, 0, disc_z) * extrude(make_face(sk), h["t"])
+            s = arm if s is None else s + arm
+    else:
+        s = _cyl(h["od"] / 2, h["t"], z0=disc_z)
     if hub_total > h["t"]:
         s += _cyl(hub_d / 2, hub_total - h["t"] + 0.01, z0=z0)
     if h["engage"] > 0:
@@ -99,9 +122,11 @@ def horn(ctx, spec):
             raise ValueError(f"{spec['catalog']}: spline_engage needs spline_d (the bore the spline slides into)")
         s -= _cyl(h["spline_d"] / 2 + 0.05, h["engage"] + 0.01, z0=z0 - 0.01)
     top = disc_z + h["t"]
-    for (x, y) in iface.circle(h["n"], h["bc"], spec.get("hole_start_deg", 45.0)):
-        s -= Pos(x, y, disc_z - 1) * Cylinder(iface.screw_spec(h["screw"])["tap"] / 2, h["t"] + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        if _g(spec, "holes"):
+    used = iface.horn_holes(spec["catalog"], spec.get("hole_start_deg"), spec.get("use_holes", "ends"))
+    hole_d = h["hole_d"] or iface.screw_spec(h["screw"])["tap"]
+    for (x, y) in iface.horn_holes(spec["catalog"], spec.get("hole_start_deg"), all_holes=True):
+        s -= Pos(x, y, disc_z - 1) * Cylinder(hole_d / 2, h["t"] + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        if _g(spec, "holes") and any(abs(x - u) < 1e-6 and abs(y - v) < 1e-6 for u, v in used):
             ctx.site(Site(_g(spec, "holes"), "female", h["screw"], "threaded", Location((x, y, top)),
                           engage=h["t"] + 2.0, min_engage=h["t"] * 0.8))
     ctx.rigid("spline", Location((0, 0, 0)))

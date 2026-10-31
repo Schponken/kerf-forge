@@ -6,7 +6,8 @@
 (b) insertion paths: an item declared with `insert: {direction: [x, y, z], distance: mm}` (direction = the way it moves
     as it goes IN, in the item's own frame) is slid in from `distance` away and must not hit anything on the way
     (its own subtree moves with it; allow_overlap allowances still apply). With `assembly.order`, items installed
-    later than it (in its subtree or not) are not there yet: they neither move with it nor block it.
+    later than it (in its subtree or not) are not there yet: they neither move with it nor block it; subtree items
+    installed in an EARLIER step are already in place and block it (a servo slid in last onto a mounted horn).
 Assembly order: `assembly.key_access: [{group, before: [items], why}]` says those items are fitted after the group's
 screws are driven (e.g. the second motor of a coax pair covers the first motor's screw heads), so they don't block it.
 """
@@ -41,6 +42,31 @@ def _blocked(rod, shapes):
     return [i for i, s in shapes if geom.overlap(s, rod) > geom.OVERLAP_TOL_MM3]
 
 
+def _rigid_part(sh):
+    """The shape a tool can't push aside: without its `kerf_flex` solids (loose servo leads, item frame)."""
+    flex = getattr(sh, "kerf_flex", None)
+    if not flex:
+        return sh
+    out = sh
+    for f in flex:
+        out = out - f.moved(sh.location)
+    return out
+
+
+def _ball_end_dir(start, z, k, present, n_azimuth=12):
+    """A ball-end key direction (tilted k['ball_deg'] off the screw axis) that clears `present`, else None."""
+    a = math.radians(k["ball_deg"])
+    ex = np.cross(z, [1.0, 0, 0] if abs(z[0]) < 0.9 else [0, 1.0, 0])
+    ex /= np.linalg.norm(ex)
+    ey = np.cross(z, ex)
+    for t in np.linspace(0, 2 * math.pi, n_azimuth, endpoint=False):
+        d = math.cos(a) * z + math.sin(a) * (math.cos(t) * ex + math.sin(t) * ey)
+        # the ball end sits in the socket, so the tilted shank starts one key radius up the axis
+        if not _blocked(_rod(start + z * k["r"], d, k["r"], k["reach"]), present):
+            return d
+    return None
+
+
 def _install_steps(asm) -> dict:
     """assembly.order: the build sequence, a list of item ids (or lists of ids installed in the same step). Items not
     listed count as present from the start (step 0), the conservative choice."""
@@ -63,7 +89,7 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
         for fs in getattr(it.shape, "kerf_sites", []) if it.shape is not None else []:
             if fs.role == "female":
                 female_items.setdefault(fs.group, set()).add(i)
-    all_shapes = [(i, it.shape) for i, it in items.items() if it.shape is not None and it.role != "keepout"]
+    all_shapes = [(i, _rigid_part(it.shape)) for i, it in items.items() if it.shape is not None and it.role != "keepout"]
     # sub-assemblies a linear order can't express: {group, before: [items], why} = those items go on after this
     # group's screws are driven (e.g. each motor of a coax pair is screwed to its own plate before the plates join)
     later = {}
@@ -90,17 +116,7 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
             res = {"item": iid, "group": s.group, "screw": s.screw, "key_mm": k["s"], "at": np.round(top, 2).tolist(),
                    "straight": not hits, "blocked_by": hits}
             if hits:
-                a = math.radians(k["ball_deg"])
-                ex = np.cross(z, [1.0, 0, 0] if abs(z[0]) < 0.9 else [0, 1.0, 0])
-                ex /= np.linalg.norm(ex)
-                ey = np.cross(z, ex)
-                ok_dir = None
-                for t in np.linspace(0, 2 * math.pi, n_azimuth, endpoint=False):
-                    d = math.cos(a) * z + math.sin(a) * (math.cos(t) * ex + math.sin(t) * ey)
-                    # the ball end sits in the socket, so the tilted shank starts one key radius up the axis
-                    if not _blocked(_rod(start + z * k["r"], d, k["r"], k["reach"]), present):
-                        ok_dir = d
-                        break
+                ok_dir = _ball_end_dir(start, z, k, present, n_azimuth)
                 res["ball_end"] = ok_dir is not None
                 where = f"{s.screw} screw in {iid} (group '{s.group}') at {res['at']}"
                 if ok_dir is not None:
@@ -110,7 +126,44 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
                     problems.append(f"{where}: no {k['s']:g} mm hex key can reach the head (straight hits {hits}, "
                                     f"ball-end at {k['ball_deg']:g} deg also blocked)")
             results.append(res)
+    _horn_centre_screws(asm, items, all_shapes, step, results, problems, warnings)
     return results, problems, warnings
+
+
+def _horn_centre_screws(asm, items, all_shapes, step, results, problems, warnings):
+    """Every servo horn is held on its spline by a centre screw, driven when the horn goes on (assembly.order) through
+    whatever is already there (the link bolted to the horn on the bench: iface.horn_mount cuts its access hole). Checked
+    like any screw: the head sits on the horn face, a hex key of its size along the servo axis (else a ball-end key)
+    must reach it past everything installed by then except the horn and its servo."""
+    from .iface import horn_dims
+    for iid, it in items.items():
+        if it.shape is None or it.role == "keepout" or it.spec.get("proxy") != "horn":
+            continue
+        h = horn_dims(it.spec["catalog"])
+        cs = h["center_screw"]
+        top_z = -h["engage"] + max(h["hub_total"] or h["t"], h["t"])           # horn face, proxy frame
+        w = it.shape.location
+        o = geom.world_point(w, (0, 0, top_z))
+        z = geom.world_dir(w, (0, 0, 1))
+        k = key_spec(cs, "clearance")
+        start = o + z * (screw_spec(cs)["head_h"] + 0.05)
+        e = asm.by_child.get(iid)
+        servo = e.parent if e is not None else None                      # the screw threads into its spline
+        present = [(i, sh) for i, sh in all_shapes if i not in (iid, servo) and step.get(i, 0) <= step.get(iid, 0)]
+        hits = _blocked(_rod(start, z, k["r"], k["reach"]), present)
+        res = {"item": iid, "group": f"{iid} centre screw", "screw": cs, "key_mm": k["s"],
+               "at": np.round(start, 2).tolist(), "straight": not hits, "blocked_by": hits}
+        if hits:
+            ok = _ball_end_dir(start, z, k, present)
+            res["ball_end"] = ok is not None
+            where = f"{cs} horn centre screw of {iid} at {res['at']}"
+            if ok is not None:
+                warnings.append(f"{where}: a straight {k['s']:g} mm key hits {hits}; it needs a ball-end key")
+            else:
+                problems.append(f"{where}: no {k['s']:g} mm key can reach it along the servo axis (hits {hits}, "
+                                f"ball-end also blocked): cut an access hole (iface.horn_mount) or fit those parts "
+                                f"after the horn (assembly.order)")
+        results.append(res)
 
 
 def insertion_paths(asm, step_mm: float = 1.0) -> tuple[list, list]:
@@ -127,13 +180,15 @@ def insertion_paths(asm, step_mm: float = 1.0) -> tuple[list, list]:
         d_loc /= np.linalg.norm(d_loc)
         dist = float(spec["distance"])
         # with assembly.order, only what is already installed matters: subtree items fitted later (a horn and arm on a
-        # servo that goes in first) neither ride along nor block, and nothing installed later blocks
+        # servo that goes in first) neither ride along nor block, and nothing installed later blocks. Subtree items
+        # installed in the SAME step ride along (a bench sub-assembly); ones installed EARLIER are already in place,
+        # so they stay put and are obstacles (a servo slid in last onto a horn + link that are already mounted)
         now = step.get(iid, 0)
-        moving = sorted(m for m in asm.subtree(iid) if m == iid or step.get(m, 0) <= now)
+        moving = sorted(m for m in asm.subtree(iid) if m == iid or step.get(m, 0) == now)
         homes = {m: items[m].shape.location for m in moving}
         d = geom.world_dir(items[iid].shape.location, d_loc)
         others = [i for i, o in items.items() if o.shape is not None and o.role != "keepout" and i not in moving
-                  and i not in asm.subtree(iid) and step.get(i, 0) <= now]
+                  and step.get(i, 0) <= now]
         n = max(8, math.ceil(dist / step_mm))
         hits = []
         try:

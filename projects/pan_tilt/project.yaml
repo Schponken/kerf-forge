@@ -8,6 +8,7 @@ printer: Bambu Lab A2L
 supports: allowed
 params:
   servo_floor_z: {value: 10.0, min: 9, max: 14, step: 0.5, label: Pan servo bottom above the base underside (tripod screw tip room)}
+  deck_t: {value: 5.0, min: 4.5, max: 8, step: 0.5, label: Base deck over the pan servo tabs (M2 pilots from below)}
   floor_t: {value: 1.5, min: 1.2, max: 3, step: 0.1, label: Floor under the tripod nut}
   base_margin: {value: 4.0, min: 3, max: 8, step: 0.5, label: Base length beyond the servo tabs (each end)}
   base_side: {value: 7.0, min: 5, max: 12, step: 0.5, label: Base wall beside the servo body (each side)}
@@ -24,13 +25,15 @@ params:
 layout: parts/layout.py
 parts:
   base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: Z,
-         note: "Print upright, bottom face on the bed. Drop the 1/4-20 nut into the servo pocket before the servo."}
+         note: "Print upright, bottom face on the bed (the deck legs over the cavity are short bridges off the end and back walls). Slide the 1/4-20 nut into its floor pocket before the servo."}
   yoke: {file: parts/yoke.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: [Z, X],
          note: "Print on its plate (as assembled). Pivot hole and servo window are teardrop/bridged; no supports."}
   bracket: {file: parts/bracket.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: [X, Z],
             note: "Print standing on its flat bottom (as assembled at tilt 0)."}
 purchased:
-  pan_servo: {catalog: servos.SG90, proxy: servo, groups: {tabs: base_pan}, range: [-90, 90]}
+  pan_servo: {catalog: servos.SG90, proxy: servo, groups: {tabs: base_pan}, tab_screws_from: bottom, range: [-90, 90],
+              insert: {direction: [0, 1, 0], distance: 30},
+              assembly_note: "slide it in from the open -Y side, case top into the deck slot, lead out of the open side"}
   pan_horn: {catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {holes: yoke_pan}}
   tilt_servo: {catalog: servos.SG90, proxy: servo, groups: {tabs: yoke_tilt}, tab_screws_from: bottom, range: [-90, 90]}
   tilt_horn: {catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {holes: bracket_tilt}}
@@ -92,10 +95,10 @@ wiring:      # ends = item centres; tie points move with their item; cut lengths
   - {id: psu_cord, from: psu, to: jack, v: 5.0, gauge: 24, color: black/white, length_mm: 1000, supplied: psu,
      note: "the adapter's own 1 m DC cord with its 5.5 x 2.1 plug (checked as 24 AWG, the thinnest plausible)"}
   - {id: pan_pwr, from: jack, to: pan_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
-     route: [{item: base, at: [-27, 4.5, 14]}, {item: base, at: [-14, 4.5, 14]}],
-     note: "the SG90's own lead out of the base's -X slot plus a 300 mm servo extension; red/brown to the jack terminals"}
+     route: [{item: base, at: [14, -4, 14]}, {item: base, at: [14, -20, 14]}],
+     note: "the SG90's own lead (it leaves the servo's output end) out of the base's open -Y side, plus a 300 mm servo extension; red/brown to the jack terminals"}
   - {id: pan_sig, from: pi, to: pan_servo, kind: signal, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
-     route: [{item: base, at: [-27, 4.5, 14]}, {item: base, at: [-14, 4.5, 14]}],
+     route: [{item: base, at: [14, -4, 14]}, {item: base, at: [14, -20, 14]}],
      note: "Pi GPIO18 (PWM0) to the pan servo signal, Pi GND to the supply minus (common ground)"}
   - {id: tilt_pwr, from: jack, to: tilt_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
      route: [{item: yoke, at: [0, 47.5, 7]}, {item: yoke, at: [0, 39.5, 7]}],

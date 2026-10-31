@@ -146,3 +146,21 @@ def test_view_cone_frustum_and_camera_lens_joint():
     assert "lens" in cam.joints
     with pytest.raises(ValueError):
         proxies.build(Ctx("v", {}), {"proxy": "view_cone", "length": 30})
+
+
+def test_servo_flex_lead_counts_for_interference_not_tool_reach():
+    """SG90 lead envelope (cable_boss_flex): part of the proxy solid, but access._rigid_part drops it."""
+    from kerf import access, iface, proxies
+    from kerf.ctx import Ctx
+    d = iface.servo_dims("servos.SG90")
+    e = catalog.get("servos.SG90")
+    s = proxies.build(Ctx("s", {}), {"catalog": "servos.SG90", "proxy": "servo"})
+    assert len(s.kerf_flex) == 1
+    s.location = Location((5, 7, 9))                       # placed in an assembly
+    x = d["L"] / 2 + catalog.num(e, "cable_boss_protrusion") / 2
+    z = -d["tab_z"] + catalog.num(e, "cable_boss_z0") + catalog.num(e, "cable_boss_h") / 2
+    probe = Pos(5 + x, 7, 9 + z) * Box(1, 1, 1)
+    assert (s & probe).volume > 0.5                         # interference sees the lead
+    assert (access._rigid_part(s) & probe).volume < 1e-6    # a hex key pushes it aside
+    mg = proxies.build(Ctx("m", {}), {"catalog": "servos.MG996R", "proxy": "servo"})
+    assert mg.kerf_flex == [] and access._rigid_part(mg) is mg   # a moulded boss stays rigid

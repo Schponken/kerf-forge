@@ -270,6 +270,13 @@ def test_servo_mount_window_and_tab_holes(tmp_path, servo, top):
     kind = "heatset"
     y = SERVO_YAML.replace("SERVO", path).replace("FROM", ", tab_screws_from: bottom" if top else "")
     src = SERVO_PLATE.replace("SERVO", path).replace("TOP", str(top)).replace("KIND", kind).replace("T\n", f"{t}\n")
+    e = catalog.get(path)
+    lead_top = d["tab_z"] - catalog.num(e, "cable_boss_z0", default=0.0) - catalog.num(e, "cable_boss_h", default=0.0)
+    if not top and "cable_boss_protrusion" in e and lead_top < t:
+        # the lead exit sits under the tabs within the plate: an end-tab insert there would break into it
+        with pytest.raises(AssertionError, match="the ledge"):
+            _proj(tmp_path, y, {"plate": src})
+        return
     proj, asm = _proj(tmp_path, y, {"plate": src})
     n = len(d["holes"])
     assert n in (2, 4)

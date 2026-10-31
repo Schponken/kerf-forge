@@ -47,12 +47,45 @@ def test_servo_proxy_matches_catalog(key):
     assert bb.size.Z == pytest.approx(d["H"] + d["shaft_h"], abs=0.01)
 
 
+def test_servo_gear_boss_proxy():
+    """A catalog gear_boss (SG90) is solid above the case top around the output axis, plus its idler lobe."""
+    from build123d import Box, Pos
+    d = iface.servo_dims("servos.SG90")
+    e = catalog.get("servos.SG90")
+    s = proxies.build(Ctx("g", {}), {"catalog": "servos.SG90", "proxy": "servo"})
+    z = d["top"] + catalog.num(e, "gear_boss_h") / 2
+    probe = lambda x: (s & Pos(x, 0, z) * Box(0.4, 0.4, 0.4)).volume > 0.05
+    assert probe(d["out_x"] + catalog.num(e, "gear_boss_d") / 2 - 0.5)      # boss rim, beyond the spline
+    assert probe(d["out_x"] - catalog.num(e, "aux_boss_offset"))            # idler lobe
+    assert not probe(d["out_x"] - catalog.num(e, "aux_boss_offset") - catalog.num(e, "aux_boss_d") / 2 - 1.0)
+
+
 @pytest.mark.parametrize("key", [k for _, k in entries("servo_horns")])
 def test_horn_proxy(key):
     h = iface.horn_dims(f"servo_horns.{key}")
     assert h["bc"] < h["od"] and h["n"] >= 2
     s = proxies.build(Ctx(key, {}), {"catalog": f"servo_horns.{key}", "proxy": "horn"})
-    assert s.bounding_box().size.X == pytest.approx(h["od"], abs=0.01)
+    if h["arms"]:   # arm horn: n counts every arm hole; the X extent spans the 0 / 180 deg arm tips
+        assert h["n"] >= 2
+        bb = s.bounding_box()
+        assert bb.max.X == pytest.approx(max(a["tip_r"] + a["tip_w"] / 2 for a in h["arms"] if a["deg"] == 0), abs=0.01)
+    else:
+        assert s.bounding_box().size.X == pytest.approx(h["od"], abs=0.01)
+
+
+def test_arm_horn_matches_its_cad_model():
+    """sg90_arm_1 proxy vs the FreeCAD-library STEP it was measured from (volume 268 mm3 incl. bore + holes)."""
+    from kerf import iface
+    s = proxies.build(Ctx("a", {}), {"catalog": "servo_horns.sg90_arm_1", "proxy": "horn", "groups": {"holes": "g"}})
+    # the model's extra cuts kerf does not draw: spline bore d 6.0 (kerf d 4.8) x 3, d 2 screw hole x 1, d 5 head recess x 1
+    import math
+    model_cuts = math.pi / 4 * ((6.0 ** 2 - 4.8 ** 2) * 3.0 + 2.0 ** 2 * 1.0 + (5.0 ** 2 - 2.0 ** 2) * 1.0)
+    assert s.volume == pytest.approx(268.0 + model_cuts, rel=0.05)
+    assert len([x for x in s.kerf_sites if x.group == "g"]) == 2          # 'ends': innermost + outermost hole
+    pts = iface.horn_holes("servo_horns.sg90_arm_4", start_deg=90)
+    assert len(pts) == 8 and any(abs(x) < 1e-9 and abs(y - 17) < 1e-9 for x, y in pts)   # +X arm turned to +Y
+    assert len(iface.horn_holes("servo_horns.sg90_arm_1", use="all")) == 7
+    assert iface.horn_holes("servo_horns.aluminum_micro_21T")[0][0] > 0     # disc horns keep the 45 deg default
 
 
 @pytest.mark.parametrize("key", [k for _, k in entries("bearings")])

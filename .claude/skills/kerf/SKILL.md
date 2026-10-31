@@ -150,7 +150,9 @@ Always-on checks (no yaml needed): print checks per part (one solid, bed fit, wa
 pin alignment + pin lengths.
 
 Interfaces (`kerf/iface.py`, both sides use the same group): `bolt_pattern` with `rect`/`square`/`circle` points
-(clearance, counterbore, countersink, heatset, tap, nut_trap), `servo_mount`, `horn_mount`, `bearing_seat`,
+(clearance, counterbore, countersink, heatset, tap, nut_trap), `servo_mount`, `horn_mount` (disc horns, or the stock
+SG90 arm horns servo_horns.sg90_arm_1/2/4: pass horn_mount the same use / start_deg as the horn item's use_holes /
+hole_start_deg), `bearing_seat`,
 `motor_mount`, `stack_mount`, `pin_hole` (printed hinges: `press` or `heatset`/`tap` on the side that holds the pin,
 `free` on the side that turns; the revolute axis must be the pin axis; the knuckle span should equal a stocked pin
 length from the catalog `lengths`), `tripod_socket` (1/4-20 camera-tripod mount: captive catalog nut over a
