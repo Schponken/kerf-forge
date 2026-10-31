@@ -273,3 +273,13 @@ entry before each push (date, what changed, verify state, next step, open proble
 - Drone briefs (fpv_5in, tvc_drone) gained a graded "Complete electronics" section; evals/common.py
   `complete_electronics()` enforces it (tested by hand: complete fake project PASS, bare project fails on 12 points,
   1-min flight time fails). These are stricter rules, nothing loosened.
+
+## 2026-10-31 — session fc7cb2cb: E4 tvc_drone mechanical design done (electronics pending)
+- projects/tvc_drone: REFERENCES.md, DESIGN.md, project.yaml, 9 printed parts; `kerf build` PASS: T/W 4.1, CG 0.45 mm
+  off axis, tip-over 20.9 deg, props 5.3 mm clear at all gimbal corners, FEA hub 3.5 / ring 3.2 / yoke 3.5 (Z) /
+  leg 2.7 MPa (SF 2 on 2 x max thrust), 641 g. Renders read.
+- Engine on the way: prop_clearance screens pairs on sampled surfaces before exact OCC distances (136 s -> 19 s);
+  FEA regions `any: [...]` (unions, e.g. fixed at both pivots); FEA falls back to a direct sparse solve when AMG+CG
+  stalls (seen on a sideways-loaded leg); `assembly.key_access` merged with the other session's `assembly.order`.
+- Acceptance now also grades "complete electronics" (Spencer's new PLAN item: receiver, BEC, XT60, strap, wiring,
+  power_budget, flight_time, WIRING.md/svg). tvc_drone stays open until that engine item exists; I'm taking it next.
