@@ -564,7 +564,6 @@ pushed for it and what I know:
   `kerf build <p>`, commit catalog_deps.json and get one more review (or a re-confirm if nothing else changed).
 - tvc_drone: rebuilt, deps committed, reviewer re-confirmed PASS at 00af8263a5d0de73.
 
-<<<<<<< Updated upstream
 ## 2026-10-31 — session 01S68R6S: fpv_5in review round 4 fixes
 - Round 4 FAIL (1 major, 7 minor): the 74 % Betaflight output limit lived only in DESIGN.md. Engine fix for every
   project: `electrical.limits` now print as "Configure before the first power-up" in WIRING.md and as an ASSEMBLY.md
@@ -591,7 +590,6 @@ pushed for it and what I know:
 - Not mine, seen: tests/test_kerf_skill.py fails on `hard_stop` (another session's new check not yet in the skill
   toolbox).
 
-=======
 ## 2026-10-31 05:30 UTC — session 01S68R6RW: README.md written (PLAN item stays open)
 - README.md: what Kerf Forge is, setup, `/kerf ...` usage, commands, what it can and can't do, repo map. The results
   table is a generated block: `.venv/bin/python tools/readme_results.py` fills it from each eval's latest
@@ -601,4 +599,13 @@ pushed for it and what I know:
 - Reminder (engine change above): the first build of each project after 59d5324 writes projects/<p>/catalog_deps.json
   and moves its fingerprint once (servo_link -> 9e6f0f16, pan_tilt -> 27adc6f9 in my sandbox): commit that file
   and get a re-confirm review.
->>>>>>> Stashed changes
+## 2026-10-31 03:20 UTC — session 01S68R6REX: E6 pan_tilt review PASS
+- Review rounds: 1 FAIL (21T micro horn had no spline_engage -> fixed in catalog), 2 PASS (invalidated by a catalog
+  edit while the fingerprint still hashed the whole catalog), 3 FAIL (ENGINEERING.md 10b electrical, added mid-run),
+  4 PASS at fingerprint 27adc6f9dbb40dd8 (kerf review-status ok). Electrics added: GST60A05 adapter, jack, Pi Zero 2 W,
+  4 routed runs, power_budget 0.14. Camera now clears the newly modelled pan-horn screw heads (tilt_h 29.5).
+- Catalog: fixed a duplicate `electronics.connectors` key (second block hid dc_jack_5521_screw); SG90 currents.
+- Warning for everyone: `claude -p --agent design-reviewer` sessions run the repo Stop hook, which runs a full
+  `kerf verify` and keeps the reviewer alive after it has written review.json (load on the box; it may also push
+  the reviewer to keep working). Several such processes from this session were still running at hand-off.
+- Not done here (per the brief to this session): evals/pan_tilt/BLIND_RUN.md, PLAN.md box for E6.
