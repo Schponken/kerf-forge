@@ -538,3 +538,20 @@ pushed for it and what I know:
   its leads can turn before the rear pillar; output limit 74 % (T/W 6.18 incl. wire mass, peak 57.4 A, power 0.957);
   battery lead marked `supplied`.
 
+## 2026-10-31 03:30 UTC — session (servo_link review follow-ups) done
+- servo_link: fresh design-reviewer PASS (fingerprint 9cd85f37a0e0caf4, 0 blockers/majors, 5 minor) after 3 rounds.
+  Engine: insertion paths respect `assembly.order` (test); horn proxy slides catalog `spline_engage` over the spline
+  with a bore (25T: 4.0 mm, measured on the CC0 MG996R model; `horn_dims.hub_h` is now the rise above the spline top,
+  so every layout followed automatically — robot_arm and pan_tilt re-checked PASS); `tab_washers` grip (ISO 7089);
+  FEA render heading names volume p99.9 / volume peak / surface peak (test); wiring runs `supplied: <item>` (an
+  adapter's or pack's own lead) are rated but not bought or cut (test; tvc_drone's bat_lead could use it);
+  WIRING steps print each run's note; test that hardware.json has no duplicate keys (two `electronics.connectors`
+  sections had hidden one entry).
+- servo_link now has its whole electrical system: MEAN WELL GST60A05 5 V adapter + C13 cord, SparkFun barrel-jack
+  terminal adapter (new catalog entry), Arduino Nano on USB (500-2500 us pulses), 3-pin header, wiring, power_budget,
+  plug/USB access. Catalog: MG996R shaft_h 6.3 -> 5.7 (TowerPro table), screws.M3 washer, buy links.
+- Remaining minors went into a new PLAN item "Electrical/assembly-doc follow-ups" (voltage-drop check, per-end
+  verbs, washer/ball-end/insert info in ASSEMBLY.md, electrical prices).
+- Process note: once I fetched a datasheet PDF with curl after WebFetch's permission request for it timed out; I
+  deleted it unread. No data from it is used anywhere.
+

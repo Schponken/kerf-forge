@@ -1,45 +1,39 @@
 {
   "verdict": "PASS",
-  "fingerprint": "43b35f19ba1da96c",
+  "fingerprint": "9cd85f37a0e0caf4",
   "reviewer": "design-reviewer",
-  "date": "2026-10-30",
-  "summary": "The re-sourced MG996R values still fit. I sliced the rebuilt bracket: the window is 41.48 x 20.56 mm (0.29 mm clearance per side on the 40.9 x 20 body) and widens to 42.04 x 21.16 at the entry face. I also slid the servo alone 45 mm along its top-first insertion axis and nothing touched; the bigger cable-boss envelope stays behind the wall the whole way. iface.servo_lead_in reduced the chamfer to 0.30 mm for the PETG 2.60 mm pilot holes, which leaves exactly 2.40 mm of wall at the face and 2.70 mm behind the chamfer. Re-running the assembly with tab_z = 30.2 (and with 30.2 plus body_h 36.05) and with 26.5 gave no interference, a clear +/-90 deg sweep and no new key-access problem. The report shows 12 aligned M3 screws, arm_torque 0.54 of 4.7 kg*cm, bracket_fea 0.56 of 13 MPa, arm_fea 4.58 of 24 MPa (0.75 mm deflection) and mass 188.5 of 250 g. The renders show nothing wrong. What remains is minor: DESIGN.md and the BOM still quote the old servo numbers, the engine's insertion check can't be used on this rig, and the horn model's seating overstates the arm-to-wall gap.",
+  "date": "2026-10-31",
+  "summary": "The round-2 major is closed. The BOM now has the C13 mains cord, the cord fact is recorded in the adapter's catalog note with an element14 source, and the BOM also lists the USB Mini-B cable, the 3-pin header the servo plug pushes onto (red in the middle, brown on the outside, as on a standard servo plug), the ball-end driver and real buy links. gnd_common takes the Nano's ground to the jack's minus terminal, so no header pin carries two wires. I recomputed the new routes by hand (servo_pwr 207.6 mm routed, 238.7 mm minimum cut, 250 mm cut; gnd_common 88.8, 102.1 and 110 mm) and the ratings (2.5 of 6 A; burst rise 4.9 K and 1.9 K; ampacity 3.5 and 7 A). Geometry, sweep, insertion and FEA are unchanged from my round-2 probes, and 81 electrical, catalog and access tests pass. What remains are engine follow-ups and documented margins.",
   "findings": [
     {
       "severity": "minor",
+      "part": "engine",
+      "issue": "The generated packages still give the wrong action words. WIRING.md and the Electrical section of ASSEMBLY.md say 'solder jack -> servo' and 'solder nano -> jack', but both ends are screw terminals or a header; the run notes printed after them say so, so the correct instruction is there. ASSEMBLY.md step 6 (servo) still leaves out the washers, removing the grommets, the top-first insertion from behind and the ball-end driver. DESIGN.md and the BOM have all of these. This is an engine issue in ship.py and wiring_out.py, not this project's design.",
+      "fix": "In wiring_out.steps, choose the verb per end ('clamp into the screw terminal' for connector items, 'solder to the header' when the run declares a header end). In ship.py, add to each fastener step the matching bom_extra items, the ball-end warnings from hex_keys and the item's insert direction. Add tests."
+    },
+    {
+      "severity": "minor",
+      "part": "engine",
+      "issue": "Nothing checks voltage drop. Checked as AWG 24, the adapter cord drops about 0.42 V at the 2.5 A stall, so the servo would see about 4.5 V, below its 4.8 V minimum, while the report still shows 'servo input 5.0 V' as passing. DESIGN.md now states this, and the effect is harmless here: the rig uses 11 % of stall torque and runs at 0.9 A.",
+      "fix": "Add an IR-drop term along each feed path at peak current (resistance at 100 C, both conductors, plus connector resistance where catalogued) to the voltage-range check."
+    },
+    {
+      "severity": "minor",
       "part": "bracket",
-      "issue": "DESIGN.md and project.yaml still quote the replaced catalog values. DESIGN.md line 29 says the lead-in is limited to 0.4 mm; the build now gives 0.30 mm because the window grew to 41.5 mm. Lines 32-33 and 85 give the boss as ~6.6 mm proud, 4 mm tall, 3-7 mm above the case bottom; the catalog envelope is now 7.0 proud, 8.0 tall, z 2.5-10.5, 8.0 wide. Line 85 and the project.yaml bom_extra washer spec say 4.2 mm tab holes; they are 4.5 mm keyhole slots open to the tab end. Line 25 says inserts would leave 2.1 mm of wall; with the new window that is 2.0 mm (24.75 - 20.75 - 2.0). The geometry is right, but someone checking a servo with calipers against DESIGN.md would use the wrong numbers.",
-      "fix": "In DESIGN.md: lead-in 'asked for 0.5 mm, reduced automatically to 0.30 mm'. Insert wall '2.0 mm'. Boss 'keep-out envelope 7.0 mm proud, 8 mm wide, 2.5-10.5 mm above the case bottom'. Tab holes '4.5 mm keyhole slots open to the tab end'. Also add a line that tab_z is unconfirmed (26.5-30.2) and was checked at both ends. In the project.yaml bom_extra washer spec, replace '4.2 mm' with '4.5 mm keyhole slots open to the tab end; washers are required, because a bare 5.5 mm M3 head bears on only 0.5 mm each side of the slot'."
+      "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the 20 mm horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its top and bottom edges, and the arm is 2.5 mm off the wall face. It is clear in every probe, and DESIGN.md now says to measure tab_z before printing.",
+      "fix": "Measure tab_z on the real servo and catalogue it. Optionally make the window about 1 mm taller (the pilot-hole wall depends on X, not on the window height) to remove the rub risk outright."
     },
     {
       "severity": "minor",
       "part": "servo",
-      "issue": "The keyhole slots make the washers load-bearing, not optional. A DIN 125 M3 washer (7 mm OD) centred on a hole at x = 24.75 reaches x = 28.25, which is 1.25 mm past the 54 mm tab end, so it bears on a partial ring, roughly 1.25 mm strips on each side of the slot. That is adequate for the in-plane stall couple: the +/-18.6 N acts in Z, across the slots, which open along X. But the washer is the only thing stopping the head from pulling into the slot. The fastener check also counts a 2.5 mm grip without the 0.5 mm washer, so engagement is really 5.0 mm in the 7.2 mm pilot (minimum 4.5), not 5.5. It still passes, with 0.5 mm of margin.",
-      "fix": "Leave the geometry as it is. In DESIGN.md assembly step 3 say 'washers are required (the tab holes are slots open to the end)' and note that M3 x 8 gives 5.0 mm of thread with the washer. If the grommets are ever left in, the screws must go to M3 x 12."
+      "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented and now in the BOM as a tool.",
+      "fix": "None."
     },
     {
       "severity": "minor",
-      "part": "engine",
-      "issue": "The servo's insertion path can't be proven by kerf check. access.insertion_paths moves the whole subtree, and assembly.order doesn't change that. I declared `insert: {direction: [0,0,1], distance: 45}` on the servo and the check reported a false failure, because it dragged the horn and arm, which go on later, through the bracket. With the servo moved alone (my own probe) the path is clear. So this project leaves its top-first insertion undeclared, and the boss-vs-window question that this catalog change raised is protected only by manual probes.",
-      "fix": "In access.insertion_paths, leave out of the moving set any subtree items that assembly.order installs after the inserted item, and add a test for that case. Then add `insert` for the servo and `order: [base, bracket, servo, horn, arm]` to servo_link/project.yaml, so the top-first path through the 41.5 x 20.6 window is checked every build."
-    },
-    {
-      "severity": "minor",
-      "part": "horn",
-      "issue": "The horn proxy seats the hub bottom on top of the 6.3 mm spline, but a real 25T horn slides over the spline. That puts the modelled horn and arm about 4 mm further from the wall than the real ones. The modelled arm-to-wall-face gap is 10.5 mm at nominal tab_z and 7.1 mm at tab_z 30.2. Assuming about 4 mm of spline engagement, the real gap is roughly 6.5 mm and 3 mm (estimated; the disc itself would sit about 1 mm in front of the wall face at tab_z 30.2). Nothing collides even then. But the margin the sweep reports is optimistic, and a deeper-seating horn on a servo with a high tab could rub the disc on the window edge, which has only 0.28 mm of side clearance.",
-      "fix": "Add a spline-engagement value to catalog servo_horns.aluminum_25T, with a source or a caliper measurement. In the proxy, seat the horn by that engagement instead of on the spline top. Rebuild and re-sweep. Until then, when the real servo arrives, measure tab underside to case top as well as the hole pattern."
-    },
-    {
-      "severity": "minor",
-      "part": "catalog",
-      "issue": "The servos.MG996R note is dated '2026-10-31', a day after this review. tab_z is still marked UNCONFIRMED. I checked that 26.5-30.2 causes no collision, but the pivot height, arm clearance and horn position all move with it.",
-      "fix": "Correct the date in the note. Measure tab_z on a real servo and record it with that measurement as the source."
-    },
-    {
-      "severity": "minor",
-      "part": "engine",
-      "issue": "The FEA pictures show a different peak from report.json. fea_bracket_fea.png says 0.65 MPa while the report says 0.88; fea_arm_fea.png says 7.28 MPa while the report says 11.49. The render colours surface triangles and the report takes the peak over all elements. The hot spots are where the load path says they should be: the lower window corners next to the tab-screw load boxes on the bracket, and the hub neck on the arm, with the load at the tip. The limits are judged on p99.9, so nothing passes that shouldn't, but a reviewer comparing the numbers could be misled.",
-      "fix": "In kerf/fea_render.py, title the picture 'surface peak X MPa (volume peak Y, p99.9 Z)', with Y and Z taken from the FEA result dict."
+      "part": "project",
+      "issue": "Some BOM rows have no buy link or price: the mains cord, the Mini-B cable, the header, the AWG 22 wire, the adapter, the jack and the Nano. The total of $14.86 therefore leaves out most of the electrics, and the adapter alone costs more than that.",
+      "fix": "Add catalog/prices.json entries (or bom_extra links) for these rows so the BOM total is real."
     }
   ]
 }
