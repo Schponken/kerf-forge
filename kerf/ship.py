@@ -278,11 +278,11 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
          "the parts already fitted in grey and this step's part(s) in colour, moved back along the way they go on.", "",
          "## Before you start", "",
          f"- Print every part in `plates/` (orientation is already set). Parts: {', '.join(proj.printed)}.",
-         f"- Tools: {', '.join(sorted(keys)) or 'none'}" + ("; soldering iron with a heat-set insert tip" if any_insert else "")
-         + ("; a vise or small hammer to press dowel pins" if any(not p.get('screw_pivot') for s in st for p in s['pins']) else "")
-         + ("; a screwdriver that fits the shoulder screws' heads" if any(p.get('shoulder') for s in st for p in s['pins']) else "")
-         + ("; a flat plate to press inserts flush" if any_insert else "")
-         + ".", "- Shopping list with links and prices: `bom.md`.", ""]
+         "- Tools: " + ("; ".join(sorted(keys)
+                                  + (["soldering iron with a heat-set insert tip", "a flat plate to press inserts flush"] if any_insert else [])
+                                  + (["a vise or small hammer to press dowel pins"] if any(not p.get('screw_pivot') for s in st for p in s['pins']) else [])
+                                  + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for s in st for p in s['pins']) else []))
+                         or "none") + ".", "- Shopping list with links and prices: `bom.md`.", ""]
     for s in st:
         L.append(f"## Step {s['step']} — {', '.join(s['items'])}")
         L.append("")
