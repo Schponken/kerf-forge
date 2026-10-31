@@ -125,7 +125,7 @@ electrical:
           jumper_mm: 100, input_v: 115}
 wiring:      # servo runs are each servo's own 300 mm lead + an extension (lead:), length-checked at every joint pose
   # supply DC (+V/-V screw pins, ferrules) out of the hood to the two WAGO bus pairs; the hood ties the bundle to its floor
-  - {id: psu_arm, from: psu.dc, to: bus_arm, v: 5.3, gauge: 16, color: red/black, length_mm: 380, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4]],
+  - {id: psu_arm, from: psu.dc, to: bus_arm, v: 5.3, gauge: 16, color: red/black, length_mm: 380, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4], [-130, -5, 4]],
      note: "supply +V/-V (one pin pair) to the arm bus splices"}
   - {id: psu_yaw, from: psu.dc, to: bus_yaw, v: 5.3, gauge: 16, color: red/black, length_mm: 360, route: [psu_hood.dc_tie, psu_hood.dc_exit, [-301.5, -62, 4], [-130, -62, 4]],
      note: "second +V/-V pin pair to the yaw bus splices"}
