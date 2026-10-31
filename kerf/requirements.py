@@ -376,7 +376,8 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
                      "p999": res["max_vm_mpa"], "peak": res["max_vm_peak_mpa"]},
             "detail": sf_msg + "".join(n + "; " for n in shear_notes) + f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
                       f"peak {res['max_vm_peak_mpa']:.2f} MPa at {res.get('max_vm_peak_at')}, deflection {res['max_disp_mm']:.3f} mm"
-                      + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f" at {res.get('max_disp_at')}, {res['elements']} elements"}
+                      + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f" at {res.get('max_disp_at')}, {res['elements']} elements"
+                      + (f"; {res['solver_note']}" if res.get("solver_note") else "")}
 
 
 def section_props(shape, origin, normal):

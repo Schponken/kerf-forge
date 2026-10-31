@@ -50,6 +50,29 @@ independent review (design-reviewer subagent) → commit. You get `projects/<nam
 What to open after a build: `out/viewer.html` (assembly with joint sliders and explode), `out/bom.md` (shopping
 list), `out/ASSEMBLY.md`, `out/WIRING.md` + `out/wiring.svg`, `out/plates/*.3mf` (open in Bambu Studio).
 
+## Kerf Studio (the app)
+
+Point-and-click control of everything. `.venv/bin/kerf studio` opens it in your browser; on a Mac, install it as an
+app on your Dock (one click launches it in its own window):
+
+```bash
+git clone https://github.com/Schponken/kerf-forge ~/kerf-forge 2>/dev/null || git -C ~/kerf-forge pull
+~/kerf-forge/setup.sh; ~/kerf-forge/tools/mac/install_app.sh
+```
+
+- **Projects**: status (checks / review), interactive 3D model with the real joint motion, every check with its
+  value and limit, problems and warnings, files (print plates, STL/3MF, STEP, BOM), and the design, assembly,
+  wiring and print-settings docs.
+- **Build / Check / Quick check** with a live log; **Build N unbuilt projects** on a fresh install.
+- **Tune**: sliders for every parameter in project.yaml. *Try these values* rebuilds a scratch copy with every check
+  (fit, motion, strength) and shows it in 3D, leaving your design untouched; *Save to design* writes the values into
+  project.yaml (then Build; the design review has to be redone).
+- **Open plates in Bambu Studio** and **Show files** (Finder).
+- **New design**: describe it in plain words; Claude Code (`claude`, installed and signed in on the Mac) runs the
+  full /kerf workflow in the repo and its progress streams into the Activity panel.
+
+The server only listens on 127.0.0.1 (your computer). Log: ~/Library/Logs/KerfStudio.log.
+
 ## What it can and can't do
 
 Can:

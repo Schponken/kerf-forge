@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kerf Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<style>
+:root{
+  --bg:#f6f5f2; --panel:#ffffff; --ink:#1d1f22; --muted:#6a6f76; --line:#e4e2dc; --soft:#efede8;
+  --accent:#d9480f; --accent-ink:#fff; --ok:#1f8a4c; --ok-bg:#e6f4ec; --bad:#c92a2a; --bad-bg:#fbeaea;
+  --warn:#a5650a; --warn-bg:#fdf3e1; --info:#1c5fa8; --info-bg:#e7f0fb; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.04);
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141517; --panel:#1c1d20; --ink:#e9e8e4; --muted:#9a9ea5; --line:#2c2e33; --soft:#232428;
+  --accent:#ff7a3d; --accent-ink:#1a0d05; --ok:#4cc584; --ok-bg:#16301f; --bad:#ff6b6b; --bad-bg:#3a1a1a;
+  --warn:#f2b45a; --warn-bg:#3a2b12; --info:#7ab3ff; --info-bg:#162a44; --shadow:none;}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;display:flex}
+button{font:inherit;cursor:pointer;white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.primary:hover{filter:brightness(1.05)}
+button:disabled{opacity:.5;cursor:default}
+input,textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+textarea{min-height:120px;resize:vertical}
+a{color:var(--info)}
+/* sidebar */
+#side{width:290px;flex:none;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;height:100%}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 12px}
+.brand svg{flex:none}
+.brand b{font-size:16px;letter-spacing:.2px}
+.brand small{display:block;color:var(--muted);font-size:12px}
+#newbtn{margin:4px 14px 10px;width:calc(100% - 28px)}
+#search{margin:0 14px 8px;width:calc(100% - 28px)}
+#plist{overflow:auto;flex:1;padding:0 8px}
+.pitem{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.pitem:hover{background:var(--soft)}
+.pitem.sel{background:var(--soft);border-color:var(--line)}
+.thumb{width:46px;height:46px;border-radius:8px;background:var(--soft) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--muted);font-size:18px}
+.pmeta{min-width:0}
+.pmeta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.pmeta span{font-size:12px;color:var(--muted)}
+#jobs{border-top:1px solid var(--line);padding:10px 12px;max-height:34%;overflow:auto}
+#jobs h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.job{display:flex;gap:8px;align-items:center;padding:6px 6px;border-radius:8px;cursor:pointer;font-size:13px}
+.job:hover{background:var(--soft)}
+.job .lab{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--muted)}
+.dot.running{background:var(--info);animation:pulse 1.2s infinite}.dot.done{background:var(--ok)}.dot.failed,.dot.stopped{background:var(--bad)}
+@keyframes pulse{50%{opacity:.35}}
+/* main */
+#main{flex:1;min-width:0;height:100%;overflow:auto;display:flex;flex-direction:column}
+.head{padding:22px 28px 0}
+.head h1{margin:0 0 4px;font-size:22px}
+.desc{color:var(--muted);max-width:900px;margin:0 0 12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);font-weight:600;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.info{background:var(--info-bg);color:var(--info)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 28px}
+.tab{border:none;background:none;border-bottom:2px solid transparent;border-radius:0;padding:10px 12px;color:var(--muted);font-weight:600}
+.tab.sel{color:var(--ink);border-bottom-color:var(--accent)}
+.body{padding:20px 28px 40px;flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.viewer{width:100%;height:calc(100vh - 250px);min-height:420px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+td.num{font-family:var(--mono);white-space:nowrap}
+.why{color:var(--muted);font-size:12px}
+ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:3px 0}
+.grid2{display:grid;grid-template-columns:minmax(320px,440px) 1fr;gap:18px}
+.param{padding:10px 0;border-bottom:1px solid var(--line)}
+.param:last-child{border-bottom:none}
+.param .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.param label{font-weight:600;font-size:13px}
+.param .val{font-family:var(--mono);font-size:13px}
+.param.changed label{color:var(--accent)}
+.param .rng{display:flex;gap:8px;align-items:center;margin-top:4px}
+.param input[type=range]{flex:1;padding:0;accent-color:var(--accent)}
+.param input[type=number]{width:84px;padding:4px 6px;font-family:var(--mono);font-size:13px}
+.param .key{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.note{font-size:12.5px;color:var(--muted)}
+.banner{padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:13px}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}.banner.ok{background:var(--ok-bg);color:var(--ok)}
+.banner.bad{background:var(--bad-bg);color:var(--bad)}.banner.info{background:var(--info-bg);color:var(--info)}
+.files h3{font-size:13px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.files a.f{display:inline-flex;gap:6px;align-items:center;margin:0 8px 8px 0;padding:6px 10px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);background:var(--panel);font-size:13px}
+.renders{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.renders img{width:100%;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:zoom-in}
+.doc{max-width:900px}
+.doc img{max-width:100%;border-radius:8px;border:1px solid var(--line)}
+.doc table{font-size:13px}
+.doc pre,.doc code{font-family:var(--mono);font-size:12.5px;background:var(--soft);border-radius:6px}
+.doc pre{padding:10px;overflow:auto}.doc code{padding:1px 4px}
+.docnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+/* log drawer */
+#drawer{position:fixed;right:16px;bottom:16px;width:min(640px,calc(100vw - 330px));max-height:46vh;display:none;flex-direction:column;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.18);z-index:5}
+#drawer.open{display:flex}
+#drawer .dh{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+#drawer .dh b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#log{margin:0;padding:10px 12px;overflow:auto;font:12px/1.5 var(--mono);white-space:pre-wrap;flex:1}
+.new{max-width:760px}
+.examples{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+.examples button{font-size:12.5px;padding:5px 10px;border-radius:999px}
+.row{display:flex;gap:10px;align-items:center}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;place-items:center;z-index:9;cursor:zoom-out}
+.lightbox img{max-width:92vw;max-height:92vh;background:#fff;border-radius:10px}
+@media (max-width:900px){body{flex-direction:column}#side{width:100%;height:auto;max-height:40vh}.grid2{grid-template-columns:1fr}#drawer{width:calc(100vw - 32px)}}
+</style>
+</head>
+<body>
+<aside id="side">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="2" y="2" width="26" height="26" rx="7" fill="var(--accent)"/><path d="M9 21V9m0 6 8-6m-5 4 7 8" stroke="var(--accent-ink)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><b>Kerf Studio</b><small>describe it → printable, checked parts</small></div>
+  </div>
+  <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
+  <input id="search" placeholder="Search projects" oninput="renderList()">
+  <div id="plist"></div>
+  <div id="buildall" style="padding:6px 14px;display:none"><button style="width:100%" onclick="buildAll()"></button></div>
+  <div id="jobs"><h4>Activity</h4><div id="joblist" class="note">Nothing running.</div></div>
+</aside>
+<main id="main"><div class="body"><div class="empty"><b>Loading…</b></div></div></main>
+<div id="drawer"><div class="dh"><span id="dstate" class="dot"></span><b id="dtitle"></b><span id="dtime" class="note"></span>
+  <button id="dstop" onclick="stopJob()">Stop</button><button onclick="closeDrawer()">Close</button></div><pre id="log"></pre></div>
+<div class="lightbox" id="lb" onclick="this.style.display='none'"><img id="lbimg" alt=""></div>
+<script>
+const S = {projects: [], claude: false, platform: "", sel: null, detail: null, tab: "model", edits: {}, job: null, since: 0, doc: null};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const api = async (path, body) => {
+  const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
+  const j = await r.json().catch(() => ({error: "bad response"}));
+  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  return j;
+};
+const fileUrl = (p, rel) => `/files/${p}/${rel.split("/").map(encodeURIComponent).join("/")}`;
+const fmt = v => v == null ? "–" : (typeof v === "number" ? (Math.abs(v) >= 100 ? v.toFixed(0) : +v.toFixed(3)) : esc(Array.isArray(v) ? v.join(", ") : v));
+
+function statusChips(p) {
+  const c = [];
+  if (p.running && p.running.length) c.push(`<span class="chip info">running</span>`);
+  if (!p.built) c.push(`<span class="chip">not built</span>`);
+  else if (p.ok) c.push(`<span class="chip ok">checks pass</span>`);
+  else c.push(`<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`);
+  if (p.stale) c.push(`<span class="chip warn">changed since build</span>`);
+  c.push(p.review && p.review.ok ? `<span class="chip ok">reviewed</span>` : `<span class="chip warn">review needed</span>`);
+  return c.join("");
+}
+
+async function loadProjects() {
+  try {
+    const d = await api("/api/projects");
+    S.projects = d.projects; S.claude = d.claude; S.platform = d.platform;
+    renderList();
+    if (!S.sel && S.projects.length && !S.newOpen) select(S.projects[0].name);
+  } catch (e) { console.error(e); }
+}
+async function buildAll() {
+  const n = S.projects.filter(p => !p.built).length;
+  if (!confirm(`Build ${n} project(s)? Each one runs every check and writes its 3D viewer, plates and guides (a few minutes each).`)) return;
+  try { const r = await api("/api/build-all", {}); watch(r.job); } catch (e) { alert(e.message); }
+}
+function renderList() {
+  const unbuilt = S.projects.filter(p => !p.built).length;
+  $("#buildall").style.display = unbuilt ? "" : "none";
+  $("#buildall button").textContent = `Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}`;
+  const q = ($("#search").value || "").toLowerCase();
+  $("#plist").innerHTML = S.projects.filter(p => !q || (p.title + p.name + p.description).toLowerCase().includes(q)).map(p => `
+    <div class="pitem ${p.name === S.sel ? "sel" : ""}" onclick="select('${p.name}')">
+      <div class="thumb" style="${p.thumb ? `background-image:url('${fileUrl(p.name, p.thumb)}')` : ""}">${p.thumb ? "" : "◇"}</div>
+      <div class="pmeta"><b>${esc(p.title)}</b><span>${!p.built ? "not built yet" : p.ok ? "checks pass" : p.problems + " problems"}${p.review && p.review.ok ? " · reviewed" : ""}${p.running && p.running.length ? " · running" : ""}</span></div>
+    </div>`).join("") || `<div class="note" style="padding:10px">No projects.</div>`;
+}
+
+async function select(name, keepTab) {
+  S.sel = name; S.newOpen = false; S.edits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
+  renderList();
+  try { S.detail = await api(`/api/project/${name}`); } catch (e) { $("#main").innerHTML = `<div class="body"><div class="banner bad">${esc(e.message)}</div></div>`; return; }
+  renderProject();
+}
+async function refreshDetail() { if (S.sel && !S.newOpen) { S.detail = await api(`/api/project/${S.sel}`); renderProject(); } }
+
+function renderProject() {
+  const d = S.detail; if (!d) return;
+  const plates = d.files.some(f => f.startsWith("out/plates/") && f.endsWith(".3mf"));
+  const tabs = [["model","3D model"],["tune","Tune"],["results","Checks"],["files","Files"],["docs","Docs"]];
+  $("#main").innerHTML = `
+    <div class="head">
+      <h1>${esc(d.title)}</h1>
+      <p class="desc">${esc(d.description)}</p>
+      <div class="chips">${statusChips(d)}${d.report && d.report.seconds ? `<span class="chip">last check ${Math.round(d.report.seconds)} s</span>` : ""}</div>
+      <div class="actions">
+        <button class="primary" onclick="run('build')" title="Every check, then STEP/STL/3MF plates, BOM, assembly guide and renders">Build</button>
+        <button onclick="run('check')" title="Every check incl. motion sweeps and strength, no files">Check</button>
+        <button onclick="run('quick')" title="Fast check without motion sweeps and FEA">Quick check</button>
+        <button onclick="openIn('plates')" ${plates ? "" : "disabled"} title="Open the print plates in Bambu Studio">Open plates in Bambu Studio</button>
+        <button onclick="openIn('folder')">Show files</button>
+      </div>
+    </div>
+    <nav class="tabs">${tabs.map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}</nav>
+    <div class="body" id="tabbody"></div>`;
+  renderTab();
+}
+function setTab(t) { S.tab = t; document.querySelectorAll(".tab").forEach(b => b.classList.toggle("sel", b.dataset.t === t)); renderTab(); }
+
+function notBuilt(what) {
+  return `<div class="card empty"><b>Not built yet</b>${what}<br><br><button class="primary" onclick="run('build')">Build now</button>
+    <p class="note">A build runs every check and writes the 3D viewer, print plates, BOM and assembly guide (a few minutes).</p></div>`;
+}
+
+function renderTab() {
+  const d = S.detail, el = $("#tabbody"), t = S.tab;
+  if (t === "model") {
+    el.innerHTML = d.viewer ? `<iframe class="viewer" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>
+      <p class="note">Drag to orbit, scroll to zoom. The viewer's joint sliders move the real kinematics.</p>` : notBuilt("The 3D model appears here after the first build.");
+  } else if (t === "tune") renderTune(el);
+  else if (t === "results") renderResults(el, d.report);
+  else if (t === "files") renderFiles(el);
+  else if (t === "docs") renderDocs(el);
+}
+
+function reqTable(reqs) {
+  if (!reqs || !reqs.length) return `<p class="note">No requirement checks.</p>`;
+  return `<table><tr><th>Requirement</th><th>Result</th><th>Value</th><th>Limit</th></tr>${reqs.map(r => `
+    <tr><td><b>${esc(r.id)}</b> <span class="why">${esc(r.check)}</span><div class="why">${esc(r.why || r.detail || "")}</div></td>
+    <td>${r.skipped ? `<span class="chip">skipped</span>` : r.ok ? `<span class="chip ok">pass</span>` : `<span class="chip bad">fail</span>`}</td>
+    <td class="num">${fmt(r.value)}</td><td class="num">${fmt(r.limit)}</td></tr>`).join("")}</table>`;
+}
+function renderResults(el, rep) {
+  if (!rep) { el.innerHTML = notBuilt("Check results appear here."); return; }
+  const P = rep.problems || [], W = rep.warnings || [];
+  el.innerHTML = `
+    <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Every check passes: parts fit, nothing collides at any joint angle, screws line up, strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.`}</div>
+    ${P.length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Problems</h3><ul class="msgs">${P.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
+    <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Engineering requirements</h3>${reqTable(rep.requirements)}</div>
+    ${W.length ? `<details class="card"><summary><b>${W.length} warning${W.length == 1 ? "" : "s"}</b> <span class="note">(worth reading, not blocking)</span></summary><ul class="msgs">${W.map(w => `<li>${esc(w)}</li>`).join("")}</ul></details>` : ""}`;
+}
+
+function renderTune(el) {
+  const d = S.detail;
+  if (!d.params.length) { el.innerHTML = `<div class="card empty"><b>No tunable parameters</b>This project has no numeric params in project.yaml.</div>`; return; }
+  const changed = Object.keys(S.edits).length;
+  const tr = d.trial;
+  el.innerHTML = `<div class="grid2">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:6px"><b>Parameters</b><span class="note">${changed ? changed + " changed" : "file values"}</span></div>
+      ${d.params.map(p => {
+        const v = S.edits[p.key] ?? p.value, ch = p.key in S.edits;
+        return `<div class="param ${ch ? "changed" : ""}"><div class="top"><label for="r_${p.key}">${esc(p.label)}</label><span class="key">${esc(p.key)}</span></div>
+          <div class="rng"><input type="range" id="r_${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" oninput="setParam('${p.key}', this.value, true)">
+          <input type="number" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" onchange="setParam('${p.key}', this.value)"></div>
+          <div class="note">${p.min} – ${p.max}${p.bounded ? "" : " (no range in project.yaml: ±50 %)"}${ch ? ` · file: ${p.value}` : ""}</div></div>`;}).join("")}
+      <div class="row" style="margin-top:14px;flex-wrap:wrap">
+        <button class="primary" onclick="tryParams()" ${changed ? "" : "disabled"}>Try these values</button>
+        <button onclick="saveParams()" ${changed ? "" : "disabled"}>Save to design</button>
+        <button onclick="S.edits={};renderTab()" ${changed ? "" : "disabled"}>Reset</button>
+      </div>
+      <p class="note">"Try" rebuilds a scratch copy with every check (fit, motion, strength); your design files stay untouched.
+        "Save" writes the values into project.yaml, then Build again; a saved change needs a fresh design review.</p>
+    </div>
+    <div>${tr ? `
+      <div class="banner ${tr.ok ? "ok" : "bad"}">Last try: ${tr.ok ? "every check passes" : (tr.problems || []).length + " problem(s)"} with
+        ${Object.entries(tr.params || {}).filter(([k, v]) => d.params.some(p => p.key === k && p.value != v)).map(([k, v]) => `${esc(k)} = ${fmt(v)}`).join(", ") || "the file values"}</div>
+      <iframe class="viewer" style="height:520px" src="/trial/${d.name}/out/viewer.html?t=${Date.now()}"></iframe>
+      ${(tr.problems || []).length ? `<div class="card" style="margin-top:12px"><b>Problems</b><ul class="msgs">${tr.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
+      <div class="card" style="margin-top:12px"><b>Requirements with these values</b>${reqTable(tr.requirements)}</div>`
+      : `<div class="card empty"><b>Move a slider, then "Try these values"</b>The tried design shows here in 3D with every check re-run.</div>`}</div>
+  </div>`;
+}
+function setParam(k, v, live) {
+  const p = S.detail.params.find(x => x.key === k); v = parseFloat(v);
+  if (isNaN(v)) return;
+  if (Math.abs(v - p.value) < 1e-9) delete S.edits[k]; else S.edits[k] = v;
+  if (live) { const n = document.querySelector(`#r_${k}`).parentElement.querySelector("input[type=number]"); n.value = v;
+    document.querySelector(`#r_${k}`).closest(".param").classList.toggle("changed", k in S.edits); return; }
+  renderTab();
+}
+document.addEventListener("change", e => { if (e.target.type === "range") renderTab(); });
+async function tryParams() { try { const r = await api("/api/run", {project: S.sel, action: "trial", values: S.edits}); watch(r.job); } catch (e) { alert(e.message); } }
+async function saveParams() {
+  if (!confirm("Write these values into the design (project.yaml)? Build again afterwards; the design review will need to be redone.")) return;
+  try { await api("/api/save", {project: S.sel, values: S.edits}); S.edits = {}; await refreshDetail(); S.tab = "tune"; renderProject(); } catch (e) { alert(e.message); }
+}
+
+function renderFiles(el) {
+  const d = S.detail, f = d.files;
+  if (!f.length) { el.innerHTML = notBuilt("Print plates, STL/3MF parts, STEP and BOM appear here."); return; }
+  const group = (title, pred, icon) => { const g = f.filter(pred); return g.length ? `<h3>${title}</h3>${g.map(x => `<a class="f" href="${fileUrl(d.name, x)}" download>${icon} ${esc(x.split("/").pop())}</a>`).join("")}` : ""; };
+  el.innerHTML = `<div class="files">
+    ${group("Print plates (open in Bambu Studio)", x => x.startsWith("out/plates/") && x.endsWith(".3mf"), "▦")}
+    ${group("Single parts", x => x.startsWith("out/parts/"), "◧")}
+    ${group("CAD + shopping list", x => /assembly\.step|bom\.(csv|md)$/.test(x), "▤")}
+    ${group("Guides", x => /(ASSEMBLY|WIRING|PRINT_SETTINGS)\.md$/.test(x), "☰")}
+    ${d.renders.length ? `<h3>Renders</h3><div class="renders">${d.renders.map(r => `<img loading="lazy" src="${fileUrl(d.name, r)}" alt="${esc(r)}" onclick="zoom(this.src)">`).join("")}</div>` : ""}
+  </div>`;
+}
+function zoom(src) { $("#lbimg").src = src; $("#lb").style.display = "grid"; }
+
+async function renderDocs(el) {
+  const d = S.detail;
+  if (!d.docs.length) { el.innerHTML = `<div class="card empty"><b>No documents yet</b></div>`; return; }
+  S.doc = S.doc && d.docs.includes(S.doc) ? S.doc : d.docs[0];
+  const names = {"DESIGN.md": "Design", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring",
+                 "out/bom.md": "Shopping list", "out/plates/PRINT_SETTINGS.md": "Print settings"};
+  el.innerHTML = `<div class="docnav">${d.docs.map(x => `<button class="${x === S.doc ? "primary" : ""}" onclick="S.doc='${x}';renderTab()">${names[x] || x}</button>`).join("")}</div><div class="card doc" id="docbody">Loading…</div>`;
+  const txt = await (await fetch(fileUrl(d.name, S.doc))).text();
+  const dir = S.doc.includes("/") ? S.doc.slice(0, S.doc.lastIndexOf("/") + 1) : "";
+  let html = window.marked ? marked.parse(txt) : `<pre>${esc(txt)}</pre>`;
+  html = html.replace(/(src|href)="(?!https?:|#|\/|mailto:)([^"]+)"/g, (m, a, u) => `${a}="${fileUrl(d.name, dir + u)}"`);
+  $("#docbody").innerHTML = html;
+}
+
+/* ---- jobs */
+async function run(action) {
+  try { const r = await api("/api/run", {project: S.sel, action}); watch(r.job); } catch (e) { alert(e.message); }
+}
+async function openIn(what) {
+  try { const r = await api("/api/open", {project: S.sel, what}); if (!r.opened) alert("Files are here:\n" + r.paths.join("\n")); } catch (e) { alert(e.message); }
+}
+function watch(id) { S.job = id; S.since = 0; $("#log").textContent = ""; $("#drawer").classList.add("open"); pollJob(); pollJobs(); }
+function closeDrawer() { $("#drawer").classList.remove("open"); S.job = null; }
+async function stopJob() { if (S.job && confirm("Stop this job?")) await api("/api/stop", {job: S.job}).catch(e => alert(e.message)); }
+async function pollJob() {
+  if (!S.job) return;
+  try {
+    const j = await api(`/api/job/${S.job}?since=${S.since}`);
+    $("#dtitle").textContent = j.label; $("#dstate").className = "dot " + j.state;
+    $("#dtime").textContent = `${j.state} · ${Math.floor(j.seconds / 60)}:${String(Math.floor(j.seconds % 60)).padStart(2, "0")}`;
+    $("#dstop").style.display = j.state === "running" ? "" : "none";
+    if (j.lines.length) { const lg = $("#log"), atEnd = lg.scrollTop + lg.clientHeight >= lg.scrollHeight - 30;
+      lg.textContent += j.lines.join("\n") + "\n"; S.since = j.n; if (atEnd) lg.scrollTop = lg.scrollHeight; }
+    if (j.state === "running") setTimeout(pollJob, 1000);
+    else { if (j.kind === "trial") S.tab = "tune"; await loadProjects(); if (j.project === "*") await refreshDetail(); if (j.project === S.sel) await refreshDetail(); else if (j.kind === "design" && S.projects.some(p => p.name === j.project)) select(j.project); }
+  } catch (e) { setTimeout(pollJob, 3000); }
+}
+async function pollJobs() {
+  try {
+    const d = await api("/api/jobs");
+    $("#joblist").innerHTML = d.jobs.length ? d.jobs.slice(0, 12).map(j => `<div class="job" onclick="watch('${j.id}')" title="${esc(j.tail[0] || "")}">
+      <span class="dot ${j.state}"></span><span class="lab">${esc(j.label)}</span><span class="note">${Math.round(j.seconds)} s</span></div>`).join("") : "Nothing running.";
+  } catch (e) {}
+}
+
+/* ---- new design */
+const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
+  "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
+function showNew() {
+  S.newOpen = true; S.sel = null; renderList();
+  $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.
+    Claude Code researches proven designs, picks real parts, models every printed part, proves fit, motion and strength, and has it independently reviewed.</p></div>
+    <div class="body new">
+      ${S.claude ? "" : `<div class="banner warn">Claude Code isn't installed on this computer, so new designs can't start from here. Install it with <code>npm install -g @anthropic-ai/claude-code</code>, sign in once by running <code>claude</code>, then restart Kerf Studio.</div>`}
+      <div class="card">
+        <label class="note" for="ndesc">What should it be?</label>
+        <textarea id="ndesc" placeholder="e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm" oninput="autoname()"></textarea>
+        <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname()">${esc(x)}</button>`).join("")}</div>
+        <label class="note" for="nname">Project folder name</label>
+        <input id="nname" placeholder="desk_arm" oninput="this.dataset.touched=1">
+        <div class="row" style="margin-top:14px"><button class="primary" id="nstart" onclick="startNew()" ${S.claude ? "" : "disabled"}>Start designing</button>
+          <span class="note">Takes roughly 1–4 hours. It keeps going while Kerf Studio stays open; follow it under Activity.</span></div>
+      </div>
+    </div>`;
+}
+function autoname() {
+  const n = $("#nname"); if (n.dataset.touched) return;
+  const stop = new Set(["a","an","the","for","my","with","that","and","of","to","in","on","at","it","is"]);
+  n.value = ($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40);
+}
+async function startNew() {
+  try { const r = await api("/api/new", {name: $("#nname").value.trim(), description: $("#ndesc").value}); watch(r.job); }
+  catch (e) { alert(e.message); }
+}
+
+loadProjects(); pollJobs();
+setInterval(loadProjects, 5000); setInterval(pollJobs, 3000);
+</script>
+</body>
+</html>

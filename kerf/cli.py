@@ -7,6 +7,7 @@
   kerf review-status <proj>   is the visual review current for this geometry?
   kerf new <name> "<title>"   scaffold a project
   kerf status                 one-screen overview: plan progress, every project, review and eval state
+  kerf studio                 open Kerf Studio, the point-and-click app for everything above (local, in your browser)
   kerf print <project>        orient + plate + slice (Bambu Studio CLI) [--send N: start plate N over LAN] [--dry-run] [--open]
 """
 from __future__ import annotations
@@ -200,6 +201,7 @@ def main(argv=None) -> int:
     k = sub.add_parser("calibrate"); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
     f = sub.add_parser("feedback"); f.add_argument("material"); f.add_argument("reports", nargs="+")
     f.add_argument("--printer", default=None)
+    st = sub.add_parser("studio"); st.add_argument("--port", type=int, default=8765); st.add_argument("--no-open", action="store_true")
     pr = sub.add_parser("print"); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
     pr.add_argument("--send", type=int, default=None, metavar="PLATE"); pr.add_argument("--open", action="store_true")
     fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
@@ -225,6 +227,9 @@ def main(argv=None) -> int:
         return new(a.name, a.title)
     if a.cmd == "status":
         return status()
+    if a.cmd == "studio":
+        from . import studio
+        return studio.serve(a.port, open_browser=not a.no_open)
     if a.cmd == "print":
         from . import bambu
         try:

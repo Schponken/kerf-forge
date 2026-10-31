@@ -63,3 +63,19 @@ def test_result_cache_hits_only_for_identical_problems(tmp_path, monkeypatch):
     assert c["max_disp_mm"] == pytest.approx(a["max_disp_mm"] * 1.2, rel=1e-6)
     monkeypatch.setenv("KERF_FEA_CACHE", "0")
     assert fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -5.0))])["cached"] is False
+
+
+def test_stalled_solver_coarsens_and_solves_exactly(tmp_path, monkeypatch):
+    """When AMG+CG stalls on a system too big for the direct solver, the mesh is coarsened until LU fits."""
+    from build123d import Box, Align
+    monkeypatch.setenv("KERF_CACHE", str(tmp_path))
+    bar = Box(100, 10, 10, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    fixed = lambda x, y, z: x < 0.01      # noqa: E731
+    tip = lambda x, y, z: x > 99.99       # noqa: E731
+    ref = fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -10.0))])
+    monkeypatch.setattr(fea, "AMG_MAXITER", 1)            # force a "stall"
+    monkeypatch.setattr(fea, "DIRECT_MAX_DOFS", ref["nodes"] * 3 // 2)   # the first mesh is too big for LU
+    monkeypatch.setenv("KERF_FEA_CACHE", "0")
+    r = fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -10.0))])
+    assert "coarser mesh" in r["solver_note"] and r["elements"] < ref["elements"]
+    assert r["max_disp_mm"] == pytest.approx(2.0, rel=0.03)          # beam theory: F L^3 / 3EI = 2.0 mm

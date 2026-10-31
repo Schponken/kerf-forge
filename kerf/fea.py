@@ -121,7 +121,10 @@ def stiffness(basis, lam: float, mu: float, chunk: int = 8000):
     return K
 
 
-def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = None) -> dict:
+AMG_MAXITER = 600
+
+
+def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = None, _depth: int = 0) -> dict:
     from skfem import Basis, ElementTetP2, ElementVector, FacetBasis, Functional, LinearForm, MeshTet, asm, condense, solve
     from skfem.helpers import eye, sym_grad, trace
     from skfem.models.elasticity import lame_parameters
@@ -180,13 +183,26 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
     B = np.stack([e0, e1, e2, -z_ * e1 + y_ * e2, z_ * e0 - x_ * e2, -y_ * e0 + x_ * e1], axis=1)[I]
     ml = pyamg.smoothed_aggregation_solver(A.tocsr(), B=B, smooth="energy")
     res_hist = []
-    xI = ml.solve(b, tol=1e-9, accel="cg", maxiter=600, residuals=res_hist)
+    xI = ml.solve(b, tol=1e-9, accel="cg", maxiter=AMG_MAXITER, residuals=res_hist)
     if res_hist and res_hist[-1] > 1e-6 * max(res_hist[0], 1e-30):
         # AMG+CG occasionally stalls on a load case (seen on slender parts loaded sideways). Small systems are
-        # solved directly instead (sparse LU, exact up to round-off); large ones still fail loudly.
+        # solved directly instead (sparse LU, exact up to round-off). A system too big for that is re-meshed 1.4x
+        # coarser (P2 tets keep bending accurate at a few elements through the thickness) until it fits, and the
+        # result says so; only after 6 coarsenings does it fail.
         if A.shape[0] > DIRECT_MAX_DOFS:
-            raise RuntimeError(f"FEA solver did not converge (residual ratio {res_hist[-1] / res_hist[0]:.1e}) and "
-                               f"{A.shape[0]} unknowns is too many for the direct fallback")
+            ratio = res_hist[-1] / res_hist[0]
+            if _depth >= 6:
+                raise RuntimeError(f"FEA solver did not converge (residual ratio {ratio:.1e}) and {A.shape[0]} unknowns "
+                                   "is too many for the direct fallback, even after coarsening the mesh 6 times")
+            r = static(shape, E_mpa, nu, fixed, loads, size=size * 1.4, _depth=_depth + 1)
+            r = dict(r, solver_note=r.get("solver_note") or (f"iterative solver stalled on a {size:.2f} mm mesh "
+                                                              f"({A.shape[0]} unknowns); solved exactly on a coarser mesh"))
+            if cfile:
+                import pickle
+                with open(cfile + ".tmp", "wb") as fh:
+                    pickle.dump({k: v for k, v in r.items() if k != "cached"}, fh)
+                os.replace(cfile + ".tmp", cfile)
+            return dict(r, cached=False)
         from scipy.sparse.linalg import spsolve
         xI = spsolve(A.tocsc(), b)
         if np.linalg.norm(A @ xI - b) > 1e-6 * max(np.linalg.norm(b), 1e-30):

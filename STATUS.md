@@ -940,3 +940,18 @@ pushed for it and what I know:
   E, nu, fea.py source and skfem/pyamg/scipy versions, taken after meshing and before solving, so a hit is the same
   problem by construction. Stored in .cache/fea (gitignored; KERF_CACHE moves it, KERF_FEA_CACHE=0 disables).
   servo_link check 56 s cold -> 18 s warm, identical results. Test: test_result_cache_hits_only_for_identical_problems.
+
+## 2026-10-31 23:20 UTC — planning session 01S68R6Q: Kerf Studio app, FEA solver fallback
+- Kerf Studio (`kerf studio`, kerf/studio.py + kerf/assets/studio.html): project browser, 3D viewer, checks table,
+  files, docs, Build/Check/Quick check, Build-all, Tune sliders with scratch-copy "Try" and in-place "Save", open
+  plates in Bambu Studio, New design via `claude -p "/kerf ..."` with streamed progress. Tested here: 5 unit/API tests
+  (param writes keep comments and enforce ranges, trials never touch the real project, path traversal refused, bad
+  input -> 400), every screen screenshotted with no page errors, a full Tune -> Try run in a real browser (arm_t 7:
+  every check re-run, PASS, 53 s). NOT tested here: launching Claude Code for a new design (blocked in this cloud
+  session) and the Mac app bundle (needs macOS: sips/iconutil/Dock).
+- tools/mac/install_app.sh: ~/Applications/Kerf Studio.app (launcher starts the server if needed, opens a Chrome/Edge/
+  Brave app window, else the default browser), icon from tools/mac/icon.png, added to the Dock once.
+- FEA: when AMG+CG stalls on a system too big for LU, the mesh is coarsened 1.4x (up to 6 times) and solved exactly;
+  the requirement detail says so. Found by Studio: servo_link with arm_len 120 used to error ("did not converge");
+  it now answers (4.41 MPa of 24, but 1.07 mm deflection vs the 1.0 mm limit = a real fail). Test:
+  test_stalled_solver_coarsens_and_solves_exactly.
