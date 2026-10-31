@@ -657,3 +657,9 @@ pushed for it and what I know:
 - Re-verified the other session's `kerf print` (tests 9/9, dry-run on fpv_5in orients all parts and falls back to
   Bambu Studio). The only open part is the real print, which needs Spencer's A2L and Mac: wrote .claude/state/BLOCKED
   with the exact steps. PLAN box stays open until Spencer runs `kerf print servo_link --send 1`.
+
+## 2026-10-31 04:40 UTC — session 6e99fb9c38: E5 bionic_finger DONE
+- design-reviewer PASS (round 4, fingerprint 520a41a6bae1e1de; minors only: side play documented, cosmetic lug point,
+  distal wall 1.12 warning, 10-deg groove steps, tendon threading tips now in DESIGN.md s9). Eval acceptance: no fails.
+- Engine from this item: shoulder-screw pivots, `hard_stop` requirement, ASSEMBLY.md lists screw-pivot inserts with
+  flush/torque guidance and only the tools needed. PLAN E5 checked.

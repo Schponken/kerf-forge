@@ -147,7 +147,9 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
    base's insert and tighten until the shoulder bottoms on the insert - gently (~0.5 N m, two-finger torque on the
    driver; the insert's wall to the extensor groove is thin) - then check the joint swings freely.
 3. Same for proximal -> middle and middle -> distal.
-4. Thread the flexor from the base's back face through the palmar channel to the distal pocket; sleeve, pull in, CA.
+4. Tendons last, with the finger slightly curled (opens the paths through the knuckle gaps): stiffen ~20 mm of each
+   line end with thin CA (or use a fine wire leader) and feed it; pliers or a crimper for the sleeves.
+   Thread the flexor from the base's back face through the palmar channel to the distal pocket; sleeve, pull in, CA.
    Same for the extensor along the dorsal channel.
 5. Bolt the base to the hand frame with two M3 screws and nuts through its 15.4 mm holes.
 

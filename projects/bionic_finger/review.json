@@ -1,26 +1,26 @@
 {
   "verdict": "PASS",
-  "fingerprint": "fff481bce3957f7e",
+  "fingerprint": "520a41a6bae1e1de",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 3: the geometry is identical to round 2 (same part volumes, walls and requirement values in report.json), so the round-2 engineering conclusions stand. Every joint stops at about -2 deg, flexion is clear to 80/80/70, the pivots are ground-shoulder screws, and both FEA cases pass (4.6 and 10.5 MPa vs 24). The round-2 doc and BOM items are fixed in DESIGN.md and bom (side play stated, insert flush-to-low, ~0.5 N m torque, McMaster 97505A106 link). The remaining issues are minor: the generated ASSEMBLY.md the owner will follow does not carry those instructions, plus two accepted geometry nits.",
+  "summary": "Round 4: the geometry is identical to rounds 2-3 (same part volumes, walls and requirement values), so the engineering stands. Each joint has a hard stop at about -2 deg, flexion runs clear to 80/80/70, the pivots are ground-shoulder screws, and both FEA cases pass (4.6 and 10.5 MPa vs 24). The generated ASSEMBLY.md now has the real tools, an insert step per part (flush-to-low, plate, trim the lip), gentle shoulder-screw torque with a free-turn check, and the tendon/crimp-sleeve step. bom.md carries the McMaster order number and 'tighten gently'. Only minor items remain.",
   "findings": [
     {
       "severity": "minor",
-      "part": "out/ASSEMBLY.md, bom (generated)",
-      "issue": "The owner-facing build sheet still has 'Tools: none', no insert heat-set step, no flush-to-low instruction, no torque limit (each pivot line says 'tighten until the shoulder bottoms'), and no tendon threading / crimp-sleeve steps. The BOM note still says 'tighten fully'. The correct procedure exists only in DESIGN.md s9, so someone working from ASSEMBLY.md can leave an insert proud (clamping the joint, which has only 0.15 mm of head play) or pull an insert whose mouth wall to the extensor groove is ~0.2 mm.",
-      "fix": "Have the generator include the project's assembly notes (e.g. an `assembly.notes`/per-step text field in project.yaml, or append DESIGN s9), list the tools (soldering iron with insert tip, flat plate, small slotted driver, crimper), and add a 'light torque' note for shoulder pivots into heat-set inserts. That is a general engine improvement, not a one-project patch."
+      "part": "out/ASSEMBLY.md step 4 (distal assembly_note)",
+      "issue": "Order and practicality of the tendon step. The note is nested under 'Fit distal' and says 'After the dip pivot screw below', so it reads before the screw it depends on. Threading a braid ~90 mm from the base's back face through 2.2 mm channels that hand over into the 0.3 mm lap gap and knuckle grooves at three joints, after everything is assembled, will snag at each channel/groove transition unless the tip is stiffened.",
+      "fix": "Make tendons their own final step after the dip pivot, rather than a sub-bullet. Add: stiffen the line end with a drop of CA (or use a fine wire leader) and feed it with the finger slightly curled, then check it slides with no snag before fitting the crimp sleeve. Add a crimping tool or pliers to the tools list."
     },
     {
       "severity": "minor",
       "part": "all joints",
-      "issue": "Side play is unchanged in geometry: 0.45 mm axial, ~1.7 deg tilt per joint, a few mm of fingertip wobble. It is now documented in DESIGN s2 with remedies (4.2 mm hole after a test pair, or a 0.2 mm PTFE washer under the head, which cuts the play to 0.25 mm without clamping).",
-      "fix": "Accept as documented, or apply the 4.2 mm hole after the test print."
+      "issue": "Side play is unchanged and documented: 0.45 mm axial and ~1.7 deg tilt per joint, a few mm of fingertip wobble.",
+      "fix": "Accept as documented, or use the 4.2 mm free hole / 0.2 mm PTFE washer from DESIGN s2 after the test pair."
     },
     {
       "severity": "minor",
       "part": "proximal/middle/distal (child stop lug)",
-      "issue": "Cosmetic cusp where the pocket circle cuts the child's top-band lug (documented in DESIGN). It is not on the load path.",
+      "issue": "Cosmetic cusp where the pocket circle cuts the child's top-band lug. It is documented and not loaded.",
       "fix": "Optional: start the lug at z = RH in the top band."
     },
     {
@@ -32,8 +32,8 @@
     {
       "severity": "minor",
       "part": "fingerlib.crossing_cuts",
-      "issue": "Knuckle-face grooves are built from 10-deg steps (serrated fan). A taut 0.5 mm line stays inside the tube union per the STEP comment; a slack or 0.8 mm line may drag on the ridges.",
-      "fix": "Acceptable. Use a single swept groove if the line frays in testing."
+      "issue": "Knuckle-face grooves are built from 10-deg steps (serrated fan). A taut 0.5 mm line clears the ridges; a slack or 0.8 mm line may drag on them.",
+      "fix": "Acceptable. Use one swept groove if the line frays in testing."
     }
   ]
 }
