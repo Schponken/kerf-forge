@@ -154,7 +154,8 @@ item except its `owner` and allow_overlap partners, at home and over the sweeps,
 FEA loads: region keys (`box`, `sites`, `near_joint`, `cylinder: {at: [x,y,z] | joint, dir, r, tol: 0.3, span}`
 for a bore, or `any: [region, ...]` for a union, e.g. `fixed` at both pivots) plus one of `force_n: [fx,fy,fz]` (total, spread evenly), `pressure_mpa: p` (into the surface),
 `torque_nmm: T` with `axis: {at, dir}` (tangential, proportional to radius) or `bearing_n: [fx,fy,fz]` (cosine pressure
-on the half of a bore facing the load). Each FEA result reports `applied_force_n` / `applied_moment_nmm` (part origin),
+on the half of a bore facing the load; when the pin group puts the other parts' bands off this part's, the single-shear
+lever moment is added automatically, `single_shear: false` opts out). Each FEA result reports `applied_force_n` / `applied_moment_nmm` (part origin),
 and `kerf build` writes `out/renders/fea_<id>.png` (kerf/fea_render.py: von Mises, magenta above the limit).
 Numbers inside requirement regions and forces may be expressions over params/layout values.
 
@@ -223,6 +224,7 @@ wiring:
 
 ## Item keys
 - Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),
+  `walls` (perimeter loops; default 4 on strength-checked parts, else 2; written into the plate 3MF),
   `load_axis` (x / -y / [x, y, z] / list: main stress direction in the part frame; warned if > 30 deg across layers),
   `supports` (per-part override), `params` (per-part param overrides), `note` (shown in the BOM).
 - Creative mode (kerf/meshy.py): a printed part with `source: meshy`, `prompt` (what to ask Meshy text-to-3D for),
