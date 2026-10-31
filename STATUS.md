@@ -834,3 +834,13 @@ pushed for it and what I know:
 - Tests: tests/test_eng_minors.py + test_pins additions; full suite 438 passed. All six projects re-checked
   (--quick): all PASS except fpv_5in twr 5.94 < 6 (already known, its owner's B-F3). New warnings (not problems) on
   existing parts: horizontal round clearance holes, a few fixed boxes away from screws, fpv top_plate load_axis.
+## 2026-10-31 12:45 UTC — session dafdd49d (fork): PLAN "Audit fixes: fpv_5in" DONE
+- B-F1..F10 fixed (F6 justified as an estimate with the Blackbox <= 60 A gate); AUDIT.md rows marked. ENG-6's
+  4-perimeter mass had taken T/W to 5.94: lightened (arm taper 20 -> 14 mm, body side + centre windows, two top-plate
+  windows) to 6.02 with every FEA inside SF 3 (arm 9.0 / 0.83 mm vs the new 0.87 limit, body 10.8 incl. new
+  body_strength_3, top 7.0 / 9.0). Pillar r 2 + rib r 1 fillets, groove-mouth/bed chamfers, nuts sunk 0.5,
+  usb_access (+Y), VTX routes, top_plate load_axis z.
+- design-reviewer round 9 PASS at 0fffc865b90f4c37 (7 minors: thin T/W + body surface peak margins, ASSEMBLY.md has
+  no nut-drop / threadlocker step (ship.py), heat-shrink row length). Eval acceptance clean.
+- Note: F.bed_chamfer on the body chamfered the post counterbore mouths and raised body_strength 10.5 -> 11.9 (hot
+  spot at the post foot): use targeted chamfers on parts whose FEA is fixed at counterbored sites.

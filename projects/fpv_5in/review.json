@@ -1,75 +1,16 @@
 {
   "verdict": "PASS",
-  "fingerprint": "c0d6880d38b83a40",
+  "fingerprint": "0fffc865b90f4c37",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 8. The round-7 major is fixed. bom.md now links the 8 arm screws to an exact Zoro M3 x 12 100-pack and the 4 VTX screws to an exact M2 x 12 20-pack. ship.py now flags any size-only price fallback on the BOM row and under the total, a test covers it, and this build has no fallback rows. The camera now runs from the stack's 9 V pad (8.99 V at the camera, rated 5-36 V), and the DESIGN.md numbers match report.json. The part geometry has not changed since round 6. Every check passes: prop gap 3.45 mm, TWR 6.18, frame 149.4 g, arm FEA 9.5 and body FEA 10.15 vs 11.67 MPa, top-plate FEA 7.03 and 8.86 vs 9.67 MPa, power 0.958 of rating, a clear cam_tilt sweep, and straight hex-key access to every screw. The open findings are all minor.",
+  "summary": "Round 9, after the audit-B fixes. Every check in report.json passes with no problems: prop gap 3.45 mm, FEA hot spots sit at the arm-screw ribs, the arm root and the pillar roots, where the load path puts them, and the camera tilt sweep is clear. The mating dimensions I spot-checked match the catalog (motor 16 x 16 M3, stack 30.5 mm, camera side holes). No blocker or major remains. The thin T/W margin (6.02) and the unverified 60 A peak current are both stated in DESIGN.md with a measurement gate, so they stay minor.",
   "findings": [
-    {
-      "severity": "minor",
-      "part": "body",
-      "issue": "Carried. The generated ASSEMBLY.md step 2 says only 'Drive 8 x M3 x 12'. It never says to drop the 8 arm nuts into their top pockets, to tape or CA the 4 downward-opening stack nuts, or to use threadlocker. It also puts every soldering step after the strap. DESIGN.md has the right order, but the builder follows ASSEMBLY.md.",
-      "fix": "Engine: emit 'press N nuts into <part> pockets (open down: tape them)' before the step that drives their screws. Print bom_extra notes (threadlocker) at the matching step. Let the electrical steps come before a named mechanical step (here, before top_plate)."
-    },
-    {
-      "severity": "minor",
-      "part": "top_plate",
-      "issue": "Carried. The BOM row says 'heat-shrink for AWG 12 joints, 20 mm pieces', but the wiring note asks for 8-10 mm at the XT60 cups, because 20 mm reaches the rear pillar. The XT60 is still held rearward only by the cable tie's friction. The hold-when-unplugging note is in WIRING.md and ASSEMBLY.md.",
-      "fix": "Make the AWG 12 heat-shrink row 10 mm. Optional: add a 0.8-1 mm rear retaining lip on the XT60 cradle."
-    },
-    {
-      "severity": "minor",
-      "part": "body",
-      "issue": "Carried. Each arm nut sits at the bottom of an open 1 mm hex well on the phase-wire line, with the M3 x 12 tip 1 mm below the body top. Soft 18 AWG silicone pressed hard into the well could still reach the thread end. That is unlikely.",
-      "fix": "Optional: after torquing, put a dab of RTV or hot glue in each of the 8 wells, or a strip of Kapton under each phase bundle. Add one line to the build notes."
-    },
-    {
-      "severity": "minor",
-      "part": "body",
-      "issue": "Carried. The screw tip is only about 0.3 mm past the top of the sunk nut. With the length tolerance and the tip chamfer, a short M3 x 12 engages about 1.8-2.2 mm of the 2.4 mm nut. Thread-strip strength is still well over the 144 N design load, but a nylon-insert nut cannot be used.",
-      "fix": "Keep the blue threadlocker on these 8 screws. In the build notes, say to check that each screw end is flush with or past the top of its nut."
-    },
-    {
-      "severity": "minor",
-      "part": "stack",
-      "issue": "Carried. The XT60 has no weight_g (it counts as 0 g in the mass budget), and the XING2 motor lead and CNHL pack lead gauge and length are not in the catalog. Separately, the WIRING.md loads table still uses the camera's 0.2 A draw at 5 V. At 9 V it draws about 0.08-0.1 A per the catalog note, so the table is conservative and harmless.",
-      "fix": "Add XT60 weight_g (about 9 g with its housing) and the lead data to the catalog, each with a source. Optional: give the camera load a per-voltage current."
-    },
-    {
-      "severity": "minor",
-      "part": "arm_1",
-      "issue": "Carried. The counterbore ceilings in the arms and the top plate open on the bed face, so each prints as a mid-air ring. This is documented in DESIGN.md only, not in the 3MF or ASSEMBLY output.",
-      "fix": "Turn on hole bridging / a sacrificial layer in the slicer, or model a 0.2 mm sacrificial layer. Put the note in the ASSEMBLY 'Before you start' section."
-    },
-    {
-      "severity": "minor",
-      "part": "stack",
-      "issue": "Carried, and handled by the documented gate. The 74 % output cap gives a central estimate of 57.4 A, and the real full-pack peak may reach about 60-66 A against the XT60's 60 A, 1-minute rating.",
-      "fix": "Keep the Blackbox/OSD check (peak 60 A or less) before freestyle. If the peak is over, lower motor_output_limit by 1-2 % (twr 6.18 has about 3 % margin)."
-    },
-    {
-      "severity": "minor",
-      "part": "top_plate",
-      "issue": "Carried. The single strap band at x 4.5-24.5 sits 14.5 mm ahead of the pack centre, so the rear of the pack is held only by the anti-slip pad.",
-      "fix": "If the pack shifts in testing, add a second band at about x -36 or move the VTX back."
-    },
-    {
-      "severity": "minor",
-      "part": "body",
-      "issue": "Carried. At 0 deg tilt the cheek tips, and at 35-40 deg the front corners of the roof tongue, may show at the edges of the 155 deg image. Both are clear at the 25 deg home tilt.",
-      "fix": "Check with the camera fitted. Chamfer or round them if they show."
-    },
-    {
-      "severity": "minor",
-      "part": "arm_1",
-      "issue": "Carried. The first arm bending mode is about 165 Hz, in the gyro noise band. The PETG-CF arm sits under a motor base that can reach 70-80 C.",
-      "fix": "Hover test plus a Blackbox gyro-noise check before freestyle. Consider a 0.5-1 mm standoff ring under each motor."
-    },
-    {
-      "severity": "minor",
-      "part": "top_plate",
-      "issue": "New, documentation only. The new screw:M2x12:socket price entry is a third-party Walmart listing ('Unique Bargains', 20 pcs). Its note names the right product (M2 x 12, 12.9, socket head), but neither it nor the Zoro M3 x 12 page could be opened in this review (Zoro 403, Walmart bot wall). Third-party Walmart listings tend to go stale.",
-      "fix": "Optional: when you next refresh prices, add a second source for M2 x 12 DIN 912 from a stable distributor (Zoro, McMaster, Accu)."
-    }
+    {"severity": "minor", "part": "body", "issue": "FEA is judged on the engine's 99.9th-percentile stress. The body passes at 10.76 MPa against 11.67. The volume peak is 20.7 MPa and the surface peak 15.6 MPa, both above the 11.67 allowable. The hot spot is the rib-to-plate junction at the arm_1 screws, which is where the load goes, but it has little margin if the p99.9 convention hides a real concentration.", "fix": "Print a spare body and a crash-test arm_1 load coupon, or add 1 mm more rib root fillet / a wider rib foot. Do not lower the 3 SF."},
+    {"severity": "minor", "part": "top_plate", "issue": "T/W is 6.02 against a 6.0 floor, on a 161 g printed-mass estimate and a 74 % output cap. DESIGN.md says 3 g of extra print mass fails it. The pillars run across the layers at 7.0 / 9.0 MPa against 9.67, so that margin is also thin.", "fix": "Weigh the printed parts before flying. If heavy, widen the lightening windows in the top plate and body, not the pillars. Keep the 4-wall setting on the pillars."},
+    {"severity": "minor", "part": "body", "issue": "The 14.22 A per motor at the 74 % limit is a propeller-law estimate, not a firmware limit. BLHeli_S has no current limit, and peak 57.5 A sits against the XT60's 60 A rating. The brief's twr contract assumes catalog thrust x 4, and this project uses a reduced 3691 g.", "fix": "Keep the Blackbox/OSD punch-out gate as a mandatory first-flight step. Consider an XT90 or an AM32 ESC if the logged peak is above 55 A."},
+    {"severity": "minor", "part": "body", "issue": "Generated ASSEMBLY.md still has no step to drop the 8 arm nuts and 4 stack nuts into their pockets (the stack ones open downward and need tape or CA), and it gives no threadlocker step. It also puts top_plate (step 6) before vtx (step 7), although the VTX has to be screwed under the plate on the bench first (the bench note is only a bullet under step 7). All solder steps come last. DESIGN.md has the correct order.", "fix": "Engine: honour key_access ordering in the step list, emit nut-pocket and insert steps before the screw step, and print bom_extra notes at their steps. Until then, tell the builder to follow DESIGN.md section 'Assembly order'."},
+    {"severity": "minor", "part": "top_plate", "issue": "BOM heat-shrink row for AWG 12 still says 20 mm pieces, but the wiring note needs 8-10 mm at the XT60 cups (20 mm reaches the rear pillar). The XT60 is held rearward only by cable-tie friction.", "fix": "Make the AWG 12 row 10 mm. Optionally add a 1 mm rear retaining lip to the XT60 cradle."},
+    {"severity": "minor", "part": "arm_1", "issue": "The motor-screw edge-distance warnings (88 % of the ring is material on the arm pad, 46-50 % at the top-plate insert and VTX pilot holes) are forced by the purchased hole patterns. The motor M3 x 10 gives only 2.5 mm thread engagement in a motor whose thread depth is typical, not published, so the 0.5 mm margin to the windings is unverified.", "fix": "Measure the thread depth of one motor before tightening all 16 screws (already in DESIGN.md risks). Add a note to the top-plate heat-set inserts to be pressed slowly to avoid splitting the 46 % ring."},
+    {"severity": "minor", "part": "body", "issue": "Carried: the arm nut wells sit on the phase-wire line, with the M3 x 12 tip only about 0.3 mm past the sunk nut. A short screw or a nylon-insert nut would not engage fully.", "fix": "Keep the blue threadlocker on all 8 screws, use plain steel nuts only, and put a dab of RTV or a Kapton strip over each well."}
   ]
 }
