@@ -5,7 +5,7 @@ the finger. Every joint axis is parallel to Y. A segment's origin is on its prox
 on the mcp axis. Flexion = positive rotation about +Y (+X turns toward -Z, the palm).
 
 Knuckles are two-layer LAP joints so every part prints on its side (Y vertical) with no supports:
-- the part is split into a bottom band (its knuckle side, on the bed), a 0.3 mm gap layer at y = 0 and a top band;
+- the part is split into a bottom band (its knuckle side, on the bed), a 0.4 mm gap layer at y = 0 and a top band;
 - at a joint the parent's knuckle disc sits in band `s` and the child's disc in band `-s`; each disc turns inside a
   concave pocket (radius Rk + clearance) of the other part, and the child keeps all other material beyond `xc` (or
   dorsal of the axis), which the joint-sweep check proves clear up to the full flexion range;
@@ -20,27 +20,35 @@ import math
 from build123d import Box, Circle, Cylinder, Location, Plane, Polygon, Pos, Rectangle, Rot, Sketch, extrude, Align, Solid, Compound
 
 # ---- fixed design numbers (DESIGN.md explains each) ----
-W = 15.4          # finger width (Y): a knuckle band (7.55) + the gap (0.3) = 7.85, under the 8 mm shoulder of the pivot
-                  # screw with 0.15 mm play (adult index ~16-18 mm, Aero Hand 16.4)
-D = 15.0          # depth (Z) at the knuckles
+W = 15.6          # finger width (Y): two knuckle bands (7.6 = 38 layers of 0.2) + the gap (0.4 = 2 layers)
+                  # (adult index ~16-18 mm, Aero Hand 16.4)
+D = 18.0          # depth (Z) at the knuckles: room for both lines 1.6 mm clear of the inserts and >= 1.75 mm skin
 H = D / 2         # half depth
-GAP = 0.3         # axial gap between the two lap layers (0.15 per face)
-RK = 7.5          # knuckle disc radius (= H, full-depth round knuckle)
+GAP = 0.4         # axial gap between the two lap layers (0.2 per face, on the 0.2 mm layer grid)
+BOSS = 0.2        # one-layer boss around each insert on the parent's gap face: the 8 mm shoulder spans the child's
+                  # band (7.6) + the gap left at the boss (0.2) = 7.8, so the head never clamps (0.2 mm play), and the
+                  # insert gets 7.6 + 0.2 = 7.8 mm of material (catalog: 6.7 deep hole + 0.8 floor)
+BOSS_R = 3.4      # boss radius: 1.4 mm of wall around the 4.0 insert bore, 0.2 mm inside the closest swept groove (3.6)
+RK = H            # knuckle disc radius (= H, full-depth round knuckle)
 CLR = 0.4         # radial clearance between a disc and the pocket it turns in
 RH = RK + CLR     # pocket radius
-XC = 8.5          # child keeps palmar / far-side material only beyond this distance from the axis
 PIN = "motion.shoulder_4_m3"   # pivot: 4 mm shoulder screw, shoulder turns in the child, M3 thread in a heat-set insert in the parent
 SIDES = {"mcp": -1, "pip": +1, "dip": -1}      # band that holds the PARENT's knuckle at each joint
-FLEX = 4.0        # flexor line distance below the axis (moment arm at home)
-FLEX_A = 4.5      # flexor channel exits this far either side of an axis
-EXT = 5.0         # extensor line above the axis and wrap radius
-EXT_A = 5.0
 TUBE_D = 2.2      # tendon channel diameter (requirement: >= 1.5 clear; line 0.5-0.8 mm)
+# Channel distances from the pin axes keep every swept groove >= the catalog heat-set wall (1.6) from the 4.0 insert
+# bore: insert r 2.0 + 1.6 + tube r 1.1 = 4.7 (audit C-6).
+FLEX = 4.7        # flexor line distance below the axis (moment arm at home); its chord only moves away as a joint bends
+FLEX_A = 4.5      # flexor channel exits this far either side of an axis
+EXT = 6.15        # extensor line above the axis = wrap radius of the crown points; at full flexion (80 deg) the chord
+                  # between the two crowns passes EXT cos(40 deg) = 4.71 from the axis
+EXT_WRAP = 0.0    # crown angle offset from straight up (parent 90 + this, child 90 - this)
+EXT_A = 5.0
 ROOF = 55.0       # channel roof slope (deg from horizontal on the printer) - no supports
 STEP = 10.0       # joint sampling for swept tendon cuts (deg). Between two steps the line lies between two tube axes at
-                  # most 1.6 mm apart (9 mm from the axis), so <= 0.8 mm off the nearer axis: inside its 1.1 mm radius
-                  # with the 0.25 mm line radius to spare, i.e. the line never touches the ridges between the tubes.
-                  # (5 deg steps make OCC tessellate the groove floors with cracks.)
+                  # most 1.64 mm apart (9.4 mm from the axis, the pocket rim), so <= 0.82 mm off the nearer axis: inside
+                  # its 1.1 mm radius with a 0.25 mm line radius to spare (0.5 mm line). A 0.8 mm line can brush the
+                  # ridges between two steps there (DESIGN.md s10). (5 deg steps make OCC tessellate the groove floors
+                  # with cracks.)
 XE = RH + 1.5     # each tendon run is also cut out of the neighbouring part's knuckle out to this distance from the axis
 BAND_T = W / 2 - GAP / 2
 MIN_EDGE = 1.5    # the pocket circle meets the top/bottom faces at a grazing angle: cut the band back to where the
@@ -90,9 +98,10 @@ def _tube(p0, p1, up, d=TUBE_D, ext=0.4):
     r = d / 2
     beta = math.radians(90 - ROOF)
     apex = r / math.sin(beta)
-    half = apex * math.tan(beta)
+    # roof triangle on the tangent chord (not the full chord at the centre), so the cutter is exactly d wide
+    tx, ty = r * math.sin(beta), r * math.cos(beta)
     pl = Plane(origin=tuple(a - t * ext), x_dir=(0, up, 0), z_dir=tuple(t))
-    prof = Circle(r) + Polygon((apex, 0), (0, half), (0, -half), align=None)
+    prof = Circle(r) + Polygon((apex, 0), (tx, ty), (tx, -ty), align=None)
     return extrude(pl * prof, L + 2 * ext)
 
 
@@ -105,8 +114,9 @@ def _rot(theta_deg, p, about_u=0.0):
 
 def joint_points(lj: float):
     """Tendon waypoints at a joint whose axis is at u = lj in the parent frame (child frame axis at 0)."""
-    wp = (lj + EXT * math.cos(math.radians(95)), 0, EXT * math.sin(math.radians(95)))
-    wc = (EXT * math.cos(math.radians(85)), 0, EXT * math.sin(math.radians(85)))
+    a_p, a_c = math.radians(90 + EXT_WRAP), math.radians(90 - EXT_WRAP)
+    wp = (lj + EXT * math.cos(a_p), 0, EXT * math.sin(a_p))
+    wc = (EXT * math.cos(a_c), 0, EXT * math.sin(a_c))
     return {
         "flex_p": (lj - FLEX_A, 0, -FLEX), "flex_c": (FLEX_A, 0, -FLEX),
         "ext_p": (lj - EXT_A, 0, wp[2]), "ext_wp": wp, "ext_wc": wc, "ext_c": (EXT_A, 0, wc[2]),
@@ -169,11 +179,18 @@ def pin_holes(ctx, lj: float, joint: str, role: str):
     would let the other band slide off its free end."""
     from kerf import iface
     s = SIDES[joint]
-    if role == "parent":    # insert hole opens on the gap face of the parent's band (out of the material = -s)
-        loc = Location((lj, s * GAP / 2, 0), (-90 if -s > 0 else 90, 0, 0))
-        return iface.pin_hole(ctx, PIN, loc, group=f"pin_{joint}", depth=BAND_T, fit="heatset")
+    if role == "parent":    # insert hole opens on the boss face (insert_boss) of the parent's band (out of the material = -s)
+        loc = Location((lj, s * (GAP / 2 - BOSS), 0), (-90 if -s > 0 else 90, 0, 0))
+        return iface.pin_hole(ctx, PIN, loc, group=f"pin_{joint}", depth=BAND_T + BOSS, fit="heatset")
     loc = Location((0.0, -s * W / 2, 0), (-90 if -s > 0 else 90, 0, 0))   # +Z of the hole frame points out of the face
     return iface.pin_hole(ctx, PIN, loc, group=f"pin_{joint}", depth=BAND_T, fit="free")
+
+
+def insert_boss(lj: float, joint: str):
+    """The one-layer boss (BOSS thick, BOSS_R radius) on the parent's gap face around its insert: the shoulder bottoms
+    on it, so the shoulder length sets the axial play, and the child's band turns against it."""
+    s = SIDES[joint]
+    return Pos(lj, s * (GAP / 2 - BOSS / 2), 0) * Rot(90, 0, 0) * Cylinder(BOSS_R, BOSS)
 
 
 def child_end(body: Sketch, theta: float = 80.0):
@@ -215,3 +232,17 @@ def parent_end(bottom: Sketch, top: Sketch, lj: float, theta: float = 80.0):
 def pocket(u):
     """Where the other part's knuckle disc turns (r <= RH), widened to |x - u| <= XT so no knife edge is left."""
     return disc(u, RH) + rect(u - XT, u + XT, -H - 1, H + 1)
+
+
+def edge_chamfers(ctx, part, size: float = 0.5):
+    """ENGINEERING.md s5 outside edges: the 0.5 mm elephant's-foot chamfer on the first layer (features.bed_chamfer)
+    and the same chamfer on the top (last-layer) outline, which faces up and prints without support."""
+    from kerf import features
+    bed = features.bed_edges(ctx, part)
+    y_top = -math.copysign(W / 2, bed[0].center().Y)
+    part, failed = features.bed_chamfer(ctx, part, size)
+    top = [e for e in part.edges() if abs(e.center().Y - y_top) < 0.05 and all(abs(v.Y - y_top) < 0.05 for v in e.vertices())]
+    part, f2 = features.safe_fillet(part, [(top, size)], kind="chamfer")
+    if f2 and getattr(ctx, "notes", None) is not None:
+        ctx.notes.append(f"{len(f2)} of {len(top)} top-face edges could not take the {size} mm chamfer (deburr them)")
+    return part, failed + f2

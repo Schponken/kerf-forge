@@ -1,7 +1,7 @@
 name: Bionic index finger
 description: >
   One tendon-driven index finger for a bionic hand: a knuckle mount and three phalanges (adult index proportions,
-  44 / 25 / 21 mm) on 4 mm shoulder-screw pivots (M3 thread into heat-set inserts), with a hard stop at straight. A flexor and an extensor line run in internal channels; pulling the
+  44 / 25 / 22 mm) on 4 mm shoulder-screw pivots (M3 thread into heat-set inserts), with a hard stop at straight. A flexor and an extensor line run in internal channels; pulling the
   flexor curls the finger (mcp 0-80, pip 0-80, dip 0-70 deg), pulling the extensor straightens it. Every part prints
   on its side with no supports: two-layer lap knuckles alternating sides, round pin holes, pointed-roof channels.
 printer: Bambu Lab A2L
@@ -9,27 +9,33 @@ supports: avoid
 params:
   L1: {value: 44, min: 40, max: 48, step: 0.5, label: Proximal segment (mcp axis to pip axis)}
   L2: {value: 25, min: 22, max: 28, step: 0.5, label: Middle segment (pip axis to dip axis)}
-  L3: {value: 21, min: 18, max: 24, step: 0.5, label: Distal segment (dip axis to fingertip)}
+  L3: {value: 22, min: 18, max: 24, step: 0.5, label: Distal segment (dip axis to fingertip)}
   base_len: {value: 30, min: 24, max: 40, step: 1, label: Knuckle mount length behind the mcp axis}
   mount_u1: {value: -14, min: -20, max: -12, step: 0.5, label: First mounting hole (x from mcp axis)}
-  mount_u2: {value: -24, min: -34, max: -20, step: 0.5, label: Second mounting hole (x from mcp axis)}
+  mount_u2: {value: -23.5, min: -34, max: -20, step: 0.5, label: Second mounting hole (x from mcp axis)}
   mcp_max: {value: 80, min: 80, max: 90, step: 10, label: mcp flexion range (deg)}
   pip_max: {value: 80, min: 80, max: 90, step: 10, label: pip flexion range (deg)}
   dip_max: {value: 70, min: 70, max: 80, step: 10, label: dip flexion range (deg)}
-  flex_anchor_u: {value: 13, min: 11, max: 14, step: 0.5, label: Flexor knot pocket (x from dip axis)}
-  ext_anchor_u: {value: 12, min: 10, max: 13, step: 0.5, label: Extensor knot pocket (x from dip axis)}
-  knot_d: {value: 3.0, min: 2.5, max: 3.5, step: 0.1, label: Knot pocket diameter}
+  stop_u: {value: 11.5, min: 10.5, max: 12.0, step: 0.5, label: Line stops - washer seat face (x from dip axis)}
+  flex_stop_z: {value: -3.8, min: -4.2, max: -3.4, step: 0.1, label: Flexor stop height (z)}
+  ext_stop_z: {value: 4.0, min: 3.6, max: 4.4, step: 0.1, label: Extensor stop height (z)}
+  stop_pocket_clear: {value: 0.4, min: 0.4, max: 0.6, step: 0.1, label: "Washer pocket clearance over the catalog ISO 7089 M2 washer OD (screws.M2.washer_d2)"}
+  stop_hole_d: {value: 1.2, min: 1.0, max: 1.4, step: 0.1, label: Line hole through the washer step}
+  stop_step: {value: 1.5, min: 1.2, max: 2.0, step: 0.1, label: Washer step thickness (line hole length)}
+  stop_len: {value: 4.5, min: 4.0, max: 5.0, step: 0.5, label: "Stop slot length (washer 0.3 + bead <= 3.0 + knot)"}
 parts:
-  base: {file: parts/base.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X}
+  base: {file: parts/base.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X,
+         assembly_note: "Last, once the finger is strung: bolt the base to the hand frame with two M3 screws and nuts through its two 15.6 mm cross holes (screw length = 15.6 + frame thickness + nut); leave the back face open for the two lines to the actuator."}
   proximal: {file: parts/proximal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
   middle: {file: parts/middle.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: X}
   distal: {file: parts/distal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X,
-           assembly_note: "After the dip pivot screw below, the tendons: feed the flexor (>= 100 lb braid) from the base's back face through the palmar channel to the distal's front pocket, the extensor along the dorsal channel to the rear pocket; thread a 2.5-2.9 mm crimp sleeve or bead on each end, crimp/knot it, pull it into its pocket and wick thin CA in. Pull each line to check the finger curls and comes back to the straight stop."}
+           assembly_note: "After the dip pivot screw below, the tendons (finger slightly curled): feed the flexor (>= 100 lb braid, end stiffened with thin CA) from the base's back face through the palmar channel until it comes out of the 1.2 mm hole into the front (palmar) stop slot of the distal, the extensor along the dorsal channel into the dorsal stop slot. In each slot thread an M2 flat washer and a 2.5-3 mm bead onto the line, tie a double overhand knot against the bead, pull the washer flat onto the step and wick thin CA onto the knot. Pull each line to check the finger curls and comes back to the straight stop."}
 bom_extra:
   - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 100 lb (445 N) rated", qty: 1, spec: "about 0.5 m: one flexor and one extensor line"}
-  - {type: hardware, item: "Line stop: crimp sleeve or bead, 2.5-2.9 mm OD", qty: 2, spec: "on each line end inside its 3 mm fingertip pocket, so the line cannot pull into the 2.2 mm channel"}
-  - {type: hardware, item: Thin CA glue, qty: 1, spec: "a drop on each fingertip knot in its pocket"}
-  - {type: fastener, item: "M3 screws + nuts to bolt the knuckle mount to the hand frame", qty: 2, spec: "length = 16 mm mount + frame thickness"}
+  - {type: fastener, item: "M2 flat washer", qty: 2, spec: "ISO 7089 / DIN 125-A (2.2 x 5.0 x 0.3) or DIN 433 (2.3 x 4.5 x 0.3); one per line stop, bears on the 5.4 mm seat in the fingertip"}
+  - {type: hardware, item: "Line stop bead, 2.5-3 mm OD, hole <= 1.0 mm (metal or glass seed bead)", qty: 2, spec: "on each line end against its washer, knotted behind (it cannot pass the washer's 2.2 mm hole)"}
+  - {type: hardware, item: Thin CA glue, qty: 1, spec: "stiffen the line ends for threading; a drop on each fingertip knot"}
+  - {type: fastener, item: "M3 screws + nuts to bolt the knuckle mount to the hand frame", qty: 2, spec: "length = 15.6 mm mount + frame thickness"}
 assembly:
   root: base
   joints:
@@ -56,14 +62,15 @@ requirements:
     why: "the flexor line must run free from the mount to the fingertip knot at every curl angle"
     diameter: 1.5
     path:
-      - {item: base, at: [-base_len, 0, -4.0]}
-      - {item: base, at: [-4.5, 0, -4.0]}
-      - {item: proximal, at: [4.5, 0, -4.0]}
-      - {item: proximal, at: [L1 - 4.5, 0, -4.0]}
-      - {item: middle, at: [4.5, 0, -4.0]}
-      - {item: middle, at: [L2 - 4.5, 0, -4.0]}
-      - {item: distal, at: [4.5, 0, -4.0]}
-      - {item: distal, at: [flex_anchor_u, 0, -4.0]}
+      - {item: base, at: [-base_len, 0, -4.7]}
+      - {item: base, at: [-4.5, 0, -4.7]}
+      - {item: proximal, at: [4.5, 0, -4.7]}
+      - {item: proximal, at: [L1 - 4.5, 0, -4.7]}
+      - {item: middle, at: [4.5, 0, -4.7]}
+      - {item: middle, at: [L2 - 4.5, 0, -4.7]}
+      - {item: distal, at: [4.5, 0, -4.7]}
+      - {item: distal, at: [8.5, 0, -4.7]}
+      - {item: distal, at: [stop_u - stop_step, 0, flex_stop_z]}   # channel end at the washer step (1.2 hole beyond)
     poses: &chanposes
       - {mcp: 30, pip: 30, dip: 30}
       - {mcp: 60, pip: 60, dip: 60}
@@ -76,20 +83,21 @@ requirements:
     why: "the extensor line must run free over every knuckle at every curl angle"
     diameter: 1.5
     path:
-      - {item: base, at: [-base_len, 0, 4.981]}
-      - {item: base, at: [-5.0, 0, 4.981]}
-      - {item: base, at: [-0.4358, 0, 4.981]}
-      - {item: proximal, at: [0.4358, 0, 4.981]}
-      - {item: proximal, at: [5.0, 0, 4.981]}
-      - {item: proximal, at: [L1 - 5.0, 0, 4.981]}
-      - {item: proximal, at: [L1 - 0.4358, 0, 4.981]}
-      - {item: middle, at: [0.4358, 0, 4.981]}
-      - {item: middle, at: [5.0, 0, 4.981]}
-      - {item: middle, at: [L2 - 5.0, 0, 4.981]}
-      - {item: middle, at: [L2 - 0.4358, 0, 4.981]}
-      - {item: distal, at: [0.4358, 0, 4.981]}
-      - {item: distal, at: [5.0, 0, 4.981]}
-      - {item: distal, at: [ext_anchor_u, 0, 4.981]}
+      - {item: base, at: [-base_len, 0, 6.15]}
+      - {item: base, at: [-5.0, 0, 6.15]}
+      - {item: base, at: [0, 0, 6.15]}
+      - {item: proximal, at: [0, 0, 6.15]}
+      - {item: proximal, at: [5.0, 0, 6.15]}
+      - {item: proximal, at: [L1 - 5.0, 0, 6.15]}
+      - {item: proximal, at: [L1, 0, 6.15]}
+      - {item: middle, at: [0, 0, 6.15]}
+      - {item: middle, at: [5.0, 0, 6.15]}
+      - {item: middle, at: [L2 - 5.0, 0, 6.15]}
+      - {item: middle, at: [L2, 0, 6.15]}
+      - {item: distal, at: [0, 0, 6.15]}
+      - {item: distal, at: [5.0, 0, 6.15]}
+      - {item: distal, at: [7.5, 0, 6.15]}
+      - {item: distal, at: [stop_u - stop_step, 0, ext_stop_z]}
     poses: *chanposes
   - id: proximal_fea
     check: fea_static
@@ -110,6 +118,44 @@ requirements:
     fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 2.175, tol: 0.3}}
     loads:
       - {cylinder: {at: [L1, 0, 0], dir: [0, 1, 0], r: 2.0, tol: 0.3}, bearing_n: [-222, 0, 10]}
+  - id: base_fea_line
+    check: fea_static
+    part: base
+    why: "the flexor at its rated 222 N presses the finger against the mcp pivot (plus the 10 N tip load); the knuckle mount is held by its two M3 frame screws; the engine adds the single-shear pin moment"
+    direction: auto
+    sf: 2.0
+    fixed: {any: [{cylinder: {at: [mount_u1, 0, 0], dir: [0, 1, 0], r: 1.75, tol: 0.3}},
+                  {cylinder: {at: [mount_u2, 0, 0], dir: [0, 1, 0], r: 1.75, tol: 0.3}}]}   # M3 clearance holes (3.5)
+    loads:
+      - {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 2.0, tol: 0.3}, bearing_n: [-222, 0, 10]}   # mcp insert bore
+  - id: middle_fea_line
+    check: fea_static
+    part: middle
+    why: "the flexor at 222 N presses the distal against the dip pivot (plus the 10 N tip load), the middle held on its pip shoulder; single-shear moment added by the engine"
+    direction: auto
+    sf: 2.0
+    fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 2.175, tol: 0.3}}    # pip shoulder bore (4 + 0.35)
+    loads:
+      - {cylinder: {at: [L2, 0, 0], dir: [0, 1, 0], r: 2.0, tol: 0.3}, bearing_n: [-222, 0, 10]}   # dip insert bore
+  - id: distal_fea_flexor
+    check: fea_static
+    part: distal
+    why: "the flexor at its rated 222 N pulls its M2 washer against the flat step of its stop, plus the 10 N fingertip load it balances; the distal held on its dip shoulder. Proves the washer bearing (222 N on ~18.5 mm2 = 12 MPa nominal) and the stop walls"
+    direction: auto
+    sf: 2.0
+    fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 2.175, tol: 0.3}}    # dip shoulder bore (4 + 0.35)
+    loads:
+      - {box: [[stop_u - 0.05, -2.5, flex_stop_z - 2.5], [stop_u + 0.05, 2.5, flex_stop_z + 2.5]], force_n: [-222, 0, 0]}
+      - {box: [[L3 - 9, -8, -9.1], [L3, 8, -6.5]], force_n: [0, 0, 10]}     # fingertip pad
+  - id: distal_fea_extensor
+    check: fea_static
+    part: distal
+    why: "the extensor at the same rated 222 N (pulled against the straight stops) on its washer stop"
+    direction: auto
+    sf: 2.0
+    fixed: {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 2.175, tol: 0.3}}
+    loads:
+      - {box: [[stop_u - 0.05, -2.5, ext_stop_z - 2.5], [stop_u + 0.05, 2.5, ext_stop_z + 2.5]], force_n: [-222, 0, 0]}
   - {id: stop_mcp, check: hard_stop, joint: mcp, beyond: -5, why: "the finger must stop at straight: pulling the extensor may not bend it backward"}
   - {id: stop_pip, check: hard_stop, joint: pip, beyond: -5, why: "stop at straight (see stop_mcp)"}
   - {id: stop_dip, check: hard_stop, joint: dip, beyond: -5, why: "stop at straight (see stop_mcp)"}

@@ -1,5 +1,5 @@
-"""Knuckle mount: bolts to the hand frame with two M3 screws across its width; holds the mcp dowel (pressed) in its
-knuckle disc; both tendons leave through its back face toward the actuator.
+"""Knuckle mount: bolts to the hand frame with two M3 screws across its width; holds the mcp pivot's heat-set insert
+(the shoulder screw threads into it) in its knuckle disc; both tendons leave through its back face toward the actuator.
 Origin on the mcp axis. Prints on its side (knuckle band on the bed)."""
 import importlib.util as _iu
 import pathlib as _pl
@@ -18,6 +18,7 @@ def build(ctx):
     body = F.rect(-p.base_len, 0, -F.H, F.H)
     bottom, top = F.parent_end(body, body, 0.0, p.mcp_max)
     part = F.assemble(bottom, top, b)
+    part += F.insert_boss(0.0, "mcp")
     part -= F.pin_holes(ctx, 0.0, "mcp", "parent")
     m3 = iface.screw_spec("M3")
     for u in (p.mount_u1, p.mount_u2):                     # mounting holes along Y (vertical on the printer: round)
@@ -28,6 +29,7 @@ def build(ctx):
                   [(-p.base_len - 1, 0, j["ext_wp"][2]), j["ext_wp"]]], up)
     cut += F.crossing_cuts(0.0, p.mcp_max, "parent", up)
     part = F.cut_all(part, cut)
+    part, _ = F.edge_chamfers(ctx, part)
     ctx.revolute("mcp", Axis((0, 0, 0), (0, 1, 0)), range=(0, p.mcp_max))
     ctx.rigid("flex_exit", Location((-p.base_len, 0, -F.FLEX)))
     ctx.rigid("ext_exit", Location((-p.base_len, 0, j["ext_wp"][2])))

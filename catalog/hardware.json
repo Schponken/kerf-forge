@@ -35,6 +35,10 @@
    "countersunk_head_d": 3.8,
    "nut_across_flats": 4.0,
    "nut_thickness": 1.6,
+   "washer_d1": 2.2,
+   "washer_d2": 5.0,
+   "washer_h": 0.3,
+   "washer_source": "https://www.pts-uk.com/products/washers/flat-washers-200hv-iso7089/metric-a4/A708902A4 (ISO 7089 M2: d1 2.20-2.34, d2 4.70-5.00, h 0.25-0.35; nominal d1 min, d2 max, h nominal)",
    "source": "https://optimas.com/technical-resources/tapping-sizes/ ; https://engineersedge.com/iso_socket_head_screw.htm ; https://torqbolt.com/iso-4032-hexagon-nuts-dimensions-standards-specifications ; https://fasten.it/Norms/Norm/DIN_EN_ISO_7046_1",
    "confidence": "standard",
    "note": "Clearance = ISO 273 medium(normal) series (Optimas 'Medium fit'). Head/nut = max values. ISO 10642 does not cover M2; countersunk_head_d is ISO 7046-1/ISO 14581 dk max (90 deg, k=1.2), cross-checked at https://fasten.it/en/norms/norm/din_en_iso_14581. Nut s 3.82-4.0, m 1.35-1.6."
@@ -273,7 +277,7 @@
    "note": "StepperOnline 17HS19-2004S1 drawing: shaft 5 (0/-0.012), across-flat 4.5 +/-0.1, flat length 15, shaft length 24."
   },
    "shoulder_4_m3": {
-   "buy": "https://www.mcmaster.com/products/97505A139/",
+   "buy": "https://www.mcmaster.com/products/97505A106/",
    "buy_note": "McMaster family table: order 97505A106 (4 x 8 mm, pack of 10); price not shown on the page when checked 2026-10-31",
     "d": 4.0,
     "thread": "M3",

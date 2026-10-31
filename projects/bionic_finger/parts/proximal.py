@@ -1,4 +1,5 @@
-"""Proximal phalanx: child of mcp (free on the mcp dowel), parent of pip (pip dowel pressed in its distal knuckle).
+"""Proximal phalanx: child of mcp (turns on the mcp shoulder screw), parent of pip (heat-set insert for the pip shoulder
+screw in its distal knuckle).
 Origin on the mcp axis, pip axis at x = L1. Prints on its side."""
 import importlib.util as _iu
 import pathlib as _pl
@@ -21,12 +22,14 @@ def build(ctx):
     bottom, top = F.parent_end(bottom, top, L, p.pip_max)
     part = F.assemble(bottom, top, b)
     part -= F.pin_holes(ctx, 0.0, "mcp", "child")
+    part += F.insert_boss(L, "pip")
     part -= F.pin_holes(ctx, L, "pip", "parent")
     up = -b
     jm, jp = F.joint_points(0.0), F.joint_points(L)
     cut = F.runs([[jm["flex_c"], jp["flex_p"]], [jm["ext_wc"], jp["ext_wp"]]], up)
     cut += F.crossing_cuts(0.0, p.mcp_max, "child", up) + F.crossing_cuts(L, p.pip_max, "parent", up)
     part = F.cut_all(part, cut)
+    part, _ = F.edge_chamfers(ctx, part)
     ctx.rigid("mcp", F.CHILD_FRAME)
     ctx.revolute("pip", Axis((L, 0, 0), (0, 1, 0)), range=(0, p.pip_max))
     return ctx.finish(part)
