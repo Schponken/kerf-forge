@@ -160,6 +160,26 @@ requirements:
       - {box: [["-servo_span / 2 - 0.1", "-servo_W / 2", "tab_z + servo_tab_t - 0.01"], ["servo_span / 2 + 0.1", "servo_W / 2", "tab_z + servo_tab_t + 0.01"]],
          torque_nmm: "30.0 * (horn_face_z + tilt_h - tab_z - servo_tab_t)",
          axis: {at: [0, 0, "tab_z + servo_tab_t"], dir: [-1, 0, 0]}}                       # +Y force above the deck
+  - id: yoke_knock_out
+    check: fea_static
+    part: yoke
+    why: "the 30 N sideways knock at the camera (same level as base_fea, IEC 62368-1 via the UL brief) pushed toward +Y: the bracket's horn drives the tilt servo into the +Y wall, all 30 N through its two tab screws at tilt-axis height; held at the pan-horn screws"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 2.0        # a knock is a transient handling load: strength (SF 3) governs; 2 mm elastic travel stays inside the 3.3 mm camera-yoke clearance (the 0.3 mm image-stability limit is for running loads)
+    fixed: {sites: yoke_pan, radius: 2.0}
+    loads:
+      - {sites: yoke_tilt, radius: 2.0, force_n: [0, 30.0, 0]}
+  - id: yoke_knock_in
+    check: fea_static
+    part: yoke
+    why: "the same 30 N knock toward -Y: the bracket knuckle closes its 0.9 mm gap and pushes the pivot wall's inner face round the shoulder bore outward; held at the pan-horn screws"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 2.0        # a knock is a transient handling load: strength (SF 3) governs; 2 mm elastic travel stays inside the 3.3 mm camera-yoke clearance (the 0.3 mm image-stability limit is for running loads)
+    fixed: {sites: yoke_pan, radius: 2.0}
+    loads:
+      - {box: [[-4.4, "pin_wall_in - 0.01", "tilt_h - 4.4"], [4.4, "pin_wall_in + 0.01", "tilt_h + 4.4"]], force_n: [0, -30.0, 0]}
   - id: yoke_pan_stall
     check: fea_static
     part: yoke

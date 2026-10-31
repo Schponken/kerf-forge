@@ -17,6 +17,7 @@ from kerf import iface, features
 
 SERVO = "servos.SG90"
 CLEAR = 1.0   # 0.5 mm per side: slide-in fit for the SG90 width spread (11.8-12.2, catalog note) and FDM shrinkage
+CAV_DROP = 1.0   # cavity floor this far below the nominal servo bottom (tab-height spread 0.4 + 0.6 slide clearance)
 
 
 def build(ctx):
@@ -32,8 +33,11 @@ def build(ctx):
     # cavity the servo slides into from -Y: tabs + lead envelope wide, from the servo bottom up to the deck
     wy = p.servo_W + CLEAR
     cav_x = p.servo_span + CLEAR
-    cav = Pos(0, -W / 2 - 1, p.servo_floor_z) * Box(cav_x, W / 2 + 1 + wy / 2, deck_z - p.servo_floor_z,
-                                                   align=(Align.CENTER, Align.MIN, Align.MIN))
+    # floor CAV_DROP below the servo bottom: the tab height spreads 15.6-16.0 between drawings (catalog note), and the
+    # servo must slide in with its tab tops on the deck whatever its tab height (review round 1)
+    cav_z = p.servo_floor_z - CAV_DROP
+    cav = Pos(0, -W / 2 - 1, cav_z) * Box(cav_x, W / 2 + 1 + wy / 2, deck_z - cav_z,
+                                         align=(Align.CENTER, Align.MIN, Align.MIN))
     body -= cav
     # deck: window + tab pilots from below (top_through), and the window opened to -Y so the case top slides in
     seat = Location((0, 0, deck_z))
@@ -45,14 +49,14 @@ def build(ctx):
     # 1/4-20 nut pocket (flats across Y so the nut slides in from the open side too), +0.2 mm slip on the
     # across-flats, open to the cavity above
     af = p.nut_af + 0.2
-    body -= Pos(0, 0, p.floor_t) * extrude(RegularPolygon(af / math.sqrt(3), 6), p.servo_floor_z - p.floor_t + 0.01)
+    body -= Pos(0, 0, p.floor_t) * extrude(RegularPolygon(af / math.sqrt(3), 6), cav_z - p.floor_t + 0.01)
     # tripod screw clearance through the floor (1/4 in = 6.35 mm, +0.55 free) with a lead-in chamfer at the bottom
     body -= Pos(0, 0, -1) * Cylinder(3.45, p.floor_t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body -= Pos(0, 0, -0.01) * Cone(3.45 + 0.8, 3.45, 0.8, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # hex-key + screw holes up through the floor under the two tab screws (screw head 3.8 + 1.0)
     head_r = iface.screw_spec("M2")["head_d"] / 2 + 0.5
     for sx in (-1, 1):
-        body -= Pos(sx * p.servo_hx / 2, 0, -1) * Cylinder(head_r, p.servo_floor_z + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        body -= Pos(sx * p.servo_hx / 2, 0, -1) * Cylinder(head_r, cav_z + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
     # label on the +Y side
     body -= features.label("PT1", 5.0, depth=0.6, loc=Location((0, W / 2, H / 2), (90, 0, 180)), emboss=False)

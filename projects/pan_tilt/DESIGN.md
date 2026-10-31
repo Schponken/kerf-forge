@@ -26,7 +26,7 @@ Assumptions:
 - **A2** Supported tripod-screw protrusion: 5.5-8 mm above the tripod plate (typical quick-release plates are
   4.5-7 mm; no standard value was found - see REFERENCES.md). Below ~5.5 mm the screw engages fewer than 3 threads
   of the nut (the nut sits on a 1.5 mm floor, top 7.24 mm above the underside). The pan servo body sits 10 mm above the base underside
-  (`servo_floor_z`), leaving ≥ 2 mm over an 8 mm screw tip. A longer screw would hit the pan servo: check yours.
+  (`servo_floor_z`; the cavity floor is 1 mm lower so any servo in the 15.6-16.0 tab-height spread slides in), leaving ≥ 2 mm over an 8 mm screw tip. A longer screw would hit the pan servo: check yours.
 - **A3** Horns: a 21T CNC aluminium micro disc horn on each servo (catalog `servo_horns.aluminum_micro_21T`). Its
   bolt circle (12 mm), M2 thread and 4 mm hub height are catalog ESTIMATES; the hub slides the full 3.2 mm SG90
   spline length over the spline (catalog `spline_engage`, added after review round 1), so each horn face sits 0.8 mm
@@ -43,7 +43,7 @@ Options considered:
    traxrobotics turret and Adafruit kit (REFERENCES.md), plus the inertiarobotics lesson: the tilt load is shared by
    the servo horn and an opposite M3 pivot, so the micro spline does not carry the bracket's side load alone.
 2. Bearings on both axes (inertiarobotics A/B): 4 extra bearings and a taller head; overkill for a 4 g camera — the
-   turning head is 34 g with its CG 15 mm off the pan axis (0.05 kg·cm overturning moment on the pan servo's output
+   turning head is 39 g with its CG 12.5 mm off the pan axis (0.05 kg·cm overturning moment on the pan servo's output
    bearing), well under ENGINEERING.md §8's thresholds (60 mm link / 100 g) for a separate bearing.
 3. Single-sided tilt on the horn only (Adafruit kit): simplest, but known neck wobble; rejected.
 
@@ -53,20 +53,20 @@ position), so tilting keeps the image centre in place and the tilt servo carries
 ## 3. Purchased parts and sizing
 | Item | Catalog | Qty | Sizing |
 |---|---|---|---|
-| Micro servo | `servos.SG90` | 2 | Tilt: worst gravity torque 0.02 kg·cm (camera 4 g + bracket 6 g, lens on the axis, + 10 g cable drag at 13.5 mm) vs 0.9 limit (50% of 1.8) → 2% of stall. Pan: vertical axis, no gravity torque; with the tripod laid on its side the head's 34 g at 15 mm = 0.05 kg·cm (3% of stall). Speed 0.1 s/60°. |
+| Micro servo | `servos.SG90` | 2 | Tilt: worst gravity torque 0.02 kg·cm (camera 4 g + bracket 6 g, lens on the axis, + 10 g cable drag at 13.5 mm) vs 0.9 limit (50% of 1.8) → 2% of stall. Pan: vertical axis, no gravity torque; with the tripod laid on its side (`torque_pan`, gravity across the axis) 0.05 kg·cm (3% of stall). Speed 0.1 s/60°. |
 | Disc horn 21T, 4 x M2 | `servo_horns.aluminum_micro_21T` | 2 | estimate geometry (A3); pan: 4 x M2 x 8 from the yoke top; tilt: 4 x M2 x 6 from the bracket inside |
 | Camera Module 3 | `boards.rpi_camera_module_3` | 1 | 4 g; 4 x M2 x 5 into standoff pilots |
 | 1/4-20 hex nut | `tripod_nut_1_4_20` | 1 | ASME B18.2.2, 11.13 AF / 5.74 max; pocket +0.2 on AF |
 | 4 x 6 mm shoulder screw, M3 thread + M3 heat-set insert | `motion.shoulder_4_m3`, fdm_holes.M3 insert | 1 + 1 | tilt pivot (audit F11). The ground 4 mm shoulder turns in the yoke's -Y wall (free fit); the M3 thread goes into a CNC Kitchen M3 insert in the bracket knuckle and the shoulder end bottoms on it, so the screw is locked by its own seat, never clamps the wall (shoulder 6 = 5 wall + 0.9 gap + 0.1 play; picked by kerf/pins.py) and needs no threadlocker (anaerobic lockers crack PETG, Henkel 243 TDS). |
 | M2 screws | screws.M2 | 2+2+4+4+4 | lengths picked by the fastener check (out/bom.md): servo tabs M2 x 6, horns M2 x 8 / x 6, camera M2 x 5 |
 
-Mass: 59.3 g complete (report.json), printed parts base 14.2 g, yoke 12.8 g, bracket 6.0 g (40% infill estimate).
+Mass: 67.3 g complete (report.json), printed parts base 17.7 g, yoke 16.0 g, bracket 7.6 g (40% infill, 4 wall loops on the strength-checked parts).
 
 ## 4. Printed parts
 | Part | Job | Material | print_rot | load_axis | Envelope |
 |---|---|---|---|---|---|
 | base | screws onto the tripod; holds the pan servo hung from a 5 mm deck by its tabs (slides in from the open -Y side, 0.5 mm per side); captive 1/4-20 nut | PETG, 40% | [0,0,0] (bottom on bed) | Z | 40.2 x 26.2 x 33.0 |
-| yoke | pan-horn plate (front notch for the camera FPC); +Y wall carries the tilt servo (mounted from outside); -Y wall carries the M3 pivot | PETG, 40% | [0,0,0] (plate on bed) | Z, X | 30 x 72.8 x 40.6 |
+| yoke | pan-horn plate (front notch for the camera FPC); +Y wall carries the tilt servo (mounted from outside); -Y wall carries the shoulder-screw pivot | PETG, 40% | [0,0,0] (plate on bed) | Z, X | 30 x 72.9 x 43.1 |
 | bracket | U that holds the camera; +Y arm on the tilt horn, -Y arm knuckle on the pivot | PETG, 40% | [0,0,0] (flat bottom on bed) | X, Z | 24.5 x 34 x 26 |
 
 Orientation notes: every part prints as assembled. The base deck legs over the servo cavity are 4.5 mm ledges
@@ -106,6 +106,7 @@ FEA load cases (all SF 3 on PETG Z strength 39 MPa → allowable 13 MPa):
 |---|---|---|---|
 | bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 1.99 MPa p99.9 (peak 3.6), 0.04 mm |
 | yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the 4 mm shoulder bore (+ the engine's single-shear lever moment, 32 N·mm) | 2.44 MPa (peak 4.0), 0.22 mm (limit 0.3) |
+| yoke_knock_out / _in | pan-horn screws | the 30 N camera knock as ±Y: all of it at the tilt tab screws (+Y), or on the pivot wall's inner face round the bore (-Y) | 8.93 / 9.79 MPa p99.9 (peaks 16.8 / 22.6 at the wall roots), 1.70 / 1.26 mm elastic (limit 2.0: a transient load, strength governs; inside the 3.3 mm camera-yoke clearance) |
 | yoke_pan_stall (crash case) | tilt tab screws + pivot bore (head blocked) | 176.5 N·mm pan stall torque at the pan-horn screws | 0.86 MPa, 0.03 mm |
 | base_fea | underside on the tripod plate | 176.5 N·mm pan stall at the tab screws; a 30 N sideways knock **at the camera** (IEC 62368-1 external-force level, UL tech brief; 100 N is for hand-held equipment) = 30 N at the tab screws + 30 N × 42.0 mm lever (deck to tilt axis) as a moment on the tab-top contact under the deck | 6.08 MPa p99.9 (peak 9.1 at a pilot), 0.12 mm (limit 0.2) |
 | bracket_arm | section 5.5 mm ahead of the tilt axis | 13 N at the camera seat (stall torque / 13.5 mm), kt 1.5 | 0.2 MPa |
@@ -119,8 +120,8 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
 1. **Base**: slide the 1/4-20 nut in through the open -Y side and drop it into its floor pocket (flats across Y).
 2. Slide the pan servo in from the open -Y side, output end toward +X, its case top into the deck slot, tab tops up
    against the deck; the lead (it leaves the servo's output end below the tabs) hangs out of the open side.
-   2 x M2 x 6 from below through the tabs into the deck pilots: the 1.5 mm key goes up through the two holes in the
-   floor.
+   2 x M2 x 6 from below through the tabs into the deck pilots: the screws and the 1.5 mm key go up through the two
+   holes in the floor and ~13 mm of open cavity (use the key's long arm, or a long 1.5 mm driver).
 3. Centre both servos electrically (1500 µs) before fitting horns.
 4. **Bench**: screw the tilt horn to the bracket's +Y arm, 4 x M2 x 6 from the inside; the 1.5 mm key reaches them
    straight through the four access holes in the -Y arm. Screw the pan horn under the yoke plate, 4 x M2 x 8 from
@@ -166,8 +167,17 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
   tilt -35°: the tilt axis went up 1.5 mm (`tilt_h` 29.5), camera-to-yoke clearance now 3.3 mm.
 - Round 3 (FAIL, 1 major): ENGINEERING.md 10b (added by another session during this run) now requires the electrical
   system: added §8b (supply, jack, Pi, four routed runs, power_budget), SG90 currents in the catalog.
+- Rounds 4-5 PASS (minors). Then the SG90 lead exit (catalog) forced the base rework (§4/§5) and the final audit
+  (AUDIT.md B-F11..F18) was worked: shoulder-screw pivot in an insert, horizontal pilots, knock and pan-stall FEA,
+  `torque_pan`, BOM.
+- Audit re-review round 1 (FAIL, 1 major): the base cavity had zero vertical clearance for the servo's tab-height
+  spread: cavity floor 1 mm lower. Minors: yoke knock cases added (`yoke_knock_out/_in`), DESIGN masses refreshed,
+  long-driver note for the base tab screws.
 
 ## 10. Risks / numbers to measure before the final print
+- Base: the deck pilots sit ~2 mm from the window edge (SG90 hole pattern forces it; edge-distance warning) and start
+  in the bridged deck underside, where the knock FEA peak is: print the base first and test the two tab screws.
+- Bracket: horizontal holes are teardrops (1.2% overhang reported); check the slicer preview for the standoff roofs.
 - Horn (A3): measure bolt circle, thread and hub height of the horns you buy; if they differ, the catalog entry and
   both horn mounts change.
 - SG90 tab hole and output offset were scaled from a drawing (catalog note) — print the base first and test-fit.
