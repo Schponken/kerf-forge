@@ -30,6 +30,7 @@ import numpy as np
 logging.getLogger("skfem").setLevel(logging.ERROR)
 
 
+DIRECT_MAX_DOFS = 120000  # sparse LU fallback stays under ~2 GB up to here (P2 tets)
 MAX_TETS = 80000  # quadratic tets with the AMG solver stay well under ~2 GB
 
 
@@ -141,7 +142,15 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
     res_hist = []
     xI = ml.solve(b, tol=1e-9, accel="cg", maxiter=600, residuals=res_hist)
     if res_hist and res_hist[-1] > 1e-6 * max(res_hist[0], 1e-30):
-        raise RuntimeError(f"FEA solver did not converge (residual ratio {res_hist[-1] / res_hist[0]:.1e})")
+        # AMG+CG occasionally stalls on a load case (seen on slender parts loaded sideways). Small systems are
+        # solved directly instead (sparse LU, exact up to round-off); large ones still fail loudly.
+        if A.shape[0] > DIRECT_MAX_DOFS:
+            raise RuntimeError(f"FEA solver did not converge (residual ratio {res_hist[-1] / res_hist[0]:.1e}) and "
+                               f"{A.shape[0]} unknowns is too many for the direct fallback")
+        from scipy.sparse.linalg import spsolve
+        xI = spsolve(A.tocsc(), b)
+        if np.linalg.norm(A @ xI - b) > 1e-6 * max(np.linalg.norm(b), 1e-30):
+            raise RuntimeError("FEA direct fallback solve failed")
     u = x0.copy()
     u[I] = xI
     eps = sym_grad(basis.interpolate(u))

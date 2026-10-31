@@ -89,3 +89,26 @@ def test_yaml_load_cases_and_render(tmp_path):
     png = fea_render.render(res["_viz"], tmp_path / "fea_seat.png", res["_viz"]["title"])
     assert (tmp_path / "fea_seat.png").stat().st_size > 20000 and png.endswith(".png")
     json.dumps({k: v for k, v in res.items() if k != "_viz"})
+
+
+def test_region_union():
+    from types import SimpleNamespace
+    from kerf import requirements
+    item = SimpleNamespace(id="x", shape=None)
+    pred = requirements._region(item, {"any": [{"box": [[0, 0, 0], [1, 1, 1]]}, {"box": [[5, 5, 5], [6, 6, 6]]}]})
+    x = np.array([0.5, 5.5, 3.0])
+    assert pred(x, x, x).tolist() == [True, True, False]
+
+
+def test_direct_fallback_when_amg_stalls(monkeypatch):
+    """If AMG+CG stalls, a small system is solved directly and still matches beam theory."""
+    import pyamg
+
+    class Stalled:
+        def solve(self, b, residuals=None, **kw):
+            residuals += [1.0, 1.0]
+            return np.zeros_like(b)
+    monkeypatch.setattr(pyamg, "smoothed_aggregation_solver", lambda *a, **k: Stalled())
+    beam = Box(100, 10, 10, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    r = fea.static(beam, 2000, 0.3, fixed=lambda x, y, z: x < 0.01, loads=[(lambda x, y, z: x > 99.99, (0, 0, -10.0))])
+    assert r["max_disp_mm"] == pytest.approx(10 * 100 ** 3 / (3 * 2000 * (10 * 10 ** 3 / 12)), rel=0.03)

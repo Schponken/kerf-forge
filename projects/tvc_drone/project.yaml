@@ -7,8 +7,8 @@ printer: Bambu Lab A2L
 supports: allowed
 params:
   ring_r_in: {value: 72, min: 70, max: 80, step: 0.5, label: Gimbal outer ring inner radius (props are 65.9)}
-  ring_r_out: {value: 80, min: 76, max: 88, step: 0.5, label: Gimbal outer ring outer radius}
-  ring_h: {value: 10, min: 8, max: 14, step: 0.5, label: Gimbal outer ring height}
+  ring_r_out: {value: 82, min: 76, max: 88, step: 0.5, label: Gimbal outer ring outer radius}
+  ring_h: {value: 16, min: 8, max: 20, step: 0.5, label: Gimbal outer ring height}
   lug_out: {value: 2, min: 1, max: 4, step: 0.5, label: Roll horn lug beyond the ring}
   hub_t: {value: 8, min: 8, max: 10, step: 0.5, label: Motor hub / motor plate thickness}
   hub_r: {value: 27, min: 24, max: 30, step: 0.5, label: Motor hub disc radius}
@@ -98,10 +98,45 @@ requirements:
     part: motor_hub
     why: "the hub carries both motors' thrust into the two pitch pivots: 2 x max thrust (2 x 2 x 1685 g = 66 N)"
     direction: xy
-    sf: 1.0                  # the 2 x max-thrust load already is the safety factor the brief asks for
+    sf: 2.0                  # on top of the brief's 2 x max thrust (ENGINEERING.md static along layers)
     max_disp_mm: 0.5
-    fixed: {near_joint: pitch_horn, radius: 12}
+    fixed: {any: [{near_joint: pitch_horn, radius: 12},                                     # horn face + screws
+                  {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.68, span: [-71, -60]}}]}   # dowel bore
     loads: [{box: [[-15, -15, hub_t - 0.01], [15, 15, hub_t + 0.01]], force_n: [0, 0, 66.1]}]
+  - id: outer_fea
+    check: fea_static
+    part: gimbal_outer
+    why: "the roll ring passes the hub's 2 x max thrust from the pitch servo pad and pitch dowel to the roll pivots"
+    direction: xy            # printed flat: the ring's bending runs along the layers
+    sf: 2.0
+    max_disp_mm: 1.0         # props clear the ring by > 5 mm; 1 mm of flex at 2 x max thrust is harmless
+    fixed: {any: [{near_joint: roll_horn, radius: 12},
+                  {cylinder: {at: [0, 0, 0], dir: [1, 0, 0], r: 1.68, span: [-83, -71]}}]}
+    loads:
+      - {sites: ring_servo, radius: 3, force_n: [0, 0, 33.05]}
+      - {cylinder: {at: [0, 0, 0], dir: [0, 1, 0], r: 1.525, span: [-83, -71]}, force_n: [0, 0, 33.05]}
+  - id: yoke_fea
+    check: fea_static
+    part: ring_low
+    why: "the yoke arms carry 2 x max thrust from the roll pivots up into the mast tubes"
+    direction: z             # printed upside down: the arms' axial load runs across the layers
+    sf: 2.0
+    max_disp_mm: 1.0
+    fixed: {any: [{cylinder: {at: [0, rod_r, 0], dir: [0, 0, 1], r: 2.75}},
+                  {cylinder: {at: [-0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}},
+                  {cylinder: {at: [0.866 * rod_r, -0.5 * rod_r, 0], dir: [0, 0, 1], r: 2.75}}]}
+    loads:
+      - {sites: yoke_servo, radius: 3, force_n: [0, 0, 33.05]}
+      - {cylinder: {at: [0, 0, 0], dir: [1, 0, 0], r: 1.525, span: [-92, -82]}, force_n: [0, 0, 33.05]}
+  - id: leg_fea
+    check: fea_static
+    part: leg_1
+    why: "a hard landing on two legs at 3 g: 600 g x 3 x 9.81 / 2 = 8.8 N up at each foot, plus a 4.4 N sideways (tangential) kick"
+    direction: xy            # printed on its side: the strut bends along the layers
+    sf: 2.0
+    max_disp_mm: 3.0
+    fixed: {box: [[-10, -17, -0.01], [10, 17, 0.01]]}     # pad top face, clamped under the ring_low lug
+    loads: [{box: [[foot_r - leg_r0 - 11, -11, ground_z - ring_low_z - 0.01], [foot_r - leg_r0 + 11, 11, ground_z - ring_low_z + 0.01]], force_n: [0, 4.4, 8.8]}]
   - {id: props, check: prop_clearance, min_mm: 3, min_between_mm: 20, joints: [],
      poses: [{gimbal_roll: 15}, {gimbal_roll: -15}, {gimbal_pitch: 15}, {gimbal_pitch: -15},
              {gimbal_roll: 15, gimbal_pitch: 15}, {gimbal_roll: 15, gimbal_pitch: -15},

@@ -142,8 +142,12 @@ def _region(item, spec, params=None):
     """Vectorised predicate (x, y, z arrays in the part frame) for a yaml region:
     {box: [[x0,y0,z0],[x1,y1,z1]]} | {sites: group, radius: r} | {near_joint: label, radius: r} |
     {cylinder: {at: [x,y,z] | joint label, dir: [dx,dy,dz], r: radius, tol: 0.3, span: [s0, s1]}} (faces whose
-    distance from the axis is r +/- tol, e.g. a bore or a shaft seat; span limits the axial extent from `at`)."""
+    distance from the axis is r +/- tol, e.g. a bore or a shaft seat; span limits the axial extent from `at`) |
+    {any: [region, region, ...]} (the union, e.g. fixed at both pivots of a part)."""
     shape = item.shape
+    if "any" in spec:                       # union of regions, e.g. a part held at two pivots
+        preds = [_region(item, sub, params) for sub in spec["any"]]
+        return lambda x, y, z: np.logical_or.reduce([f(x, y, z) for f in preds])
     if "cylinder" in spec:
         c = spec["cylinder"]
         o, d = _axis(item, c, params or {})

@@ -123,8 +123,8 @@ smallest atan(CG-to-edge distance / CG height) in degrees over the poses; negati
 `prop_clearance` (`min_mm`, optional `min_between_mm` tip-to-tip, `props`, `ignore`, `joints` to sweep (default all),
 `samples`, `poses`) measures every prop disc (keep-out, `proxy: prop_disc`) to every other disc and to every non-keep-out
 item except its `owner` and allow_overlap partners, at home and over the sweeps, and reports the tightest gap.
-FEA loads: region keys (`box`, `sites`, `near_joint`, or `cylinder: {at: [x,y,z] | joint, dir, r, tol: 0.3, span}`
-for a bore) plus one of `force_n: [fx,fy,fz]` (total, spread evenly), `pressure_mpa: p` (into the surface),
+FEA loads: region keys (`box`, `sites`, `near_joint`, `cylinder: {at: [x,y,z] | joint, dir, r, tol: 0.3, span}`
+for a bore, or `any: [region, ...]` for a union, e.g. `fixed` at both pivots) plus one of `force_n: [fx,fy,fz]` (total, spread evenly), `pressure_mpa: p` (into the surface),
 `torque_nmm: T` with `axis: {at, dir}` (tangential, proportional to radius) or `bearing_n: [fx,fy,fz]` (cosine pressure
 on the half of a bore facing the load). Each FEA result reports `applied_force_n` / `applied_moment_nmm` (part origin),
 and `kerf build` writes `out/renders/fea_<id>.png` (kerf/fea_render.py: von Mises, magenta above the limit).

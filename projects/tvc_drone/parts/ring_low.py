@@ -38,6 +38,11 @@ def build(ctx):
         tri = Polygon((x0, z0 + 0.5), (x1, z0 + 0.5), (x0, z0 - 22), align=None)
         for yy in ((y_lo + 2, y_hi - 2) if sgn > 0 else (-7, 7)):
             body += Pos(0, yy, 0) * (Plane.XZ * extrude(tri, 1.5, both=True))
+    # webs on top of the two yoke bridges: the thrust from the pivots bends the bridges back to the tubes
+    for yy in (y_lo + 2.5, y_hi - 2.5):
+        body += Pos(0, yy - 2.0, z0 + t - 0.01) * Box(xp - 2.0, 4.0, 18.0, align=(Align.MIN, Align.MIN, Align.MIN))
+    for yy in (-6.5, 6.5):
+        body += Pos(-xm + 2.0, yy - 2.0, z0 + t - 0.01) * Box(xm - 2.0, 4.0, 18.0, align=(Align.MIN, Align.MIN, Align.MIN))
     # --- tube bosses (up), bores 5.5 (0.5 mm clearance on the 5 mm tube), radial M3 lock holes
     for a in p.rod_angles:
         c = (p.rod_r * math.cos(math.radians(a)), p.rod_r * math.sin(math.radians(a)))
