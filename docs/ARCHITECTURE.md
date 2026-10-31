@@ -58,6 +58,8 @@ assembly:
   joints:                       # parent.joint_label -> child.joint_label; child joints are always rigid
     - {parent: base.bracket_seat, child: bracket.base}
     - {parent: servo.output, child: horn.spline, name: swing, range: [-90, 90], home: 0}
+  order: [base, bracket, servo, horn, arm]   # optional build sequence (ids or [ids]); a screw is driven when the later of
+                                # its two parts goes on, so only parts installed by then can block its hex key
   allow_overlap:                # only with a physical reason
     - {pair: [servo, horn], max_mm3: 60, why: horn spline engages the servo output shaft}
   sweeps:

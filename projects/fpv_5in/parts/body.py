@@ -9,7 +9,7 @@
 from build123d import *
 from kerf import iface, features as F
 
-POSTS = [(30, 14), (30, -14), (-30, 14), (-30, -14)]
+POSTS = [(30, 12), (30, -12), (-30, 12), (-30, -12)]
 
 
 def build(ctx):

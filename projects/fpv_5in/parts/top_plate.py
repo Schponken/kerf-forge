@@ -4,7 +4,7 @@ rear tab. Frame: z = 0 at the post feet (= body top), plate from z = post_h to p
 from build123d import *
 from kerf import iface
 
-POSTS = [(30, 14), (30, -14), (-30, 14), (-30, -14)]
+POSTS = [(30, 12), (30, -12), (-30, 12), (-30, -12)]
 XT60_X = -51.0
 
 

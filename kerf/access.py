@@ -38,10 +38,29 @@ def _blocked(rod, shapes):
     return [i for i, s in shapes if geom.overlap(s, rod) > geom.OVERLAP_TOL_MM3]
 
 
+def _install_steps(asm) -> dict:
+    """assembly.order: the build sequence, a list of item ids (or lists of ids installed in the same step). Items not
+    listed count as present from the start (step 0), the conservative choice."""
+    steps = {}
+    for k, entry in enumerate(asm.proj.data["assembly"].get("order") or [], start=1):
+        for i in ([entry] if isinstance(entry, str) else entry):
+            if i not in asm.proj.items:
+                raise ValueError(f"assembly.order names unknown item '{i}'")
+            steps[i] = k
+    return steps
+
+
 def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
-    """Returns (per-screw results, problems, warnings) at the current pose."""
+    """Returns (per-screw results, problems, warnings) at the current pose. With `assembly.order`, a screw is driven
+    when the later of the parts it joins is installed, so only items installed by then can block the key."""
     items = asm.proj.items
-    shapes = [(i, it.shape) for i, it in items.items() if it.shape is not None and it.role != "keepout"]
+    step = _install_steps(asm)
+    female_items: dict = {}
+    for i, it in items.items():
+        for fs in getattr(it.shape, "kerf_sites", []) if it.shape is not None else []:
+            if fs.role == "female":
+                female_items.setdefault(fs.group, set()).add(i)
+    all_shapes = [(i, it.shape) for i, it in items.items() if it.shape is not None and it.role != "keepout"]
     results, problems, warnings = [], [], []
     for iid, it in items.items():
         if it.shape is None:
@@ -49,6 +68,8 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
         for s in getattr(it.shape, "kerf_sites", []):
             if s.role != "male":
                 continue
+            when = max([step.get(iid, 0)] + [step.get(f, 0) for f in female_items.get(s.group, ())])
+            shapes = [(i, sh) for i, sh in all_shapes if step.get(i, 0) <= when]
             w = it.shape.location * s.loc
             o = geom.world_point(w, (0, 0, 0))
             z = geom.world_dir(w, (0, 0, 1))

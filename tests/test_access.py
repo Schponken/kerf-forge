@@ -129,3 +129,24 @@ def test_lip_over_pocket_blocks(tmp_path):
 def test_sideways_through_wall_blocks(tmp_path):
     res, problems = _insert(tmp_path, "[1, 0, 0]", lip=False)
     assert len(problems) == 1 and "base" in problems[0]
+
+
+def test_assembly_order_lets_later_parts_cover_screws(tmp_path):
+    """A lid installed after the screws are driven may cover them (assembly.order); without the order it blocks."""
+    res, problems, _ = _keys(tmp_path, 0, 30, 100)           # roof 3 mm above the heads, over both screws
+    assert len(problems) == 2
+    block = BOLT_BLOCK.replace('    ctx.rigid("top"', '    ctx.rigid("origin", Location((0, 0, 0)))\n    ctx.rigid("top"')
+    roof = ROOF.replace("RX", "0").replace("RZ", "30").replace("RW", "100")
+    yaml = KEY_YAML + "  order: [block, plate, roof]\n"
+    d = _write_project(tmp_path / "ordered", yaml, {"block": block, "plate": BOLT_PLATE, "roof": roof})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    res, problems, warnings = access.hex_key_reach(asm)
+    assert problems == [] and warnings == [] and all(r["straight"] for r in res)
+    # the roof installed BEFORE the plate still blocks
+    d = _write_project(tmp_path / "ordered2", KEY_YAML + "  order: [block, roof, plate]\n", {"block": block, "plate": BOLT_PLATE, "roof": roof})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    assert len(access.hex_key_reach(asm)[1]) == 2

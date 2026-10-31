@@ -67,6 +67,7 @@ assembly:
     - {parent: top_plate.battery, child: battery.bottom}
     - {parent: top_plate.xt60, child: xt60.bottom}
     - {parent: body.cam_tilt, child: camera.pivot, name: cam_tilt, range: [0, 40], home: 25}
+  order: [body, [arm_1, arm_2, arm_3, arm_4], [motor_1, motor_2, motor_3, motor_4], stack, camera, top_plate, xt60, battery]
   sweeps:
     - {joint: cam_tilt, samples: 9}
 requirements:
