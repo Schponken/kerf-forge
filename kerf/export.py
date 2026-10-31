@@ -129,7 +129,14 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
     for (size, kind), n in sorted(recv.items()):
         rows.append({"type": "fastener", "item": f"{size} {'heat-set insert' if kind == 'heatset' else 'hex nut'}", "qty": n, "spec": "", "note": ""})
     for pj in pins or []:
-        if pj["screw_pivot"]:
+        if pj.get("shoulder"):
+            from .iface import pin_dims
+            pd = pin_dims(pj["pin"])
+            rows.append({"type": "fastener", "item": f"{pj['d_mm']:g} x {pj['length_mm']:g} mm shoulder screw, {pd['thread']} thread (pivot)",
+                         "qty": 1, "spec": pj["pin"], "note": f"hinge '{pj['group']}'; tighten fully (the shoulder bottoms)"})
+            if "heatset" in pj["fixed_fit"]:
+                rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
+        elif pj["screw_pivot"]:
             rows.append({"type": "fastener", "item": f"{pj['pin']} x {pj['length_mm']:g} mm socket head screw (pivot)", "qty": 1,
                          "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; medium threadlocker"})
             if "heatset" in pj["fixed_fit"]:

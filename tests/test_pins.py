@@ -154,3 +154,60 @@ def test_screw_pivot_into_heatset(tmp_path):
     rows = export.bom(proj, [], {}, tmp_path, pins=out)
     assert any("M3 x 18 mm socket head screw (pivot)" in r["item"] for r in rows)
     assert any(r["item"] == "M3 heat-set insert" for r in rows)
+
+
+def _shoulder_asm(tmp_path, through_lug: bool):
+    """Shoulder screw (4 mm shoulder, M3 thread) through the knuckle (y -3.5..3.5) into a heat-set insert whose face is
+    at y = -4, optionally also through the +Y lug (y 4..8)."""
+    base = textwrap.dedent(SCREW_BASE).replace('"M3"', 'p.pin').replace(
+        "Box(12, p.lug_out - 4, 16", "Box(12, p.lug_out - 4 + (4 if sy < 0 else 0), 16").replace(
+        "y0 = sy * (p.lug_out + 4) / 2", "y0 = sy * (p.lug_out + 4) / 2 + (-2 if sy < 0 else 0)")
+    if not through_lug:
+        base = "\n".join(ln for ln in base.splitlines() if 'fit="free"' not in ln)
+    d = tmp_path / "hinge"
+    (d / "parts").mkdir(parents=True)
+    (d / "project.yaml").write_text(textwrap.dedent(YAML))
+    (d / "parts" / "base.py").write_text(base)
+    (d / "parts" / "arm.py").write_text(textwrap.dedent(ARM))
+    proj = P.build(P.load(str(d), {"pin": "motion.shoulder_4_m3"}))
+    assert not {k: v.error for k, v in proj.items.items() if v.error}
+    asm = A.plan(proj)
+    A.solve(asm)
+    return proj, asm
+
+
+def test_shoulder_screw_pivot(tmp_path):
+    """Head on the knuckle's +Y face (y=3.5), shoulder bottoms on the insert face (y=-4): needs 7.5 mm, the 8 mm
+    stocked shoulder leaves 0.5 mm play. The free hole is sized on the 4 mm shoulder, the insert on the M3 thread."""
+    proj, asm = _shoulder_asm(tmp_path, through_lug=False)
+    out, problems, warnings = pins.check(asm)
+    assert problems == [], problems
+    (pj,) = out
+    assert pj["shoulder"] and pj["length_mm"] == 8 and pj["d_mm"] == 4.0
+    assert not any("threadlocker" in w for w in warnings)        # a shoulder screw does not clamp
+    arm_pin = proj.items["arm"].shape.kerf_pins[0]
+    assert arm_pin.d == 4.0 and arm_pin.fit == "free"
+    rows = export.bom(proj, [], {}, tmp_path, pins=out)
+    assert any(r["item"] == "4 x 8 mm shoulder screw, M3 thread (pivot)" for r in rows)
+    assert any(r["item"] == "M3 heat-set insert" for r in rows)
+
+
+def test_shoulder_screw_no_stocked_length(tmp_path):
+    """Through the +Y lug as well: head face to insert face is 12 mm, longer than any stocked shoulder (2-10)."""
+    _, asm = _shoulder_asm(tmp_path, through_lug=True)
+    _, problems, _ = pins.check(asm)
+    assert any("needs a shoulder of 12.00" in p for p in problems), problems
+
+
+def test_hard_stop_requirement(tmp_path):
+    """The arm (z 16-24, pivot z = 20, range [-60, 0]) swings over the 30 mm base block: 5 deg past 0 nothing stops
+    it; folded to -150 it runs into the base. hard_stop must tell the two apart and refuse a value inside the range."""
+    from kerf import requirements as R
+    proj, asm = _asm(tmp_path)
+    near, far = R.REGISTRY["hard_stop"](proj, asm, joint="swing", beyond=5), R.REGISTRY["hard_stop"](proj, asm, joint="swing", beyond=-150)
+    assert not near["ok"] and near["value"] == 0
+    assert far["ok"] and far["value"] > 1
+    with pytest.raises(ValueError):
+        R.REGISTRY["hard_stop"](proj, asm, joint="swing", beyond=-30)
+    A.solve(asm)
+    assert proj.items["arm"].shape.joints  # the joint's range was restored: home pose still solves

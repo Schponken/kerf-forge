@@ -396,6 +396,10 @@ def pin_dims(pin: str) -> dict:
         from .assembly import STANDARD_SCREW_LENGTHS
         return {"d": sp["d"], "screw": True, "lengths": list(STANDARD_SCREW_LENGTHS)}
     e = catalog.get(pin)
+    if e.get("thread"):   # shoulder screw: d = the shoulder (the bearing), `thread` goes into the fixed part
+        return {"d": _first(e, "d"), "screw": True, "shoulder": True, "thread": e["thread"],
+                "thread_len": float(e["thread_len"]), "head_d": e.get("head_d"), "head_h": e.get("head_h"),
+                "lengths": [float(x) for x in e.get("lengths", [])]}
     return {"d": _first(e, "d", "diameter", "od"), "screw": False, "lengths": [float(x) for x in e.get("lengths", [])]}
 
 
@@ -405,6 +409,8 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
 
     loc: on the face the hole enters from, origin on the pin axis, +Z along the axis OUT of the material; the hole runs
       `depth` mm into -Z (the knuckle or boss length along the pin). through=True overshoots the far face as well.
+    pin: a catalog dowel ("motion.pin_3mm"), a screw size ("M3") or a shoulder screw ("motion.shoulder_4_m3": the
+      shoulder turns in the free holes, its thread goes into the heatset/tap hole, the shoulder end bottoms on it).
     fit: free  - the pin turns in this hole (moving knuckle), d + fdm_fits.pin.free_allowance_d
          press - a steel dowel is pressed in and held here, d + fdm_fits.pin.press_allowance_d
          heatset / tap - a screw used as the pivot threads in here (pin = "M3" etc.; blind, from iface.hole)
@@ -416,8 +422,8 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
     pd = pin_dims(pin)
     if fit in ("heatset", "tap"):
         if not pd["screw"]:
-            raise ValueError(f"fit '{fit}' needs a screw pivot (pin='M3'), not dowel '{pin}'")
-        c, _, engage, _ = hole(pin, fit, depth, teardrop=teardrop)
+            raise ValueError(f"fit '{fit}' needs a screw pivot (pin='M3' or a shoulder screw), not dowel '{pin}'")
+        c, _, engage, _ = hole(pd.get("thread", pin), fit, depth, teardrop=teardrop)
         ctx.pin_site(PinSite(group, pin, fit, loc, engage, pd["d"]))  # deepest the tip may go
         return loc * c
     if fit == "press" and pd["screw"]:

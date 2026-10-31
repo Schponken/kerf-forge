@@ -290,7 +290,10 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
                 moves = f" — it must then move freely over {o['range'][0]:g} to {o['range'][1]:g}" + (" deg" if o["kind"] == "revolute" else " mm") if o["range"] else ""
                 L.append(f"- Fit **{f['item']}**{qty} ({f['what']}) onto **{o['parent']}** (joint `{o['joint']}`){moves}.")
         for p in s["pins"]:
-            if p.get("screw_pivot"):
+            if p.get("shoulder"):
+                L.append(f"- Pivot `{p['group']}`: {p['d_mm']:g} x {p['length_mm']:g} mm shoulder screw through {', '.join(p['free_in'])} "
+                         f"into {', '.join(p['fixed_in'])}; tighten until the shoulder bottoms - the joint then turns freely.")
+            elif p.get("screw_pivot"):
                 L.append(f"- Pivot `{p['group']}`: {p['pin']} x {p['length_mm']:g} mm screw through {', '.join(p['free_in'])} into "
                          f"{', '.join(p['fixed_in'])}; medium threadlocker, back off ~1/8 turn so it turns freely.")
             else:

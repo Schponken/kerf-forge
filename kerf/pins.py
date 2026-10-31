@@ -38,9 +38,12 @@ def _line_off(o_ref, u, p) -> float:
     return float(np.linalg.norm(v - np.dot(v, u) * u))
 
 
+SHOULDER_PLAY = 0.5  # mm; most axial play a shoulder-screw pivot may leave between the head and the moving part
+
+
 def _min_cover(s, d: float) -> float:
     if s.fit == "heatset":
-        sp = screw_spec(s.pin)
+        sp = screw_spec(pin_dims(s.pin).get("thread", s.pin))
         return min((sp.get("insert_len") or s.depth) * 0.7, 1.5 * d)
     if s.fit == "tap":
         return 1.5 * d
@@ -111,7 +114,11 @@ def check(asm) -> tuple[list, list, list]:
             return all(min(b, a1) - max(a, a0) >= _min_cover(s, d) - 1e-3 for a, b, _, s in iv)
 
         length, head_end = None, None
-        if pd["screw"]:
+        if pd.get("shoulder"):
+            length = _shoulder(g, pin, pd, iv, lo, hi, problems)
+            if length is None:
+                bad = True
+        elif pd["screw"]:
             fx = [x for x in iv if x[3].fit in FIXED]
             ends = []
             if fx and min(a for a, _, _, _ in fx) <= lo + 1e-3:
@@ -146,6 +153,38 @@ def check(asm) -> tuple[list, list, list]:
             problems.append(f"pin group '{g}': no stocked {pin} length fits inside the {span:.1f} mm span and reaches every "
                             f"hole by min(hole, 1.5 d) (lengths {pd['lengths']}); make the span equal a stocked length")
         out.append({"group": g, "pin": pin, "d_mm": d, "length_mm": length, "span_mm": round(span, 2),
-                    "fixed_in": fixed, "free_in": free, "screw_pivot": pd["screw"],
+                    "fixed_in": fixed, "free_in": free, "screw_pivot": pd["screw"], "shoulder": bool(pd.get("shoulder")),
                     "fixed_fit": sorted({s.fit for _, s, _, _ in sites if s.fit in FIXED})})
     return out, problems, warnings
+
+
+def _shoulder(g, pin, pd, iv, lo, hi, problems):
+    """Shoulder-screw pivot: the head sits on the outer face of the free holes, the shoulder runs through them and
+    bottoms on the face of the threaded (fixed) hole, the thread goes into that hole. Picks the shortest stocked
+    shoulder length that does not clamp the moving parts (shoulder >= head face to fixed face) with at most
+    SHOULDER_PLAY of axial play, and checks the thread fits and engages the fixed hole. Returns the length or None."""
+    fx = [x for x in iv if x[3].fit in FIXED]
+    fr = [x for x in iv if x[3].fit not in FIXED]
+    if len(fx) != 1 or not fr:
+        problems.append(f"pin group '{g}': a shoulder screw needs exactly one threaded hole and at least one free hole")
+        return None
+    a, b, iid, s = fx[0]
+    if a <= min(x[0] for x in fr) - 1e-3:      # thread at the low end: head on the high end
+        face, head, depth = b, max(x[1] for x in fr), b - a
+    elif b >= max(x[1] for x in fr) + 1e-3:
+        face, head, depth = a, min(x[0] for x in fr), b - a
+    else:
+        problems.append(f"pin group '{g}': the shoulder screw's threaded hole in {iid} must be at one end of the pin line")
+        return None
+    need = abs(head - face)
+    fits = [L for L in sorted(pd["lengths"]) if need - 1e-3 <= L <= need + SHOULDER_PLAY]
+    if not fits:
+        problems.append(f"pin group '{g}': {pin} needs a shoulder of {need:.2f}-{need + SHOULDER_PLAY:.2f} mm (head face to "
+                        f"the threaded part's face) but is stocked in {pd['lengths']}; change the knuckle widths")
+        return None
+    cover = _min_cover(s, pd["d"])
+    if pd["thread_len"] > depth + 0.5 or min(pd["thread_len"], depth) < cover - 1e-3:
+        problems.append(f"pin group '{g}': {pin} thread {pd['thread_len']:g} mm does not fit / engage the {depth:.1f} mm "
+                        f"threaded hole in {iid} (needs >= {cover:.1f} mm)")
+        return None
+    return fits[0]
