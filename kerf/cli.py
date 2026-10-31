@@ -190,6 +190,7 @@ def main(argv=None) -> int:
     fd.add_argument("--limit", type=int, default=8); fd.add_argument("--measure", type=int, default=4)
     for k in ("--add", "--title", "--license", "--dims", "--source"):
         fd.add_argument(k, default=None)
+    g = sub.add_parser("gallery"); g.add_argument("projects", nargs="*")
     a = ap.parse_args(argv)
     sys.path.insert(0, str(ROOT))
     if a.cmd == "doctor":
@@ -218,6 +219,12 @@ def main(argv=None) -> int:
         if r["sent"] is not None and not r["sent"]["started"]:
             _p(f"FAIL the printer did not report the job started: {r['sent']['status']}")
             return 1
+        return 0
+    if a.cmd == "gallery":
+        from . import gallery
+        r = gallery.build(a.projects or None)
+        _p(f"gallery: {r['index']} + {len(r['files'])} files (out/gallery/files.json) for "
+           f"{len(r['projects'])} projects; publish index.html with those files as one Artifact")
         return 0
     if a.cmd == "find":
         from . import find as F, project as P
