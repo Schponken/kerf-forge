@@ -168,6 +168,7 @@ def cmd_beat():
         p = DIR / f"{k}.json"
         c = json.loads(p.read_text(encoding="utf-8")); c["heartbeat"] = now
         p.write_text(json.dumps(c, indent=1) + "\n")
+        git("add", f"claims/{k}.json")  # staged, so the next commit carries it and `git pull --rebase` isn't blocked
     return 0
 
 
