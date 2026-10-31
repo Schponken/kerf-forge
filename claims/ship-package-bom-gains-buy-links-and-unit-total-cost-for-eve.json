@@ -1,0 +1,7 @@
+{
+ "item": "Ship package: BOM gains buy links and unit/total cost for every purchased item (catalog sources), and `kerf build` writes `out/ASSEMBLY.md` \u2014 step-by-step assembly order with an exploded render per step and the screw/insert list for each step",
+ "session": "12d9384eb7",
+ "since": 1793409523.77599,
+ "heartbeat": 1793409523.77599,
+ "since_utc": "2026-10-31 01:18"
+}
