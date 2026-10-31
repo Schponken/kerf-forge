@@ -315,3 +315,49 @@ def test_supplied_lead_is_not_bought_or_weighed():
     class _P:
         data = {"wiring": [w, {**w, "supplied": False}]}
     assert E.wiring_mass_g(_P()) == pytest.approx(2 * 0.1 * 43)     # only the second: 2 x 0.1 m x 43 g/m (AWG 12)
+
+
+def test_voltage_drop_by_hand(tmp_path):
+    """One MG996R on 400 mm of AWG 20 from the 5 V adapter. Hand calc: AWG 20 d 0.8128 mm -> A = 5.1887e-7 m2;
+    copper 1.72e-8 ohm m at 20 C, alpha 0.00393. Loop (2 x 0.4 m) at 40 C: 0.8 x 1.8552e-8 / 5.1887e-7 = 0.02860 ohm
+    -> 0.9 A running drops 0.02574 V (servo sees 4.974 V); at 100 C (2.2608e-8): 0.03486 ohm x 2.5 A stall = 0.0871 V."""
+    assert E.loop_ohm(20, 400) == pytest.approx(0.02860, rel=2e-3)
+    proj, asm = _servos(tmp_path, 1)
+    rows = {r["kind"]: r for r in E.analyse(proj)["ratings"] if r["kind"].startswith("voltage after")}
+    avg = rows["voltage after IR drop (avg, 1 run(s))"]
+    peak = rows["voltage after IR drop (peak, 1 run(s))"]
+    assert avg["value"] == pytest.approx(5 - 0.02574, abs=1e-3) and avg["ok"] and avg["limit"] == 4.8
+    assert peak["value"] == pytest.approx(5 - 0.0871, abs=1e-3) and peak["soft"]
+
+
+def test_voltage_drop_sag_is_reported_not_failed(tmp_path):
+    """Thin, long wire: the average drop below the servo's 4.8 V fails power_budget; a sag only at peak is reported."""
+    proj, asm = _servos(tmp_path, 1)
+    proj.data["wiring"][0].update(gauge=26, length_mm=1500)
+    # AWG 26: A = 1.2810e-7; 3 m loop. 40 C: 0.4345 ohm x 0.9 A = 0.391 V -> 4.609 V < 4.8 -> fail
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert not r["power"]["ok"] and "voltage after IR drop (avg" in r["power"]["detail"]
+    proj.data["wiring"][0].update(gauge=22, length_mm=1500)
+    # AWG 22, 3 m loop: 40 C 0.1703 ohm x 0.9 = 0.153 V (ok); 100 C 0.2075 ohm x 2.5 A = 0.519 V -> 4.48 V sag
+    r = {x["id"]: x for x in requirements.run_all(proj, asm)}
+    assert r["power"]["ok"] and "brief sag at peak" in r["power"]["detail"]
+
+
+def test_steps_pick_the_verb_per_end():
+    wires = [{"id": "p", "from": "jack", "to": "servo", "kind": "power", "gauge": 22, "length_mm": 250, "color": "red/black",
+              "points": [], "terms": {"from": "screw", "to": "header"}},
+             {"id": "g", "from": "nano", "to": "jack", "kind": "signal", "gauge": 26, "length_mm": 110, "color": "black",
+              "points": [], "terms": {"from": "plug", "to": "screw"}}]
+    st = WO.steps({"wires": wires, "mains": True})
+    assert "clamp under jack's screw terminal, solder to the pin header servo's plug pushes onto; heat-shrink" in st[0]
+    assert "plug into nano, clamp under jack's screw terminal." in st[1] and "heat-shrink" not in st[1]
+    rows = WO.bom_rows({"wires": wires})
+    assert sum(r["qty"] for r in rows if "heat-shrink" in r["item"]) == 2          # only the 2 header ends are soldered
+
+
+def test_feed_at_the_minimum_is_reported_not_failed(tmp_path):
+    """A run at exactly the load's minimum voltage (catalog min = nominal) leaves no headroom to judge a drop."""
+    proj, asm = _servos(tmp_path, 1)
+    proj.data["wiring"][0]["v"] = 4.8                     # MG996R voltage_min 4.8
+    rows = [r for r in E.analyse(proj)["ratings"] if r["kind"].startswith("voltage after")]
+    assert rows and all(r["soft"] and not r["ok"] for r in rows)

@@ -122,3 +122,24 @@ def test_new_part_is_drawn_away_from_its_parent(tmp_path):
     proj, asm, _ = _bolt(tmp_path)
     off = ship._explode_offset(proj, asm, "plate", ["block", "plate"])
     assert off[2] > 10 and abs(off[0]) < 1e-6 and abs(off[1]) < 1e-6     # plate sits on top of the block -> lifted up
+
+
+def test_assembly_md_carries_washers_ball_end_insert_and_notes(tmp_path):
+    """Screw steps list bom_extra rows tied to the group (washers) and ball-end warnings; a fitted item shows its
+    assembly_note and its checked insert path (servo_link review: grommets, washers, top-first, ball-end key)."""
+    proj, asm, fj = _bolt(tmp_path)
+    proj.data["bom_extra"] = [{"type": "fastener", "item": "M3 flat washer", "qty": 2, "group": "g", "spec": "under the heads"},
+                              {"type": "hardware", "item": "cable tie", "qty": 1}]
+    proj.items["plate"].spec["assembly_note"] = "deburr the holes first"
+    rep = {"assembly": {"fasteners": fj, "pins": [],
+                        "hex_keys": [{"group": "g", "straight": False, "ball_end": True},
+                                     {"group": "g", "straight": True}],
+                        "insertion": [{"item": "plate", "direction": [0.0, 0.0, -1.0], "distance_mm": 20.0, "clear": True}]},
+           "parts": {}, "bom": []}
+    ship.write_assembly(proj, asm, rep, tmp_path)
+    md = (tmp_path / "ASSEMBLY.md").read_text()
+    step2 = md.split("## Step 2")[1]
+    assert "  - deburr the holes first" in step2
+    assert "It goes in moving -Z (down) (world), from 20 mm away — this path is checked clear." in step2
+    assert "With: 2 x M3 flat washer — under the heads." in step2 and "cable tie" not in step2
+    assert "1 screw(s) of `g` need a ball-end hex key" in step2

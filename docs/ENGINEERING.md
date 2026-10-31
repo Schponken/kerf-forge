@@ -128,6 +128,11 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
   half the 200 C rating of silicone insulation). Copper: 1.72e-8 ohm m and 0.00393 /K at 20 C (CRC via
   hyperphysics), 8.92 g/cm3 x 385 J/(kg K) (copper.org). A real, configured ESC/firmware current limit may cap the
   peak (`electrical.limits` with a why); never lower a rating.
+- Voltage drop (in `power_budget`): every load's input after the IR drop of the +/- pairs back to its source or
+  regulator (R = 2 L rho / A) must stay >= its `voltage_min` at average current with 40 C wire; at peak (100 C wire)
+  a sag below it is reported, not failed (a brief brown-out of a stalled servo, not a design fault). A feed at
+  exactly the load's minimum (a '5 V' camera on a 5 V pad) has no headroom to judge: its drop is reported only. A lead whose
+  gauge the maker does not publish is checked at the thinnest gauge whose ampacity covers the maker's current rating.
 - `flight_time` (drones, hover) or `run_time` (everything else) from 80 % of capacity (the LiPo 80 % rule, Flite
   Test). Hover power by momentum theory: P = sum(kappa x T^1.5 / sqrt(2 rho A)) / (FM x eta) with rho 1.225, figure
   of merit FM 0.5 (UIUC measured 0.38-0.61 on 2.5-5 in props, Deters & Selig 2008; 0.6 typical per Bauersfeld &

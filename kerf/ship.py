@@ -289,6 +289,7 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
                 o = f["onto"]
                 moves = f" — it must then move freely over {o['range'][0]:g} to {o['range'][1]:g}" + (" deg" if o["kind"] == "revolute" else " mm") if o["range"] else ""
                 L.append(f"- Fit **{f['item']}**{qty} ({f['what']}) onto **{o['parent']}** (joint `{o['joint']}`){moves}.")
+            L += fit_notes(proj, rep, f["item"])
         for p in s["pins"]:
             if p.get("shoulder"):
                 L.append(f"- Pivot `{p['group']}`: {p['d_mm']:g} x {p['length_mm']:g} mm shoulder screw through {', '.join(p['free_in'])} "
@@ -301,11 +302,45 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
                          f"it turns in {', '.join(p['free_in'])}.")
         for x in s["screws"]:
             L.append(f"- Drive {x['qty']} x {x['screw']} x {x['length_mm']:g} mm {x['head']} screw(s) (groups: {', '.join(s['groups'])}).")
+        L += screw_notes(proj, rep, s["groups"])
         for b in s["bench"]:
             L.append(f"- Bench sub-assembly: do group `{b['group']}` before fitting {', '.join(b['before'])} — {b['why']}.")
         L.append("")
     (outdir / "ASSEMBLY.md").write_text("\n".join(L), encoding="utf-8")
     return {"file": "ASSEMBLY.md", "steps": len(st), "renders": render is not None}
+
+
+def _dir_words(d) -> str:
+    names = (("+X", "-X"), ("+Y", "-Y"), ("+Z (up)", "-Z (down)"))
+    k = int(np.argmax(np.abs(d)))
+    return names[k][0 if d[k] > 0 else 1] + ("" if abs(d[k]) > 0.97 else f" ({[round(float(x), 2) for x in d]})")
+
+
+def fit_notes(proj, rep: dict, iid: str) -> list[str]:
+    """Extra lines for fitting one item: its `assembly_note` and the checked `insert` path."""
+    out = []
+    note = proj.items[iid].spec.get("assembly_note")
+    if note:
+        out.append(f"  - {note}")
+    for r in rep.get("assembly", {}).get("insertion", []) or []:
+        if r["item"] == iid:
+            out.append(f"  - It goes in moving {_dir_words(np.asarray(r['direction'], float))} (world), from "
+                       f"{r['distance_mm']:g} mm away" + (" — this path is checked clear." if r["clear"] else
+                                                          " — WARNING: the check found this path blocked."))
+    return out
+
+
+def screw_notes(proj, rep: dict, groups: list) -> list[str]:
+    """Extra lines for a step's screws: bom_extra items tied to their group (washers, spacers) and hex-key warnings."""
+    out = []
+    for x in proj.data.get("bom_extra") or []:
+        if x.get("group") in groups:
+            out.append(f"  - With: {x.get('qty', '')} x {x['item']}" + (f" — {x['spec']}" if x.get("spec") else "") + ".")
+    ball = Counter(r["group"] for r in rep.get("assembly", {}).get("hex_keys", []) or []
+                   if r["group"] in groups and not r["straight"] and r.get("ball_end"))
+    for g, n in sorted(ball.items()):
+        out.append(f"  - {n} screw(s) of `{g}` need a ball-end hex key (a straight key is blocked; tilt up to 25 deg).")
+    return out
 
 
 def write(proj, asm, rep: dict, outdir: Path, render=None, prices: dict | None = None) -> dict:

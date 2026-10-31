@@ -14,13 +14,16 @@ def power_budget(proj, asm, fm=None, eta=None):
     """Every rated element (battery C, BEC/ESC outputs, connectors, wire ampacity and burst heating, input voltage
     ranges) holds at average and at peak current."""
     m = E.analyse(proj, fm=fm, eta=eta)
-    bad = [r for r in m["ratings"] if not r["ok"]]
-    util = [r["value"] / r["limit"] for r in m["ratings"] if r["kind"] != "voltage" and r["limit"]]
+    bad = [r for r in m["ratings"] if not r["ok"] and not r.get("soft")]
+    sags = [r for r in m["ratings"] if not r["ok"] and r.get("soft")]
+    util = [r["value"] / r["limit"] for r in m["ratings"] if not r["kind"].startswith("voltage") and r["limit"]]
     worst = max(util) if util else 0.0
     detail = (f"worst load / rating over {len(m['ratings'])} rated elements (battery avg {m['avg_a']} A, peak "
               f"{m['peak_a']} A)")
     if bad:
-        detail += "; over: " + "; ".join(f"{r['what']} {r['kind']} {r['value']} > {r['limit']}" for r in bad[:6])
+        detail += "; over: " + "; ".join(f"{r['what']} {r['kind']} {r['value']} vs {r['limit']}" for r in bad[:6])
+    if sags:
+        detail += "; brief sag at peak (not failed): " + "; ".join(f"{r['what']} {r['value']} V < {r['limit']} V" for r in sags[:4])
     return {"ok": not bad, "value": round(worst, 3), "limit": 1.0, "detail": detail, "rows": m["ratings"]}
 
 

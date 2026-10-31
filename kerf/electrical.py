@@ -43,6 +43,10 @@ COAX_KAPPA = 1.281           # induced-power interference factor, coaxial pair a
 BEC_EFF_DEFAULT = 0.8        # switching regulator efficiency, conservative (no maker figure published for our BECs)
 
 
+# how a wire end joins an item: run `ends: {from: screw, to: header}` or the item's catalog `terminal`; default solder
+TERMINALS = {"solder", "screw", "lever", "header", "plug"}
+
+
 class ElectricalError(ValueError):
     pass
 
@@ -62,6 +66,15 @@ def burst_rise_k(current_a: float, gauge, seconds: float) -> float:
     j = current_a / wire_area_m2(gauge)
     rho = CU_RHO_20 * (1 + CU_ALPHA * 80.0)
     return j * j * rho * seconds / CU_CV
+
+
+WIRE_AMBIENT_C = 40.0        # same ambient as the burst-heating rule (40 C -> 100 C)
+
+
+def loop_ohm(gauge, length_mm: float, temp_c: float = WIRE_AMBIENT_C) -> float:
+    """Resistance of a +/- pair (out and back) of `length_mm` cut length at `temp_c` (copper, CRC resistivity)."""
+    rho = CU_RHO_20 * (1 + CU_ALPHA * (temp_c - 20.0))
+    return 2 * float(length_mm) / 1000 * rho / wire_area_m2(gauge)
 
 
 def hover_power_w(mass_g: float, prop_d_mm: float, groups: list, fm=FM_DEFAULT, eta=ETA_MOTOR_DEFAULT) -> float:
@@ -192,7 +205,14 @@ def analyse(proj, fm=None, eta=None) -> dict:
             raise ElectricalError(f"wiring '{wid}': a power run needs its voltage 'v'")
         if str(int(w["gauge"])) not in catalog.get("wire.awg")["ampacity_a"]:
             raise ElectricalError(f"wiring '{wid}': AWG {w['gauge']} is not in catalog wire.awg")
-        ws.append({**w, "id": wid, "fi": fi, "fp": fp, "ti": ti, "tp": tp, "kind": kind})
+        ends = w.get("ends") or {}
+        terms = {}
+        for side, item in (("from", fi), ("to", ti)):
+            t = ends.get(side) or _cat(proj, item)[1].get("terminal") or "solder"
+            if t not in TERMINALS:
+                raise ElectricalError(f"wiring '{wid}': {side} end '{t}' is not one of {sorted(TERMINALS)}")
+            terms[side] = t
+        ws.append({**w, "id": wid, "fi": fi, "fp": fp, "ti": ti, "tp": tp, "kind": kind, "terms": terms})
     power = [w for w in ws if w["kind"] == "power"]
     feed = {}
     for w in power:
@@ -337,6 +357,30 @@ def analyse(proj, fm=None, eta=None) -> dict:
             ok = float(lo) - 1e-9 <= float(w["v"]) <= float(hi) + 1e-9
             rows.append({"what": f"{w['ti']} input", "kind": "voltage", "value": w["v"], "limit": [lo, hi], "ok": ok, "note": ""})
 
+    # voltage drop: a load's input = its run's voltage minus the IR drop of every +/- pair back to the source or to the
+    # regulator that starts its rail (a lower-voltage run). Average current at 40 C wire = a rating (must hold);
+    # peak at 100 C wire = `soft` (reported, not failed: a brief sag at stall/punch-out, e.g. a servo browning out).
+    for w in power:
+        _, e = _cat(proj, w["ti"])
+        lo = e.get("voltage_min", e.get("input_v_min"))
+        hi = e.get("voltage_max", e.get("input_v_max"))
+        # a catalog that states one nominal voltage (min == max) gives no tolerance to judge a drop against
+        if lo is None or (hi is not None and float(hi) <= float(lo)) or int(w.get("conductors") or 2) != 2:
+            continue
+        chain, x = [w], w
+        while x["fi"] in feed and abs(float(feed[x["fi"]]["v"]) - float(x["v"])) < 0.05:
+            x = feed[x["fi"]]
+            chain.append(x)
+        # a feed at exactly the load's minimum leaves no headroom to judge (the catalog minimum is then the nominal
+        # rating, e.g. a '5 V' camera on a 5 V pad): report its drop, do not fail it
+        no_headroom = float(w["v"]) <= float(lo) + 1e-9
+        for cur, temp, soft in (("avg_a", WIRE_AMBIENT_C, no_headroom), ("peak_a", WIRE_AMBIENT_C + WIRE_BURST_DT_K, True)):
+            drop = sum(r[cur] * loop_ohm(r["gauge"], r["length_mm"], temp) for r in chain)
+            v_in = float(w["v"]) - drop
+            rows.append({"what": f"{w['ti']} input", "kind": f"voltage after IR drop ({cur[:-2]}, {len(chain)} run(s))",
+                         "value": round(v_in, 3), "limit": float(lo), "ok": v_in >= float(lo) - 1e-9, "soft": soft,
+                         "note": f"{drop:.3f} V drop over {' + '.join(r['id'] for r in chain)}"})
+
     usable = float(el.get("usable", USABLE_DEFAULT))
     return {"battery": bat, "mains": mains, "cells": cells, "v_bat": v_bat, "capacity_ah": ah, "usable": usable, "burst_s": burst_s,
             "avg_a": round(tot_avg, 3), "peak_a": round(tot_peak, 3), "hover": hover,
@@ -344,7 +388,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
             "loads": {i: _capped(dict(zip(("avg_a", "peak_a", "source"), own(i))), limits.get(i)) for i in memo},
             "limits": {i: {"peak_a": float(v["peak_a"]), "why": v["why"]} for i, v in limits.items()},
             "wires": [{k: w.get(k) for k in ("id", "from", "to", "kind", "v", "gauge", "color", "conductors", "length_mm", "avg_a",
-                                             "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note")} for w in ws],
+                                             "peak_a", "routed_mm", "cut_min_mm", "points", "supplied", "note", "terms")} for w in ws],
             "ratings": rows}
 
 

@@ -1,0 +1,18 @@
+[
+ "boards.rpi_camera_module_3",
+ "boards.rpi_zero_2w",
+ "electronics.connectors.dc_jack_5521_screw",
+ "electronics.supplies.meanwell_gst60a05",
+ "fdm_fits.pin",
+ "fdm_holes.M2",
+ "fdm_holes.M3",
+ "materials.PETG",
+ "screws.M2",
+ "screws.M3",
+ "servo_horns.aluminum_micro_21T",
+ "servos.SG90",
+ "tools.hex_key",
+ "tripod_nut_1_4_20",
+ "wire.awg",
+ "wire.silicone"
+]

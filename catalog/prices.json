@@ -412,5 +412,61 @@
     "checked": "2026-10-31",
     "source": "https://www.zoro.com/kable-kontrol-cable-zip-ties-4-inch-long-uv-resistant-nylon-18-lbs-tensile-strength-100-pc-pack-ct242/i/G203161758/",
     "note": "Kable Kontrol CT242 'Cable Tie, 4 in L, 1 in Max Bundle Dia., Black, Nylon 6/6, 18 lb Strength, 100 PK', 2.5 mm wide x 4 in (~100 mm), $0.71/100; Zoro sells it in multiples of 16 packs ($11.36 minimum order)."
+  },
+  "electronics.supplies.meanwell_gst60a05": {
+    "buy": "https://www.jameco.com/z/GST60A05-P1J-MEAN-WELL-5-Volt-6-Amp-30-Watt-3-Wire-Regulated-Switching-Desktop-Power-Adapter-2-1mm-Plug-Level-VI_2224358.html",
+    "pack_qty": 1,
+    "pack_usd": 19.4,
+    "checked": "2026-10-31",
+    "source": "https://www.jameco.com/z/GST60A05-P1J-MEAN-WELL-5-Volt-6-Amp-30-Watt-3-Wire-Regulated-Switching-Desktop-Power-Adapter-2-1mm-Plug-Level-VI_2224358.html",
+    "note": "Jameco GST60A05-P1J, '$19.40 ea' (1+). Mains cord not included (see mains_cord:C13)."
+  },
+  "electronics.connectors.dc_jack_5521_screw": {
+    "buy": "https://www.sparkfun.com/dc-barrel-jack-adapter-female.html",
+    "pack_qty": 1,
+    "pack_usd": 3.75,
+    "checked": "2026-10-31",
+    "source": "https://www.sparkfun.com/dc-barrel-jack-adapter-female.html",
+    "note": "SparkFun PRT-10288, $3.75."
+  },
+  "boards.arduino_nano": {
+    "buy": "https://www.pishop.us/product/arduino-nano/",
+    "pack_qty": 1,
+    "pack_usd": 28.95,
+    "checked": "2026-10-31",
+    "source": "https://www.pishop.us/product/arduino-nano/",
+    "note": "PiShop US, genuine Arduino Nano A000005, $28.95 (New)."
+  },
+  "wire:AWG22": {
+    "buy": "https://outofdarts.com/products/silicone-stranded-hobby-wire-red-black-pair",
+    "pack_qty": 0.61,
+    "pack_usd": 0.59,
+    "checked": "2026-10-31",
+    "source": "https://outofdarts.com/products/silicone-stranded-hobby-wire-red-black-pair",
+    "note": "Out of Darts silicone hobby wire by the foot, red + black pair (1 ft each = 0.61 m of wire), 22 AWG $0.59; the 22 AWG variant showed 'sold out' on the check date. UNIT = METRES, so pack_qty 0.61."
+  },
+  "header:2.54x40": {
+    "buy": "https://www.sparkfun.com/break-away-headers-straight.html",
+    "pack_qty": 40,
+    "pack_usd": 1.95,
+    "checked": "2026-10-31",
+    "source": "https://www.sparkfun.com/break-away-headers-straight.html",
+    "note": "SparkFun break-away straight headers, 40 pins at 2.54 mm, $1.95. UNIT = pins."
+  },
+  "cable:usb_mini_b": {
+    "buy": "https://www.sparkfun.com/sparkfun-usb-mini-b-cable-6-foot.html",
+    "pack_qty": 1,
+    "pack_usd": 5.5,
+    "checked": "2026-10-31",
+    "source": "https://www.sparkfun.com/sparkfun-usb-mini-b-cable-6-foot.html",
+    "note": "SparkFun USB A to Mini-B 6 ft, $5.50, in stock."
+  },
+  "mains_cord:C13": {
+    "buy": "https://www.jameco.com/z/10W1-01206-SH-Jameco-ValuePro-Power-Cord-NEMA-5-15P-to-C13-Plug-6-Feet-AWG-18-3-SVT-Black-Detachable-Shielded_161761.html",
+    "pack_qty": 1,
+    "pack_usd": 4.95,
+    "checked": "2026-10-31",
+    "source": "https://www.jameco.com/z/10W1-01206-SH-Jameco-ValuePro-Power-Cord-NEMA-5-15P-to-C13-Plug-6-Feet-AWG-18-3-SVT-Black-Detachable-Shielded_161761.html",
+    "note": "Jameco ValuePro NEMA 5-15P (US) to C13, 6 ft, 18 AWG, $4.95. Outside the US buy the local-plug C13 cord."
   }
 }

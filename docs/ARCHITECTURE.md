@@ -40,7 +40,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/wiring_out.py` | `out/WIRING.md`, `out/wiring.svg`, the solder/wiring steps appended to `out/ASSEMBLY.md`, and the BOM rows for wire and heat-shrink; buy links from catalog sources |
 | `kerf/bambu.py` | `kerf print <p>`: orients each printed part (24 axis-aligned rotations scored on one tessellation: bed fit, `load_axis` within 30 deg of the layers, least >45 deg overhang, then height; the yaml `print_rot` is kept unless another needs clearly less support, and every change is reported), packs plates into `out/print/`, slices each with the Bambu Studio / OrcaSlicer CLI (full exported machine/process/filament JSON from `~/.kerf/bambu.json`) to `.gcode.3mf`, and with `--send N` uploads plate N over FTPS (implicit TLS, 990) and starts it with MQTT `print.project_file` (TLS 8883, Developer Mode), polling `pushall` reports until it starts; without a slicer config it writes the plates and opens them in Bambu Studio / Bambu Connect; `--dry-run` prints every command and payload (access code masked) |
 | `kerf/meshy.py` | Creative mode: a `source: meshy` part's cached Meshy model is scaled to `bounds`, repaired per connected piece (merge + fill holes, else voxel remesh) and unioned, then fused with the part's B-rep features and cut by its `ctx.mesh_cut` solids in mesh space (manifold3d), simplified at 10 um; the result rides on the shape as `kerf_mesh` and geom uses it for print checks, overlaps, bbox, volume, STL/3MF/plates and GLB, while joints, fastener/pin sites, FEA and STEP keep the exact features; a missing model reports the prompt and path to generate |
-| `kerf/ship.py` | Ship package: prices every BOM row from `catalog/prices.json` (dated snapshot: buy link, pack qty/price, source; keys = catalog path, `screw:M3x8:socket` -> `screw:M3:socket`, `insert:M3`, `nut:M3`, `dowel:3x16` -> `dowel:3`, `material:PETG` per gram, or a bom_extra row's `price_key`), adds buy / unit $ / total $ columns and the total to `bom.md`/`bom.csv`; writes `out/ASSEMBLY.md`: root first, then `assembly.order` (unnamed items right after their parent), per step the heat-set inserts to press first, pins, screws (driven when the later of their two parts goes on), bench sub-assemblies from `key_access`, and an iso render in `out/assembly_steps/` with the new part pulled back along its mating joint axis (or its `insert` path) |
+| `kerf/ship.py` | Ship package: prices every BOM row from `catalog/prices.json` (dated snapshot: buy link, pack qty/price, source; keys = catalog path, `screw:M3x8:socket` -> `screw:M3:socket`, `insert:M3`, `nut:M3`, `dowel:3x16` -> `dowel:3`, `material:PETG` per gram, or a bom_extra row's `price_key`), adds buy / unit $ / total $ columns and the total to `bom.md`/`bom.csv`; writes `out/ASSEMBLY.md`: root first, then `assembly.order` (unnamed items right after their parent), per step the heat-set inserts to press first, pins, screws (driven when the later of their two parts goes on), bench sub-assemblies from `key_access`, its `insert` path (checked clear) and `assembly_note`, per screw group the `bom_extra` rows with that `group` and ball-end key warnings, and an iso render in `out/assembly_steps/` with the new part pulled back along its mating joint axis (or its `insert` path) |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM (with a buy / source link column) |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` |
 | `kerf/cli.py` | `kerf doctor | check | build | verify | review-status | new | status | calibrate | feedback | find | print` |
@@ -167,6 +167,11 @@ wiring:
   - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 20, conductors: 3, length_mm: 120, route: [arm_1.motor]}
   - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, length_mm: 60}
 ```
+- Wire ends: `ends: {from: screw, to: header}` on a run, else the item's catalog `terminal`, else `solder`
+  (solder | screw | lever | header | plug): the WIRING/ASSEMBLY step says what to do at each end and heat-shrink is
+  counted only for soldered ends. `power_budget` also checks voltage drop: each load's input after the IR drop of
+  every +/- pair back to its source or regulator, at average current (40 C wire, must be >= its voltage_min) and at
+  peak (100 C wire, reported as a brief sag, not failed); skipped where the catalog gives one nominal voltage.
 - `supplied: <item>` marks a lead that comes with an item (an adapter's DC cord, a pack's own lead): rated and
   length-checked like any run, but no wire or heat-shrink in the BOM and its step says connect, not cut.
 - A power run (`kind: power`, default) is the +/- pair (`conductors` overrides, e.g. 3 motor phases) and carries
@@ -208,7 +213,8 @@ wiring:
 - Keep-outs: as purchased, plus `owner` (the item the volume belongs to; never an interference with it).
 - Project level: `name`, `printer`, `supports`, `params` (`value`, `min`, `max`, `step`, `label`), `derived`, `layout`,
   `parts`, `purchased`, `keepouts`, `assembly`, `requirements`, `bom_extra` ([{item, qty, type, spec, note}] extra BOM
-  rows such as straps, wire, glue).
+  rows such as straps, wire, glue; `group: <fastener group>` lists the row in ASSEMBLY.md at that group's screws,
+  e.g. washers), and any item may carry `assembly_note` (printed in ASSEMBLY.md where it is fitted).
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs
 | proxy | from catalog | joints | fastener sites (`groups:` key) |

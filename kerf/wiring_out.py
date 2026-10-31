@@ -39,6 +39,16 @@ def _conductors(w):
     return int(w.get("conductors") or (2 if w["kind"] == "power" else 1))
 
 
+SOLDERED = {"solder", "header"}      # ends that get a solder joint and a heat-shrink sleeve
+
+
+def join(term: str, item: str) -> str:
+    """The action for one wire end, by how it joins the item (electrical.TERMINALS)."""
+    return {"solder": f"solder to {item}", "screw": f"clamp under {item}'s screw terminal",
+            "lever": f"push into {item}'s lever connector", "plug": f"plug into {item}",
+            "header": f"solder to the pin header {item}'s plug pushes onto"}[term]
+
+
 def bom_rows(model) -> list:
     rows = []
     wire = defaultdict(float)
@@ -48,7 +58,8 @@ def bom_rows(model) -> list:
             continue
         n = _conductors(w)
         wire[(int(w["gauge"]), w.get("color") or ("red/black" if n == 2 else "any"))] += float(w["length_mm"]) * n
-        ends[int(w["gauge"])] += 2 * n
+        terms = w.get("terms") or {"from": "solder", "to": "solder"}
+        ends[int(w["gauge"])] += n * sum(1 for t in terms.values() if t in SOLDERED)
     for (g, col), mm in sorted(wire.items()):
         rows.append({"type": "wire", "item": f"AWG {g} silicone stranded wire ({col}), metres", "qty": math.ceil(mm / 100) / 10,
                      "spec": f"chassis rating {catalog.get('wire.awg')['ampacity_a'][str(g)]} A", "link": wire_link(g), "price_key": f"wire:AWG{g}",
@@ -91,7 +102,7 @@ def wiring_md(proj, model) -> str:
         L.append(f"| {i} | {d['avg_a']:.3f} | {d['peak_a']:.3f} | {d['source']} |")
     L += ["", "## Ratings", "", "| Element | Check | Value | Limit | OK |", "|---|---|---|---|---|"]
     for r in model["ratings"]:
-        L.append(f"| {r['what']} | {r['kind']} | {r['value']} | {r['limit']} | {'yes' if r['ok'] else '**NO**'} |")
+        L.append(f"| {r['what']} | {r['kind']} | {r['value']} | {r['limit']} | {'yes' if r['ok'] else ('sags (brief, at peak)' if r.get('soft') else '**NO**')} |")
     L += ["", "## Solder and wiring steps", ""] + [f"{k}. {s}" for k, s in enumerate(steps(model), 1)]
     return "\n".join(L) + "\n"
 
@@ -114,8 +125,11 @@ def steps(model) -> list:
                        f"{w['to']}, nothing to cut.")
             continue
         what = w.get("color") or ("red (+) and black (-) pair" if n == 2 else f"{n} conductors")
-        out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**; slide heat-shrink on, "
-                   f"solder {w['from']} -> {w['to']}, shrink. Route: {' -> '.join(str(p) for p in w['points'])}."
+        terms = w.get("terms") or {"from": "solder", "to": "solder"}
+        shrink = "; heat-shrink each soldered end" if any(t in SOLDERED for t in terms.values()) else ""
+        out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**: "
+                   f"{join(terms['from'], w['from'])}, {join(terms['to'], w['to'])}{shrink}. "
+                   f"Route: {' -> '.join(str(p) for p in w['points'])}."
                    + (f" {w['note']}." if w.get("note") else ""))
     for (why, pk), ids in _limit_groups(model).items():
         out.append(f"Configure before the first power-up: **{', '.join(ids)}**: {why} (the wiring is rated for a {pk:g} A "
