@@ -14,9 +14,19 @@ class CatalogError(KeyError):
     pass
 
 
+def _no_dupes(pairs):
+    """JSON silently keeps the last of two equal keys (a bad merge can hide a whole section); refuse instead."""
+    d = {}
+    for k, v in pairs:
+        if k in d:
+            raise CatalogError(f"{CATALOG.name}: duplicate key {k!r} (a merge left two copies; merge their entries into one)")
+        d[k] = v
+    return d
+
+
 @lru_cache(maxsize=1)
 def load() -> dict:
-    return json.loads(CATALOG.read_text(encoding="utf-8"))
+    return json.loads(CATALOG.read_text(encoding="utf-8"), object_pairs_hook=_no_dupes)
 
 
 _USED: set | None = None

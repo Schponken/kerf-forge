@@ -128,21 +128,24 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
     recv = Counter((j["screw"], j["receiver"]) for j in fastener_joints if j["receiver"] in ("heatset", "nut_trap"))
     for (size, kind), n in sorted(recv.items()):
         rows.append({"type": "fastener", "item": f"{size} {'heat-set insert' if kind == 'heatset' else 'hex nut'}", "qty": n, "spec": "", "note": ""})
+    def g(x):  # a pin with no valid stocked length is a check problem already; never crash the BOM on it
+        return "? (no stocked length fits, see the pin problems)" if x is None else f"{x:g}"
+
     for pj in pins or []:
         if pj.get("shoulder"):
             from .iface import pin_dims
             pd = pin_dims(pj["pin"])
-            rows.append({"type": "fastener", "item": f"{pj['d_mm']:g} x {pj['length_mm']:g} mm shoulder screw, {pd['thread']} thread (pivot)",
+            rows.append({"type": "fastener", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm shoulder screw, {pd['thread']} thread (pivot)",
                          "qty": 1, "spec": pj["pin"], "note": f"hinge '{pj['group']}'; tighten fully (the shoulder bottoms)"})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
         elif pj["screw_pivot"]:
-            rows.append({"type": "fastener", "item": f"{pj['pin']} x {pj['length_mm']:g} mm socket head screw (pivot)", "qty": 1,
+            rows.append({"type": "fastener", "item": f"{pj['pin']} x {g(pj['length_mm'])} mm socket head screw (pivot)", "qty": 1,
                          "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; medium threadlocker"})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pj['pin']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
         else:
-            rows.append({"type": "pin", "item": f"{pj['d_mm']:g} x {pj['length_mm']:g} mm steel dowel pin", "qty": 1,
+            rows.append({"type": "pin", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm steel dowel pin", "qty": 1,
                          "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})
     rows += extra or []
     for x in proj.data.get("bom_extra") or []:

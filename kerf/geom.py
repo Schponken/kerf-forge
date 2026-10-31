@@ -96,7 +96,8 @@ def overhang(v: np.ndarray, f: np.ndarray, angle_deg: float = 45.0, bed_z: float
     area = area2 / 2
     zmin = v[:, 2].min() if bed_z is None else bed_z
     cz = (a[:, 2] + b[:, 2] + c[:, 2]) / 3
-    mask = ok & (nz < -np.sin(np.radians(angle_deg))) & (cz > zmin + 0.05)
+    # 0.25 deg of slack: an exact 45 deg chamfer or teardrop roof tessellates to nz a hair past -sin(45) and is printable
+    mask = ok & (nz < -np.sin(np.radians(angle_deg + 0.25))) & (cz > zmin + 0.05)
     total = float(area.sum())
     oh = float(area[mask].sum())
     return oh, (oh / total if total else 0.0), mask

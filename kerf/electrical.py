@@ -406,7 +406,8 @@ def _point(proj, ref, endpoint=False):
     """World point of a route reference. An endpoint pin (`stack.5v`) that is not a joint of the item is just an
     electrical pin name: the item's bounding-box centre stands in for it."""
     if isinstance(ref, (list, tuple)):
-        return np.asarray(ref, float)
+        from .requirements import _ev
+        return np.asarray([_ev(v, proj.params) for v in ref], float)
     if isinstance(ref, dict):                       # {item, at: [x, y, z] | joint}: a tie point that moves with the item
         it = proj.items.get(ref.get("item"))
         if it is None or it.shape is None:
@@ -414,7 +415,8 @@ def _point(proj, ref, endpoint=False):
         at = ref.get("at", [0, 0, 0])
         if isinstance(at, str):
             return geom.world_point(it.shape.joints[at].location, (0, 0, 0))
-        return geom.world_point(it.shape.location, at)
+        from .requirements import _ev                # coordinates may be param expressions ("wall_out + 18")
+        return geom.world_point(it.shape.location, [_ev(v, proj.params) for v in at])
     item, pin = _ref(ref)
     if item not in proj.items or proj.items[item].shape is None:
         raise ElectricalError(f"route point '{ref}': unknown item")

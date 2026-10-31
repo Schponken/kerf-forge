@@ -12,6 +12,14 @@ ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
 
 
+def req_line(r):
+    """One requirement result; a failure whose rounded value equals its limit says so (it misses by less than the rounding)."""
+    t = f"{'ok ' if r['ok'] else 'BAD'} {r['value']} (limit {r['limit']})"
+    if not r['ok'] and r['value'] == r['limit']:
+        t += ' - misses the limit by less than the shown rounding; add margin'
+    return t
+
+
 def render_glb(glb: Path, prefix: Path, views="iso,front,right,top", sheet=True) -> dict:
     args = ["node", str(RENDER), str(glb), str(prefix), views] + (["--sheet"] if sheet else [])
     r = subprocess.run(args, capture_output=True, text=True, timeout=240)
@@ -200,7 +208,7 @@ def summary(rep: dict) -> str:
     for s in a.get("sweeps", []):
         L.append(f"  sweep {s['joint']:14s} {'clear' if s['clear'] else 'COLLIDES'} over {s.get('range', '')} ({s['samples']} samples)")
     for r in rep.get("requirements", []):
-        L.append(f"  req {r['id']:20s} " + ("skipped (--quick)" if r.get("skipped") else f"{'ok ' if r['ok'] else 'BAD'} {r['value']} (limit {r['limit']})"))
+        L.append(f"  req {r['id']:20s} " + ("skipped (--quick)" if r.get("skipped") else req_line(r)))
     for p in rep["problems"]:
         L.append(f"  PROBLEM: {p}")
     for w in rep["warnings"]:
