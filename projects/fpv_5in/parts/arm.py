@@ -11,6 +11,7 @@ from build123d import *
 from kerf import iface, features as F
 
 MOTOR = "drone.motors.2207_1855kv_6s"
+TIP_W = 14.0                                    # arm width where it meets the motor pad (20 at the root)
 RIDGE_W, RIDGE_H, RIDGE_R1 = 4.5, 1.5, 58.0     # key ridges: width, height, outer end radius (4.5 wide: a 33 N side
 #                                                 hit bends the ridge root across one layer line at ~3 MPa, review round 2)
 
@@ -21,10 +22,15 @@ def build(ctx):
     t, w = p.arm_t, p.arm_w
     pad_d = 32.0                                    # motor bell 29.1 mm + margin: a solid pad under the whole motor base
     L = p.motor_r - p.arm_r0
-    body = Pos(p.arm_r0, 0, -t) * Box(L, w, t, align=(Align.MIN, Align.CENTER, Align.MIN))
+    # full width over the clamped root and the key ridges, then tapered toward the motor pad: the crash moment falls
+    # linearly to zero at the motor, so the outer arm needs less section (audit F3: mass for T/W >= 6)
+    x_pad = p.motor_r - pad_d / 2 + 1.0
+    outline = Polyline((p.arm_r0, -w / 2), (RIDGE_R1, -w / 2), (x_pad, -TIP_W / 2), (p.motor_r, -TIP_W / 2),
+                       (p.motor_r, TIP_W / 2), (x_pad, TIP_W / 2), (RIDGE_R1, w / 2), (p.arm_r0, w / 2), close=True)
+    body = Pos(0, 0, -t) * extrude(make_face(outline), t)
     body += Pos(p.motor_r, 0, -t) * Cylinder(pad_d / 2, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body += Pos(p.arm_r0, 0, -t) * Cylinder(w / 2, t, align=(Align.CENTER, Align.CENTER, Align.MIN))  # rounded root
-    body, failed = F.safe_fillet(body, [(body.edges().filter_by(Axis.Z).filter_by_position(Axis.X, p.motor_r - pad_d / 2, p.motor_r), 4.0)])
+    body, failed = F.safe_fillet(body, [(body.edges().filter_by(Axis.Z).filter_by_position(Axis.X, p.motor_r - pad_d / 2 - 2, p.motor_r), 4.0)])
     for f in failed:
         ctx.notes.append(f"fillet skipped: {f}")
     for sy in (1, -1):                              # key ridges along both top edges under the body

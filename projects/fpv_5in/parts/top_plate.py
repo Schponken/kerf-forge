@@ -19,9 +19,11 @@ two pillars instead of four thin posts (the posts print upright: that bending ru
 the top_plate_x / top_plate_y FEA cases). Leads pass outside the pillars (|y| > 12.5 mm; the plate is 42 mm wide).
 """
 from build123d import *
-from kerf import iface
+from kerf import iface, features as F
 
 POSTS = [(33.0, 8), (33.0, -8), (-33.0, 8), (-33.0, -8)]   # must match parts/body.py
+PILLAR_FILLET = 2.0
+WINDOWS = [(-24.0, -3.0, 5.0), (7.0, 21.0, 9.0)]   # (x0, x1, half-height in y)
 XT60_X = -59.0  # cradle x -71.55..-46.45: the solder cups end 9 mm behind the rear pillar so the 12 AWG leads can turn
 VTX = "drone.vtx.tx800"
 BOSS_H = 3.0
@@ -56,6 +58,17 @@ def build(ctx):
         s += Pos(x, y, 0) * Cylinder(4.5, H, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for x in sorted({x for x, _ in POSTS}):         # web each post pair into one pillar
         s += Pos(x, 0, 0) * Box(9.0, 16.0, H, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # r 2 fillet where each pillar meets the plate: the governing section of the battery-crash cases (audit F2)
+    roots = [e for e in s.edges() if abs(e.center().Z - H) < 0.01 and min(abs(e.center().X - x) for x, _ in POSTS) < 5.0
+             and abs(e.center().Y) < 13.0]
+    s, failed = F.safe_fillet(s, [(roots, PILLAR_FILLET)])
+    for f in failed[:3]:
+        ctx.notes.append(f"pillar root fillet skipped: {f}")
+    # lightening windows (audit F3) in the plate between the pillars, clear of the VTX bosses (y +-10), the strap
+    # notches and the pillar fillets; the pack sits on the pad over them
+    for (x0, x1, hy) in WINDOWS:
+        w = Pos((x0 + x1) / 2, 0, H - 1) * Box(x1 - x0, 2 * hy, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        s -= w.fillet(3.0, w.edges().filter_by(Axis.Z))
     # VTX bosses under the plate, M2 pilot holes (light part, rarely removed: ENGINEERING.md section 7)
     sp = ctx.cat.num(ctx.cat.get(VTX), "spacing")
     for (x, y) in iface.square(sp):

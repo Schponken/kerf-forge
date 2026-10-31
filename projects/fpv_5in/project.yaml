@@ -26,7 +26,7 @@ parts:
   arm_2: {file: parts/arm.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
   arm_3: {file: parts/arm.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
   arm_4: {file: parts/arm.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
-  top_plate: {file: parts/top_plate.py, material: CF-PETG, print_rot: [180, 0, 0], infill: 0.3}
+  top_plate: {file: parts/top_plate.py, material: CF-PETG, print_rot: [180, 0, 0], infill: 0.3, load_axis: z}   # pillar bending = axial stress along the upright pillars, across the layers (top_plate_x/_y prove it, direction z)
 purchased:
   motor_1: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_1}}
   motor_2: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_2}}
@@ -80,7 +80,8 @@ wiring:
      route: [{item: arm_4, at: [24, 0, 9]}, {item: arm_4, at: [64, 0, 9]}, {item: arm_4, at: [70, 0, 1.5]}, {item: arm_4, at: [96, 0, 1.5]}]}
   # FC 5 V rail: VTX (0.75 A at 800 mW) + receiver (0.1 A) of the 3 A BEC; camera (5-36 V) on the 9 V pad, so the
   # lead's voltage drop can't take it under its 5 V minimum
-  - {id: vtx_5v, from: stack.5v, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 80}
+  - {id: vtx_5v, from: stack.5v, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 80,
+     route: [[-8, 14, 30], [-13.5, 14, 33]], note: "up from the FC's rear-right pads in the 5 mm gap over the stack to the VTX pads (outside the strap band)"}
   - {id: cam_9v, from: stack.9v, to: camera, v: 9.0, gauge: 28, color: red/black, length_mm: 110,
      route: [[20, 15, 20], [37, 15, 20], [38, 11, 20]]}
   - {id: rx_5v, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 110,
@@ -88,7 +89,8 @@ wiring:
   # signals
   - {id: cam_video, from: camera, to: stack, kind: signal, gauge: 28, color: yellow, length_mm: 110,
      route: [[38, 11, 20], [37, 15, 20], [20, 15, 20]], note: "camera video into the FC (OSD)"}
-  - {id: vtx_video, from: stack, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 80, note: "FC video out + SmartAudio (UART) to the VTX"}
+  - {id: vtx_video, from: stack, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 80,
+     route: [[-8, 14, 30], [-13.5, 14, 33]], note: "FC video out + SmartAudio (UART) to the VTX, same path as vtx_5v"}
   - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 110,
      route: [[20, 15, 32], [38, 15, 40]], note: "CRSF TX/RX to an FC UART"}
 keepouts:
@@ -154,7 +156,7 @@ requirements:
     why: "crash / aggressive case: 2 x one motor's max thrust (2 x 1685 g = 33.1 N) pulling the motor screws up, arm held at its two frame bolts"
     direction: xy            # arm prints flat; bending stress runs along the arm, in the layer plane
     sf: 3.0                  # ENGINEERING.md section 3: crash-exposed drone arm
-    max_disp_mm: 1.5
+    max_disp_mm: 0.87         # ENGINEERING.md: arm tip deflection < 1 % of the 87 mm arm (audit F8)
     fixed: {sites: arm_1, radius: 3.5}
     loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, 33.06]}]
   - id: body_strength
@@ -168,7 +170,18 @@ requirements:
     loads:
       # lever on the arm (supports at r 38 / 52, 33.06 N at r 113): inner nut pulls the body down 144.0 N,
       # the arm top presses up on the body underside around the outer screw with 177.1 N
-      - {box: [[23.8, 23.8, body_t - 3.71], [29.9, 29.9, body_t - 3.69]], force_n: [0, 0, -144.0]}   # nut seat (nut sunk 1 mm)
+      - {box: [[23.8, 23.8, body_t - 3.21], [29.9, 29.9, body_t - 3.19]], force_n: [0, 0, -144.0]}   # nut seat (nut sunk 0.5 mm + 2.7 pocket)
+      - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
+  - id: body_strength_3
+    check: fea_static
+    part: body
+    why: "same arm_1 crash couple, reacted by the post feet (top plate + battery, the largest mass) AND the opposite arm's clamp (arm_3 + motor_3 inertia): loads the diagonal path across the body past the stack holes and the lightening windows (audit F5). Holding it at arm_3 alone would put the whole quad's inertia on a 55 g arm + motor (9 % of the mass): not a real load case"
+    direction: xy
+    sf: 3.0
+    max_disp_mm: 1.0
+    fixed: {any: [{sites: posts, radius: 5.5}, {sites: arm_3, radius: 6.0}]}   # arm_3 clamp: screw + nut seat and the arm top round it
+    loads:
+      - {box: [[23.8, 23.8, body_t - 3.21], [29.9, 29.9, body_t - 3.19]], force_n: [0, 0, -144.0]}
       - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
   # top plate: posts print upright, so post bending runs across the layers (direction z). Crash case: a 50 g hit on
   # battery + pad + strap (215 g CNHL pack + ~15 g) = 0.23 kg x 50 x 9.81 = 112.8 N, applied at the pack CG 21 mm above
@@ -198,5 +211,7 @@ requirements:
   - {id: power, check: power_budget,
      why: "battery C rating, ESC channels, FC 5 V BEC, XT60 and every wire inside their ratings at hover and at full throttle"}
   - {id: flight_time, check: flight_time, min_min: 3, why: "brief: at least 3 min at hover on 80 % of the 1300 mAh pack. Ideal-hover estimate (momentum theory, FM 0.5): real hover draws more, and freestyle flying gives about 3-5 min"}
+  - {id: usb_access, check: connector_access, item: stack, direction: [0, 1, 0], at: [0, 0, 17], length_mm: 45, size: [12, 7],
+     why: "Betaflight CLI is needed (motor_output_limit 74): fit the FC with its USB-C port facing +Y (right); +Y between the right-hand arms is open from the board out past the body edge for a USB-C plug (12 x 7 mm) + 45 mm of cable. If that turns the FC's arrow sideways, set board_align_yaw (90 / 270) in Betaflight. +X is the camera, -X the VTX + XT60 lead, so +/-Y are the sides to use"}
   - {id: xt60_plug, check: connector_access, item: xt60, direction: [-1, 0, 0], length_mm: 30,
      why: "the battery plug goes straight into the XT60 from the rear with the frame assembled"}

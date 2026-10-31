@@ -25,30 +25,43 @@
 - Thrust/weight: 4 × 1685 = 6740 g at full output, but the XT60 is rated 60 A burst (Holybro: 1 minute) and four
   motors at full output draw 4 × 35.08 = 140 A. Betaflight `set motor_output_limit = 74` caps each motor: by the
   propeller law (thrust ~ rpm², power ~ rpm³) 1685 × 0.74² = 923 g and 35.08 × 0.74³ = 14.22 A per motor →
-  3691 g / ~597 g all-up incl. wire = **6.18**, peak 57.4 A (the `power` requirement). Raise the limit only with a bigger
-  connector. 14.22 A is a central estimate (motor speed falls a little less than the output at part load, so the
-  real peak may be ~60 A on a full pack): check the Blackbox/OSD current peak is ≤ 60 A on a full pack before freestyle.
+  3691 g / 613 g all-up (4-perimeter mass model, wire included) = **6.02**, peak 57.5 A (the `power` requirement).
+  Raise the limit only with a bigger connector. T/W margin is thin: a frame that prints 3 g heavier than estimated
+  drops under 6.0 — weigh the printed parts (161 g estimate) before setting expectations.
+- **The 14.22 A per motor is an ESTIMATE, not a current limit** (audit F6): BLHeli_S has no firmware current limit, the
+  cube law is a steady-state propeller relation and a punch-out transient overshoots it, so the real peak may reach
+  ~60 A on a full pack. The gate before freestyle: log one full-pack punch-out (Blackbox or OSD max current) and
+  confirm ≤ 60 A. If it is higher, the fix is an AM32/BLHeli_32 ESC with a configured current limit, or a connector
+  with headroom (XT90); lowering the output limit instead would take T/W under 6.
 - Arm root bending (hand calc): crash load 2 × 1685 g = 33.1 N at r = 113 mm; outer arm screw at r = 52 mm → lever
   61 mm, M = 2017 N·mm; section 20 × 11 mm: Z = 403 mm³ → 5.0 MPa nominal. FEA (fixed at the two arm screws, load on
-  the four motor-screw seats) gives 9.5 MPa (99.9th percentile) at the screw holes vs CF-PETG 35 MPa / SF 3 =
-  11.7 MPa, deflection ~1 mm (crash case; ~0.2 mm at hover thrust).
+  the four motor-screw seats) gives 9.0 MPa (99.9th percentile) at the root vs CF-PETG 35 MPa / SF 3 =
+  11.7 MPa, tip deflection 0.83 mm under the crash load vs the 1 % of arm length rule (0.87 mm, now the encoded limit,
+  audit F8).
 - Body (the part that must outlive the arms): the same crash reaches it as a lever couple on the arm screws — arm as
   a beam on supports at r 38 / 52 with 33.06 N at r 113 → inner nut pulls the body down 144.0 N, the arm presses up
-  on the underside round the outer screw with 177.1 N. FEA held at the four post feet: 10.2 MPa vs 11.7 MPa (load at the sunk nut seat)
-  (needed a 7 mm plate plus 3 × 5 mm ribs either side of each arm's screws; 5 mm plain plate gave 22 MPa).
-- Mass: printed parts 149.5 g (limit 250); all-up about 597 g including wire.
+  on the underside round the outer screw with 177.1 N. FEA held at the four post feet (`body_strength`): 10.8 MPa vs
+  11.7 MPa (load at the nut seat); `body_strength_3` adds the opposite arm's clamp as a second reaction (the diagonal
+  path across the stack area, audit F5): 10.8 MPa. Needed a 7 mm plate plus 3 × 5 mm ribs (8 mm ramp at their inner
+  end, r 1 root fillets) either side of each arm's screws; 5 mm plain plate gave 22 MPa.
+- FEA is on the solid model, the parts print at 30-50 % infill: per ENGINEERING.md s5 the stress peaks at the surface
+  and every strength-checked part prints with 4 wall loops (out/plates/PRINT_SETTINGS.md and the plate 3MF carry
+  infill + wall loops per object; mass counts them), so set those per object in the slicer (audit F3).
+- Mass: printed parts 161 g (limit 250, 4-perimeter estimate); all-up 613 g including wire. Lightened for T/W
+  (audit F3): arms taper from 20 mm at the ridges to 14 mm at the motor pad, two 26 × 11 side windows and a 16 mm
+  centre window in the body, two windows in the top plate.
 
 ## Parts (all CF-PETG, hardened nozzle, ≥ 4 walls)
 | Part | Job | Print orientation | load_axis | Envelope |
 |---|---|---|---|---|
 | body | 7 mm centre plate + ribs, stack, arm clamps with key grooves, camera cage, post seats | flat, cheeks and ribs up | both diagonals | 114 × 92 × 25 |
 | arm_1..4 | carry each motor to the body; key ridges on top | flat, top face up | x (along the arm) | 103 × 32 × 12.5 |
-| top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm) | upside down (plate on bed) | – | 130 × 42 × 41 |
+| top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm, r 2 root fillets) | upside down (plate on bed) | z (pillar bending, across layers: proven by top_plate_x/_y with direction z) | 130 × 42 × 41 |
 
 ## Interfaces
 | A | B | How | Group | Screws |
 |---|---|---|---|---|
-| arm_N | body | M3 counterbored from below into nut traps (pockets open on the body top); 2 ridges in 2 grooves take side loads | arm_N | 2 × M3 × 12 per arm (nuts sunk 1 mm so the tips stay under the body top) |
+| arm_N | body | M3 counterbored from below into nut traps (pockets open on the body top); 2 ridges in 2 grooves (0.4 mm 45° mouth chamfer against elephant's foot) take side loads | arm_N | 2 × M3 × 12 per arm (nuts sunk 0.5 mm: the tip ends 0.5 mm under the body top with the nut fully engaged, audit F9) |
 | motor_N | arm_N | M3 from below (counterbored, 7.5 mm grip: 2.5 mm into the 3 mm motor thread) | motor_N | 4 × M3 × 10 per motor |
 | stack | body | M3 from the stack top through grommets into nut traps (pockets open underneath) | stack | 4 × M3 × 30 |
 | top_plate | body | M3 counterbored from below into heat-set inserts in the post feet | posts | 4 × M3 × 8 + 4 inserts |
@@ -77,7 +90,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 
 - Top plate (review round 2): each post pair is filled into one 9 × 25 mm pillar (posts at x ±33, y ±8) so a 50 g battery
   hit (112.8 N + its 2369 N·mm tipping couple, posts bent across the layers) stays inside CF-PETG z strength / 3:
-  FEA 7.0 (front/back) and 8.9 (side) vs 9.67 MPa. A 24 mm roof tongue reaches over the camera to x 58 (lens front
+  FEA 7.0 (front/back) and 9.0 (side) vs 9.67 MPa with r 2 fillets at the pillar roots (audit F2). A 24 mm roof tongue reaches over the camera to x 58 (lens front
   61.9-64.8), 9.8 mm above the camera top at full tilt, so a hit from above lands on the roof.
 - Arm key ridges are 4.5 × 1.5 mm: a 33 N side hit bends the ridge root across one layer line at about 3 MPa.
 
@@ -85,23 +98,31 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   cups end 9 mm behind the rear pillar; pre-bend the 12 AWG pigtail toward −y before soldering and use 8–10 mm
   heat-shrink on the cups (20 mm would reach the pillar); it turns out of the cradle front, passes the pillar at
   y −16 under the VTX and drops to the ESC pads. Motor phases run over the body top between each arm's ribs and
-  along the arm top (2 ties per arm). Camera and receiver leads pass the front pillar at y +15.
+  along the arm top (2 ties per arm). Camera and receiver leads pass the front pillar at y +15. The VTX 5 V and video
+  leads go up from the FC's rear-right pads through the gap over the stack to the VTX (routed, audit F10).
+- FC USB (audit F1b, `usb_access`): fit the FC with its USB-C port facing +Y; a USB-C plug (12 × 7 mm) and 45 mm of
+  cable are clear from the board centre out past the body edge. The SpeedyBee manual text gives no port position, so
+  this is an install instruction: if it turns the FC's arrow sideways, set `board_align_yaw` (90 / 270) in Betaflight.
 
 ## Assembly order
 1. Press 4 M3 heat-set inserts into the top-plate post feet; screw the VTX under the top plate (4 × M2 × 12 with
    washers and 6 mm nylon spacers) — on the bench, before the plate goes on.
 2. Put 8 M3 nuts into the arm nut pockets on the body top and 4 M3 nuts into the stack pockets underneath (those
    open downward: hold each with a strip of tape or a dab of CA until its screw has started).
-3. Bolt each arm under the body, ridges in the grooves: 2 × M3 × 12 from below (a drop of blue threadlocker each).
+3. Bolt each arm under the body, ridges in the grooves: 2 × M3 × 12 from below (a drop of blue threadlocker each;
+   nuts sit 0.5 mm below the top face).
 4. Bolt each motor onto its arm: 4 × M3 × 10 from below (2.5 mm into the motor; never longer: windings).
-5. Stack on the grommets: 4 × M3 × 30 from the top into the stack nuts. Solder motors / XT60 lead.
+5. Stack on the grommets, FC USB-C port facing +Y (right): 4 × M3 × 30 from the top into the stack nuts. Solder
+   motors / XT60 lead.
 6. Camera between the cheeks: 2 × M2 × 6 into its side holes; set the tilt, snug the screws.
 7. Top plate: 4 × M3 × 8 up through the body into the post inserts; XT60 into the cradle (solder cups forward)
    with a cable tie wrapped under it through the two slots beside the cradle; receiver tied under the camera roof;
    VTX antenna tube tied under the tab and bent up behind it; receiver antenna legs tied in a V at the roof front. XT60 leads run outside the post pillars (|y| > 12.5 mm).
 8. Battery on the pad; strap around the pack's width in the plate-edge notches, under the plate (between the VTX
    and the front pillar).
-9. Betaflight: `set motor_output_limit = 74`, `save` (keeps the XT60 inside its 60 A rating; see sizing).
+9. Betaflight (USB-C from the right side): `set motor_output_limit = 74`, `save` (keeps the XT60 inside its 60 A
+   rating; see sizing); `board_align_yaw` if the FC arrow is not forward. Then log a full-pack punch-out and check
+   the max current ≤ 60 A before freestyle (the 74 % figure is an estimate).
 
 ## Risks / measure first
 - Camera side-hole position (catalog note: scaled from a drawing) and the 22 mm stack height (typical, not published).
@@ -120,5 +141,14 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 - Printing: the arm and top-plate counterbores open on the bed face, so each screw-seat ceiling is a ring printed
   in mid-air: turn on the slicer's hole bridging (Bambu Studio / Orca "bridge holes" / sacrificial layer) or accept a
   light drill-out of the seat.
-- Motor phase leads run over the body top on each arm's screw line; the arm nuts are sunk 1 mm so the M3 × 12 tips
-  stop under the top face (kerf's wire-route check now also tests every screw, review round 6).
+- Motor phase leads run over the body top on each arm's screw line; the arm nuts are sunk 0.5 mm so the M3 × 12 tips
+  stop 0.5 mm under the top face (kerf's wire-route check also tests every screw, review round 6).
+- Slicer: set infill and wall loops per object as out/plates/PRINT_SETTINGS.md lists (4 walls on every part); the
+  strength numbers assume them.
+
+## Audit B fixes (2026-10-31, session dafdd49d)
+F1 rebuilt (WIRING/ASSEMBLY show `cam_9v`); F1b `usb_access`; F2 pillar root fillets r 2 + rib root fillets r 1
+and ramped rib ends; F3 4-wall print settings per object + lightening so T/W ≥ 6 holds on the 4-perimeter mass;
+F4 top_plate `load_axis: z`; F5 `body_strength_3`; F6 estimate + Blackbox gate stated; F7 groove-mouth and bed-outline
+chamfers (not F.bed_chamfer: chamfering the post counterbore mouths moved the body hot spot); F8 arm max_disp 0.87;
+F9 nuts sunk 0.5 mm; F10 VTX routes.

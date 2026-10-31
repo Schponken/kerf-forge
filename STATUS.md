@@ -796,7 +796,6 @@ pushed for it and what I know:
 - Note for the ENG-7 / pan_tilt owner (reviewer minor): `tap_h` (horizontal pilot 2.10 for M2) is also applied to
   TEARDROP taps, where the teardrop already removes the droop it compensates; the screws may have little bite. Decide
   whether teardrop taps should keep the vertical pilot, and print a coupon.
-<<<<<<< Updated upstream
 ## 2026-10-31 13:00 UTC — session dafdd49d (fork): pan_tilt audit F11-F18 — re-review PASS
 - design-reviewer audit round 1 FAIL (base cavity had zero vertical clearance for the SG90 tab-height spread) ->
   cavity floor 1 mm lower; yoke knock cases (`yoke_knock_out/_in`, 30 N, strength-governed, 2 mm elastic limit).
@@ -804,11 +803,9 @@ pushed for it and what I know:
 - Minor left open (engine, ship.py): generated ASSEMBLY.md lists the tilt pivot pin before the tilt servo and has no
   horn centre-screw step (DESIGN.md §8 has the right order). Headless reviewers still run `kerf verify` from the repo
   Stop hook (E6 stumble #4).
-=======
 ## 2026-10-31 12:40 UTC — session 262017a2: PLAN "Audit fixes: servo_link" DONE
 - A-8/15/16/17 fixed; design-reviewer PASS at 46118d7a3ecd48d5; eval acceptance passes. Engine: `tip_over` takes
   `include:` (only those items' mass; e.g. leave out a desk adapter beside the device), test.
->>>>>>> Stashed changes
 ## 2026-10-31 11:40 UTC — session dafdd49d: PLAN E6 and "Audit fixes: pan_tilt" DONE
 - E6: blind run 2 (fresh subagent, brief only) reached PASS on its own in ~50 min with one review round (run 1:
   2.3 h, 5 rounds). Its 6 stumbles are fixed with tests (kerf new crash, unevaluated-requirement text, tripod nut in

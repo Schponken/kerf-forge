@@ -16,6 +16,14 @@ CHEEK_T, CHEEK_Y0 = 4.0, 10.0                    # cheek thickness; inner face (
 CAGE_X1 = 68.0
 CAM_RECESS = 1.0                                  # M2 button-head recess (ISO 7380 M2 head 3.5 mm; 4.4 mm bore)
 RIB_R0, RIB_R1, RIB_Y, RIB_W, RIB_H = 34.0, 64.0, 6.0, 3.0, 5.0   # top ribs: start/end radius, offset, width, height
+RIB_RAMP = 8.0
+GROOVE_CH = 0.4
+NUT_RECESS = 0.5   # arm nuts sunk 0.5 mm: an M3 x 12 (grip 6) ends 0.5 mm under the top face, nut fully engaged (audit F9)
+# lightening windows (audit F3: 4-perimeter mass took T/W under 6) in low-stress plate areas away from the arm and
+# post load paths (body_strength / body_strength_3 FEA): centre under the stack (inside the nut traps) and the two
+# side bays between arms
+CENTRE_WIN = 16.0
+SIDE_WIN = (26.0, 11.0, 36.0)    # x size, y size, |y| centre
 
 
 def _outline(h, z0, hh):
@@ -31,6 +39,8 @@ def build(ctx):
     nose_w = 2 * (CHEEK_Y0 + CHEEK_T + 3.0)       # room for the cheek gussets
     nose = Pos(h - 2, 0, 0) * Box(CAGE_X1 - (h - 2), nose_w, t, align=(Align.MIN, Align.CENTER, Align.MIN))
     body = plate + nose
+    # 0.5 mm elephant's-foot chamfer round the bed outline (audit F7; the groove mouths get theirs below)
+    body, _ = F.safe_fillet(body, [(body.edges().filter_by_position(Axis.Z, -0.01, 0.01), 0.5)], kind="chamfer")
     # cheeks: side profile x 41..68, top 6 mm above the pivot, sloping down to 18 mm at the front (prop-disc clearance)
     ztop = p.cam_z + 6
     prof = Polyline((41, t), (41, ztop), (56, ztop), (CAGE_X1, 18), (CAGE_X1, t), close=True)
@@ -51,16 +61,45 @@ def build(ctx):
         # nuts sunk 1 mm below the top face, so the M3 thread ends stop under it: the motor phase leads run over this
         # line between the ribs and must not lie on screw tips (review round 6)
         body -= iface.bolt_pattern(ctx, f"arm_{k + 1}", "M3", [(p.arm_hole_1, 0), (p.arm_hole_2, 0)], loc, "nut_trap",
-                                   depth=t, nut_recess=1.0)
+                                   depth=t, nut_recess=NUT_RECESS)
         for sy in (1, -1):                       # key grooves for the arm ridges, 0.2 mm clearance all round
             g = Pos(p.arm_r0 - 0.2, sy * (p.arm_w / 2 - RIDGE_W / 2), -1) * \
                 Box(RIDGE_R1 - p.arm_r0 + 0.4 + 10, RIDGE_W + 0.4, RIDGE_H + 0.2 + 1, align=(Align.MIN, Align.CENTER, Align.MIN))
-            body -= Rot(0, 0, th) * g
+            gl, gw = RIDGE_R1 - p.arm_r0 + 0.4 + 10, RIDGE_W + 0.4
+            mouth = Pos(p.arm_r0 - 0.2 + gl / 2, sy * (p.arm_w / 2 - RIDGE_W / 2), -0.01) * \
+                extrude(Rectangle(gl + 2 * GROOVE_CH, gw + 2 * GROOVE_CH), amount=GROOVE_CH + 0.01, taper=45)
+            body -= Rot(0, 0, th) * (g + mouth)    # 45 deg mouth chamfer: elephant's foot can't pinch the ridge (F7)
         for sy in (1, -1):                       # stiffening ribs on the top either side of the arm screws
-            rib = Pos(RIB_R0, sy * RIB_Y, t) * Box(RIB_R1 - RIB_R0, RIB_W, RIB_H, align=(Align.MIN, Align.CENTER, Align.MIN))
+            # side profile: ramps up from the plate over RIB_RAMP at the inner end, so the rib does not stop abruptly
+            # over the nut (an abrupt end was the body's hot spot)
+            prof = Polyline((RIB_R0, t), (RIB_R0 + RIB_RAMP, t + RIB_H), (RIB_R1, t + RIB_H), (RIB_R1, t), close=True)
+            rib = Pos(0, sy * RIB_Y + RIB_W / 2, 0) * extrude(Plane.XZ * make_face(prof), amount=RIB_W)
             body += (Rot(0, 0, th) * rib) & _outline(h - 0.5, t, RIB_H)   # clipped inside the plate edge
         ctx.rigid(f"arm_{k + 1}", Location((0, 0, 0), (0, 0, th)))
     body -= iface.stack_mount(ctx, "drone.stacks.fc_30_5", Location((0, 0, t)), "stack", depth=t, kind="nut_trap")
+    win = Pos(0, 0, -1) * Box(CENTRE_WIN, CENTRE_WIN, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for sy in (1, -1):
+        w1 = Pos(0, sy * SIDE_WIN[2], -1) * Box(SIDE_WIN[0], SIDE_WIN[1], t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        win += w1
+    body -= win.fillet(3.0, win.edges().filter_by(Axis.Z))
+    # rib roots: r 1 fillet on the load path (ENGINEERING.md s5, audit F2); skipped edges are reported as notes
+    import math
+
+    def _on_rib_side(e):        # long edge at the top face along a rib's side (rib frame: u along the arm, v across)
+        c = e.center()
+        if abs(c.Z - t) > 0.01 or e.length < 2.5:
+            return False
+        for k in range(4):
+            a = math.radians(45 + 90 * k)
+            u, v = c.X * math.cos(a) + c.Y * math.sin(a), -c.X * math.sin(a) + c.Y * math.cos(a)
+            if RIB_R0 - 0.1 < u < RIB_R1 + 0.1 and min(abs(abs(v) - (RIB_Y + d * RIB_W / 2)) for d in (-1, 1)) < 0.05:
+                return True
+        return False
+    rib_roots = [e for e in body.edges() if _on_rib_side(e)]
+    body, failed = F.safe_fillet(body, [(rib_roots, 1.0)])
+    for f in failed[:3]:
+        ctx.notes.append(f"rib root fillet skipped: {f}")
+    # (not F.bed_chamfer: chamfering the post counterbore mouths moved the body FEA hot spot at the post feet)
     body -= iface.bolt_pattern(ctx, "posts", "M3", [(x, -y) for x, y in POSTS], Location((0, 0, 0), (180, 0, 0)),
                                "counterbore", depth=t)
     ctx.rigid("stack", Location((0, 0, t)))
