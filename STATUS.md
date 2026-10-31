@@ -669,3 +669,12 @@ pushed for it and what I know:
   `proj_dir / "project.yaml"` crashed and showed eval FAIL (bionic_finger, robot_arm, pan_tilt); test added.
 - Table is a snapshot: E2/E3/E5 reviews are stale/none and pan_tilt eval fails only on the missing BLIND_RUN.md (E6
   owner). Whoever does the final summary: re-run `tools/readme_results.py` after the last eval passes.
+
+## 2026-10-31 05:15 UTC — session (gallery) — published, item left open for the final republish
+- `kerf gallery` (kerf/gallery.py, test): out/gallery/index.html + per-project viewer.html and JPEG render sheets +
+  files.json. Published as https://claude.ai/artifact/McXTe1kc9EMpfKshBNu6mH (link in README.md "Gallery").
+- Version 1 shows servo_link, tvc_drone, pan_tilt, bionic_finger, fpv_5in from fresh local builds; robot_arm was
+  mid-review (its build here went stale on pull) so it shows "not built". The PLAN item stays open: whoever finishes
+  the last eval runs `kerf build` on every project, `kerf gallery`, then republishes index.html + files.json's files to
+  the SAME url (Artifact publish with `url`, after an Artifact `read` of it), and checks the item off.
+
