@@ -23,15 +23,15 @@ params:
   batt_dy: {value: -10, min: -15, max: 15, step: 0.5, label: Battery offset y (CG trim)}
 layout: parts/layout.py
 parts:
-  ring_low: {file: parts/ring_low.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: z}
-  gimbal_outer: {file: parts/gimbal_outer.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: [x, y]}
+  ring_low: {file: parts/ring_low.py, material: PETG, print_rot: [180, 0, 0], infill: 0.2, load_axis: z}
+  gimbal_outer: {file: parts/gimbal_outer.py, material: PETG, print_rot: [0, 0, 0], infill: 0.2, load_axis: [x, y]}
   motor_hub: {file: parts/motor_hub.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, load_axis: y}
   motor_plate: {file: parts/motor_plate.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: [x, y]}
   ring_mid: {file: parts/ring_mid.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3, load_axis: [x, y]}
   ring_top: {file: parts/ring_top.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3, load_axis: [x, y]}
-  leg_1: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
-  leg_2: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
-  leg_3: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
+  leg_1: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.25, load_axis: [x, z]}
+  leg_2: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.25, load_axis: [x, z]}
+  leg_3: {file: parts/leg.py, material: PETG, print_rot: [90, 0, 0], infill: 0.25, load_axis: [x, z]}
 purchased:
   servo_roll: {catalog: servos.MG90S, proxy: servo, groups: {tabs: yoke_servo}, range: [-15, 15]}
   servo_pitch: {catalog: servos.MG90S, proxy: servo, groups: {tabs: ring_servo}, range: [-15, 15]}
@@ -156,9 +156,9 @@ wiring:
   - {id: rx_crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: yellow/white, conductors: 2, length_mm: 70,
      route: [[0, -31, 197], [0, -31, 180]], note: "CRSF TX/RX to a free FC UART"}
 requirements:
-  - {id: twr, check: thrust_to_weight, thrust_g_total: 1899, test_v: 24.0, pack_v: 22.2, min_ratio: 2.0,
-     why: "ENGINEERING.md s3 multirotor T/W >= 2 at the pack's nominal 22.2 V: 2 x 1685 g (XING2 2207 + 51466, measured at 24 V) x 0.78 coax efficiency (MDPI Aerospace 3(4):32) x 0.7225 (thrust at the 85 % output cap, see electrical.limits) = 1899 g at 24 V"}
-  - {id: twr_sag, check: thrust_to_weight, thrust_g_total: 1899, test_v: 24.0, pack_v: 21.0, min_ratio: 1.8,
+  - {id: twr, check: thrust_to_weight, motors: [motor_top, motor_bottom], factor: 0.78, output_limit: 0.85, min_ratio: 2.0,
+     why: "ENGINEERING.md s3 multirotor T/W >= 2 at the 6S pack's nominal 22.2 V: catalog 1685 g per XING2 2207 + 51466 (measured at 24 V) x 0.78 coax efficiency (MDPI Aerospace 3(4):32) x 0.85^2 (thrust at the 85 % output cap, see electrical.limits), scaled by (22.2/24)^2"}
+  - {id: twr_sag, check: thrust_to_weight, motors: [motor_top, motor_bottom], factor: 0.78, output_limit: 0.85, pack_v: 21.0, min_ratio: 1.8,
      why: "still climbs with authority when the 6S pack sags to 3.5 V/cell (21 V) under full load late in the flight"}
   - {id: power, check: power_budget,
      why: "battery C rating, XT60, ESC channels, FC 5 V pad, servo UBEC and every wire within rating at average (hover) and peak current"}

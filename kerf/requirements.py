@@ -124,11 +124,36 @@ def static_torque(proj, asm, joint, actuator=None, stall_kgcm=None, max_fraction
 
 
 @check("thrust_to_weight")
-def thrust_to_weight(proj, asm, thrust_g_total, min_ratio, test_v=None, pack_v=None):
+def thrust_to_weight(proj, asm, min_ratio, thrust_g_total=None, test_v=None, pack_v=None, motors=None, factor=1.0,
+                     output_limit=1.0):
     """Static thrust / all-up mass. Motor thrust tables are measured at one supply voltage (`test_v`); prop thrust goes
     with speed squared and speed with voltage, so a thrust from a 24 V table flown on a 22.2 V pack is scaled by
-    (pack_v / test_v)^2. Give both to check at the pack's nominal (or loaded) voltage."""
+    (pack_v / test_v)^2. Give both to check at the pack's nominal (or loaded) voltage.
+    Or give `motors: [item, ...]`: thrust = sum of each motor's catalog thrust_g_max x factor (coax / installation loss)
+    x output_limit^2 (a throttle cap), at the catalog thrust_test_v; pack_v defaults to the electrical battery's
+    nominal voltage (cells x 3.7 V)."""
     from .electrical import wiring_mass_g
+    if motors:
+        if thrust_g_total is not None:
+            raise ValueError("thrust_to_weight: give thrust_g_total or motors, not both")
+        tvs = set()
+        thrust_g_total = 0.0
+        for mid in motors:
+            e = catalog.get(proj.items[mid].spec["catalog"])
+            thrust_g_total += float(e["thrust_g_max"]) * float(factor) * float(output_limit) ** 2
+            tvs.add(float(e.get("thrust_test_v") or 0) or None)
+        if len(tvs) != 1 or None in tvs:
+            raise ValueError("thrust_to_weight: every motor needs a catalog thrust_test_v (and the same one)")
+        test_v = tvs.pop()
+        if pack_v is None:
+            bat = (proj.data.get("electrical") or {}).get("battery")
+            cells = catalog.get(proj.items[bat].spec["catalog"]).get("cells") if bat in proj.items else None
+            if not cells:
+                raise ValueError("thrust_to_weight: give pack_v (no electrical battery with cells)")
+            pack_v = round(3.7 * float(cells), 2)
+        thrust_g_total = round(thrust_g_total, 1)
+    if thrust_g_total is None:
+        raise ValueError("thrust_to_weight: give thrust_g_total or motors")
     if (test_v is None) != (pack_v is None):
         raise ValueError("thrust_to_weight: give both test_v and pack_v (or neither)")
     k = (float(pack_v) / float(test_v)) ** 2 if test_v else 1.0
