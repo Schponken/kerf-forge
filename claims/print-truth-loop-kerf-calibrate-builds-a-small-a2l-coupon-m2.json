@@ -1,7 +1,0 @@
-{
- "item": "Print-truth loop: `kerf calibrate` builds a small A2L coupon (M2/M2.5/M3 clearance + tap + heat-set holes, 608 and 623 bearing pockets, 0.2/0.3/0.4 mm slip-fit pins, a servo-tab window). Spencer reports what fit (`kerf feedback <material> hole_M3=tight ...`); offsets are stored per printer+material in catalog/printers/ with the date and applied by iface, so every later design fits his real printer, not a textbook one. Tests use synthetic feedback",
- "session": "9a8926925c",
- "since": 1793409417.2590413,
- "heartbeat": 1793409870.1404104,
- "since_utc": "2026-10-31 01:16"
-}
