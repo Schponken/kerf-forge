@@ -634,7 +634,9 @@
     "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING2-2207-1855KV.png",
     "confidence": "datasheet",
     "max_current_a": 35.08,
-    "max_current_note": "Peak Current 35.08 A (1855KV) on the iFlight page and test report (Gemfan 51466, 24 V, 100%)."
+    "max_current_note": "Peak Current 35.08 A (1855KV) on the iFlight page and test report (Gemfan 51466, 24 V, 100%).",
+    "min_thread_engagement": 2.0,
+    "min_thread_engagement_note": "iFlight ships M3x8 screws for 5-6 mm carbon arms (max_screw_depth_note above), i.e. 2-3 mm in the motor base; 2.0 mm is the manufacturer's own minimum."
    },
    "2306_1755kv_6s": {
     "model": "iFlight XING2 2306 1755KV (6S)",
@@ -661,7 +663,9 @@
     "source": "https://shop.iflight.com/xing2-2306-4s-6s-fpv-motor-unibell-pro1465",
     "confidence": "datasheet",
     "max_current_a": 36.21,
-    "max_current_note": "iFlight page 'Peak Current: 36.21A / 51.3A' listed in KV order; 36.21 A taken as the 1755KV value (page does not label which KV, mapping inferred)."
+    "max_current_note": "iFlight page 'Peak Current: 36.21A / 51.3A' listed in KV order; 36.21 A taken as the 1755KV value (page does not label which KV, mapping inferred).",
+    "min_thread_engagement": 2.0,
+    "min_thread_engagement_note": "iFlight ships M3x8 screws for 5-6 mm carbon arms (max_screw_depth_note above), i.e. 2-3 mm in the motor base; 2.0 mm is the manufacturer's own minimum."
    },
    "1404_3800kv_3in": {
     "model": "iFlight XING2 1404 3800KV (3-4S)",
@@ -688,7 +692,9 @@
     "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING2-1404-3800KV.png",
     "confidence": "datasheet",
     "max_current_a": 15.84,
-    "max_current_note": "iFlight page 'Peak Current: 13.8A / 15.84A / 17.99A' for 3000/3800/4600KV; matches the test report (4030 prop, 16 V, 100%)."
+    "max_current_note": "iFlight page 'Peak Current: 13.8A / 15.84A / 17.99A' for 3000/3800/4600KV; matches the test report (4030 prop, 16 V, 100%).",
+    "min_thread_engagement": 1.5,
+    "min_thread_engagement_note": "iFlight ships M2x5 and M2x7 screws (2 mm apart) to cover thin and thick arms, so the shipped screws give ~1.5-2 mm in the 2 mm thread; 1.5 mm = 3.75 threads of 0.4 mm pitch."
    },
    "2806_5_1300kv_7in": {
     "model": "iFlight XING 2806.5 1300KV (6S, 7in)",
@@ -715,7 +721,9 @@
     "source_detail": "https://shop.iflight.com/image/catalog/TEST REPORT/XING-2806.5-1300KV.png",
     "confidence": "datasheet",
     "max_current_a": 48.33,
-    "max_current_note": "iFlight page lists Peak Current 48.33 A for 1300KV (pair with 72.3 A for 1800KV). The test report's HQ 7x4x3 point is 42.33 A; the page figure (likely the larger 8in prop) is used as the worst case."
+    "max_current_note": "iFlight page lists Peak Current 48.33 A for 1300KV (pair with 72.3 A for 1800KV). The test report's HQ 7x4x3 point is 42.33 A; the page figure (likely the larger 8in prop) is used as the worst case.",
+    "min_thread_engagement": 2.0,
+    "min_thread_engagement_note": "iFlight ships M3x8 screws for 5-6 mm carbon arms (max_screw_depth_note above), i.e. 2-3 mm in the motor base; 2.0 mm is the manufacturer's own minimum."
    }
   },
   "props": {
@@ -933,6 +941,22 @@
       "confidence": "multiple-vendors"
      }
     ],
+    "confidence": "multiple-vendors"
+   }
+  },
+  "vtx": {
+   "tx800": {
+    "model": "SpeedyBee TX800 5.8 GHz VTX (25-800 mW, MMCX)",
+    "spacing": 20,
+    "screw": "M2",
+    "hole_note": "holes take M3; use M2 with washers (Oscar Liang)",
+    "board_size": 28,
+    "height": 8,
+    "height_confidence": "typical",
+    "height_note": "Not published (PCB 28x28 plus removable heatsink); 8 mm envelope incl. heatsink - measure before a tight fit.",
+    "weight_g": 5.6,
+    "antenna": "MMCX",
+    "source": "https://www.getfpv.com/speedybee-tx800-5-8ghz-vtx.html ; https://oscarliang.com/speedybee-tx800/",
     "confidence": "multiple-vendors"
    }
   }

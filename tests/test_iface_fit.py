@@ -450,8 +450,17 @@ def test_motor_and_stack_mounts(tmp_path, motor, stack, mkind, skind):
     pts, mscrew = iface.motor_holes(f"drone.motors.{motor}")
     dep = catalog.num(e, "max_screw_depth")
     md = iface.screw_spec(mscrew)["d"]
-    t = _thickness_for(mscrew, mkind, lambda t, r: r[1], lambda t, r: (min(dep, 1.5 * md) * 0.9, dep),
-                       [x / 2 for x in range(5, 17)])
+    eng_min = catalog.num(e, "min_thread_engagement", default=min(dep, 1.5 * md) * 0.9)
+    t = None
+    for cand in [x / 10 for x in range(25, 81)]:   # thinnest plate whose grip gives a stock screw with bottoming margin
+        try:
+            g = iface.hole(mscrew, mkind, cand)[1]
+        except ValueError:
+            continue
+        if any(g + eng_min - 1e-3 <= L <= g + dep - A.length_tol(L) + 1e-3 for L in A.STANDARD_SCREW_LENGTHS):
+            t = cand
+            break
+    assert t is not None, f"no plate thickness gives a stock {mscrew} length for {motor}"
     se = catalog.get(f"drone.stacks.{stack}")
     h = catalog.num(se, "height")
     boss = _thickness_for(str(se["screw"]), skind, lambda t, r: h, lambda t, r: (r[3], r[2]), [x / 2 for x in range(10, 31)])

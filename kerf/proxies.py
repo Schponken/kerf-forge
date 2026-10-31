@@ -167,7 +167,8 @@ def motor(ctx, spec):
         s -= Pos(x, y, 0) * Cylinder(sp["tap"] / 2, depth, align=(Align.CENTER, Align.CENTER, Align.MIN))
         if _g(spec, "mount"):
             ctx.site(Site(_g(spec, "mount"), "female", screw, "threaded", Location((x, y, 0)) * Rot(180, 0, 0),
-                          engage=depth, min_engage=min(depth, 1.5 * sp["d"]) * 0.9))
+                          engage=depth, min_engage=catalog.num(e, "min_thread_engagement",
+                                                               default=min(depth, 1.5 * sp["d"]) * 0.9)))
     ctx.rigid("base", Location((0, 0, 0)))
     ctx.rigid("prop", Location((0, 0, body_h + shaft_h * 0.4)))
     return ctx.finish(s, color="#3b4148")

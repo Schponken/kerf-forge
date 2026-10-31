@@ -160,7 +160,7 @@ from build123d import *
 from kerf import iface
 M = "drone.motors.2207_1855kv_6s"
 def build(ctx):
-    t = 5
+    t = 5.5   # M3 x 8 leaves 2.5 mm in the 3 mm motor thread: bottoming margin for the screw length tolerance
     s = Box(140, 40, t, align=(Align.MIN, Align.CENTER, Align.MIN))
     # screws come up from underneath: loc on the bottom face, +Z pointing down (toward the screw heads)
     s -= iface.motor_mount(ctx, M, Location((120, 0, 0), (180, 0, 0)), group="m", plate_t=t)

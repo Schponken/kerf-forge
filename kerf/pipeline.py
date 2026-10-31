@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import access, assembly as A, checks, export, pins, project as P, requirements, viewer
+from . import access, assembly as A, checks, export, pins, project as P, requirements, shanks, viewer
 
 ROOT = Path(__file__).resolve().parent.parent
 RENDER = ROOT / "tools" / "render" / "render.mjs"
@@ -57,6 +57,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             fj, fprob = A.fasteners(asm)
             rep["assembly"]["fasteners"] = fj
             rep["problems"] += fprob
+            rep["problems"] += shanks.check(asm, fj)
             pinj, pprob, pwarn = pins.check(asm)
             rep["assembly"]["pins"] = pinj
             rep["problems"] += pprob

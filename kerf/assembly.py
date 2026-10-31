@@ -10,6 +10,17 @@ from build123d import LinearJoint, Location, RevoluteJoint, RigidJoint
 from . import geom
 from .project import Project, ProjectError
 
+# ISO 4762 screw length tolerance is js15 (ISO 4759-1): +/- half of IT15 for the nominal length (ISO 286-1 IT15:
+# 0.40 mm up to 3, 0.48 to 6, 0.58 to 10, 0.70 to 18, 0.84 to 30, 1.00 to 50, 1.20 to 80 mm). A screw into a purchased
+# part's blind thread ("threaded" receiver: motor bases, steppers, horns) must stay that far short of the bottom.
+_IT15 = [(3, 0.40), (6, 0.48), (10, 0.58), (18, 0.70), (30, 0.84), (50, 1.00), (80, 1.20)]
+
+
+def length_tol(L: float) -> float:
+    return next(t for lim, t in _IT15 if L <= lim) / 2 if L <= 80 else 0.6
+
+
+LENGTH_TOL_MM = length_tol(10)  # 0.29, the common 6-10 mm case
 STANDARD_SCREW_LENGTHS = [3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 55, 60]
 
 
@@ -239,9 +250,12 @@ def fasteners(asm: Assembly) -> tuple[list, list]:
             spec = screw_spec(ms.screw)
             need_min = along + (fs.min_engage or min(fs.engage, spec["min_engage"]))
             need_max = along + fs.engage
-            length = next((L for L in STANDARD_SCREW_LENGTHS if need_min - 1e-3 <= L <= need_max + 1e-3), None)
+            blind = fs.kind == "threaded"
+            length = next((L for L in STANDARD_SCREW_LENGTHS
+                           if need_min - 1e-3 <= L <= need_max - (length_tol(L) if blind else 0.0) + 1e-3), None)
             j = {"group": g, "screw": ms.screw, "male": mi, "female": fi, "head": ms.kind, "receiver": fs.kind,
-                 "grip_mm": round(along, 2), "gap_mm": round(gap, 2), "length_mm": length}
+                 "grip_mm": round(along, 2), "gap_mm": round(gap, 2), "length_mm": length,
+                 "at": np.round(mo, 3).tolist(), "dir": np.round(-mz, 6).tolist()}
             if abs(gap) > 0.3:
                 problems.append(f"fastener group '{g}': {mi} sits {gap:.2f} mm off {fi} along the screw axis (parts not clamped together)")
             if length is None:

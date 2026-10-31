@@ -9,15 +9,15 @@ params:
   motor_r: {value: 113, min: 100, max: 120, step: 0.5, label: Motor radius from centre (diagonal / 2)}
   arm_w: {value: 20, min: 14, max: 24, step: 0.5, label: Arm width}
   arm_t: {value: 11, min: 8, max: 12, step: 0.5, label: Arm thickness}
-  arm_r0: {value: 31, min: 28, max: 36, step: 0.5, label: Arm root end radius}
+  arm_r0: {value: 36, min: 28, max: 36, step: 0.5, label: Arm root end radius}
   arm_hole_1: {value: 38, min: 36, max: 44, step: 0.5, label: Inner arm screw radius}
   arm_hole_2: {value: 52, min: 46, max: 58, step: 0.5, label: Outer arm screw radius}
-  body_t: {value: 5, min: 5, max: 6, step: 0.5, label: Body plate thickness}
-  body_half: {value: 43, min: 40, max: 48, step: 0.5, label: Body plate half-width}
-  post_h: {value: 27, min: 26, max: 34, step: 0.5, label: Top-plate post height above the body}
+  body_t: {value: 7, min: 5, max: 8, step: 0.5, label: Body plate thickness}
+  body_half: {value: 46, min: 40, max: 48, step: 0.5, label: Body plate half-width}
+  post_h: {value: 38, min: 36, max: 44, step: 0.5, label: Top-plate post height above the body}
   top_t: {value: 3, min: 2.5, max: 4, step: 0.5, label: Top plate thickness}
   cam_x: {value: 48, min: 46, max: 52, step: 0.5, label: Camera pivot x}
-  cam_z: {value: 17, min: 16.5, max: 20, step: 0.5, label: Camera pivot height}
+  cam_z: {value: 19, min: 18, max: 22, step: 0.5, label: Camera pivot height}
 derived:
   diag: 2 * motor_r
 parts:
@@ -37,13 +37,16 @@ purchased:
            note: "RunCam Phoenix 2; frame: local Z = tilt axis, local +Y = lens; side M2 holes 5.1 mm from the back face"}
   battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400"}
   xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000"}
+  vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
 keepouts:
   prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1, h: 7}
   prop_2: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_2, h: 7}
   prop_3: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_3, h: 7}
   prop_4: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_4, h: 7}
 bom_extra:
-  - {type: fastener, item: M2 x 5 mm button head screw, qty: 2, spec: ISO 7380, note: "camera side pivots; the camera's own threads"}
+  - {type: fastener, item: M2 x 6 mm button head screw, qty: 2, spec: ISO 7380, note: "camera side pivots; ~2.5 mm into the camera's own threads"}
+  - {type: hardware, item: ELRS nano receiver (heat-shrunk), qty: 1, spec: "cable-tied under the top-plate rear tab; antenna through the tab tie slots"}
+  - {type: hardware, item: M2 flat washer, qty: 4, spec: "under the VTX screw heads (its holes take M3)"}
   - {type: hardware, item: 20 mm battery strap (250 mm), qty: 1, spec: "through the two top-plate slots"}
   - {type: hardware, item: 2.5 mm cable tie, qty: 9, spec: "2 per arm for motor wires, 1 for the XT60 in its cradle"}
   - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount"}
@@ -66,8 +69,11 @@ assembly:
     - {parent: body.top, child: top_plate.base}
     - {parent: top_plate.battery, child: battery.bottom}
     - {parent: top_plate.xt60, child: xt60.bottom}
+    - {parent: top_plate.vtx, child: vtx.bottom}
     - {parent: body.cam_tilt, child: camera.pivot, name: cam_tilt, range: [0, 40], home: 25}
-  order: [body, [arm_1, arm_2, arm_3, arm_4], [motor_1, motor_2, motor_3, motor_4], stack, camera, top_plate, xt60, battery]
+  order: [body, [arm_1, arm_2, arm_3, arm_4], [motor_1, motor_2, motor_3, motor_4], stack, camera, top_plate, vtx, xt60, battery]
+  key_access:
+    - {group: vtx, before: [body, stack, camera, arm_1, arm_2, arm_3, arm_4], why: "the VTX is screwed under the top plate on the bench before the plate goes onto the frame"}
   sweeps:
     - {joint: cam_tilt, samples: 9}
 requirements:
@@ -88,3 +94,17 @@ requirements:
     max_disp_mm: 1.5
     fixed: {sites: arm_1, radius: 3.5}
     loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, 33.06]}]
+  - id: body_strength
+    check: fea_static
+    part: body
+    why: "the arm_1 crash load (2 x max thrust at the motor) arrives at the body as a lever couple through the two arm screws; the body must not fail before the replaceable arm"
+    direction: xy            # body prints flat; plate bending stress lies in the layers
+    sf: 3.0
+    max_disp_mm: 1.0
+    fixed: {sites: posts, radius: 5.5}      # post feet (screw seat + the 9 mm foot on the top face): the top-plate + battery mass is the main inertia it is held by
+    loads:
+      # lever on the arm (supports at r 38 / 52, 33.06 N at r 113): inner nut pulls the body down 144.0 N,
+      # the arm top presses up on the body underside around the outer screw with 177.1 N
+      - {box: [[23.8, 23.8, body_t - 2.71], [29.9, 29.9, body_t - 2.69]], force_n: [0, 0, -144.0]}
+      - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
+

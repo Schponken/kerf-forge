@@ -296,3 +296,16 @@ entry before each push (date, what changed, verify state, next step, open proble
   re-reviewed by this session; the robot_arm session needs a fresh design-reviewer pass before it finishes.
 - Free STEP models of this servo exist (Printables 1199804 is CC0) but none is the manufacturer's and they disagree
   on tab height, so they are evidence for the numbers, not loaded as `proxy: step` geometry.
+
+## 2026-10-31 — session 1c-pins: E2 fpv_5in, review round 1 fixes
+- fpv_5in built and reviewed (FAIL, 2 blockers + 5 major); all fixed: arms start at r 26 so the stack screw tips
+  clear them; XT60 cradle open at the plug end with front stops; arms keyed by top ridges in body grooves; motor
+  grip 7.5 mm (2.5 mm into the motor); camera cage to 3 mm past the lens with 4 mm gusseted cheeks; body FEA added
+  (7 mm plate + ribs, 9.8/11.7 MPa); TX800 VTX under the top plate (catalog entry with sources), receiver/antenna
+  tie slots; second arm tie slot; posts moved clear of the arms; M2 x 6 camera screws.
+- Engine (from the review): `kerf/shanks.py` checks every screw body against all other items (tip poking out of a
+  nut into a neighbour); blind purchased threads ("threaded") keep the ISO 4762 js15 length tolerance from the
+  bottom; motor catalog `min_thread_engagement` (iFlight's shipped screws: 2 mm for M3, 1.5 mm for the M2 1404);
+  `assembly.order` for hex-key access; motor_mount counterbore_depth; stack proxy uses the largest board. Tests.
+- Reviewer engine notes not yet done: arm FEA render peak (13.9) differed from report peak (24.8) in round 1 —
+  check kerf/fea_render.py uses the same solve.

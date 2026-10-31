@@ -29,6 +29,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/vendor.py` | `proxy: step` vendor CAD models: loads catalog/models STEP, keeps the base proxy's joints and sites, refuses a model whose bbox or holes disagree with the catalog |
 | `kerf/viewer.py` | Writes the self-contained `out/viewer.html` (meshes, joint sliders from the engine's own kinematics, explode, BOM, print info) |
 | `kerf/attribution.py` | Face → part-file line and project param that produced it (viewer click-to-edit) |
+| `kerf/shanks.py` | Screw bodies: after fastener sizing, each screw (head seat to tip, 0.8 d cylinder) must not run into any item but the two it joins (a tip poking out of a nut into a neighbour, a screw reaching a prop disc) |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` |
 | `kerf/cli.py` | `kerf doctor | check | build | verify | review-status | new | status` |
