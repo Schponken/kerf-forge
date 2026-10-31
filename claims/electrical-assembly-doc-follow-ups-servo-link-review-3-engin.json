@@ -1,7 +1,0 @@
-{
- "item": "Electrical/assembly-doc follow-ups (servo_link review 3, engine, all minor): `power_budget` adds a voltage-drop check (IR drop of every run on the feed path at peak vs the load's voltage_min, test with a hand-calculated answer); WIRING.md / ASSEMBLY.md pick the verb per end (screw terminal, header, solder) instead of always 'solder'; ASSEMBLY.md screw steps pull in bom_extra items for that group (washers), ball-end key warnings and the item's `insert` direction (test); prices.json entries for the electrical items now in BOMs (adapters, jack, Nano, wire, header, cords)",
- "session": "9a8926925c",
- "since": 1793414304.433106,
- "heartbeat": 1793416412.1949265,
- "since_utc": "2026-10-31 02:38"
-}
