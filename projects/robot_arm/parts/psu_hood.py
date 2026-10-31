@@ -16,7 +16,8 @@ Z up. The supply's case is x 0..129, y -48.5..48.5, z 0..30 (catalog, +/-1 mm).
   held by its two flange screws in heat-set inserts in bosses behind the wall (2.5 mm wall around each insert).
 - DC exit: a teardrop hole in the -Y wall; the output bundle is tied to a bridge on the floor right inside it, so a
   pull on the leads loads the tie, not the screw terminals.
-- The top has a 8 mm hole over the supply's output-voltage pot (SVR1) and a 3.5 mm light hole over its LED, so the
+- The top has a 7 mm hole over the supply's output-voltage pot (SVR1) and a 2.5 mm light hole over its LED (1.25 mm
+  web between them, about three extrusion lines), so the
   5.4 V trim is set and checked with the hood on; a window in the -Y wall keeps the supply's side vent slots open.
 Printed standing on its end wall (print_rot [0, -90, 0]): the insert holes print vertical and the inlet window is a
 plain opening in the first layers; the side screw hole and the DC exit are the only horizontal holes (the exit is a
@@ -71,8 +72,8 @@ def build(ctx):
     sx_, sy_ = e_psu["svr_xy_scaled"]
     lx, ly = e_psu["led_xy_scaled"]
     y0 = Y_IN_N                                                # datasheet y = 0 side
-    body -= Pos(sx_, y0 + sy_, ZC - 1) * Cylinder(float(e_psu["svr_d_scaled"]) / 2 + 1.0, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    body -= Pos(lx, y0 + ly, ZC - 1) * Cylinder(1.75, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= Pos(sx_, y0 + sy_, ZC - 1) * Cylinder(float(e_psu["svr_d_scaled"]) / 2 + 0.5, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= Pos(lx, y0 + ly, ZC - 1) * Cylinder(1.25, T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # the supply's own side vent slots (datasheet side view, x ~15-25 near the base) stay open: window in the -Y wall
     body -= Pos(20.0, Y_IN_N - T / 2, 2.0) * Box(14.0, T + 2, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("origin", Location((0, 0, 0)))

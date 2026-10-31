@@ -38,11 +38,11 @@ parts:
   finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: X}
   cable_mast: {file: parts/cable_mast.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: Z}
   psu_hood: {file: parts/psu_hood.py, material: PETG, print_rot: [0, -90, 0], infill: 0.3,
-             assembly_note: "on the bench, BEFORE the hood goes on the supply: press the two M3 inserts into the bosses behind the end wall, fit the inlet (next step; its flange screws take at most 0.5 N*m), push the three mains jumpers' receptacles onto its L / N / PE tabs and clamp their ferrules in the supply's AC/L, AC/N and FG terminals (WIRING.md), and the two DC pairs in its +V/-V terminals; then slide the hood over the terminal end, feed the DC pairs out of the side exit, tie them to the floor bridge and fit the side screw"}
+             assembly_note: "on the bench, BEFORE the hood goes on the supply: press the two M3 inserts into the bosses behind the end wall, fit the inlet (next step; its flange screws take at most 0.5 N*m), push the three mains jumpers' receptacles onto its L / N / PE tabs and clamp their ferrules in the supply's AC/L, AC/N and FG terminals (WIRING.md), and the two DC pairs in its +V/-V terminals; feed the DC pairs out through the hood's side exit and tie them to its floor bridge (the bridge cannot be reached once the hood is seated); then slide the hood over the terminal end and fit the side screw"}
 purchased:
   brg_lo: {catalog: bearings.6001, proxy: bearing}
   brg_hi: {catalog: bearings.6001, proxy: bearing}
-  yaw_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: yaw_servo}, range: [-61, 61]}
+  yaw_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: yaw_servo}, tab_screws_from: bottom, range: [-61, 61]}
   yaw_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: yaw_horn}}
   sh_servo: {catalog: servos.DS3225, proxy: servo, groups: {tabs: sh_servo}, tab_screws_from: bottom, range: [-60, 60]}
   sh_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: sh_horn}}
@@ -141,8 +141,8 @@ wiring:      # servo runs are each servo's own 300 mm lead + an extension (lead:
      ends: {from: lever, to: plug}, route: [[-112, -5, 15], [-114, -18, 30], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2],
      note: "tied through the upper arm and forearm slot pairs"}
   - {id: pwr_yaw, from: bus_yaw, to: yaw_servo, v: 5.4, gauge: 22, color: red/brown, lead: [yaw_servo, electronics.wire_misc.servo_ext_300_pololu2184], fuse: electronics.fuses.ato_5a_littelfuse_257005, fuse_holder: electronics.fuses.ato_holder_littelfuse_fhac0001zxj,
-     ends: {from: lever, to: plug}, route: [[-112, -37, 15], [-100, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]],
-     note: "out of the housing's front exit, back along the housing inside the gear guard, out of the guard's floor-level hole"}
+     ends: {from: lever, to: plug}, route: [[-112, -37, 15], [-100, -42, 11], [-45, -42, 11], [-45, -31.25, 11], [-36, -28, 10], base.yaw_lead_exit, [-34.4, -12, 10]],
+     note: "from the boss, out of the servo pocket's -Y side exit and the gear guard's floor-level hole"}
   - {id: sig_sh, from: driver, to: sh_servo, kind: signal, gauge: 22, color: orange, lead: pwr_sh, ends: {from: crimp, to: plug},
      route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, yoke_r.lead_top], note: "PCA9685 channel 1, signal (PWM) pin; the housing's V+ and GND slots stay empty"}
   - {id: sig_el, from: driver, to: el_servo, kind: signal, gauge: 22, color: orange, lead: pwr_el, ends: {from: crimp, to: plug},
@@ -152,7 +152,7 @@ wiring:      # servo runs are each servo's own 300 mm lead + an extension (lead:
   - {id: sig_gr, from: driver, to: gr_servo, kind: signal, gauge: 22, color: orange, lead: pwr_gr, ends: {from: crimp, to: plug},
      route: [[-114, -18, 95], [-114, -18, 135.5], base.cable_post, cable_mast.cable_top, upper_arm.lead_1, upper_arm.lead_2, forearm.lead_1, forearm.lead_3, forearm.lead_4, gripper.lead_1, gripper.lead_2], note: "channel 4"}
   - {id: sig_yaw, from: driver, to: yaw_servo, kind: signal, gauge: 22, color: orange, lead: pwr_yaw, ends: {from: crimp, to: plug},
-     route: [[-114, -20, 95], [-114, -42, 11], [-45, -42, 11], [-45, -31, 11], [-45, -24, 11], [-21.5, -17, 11], [-22, -2, 11], [-30, 0, 11]], note: "channel 0"}
+     route: [[-114, -20, 95], [-114, -42, 11], [-45, -42, 11], [-45, -31.25, 11], [-36, -28, 10], base.yaw_lead_exit, [-34.4, -12, 10]], note: "channel 0"}
   - {id: gnd_ref, from: bus_yaw, to: driver, kind: signal, gauge: 22, color: black, length_mm: 150, ends: {from: lever, to: crimp},
      route: [[-112, -37, 15], [-114, -20, 30], [-114, -20, 95]],
      note: "supply GND to a GND pin of the PCA9685 (channel 15's GND): the servo signals need a common ground (the driver's V+ terminal stays unused)"}

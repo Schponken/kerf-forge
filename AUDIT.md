@@ -46,10 +46,19 @@ Each project's findings are listed in its appendix section with severity and a c
 | fpv_5in | B-F1, F1b, F2, F3 (major), F4..F10 (minor) | open |
 | pan_tilt | B-F11, F12 (major), F13..F18 (minor) | open |
 | bionic_finger | C-1..C-3 (major), C-4..C-9 (minor) | open |
-| robot_arm | C-10..C-12 (major), C-13..C-20 (minor) | open |
+| robot_arm | C-10..C-12 (major), C-13..C-20 (minor) | fixed (see log); review round 5 PASS (5b285dd83259e4c0) |
 
 ## Resolution log
 (append: `- <date> <session>: <IDs> fixed in <commit> / justified: <reason>`)
+- 2026-10-31 18259c3d8c: robot_arm C-10 (base_fea, direction z, SF 3: 1.2 MPa p99.9), C-11 (SCHURTER DD11 fused +
+  switched inlet in the new psu_hood, C13 cord, 5 A ATO fuse per servo, engine `fuse:` checks), C-12 (servo lead +
+  extension via engine `lead:`, lead_length_mm checked; signal pins crimped into housings), C-13 (upper_arm/forearm
+  stall FEA added), C-14 (free pivot holes teardrop: `iface.pin_hole` already had `teardrop`; horn clearance holes
+  and insert holes stay round, a 3.4 mm hole sags < 0.2 mm), C-15 (front foot screws x = 7.5: 6.5 mm edge
+  distance), C-16 (washers in BOM, M2 x 8 row removed), C-17 (threadlocker on the screw tip only, BOM note), C-18
+  (software desk limit in DESIGN.md 'Use notes'; no engine desk plane — justified: the base may sit at a desk edge),
+  C-19 (assembly.order + desk step), C-20 (DESIGN numbers from report) fixed in e5b8ec6..7b72d26. Engine side notes:
+  ENG-20's servo pigtail length is now checked by `lead:`; ENG-7's "pin_hole has no teardrop" was already false.
 
 
 ---

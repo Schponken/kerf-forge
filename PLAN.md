@@ -66,7 +66,7 @@ tested before handoff.
 
 ## Phase 3 — the eval projects (each: REFERENCES.md from the design-researcher, `kerf build` PASS, design-reviewer PASS, `evals/<id>/acceptance.py` PASS)
 - [x] E2 `fpv_5in` — 5" freestyle FPV quad frame (evals/fpv_5in/brief.md)
-- [ ] E3 `robot_arm` — 4-axis desk robot arm with gripper (evals/robot_arm/brief.md)
+- [x] E3 `robot_arm` — 4-axis desk robot arm with gripper (evals/robot_arm/brief.md)
 - [x] E4 `tvc_drone` — coax thrust-vectoring rocket-style drone (evals/tvc_drone/brief.md)
 - [x] E5 `bionic_finger` — tendon-driven 3-segment finger (evals/bionic_finger/brief.md)
 - [ ] E6 `pan_tilt` — BLIND test of the tool: a fresh general-purpose subagent with no prior context is given only evals/pan_tilt/brief.md and told to use the `kerf` skill; it must reach PASS on its own. Record its transcript summary and anything it got stuck on in evals/pan_tilt/BLIND_RUN.md, then fix the skill/engine for every stumble (and re-run blind if fixes were needed)
@@ -94,7 +94,7 @@ tested before handoff.
   - [ ] Audit fixes: fpv_5in (B-F1..F10), re-review PASS
   - [ ] Audit fixes: pan_tilt (B-F11..F18), re-review PASS
   - [ ] Audit fixes: bionic_finger (C-1..C-9), re-review PASS
-  - [ ] Audit fixes: robot_arm (C-10..C-20; coordinate with the E3 owner), re-review PASS
+  - [x] Audit fixes: robot_arm (C-10..C-20; coordinate with the E3 owner), re-review PASS
   - [ ] Audit fixes: engine majors ENG-1..ENG-6 (each with a test), re-check every project
   - [ ] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)
 - [ ] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project

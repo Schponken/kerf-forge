@@ -1,45 +1,45 @@
 {
-  "verdict": "FAIL",
-  "fingerprint": "fbdd34a30af560b8",
+  "verdict": "PASS",
+  "fingerprint": "5b285dd83259e4c0",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "All three round-3 majors are fixed in the outputs as well as in the prose. The electrics are now complete (SCHURTER fused, switched inlet in a printed hood, C13 cord, earth jumper, a 5 A ATO fuse per servo, mini-B USB cable, ferrules and FASTONs). WIRING.md and the BOM agree on one lead scheme (own lead plus Pololu extension, 600/900 mm against routes of 388-659 mm). The assembly order puts the retainer before the desk bolting. All four round-3 minors and AUDIT C-10 to C-20 are addressed too: base_fea, stall FEA, teardrops, edge distance 6.5, washers, threadlocker note, order, masses. It still fails on one new problem. The new psu_hood covers the LRS-100's SVR1 voltage pot and LED (MEAN WELL drawing: right at the terminal end, x about 4 mm, inside the hood's x 0-20 top), and it covers the DC output terminals. The required 5.3 V trim, which the voltage-drop proof depends on, therefore cannot be set or metered with the hood fitted. The only way to do it is with the mains terminals exposed and live.",
+  "summary": "The round-4 major is fixed in the geometry. I re-rendered the LRS-100 datasheet page 4 and measured it: SVR1 at x 4.7, y 9.7 and the LED at x 11.0, y 10.0, which matches the catalog's 5.1/9.6 and 11.1/9.9. psu_hood cuts an 8 mm hole and a 3.5 mm hole at those points, in the solid top (x 0-20), referenced to the -Y wall that bears on the case's y = 0 face. The 5.4 V trim (WIRING step 21, DESIGN step 11) can now be set and checked at the WAGO bus with the hood closed and no mains terminal exposed. The side vent window (x 13-27, z 2-12) covers the datasheet's slots, which measure x 15.7-25.7, z 3-9 (round 4's z 9-13 was a misreading). The tie bridge replaces the floor slots, the cable_mast docstring is correct, and at 5.4 V the worst stall row is 4.951 V against 4.8 V. The arm geometry has not changed since round 4. Poses, FEA hot spots and load cases are still consistent. Only minor items remain.",
   "findings": [
     {
-      "severity": "major",
+      "severity": "minor",
       "part": "psu_hood",
-      "issue": "The hood blocks the supply's output adjustment. The MEAN WELL LRS-100 drawing (datasheet page 4, the catalog's source_mech) puts SVR1 and the LED on the top face right beside terminal 7, about 4 mm from the terminal end and about 9 mm from the y = 0 side. That is hood frame (x about 4, y about -39.5), under the hood's solid top (x 0-20, full width, 2 mm above the case). WIRING.md step 21 and DESIGN assembly step 11 say to set the output to 5.3 V with a meter 'at its output terminals' after the hood is on. The pot and the +V/-V terminals are both inside the closed hood. To trim it, the builder must take the hood off with mains connected, exposing the L/N screw terminals 10-20 mm from the pot. That is exactly the hazard the hood was added to remove. Skipping the trim leaves 5.0 V, and then the wrist and grip servos sag to about 4.55 V at stall, below the 4.8 V the power check was satisfied with. The LED (power-on indication) is hidden too.",
-      "fix": "Add the SVR1 and LED positions (datasheet: about x 4, y 9 from the terminal end / LED side) to catalog electronics.supplies.meanwell_lrs100_5 with the source. In psu_hood.py, cut an adjustment hole of about 5 mm in the top over SVR1, sized for an insulated trimmer screwdriver but too small for a finger (IEC test finger 12 mm), and a 3 mm light hole or light-pipe over the LED. Change step 21 / DESIGN step 11 to measure the voltage at the WAGO bus pair, which is reachable, not 'at its output terminals'."
+      "issue": "The SVR hole (d 8 at x 5.1, y 9.6) and the LED hole (d 3.5 at x 11.1, y 9.9) are 6.0 mm apart centre to centre. That leaves a 0.26 mm web between them (6.007 - 4 - 1.75), less than one 0.4 mm extrusion line. It will print as a ragged sliver or not at all, and the two holes merge into one 8 x 12 mm slot. This is still finger-safe (8 mm wide is less than the 12 mm IEC test finger) and the mains pins are 50 mm or more away, so it is cosmetic and robustness only.",
+      "fix": "Leave at least 1.2 mm web: cut the LED hole at 2.5 mm, or move it to x 12 (the LED still shows, given the ±1 mm case tolerance). Alternatively, cut one deliberate rounded slot over both."
     },
     {
       "severity": "minor",
       "part": "psu_hood",
-      "issue": "(1) The -Y sleeve wall bears flat on the supply's datasheet side face over x 0-42. The drawing's side view shows vent slots there at about x 15-25 (z about 9-13), so they are covered (the LRS cools by free air). (2) The DC tie slots go through the 2 mm floor, which sits flat on the desk. A tie looped through them runs under the floor and rocks the hood or lifts it about 1 mm, unless the hood is lifted every time the bundle is re-tied.",
-      "fix": "Cut matching vent openings in the -Y wall at the slot positions (or stand the wall off 1 mm with ribs and keep only the screw boss in contact). Make the tie anchor a bridge or loop standing on the floor (a 4 x 2 mm tunnel under a 2 mm strap), not a through-slot."
+      "issue": "The assembly order (project.yaml assembly_note, ASSEMBLY step 26) says to slide the hood on, feed the DC pairs out, then 'tie them to the floor bridge'. Once the hood is seated, the bridge (x -12, y -43.5..-37.5, z 2-7) is enclosed: the top covers x -65..20, the inlet fills the end window, and the only opening near it is the 10 mm DC exit 5 mm away. You cannot thread a tie through the X-direction tunnel through that hole. Separately, in the print orientation (standing on the end wall) the bridge block's -X face is a 6 x 5 mm flat overhang that sticks out 5 mm from a vertical wall. Report overhang is only 0.23 %, so it will just sag a little.",
+      "fix": "Reword the note: feed the DC pairs out of the exit and tie them to the bridge with the hood held beside the supply, then lower or slide the hood on and fit the side screw. Optionally, chamfer the bridge block's -X underside at 45 degrees."
     },
     {
       "severity": "minor",
       "part": "wiring",
-      "issue": "The IR-drop rows leave out resistances that are in the catalog or certain to be there. The 5 A ATO fuse has cold_resistance_ohm 0.01785 (about 45 mV at 2.5 A). Each servo lead also has the plug-to-extension contact (two 0.1 in contacts in the loop). The servo's own 300 mm lead is assumed to be 22 AWG, but the catalog has no gauge for any servo's lead (MG996R pigtails are often thinner). The wrist and grip peak rows (4.851 V against 4.8) have 51 mV of margin, which these effects use up. The rows are soft (stall transient), so this is not a failure, but the stated margin is optimistic.",
-      "fix": "Engine: add the fuse's cold_resistance_ohm, and the fuse holder's lead length at its 16 AWG gauge, to the run's loop resistance in electrical.py (the data is already in the catalog). Add a sourced lead gauge to the servo catalog entries, or treat the own-lead part as the thinner of 22/26 AWG. With 5.5 V available from the SVR, trimming to 5.4 V would restore the margin (all servos are rated to at least 6.8 V)."
+      "issue": "Carried over, now with more margin. The IR-drop rows still leave out the 5 A ATO fuse's catalog cold_resistance_ohm (0.01785 ohm, about 45 mV at 2.5 A), the fuse holder's 16 AWG lead, and the plug-to-extension contacts. They also assume the servo's own lead is 22 AWG, but no gauge is sourced. At 5.4 V the wrist and grip stall rows are 4.951 V, 151 mV above 4.8 V, so the omitted terms (roughly 60-110 mV) still leave positive margin. kerf/electrical.py was not changed.",
+      "fix": "Engine: add the fuse's cold resistance and the holder lead to the run's loop resistance (the data is already in the catalog), and add a sourced lead gauge to the servo catalog entries."
     },
     {
       "severity": "minor",
       "part": "cable_mast",
-      "issue": "The docstring still says 'foot and column flush (10 mm) so it needs no support'. The foot is now 26 mm wide in Y with the 10 mm column centred on it, so lying on its side (print_rot [90,0,0]) the 61 mm column stands 8 mm off the bed along its whole length on support (12.6 % support surface). The support side of the column is left rough. DESIGN.md has the correct description.",
-      "fix": "Correct the docstring. Optionally, flush the column with one long side of the foot (shift X_COL's Y offset, foot y -5..21), or split the foot into a separate pad, so the column lies on the bed with no support."
+      "issue": "The docstring is now correct (the column is centred on the 26 mm foot and printed lying down on support). The 12.6 % support surface remains, so the support side of the column will be rough. This is cosmetic.",
+      "fix": "Optional: shift the column flush with one long side of the foot so it lies on the bed with no support."
     },
     {
       "severity": "minor",
       "part": "nano",
-      "issue": "Carried over and accepted: the Nano, the 4 WAGO splices and the 5 inline fuse holders are loose on the desk behind the base. DESIGN.md now tells the builder to case the Nano and screw the supply down. The supply's plan-view M3 holes are only 3 mm deep, so screwing it to a desk top needs a thin board or long screws from below.",
-      "fix": "None required. A small printed electronics tray on the rear pad (Nano posts, WAGO clips, fuse-holder slots) would make the desk layout tidy and short-proof."
+      "issue": "Carried over and accepted: the Nano, the 4 WAGO splices and the 5 inline fuse holders sit loose on the desk behind the base. DESIGN.md tells the builder to case the Nano and screw the supply down. The supply's plan M3 holes take a screw only 3 mm deep.",
+      "fix": "None required. A printed electronics tray on the rear pad would make the layout tidy and short-proof."
     },
     {
       "severity": "minor",
       "part": "yoke_r",
-      "issue": "Accepted, for the record. yoke_r_fea peak is 17.7 MPa and gripper_fea peak is 14.6 MPa, local corner singularities with p99.9 of 6.6 and 5.1 MPa against 13 MPa. The FEA renders put the hot spots on the load path: the cheek root at the foot end, the jaw root, the servo-window frame of plate A in upper_arm/forearm (static and stall), and the tower and shelf in base_fea. The applied resultants in report.json match the stated load cases. The DS32xx tab holes are still UNVERIFIED in the catalog.",
-      "fix": "None required. Test-print yoke_r and fit a real DS3225 before printing the rest, as DESIGN.md's Risks section says."
+      "issue": "Accepted, for the record. yoke_r_fea peaks at 17.7 MPa and upper_arm_stall at 18.8 MPa, both local singularities. Their p99.9 values (6.55 against 13 and 13.42 against 24 MPa) pass. The hot spots in the renders are on the load path (the cheek root at the foot, and the frame of the servo window in plate A). The DS32xx tab holes are still UNVERIFIED in the catalog.",
+      "fix": "None required. Test-print yoke_r and fit a real DS3225 before printing the rest, as the Risks section of DESIGN.md says."
     }
   ]
 }

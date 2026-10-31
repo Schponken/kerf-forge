@@ -54,7 +54,7 @@ MEAN WELL LRS-100-5 (5 V, 18 A).
 ## Part list
 | Part | Job | Material | Print orientation | Approx. |
 |---|---|---|---|---|
-| base | desk plate, bearing tower, yaw-servo pocket, cable post | PETG 30 % | upright, supports under shelf/bore ceiling | 130 g |
+| base | desk plate, bearing tower, open-bottomed yaw-servo pocket, cable post | PETG 30 % | upright, supports under shelf/bore ceiling | 134 g |
 | turntable | spindle, 24 T gear, platform | PETG 40 % | upside down (platform on bed) | 37 g |
 | retainer | washer under the lower inner race | PETG 100 % | flat | 1 g |
 | yaw_gear | 36 T gear on the yaw horn | PETG 50 % | flat | 15 g |
@@ -71,7 +71,7 @@ Masses are report.json's (all within 10 %); the arm on its base is 693 g (`arm_m
 ## Interfaces
 | A | B | Call | Group | Hardware |
 |---|---|---|---|---|
-| base | yaw servo | `servo_mount` (tap, top-in, slot for the cable boss) | yaw_servo | 4 × M3×8 thread-forming |
+| base | yaw servo | `servo_mount` top_through from BELOW (tap; solid shelf round all 4 tab holes, the cable boss never passes it) | yaw_servo | 4 × M3×8 thread-forming, from below (ball-end key for the two beside the boss) |
 | yaw horn | yaw_gear | `horn_mount` counterbored (heads 0.3 mm under the gear face: the platform turns over them) | yaw_horn | 4 × M3×8 |
 | base | 2 × 6001 | `bearing_seat` press (+0.05) | — | — |
 | turntable | retainer | `bolt_pattern` heat-set / clearance | retainer | M3×8 + insert |
@@ -144,8 +144,8 @@ platform. `cable_loop` (channel_clear, 5 mm bundle) proves that span is clear at
 checked against every part at both ends of every joint's range (electrical route check).
 
 The gear mesh is enclosed: the guard ring round the yaw gear plus two side walls past the turntable gear (2.9 mm
-from its tips), the platform above. The yaw servo's own lead leaves the housing's front exit, runs back inside the
-ring along the housing at floor level and out through a hole in the ring's −Y side, 40 mm below the gears.
+from its tips), the platform above. The yaw servo's own lead leaves the servo pocket through an exit in its −Y wall at
+floor level and goes straight out through a hole in the guard ring's −Y side, well below the gears.
 
 ## Electrics
 | Item | Catalog | Job |
@@ -169,7 +169,7 @@ instead of cooking the lead until the supply's 110–150 % overload trips. The 1
 supply's own overload limit (22 A chassis rating vs ≤ 27 A trip, for seconds) and never leave the desk.
 Mains side: the LRS draws 1.9 A at 115 VAC; the T3.15 A fuses run at 60 % (≤ 75 %), the inlet (7 A UL), the cord
 (10 A) and the 18 AWG jumpers are all above it (report rows `mains ...`). The supply output is trimmed to 5.4 V with
-its SVR pot through the 8 mm hole in the hood top, hood on and closed (measure at the WAGO bus with a meter before
+its SVR pot through the 7 mm hole in the hood top, hood on and closed (measure at the WAGO bus with a meter before
 connecting the servos; the LED shows through a light hole): at 5.0 V the long wrist/grip leads (900 mm) would
 drop the stalled servos below their 4.8 V minimum. All servos are rated to 6.8 V or more.
 
@@ -187,7 +187,11 @@ non-conductive pad, not loose against the WAGO splices; screw the supply to the 
 
 ## Assembly order
 1. Press both 6001 bearings into the base tower (lower one from below, up to its shoulder; upper one from the top).
-2. Drop the yaw servo into its pocket (cable boss through the slot), 4 × M3 × 8 thread-forming screws into the shelf.
+2. Push the yaw servo up into its pocket from below (base on its back on the bench), case top through the shelf
+   window, tab tops against the shelf; 4 × M3 × 8 thread-forming screws from below (the two beside the cable boss
+   need a ball-end key, tilted sideways in the widened part of the pocket). The tab holes sit 1–1.5 mm from the
+   window edge (less than 1.5 d): the MG996R's own 49.5 × 10 hole pattern forces it, as on every servo bracket;
+   the shelf is solid all round them (holewall check). Lead out through the pocket's −Y exit and the guard hole.
    Centre it (1500 µs), press the aluminium horn on and fit its centre screw; bolt the yaw gear on (4 × M3 × 8,
    counterbored: an M3 × 10 would reach the servo case under the horn).
 3. Melt the turntable's 11 inserts (3 + 3 yoke feet, 4 cable mast, 1 spindle end) and the 3 pivot inserts (upper
@@ -207,8 +211,8 @@ non-conductive pad, not loose against the WAGO splices; screw the supply to the 
 9. yoke_l onto the platform with the upper arm's pivot in it (pivot screw through yoke_l).
 10. PCA9685 onto the post bosses (4 × M2 thread-forming). Route and tie the leads as in 'Cables'.
 11. Electrics, per out/WIRING.md: inserts into the hood's bosses; mains jumpers (FASTON on the inlet, ferrules into
-    the supply's L / N / FG), inlet into the hood, hood over the supply (M3 × 6 side screw); DC pairs (ferrules) out
-    through the exit and tied; WAGO buses; a fuse holder at the bus end of each servo's red wire; orange wires crimped
+    the supply's L / N / FG), inlet into the hood, hood over the supply (M3 × 6 side screw); DC pairs (ferrules) through the exit and
+    tied to the floor bridge BEFORE the hood is seated (the bridge is out of reach afterwards); WAGO buses; a fuse holder at the bus end of each servo's red wire; orange wires crimped
     into housings on the driver; I2C to the Nano. Check every + to − pair with a meter, set the supply to 5.4 V (pot hole in the hood top, meter on the WAGO bus) with no
     servos plugged in, then plug the servo leads in. Centre every servo (1500 µs) before fitting its horn.
 

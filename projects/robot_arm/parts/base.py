@@ -1,5 +1,6 @@
 """Base: desk plate, bearing tower for the turntable spindle (two 6001 bearings, 25 mm apart, so the arm's tipping
-moment never reaches the servo), and the pocket the yaw servo (MG996R) hangs in, output up, 45 mm behind the yaw axis.
+moment never reaches the servo), and the open-bottomed pocket the yaw servo (MG996R) is pushed up into from below,
+output up, 45 mm behind the yaw axis (it goes in before the base is bolted to the desk).
 Origin: yaw axis on the desk (underside of the plate); z up; the arm points +X at home.
 Printed upright; the servo shelf and the bearing-bore ceiling need supports (supports: allowed)."""
 import math
@@ -18,25 +19,32 @@ def build(ctx):
     d = iface.servo_dims(YAW)
     DRV_HOLES = [tuple(h) for h in catalog.get(DRV)["holes"]]
     xc = -p.yaw_c - p.yaw_out_x                    # yaw servo body centre (output end toward the tower)
-    shelf_t = 8.0
+    shelf_t = 7.0                                  # < case top above the tab tops (7.7): the case top passes it
     r_tower = p.brg_D / 2 + 6.0
     body = Pos(-29, 0, 0) * Box(138, 100, p.base_floor, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body = fillet(body.edges().filter_by(Axis.Z), 8.0)
     body += Cylinder(r_tower, p.z_tt, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    # servo housing: walls round the hanging body, a shelf the tabs rest on, room for the cable boss at the output end
+    # servo housing, open at the bottom: the servo goes in from BELOW (top_through), case top up through the shelf
+    # window, tab tops pressed against the shelf's underside, 4 screws from below. Coming from below, the cable boss
+    # (low on the output end) never has to pass the shelf, so the shelf is solid round all four tab holes.
+    z_tabtop = p.z_shelf + d["tab_t"]
     boss_x1 = xc + d["L"] / 2 + 6.6 + 0.6
-    hx0, hx1 = xc - d["span"] / 2 - 4.0, max(boss_x1 + 4.0, xc + d["span"] / 2 + 4.0)
+    cav_x0, cav_x1 = xc - d["span"] / 2 - 0.6, max(boss_x1, xc + d["span"] / 2 + 0.6)   # the tabs pass it on the way up
+    hx0, hx1 = cav_x0 - 4.0, cav_x1 + 4.0
     hw = d["W"] / 2 + 0.5 + 4.0
-    body += Pos((hx0 + hx1) / 2, 0, 0) * Box(hx1 - hx0, 2 * hw, p.z_shelf, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    cav_x0, cav_x1 = xc - d["L"] / 2 - 0.5, boss_x1
-    body -= Pos((cav_x0 + cav_x1) / 2, 0, p.base_floor) * Box(cav_x1 - cav_x0, d["W"] + 1.0, p.z_shelf - shelf_t - p.base_floor,
-                                                             align=(Align.CENTER, Align.CENTER, Align.MIN))
-    body -= iface.servo_mount(ctx, YAW, Location((xc, 0, p.z_shelf)), group="yaw_servo", plate_t=shelf_t, kind="tap")
-    # slot so the cable boss (low on the output-end face) passes the shelf when the servo drops in
-    body -= Pos((xc + d["L"] / 2 - 1.0 + boss_x1) / 2, 0, p.z_shelf - shelf_t - 1) * Box(boss_x1 - xc - d["L"] / 2 + 1.0, 9.0, shelf_t + 2,
-                                                                                         align=(Align.CENTER, Align.CENTER, Align.MIN))
-    # cable exit through the housing's front wall, at floor level
-    body -= Pos(boss_x1 + 2.0, 0, p.base_floor) * Box(8.0, 10.0, 10.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body += Pos((hx0 + hx1) / 2, 0, 0) * Box(hx1 - hx0, 2 * hw, z_tabtop + shelf_t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    ax0 = xc + d["L"] / 2 - 6.0                    # widened key-access part of the pocket (below), housing round it
+    body += Pos((ax0 - 4.0 + hx1) / 2, 0, 0) * Box(hx1 - ax0 + 4.0, 2 * 26.0, z_tabtop + shelf_t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= Pos((cav_x0 + cav_x1) / 2, 0, -1.0) * Box(cav_x1 - cav_x0, d["W"] + 1.0, z_tabtop + 1.0,
+                                                      align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # the output-end tab screws sit either side of the cable boss: a hex key can only reach them tilted sideways, so
+    # the pocket is widened (y +-22) under those tabs, from the floor up to the tab undersides (the shelf stays whole)
+    body -= Pos((ax0 + cav_x1) / 2, 0, -1.0) * Box(cav_x1 - ax0, 2 * 22.0, p.z_shelf - 0.5 + 1.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= iface.servo_mount(ctx, YAW, Location((xc, 0, z_tabtop)), group="yaw_servo", plate_t=shelf_t, kind="tap",
+                              top_through=True)
+    # yaw lead exit: through the widened pocket's -Y wall, at floor level, toward the gear guard's floor hole
+    body -= Pos((ax0 + cav_x1) / 2, -24.0, p.base_floor) * Box(8.0, 6.0, 8.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    ctx.rigid("yaw_lead_exit", Location(((ax0 + cav_x1) / 2, -24.0, p.base_floor + 4.0)))
     # bearing seats: lower 6001 pushed up from below to a shoulder, upper 6001 dropped in from the top
     body -= iface.bearing_seat(ctx, BRG, Location((0, 0, 0), (180, 0, 0)), fit="press", depth=p.z_blo + p.brg_B,
                                through=p.z_bhi - p.z_blo - p.brg_B, shaft_clear=4.0)
