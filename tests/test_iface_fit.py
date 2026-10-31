@@ -138,7 +138,8 @@ def test_screw_spec_is_the_catalog(size):
     f, s = catalog.get(f"fdm_holes.{size}"), catalog.get(f"screws.{size}")
     sp = iface.screw_spec(size)
     assert sp["d"] == float(size[1:])
-    assert sp["clearance"] == f["clearance_hole"] and sp["tap"] == f["self_tap_pilot"]
+    # no published FDM pilot (e.g. M1.6): screw_spec falls back to the metal tap drill, as the fdm_holes note says
+    assert sp["clearance"] == f["clearance_hole"] and sp["tap"] == f.get("self_tap_pilot", s.get("tap_drill"))
     assert sp["nut_pocket_af"] == f["nut_pocket_af"]
     if "heatset_hole_d" in f:
         assert sp["insert_hole"] == f["heatset_hole_d"] and sp["insert_len"] == f["heatset_length"]

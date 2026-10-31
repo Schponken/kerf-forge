@@ -3,7 +3,9 @@
     "currency": "USD",
     "checked": "2026-10-30",
     "note": "Dated price snapshot for BOM costing (unit = pack_usd / pack_qty). Every price was read from the linked page with WebFetch on the check date; prices exclude shipping and sales tax unless stated. Store pages change often, so re-check before ordering. Amazon blocked automated reading, so no Amazon prices are used.",
-    "missing": {}
+    "missing": {
+      "electronics.connectors.fdisc_187_insulated_18awg": "TE 2-520275-2: no USD price page could be opened on 2026-10-31 (RS UK: GBP 20.30 per 100, i.e. GBP 0.203 each, https://uk.rs-online.com/web/p/crimp-receptacles/7820735; Carlton-Bates lists it without a price). Need 3 per arm."
+    }
   },
   "servos.MG996R": {
     "buy": "https://hobbyking.com/towerpro-mg996r-10kg-servo-10kg-0-20sec-55g.html",
@@ -572,5 +574,45 @@
     "checked": "2026-10-31",
     "source": "https://www.pololu.com/product/1930",
     "note": "Pololu #1930 female crimp pins 100-pack, $11.95 at qty 1. UNIT = pins."
+  },
+  "electronics.cords.iec_c13_cord_us_18awg": {
+    "buy": "https://www.newegg.com/black-tripp-lite-6-ft-no-type-specified/p/N82E16812120742",
+    "pack_qty": 1,
+    "pack_usd": 8.22,
+    "checked": "2026-10-31",
+    "source": "https://www.newegg.com/black-tripp-lite-6-ft-no-type-specified/p/N82E16812120742",
+    "note": "Newegg (sold and shipped by TELeasy) Tripp Lite P006-006, 6 ft, 18AWG SJT 10A, $8.22; stock not stated. SHI lists the same part at $7.00 (MSRP $12.50)."
+  },
+  "electronics.wire_misc.mains_wire_18awg_ul1015": {
+    "buy": "https://www.zoro.com/remington-industries-hookup-wire-csa-tew-ul-1015-18-awg-black-100-ft-18ul1015tpcbla100/i/G807453020/",
+    "pack_qty": 30.48,
+    "pack_usd": 68.39,
+    "checked": "2026-10-31",
+    "source": "https://www.zoro.com/remington-industries-hookup-wire-csa-tew-ul-1015-18-awg-black-100-ft-18ul1015tpcbla100/i/G807453020/",
+    "note": "Zoro Remington 18UL1015TPCBLA100, 18 AWG UL1015 black, 100 ft spool, $68.39/ea. UNIT = METRES (100 ft = 30.48 m). The arm needs about 0.3 m in three colours (black L, white N, green PE): buy white and green spools too, or Remington's 6-colour 25 ft kit (remingtonindustries.com, price range from $83.57; per-option price not shown)."
+  },
+  "electronics.wire_misc.ferrule_wago_216_203_18awg": {
+    "buy": "https://standardelectricsupply.com/WAGO-216-203-Ferrule",
+    "pack_qty": 100,
+    "pack_usd": 10.0,
+    "checked": "2026-10-31",
+    "source": "https://standardelectricsupply.com/WAGO-216-203-Ferrule",
+    "note": "Standard Electric Supply WAGO 216-203: '$0.10 / Each', '100 Pieces' per pack. pack_usd = 100 x 0.10. Master Electronics: $0.1521 each at the 300 minimum, marked no longer manufactured."
+  },
+  "electronics.cables.usb_mini_b_1m": {
+    "buy": "https://masterelectronics.com/en/molex-waldom/887328602-11905233.html",
+    "pack_qty": 25,
+    "pack_usd": 74.0,
+    "checked": "2026-10-31",
+    "source": "https://masterelectronics.com/en/molex-waldom/887328602-11905233.html",
+    "note": "Master Electronics Molex 88732-8602: $2.96 each at the 25-piece minimum, 0 in stock, ~22-week lead time, marked no longer manufactured. pack_usd = 25 x 2.96. For one arm buy electronics.cables.usb_mini_b_6ft_sparkfun_cab11301 instead."
+  },
+  "electronics.cables.usb_mini_b_6ft_sparkfun_cab11301": {
+    "buy": "https://www.sparkfun.com/sparkfun-usb-mini-b-cable-6-foot.html",
+    "pack_qty": 1,
+    "pack_usd": 5.5,
+    "checked": "2026-10-31",
+    "source": "https://www.sparkfun.com/sparkfun-usb-mini-b-cable-6-foot.html",
+    "note": "SparkFun CAB-11301 USB Mini-B cable 6 ft, $5.50 (25+: $5.23, 100+: $4.95), in stock."
   }
 }
