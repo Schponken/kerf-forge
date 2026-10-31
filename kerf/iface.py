@@ -117,6 +117,9 @@ def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = 
     nut_recess (nut_trap): sink the nut this far below the far face, so the shortest screw that fills the nut ends
     below that face instead of standing proud of it (nothing lying on the face meets a thread end)."""
     sp = screw_spec(screw, material)
+    if teardrop is not None and kind not in ("clearance", "tap", "heatset"):
+        raise ValueError(f"teardrop is not available for a {kind} hole (only clearance, tap, heatset); print it vertical "
+                         f"or bridge it with a sacrificial layer")
     if kind == "clearance":
         if teardrop is not None:
             return _teardrop(sp["clearance"] / 2, -depth - EXTRA, EXTRA, teardrop), depth, 0.0, 0.0
@@ -140,12 +143,14 @@ def hole(screw: str, kind: str, depth: float, counterbore_depth: float | None = 
         if hd > depth - 0.8:
             raise ValueError(f"{screw} heat-set insert needs a {hd:.1f} mm deep hole plus a 0.8 mm floor; only {depth:.1f} mm of material")
         # brass threads: ~1.3 d of engagement holds an M2-M5 screw to its proof load
-        return _cyl(sp["insert_hole"] / 2, -hd, EXTRA), 0.0, hd - 0.5, min(sp["insert_len"] * 0.7, 1.5 * sp["d"])
+        c = _cyl(sp["insert_hole"] / 2, -hd, EXTRA) if teardrop is None else _teardrop(sp["insert_hole"] / 2, -hd, EXTRA, teardrop)
+        return c, 0.0, hd - 0.5, min(sp["insert_len"] * 0.7, 1.5 * sp["d"])
     if kind == "tap":
         hd = min(depth - 0.8, 2.5 * sp["d"] + 1.0)
         if hd < sp["min_engage"] + 0.5:
             raise ValueError(f"{screw} pilot hole needs {sp['min_engage'] + 1.3:.1f} mm of material; only {depth:.1f} mm")
-        return _cyl(sp["tap"] / 2, -hd, EXTRA), 0.0, hd - 0.5, sp["min_engage"]
+        c = _cyl(sp["tap"] / 2, -hd, EXTRA) if teardrop is None else _teardrop(sp["tap"] / 2, -hd, EXTRA, teardrop)
+        return c, 0.0, hd - 0.5, sp["min_engage"]
     if kind == "nut_trap":
         # clearance through the plate, hex pocket open to the far face, nut pushed in from the far side.
         # Only sensible for plates up to ~3 d + nut height; thicker parts should use a heat-set insert.
@@ -292,15 +297,18 @@ def horn_dims(path: str) -> dict:
     }
 
 
-def horn_mount(ctx, horn: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", start_deg: float = 45.0):
+def horn_mount(ctx, horn: str, loc: Location, group: str, plate_t: float, kind: str = "clearance", start_deg: float = 45.0,
+               teardrop: float | None = None):
     """Holes in a printed link that bolts flat onto a servo horn face, plus an access hole for the horn's centre screw.
     loc: on the link's OUTER face (the screw-head side, away from the horn), +Z away from the horn, origin on the
-    servo axis. plate_t: link thickness at the hub."""
+    servo axis. plate_t: link thickness at the hub. teardrop: for a link printed with the horn axis horizontal, the
+    direction (deg, in loc's XY plane) that is UP on the printer; every hole gets a 45-degree roof."""
     h = horn_dims(horn)
     pts = circle(h["n"], h["bc"], start_deg)
-    cut = bolt_pattern(ctx, group, h["screw"], pts, loc, kind, plate_t)
+    cut = bolt_pattern(ctx, group, h["screw"], pts, loc, kind, plate_t, teardrop=teardrop)
     cs = screw_spec(h["center_screw"])
-    cut += loc * _cyl(cs["head_d"] / 2 + 0.75, -plate_t - EXTRA, EXTRA)  # driver + head access to the centre screw
+    r = cs["head_d"] / 2 + 0.75                                            # driver + head access to the centre screw
+    cut += loc * (_cyl(r, -plate_t - EXTRA, EXTRA) if teardrop is None else _teardrop(r, -plate_t - EXTRA, EXTRA, teardrop))
     return cut
 
 

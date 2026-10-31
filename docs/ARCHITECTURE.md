@@ -64,6 +64,8 @@ parts:                          # printed parts
 purchased:                      # catalog-backed proxies (real mass + geometry for collisions)
   servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: bracket_servo}}
   horn:  {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm}}
+  psu:   {catalog: ..., proxy: box, render: false}  # render: false = left out of the GLB views/renders only (an
+                                # off-device supply that would shrink the device in them); still checked, in STEP + BOM
 keepouts:                       # volumes nothing may enter (prop discs, camera view, fingers)
   prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1}
 assembly:

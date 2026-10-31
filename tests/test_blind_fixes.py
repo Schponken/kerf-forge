@@ -79,3 +79,39 @@ def test_tripod_socket_cutter():
     removed = blk.volume - out.volume
     hex_v = 3 * 3 ** 0.5 / 2 * ((nut["across_flats"] + 0.2) / 3 ** 0.5) ** 2 * (nut["thickness"] + 0.3)
     assert hex_v < removed < hex_v + 3.14159 * 4.3 ** 2 * 1.6               # + the clearance hole and lead-in
+
+
+def test_tap_and_heatset_holes_take_a_teardrop():
+    from kerf import iface
+    for kind in ("tap", "heatset"):
+        plain = iface.hole("M3", kind, 10.0)[0]
+        td = iface.hole("M3", kind, 10.0, teardrop=90)[0]
+        assert td.volume > plain.volume + 0.05, kind      # the roof is really there
+        lo, hi = geom.bbox(td)
+        assert hi[1] > geom.bbox(plain)[1][1] + 0.3       # pointed toward +Y (up on the printer)
+    with pytest.raises(ValueError, match="teardrop is not available"):
+        iface.hole("M3", "counterbore", 10.0, teardrop=90)
+
+
+def test_horn_mount_teardrop():
+    from kerf import iface
+
+    class Ctx:
+        def __init__(self):
+            self.sites = []
+
+        def site(self, s):
+            self.sites.append(s)
+    horn = next(f"servo_horns.{k}" for k in catalog.load()["servo_horns"])
+    a = iface.horn_mount(Ctx(), horn, Location(), "g", 4.0)
+    b = iface.horn_mount(Ctx(), horn, Location(), "g", 4.0, teardrop=90)
+    assert b.volume > a.volume
+
+
+def test_render_false_items_left_out_of_views_only():
+    a, b = Box(2, 2, 2), Box(2, 2, 2)
+    b.location = Location((0, 0, -150))
+    proj = SimpleNamespace(items={"head": SimpleNamespace(shape=a, role="printed", spec={}),
+                                  "psu": SimpleNamespace(shape=b, role="purchased", spec={"render": False})})
+    assert [s.label for s in export._placed_copies(proj, for_render=True)] == ["head"]
+    assert [s.label for s in export._placed_copies(proj)] == ["head", "psu"]

@@ -13,9 +13,15 @@ PALETTE = ["#4C78A8", "#F58518", "#54A24B", "#B279A2", "#E45756", "#72B7B2", "#E
 PURCHASED_COLOR = "#3A3F44"
 
 
-def _placed_copies(proj, include_keepouts=False, explode=0.0):
+def _hidden(it, for_render):
+    """`render: false` on an item (e.g. a power supply modelled far from the device) keeps it out of the GLB views and
+    renders so it doesn't shrink the device in them; it is still in every check, the STEP and the BOM."""
+    return for_render and (getattr(it, "spec", None) or {}).get("render") is False
+
+
+def _placed_copies(proj, include_keepouts=False, explode=0.0, for_render=False):
     shapes = []
-    allb = [it.shape for it in proj.items.values() if it.shape is not None and it.role != "keepout"]
+    allb = [it.shape for it in proj.items.values() if it.shape is not None and it.role != "keepout" and not _hidden(it, for_render)]
     if not allb:
         return shapes
     import numpy as np
@@ -23,7 +29,7 @@ def _placed_copies(proj, include_keepouts=False, explode=0.0):
     hi = np.max([geom.bbox(s)[1] for s in allb], axis=0)
     center = (lo + hi) / 2
     for k, (iid, it) in enumerate(proj.items.items()):
-        if it.shape is None or (it.role == "keepout" and not include_keepouts):
+        if it.shape is None or (it.role == "keepout" and not include_keepouts) or _hidden(it, for_render):
             continue
         s = it.shape.moved(Location())
         if explode:
@@ -45,7 +51,7 @@ def step_assembly(proj, path):
 
 
 def glb(proj, path, explode=0.0, include_keepouts=False):
-    geom.write_glb(_placed_copies(proj, include_keepouts, explode), path, 0.05, 0.2, label=proj.name)
+    geom.write_glb(_placed_copies(proj, include_keepouts, explode, for_render=True), path, 0.05, 0.2, label=proj.name)
 
 
 def part_files(proj, outdir):
