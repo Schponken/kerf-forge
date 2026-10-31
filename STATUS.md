@@ -663,3 +663,9 @@ pushed for it and what I know:
   distal wall 1.12 warning, 10-deg groove steps, tendon threading tips now in DESIGN.md s9). Eval acceptance: no fails.
 - Engine from this item: shoulder-screw pivots, `hard_stop` requirement, ASSEMBLY.md lists screw-pivot inserts with
   flush/torque guidance and only the tools needed. PLAN E5 checked.
+## 2026-10-31 04:30 UTC — session 262017a2: README results table
+- Built all six projects (all `kerf build` PASS) and filled the README results table with tools/readme_results.py;
+  assembly sheets committed in docs/results/. Fixed a bug there: it passed the project dir as a str, so graders that do
+  `proj_dir / "project.yaml"` crashed and showed eval FAIL (bionic_finger, robot_arm, pan_tilt); test added.
+- Table is a snapshot: E2/E3/E5 reviews are stale/none and pan_tilt eval fails only on the missing BLIND_RUN.md (E6
+  owner). Whoever does the final summary: re-run `tools/readme_results.py` after the last eval passes.

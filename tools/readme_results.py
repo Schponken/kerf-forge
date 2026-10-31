@@ -27,7 +27,7 @@ def rows():
         rep = json.loads(rep_f.read_text())
         rs = cli.review_status(pid) if hasattr(cli, "review_status") else {"ok": False}
         try:
-            fails = importlib.import_module(f"evals.{pid}.acceptance").accept(rep, str(ROOT / "projects" / pid))
+            fails = importlib.import_module(f"evals.{pid}.acceptance").accept(rep, ROOT / "projects" / pid)
         except Exception as e:  # noqa: BLE001
             fails = [f"acceptance crashed: {e}"]
         mass = round(sum(p.get("mass_est_g", 0) * 1 for p in rep.get("parts", {}).values())
