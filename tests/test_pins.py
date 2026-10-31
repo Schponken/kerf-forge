@@ -121,6 +121,7 @@ def test_span_without_stocked_length(tmp_path):
     _, asm = _asm(tmp_path, lug_out=8.5)  # span 17 mm, 4.5 mm lugs: 16 mm pin can't fill both lugs, 20 too long
     _, problems, _ = pins.check(asm)
     assert any("no stocked" in p for p in problems), problems
+    assert any("hole needs" in p and "outer face to outer face" in p for p in problems), problems  # says what each hole needs
 
 
 SCREW_BASE = BASE.replace('''    for sy, rx in ((1, -90), (-1, 90)):

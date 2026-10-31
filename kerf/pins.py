@@ -140,8 +140,10 @@ def check(asm) -> tuple[list, list, list]:
                 if length:
                     break
             if length:
-                warnings.append(f"pin group '{g}': {pin} x {length:g} screw pivot - the head clamps the moving part; "
-                                f"use medium threadlocker and back the screw off ~1/8 turn, or use a shoulder screw")
+                hp = sorted({x[2] for x in iv if abs((x[1] if head_end == "hi" else x[0]) - (hi if head_end == "hi" else lo)) < 1e-3})
+                warnings.append(f"pin group '{g}': {pin} x {length:g} screw pivot - tightening the screw clamps the stack "
+                                f"(head on {', '.join(hp)}) and stops the joint turning; use medium threadlocker and back "
+                                f"the screw off ~1/8 turn, or use a shoulder screw")
         else:
             for L in sorted(pd["lengths"], reverse=True):
                 if L > span + 1e-3:
@@ -150,8 +152,12 @@ def check(asm) -> tuple[list, list, list]:
                     length = L
                     break
         if length is None and not bad:
+            need = ", ".join(f"{iid} {b - a:.1f} mm hole needs {_min_cover(st, d):.1f}" for a, b, iid, st in iv)
+            rule = ("a screw pivot runs from its head end to the threaded hole, which must be the far end of the line; "
+                    if pd["screw"] and not pd.get("shoulder") else "")
             problems.append(f"pin group '{g}': no stocked {pin} length fits inside the {span:.1f} mm span and reaches every "
-                            f"hole by min(hole, 1.5 d) (lengths {pd['lengths']}); make the span equal a stocked length")
+                            f"hole by min(hole, 1.5 d) ({need}; stocked lengths {pd['lengths']}). {rule}"
+                            f"Make the span (outer face to outer face along the pin) equal a stocked length")
         out.append({"group": g, "pin": pin, "d_mm": d, "length_mm": length, "span_mm": round(span, 2),
                     "fixed_in": fixed, "free_in": free, "screw_pivot": pd["screw"], "shoulder": bool(pd.get("shoulder")),
                     "fixed_fit": sorted({s.fit for _, s, _, _ in sites if s.fit in FIXED})})
