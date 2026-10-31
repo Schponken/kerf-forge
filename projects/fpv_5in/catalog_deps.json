@@ -1,0 +1,22 @@
+[
+ "drone.batteries.6S_1300",
+ "drone.cameras.micro_19mm",
+ "drone.connectors.XT60",
+ "drone.motors.2207_1855kv_6s",
+ "drone.props.5_1in",
+ "drone.stacks.fc_30_5",
+ "drone.vtx.tx800",
+ "electronics.antennas.lollipop4p_mmcx_95",
+ "electronics.pads.battery_pad",
+ "electronics.receivers.elrs_nano",
+ "electronics.straps.strap_20x250",
+ "electronics.wire_misc.heatshrink_3mm",
+ "fdm_holes.M2",
+ "fdm_holes.M3",
+ "materials.CF-PETG",
+ "screws.M2",
+ "screws.M3",
+ "tools.hex_key",
+ "wire.awg",
+ "wire.silicone"
+]
