@@ -128,3 +128,16 @@ def test_direct_fallback_when_amg_stalls(monkeypatch):
     beam = Box(100, 10, 10, align=(Align.MIN, Align.CENTER, Align.CENTER))
     r = fea.static(beam, 2000, 0.3, fixed=lambda x, y, z: x < 0.01, loads=[(lambda x, y, z: x > 99.99, (0, 0, -10.0))])
     assert r["max_disp_mm"] == pytest.approx(10 * 100 ** 3 / (3 * 2000 * (10 * 10 ** 3 / 12)), rel=0.03)
+
+
+@pytest.mark.parametrize("extra, sf, ok", [("", 2, True), ("    direction: z\n", 2, False), ("    direction: z\n", 3, True),
+                                          ("    case: landing\n", 2, False), ("    case: crash\n", 3, True)])
+def test_sf_floor_from_engineering_s3(tmp_path, extra, sf, ok):
+    """ENG-2: fea_static refuses a safety factor under ENGINEERING.md s3 (3 across layers, 3 for crash/landing)."""
+    y = YAML.replace("    sf: 2\n", f"    sf: {sf}\n" + extra)
+    d = _write_project(tmp_path / "sf", y, {"block": BLOCK})
+    from kerf import assembly as A, project as P, requirements
+    proj = P.build(P.load(str(d)))
+    r = requirements.run_all(proj, A.plan(proj))[0]
+    assert r["ok"] is ok, r["detail"]
+    assert ("below the ENGINEERING.md section 3 minimum" in r["detail"]) is (not ok)

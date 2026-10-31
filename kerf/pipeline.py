@@ -28,6 +28,26 @@ def render_glb(glb: Path, prefix: Path, views="iso,front,right,top", sheet=True)
     return json.loads(r.stdout.strip().splitlines()[-1])
 
 
+def _layer_proofs(proj, rep):
+    """A part whose declared load_axis runs across layers (checks.layer_direction warning) must be proven by a strength
+    check that uses the across-layer strength: fea_static / cantilever_stress on that part with direction z or auto.
+    With one, the warning is dropped (the check's own pass/fail stands); without one it becomes a problem
+    (docs/ENGINEERING.md sections 3b and 4)."""
+    proven = {r.get("part") for r in proj.data.get("requirements") or []
+              if r.get("check") in ("fea_static", "cantilever_stress")
+              and r.get("direction", "xy" if r.get("check") == "fea_static" else "auto") in ("z", "auto")}
+    keep = []
+    for w in rep["warnings"]:
+        pid = w.split(":", 1)[0]
+        if "runs" in w and "out of the layer plane" in w and pid in proj.items:
+            if pid not in proven:
+                rep["problems"].append(w.replace("; reorient so it lies along the bed, or prove it",
+                                                 ": unproven; reorient so it lies along the bed, or prove it"))
+            continue
+        keep.append(w)
+    rep["warnings"] = keep
+
+
 def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9) -> dict:
     t0 = time.time()
     from . import catalog
@@ -131,6 +151,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rq = requirements.run_all(proj, asm, quick=not sweeps)
             fea_viz = {r["id"]: r.pop("_viz") for r in rq if "_viz" in r}   # meshes stay out of report.json
             rep["requirements"] = rq
+            _layer_proofs(proj, rep)
             for r in rq:
                 if not r["ok"]:
                     rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {r['value']} (limit {r['limit']})")

@@ -249,26 +249,59 @@ def _strength(material, direction):
 
 
 @check("fea_static")
-def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_mm=None, mesh_size=None):
+def _across_share(item) -> float:
+    """Largest cos^2 (share across layers) of the part's declared load_axis in its print orientation; 0 without one."""
+    from build123d import Rot
+    from .checks import _axis_vec
+    la = item.spec.get("load_axis")
+    if la is None:
+        return 0.0
+    axes = [la] if isinstance(la, str) or (isinstance(la, (list, tuple)) and la and isinstance(la[0], (int, float))) else la
+    rot = Rot(*item.spec.get("print_rot", [0, 0, 0]))
+    return max(float(geom.world_dir(rot, tuple(_axis_vec(a)))[2]) ** 2 for a in axes)
+
+
+SF_MIN = {"static": 2.0, "across_layers": 3.0, "crash": 3.0, "landing": 3.0}   # docs/ENGINEERING.md section 3
+
+
+@check("fea_static")
+def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_mm=None, mesh_size=None, case="static"):
     """Finite-element check of one printed part under named load cases (part frame, N).
-    Passes when 99.9th-percentile von Mises <= strength(direction) / sf and deflection <= max_disp_mm."""
+    Passes when 99.9th-percentile von Mises <= strength(direction) / sf and deflection <= max_disp_mm.
+    direction: xy | z | auto (auto blends xy and z strength by the part's load_axis share across layers, cos^2 rule).
+    case: static | crash | landing. sf must meet ENGINEERING.md section 3: 2.0 static along the layers, 3.0 across
+    the layers (direction z, or auto with > 25 % across) and 3.0 for crash / landing cases; a lower sf fails."""
     from . import fea
+    from .checks import LAYER_WARN_NZ2
     it = proj.items[part]
     mat = it.spec.get("material", "PETG")
+    if case not in ("static", "crash", "landing"):
+        raise ValueError(f"fea_static case '{case}': use static, crash or landing")
+    if direction not in ("xy", "z", "auto"):
+        raise ValueError(f"fea_static direction '{direction}': use xy, z or auto")
+    nz2 = 1.0 if direction == "z" else (_across_share(it) if direction == "auto" else 0.0)
+    if direction == "auto" and it.spec.get("load_axis") is None:
+        raise ValueError(f"fea_static on {part}: direction auto needs the part's load_axis (or say xy / z)")
+    need = max(SF_MIN[case], SF_MIN["across_layers"] if nz2 > LAYER_WARN_NZ2 else SF_MIN["static"])
     m = catalog.get(f"materials.{mat}")
     E = catalog.num(m, "youngs_modulus_mpa", "tensile_modulus_mpa", "youngs_modulus", "E_mpa")
     nu = catalog.num(m, "poisson", "poissons_ratio", default=0.38)
     shape = it.shape.located(__import__("build123d").Location())
     res = fea.static(shape, E, nu, _region(it, fixed, proj.params),
                      [_fea_load(it, l, proj.params) for l in loads], size=mesh_size)
-    allow = _strength(mat, direction) / sf
-    ok = res["max_vm_mpa"] <= allow and (max_disp_mm is None or res["max_disp_mm"] <= max_disp_mm)
-    return {"ok": ok, "value": round(res["max_vm_mpa"], 2), "limit": round(allow, 2),
+    xy, z = _strength(mat, "xy"), _strength(mat, "z")
+    strength = xy - (xy - z) * nz2
+    allow = strength / sf
+    sf_ok = sf >= need - 1e-9
+    ok = sf_ok and res["max_vm_mpa"] <= allow and (max_disp_mm is None or res["max_disp_mm"] <= max_disp_mm)
+    sf_msg = "" if sf_ok else (f"SF {sf} is below the ENGINEERING.md section 3 minimum {need} for this case "
+                               f"({case}, {nz2 * 100:.0f} % across layers): raise sf; ")
+    return {"ok": ok, "value": round(res["max_vm_mpa"], 2), "limit": round(allow, 2), "sf_min": need,
             "applied_force_n": res["applied_force_n"], "applied_moment_nmm": res["applied_moment_nmm"],
             "max_disp_mm": round(res["max_disp_mm"], 3), "max_disp_at": res.get("max_disp_at"),
             "_viz": {**res["_viz"], "allow": allow, "title": f"{part}: von Mises (MPa), limit {allow:.1f}",
                      "p999": res["max_vm_mpa"], "peak": res["max_vm_peak_mpa"]},
-            "detail": f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
+            "detail": sf_msg + f"FEA {part}: von Mises p99.9 (MPa) vs {mat} {direction} strength / SF {sf}; "
                       f"peak {res['max_vm_peak_mpa']:.2f} MPa at {res.get('max_vm_peak_at')}, deflection {res['max_disp_mm']:.3f} mm"
                       + (f" (limit {max_disp_mm})" if max_disp_mm else "") + f" at {res.get('max_disp_at')}, {res['elements']} elements"}
 

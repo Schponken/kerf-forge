@@ -736,3 +736,10 @@ pushed for it and what I know:
   right next to the hole is material, so they are half-holes at a shelf edge. robot_arm `kerf check` FAILS on this now.
 - Other projects: no problems; edge-distance warnings are mostly hole patterns forced by purchased parts (servo tabs,
   horn bolt circles, motor patterns) — note them in each DESIGN.md.
+## 2026-10-31 10:10 UTC — session 262017a2: ENG-2 safety-factor floor + across-layer proof
+- `fea_static` takes `case: static|crash|landing`; an sf under ENGINEERING.md s3 (2 static along layers, 3 across
+  layers = direction z or auto with > 25 % across, 3 crash/landing) fails with a clear message (test, 5 cases).
+  direction `auto` is now real (blends xy/z strength by the part's load_axis share; it silently meant xy before).
+- A part whose load_axis runs across layers with no direction z/auto strength check is now a PROBLEM (was a warning
+  that stayed forever); with a proof the warning is dropped. All projects re-checked: only robot_arm fails (the
+  ENG-1 yaw_servo half-holes, see the entry above).
