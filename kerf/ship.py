@@ -330,7 +330,7 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
         for p in s["pins"]:
             if p.get("shoulder"):
                 L.append(f"- Pivot `{p['group']}`: {p['d_mm']:g} x {p['length_mm']:g} mm shoulder screw through {', '.join(p['free_in'])} "
-                         f"into {', '.join(p['fixed_in'])}; tighten gently (~0.5 N m) until the shoulder bottoms, then check the joint "
+                         f"into {', '.join(p['fixed_in'])}; tighten gently (0.2-0.3 N m: more only pulls a heat-set insert back out) until the shoulder bottoms, then check the joint "
                          f"turns freely (the shoulder bottoms on the insert, so an insert left proud only adds play; one set deeper "
                          f"than the free band's length lets the shoulder clamp the stack and stop the joint).")
             elif p.get("screw_pivot"):

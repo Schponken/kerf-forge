@@ -141,7 +141,7 @@ swept on its own (17 / 17 / 15 samples) and together as `curl` (0/0/0, 30/30/30,
   4.5 mm washer: 15.0 MPa) vs 24 MPa allowed, and the bead cannot pass the washer's 2.2 mm hole. The plug of step
   over the channel end shears on pi x 2.2 x 1.5 = 10.4 mm2 under the ~32 N the washer puts on it: 3 MPa. FEA
   (`distal_fea_flexor`, `distal_fea_extensor`) is the proof. The flexor stop is at z = -3.8, the extensor's at
-  z = +4.0 (slots 1.6 mm apart, >= 1.6 mm skin to the palmar/dorsal faces); each line keeps its joint height until
+  z = +4.0 (slots 2.4 mm apart, about 1.8-2.0 mm skin to the palmar/dorsal faces); each line keeps its joint height until
   it is clear of the middle's knuckle pocket (r > 9.4 mm from the dip axis) and only then turns to its stop, inside
   the distal where the line no longer slides. Lines leave the base through its back face toward the actuator.
 
@@ -170,7 +170,8 @@ the distance along the pin from the loaded band to the band that pushes on it) t
 - Proximal 15 N hand check: 15 N at 44 mm -> M = 660 N mm; section 15.6 x 18 minus two channels, Z ~ 800 mm3 ->
   0.8 MPa; pin bearing 15 / (4 x 7.6) = 0.5 MPa. Deflection 1 %-of-length limit (0.44 mm) met: 0.22 mm.
 - Pivot bearing on the 4 mm shoulder: 222 / (4 x 7.6) = 7.3 MPa nominal on a smooth ground shoulder (PETG yield ~48
-  MPa); insert pull-out not loaded (the load is across the pin).
+  MPa); the line load is across the pin, so the insert sees pull-out only from the screw preload: keep the
+  tightening torque at 0.2-0.3 N m (assembly step 2).
 - The FEA peaks (not p99.9) are single-element spikes at sharp re-entrant edges where a groove meets the pocket step;
   they are in the gap face of a band, which a 4-wall print lays down as solid perimeter.
 
@@ -190,10 +191,12 @@ the distance along the pin from the loaded band to the band that pushes on it) t
 1. Heat-set an M3 insert into the boss on the gap face of the base, proximal and middle knuckle bands (soldering iron
    at ~230 C for PETG), then press it flush with the boss face with a flat plate while it cools, and shave off any
    plastic lip (the boss face must stay flat): the shoulder bottoms on the insert, so an insert left proud of the
-   boss eats the 0.2 mm play and clamps the joint; one sunk below it leaves more play.
+   boss only adds play, while one sunk below the boss face lets the head pull down onto the child band and clamp
+   the joint (flush is the target).
 2. Put the proximal's knuckle over the base's, push a 4 x 8 shoulder screw through the proximal's outer face into the
-   base's insert and tighten until the shoulder bottoms on the insert (flat-blade screwdriver, ~0.5 N m), then check
-   the joint swings freely.
+   base's insert and tighten until the shoulder just bottoms on the insert (flat-blade screwdriver, 0.2-0.3 N m; a
+   drop of medium threadlocker on the screw's thread tip only, never on the plastic), then check the joint swings
+   freely. More torque only pulls the insert back out toward the face it was pressed in from.
 3. Same for proximal -> middle and middle -> distal.
 4. Tendons last, with the finger slightly curled (opens the paths through the knuckle gaps): stiffen ~20 mm of each
    line end with thin CA (or use a fine wire leader) and feed it. Thread the flexor from the base's back face through
@@ -205,7 +208,7 @@ the distance along the pin from the loaded band to the band that pushes on it) t
 ## 10. Risks / measure first
 
 - Pivot fit: print one knuckle pair first. If the free hole binds on the shoulder, run a 4.4 mm drill through it.
-- Insert boss: the boss is one 0.2 mm layer; check it printed (a missing boss makes the joint clamp). The swept
+- Insert boss: the boss is one 0.2 mm layer; check it printed (without it the insert sits 0.2 mm shallower; the play is the same). The swept
   grooves pass 1.6 mm from the insert bore, so heat-setting no longer bulges into them.
 - Thin spots: the wall check reports p2 >= 1.27 mm (middle; the grooves at its short top band), >= 1.6 elsewhere.
 - Single-shear joints rock slightly sideways under a hard side load (see section 2).

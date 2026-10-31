@@ -45,7 +45,7 @@ Each project's findings are listed in its appendix section with severity and a c
 | servo_link | A-8 (major), A-15..A-17 (minor) | **all resolved** — design-reviewer PASS at 46118d7a3ecd48d5 (bench screws + `stand` tip_over with new `include:`, bracket_fea at the screw heads, load_axis, DESIGN mass/edge/electrics) |
 | fpv_5in | B-F1, F1b, F2, F3 (major), F4..F10 (minor) | fixed (F6 justified); review round 9 PASS 0fffc865b90f4c37 |
 | pan_tilt | B-F11, F12 (major), F13..F18 (minor) | fixed (F11-F15, F17, F18); F16 justified -> ENG-12 (session dafdd49d) |
-| bionic_finger | C-1..C-3 (major), C-4..C-9 (minor) | open |
+| bionic_finger | C-1..C-3 (major), C-4..C-9 (minor) | **all resolved** — design-reviewer PASS at d4dc6e4152092833 (washer line stops + distal FEA, pin moment now modelled by the engine, base/middle/distal FEA, depth 18, true 2.2 channels, 1.6 mm insert walls, 7.6 + 0.4 lap on the layer grid). Left: three one-per-hinge BOM rows for shoulder screws / inserts (engine BOM merge, ENG-15 territory) |
 | robot_arm | C-10..C-12 (major), C-13..C-20 (minor) | fixed (see log); review round 9 PASS (359ef119bfeab419) |
 
 ## Resolution log

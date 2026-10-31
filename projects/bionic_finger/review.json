@@ -1,39 +1,17 @@
 {
   "verdict": "PASS",
-  "fingerprint": "520a41a6bae1e1de",
+  "fingerprint": "d4dc6e4152092833",
   "reviewer": "design-reviewer",
   "date": "2026-10-31",
-  "summary": "Round 4: the geometry is identical to rounds 2-3 (same part volumes, walls and requirement values), so the engineering stands. Each joint has a hard stop at about -2 deg, flexion runs clear to 80/80/70, the pivots are ground-shoulder screws, and both FEA cases pass (4.6 and 10.5 MPa vs 24). The generated ASSEMBLY.md now has the real tools, an insert step per part (flush-to-low, plate, trim the lip), gentle shoulder-screw torque with a free-turn check, and the tendon/crimp-sleeve step. bom.md carries the McMaster order number and 'tighten gently'. Only minor items remain.",
+  "summary": "The finger does what the brief asks. Segment lengths are 44/25/22 mm, the joints reach 0-80/0-80/0-70 deg and every sweep and the curl poses are clear. Both 2.2 mm channels stay open, the pivots are real catalog shoulder screws, there is a hard stop at straight, and nothing needs supports. All three major audit items are fixed. The line now ends on a washer seated on a flat step, the engine adds the single-shear pin moment to the line-load cases on base, proximal and middle, and those parts plus the distal now have FEA. Every case passes p99.9 below 24 MPa, with the hot spots at the knuckle bands and bores where the load path puts them. What remains are documentation, assembly-guidance and margin minors.",
   "findings": [
-    {
-      "severity": "minor",
-      "part": "out/ASSEMBLY.md step 4 (distal assembly_note)",
-      "issue": "Order and practicality of the tendon step. The note is nested under 'Fit distal' and says 'After the dip pivot screw below', so it reads before the screw it depends on. Threading a braid ~90 mm from the base's back face through 2.2 mm channels that hand over into the 0.3 mm lap gap and knuckle grooves at three joints, after everything is assembled, will snag at each channel/groove transition unless the tip is stiffened.",
-      "fix": "Make tendons their own final step after the dip pivot, rather than a sub-bullet. Add: stiffen the line end with a drop of CA (or use a fine wire leader) and feed it with the finger slightly curled, then check it slides with no snag before fitting the crimp sleeve. Add a crimping tool or pliers to the tools list."
-    },
-    {
-      "severity": "minor",
-      "part": "all joints",
-      "issue": "Side play is unchanged and documented: 0.45 mm axial and ~1.7 deg tilt per joint, a few mm of fingertip wobble.",
-      "fix": "Accept as documented, or use the 4.2 mm free hole / 0.2 mm PTFE washer from DESIGN s2 after the test pair."
-    },
-    {
-      "severity": "minor",
-      "part": "proximal/middle/distal (child stop lug)",
-      "issue": "Cosmetic cusp where the pocket circle cuts the child's top-band lug. It is documented and not loaded.",
-      "fix": "Optional: start the lug at z = RH in the top band."
-    },
-    {
-      "severity": "minor",
-      "part": "distal",
-      "issue": "The wall check still reports 1.12 mm (p2), below the 1.2 mm reliable minimum, at the knot pockets / grooves.",
-      "fix": "Move the pockets or channel 0.1-0.2 mm."
-    },
-    {
-      "severity": "minor",
-      "part": "fingerlib.crossing_cuts",
-      "issue": "Knuckle-face grooves are built from 10-deg steps (serrated fan). A taut 0.5 mm line clears the ridges; a slack or 0.8 mm line may drag on them.",
-      "fix": "Acceptable. Use one swept groove if the line frays in testing."
-    }
+    {"severity": "minor", "part": "base", "issue": "base_fea_line has a volume peak of 194 MPa and a surface peak of 61.8 MPa at [-4.3, -0.2, -3.6]. That point is the sharp corner where the swept flexor groove meets the pocket step on the gap face of the mcp knuckle band, which is the band the pin moment bends hardest. The p99.9 is 19.6 MPa, so the check passes, but this is a real notch in the main load path and not only a meshing artefact. The proximal (58.5 MPa at the extensor groove lip at the pip, [44.3, 0.2, 7.3]) and the middle (44.5 MPa) peak at the same kind of corner.", "fix": "Round the groove-to-pocket-step corners on the gap face, for example by giving the swept groove a 0.5 mm edge radius or using a teardrop with a rounded crown at the XT step. If that is not possible, state the local-yield argument and the effective SF at the notch in DESIGN s8."},
+    {"severity": "minor", "part": "proximal", "issue": "Under the 222 N line case plus the pin moment, proximal_fea_line shows 1.33 mm of deflection at the rim of the pip knuckle disc ([53, 0.9, -0.3]). This is mostly the 7.6 mm knuckle band twisting out of plane. No deflection limit is set for that case, and DESIGN s8 does not mention the number. At full line tension the pip pivot will visibly rock sideways, on top of the clearance wobble described in s2.", "fix": "Add max_disp_mm to proximal_fea_line and middle_fea_line, for example 1.5 mm, so the number is guarded. Also state in DESIGN s2/s8 that the knuckles twist about 1.3 mm at rated line tension."},
+    {"severity": "minor", "part": "base", "issue": "DESIGN s9 step 1 says an insert left proud of the boss 'eats the 0.2 mm play and clamps the joint' and one sunk below 'leaves more play'. That is backwards. The shoulder bottoms on the insert, so a proud insert moves the head outward and adds play, and only an insert sunk by more than the 0.4 mm axial play clamps the band. The generated ASSEMBLY.md has it right. s10 says 'a missing boss makes the joint clamp', which is also wrong: with no boss the band slides between the parent's gap face and the head, and the 0.4 mm play is unchanged. s2's claim that the boss 'is what makes the numbers work' overstates it, because the play comes from 8.0 - 7.6 with or without the boss.", "fix": "Correct DESIGN s2, s9 step 1 and s10 so they agree with ASSEMBLY.md: press the insert flush or slightly proud, never sunk."},
+    {"severity": "minor", "part": "base", "issue": "Tightening the shoulder screw until the shoulder bottoms preloads the screw, and that preload pulls the heat-set insert toward the face it was pressed in from. That is its weakest direction, and nothing behind it takes the load. At the ~0.5 N m given in ASSEMBLY.md and DESIGN s9, the preload is about T/(0.2 d) = 0.5/(0.2 x 0.003) = ~830 N, which is in the range where an M3 insert pulls out of PETG. DESIGN s8 says 'insert pull-out not loaded', which overlooks the preload. The joint also rubs against the screw head, which tends to unscrew a lightly tightened screw.", "fix": "Specify about 0.2-0.3 N m (snug by hand with a small flat blade) plus a drop of medium threadlocker on the metal threads only. Keep it off the PETG, because anaerobic threadlockers crack PETG. Correct the 'pull-out not loaded' line in DESIGN s8."},
+    {"severity": "minor", "part": "middle", "issue": "The p2 wall is 1.27 mm, below the 1.6 mm structural-part guideline in ENGINEERING.md s5. It sits at the grooves on the short top band. The check passes (it fails only below 0.8 mm) and DESIGN s10 discloses it.", "fix": "Accept and keep it disclosed. If it matters, trim the top-band cut-back near the grooves so the band keeps 1.6 mm, then rerun the sweeps."},
+    {"severity": "minor", "part": "distal", "issue": "Tendon threading. The swept fan grooves at each knuckle open out to the disc rim, as the part renders show. A CA-stiffened line pushed from the base's back face can follow a fan groove and come out at a knuckle rim instead of carrying on into the next channel. The washer, bead and knot also have to be fitted inside a 4.5 mm slot (0.3 washer + up to 3.0 bead + knot), which is tight with a 3 mm bead.", "fix": "In the tendon step, say to thread each joint with the finger at about 30 deg and to guide the line across each gap with tweezers. Alternatively, use a 0.3 mm steel-wire leader. Recommend the 2.5 mm bead size."},
+    {"severity": "minor", "part": "distal", "issue": "DESIGN s7 says the two stop slots are '1.6 mm apart with >= 1.6 mm skin'. From the code (r 2.7 at z -3.8 and +4.0) the gap between the slots is 2.4 mm and the skin at the slot ends is about 1.8-2.0 mm, so the text is stale. The numbers are better than stated.", "fix": "Update the numbers in DESIGN s7."},
+    {"severity": "minor", "part": "base", "issue": "BOM and ASSEMBLY ordering. The shoulder screw and the M3 insert each still appear as three separate one-off rows (one per hinge) rather than one row of qty 3. In ASSEMBLY.md step 4, the tendon note comes before the dip pivot bullet, and the 'last: bolt to the frame' note sits in step 1.", "fix": "Consolidate identical fastener rows in kerf/ship.py (an engine change that benefits every project), or accept it as cosmetic. Moving the frame-mount note to a final step would also make the guide read in build order."}
   ]
 }

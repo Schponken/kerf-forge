@@ -93,7 +93,7 @@ tested before handoff.
   - [x] Audit fixes: servo_link (A-8, A-15..A-17), re-review PASS
   - [x] Audit fixes: fpv_5in (B-F1..F10), re-review PASS
   - [x] Audit fixes: pan_tilt (B-F11..F18), re-review PASS
-  - [ ] Audit fixes: bionic_finger (C-1..C-9), re-review PASS
+  - [x] Audit fixes: bionic_finger (C-1..C-9), re-review PASS
   - [x] Audit fixes: robot_arm (C-10..C-20; coordinate with the E3 owner), re-review PASS
   - [x] Audit fixes: engine majors ENG-1..ENG-6 (each with a test), re-check every project
   - [x] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)

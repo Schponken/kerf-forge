@@ -844,3 +844,10 @@ pushed for it and what I know:
   no nut-drop / threadlocker step (ship.py), heat-shrink row length). Eval acceptance clean.
 - Note: F.bed_chamfer on the body chamfered the post counterbore mouths and raised body_strength 10.5 -> 11.9 (hot
   spot at the post foot): use targeted chamfers on parts whose FEA is fixed at counterbored sites.
+## 2026-10-31 14:40 UTC — session 262017a2: PLAN "Audit fixes: bionic_finger" DONE
+- part-designer subagent fixed C-1..C-9 (washer line stops, depth 18 mm, base/middle/distal line-case FEA with the
+  engine's single-shear moment, true 2.2 mm channels, 1.6 mm insert walls, 7.6 + 0.4 lap + one-layer insert boss,
+  chamfers); catalog gained the ISO 7089 M2 washer (sourced) and the shoulder screw link 97505A106.
+  design-reviewer PASS at d4dc6e4152092833; eval acceptance passes. DESIGN text on play/torque corrected after the
+  review; ship.py shoulder-screw torque text now 0.2-0.3 N m (insert pull-out).
+- Open minors for whoever takes ENG-15: BOM lists one row per hinge for identical shoulder screws / inserts.
