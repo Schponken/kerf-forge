@@ -40,8 +40,10 @@ SUPPORT_ON = ("needed", "on", True)   # a part's `supports:` that turns slicer s
 SUPPORT_AUTO_PCT = 5.0         # Kerf's rule: over 5 % of the surface steeper than 45 deg is more than bridges and hole tops
 BRIM_SLENDER = 3.0             # height over the smaller footprint side above which a part gets a brim (Kerf's rule)
 
-FACES = {(0, 0, -1): "bottom (-Z) face", (0, 0, 1): "top (+Z) face", (0, -1, 0): "front (-Y) face",
-         (0, 1, 0): "back (+Y) face", (-1, 0, 0): "left (-X) face", (1, 0, 0): "right (+X) face"}
+# Z is up in every part's design frame, so bottom/top are safe words; which side is a part's "front" differs between
+# projects (servo_link's bracket calls its -Y face the back), so X / Y faces are named by axis only
+FACES = {(0, 0, -1): "bottom (-Z) face", (0, 0, 1): "top (+Z) face", (0, -1, 0): "-Y face",
+         (0, 1, 0): "+Y face", (-1, 0, 0): "-X face", (1, 0, 0): "+X face"}
 
 
 def profile(material: str) -> dict:

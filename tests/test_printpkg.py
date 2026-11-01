@@ -12,8 +12,8 @@ from kerf import printpkg
 def test_orientation_words_follow_the_print_rotation():
     assert printpkg.orientation_words([0, 0, 0]) == "on its bottom (-Z) face"
     assert printpkg.orientation_words([180, 0, 0]) == "on its top (+Z) face"
-    assert printpkg.orientation_words([90, 0, 0]) == "on its front (-Y) face"      # +90 about X takes -Y to -Z
-    assert printpkg.orientation_words([0, 90, 0]) == "on its right (+X) face"
+    assert printpkg.orientation_words([90, 0, 0]) == "on its -Y face"      # +90 about X takes -Y to -Z
+    assert printpkg.orientation_words([0, 90, 0]) == "on its +X face"
     assert printpkg.orientation_words([30, 0, 0]).endswith("(tilted)")
 
 

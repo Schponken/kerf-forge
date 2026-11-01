@@ -67,20 +67,22 @@ is at 0.61 of 13 MPa. The horn bolt circle on the arm is likewise set by the hor
 | Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
 |---|---|---|---|
 | arm | servo stall driving the arm into an obstacle: 9.2 N at the 100 mm tip → 4 horn screws | bending, 0 at the tip → 922 N·mm at the hub | 18 × 6 mm bar (14 mm gave 1.44 mm tip deflection, over the 1 mm limit), r 4 blend into the round hub round the horn |
-| bracket | stall 922 N·mm as a ±18.6 N couple across the 49.5 mm tab pilots → 8 mm wall → foot → 4 M3 screws into the base inserts; the arm and weight's gravity moment the same way | wall bending at its root over the foot (wall height 75 mm to the pivot) | 8 mm wall (the 7.2 mm deep M3 pilots set it), 6 mm foot, r 4 wall/foot fillet, two 5 mm gussets with r 1.5 roots |
+| bracket | stall 922 N·mm as a ±18.6 N couple across the 49.5 mm tab pilots → 8 mm wall → foot → 4 M3 screws into the base inserts | the couple bends the wall in its own plane: bracket_fea peaks at the servo-window corners and in the foot by the outer screws; the wall root over the foot is the coldest region (0-1 %) | 8 mm wall (the 7.2 mm deep M3 pilots need it at the four holes), 6 mm foot, r 4 wall/foot fillet, two 5 mm gussets with r 1.5 roots: the wall root and gussets give out-of-plane stiffness (a knock on the arm, the cable) that no load case covers |
 | base | the bracket's 4 foot screws (heat-set inserts) → 4 M4 bench screws, or its own weight when free-standing | plate bending between the inserts and the bench screws | 8 mm plate (the inserts' depth plus floor), r 6 plan corners |
 
 ## Detail: radii, corners, edge distance, overbuilt
 - One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside), r 1.5 gusset
-  roots, r 4 wall/foot and arm hub blends, r 6 base plan corners, 0.6–1.0 mm edge chamfers.
+  roots, r 4 wall/foot and arm hub blends, r 6 base plan corners, 0.6–1.0 mm edge chamfers (listed below).
 - Left sharp on purpose (ctx.keep_sharp, report.json `sharp_kept`): the two gusset toes, where the gusset's 51° face
   meets the foot top in an open 129° corner at its tip; the toe carries almost nothing and is too thin a sliver to
   fillet. The servo window and pilot corners are interface features (dog-bone reliefs, exempt).
-- Overbuilt (kerf stress map): the bracket uses at most 4 % of its allowable stress (bracket_fea 0.61 of 13 MPa) and
-  the base less. Their size is set by fit and use, not strength: the 8 mm wall is what the 7.2 mm deep tab pilots
-  need, the 80 mm wall width carries the servo window and both gussets, the foot and base carry the inserts and the
-  bench screws, and the free-standing tip-over check (`stand`, 37° with the weight at the end of the swing) wants the
-  mass low. The rig is a bench fixture; a lighter bracket buys nothing.
+- Overbuilt (kerf stress map): the bracket uses at most 4 % of its allowable stress (bracket_fea 0.61 of 13 MPa;
+  the base has no FEA case). Its size is set by fit, not strength: the 7.2 mm deep tab pilots need 8 mm of wall at
+  the four holes, and the 88 mm wide wall carries the servo window and both gussets. The rest of the slab could be
+  pocketed on the front face (about 15 g); it is left solid because this is a bench fixture where mass buys nothing
+  (rig 198 g of 250, `stand` 37° against 15°).
+- Edge breaks: 1.0 mm chamfer on the wall top, 0.8 mm on the foot's front face and the gussets' sloped edges, 0.6 mm
+  on the arm's top, 0.8 mm round the base top.
 
 ## Parts
 | Part | Job | Material | Print orientation |

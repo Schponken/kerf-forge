@@ -29,6 +29,14 @@ def build(ctx):
     except Exception:  # noqa: BLE001 - keep the part buildable; reviewer sees the corners in the renders
         ctx.notes.append("gusset root fillets could not be applied")
     body = chamfer(body.edges().filter_by(Axis.Y).group_by(Axis.Z)[-1], 1.0)
+    # why: 0.8 mm edge break (style) on the foot's front face and the gussets' sloped edges (review: they were 90 deg)
+    y_front = p.wall_t + p.foot_d
+    brk = [e for e in body.edges() if (abs(e.center().Y - y_front) < 0.05 and e.length > 3)
+           or (abs(abs(abs(e.center().X) - p.gusset_x) - p.gusset_t / 2) < 0.05 and e.center().Y > p.wall_t + 0.5
+               and e.center().Z > p.foot_t + 0.5 and e.geom_type.name == "LINE"
+               and abs((e % 0.5).Y) > 0.1 and abs((e % 0.5).Z) > 0.1)]
+    body, bad = features.safe_fillet(body, [(brk, 0.8)], kind="chamfer")
+    ctx.notes += [f"edge break skipped: {b}" for b in bad]
     back = Location((0, 0, p.pivot_h), (-90, 0, 0))          # on the back face; +Z points through the wall toward the arm
     seat = back * Location((0, 0, -p.servo_tab_t))            # servo frame origin (tab underside) sits behind the tabs
     # Servo tabs: thread-forming M3 into pilot holes (how servos are normally mounted). Heat-set inserts would leave

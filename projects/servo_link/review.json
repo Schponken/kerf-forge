@@ -1,33 +1,74 @@
 {
   "verdict": "PASS",
-  "fingerprint": "46118d7a3ecd48d5",
+  "fingerprint": "57044319cfe478bb",
   "reviewer": "design-reviewer",
-  "date": "2026-10-31",
-  "summary": "Re-review after the fixes for the two minors from the 5179b836 round; only project.yaml and DESIGN.md changed, and no part code. The bench screw is now an M4 x 20 socket head (ISO 4762, 7.0 mm head, 4.0 mm tall), which seats in the base's 7.6 mm x 4.3 mm counterbore; the alternative is a wood screw with a head of 7 mm or less. This shows in the BOM row, DESIGN step 0 and the requirements row. `stand` is now min_deg 15 (ENGINEERING s10) and passes at 37.1 deg. The rebuilt report.json is a full build at this fingerprint (147 s, no problems), and every other result is unchanged: arm_torque 0.55/4.7, bracket_fea 0.64/13, arm_fea 4.59/24, mass 198.3/250, power 0.417. Audit findings A-8, A-15, A-16 and A-17 remain resolved.",
+  "date": "2026-11-01",
+  "summary": "Detail-pass re-review at 57044319. The geometry is sound. I checked the STL meshes: no sharp inside corners remain except the exempt teardrop tips and counterbore floors, plus the two declared gusset toes, and their reason holds (51 deg wedge, 129 deg open corner, a cold zone in the bracket FEA). The style radii r1 / r1.5 / r4 / r6 are in the code where DESIGN.md says. Every check passes: bracket_fea 0.61/13 MPa with hot spots at the window corners and the outer foot screws, which matches the in-plane stall couple applied at the pilots (moment 921 N mm about Y); arm_fea 4.59/24 MPa, deflection 0.751/1.0 mm, hot at the hub blend; sweep clear; all keys reach. What remains are minors: the new DESIGN.md 'Load -> section' and 'overbuilt' text gets several facts wrong against report.json, the bracket's outside edges are only partly broken, and the arm is a constant section where the moment runs from 0 to its peak.",
   "findings": [
     {
       "severity": "minor",
-      "part": "jack",
-      "issue": "The catalog entry electronics.connectors.dc_jack_5521_screw has no weight_g (kerf warning). The jack sits on the desk, not on the rig, so it does not affect rig_mass or stand.",
-      "fix": "Add a sourced weight to the catalog entry when one is available."
+      "part": "bracket",
+      "issue": "DESIGN.md 'Load -> section' says the bracket's moment peaks at 'wall bending at its root over the foot'. That is wrong for the design load case. The stall couple (+/-18.6 N along Z at the tab pilots) bends the 88 mm wall IN its own plane, and the FEA puts the peaks at the servo-window corners (bracket hot zone [-20.8, 7.8, 69.7]) and in the foot by the outer screws (peak 1.36 MPa at [38.4, 15.4, 5.0]). The wall root over the foot is the stress map's coldest region (cold zones [-36.2, 7.8, 8.0], [-20.8, 7.8, 8.0], [25.5, 7.8, 8.0], 0-1 % use). The section reasoning in the record therefore does not follow from the loads it cites.",
+      "fix": "Rewrite the bracket row: the peak is where the window interrupts the wall between the pilot pairs and the foot, and in the foot plate between the wall and the outer screws. Say the wall root and the gussets are there for out-of-plane stiffness (servo mass and the swinging arm), which no FEA case loads."
     },
     {
       "severity": "minor",
       "part": "bracket",
-      "issue": "Carried over: tab_z is still unconfirmed (26.5 to 30.2 across sources). At 30.2 the horn disc has about 0.3 mm to the edges of the 20.56 mm window. DESIGN.md says to measure it before printing.",
-      "fix": "Measure the tab height on the real servo and catalogue it. Optionally make the window about 1 mm taller."
+      "issue": "The overbuilt justification has the right conclusion but wrong support. (a) It says 'the 80 mm wall width'; wall_w is 88 mm (report params). (b) 'the base less': the base has no FEA or stress map, so no utilisation exists to back that. (c) 'the stand check wants the mass low' argues for the foot and base, not for the 88 x 93 x 8 wall: most of the wall's mass is above the pivot line's midpoint and raises the CG, and `stand` has 37.1 deg against a 15 deg requirement. (d) The 7.2 mm pilot depth sets 8 mm only at the four pilot bosses, not across the whole slab. The 4 % figure itself is correct (stress.utilisation 0.041; 0.61/13 = 4.7 %). For a bench fixture I accept leaving the solid wall, because stiffness and a low, heavy rig are what you want, but the stated reasons should be the true ones.",
+      "fix": "Correct 80 to 88 mm. Drop 'the base less' or add a base load case. Justify the wall with stiffness the FEA does not load (out-of-plane: the 55 g servo cantilevered behind the wall, arm inertia on fast swings; deflection now 0.021 mm) plus print simplicity (one flat bed face that the tabs seat on). Optional ~15 g saving: a 2-3 mm pocket in the front face below the tie slots, inside an 8 mm frame that keeps the gusset roots and the r4 fillet."
     },
     {
       "severity": "minor",
-      "part": "catalog",
-      "issue": "Carried over: the adapter's DC cord gauge is assumed to be 22 AWG, not sourced. The result does not depend on it.",
-      "fix": "Cite the GST60A datasheet's cable specification, or measure the cord."
+      "part": "bracket",
+      "issue": "Outside edges are broken only in places, so the edge language claimed in DESIGN.md ('0.6-1.0 mm edge chamfers'; style edge_break 0.8) does not hold on this part. Mesh check of out/parts/bracket.stl: the wall top front edge and the top corners have 1.0 mm chamfers, and the wall's outer vertical edges got r1.5 only because the gusset-root edge filter (|x| = gusset_x + gusset_t/2 = 44) happens to catch them. Still sharp 90 deg: all four gusset hypotenuse edges (~51 mm and ~59 mm each) and the whole perimeter of the foot's front face (85, 88 and 2 x 46 mm). These are the edges a hand grabs. ENGINEERING.md s5 asks for 0.5-1 mm on outside edges. The bed-face edges are fine as they are.",
+      "fix": "After the cuts, chamfer 0.8 mm on the convex edges of the gusset hypotenuse faces and the foot's front face, leaving the bed face alone. Select them explicitly, not with group_by(Axis.Z)[-1], which picks up only the wall top. Make the wall-side r1.5 deliberate, or say in the code that the gusset-root filter is meant to include it."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "Gusset toe kept sharp (sharp_kept at [+/-40, 42.6, 6.0]). The stated reason is true: the hypotenuse rises 43.9 over 35.5 = 51 deg, so the open corner is 129 deg (Kt is small), and the FEA shows the toe in the coldest band. I accept it. But a knife-edge wedge tip is the amateur way to end a gusset: it is the part that chips and the reason OCC cannot fillet it.",
+      "fix": "Optional: end the gusset with a 1-1.5 mm vertical flat at the toe (polygon vertex at foot_t + 1.5 instead of a point). The toe can then take the standard r1 fillet and sharp_kept becomes empty."
+    },
+    {
+      "severity": "minor",
+      "part": "arm",
+      "issue": "Constant 18 x 6 mm section from hub to tip, although the DESIGN table itself says the moment runs from 0 at the tip to 922 N mm at the hub. Stiffness governs (deflection 0.751 of 1.0 mm, stress 17 % of allowable), and the stress map shows the outer 40 % idle (cold zones at 0.6-2.6 % use). The bending depth is in the right plane (in-plane width, loads along the layers) and the r4 hub blend is right. The bar is acceptable, not derived.",
+      "fix": "Optional: taper the width from ~22 mm at the hub blend to ~12 mm at the tip (tip boss kept at r6 around the 3.4 mm hole). For a tip load that moves stiffness to the root and should keep deflection at or under 0.75 mm with less tip mass; re-run arm_fea. Also add a 0.4 mm bed-side chamfer so elephant's foot does not lip the edge that rides next to the horn."
+    },
+    {
+      "severity": "minor",
+      "part": "base",
+      "issue": "A flat slab with holes. Every feature has a purpose (blind M3 inserts with a floor, which I verified by section, 7.6 mm M4 counterbores, r6 corners, 0.8 mm top chamfer), but two purposeful features are missing. Nothing locates the bracket foot: 4 x M3 in 3.4 mm clearance holes is the only registration. And the servo lead and the desk wiring leave the rig with no anchor on the base.",
+      "fix": "Optional: a 0.5 mm deep pocket or two 1 mm ribs matching the foot outline (0.2 mm clearance per side), so the foot drops in square before the screws go in. Add a cable-tie slot pair or a notch at the base's rear edge for the servo lead."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "out/plates/PRINT_SETTINGS.md labels the bracket orientation 'on its front (-Y) face', while DESIGN.md and the part docstring call the same face (part y = 0, the face the tabs seat on) the BACK face. The 3MF carries the correct rotation, but a user re-orienting by hand could flip it, and then the window would need a bridge and the lead-in would end up on the wrong face.",
+      "fix": "Engine-side: name faces by the part's own docstring or the axis only ('-Y face'), or add a project-level orientation note that the print package quotes."
+    },
+    {
+      "severity": "minor",
+      "part": "bracket",
+      "issue": "Carried over: tab_z is still unconfirmed (26.5-30.2 across sources). At 30.2 the horn disc has ~0.3 mm to the 20.56 mm window edges.",
+      "fix": "Measure the real servo's tab height and catalogue it, or make the window ~1 mm taller (check the 2.4 mm wall to the pilots still holds)."
     },
     {
       "severity": "minor",
       "part": "bracket / arm",
-      "issue": "The servo tab pilot holes and the arm's horn holes are under the 1.5 d edge distance (88 % ring material), because the purchased parts' hole patterns force it. DESIGN.md 'Edge distance' records the deviation and the FEA margin covers it.",
+      "issue": "Carried over: the servo pilot holes and the arm's horn holes are under the 1.5 d edge distance (88 % ring). The purchased parts' hole patterns force it, DESIGN.md 'Edge distance' records it, and the maker note tells the user to hand-tighten.",
       "fix": "None (documented deviation)."
+    },
+    {
+      "severity": "minor",
+      "part": "jack / catalog",
+      "issue": "Carried over: dc_jack_5521_screw has no weight_g (it sits on the desk, so no effect on rig_mass or stand). The adapter cord is assumed to be 22 AWG without a source (worst case already checked).",
+      "fix": "Add the sourced weight and cord gauge when they are available."
     }
-  ]
+  ],
+  "scores": {
+    "base": {"load_path": 3, "feature_purpose": 3, "print_intent": 4, "finish": 3},
+    "bracket": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "arm": {"load_path": 3, "feature_purpose": 3, "print_intent": 5, "finish": 3}
+  }
 }
