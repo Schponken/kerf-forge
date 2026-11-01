@@ -80,6 +80,7 @@ class Ctx:
         self.mesh_cuts: list = []
         self.bom: list = []
         self.features: list = []      # design-intent ledger: what each feature is and why (kerf/intent.py)
+        self.sharp_ok: list = []      # inside corners left sharp on purpose: {at, why} (kerf.edges.split_kept)
 
     # ---- joints (declare in the part's own frame) ----
     def rigid(self, label: str, loc: Location):
@@ -98,6 +99,13 @@ class Ctx:
     def pin_site(self, s: PinSite):
         self.pins.append(s)
         self._iface_feature("pin", s.group, f"{s.pin.split('.')[-1]} {s.fit} fit", "", s.loc)
+
+    def keep_sharp(self, at, why: str):
+        """Declare the inside corner at `at` (part frame) sharp on purpose, e.g. a mating part's square corner sits in it.
+        The build report lists it with `why` instead of warning about it."""
+        if not why or not str(why).strip():
+            raise PartError(f"{self.id}: keep_sharp at {at} needs a why= (what sits in the corner)")
+        self.sharp_ok.append({"at": [round(float(v), 2) for v in at], "why": str(why)})
 
     # ---- design-intent ledger ----
     def add(self, shape, why: str, kind: str = "feature"):
@@ -169,4 +177,5 @@ class Ctx:
         shape.kerf_mesh_cuts = list(self.mesh_cuts)
         shape.kerf_bom = list(self.bom)
         shape.kerf_features = [dict(f) for f in self.features]
+        shape.kerf_sharp_ok = [dict(k) for k in self.sharp_ok]
         return shape

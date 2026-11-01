@@ -18,6 +18,8 @@ from kerf import iface, features
 HORN = "servo_horns.aluminum_micro_21T"
 CAM = "boards.rpi_camera_module_3"
 PIN = "motion.shoulder_4_m3"
+SO_R = 3.6   # camera standoff radius: material all round the M2 pilot out to 1.5 d (3 mm) + 0.6, except where the
+             # camera's rear-clearance zone trims the inner side (was 2.8: only 22 % of the 1.5 d ring was material)
 
 
 def _slab(x0, x1, z0, z1, y0, y1):
@@ -62,28 +64,32 @@ def build(ctx):
     body = _arm(r_hub, xf, zb, yi, yo) + _arm(r_hub, xf, zb, -yo, -yi)
     body += _slab(p.cam_plate_x, xf, zb, r_hub, -yo, yo)                     # camera plate
 
-    # camera standoffs (teardrop prisms along X) and the camera seat frame (board x -> +Y, board y -> +Z)
-    cam = ctx.cat.get(CAM)
-    seat = Location(Plane(origin=(p.cam_seat_x, 0, p.cam_zc), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))
-    holes = [tuple(h) for h in cam["holes"]]
-    for (bx, by) in holes:
-        so = _standoff(2.8, xf - 0.5, p.cam_seat_x, bx, p.cam_zc + by)        # r 2.8: wall round the 2.1 mm horizontal pilot (audit F14)
-        body += so & Pos(0, 0, zb) * Box(200, 200, 200, align=(Align.CENTER, Align.CENTER, Align.MIN))  # point clipped at the bed
-    # keep the parts behind the camera PCB clear (catalog rear_clearance zone + 0.3): trims the inner side of the
-    # r 2.8 standoffs only, never the plate (the zone ends at the plate face)
-    body -= seat * Pos(0, 0, -p.standoff + 0.01) * Box(16.6, 22.6, p.standoff + 1,
-                                                      align=(Align.CENTER, Align.CENTER, Align.MIN))
-    body += _teardrop_y(4.4, -yo, p.knuckle_y, 0, 0)                          # pivot knuckle on the -Y arm
-
     # inside corners where the plate meets the arms (load path of the camera into the hubs)
     corners = body.edges().filter_by(Axis.Z).filter_by(
         lambda e: abs(abs(e.center().Y) - yi) < 0.05 and abs(e.center().X - p.cam_plate_x) < 0.05)
     body, bad = features.safe_fillet(body, [(corners, 1.5)])
     ctx.notes += [f"plate/arm fillet skipped: {b}" for b in bad]
 
+    body, bad = features.safe_fillet(body, [(body.edges().group_by(Axis.Z)[0], 0.4)], kind="chamfer")   # bed edges (before the standoffs: their clipped points land on the bed)
+    ctx.notes += [f"bed chamfer skipped: {b}" for b in bad]
+
+    # camera standoffs (teardrop prisms along X) and the camera seat frame (board x -> +Y, board y -> +Z)
+    cam = ctx.cat.get(CAM)
+    seat = Location(Plane(origin=(p.cam_seat_x, 0, p.cam_zc), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))
+    holes = [tuple(h) for h in cam["holes"]]
+    for (bx, by) in holes:
+        so = _standoff(SO_R, xf - 0.5, p.cam_seat_x, bx, p.cam_zc + by)       # boss round the 2.1 mm horizontal pilot
+        body += so & Pos(0, 0, zb) * Box(200, 200, 200, align=(Align.CENTER, Align.CENTER, Align.MIN))  # point clipped at the bed
+    # keep the parts behind the camera PCB clear (catalog rear_clearance zone + 0.3): trims the inner side of the
+    # standoffs only, never the plate (the zone ends at the plate face)
+    body -= seat * Pos(0, 0, -p.standoff + 0.01) * Box(16.6, 22.6, p.standoff + 1,
+                                                      align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+    body += _teardrop_y(4.4, -yo, p.knuckle_y, 0, 0)                          # pivot knuckle on the -Y arm
+
     # tilt horn: 4 x M2 from the inside face of the +Y arm, plus the centre-screw access hole
     hm = Location(Plane(origin=(0, yi, 0), x_dir=(0, 0, 1), z_dir=(0, -1, 0)))
-    body -= iface.horn_mount(ctx, HORN, hm, group="bracket_tilt", plate_t=p.arm_t)
+    body -= iface.horn_mount(ctx, HORN, hm, group="bracket_tilt", plate_t=p.arm_t, teardrop="auto")
     # hex-key access through the -Y arm, coaxial with each horn screw
     for (u, v) in iface.circle(4, p.horn_bc, 45.0):
         body -= _out_minus_y(-v, -yo, u) * features.teardrop_hole(2.4, yo - yi + 1, up_deg=0)
@@ -99,7 +105,6 @@ def build(ctx):
     body -= iface.bolt_pattern(ctx, "cam_mount", "M2", holes, seat, kind="tap", depth=p.standoff + p.cam_plate_t,
                                teardrop=iface.print_up_deg(ctx, seat))   # horizontal pilots (audit F14)
 
-    body = chamfer(body.edges().group_by(Axis.Z)[0], 0.4)                   # bed edges
 
     ctx.rigid("horn_mount", Location(Plane(origin=(0, yo, 0), x_dir=(0, 0, 1), z_dir=(0, -1, 0))))
     ctx.rigid("cam_seat", seat)
@@ -108,4 +113,10 @@ def build(ctx):
     ctx.rigid("lens_base", seat * Location((lens["x"], lens["y"], t)))
     ctx.rigid("lens_front", seat * Location((lens["x"], lens["y"], t + ctx.cat.num(cam, "component_height"))))
     ctx.rigid("lens_view12", seat * Location((lens["x"], lens["y"], t + ctx.cat.num(cam, "component_height") + 12.0)))
+    # why: every remaining sharp inside corner rounded (style r 1, r 0.5 where 1 does not fit): stress raisers and weak
+    # layer seams (ENGINEERING.md s5); interface-feature corners (servo pocket, horn, inserts) are exempt
+    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
+        "where the pivot knuckle's 52-degree teardrop point meets the -Y arm face: too narrow for a fillet; off the "
+        "bracket_fea load path's hot zone" if abs(at[1] + yi) < 0.2 and at[2] < -4 and abs(at[0]) < 2.5 else None))
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

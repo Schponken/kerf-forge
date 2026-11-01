@@ -104,17 +104,42 @@ Coupled poses swept: all four pan/tilt corners (`corners` sweep).
 FEA load cases (all SF 3 on PETG Z strength 39 MPa → allowable 13 MPa):
 | Check | Fixed | Load | Result |
 |---|---|---|---|
-| bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 1.99 MPa p99.9 (peak 3.6), 0.04 mm |
-| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the 4 mm shoulder bore (+ the engine's single-shear lever moment, 32 N·mm) | 2.44 MPa (peak 4.0), 0.22 mm (limit 0.3) |
-| yoke_knock_out / _in | pan-horn screws | the 30 N camera knock as ±Y: all of it at the tilt tab screws (+Y), or on the pivot wall's inner face round the bore (-Y) | 8.93 / 9.79 MPa p99.9 (peaks 16.8 / 22.6 at the wall roots), 1.70 / 1.26 mm elastic (limit 2.0: a transient load, strength governs; inside the 3.3 mm camera-yoke clearance) |
-| yoke_pan_stall (crash case) | tilt tab screws + pivot bore (head blocked) | 176.5 N·mm pan stall torque at the pan-horn screws | 0.86 MPa, 0.03 mm |
-| base_fea | underside on the tripod plate | 176.5 N·mm pan stall at the tab screws; a 30 N sideways knock **at the camera** (IEC 62368-1 external-force level, UL tech brief; 100 N is for hand-held equipment) = 30 N at the tab screws + 30 N × 42.0 mm lever (deck to tilt axis) as a moment on the tab-top contact under the deck | 6.08 MPa p99.9 (peak 9.1 at a pilot), 0.12 mm (limit 0.2) |
+| bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 1.62 MPa p99.9 (peak 3.7), 0.03 mm |
+| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the 4 mm shoulder bore (+ the engine's single-shear lever moment, 32 N·mm) | 2.54 MPa (peak 4.0), 0.22 mm (limit 0.3) |
+| yoke_knock_out / _in | pan-horn screws | the 30 N camera knock as ±Y: all of it at the tilt tab screws (+Y), or on the pivot wall's inner face round the bore (-Y) | 10.4 / 9.76 MPa p99.9 (peaks 16.7 / 22.9 at the wall roots), 1.74 / 1.26 mm elastic (limit 2.0: a transient load, strength governs; inside the 3.3 mm camera-yoke clearance) |
+| yoke_pan_stall (crash case) | tilt tab screws + pivot bore (head blocked) | 176.5 N·mm pan stall torque at the pan-horn screws | 0.81 MPa, 0.03 mm |
+| base_fea | underside on the tripod plate | 176.5 N·mm pan stall at the tab screws; a 30 N sideways knock **at the camera** (IEC 62368-1 external-force level, UL tech brief; 100 N is for hand-held equipment) = 30 N at the tab screws + 30 N × 42.0 mm lever (deck to tilt axis) as a moment on the tab-top contact under the deck | 6.16 MPa p99.9 (peak 9.2 at a pilot), 0.11 mm (limit 0.2) |
 | bracket_arm | section 5.5 mm ahead of the tilt axis | 13 N at the camera seat (stall torque / 13.5 mm), kt 1.5 | 0.2 MPa |
 The yoke first failed its stiffness limit (0.56 mm, the 4 mm plate twisting under the tilt-servo reaction); the plate
 went to 6 mm and widened to ±15 mm outside the camera's view: 0.23 mm.
 
 Hand check, tripod nut floor: tightening a tripod screw by hand to ~300 N clamps the 1.5 mm floor between nut and
 tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 mm² → 5 MPa vs 39 MPa.
+
+## 7b. Load → section
+| Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
+|---|---|---|---|
+| bracket | tilt-servo stall 176.5 N·mm in at the +Y arm's 4 horn screws → camera plate → the 4 camera standoffs; camera weight and a 30 N knock on the camera → both arms → horn (+Y) and the shoulder-screw knuckle (−Y) | the arms ahead of the hubs: 13 N at the camera seat × 13.5 mm = 176 N·mm (bracket_arm) | 3.5 mm arms full height (hub r = horn OD / 2 + 1 down to the 15 mm flat bottom), 3 mm camera plate, r 1.5 plate/arm roots; camera standoffs are r 3.6 bosses round the M2 pilots |
+| yoke | pan horn at the plate centre ← tilt-servo stall at the +Y wall's tab screws, the pivot load at the −Y wall's 4 mm bore, a 30 N camera knock at the tilt axis 29.5 mm up | wall roots: 30 N × ~29.5 mm ≈ 0.9 N·m (yoke_knock_out/_in); plate twist between horn and walls (yoke_fea, stiffness governs: 0.22 mm of 0.3) | 6 mm plate, ±15 mm wide outside the camera's view; 5 mm walls with r 1.5 roots and 2.5 mm gussets either side (7×9, 12×4 on the servo wall, 6×12 outside the pivot wall); 3 mm round wall tops |
+| base | pan stall 176.5 N·mm + the 30 N knock × 42 mm (deck to tilt axis) at the 2 tab screws → 5 mm deck → end walls → floor → tripod screw/nut | deck at the tab pilots (base_fea peak 9.2 MPa at a pilot) | 5 mm deck bridging the cavity between the end walls, 4 mm plan corners; 1.5 mm floor under the 1/4-20 nut (pure compression: 5 MPa hand check) |
+
+## 7c. Detail: radii, corners, edge distance
+- One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside, r 0.5 where
+  1 does not fit), r 1.5 at the wall and arm roots, r 2.5 yoke plate corners, r 3 wall tops, r 4 base plan corners;
+  0.4–0.8 mm chamfers on bed and top edges.
+- Corners left sharp on purpose (declared with ctx.keep_sharp, listed with the reason in report.json `sharp_kept`):
+  base: the servo cavity and deck window (the SG90's square case and tabs slide along them), the 1/4-20 nut's hex
+  pocket, the 0.6 mm "PT1" label letters; yoke: the label letters; bracket: the two flank corners where the pivot
+  knuckle's 52° teardrop point meets the −Y arm (too narrow to fillet; not in a stressed zone of bracket_fea).
+- Edge distance: the SG90 tab pilots (base, yoke: 79 % of the 1.5 d ring is material) are where the servo's own hole
+  pattern puts them, and they take the self-tapping screws that come with the servo. The camera's M2 pilots were in
+  r 2.8 standoffs (22 % of the ring); the standoffs are now r 3.6 bosses (73 %): the rest is the camera's
+  rear-clearance zone trimming their inner side, which the parts behind the camera PCB need.
+- Overbuilt (kerf stress map): the bracket uses at most 11 % of its allowable stress in its FEA cases. Its size is set
+  by fit, not strength: the horn hub and its 4 screws, the camera plate spanning the 25 mm board, the shoulder-screw
+  knuckle, and a flat 15 mm bottom to print on. The idle material the map shows is the arms' lower front corners
+  (±14 mm, under the camera plate); they also take a knock on the camera that no FEA case loads, and removing them
+  saves under 0.5 g and changes no margin that matters (torque_tilt 0.02 / torque_pan 0.05 kg·cm against a 0.9 limit).
 
 ## 8. Assembly order
 1. **Base**: slide the 1/4-20 nut in through the open -Y side and drop it into its floor pocket (flats across Y).

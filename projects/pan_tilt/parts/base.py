@@ -68,4 +68,19 @@ def build(ctx):
     ctx.rigid("below_jack", Location((-40, 0, -150)))
     ctx.rigid("below_pi", Location((-40, 50, -150)))
     ctx.rigid("below_psu", Location((-40, -110, -175)))
+    # why: every remaining sharp inside corner rounded (style r 1, r 0.5 where 1 does not fit): stress raisers and weak
+    # layer seams (ENGINEERING.md s5); interface-feature corners (servo pocket, horn, inserts) are exempt
+    # kept sharp: the servo cavity and deck window (the SG90's square case and tabs slide along them) and the 1/4-20
+    # nut's hex pocket (the nut's corners sit in its corners)
+    def mating(at):
+        x, y, z = at
+        if abs(x) <= cav_x / 2 + 0.2 and y <= wy / 2 + 0.2 and cav_z - 0.2 <= z <= H + 0.2:
+            return "servo cavity / deck window: the SG90's square case and tabs slide along it"
+        if math.hypot(x, y) <= af / math.sqrt(3) + 0.3 and z <= cav_z + 0.2:
+            return "1/4-20 nut hex pocket: the nut's corners sit in it"
+        if y >= W / 2 - 1.0:
+            return "0.6 mm deep 'PT1' label letters (cosmetic, no load)"
+        return None
+    body, left = features.fillet_inside(ctx, body, 1.0, keep=mating)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

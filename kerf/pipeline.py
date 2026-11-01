@@ -168,7 +168,8 @@ def _print_checks(it, printer, supports) -> dict:
     """Every per-part check: a function of the built part alone (cached with it by kerf/partcache.py)."""
     iid = it.id
     r = checks.part_checks(it, printer, supports=supports)
-    r["sharp_inside"] = edges.sharp_inside(it.shape, getattr(it.shape, "kerf_sites", []))
+    r["sharp_inside"], r["sharp_kept"] = edges.split_kept(edges.sharp_inside(it.shape, getattr(it.shape, "kerf_sites", [])),
+                                                          getattr(it.shape, "kerf_sharp_ok", []))
     r["notes"] = list(getattr(it.shape, "kerf_notes", []))
     r["features"] = [dict(f) for f in getattr(it.shape, "kerf_features", [])]   # design-intent ledger (ctx.add / cut)
     r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]

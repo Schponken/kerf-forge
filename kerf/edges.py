@@ -41,6 +41,15 @@ def sharp_inside(shape, sites=()) -> list[dict]:
     return out
 
 
+def split_kept(corners: list[dict], kept=()) -> tuple[list[dict], list[dict]]:
+    """(still sharp, kept): corners within 0.2 mm of a ctx.keep_sharp point are kept on purpose and carry its why."""
+    sharp, done = [], []
+    for c in corners:
+        k = next((k for k in kept if max(abs(a - b) for a, b in zip(c["at"], k["at"])) <= 0.2), None)
+        (sharp if k is None else done).append(c if k is None else {**c, "why": k["why"]})
+    return sharp, done
+
+
 def advice(part: str, corners: list[dict], hot_zones=(), cell: float = 0.0) -> str | None:
     if not corners:
         return None

@@ -137,3 +137,22 @@ def test_safe_fillet_reports_failures_instead_of_crashing():
     assert len(failed) == 4 and all("fillet 20" in f for f in failed)
     out2, failed2 = F.safe_fillet(bx, [(bx.edges().filter_by(Axis.Z), 0.5)], kind="chamfer")
     assert not failed2 and bx.volume - out2.volume == pytest.approx(4 * 0.5 * 0.5 ** 2 * 10, rel=1e-3)
+
+
+def test_fillet_inside_rounds_concave_corners_and_keeps_the_ones_asked():
+    from types import SimpleNamespace
+    from kerf import edges as E
+    L = Box(30, 20, 4, align=(Align.MIN, Align.MIN, Align.MIN)) + Box(4, 20, 20, align=(Align.MIN, Align.MIN, Align.MIN))
+    ctx = SimpleNamespace(sites=[])
+    assert len(E.sharp_inside(L)) == 1                                     # the L's inside corner
+    out, failed = F.fillet_inside(ctx, L, 2.0)
+    assert E.sharp_inside(out) == [] and failed == [] and out.volume > L.volume   # material added in the corner
+    from kerf.ctx import Ctx
+    c = Ctx("t", {})
+    kept, failed = F.fillet_inside(c, L, 2.0, keep=lambda at: "the fixture's square corner sits here")
+    assert kept.volume == pytest.approx(L.volume) and failed == []           # left sharp on purpose, not a failure
+    out = c.finish(kept)
+    sharp, ok = E.split_kept(E.sharp_inside(out), out.kerf_sharp_ok)       # what the build report does
+    assert sharp == [] and ok[0]["why"] == "the fixture's square corner sits here"
+    with pytest.raises(Exception, match="why"):
+        c.keep_sharp((0, 0, 0), "")

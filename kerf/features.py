@@ -276,3 +276,72 @@ from .sections import (beam, bending_I, cavity_profile, fork_link, rib_along, se
                        teardrop_channel)
 from .idioms import (boss, cable_saddle, clevis, grip_pad, servo_cradle, side_plate,  # noqa: E402,F401
                      yoke_cheek)
+
+
+def _meshes(shape) -> bool:
+    """True when the shape still tessellates and gmsh can mesh its surfaces at the size kerf.fea uses: fillets that run
+    into each other can leave slivers that break the FEA mesh ("1D mesh not forming a closed loop")."""
+    import os
+    import tempfile
+    try:
+        shape.tessellate(0.2, 0.5)
+        import gmsh
+        from build123d import export_step
+        bb = shape.bounding_box()
+        size = max(min(bb.size.X, bb.size.Y, bb.size.Z) / 4.0, 0.6)
+        with tempfile.TemporaryDirectory() as t:
+            f = os.path.join(t, "p.step")
+            export_step(shape, f)
+            gmsh.initialize(["-noenv"])
+            try:
+                gmsh.option.setNumber("General.Terminal", 0)
+                gmsh.model.add("p")
+                gmsh.model.occ.importShapes(f)
+                gmsh.model.occ.synchronize()
+                gmsh.option.setNumber("Mesh.MeshSizeMax", size)
+                gmsh.option.setNumber("Mesh.MeshSizeMin", size / 3)
+                gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 24)
+                gmsh.model.mesh.generate(2)
+            finally:
+                gmsh.finalize()
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
+    """Round every sharp inside corner the build check would report (kerf.edges.sharp_inside: straight concave edges
+    between flat faces, the corners of interface features exempt) with radius r, then r / 2 on those r doesn't fit
+    (they run into a hole, a chamfer or a thin strip); a pass whose result OCC or gmsh (kerf.fea's mesher) cannot mesh
+    is dropped. keep(at) -> a reason string leaves a corner sharp on purpose
+    (a mating part's square corner sits in it); it is declared with ctx.keep_sharp, so the report lists it with that
+    reason instead of warning. Returns (shape, failed): the
+    corners left sharp that keep() did not ask for, as "(x, y, z)" strings for ctx.notes."""
+    from build123d import Vector
+    from . import edges as E
+    sites = getattr(ctx, "sites", None) or []
+
+    def pick(s):
+        out = []
+        for c in E.sharp_inside(s, sites):
+            if keep is not None and keep(c["at"]):
+                continue
+            at = Vector(*c["at"])
+            e = min(s.edges(), key=lambda x: (x.center() - at).length + abs(x.length - c["len"]))
+            if (e.center() - at).length < 0.1:
+                out.append(e)
+        return out
+
+    for size in (r, r / 2):
+        todo = pick(shape)
+        if not todo:
+            break
+        new, _ = safe_fillet(shape, [(todo, size)])
+        if _meshes(new):
+            shape = new
+    if keep is not None and hasattr(ctx, "keep_sharp"):
+        for c in E.sharp_inside(shape, sites):
+            why = keep(c["at"])
+            if why:
+                ctx.keep_sharp(c["at"], why)
+    return shape, [f"({e.center().X:.1f}, {e.center().Y:.1f}, {e.center().Z:.1f})" for e in pick(shape)]

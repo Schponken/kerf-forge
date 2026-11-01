@@ -23,7 +23,8 @@ Rules:
   lands in report.json and the viewer's Feature / Why table) or at least a one-line `# why:` comment on the line that
   adds or cuts it (load path, fit, print orientation, assembly, wiring, weight); the after-edit hook lists the ones
   that say nothing. Geometry with no reason is removed, not kept "just in case".
-- Fillet inside corners on load paths (r >= 1 mm) with the project's radius set (`style.radii` in project.yaml when
+- Finish every part with `body, left = features.fillet_inside(ctx, body, r)` (kerf.features; `keep=lambda at: "reason"`
+  for corners a mating part's square corner sits in). Fillet inside corners on load paths (r >= 1 mm) with the project's radius set (`style.radii` in project.yaml when
   present: one consistent design language), keep walls >= 1.6 mm on structural parts, follow the print orientation in
   the contract and design for it (chamfers instead of flat overhangs, no unsupported ceilings).
 - The full check reports two design warnings per part; treat both as work, not noise: "overbuilt" (FEA shows the

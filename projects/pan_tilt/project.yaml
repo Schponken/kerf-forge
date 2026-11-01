@@ -6,6 +6,7 @@ description: >
   wall, so the small servo spline does not carry the bracket's side load alone.
 printer: Bambu Lab A2L
 supports: allowed
+style: {radii: [1.0, 1.5, 2.5, 3.0, 4.0], edge_break: 0.5}   # 1 every inside corner, 1.5 wall/arm roots, 2.5 yoke plate corners, 3 wall tops, 4 base plan corners; 0.4-0.8 edge chamfers
 params:
   servo_floor_z: {value: 10.0, unit: "mm", min: 9, max: 14, step: 0.5, label: Pan servo bottom above the base underside (tripod screw tip room)}
   deck_t: {value: 5.0, unit: "mm", min: 4.5, max: 8, step: 0.5, label: Base deck over the pan servo tabs (M2 pilots from below)}

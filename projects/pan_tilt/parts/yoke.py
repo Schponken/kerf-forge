@@ -80,4 +80,10 @@ def build(ctx):
 
     ctx.rigid("horn_mount", Location((0, 0, 0)))
     ctx.rigid("tilt_seat", loc * Location((0, 0, -p.servo_tab_t)))
+    # why: every remaining sharp inside corner rounded (style r 1, r 0.5 where 1 does not fit): stress raisers and weak
+    # layer seams (ENGINEERING.md s5); interface-feature corners (servo pocket, horn, inserts) are exempt
+    lab_y = ledge - 9.5
+    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: "0.6 mm deep 'PT1' label letters (cosmetic, no load)"
+                                        if abs(at[1] - lab_y) < 4 and at[2] > t - 0.7 else None)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)
