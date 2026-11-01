@@ -115,7 +115,7 @@ def test_assembly_md_and_step_renders(tmp_path):
     A.solve(asm)
     calls = []
 
-    def fake_render(glb, prefix):
+    def fake_render(glb, prefix, **kw):
         assert Path(glb).stat().st_size > 1000          # a real GLB of the parts present at this step
         calls.append(Path(prefix).name)
         Path(f"{prefix}_iso.png").write_bytes(b"png")

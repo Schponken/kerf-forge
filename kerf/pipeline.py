@@ -81,8 +81,16 @@ def unattached(proj, fasteners, pins) -> list[str]:
     return out
 
 
-def render_glb(glb: Path, prefix: Path, views="iso,front,right,top", sheet=True) -> dict:
+def render_glb(glb: Path, prefix: Path, views="iso,front,right,top", sheet=True, labels=None, focus=None, title=None) -> dict:
+    """tools/render/render.mjs: PNG per view (+ a 2x2 sheet). labels = node names to tag with a callout, focus = node
+    names the camera frames (with context), title = a line printed on the sheet (e.g. the part's overall size)."""
     args = ["node", str(RENDER), str(glb), str(prefix), views] + (["--sheet"] if sheet else [])
+    if labels:
+        args.append("--labels=" + ",".join(labels))
+    if focus:
+        args.append("--focus=" + ",".join(focus))
+    if title:
+        args.append("--title=" + title)
     r = subprocess.run(args, capture_output=True, text=True, timeout=240)
     if r.returncode != 0:
         raise RuntimeError(f"render failed: {r.stderr.strip()[-800:]}")
@@ -359,7 +367,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"viewer.html could not be written: {type(e).__name__}: {e}")
                 try:  # ship package (kerf/ship.py): priced BOM + ASSEMBLY.md with a render per step when rendering
-                    rnd = (lambda g, pre: render_glb(g, pre, views="iso", sheet=False)) if do_render else None
+                    rnd = (lambda g, pre, **kw: render_glb(g, pre, views="iso", sheet=False, **kw)) if do_render else None
                     rep["files"]["ship"] = ship.write(proj, asm, rep, out, render=rnd)
                     if emodel:      # solder / wiring steps after the mechanical ones
                         wiring_out.append_assembly(out / "ASSEMBLY.md", emodel, proj)
@@ -390,7 +398,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     s.label = iid
                     from . import geom
                     geom.write_glb([s], g, 0.03, 0.2, label=iid)       # mesh-aware (fused Meshy parts)
-                    render_glb(g, out / f"part_{iid}", sheet=True)
+                    lo, hi = geom.bbox(s)
+                    dx, dy, dz = (float(v) for v in (hi - lo))
+                    render_glb(g, out / f"part_{iid}", sheet=True,
+                               title=f"{iid}: {dx:.0f} x {dy:.0f} x {dz:.0f} mm overall, shown as printed (the gridded plate is the print bed, 10 mm squares)")
         except P.ProjectError as e:
             rep["problems"].append(f"assembly: {e}")
         except Exception as e:  # noqa: BLE001

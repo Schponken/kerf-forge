@@ -30,6 +30,8 @@ PRICES = ROOT / "catalog" / "prices.json"
 OLD = "#C9CDCB"        # parts already fitted in a step render
 NEW = "#F58518"        # the part(s) this step adds
 NEW_PURCHASED = "#2F6FDB"
+NEW_SCREW = "#E4572E"  # this step's screws, drawn backed out of their holes along their axis
+OLD_SCREW = "#6B7075"  # screws already driven
 
 
 # ---------------------------------------------------------------- prices
@@ -308,6 +310,7 @@ def plan(asm, fasteners: list, pins: list) -> list[dict]:
             "pins": pin_at[(k, 1)], "screws": screw_rows(js1), "groups": sorted({j["group"] for j in js1}),
             "attach": [{"step": b, "items": seq[b - 1], "via": c, **how(asm.by_child[c])} for b, c, _ in attach.get(k, [])],
             "pins_after": pin_at[(k, 2)], "screws_after": screw_rows(js2), "groups_after": sorted({j["group"] for j in js2}),
+            "fastener_joints": js1 + js2,
             "bench": [later[g] for g in groups if g in later],
         })
     return out
@@ -342,7 +345,23 @@ def _explode_offset(proj, asm, iid, present) -> np.ndarray:
     return np.array([0.0, 0.0, dist])
 
 
-def step_glb(proj, asm, present: list, new: list, path: Path):
+def _screw_solid(j, backed_out: float):
+    """A socket-head screw at a fastener joint: shank from the seat (`at`) along `dir` for its length, head above the
+    seat; moved back out of the hole by `backed_out` mm (this step's screws are drawn ready to go in)."""
+    from build123d import Cylinder, Align, Location, Plane, Pos
+    d = float(str(j["screw"]).lstrip("M") or 3)
+    L = float(j.get("length_mm") or 6)
+    at, dr = np.asarray(j["at"], float), np.asarray(j["dir"], float)
+    at = at - dr * backed_out
+    shank = Cylinder(d / 2, L, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    head = Pos(0, 0, -d) * Cylinder(0.85 * d, d, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    loc = Location(Plane(origin=tuple(at), z_dir=tuple(dr)))
+    return loc * (shank + head)
+
+
+def step_glb(proj, asm, present: list, new: list, path: Path, screws: list | None = None, done_screws: list | None = None):
+    """GLB of one assembly step: parts already on in grey, this step's parts in colour pulled back along the way they
+    go on, this step's screws in red backed out of their holes, screws already driven in dark grey."""
     from build123d import Color, Location, Pos
     shapes = []
     for iid in present:
@@ -355,6 +374,20 @@ def step_glb(proj, asm, present: list, new: list, path: Path):
             s.color = Color(OLD)
         s.label = iid
         shapes.append(s)
+    for k, j in enumerate(screws or []):
+        try:
+            sc = _screw_solid(j, float(j.get("length_mm") or 6) + 6)
+        except Exception:  # noqa: BLE001 - a screw glyph that cannot be placed is left out, never a failed build
+            continue
+        sc.color, sc.label = Color(NEW_SCREW), f"screw_{k}"
+        shapes.append(sc)
+    for k, j in enumerate(done_screws or []):
+        try:
+            sc = _screw_solid(j, 0.0)
+        except Exception:  # noqa: BLE001
+            continue
+        sc.color, sc.label = Color(OLD_SCREW), f"done_screw_{k}"
+        shapes.append(sc)
     geom.write_glb(shapes, path, 0.08, 0.3, label=proj.name)
 
 
@@ -433,6 +466,9 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
     st = plan(asm, rep.get("assembly", {}).get("fasteners", []), rep.get("assembly", {}).get("pins", []))
     sd = outdir / "assembly_steps"
     sd.mkdir(exist_ok=True)
+    if render is not None:
+        for old in sd.glob("step_*"):            # a project with fewer steps than its last build leaves no stale pictures
+            old.unlink()
     keys = set()
     for j in rep.get("assembly", {}).get("fasteners", []):
         try:
@@ -501,10 +537,17 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
             title += f" (bench sub-assembly, joins the build in step {s['bench_for']})"
         L += [f"## Step {s['step']} — {title}", ""]
         if render is not None:
-            present = [i for x in st[: s["step"]] for i in x["items"]]
+            if s["bench_for"]:            # a bench sub-assembly is drawn on its own, not floating in the build
+                present = list(s["items"])
+            else:
+                joined = [i for a in s["attach"] for i in a["items"]]
+                present = [i for x in st[: s["step"]] if not x["bench_for"] or x["bench_for"] <= s["step"] for i in x["items"]]
+                present += [i for i in joined if i not in present]
+            new = list(s["items"]) + [i for a in s["attach"] for i in a["items"]]
+            done = [j for x in st[: s["step"] - 1] for j in x["fastener_joints"] if j["male"] in present and j["female"] in present]
             glb = sd / f"step_{s['step']:02d}.glb"
-            step_glb(proj, asm, present, s["items"], glb)
-            render(glb, sd / f"step_{s['step']:02d}")
+            step_glb(proj, asm, present, new, glb, screws=s["fastener_joints"], done_screws=done)
+            render(glb, sd / f"step_{s['step']:02d}", labels=new, focus=new)
             glb.unlink(missing_ok=True)
             L += [f"![step {s['step']}](assembly_steps/step_{s['step']:02d}_iso.png)", ""]
         for x in s["inserts"]:
