@@ -115,9 +115,8 @@ def build(ctx):
     teeth_sector = gear & extrude(wedge2d(), gw) if not drive else gear & mirror(extrude(wedge2d(), gw), Plane.XZ)
     body = (mirror(body_u, Plane.XZ) if drive else body_u) + teeth_sector   # why: teeth only on the arc that meshes (0..grip_open + margin)
 
-    # why: r 1 on the remaining inside corners; the pad's root end sits in the corner at the jaw root (kept square)
-    pad_corner = lambda at: abs(at[0] - A_b[0]) < 0.3 and abs(abs(at[1]) - A_b[1]) < 0.3  # noqa: E731
-    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0, keep=pad_corner)
+    # why: r 1 on the remaining inside corners, the jaw-root corner too (the pad's end edges are chamfered 1.2 to clear it)
+    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0)
     if half_r or failed:
         ctx.notes.append(f"inside corners at r 0.5 (r 1 does not fit): {half_r}; left sharp: {failed}")
     if drive:

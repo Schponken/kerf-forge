@@ -22,10 +22,24 @@ def _edges(body, ctx, keep):
     return out
 
 
-def fillet_inside(ctx, body, r: float = 1.0, keep=lambda at: False, fallback: bool = True):
+def _clusters(edges, tol=1e-3):
+    """Edges grouped by shared vertices: corners meeting at one vertex are filleted in one call (OCC then blends the
+    vertex; one at a time it often cannot), and one bad corner elsewhere no longer spoils the rest."""
+    groups = []
+    for e in edges:
+        vs = [v.center() for v in e.vertices()]
+        hit = [g for g in groups if any((a - b).length < tol for x in g for a in [v.center() for v in x.vertices()] for b in vs)]
+        merged = [e] + [x for g in hit for x in g]
+        groups = [g for g in groups if g not in hit] + [merged]
+    return groups
+
+
+def fillet_inside(ctx, body, r: float = 1.0, keep=lambda at: False, fallback: bool = True, cluster: bool = True):
     """Returns (body, smaller, failed): `smaller` = corners that only took r / 2 (they run into a hole, a chamfer or a
-    thin strip), `failed` = corners left sharp. fallback=False skips the r / 2 retry (its slivers can break FEA meshing)."""
-    body, _ = safe_fillet(body, [(_edges(body, ctx, keep), r)])
+    thin strip), `failed` = corners left sharp. fallback=False skips the r / 2 retry and cluster=False the vertex
+    blends (on the palm both left surfaces the FEA mesher could not close)."""
+    found = _edges(body, ctx, keep)
+    body, _ = safe_fillet(body, [(c, r) for c in _clusters(found)] if cluster else [(found, r)])
     rest = _edges(body, ctx, keep)
     if not fallback:
         return body, [], [f"({e.center().X:.1f}, {e.center().Y:.1f}, {e.center().Z:.1f})" for e in rest]

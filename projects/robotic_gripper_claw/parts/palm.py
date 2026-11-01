@@ -83,24 +83,64 @@ def build(ctx):
     # (0.5-1 mm clear), up to 0.5 mm under the gears: behind the servo the channel had no wall on the servo side, so
     # everything forward of the gear axes rotated about this root (palm_fea deflection); the beam ties both cheeks,
     # both cover posts and the keel wall into one deep section
-    x_rb = p.x_g - iface.horn_dims(HORN)["od"] / 2 - 1.0
+    x_rb = p.x_sc - p.mg_L / 2 - 1.75                # 1.5 mm before the servo window (cut 0.25 behind the case): r 1 fillet + 0.5 flat; the grip horn is 1.75 further on
     x_rb0 = xp - POST_R                              # flush with the posts' rear faces (no step against their round edges)
     body += ctx.add(Pos(x_rb0, t - 0.01, zw) * Box(x_rb - x_rb0, y_top - t + 0.01, W - t - zw + 0.01, align=(Align.MIN, Align.MIN, Align.MIN)),
                     why="root beam: deep section between the wrist fork and the gear axes (stiffness, palm_fea)", kind="beam")
+    # why: the keel wall thickens inboard past the pedestal, from the root beam to the pedestal's front, its front on the keel wall's 45 deg slope (all under the
+    # idler gear, 0.5 mm clear): the idler pin's moment enters here, and the pocket that was left between beam, wall and
+    # pedestal had corners no fillet fits
+    z_pw = p.z_i - 5.5                               # 0.5 mm inboard of the pedestal (no tangent junction)
+    body += ctx.add(side([(x_rb, t), (x_ped + (y_top - t), t), (x_ped, y_top), (x_rb, y_top)], z_pw, W - t),
+                    why="pedestal wall: ties the idler pedestal to the root beam and the keel wall", kind="web")
+    # why: r 1 radii built into the pedestal wall's two inner corners (along its base on the plate, and up its joint
+    # with the root beam): OCC cannot fillet them once the holes are cut, and a fillet tried earlier leaves surfaces
+    # the FEA mesher cannot close
+    rr = 1.0
+    with BuildSketch(Plane.YZ) as qs:              # base corner, profile in (y, z), run along x
+        with Locations((t + rr / 2, z_pw - rr / 2)):
+            Rectangle(rr, rr)
+        with Locations((t + rr, z_pw - rr)):
+            Circle(rr, mode=Mode.SUBTRACT)
+    base = Pos(x_rb, 0, 0) * extrude(qs.sketch, x_ped + (y_top - t) - x_rb)
+    base -= side([(x_ped + (y_top - t), t), (x_ped + y_top, t), (x_ped + y_top, y_top), (x_ped, y_top)], z_pw - 2, z_pw + 0.01)
+    with BuildSketch(Plane.XZ.offset(-t)) as qv:   # beam-joint corner, profile in (x, z), run up along y
+        with Locations((x_rb + rr / 2, z_pw - rr / 2)):
+            Rectangle(rr, rr)
+        with Locations((x_rb + rr, z_pw - rr)):
+            Circle(rr, mode=Mode.SUBTRACT)
+    vert = extrude(qv.sketch, -(y_top - t))
+    # the root beam's front corners the same way: along its base on the plate (far web to pedestal wall) and up its
+    # joint with the far web (1.5 mm of plate is left before the servo window for the base radius)
+    with BuildSketch(Plane.XY.offset(zw)) as qb:
+        with Locations((x_rb + rr / 2, t + rr / 2)):
+            Rectangle(rr, rr)
+        with Locations((x_rb + rr, t + rr)):
+            Circle(rr, mode=Mode.SUBTRACT)
+    vert += extrude(qb.sketch, z_pw - zw)
+    with BuildSketch(Plane.XZ.offset(-t)) as qw:
+        with Locations((x_rb + rr / 2, zw + rr / 2)):
+            Rectangle(rr, rr)
+        with Locations((x_rb + rr, zw + rr)):
+            Circle(rr, mode=Mode.SUBTRACT)
+    vert += extrude(qw.sketch, -(y_top - t))
+    # and where the far web meets the palm plate top, from the root beam to the web's sloped front (0.8 mm of flat is
+    # left before the servo window)
+    with BuildSketch(Plane.YZ) as qf:
+        with Locations((t + rr / 2, zw + rr / 2)):
+            Rectangle(rr, rr)
+        with Locations((t + rr, zw + rr)):
+            Circle(rr, mode=Mode.SUBTRACT)
+    web = Pos(x_rb, 0, 0) * extrude(qf.sketch, xw1 - x_rb)
+    web -= side([(xw1 - (y_top - 0.5), y_top), (xw1, 0.5), (xw1 + 20, 0.5), (xw1 + 20, y_top)], zw - 1, zw + rr + 1)
+    vert += web
+    body += ctx.add(base + vert, why="r 1 radii in the pedestal wall's and the root beam's inner corners (stress relief where the idler moment enters)", kind="fillet")
     # idler pedestal
     body += Pos(p.x_g, t - 0.01, p.z_i) * Rot(-90, 0, 0) * Cylinder(5.0, p.y_g0 - 0.5 - t + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for z0, z1, inner in ((0.0, zpa + POST_R, 1), (zpb - POST_R, W, 0)):
         post = Pos(xp, (t + p.y_c0) / 2, (z0 + z1) / 2) * Box(2 * POST_R, p.y_c0 - t, z1 - z0)
         body += fillet(post.edges().filter_by(Axis.Y).group_by(Axis.Z)[-inner], 2.0)
     body += Pos(0, 0, W - t - 3.0) * Cylinder(6.5, 3.01, align=(Align.CENTER, Align.CENTER, Align.MIN))   # pivot boss
-
-    # why: r 1 where the far web meets the palm plate top, filleted before the servo window is cut 1.75 mm beside it
-    # (filleted after, OCC leaves a sliver at the window that the FEA mesher cannot close)
-    web_root = [e for e in body.edges() if e.geom_type == GeomType.LINE and abs(e.center().Z - zw) < 0.05
-                and abs(e.center().Y - t) < 0.05 and e.length > 20]
-    body, failed = safe_fillet(body, [(web_root, 1.0)])
-    if failed or not web_root:
-        raise ValueError(f"far web root fillet: {len(web_root)} edges, failed {failed}")
 
     hl = Location((0, 0, t))
     body -= iface.horn_mount(ctx, HORN, hl, group="wr_horn", plate_t=t, teardrop=iface.print_up_deg(ctx, hl))
@@ -118,7 +158,7 @@ def build(ctx):
     body -= Pos(p.x_g, (Y_BED - 1) / 2, p.z_i - 1.25) * Box(2.0, -Y_BED + 1, 2.5)   # why: the push-out hole runs on as a groove open to the keel's inner face (no 0.5 mm skin)
     for (x, z) in posts(p):
         body -= iface.bolt_pattern(ctx, "cover", "M3", [(0, 0)], up(x, p.y_c0, z), kind="heatset", depth=p.y_c0 - t)
-    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0, fallback=False)   # why: r 1 on every other inside corner (ENGINEERING.md s5; style radii)
+    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0, fallback=False, cluster=False)   # why: r 1 on every other inside corner (ENGINEERING.md s5; style radii)
     if failed:
         ctx.notes.append(f"inside corners left sharp (r 1 does not fit): {failed}")
     ctx.rigid("horn_mount", Location((0, 0, 0)))

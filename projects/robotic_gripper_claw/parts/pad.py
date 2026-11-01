@@ -19,6 +19,7 @@ TONGUE = (2.53, 3.48, 3.75)        # dovetail half-width at the back face, half-
 TONGUE_R = 1.0                     # root corner radius: no sharp corner left in the jaw's groove
 NECK_R = 0.5                       # tongue-to-plate fillet (the jaw's groove lips are chamfered 0.6 to clear it)
 STOP = 2.0                         # tongue starts this far above the pad's bottom: the jaw's groove floor fills it
+END_C = 1.2                        # chamfer on the back face's two end edges (>= the jaw-root fillet r 1)
 LEAD = 0.8                         # chamfer on the tongue's leading (bottom) end: lead-in; >= the jaw groove floor's r 0.6 fillet clears it (largest the r 1 root takes is 1.0)
 RIB_H, RIB_P, RIB_C = 1.0, 2.5, 0.2   # grip ribs: height, pitch, crest half-width (2 mm base under them, as D7)
 
@@ -52,5 +53,7 @@ def build(ctx):
     body += tongue                              # why: dovetail that holds the pad on the jaw (no glue, no screws)
     neck = body.edges().filter_by(lambda e: abs(e.center().Y) < 0.01 and abs(abs(e.center().X) - TONGUE[0]) < 0.01)
     body = fillet(neck, NECK_R)                 # why: the tongue's root carries the pad's pull-off load
+    ends = body.edges().filter_by(Axis.Z).filter_by(lambda e: abs(e.center().Y) < 0.01 and abs(abs(e.center().X) - PAD_L / 2) < 0.01)
+    body = chamfer(ends, END_C)                 # why: clears the r 1 fillet in the jaw-root corner the pad's end sits in
     ctx.rigid("origin", Location((0, 0, 0)))
     return ctx.finish(body)

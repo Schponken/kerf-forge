@@ -29,6 +29,7 @@ BOSS_DRIVE = 3.7     # drive boss: the horn-screw heads sweep r 4.25..9.75 about
 BOSS_IDLER = 5.0     # idler boss: nothing turns over the idler gear's top (r 7 was tried: no stiffer, the node turns as a whole)
 MEMBER = 6.0         # frame member width (centre line +-3); window corners rounded WIN_R
 WIN_R = 2.0
+POST_GAP = 1.2      # deep members end this far from a palm post: an r 1 root radius + 0.2 clearance
 
 
 def up(x, y, z):
@@ -69,9 +70,21 @@ def build(ctx):
         L, ang = math.hypot(x1 - x0, z1 - z0), math.atan2(z1 - z0, x1 - x0)
         bar = Pos((x0 + x1) / 2, p.y_cb, (z0 + z1) / 2) * Rot(0, -math.degrees(ang), 0) * Box(L, p.y_c0 - p.y_cb + 0.01, MEMBER, align=(Align.CENTER, Align.MIN, Align.CENTER))
         deep = bar if deep is None else deep + bar
-    for z in (p.z_post_a, p.z_post_b):          # the palm posts stand under the plate there: keep 0.2 mm off them
-        deep -= Pos(p.x_post, p.y_cb - 1, z) * Box(2 * p.post_r + 0.4, p.y_c0 - p.y_cb + 1.0, 2 * (p.post_r + 0.2) + 2 * 0.4 + 0.01, align=(Align.CENTER, Align.MIN, Align.CENTER))
+    for z in (p.z_post_a, p.z_post_b):          # the palm posts stand under the plate there: members stop POST_GAP off
+        deep -= Pos(p.x_post, p.y_cb - 1, z) * Box(2 * (p.post_r + POST_GAP), p.y_c0 - p.y_cb + 1.0, 2 * (p.post_r + POST_GAP + 0.2), align=(Align.CENTER, Align.MIN, Align.CENTER))
     body += ctx.add(deep, why="deep members on the idler side: out-of-plane stiffness where the dowel moments enter", kind="rib")
+    # why: r 1 radii built in along two member sides where they meet the plate underside and OCC cannot fillet them
+    # (the face runs into the idler boss): post B - idler, outer side, full length
+    coves = None
+    for (x0, z0), (x1, z1), t0, t1, sd in ((B, I, 0.0, 1.0, 1),):   # sd: +1 left of the member's direction, -1 right
+        L, ang = math.hypot(x1 - x0, z1 - z0), math.atan2(z1 - z0, x1 - x0)
+        q = Box((t1 - t0) * L, 1.0, 1.0, align=(Align.MIN, Align.MAX, Align.CENTER)).moved(Location((t0 * L, 0, sd * (MEMBER / 2 + 0.5))))
+        q -= Pos(0, -1.0, sd * (MEMBER / 2 + 1.0)) * Rot(0, 90, 0) * Cylinder(1.0, 3 * L)
+        q = Pos(x0, p.y_c0, z0) * Rot(0, -math.degrees(ang), 0) * q
+        coves = q if coves is None else coves + q
+    for z in (p.z_post_a, p.z_post_b):
+        coves -= Pos(p.x_post, p.y_cb - 1, z) * Box(2 * (p.post_r + POST_GAP), p.y_c0 - p.y_cb + 1.0, 2 * (p.post_r + POST_GAP + 0.2), align=(Align.CENTER, Align.MIN, Align.CENTER))
+    body += ctx.add(coves, why="r 1 radii along two deep members' roots (stress relief)", kind="fillet")
     roots = [e for e in body.edges() if abs(e.center().Y - p.y_c0) < 1e-6
              and min(math.hypot(e.center().X - p.x_g, e.center().Z - z) for z in (p.z_d, p.z_i)) < BOSS_IDLER + 0.1
              and e.geom_type == GeomType.CIRCLE and e.radius in (BOSS_DRIVE, BOSS_IDLER)]
@@ -82,10 +95,9 @@ def build(ctx):
     body, failed = safe_fillet(body, [(ends, 0.4)], kind="chamfer")   # why: edge break on the boss and member faces (last layers)
     if failed:
         raise ValueError(f"boss end break: {failed}")
-    # why: r 1 on the inside corners (members into the plate and bosses); not where a palm post's top edge sits beside
-    # a member (a fillet there would sit on the post)
-    near_post = lambda at: abs(at[0] - p.x_post) < p.post_r + 1.2 and min(abs(at[2] - p.z_post_a), abs(at[2] - p.z_post_b)) < p.post_r + 1.5  # noqa: E731
-    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0, keep=near_post)
+    # why: r 1 on the inside corners (members into the plate and bosses, the member ends beside the posts too: they
+    # stop POST_GAP = 1.2 mm off the posts so the radius clears the post's top edge)
+    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0)
     if half_r or failed:
         ctx.notes.append(f"inside corners at r 0.5 (r 1 does not fit): {half_r}; left sharp: {failed}")
     if f0:

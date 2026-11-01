@@ -130,7 +130,7 @@ pitch point, separating Wr = Wt tan 20° = 14.0 N along Z; each gear axis carrie
 | Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
 |---|---|---|---|
 | finger_l / finger_r | half the stall torque, 461 N·mm, reaches each pad: along the pad's normal at the pad centre (lever 36.2 mm) 12.7 N (17.3 N at the root end, 10.2 N at the tip end) → jaw → arm → hub (finger_l: 4 horn screws + top dowel; finger_r: dowel + teeth) | bending in the grip plane, 0 at the pad → 461 N·mm at the hub (the same for any contact point) | arm 6 mm deep (in the bending plane) × 12 mm tall, layers in the grip plane so bending runs along them (8 mm ran at 15 % of allowable: overbuilt); r 2 root fillets into the hub; the jaw is a 6.5 mm plate behind the pad (dovetail groove 3.9 deep + 2.6 wall), 20 mm tall, its top ramping up from the arm; r 3 round nose; toothed sector only where it meshes |
-| palm | servo stall 922 N·mm (couple on 4 tab pilots) + the drive axis side load (≈ 45 N: 38.4 along X, 24.2 across) on the servo tabs; the idler dowel's 45 N on the pedestal plus its single-shear moment (engine: 749 N·mm); all of it back to the wrist horn screws and pivot | in-plane torque in the palm plate; out-of-plane bending and twist of the whole palm about the root between the wrist fork and the gear axes (that is where the first FEA showed the compliance: everything forward of x ≈ 30 rotated rigidly) | a channel: 7 mm palm plate (servo pilots need 7 mm) with the servo window; plate B runs on as a 7 mm keel below and rises as a wall to 0.5 mm under the idler gear (30 mm deep web carrying the pedestal); a 3 mm far web from x 25.5 (forearm plate A reaches only 24.1 mm from the wrist axis) also rising to 0.5 mm under the drive finger; a root beam across the claw on top of the palm plate between the posts' rear faces and the grip horn (x 14.7–27, y 7–13.4) tying both cheeks, both posts and the keel wall; wrist discs as the old gripper (7 mm, r 17); pedestal Ø 10 boss; r 1 on the inside corners. Tried and dropped (FEA): a 6 mm far web (no gain), an end wall closing the channel (−0.05 mm for 2.6 g, over the mass budget), a 4 mm keel (+0.08 mm) |
+| palm | servo stall 922 N·mm (couple on 4 tab pilots) + the drive axis side load (≈ 45 N: 38.4 along X, 24.2 across) on the servo tabs; the idler dowel's 45 N on the pedestal plus its single-shear moment (engine: 749 N·mm); all of it back to the wrist horn screws and pivot | in-plane torque in the palm plate; out-of-plane bending and twist of the whole palm about the root between the wrist fork and the gear axes (that is where the first FEA showed the compliance: everything forward of x ≈ 30 rotated rigidly) | a channel: 7 mm palm plate (servo pilots need 7 mm) with the servo window; plate B runs on as a 7 mm keel below and rises as a wall to 0.5 mm under the idler gear (30 mm deep web carrying the pedestal); a 3 mm far web from x 25.5 (forearm plate A reaches only 24.1 mm from the wrist axis) also rising to 0.5 mm under the drive finger; a root beam across the claw on top of the palm plate from the posts' rear faces to 1.5 mm before the servo window (x 14.7–26.25, y 7–13.4) tying both cheeks, both posts and the keel wall; a pedestal wall from the beam to the pedestal's front (keel wall thickened inboard to z 24) where the idler moment enters; wrist discs as the old gripper (7 mm, r 17); pedestal Ø 10 boss; r 1 on the inside corners. Tried and dropped (FEA): a 6 mm far web (no gain), an end wall closing the channel (−0.05 mm for 2.6 g, over the mass budget), a 4 mm keel (+0.08 mm) |
 | cover | each dowel's full side load (45 N, in the cover's plane) plus its single-shear moment out of the plane (engine: drive 295, idler 715 N·mm) → the two post screws and the post tops they clamp | in-plane: the two separating forces are equal and opposite (the front member between the dowels is a tie holding the centre distance); out of plane: the idler node turns about the posts | triangulated frame: members post–post, post–idler, post–idler diagonal (passes 14.5 mm from the drive axis), post–drive, drive–idler, two triangular windows; 6 mm plate (cover_t) on the bed; the idler-side members run 9 mm deep down to 0.5 mm over the gears, the drive side stays plate-deep (the horn-screw heads turn under it); dowel bosses down to 0.5 mm over each finger |
 | wrist_stand | wrist-servo stall 922 N·mm on plate A's tab pilots + the claw's weight (≈ 1.2 N) | in-plane torque on plate A, carried by the web and back column to the foot | plates and web exactly the forearm's (they ARE the fit gauge); column + foot sized by FEA; this part is a fixture, keep it light |
 
@@ -182,7 +182,7 @@ tcp = rigid joint on the palm between the pads (x 83, y 19.9, z 17.5).
 | gears (Lewis, whole stall torque through the mesh) | 14.42 MPa | 16.0 (48 / SF 3) | SF 3.3 |
 | claw_mass | ~127 g | 130 | ~3 g |
 | finger_l_fea / finger_r_fea (12.7 N on the pad normal) | 5.0 / 4.5 MPa | 24 (SF 2, along layers), 1 mm | SF ~10 on stress; sized by printability (6 mm arm, 2.6 mm behind the groove) and the jaw's pad, not by stress |
-| palm_fea (stall, conservative single-shear idler) | 5.3 MPa, 0.19 mm | 16 (SF 3), 0.3 mm | stiffness governs: 35 % on deflection |
+| palm_fea (stall, conservative single-shear idler) | 5.7 MPa, 0.20 mm | 16 (SF 3), 0.3 mm | stiffness governs: 33 % on deflection |
 | cover_fea (both axes' full loads + lever moments; held at the screws and the post tops they clamp) | 7.9 MPa, ~0.14 mm | 24, 0.2 mm | ~30 % on deflection |
 | stand_fea | 3.2 MPa | 16 | fixture |
 | sweeps | wrist ±75° and grip 0…40° (idler following −1) collision-free | | the far web from x 25.5 clears the forearm copy |
@@ -191,12 +191,18 @@ tcp = rigid joint on the palm between the pads (x 83, y 19.9, z 17.5).
 - **Edge distance** of the wr_horn / gr_horn holes (25T horn's 14 mm circle) and the wr_servo / gr_servo tab pilots
   (MG996R tab pattern): the purchased parts' hole patterns force them (ENGINEERING.md s7 allows it); the walls are the old
   gripper's and the arm forearm's, which are proven on the arm.
-- **Sharp inside corners kept on purpose:** the jaw-root corner of each finger (the pad's square root end sits in it);
-  the pad's tongue-to-plate corner (the jaw floor's edge sits in it; TPU, no crack risk); the cover's member ends 0.2 mm
-  beside the palm posts (a fillet there would rest on the post's top edge). OCC cannot fit r 1 into three short palm
-  corners (15 mm in all: where the root beam's front face and the keel wall meet beside the pedestal, and one inside the
-  wrist-pivot boss) and two short cover corners where a deep member meets a boss; none is in a hot zone of the FEA.
-  The far web's root (next to the servo window) is filleted before the window is cut, so the mesh stays valid.
+- **Sharp inside corners kept, and why:** the pad's tongue-to-plate corner (the jaw floor's edge sits in it; TPU, no
+  crack risk); the apex of the teardrop roof of the palm's wrist-pivot insert hole (an interface print feature; the
+  engine exempts screw features, not pin features); two short corners where the palm's root beam top meets cover post A
+  (measured in palm_fea: 0.5 and 0.65 MPa within 2.5 mm, 3-4 % of allowable); one 10 mm corner where the cover's
+  diagonal member runs into the idler boss beside a window's round end (4.6 MPa locally, 19 % of allowable). Two short
+  cover corners at the members' lower ends take r 0.5 only. The engine's "highly stressed zone" tag is per 16 mm cell;
+  the local values above are from the FEA field at the corner itself.
+- **How corners are rounded:** OCC fillets after the interface cuts (kerf's own corner detector picks them,
+  parts/detail.py). Near the servo window and the idler pedestal, and along the cover's post B - idler member, a fillet
+  either fails or leaves surfaces the FEA mesher cannot close; there the r 1 radii are built in as quarter-round strips
+  (the same geometry a fillet gives). The palm's root beam stops 1.5 mm before the servo window to leave room for its
+  radius, and the cover's deep members stop 1.2 mm short of the palm posts so their root radii clear the posts' edges.
 - **palm needs support (~9 %):** the palm plate's underside inside the servo bay (between the keel and the far web).
   Printed with claw +Y up (plates and webs vertical, posts, walls and pedestal growing up) every other face is
   self-supporting; any other orientation puts the wrist discs, posts or pedestal on overhangs. Use tree supports from
