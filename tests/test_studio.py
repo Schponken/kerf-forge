@@ -359,7 +359,7 @@ def test_studio_page_shows_numbers_units_effects_history_and_export(server, tmp_
     out = _browser(server + "/", """
 await p.waitForSelector('.pitem'); await p.waitForSelector('#tabs'); await p.click('text=Servo test rig');
 await p.waitForFunction(() => (document.querySelector('.head h1') || {}).textContent === 'Servo test rig');
-out.export = await p.getAttribute('a.btn[download]', 'href');
+out.export = await p.getAttribute('a[download][href^="/export/"]', 'href');
 await p.click('.tab[data-t=tune]'); await p.waitForSelector('.param');
 out.units = await p.$$eval('.param .unit', e => e.length); out.affects = await p.$$eval('.param .affects', e => e.length);
 await p.click('.tab[data-t=history]'); await p.waitForTimeout(300);
@@ -450,7 +450,7 @@ await p.waitForSelector('.pitem'); await p.click('#newbtn'); await p.waitForSele
 out.intake = await p.$$eval('.igrid label', e => e.length);
 await p.evaluate(() => showQuote('grip')); await p.waitForSelector('.qopt');
 out.opts = await p.$$eval('.qopt b', e => e.map(x => x.textContent)); out.rec = await p.$eval('.qopt.rec b', e => e.textContent);
-await p.click('#partsbtn'); await p.waitForSelector('#invadd');
+await p.click('#nav_parts'); await p.waitForSelector('#invadd');
 await p.fill('#invadd', 'servos.SG90'); await p.fill('#invqty', '2'); await p.click('text=Add');
 await p.click('button.primary:has-text("Save")'); await p.waitForTimeout(500);""", tmp_path)
     assert out["errs"] == [] and out["intake"] == 6, out

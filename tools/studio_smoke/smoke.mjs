@@ -26,7 +26,7 @@ await page.click('#edgo'); await page.waitForSelector('#mc.open');
 await page.waitForFunction(() => document.querySelector('#tricon').textContent === '✓', null, { timeout: 30000 });
 await page.screenshot({ path: `${prefix}-edit-done.png` });
 // duplicate with no change
-await page.click('button:has-text("⧉ Duplicate")'); await page.waitForSelector('#modal.open');
+await page.waitForTimeout(4200); await page.click('button:has-text("More ▾")'); await page.click('button:has-text("⧉ Duplicate")'); await page.waitForSelector('#modal.open');
 await page.fill('#dname', 'zz_studio_test_copy'); await page.screenshot({ path: `${prefix}-dup-modal.png` });
 await page.click('#dgo'); await page.waitForFunction(() => document.querySelector('.head h1') && document.querySelector('.head h1').textContent.includes('(copy)'), null, { timeout: 15000 });
 log('duplicated:', await page.textContent('.head h1'));
@@ -46,5 +46,5 @@ log('trial banner:', (await page.textContent('.banner')).replace(/\s+/g, ' '));
 await page.click('#bellbtn'); await page.waitForTimeout(300); log('bell after click:', await page.textContent('#bellbtn'));
 await page.click('#bellbtn'); await page.waitForTimeout(300); log('bell after 2nd click:', await page.textContent('#bellbtn'));
 // grid
-await page.click('text=▦ All projects'); await page.waitForTimeout(1200); await page.screenshot({ path: `${prefix}-grid.png` });
+await page.click('#nav_grid'); await page.waitForTimeout(1200); await page.screenshot({ path: `${prefix}-grid.png` });
 log('errors', JSON.stringify(errors)); await browser.close();

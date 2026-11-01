@@ -85,6 +85,16 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .prow:hover b{color:var(--accent)}
 .prow .v{font-variant-numeric:tabular-nums;color:var(--mute)}
 .views button[hidden]{display:none}
+/* the view menu: camera angles and display toggles in one place, so the bar shows only View, Cut and Stress */
+.vwrap{position:relative}
+.vmenu{position:absolute;top:calc(100% + 6px);left:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 8px 28px rgba(0,0,0,.18);display:none;z-index:4;min-width:190px}
+.vmenu.open{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.vmenu button{width:100%}
+.vmenu .wide{grid-column:1/-1}
+.vmenu hr{grid-column:1/-1;border:0;border-top:1px solid var(--line);margin:2px 0}
+/* inside Kerf Studio: Studio shows the title, status, checks and print info itself */
+.embedded body>header{display:none}
+.embedded .tabs [data-tab="print"],.embedded .tabs [data-tab="checks"]{display:none}
 /* build it step by step */
 #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
 .lab{position:absolute;transform:translate(10px,-50%);white-space:nowrap;font-size:12px;padding:3px 8px 3px 7px;border-radius:7px;background:var(--panel);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.18);transition:opacity .25s}
@@ -130,10 +140,11 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 <main>
   <div id="stage">
     <div class="views">
-      <button data-view="iso">Iso</button><button data-view="front">Front</button><button data-view="right">Right</button>
-      <button data-view="top">Top</button><button data-view="fit">Fit</button>
-      <button id="edges" class="on" title="Outline edges">Edges</button>
-      <button id="keep" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button>
+      <span class="vwrap"><button id="viewb" title="Camera angle and what to show">View ▾</button>
+        <span class="vmenu" id="vmenu"><button data-view="iso">Iso</button><button data-view="front">Front</button><button data-view="right">Right</button>
+          <button data-view="top">Top</button><button data-view="fit" class="wide">Fit to window</button><hr>
+          <button id="edges" class="on wide" title="Outline edges">Edges</button>
+          <button id="keep" class="wide" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button></span></span>
       <button id="cutb" title="Cut the model open to see inside (walls, channels, inserts)">Cut</button>
       <button id="stressb" title="Colour each strength-checked part by how hard its material works" hidden>Stress</button>
     </div>
@@ -151,8 +162,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   </div>
   <aside>
     <nav class="tabs">
-      <button data-tab="motion" class="on">Motion</button><button data-tab="asm" id="tabAsm" hidden>Build it</button><button data-tab="parts">Parts</button>
-      <button data-tab="bom">Parts list</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button><button data-tab="insp" id="tabInsp" hidden>Inspect</button>
+      <button data-tab="motion" class="on">Move</button><button data-tab="asm" id="tabAsm" hidden>Build it</button><button data-tab="parts">Parts</button>
+      <button data-tab="bom">Shopping list</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button><button data-tab="insp" id="tabInsp" hidden>Inspect</button>
     </nav>
     <section class="pane on" id="motion"></section>
     <section class="pane" id="asm"></section>
@@ -168,6 +179,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 <script>
 (() => {
 const T = window.KV3, D = JSON.parse(document.getElementById('kerf-data').textContent);
+if (window.parent !== window) document.documentElement.classList.add('embedded');
 const R = D.report, $ = id => document.getElementById(id), esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 // Inside Kerf Studio (same origin) the page can hand an edit request straight to Claude Code ("Do it").
@@ -291,7 +303,10 @@ function fit() {
   const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.08, dir = cam.position.clone().sub(ctl.target).normalize();
   ctl.target.copy(c); cam.position.copy(c).add(dir.multiplyScalar(d)); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix(); ctl.update(); redraw();
 }
-document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { if (b.dataset.view !== 'fit') view(b.dataset.view); fit(); });
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { if (b.dataset.view !== 'fit') view(b.dataset.view); fit(); $('vmenu').classList.remove('open'); });
+$('viewb').onclick = e => { e.stopPropagation(); $('vmenu').classList.toggle('open'); };
+$('vmenu').onclick = e => e.stopPropagation();
+document.addEventListener('click', () => $('vmenu').classList.remove('open'));
 $('edges').onclick = e => { e.target.classList.toggle('on'); for (const g of groups.values()) g.userData.edges.visible = e.target.classList.contains('on'); redraw(); };
 $('keep').onclick = e => { e.target.classList.toggle('on'); applyVis(); renderParts(); };
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(h, 1); cam.updateProjectionMatrix(); redraw(); }

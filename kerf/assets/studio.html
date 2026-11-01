@@ -31,7 +31,7 @@ button small{opacity:.75;font-weight:500;margin-left:4px}
 .intake{margin-top:12px}.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:10px 0}
 .igrid label,.intake>label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
 .qopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.qopt.rec{border-color:var(--accent)}
-#partsbtn{margin:0 14px 10px;width:calc(100% - 28px)}
+#partsbtn{display:none}
 .param .affects{margin-top:2px;opacity:.85}
 button:active{transform:scale(.97)}
 button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:var(--accent-ink);font-weight:650}
@@ -79,7 +79,7 @@ a{color:var(--info)}
 #main{flex:1;min-width:0;height:100%;overflow:auto;position:relative;
   background:radial-gradient(900px 420px at 85% -10%,var(--glow),transparent 60%),
              linear-gradient(var(--grid) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/28px 28px,var(--bg)}
-.head{padding:24px 30px 0;animation:fadeUp .4s both}
+.head{padding:24px 30px 0;animation:fadeUp .4s both;position:relative;z-index:5}
 .head h1{margin:0 0 4px;font-size:24px;letter-spacing:-.2px}
 .desc{color:var(--muted);max-width:920px;margin:0 0 12px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
@@ -260,6 +260,29 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .sidebtns{display:flex;gap:6px;margin:0 14px 8px}
 .sidebtns button{flex:1;padding:6px 8px;font-size:12.5px}
 .bell.off{opacity:.45}
+/* calmer layout (2026-11-01): one primary action, the rest in a menu; facts as one quiet line */
+.titlerow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.titlerow h1{margin:0}
+.desc.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:920px;cursor:pointer}
+.desc.one.open{white-space:normal}
+.facts{color:var(--muted);font-size:13px;margin:-4px 0 14px;display:flex;gap:6px 14px;flex-wrap:wrap}
+.facts b{color:var(--ink);font-weight:620}
+.pill{font-size:12px;font-weight:650;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.bad{background:var(--bad-bg);color:var(--bad)}.pill.info{background:var(--info-bg);color:var(--info)}.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.more{position:relative;display:inline-block}
+.menu{position:absolute;top:calc(100% + 6px);left:0;min-width:250px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;z-index:8;display:none}
+.menu.open{display:block;animation:popIn .18s both}
+.menu button,.menu a{display:flex;width:100%;gap:10px;align-items:center;text-align:left;border:0;background:none;border-radius:8px;padding:8px 10px;color:var(--ink);text-decoration:none;font:inherit;white-space:nowrap}
+.menu button:hover,.menu a:hover{background:var(--soft)}
+.menu button:disabled{opacity:.4}
+.menu .sub{color:var(--muted);font-size:12px;margin-left:auto}
+.menu hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
+.sidenav{display:flex;gap:4px;margin:0 10px 8px}
+.sidenav button{flex:1;border:0;background:none;color:var(--muted);padding:7px 6px;border-radius:8px;font-size:13px}
+.sidenav button:hover,.sidenav button.on{background:var(--soft);color:var(--ink)}
+#jobs h4{display:flex;align-items:center;justify-content:space-between}
+#jobs h4 button{border:0;background:none;padding:0 2px;font-size:13px}
+#buildall{display:none!important}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{50%{opacity:.35}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -285,18 +308,18 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
     <button class="themebtn" onclick="quitApp()" title="Quit Kerf Studio" style="margin-left:4px">⏻</button>
   </div>
   <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
-  <button id="partsbtn" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button>
-  <div class="sidebtns"><button onclick="showGrid()" title="Every project as a big card">▦ All projects</button><button class="bell" id="bellbtn" onclick="toggleBell()" title="Notify me when a long job finishes" style="flex:0 0 auto">🔔</button></div>
-  <input id="search" placeholder="Search projects" oninput="renderList()">
+  <nav class="sidenav"><button id="nav_grid" onclick="showGrid()" title="Every project as a big card">▦ All projects</button>
+    <button id="nav_parts" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button></nav>
+  <input id="search" placeholder="Search projects" oninput="renderList()" style="display:none">
   <div id="plist"></div>
   <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
-  <div id="jobs"><h4>Activity</h4><div id="joblist" class="note">Nothing running.</div></div>
+  <div id="jobs"><h4>Activity <button class="bell" id="bellbtn" onclick="toggleBell()" title="Notify me when a long job finishes">🔔</button></h4><div id="joblist" class="note">Nothing running.</div></div>
 </aside>
 <main id="main"><div class="body"><div class="sk" style="height:34px;width:40%;margin-bottom:12px"></div><div class="sk" style="height:16px;width:70%;margin-bottom:24px"></div><div class="sk" style="height:420px"></div></div></main>
 
 <div id="mc"><div class="scan"></div>
   <div class="mch"><div class="tring" id="tring"><svg viewBox="0 0 40 40" width="38" height="38"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" cx="20" cy="20" r="16" pathLength="100"/></svg><i id="tricon"></i></div>
-    <div class="t"><b id="mctitle"></b><span id="mcsub"></span></div>
+    <div class="t" onclick="toggleMin()" style="cursor:pointer" title="Fold / unfold"><b id="mctitle"></b><span id="mcsub"></span></div>
     <button id="mcstop" onclick="stopJob()">Stop</button><button onclick="toggleMin()" title="Minimise">▁</button><button onclick="closeMc()" title="Close">✕</button></div>
   <div class="pbar"><i id="pbar"></i></div>
   <div class="mcbody" id="mcbody"></div>
@@ -377,7 +400,8 @@ async function loadProjects() {
 }
 function renderList() {
   const unbuilt = S.projects.filter(p => !p.built).length;
-  $("#buildall").style.display = unbuilt ? "" : "none";
+  $("#search").style.display = S.projects.length > 6 ? "" : "none";
+  document.querySelectorAll(".sidenav button").forEach(b => b.classList.toggle("on", (b.id === "nav_grid" && S.grid) || (b.id === "nav_parts" && S.parts)));
   const est = S.projects.filter(p => !p.built).reduce((a, p) => a + (p.build_s || 0), 0);
   $("#buildall button").textContent = `⚙ Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}${est ? " (" + about(est) + ")" : ""}`;
   const q = ($("#search").value || "").toLowerCase(), first = !S.listed; S.listed = true;
@@ -390,7 +414,7 @@ function renderList() {
 }
 
 async function select(name, keepTab) {
-  S.sel = name; S.newOpen = false; S.grid = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
+  S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
   let d;
@@ -401,37 +425,51 @@ async function select(name, keepTab) {
 }
 async function refreshDetail() { if (S.sel && !S.newOpen) { const name = S.sel; try { const d = await api(`/api/project/${name}`); if (name === S.sel) { S.detail = d; renderProject(); } } catch (e) {} } }
 
+function statusPill(p) {
+  if (p.running && p.running.length) return `<span class="pill info">● working…</span>`;
+  if (!p.built) return `<span class="pill">not built yet</span>`;
+  return p.ok ? `<span class="pill ok">✓ ready to print</span>` : `<span class="pill bad">${p.problems} problem${p.problems == 1 ? "" : "s"} to fix</span>`;
+}
 function renderProject() {
   const d = S.detail; if (!d) return;
   const plates = d.files.some(f => f.startsWith("out/plates/") && f.endsWith(".3mf"));
-  const tabs = [["model","3D model"],["tune","Tune"],["results","Checks"],["files","Files"],["docs","Docs"],["history","History"]];
+  const tabs = [["model","3D model"],["tune","Tune"],["results","Checks"],["files","Files & guides"],["history","History"]];
   const n = d.summary_numbers, e = d.estimate || {};
+  const facts = [];
+  if (n && n.cost_usd != null) facts.push(`<span title="Priced shopping list per piece used; whole packs cost $${fmt(n.packs_usd)}"><b>$${fmt(n.cost_usd)}</b> parts${n.unpriced ? ` (+${n.unpriced} unpriced)` : ""}</span>`);
+  if (n && n.device_g != null) facts.push(`<span title="Everything mounted on the device"><b>${fmt(n.device_g)} g</b></span>`);
+  if (n && n.print_s) facts.push(`<span title="${n.print_sliced ? "sliced by Bambu Studio / OrcaSlicer" : "lower bound; slice for the real time (PRINT_SETTINGS.md)"}"><b>${n.print_sliced ? "" : "≥ "}${n.print_s >= 3600 ? (n.print_s / 3600).toFixed(1) + " h" : Math.round(n.print_s / 60) + " min"}</b> printing on ${n.plates} plate${n.plates == 1 ? "" : "s"}</span>`);
+  if (d.built) facts.push(d.review && d.review.ok ? `<span>reviewed ✓</span>` : `<span title="${esc((d.review || {}).why || "")}">not reviewed yet</span>`);
+  if (d.stale) facts.push(`<span style="color:var(--warn)">changed since the last build</span>`);
   $("#main").innerHTML = `
     <div class="head">
-      <h1>${esc(d.title)}</h1>
-      <p class="desc">${esc(d.description)}</p>
-      <div class="chips">${statusChips(d)}${d.report && d.report.seconds ? `<span class="chip">last run ${Math.round(d.report.seconds)} s</span>` : ""}</div>
-      ${n ? `<div class="chips">${n.cost_usd != null ? `<span class="chip" title="Priced shopping list (bom.md), per piece used; whole packs cost $${fmt(n.packs_usd)}">$${fmt(n.cost_usd)}${n.unpriced ? ` + ${n.unpriced} unpriced` : ""}</span>` : ""}
-        ${n.filament_g != null ? `<span class="chip" title="Printed parts, estimated">${fmt(n.filament_g)} g filament · ${n.print_parts} part${n.print_parts == 1 ? "" : "s"}</span>` : ""}
-        ${n.device_g != null ? `<span class="chip" title="Everything mounted on the device">device ${fmt(n.device_g)} g</span>` : ""}
-        ${n.print_s ? `<span class="chip" title="${n.print_sliced ? "sliced by Bambu Studio / OrcaSlicer" : "lower bound: plastic at the filament's max flow; slice for the real time (PRINT_SETTINGS.md)"}">${n.print_sliced ? "" : "≥ "}${n.print_s >= 3600 ? (n.print_s / 3600).toFixed(1) + " h" : Math.round(n.print_s / 60) + " min"} printing · ${n.plates} plate${n.plates == 1 ? "" : "s"}</span>` : ""}</div>` : ""}
+      <div class="titlerow"><h1>${esc(d.title)}</h1>${statusPill(d)}</div>
+      ${d.description ? `<p class="desc one" title="Click to show it all" onclick="this.classList.toggle('open')">${esc(d.description)}</p>` : ""}
+      ${facts.length ? `<div class="facts">${facts.join("<span>·</span>")}</div>` : ""}
       <div class="actions">
-        <button class="primary" onclick="run('build')" title="Every check, then STEP/STL/3MF plates, BOM, assembly guide and renders">⚙ Build${e.build ? ` <small>${about(e.build)}</small>` : ""}</button>
-        <button onclick="run('check')" title="Every check incl. motion sweeps and strength, no files">✓ Check${e.check ? ` <small>${about(e.check)}</small>` : ""}</button>
-        <button onclick="run('quick')" title="Fast check without motion sweeps and FEA">⚡ Quick check</button>
-        <button onclick="openIn('plates')" ${plates ? "" : "disabled"} title="Open the print plates in Bambu Studio">▦ Open plates in Bambu Studio</button>
-        <button onclick="openIn('folder')">📁 Show files</button>
-        <a class="btn" href="/export/${d.name}.zip" download title="Plates, parts, STEP, BOM, guides, drawings, bring-up program and the design files in one zip">⤓ Export zip</a>
+        <button class="primary" onclick="run('build')" title="Every check, then print plates, shopping list, assembly guide and the 3D viewer">⚙ Build${e.build ? ` <small>${about(e.build)}</small>` : ""}</button>
         <button onclick="openEdit('', {})" title="Describe a change; Claude Code makes it, re-checks, rebuilds and gets it reviewed">✎ Change something</button>
-        <button onclick="openDuplicate()" title="Copy this design under a new name, optionally with a change">⧉ Duplicate</button>
+        <span class="more"><button onclick="toggleMenu(event)" aria-haspopup="true">More ▾</button>
+          <div class="menu" id="moremenu">
+            <button onclick="run('check')">✓ Check everything <span class="sub">no files${e.check ? " · " + about(e.check) : ""}</span></button>
+            <button onclick="run('quick')">⚡ Quick check <span class="sub">no motion or strength</span></button>
+            <hr>
+            <button onclick="openIn('plates')" ${plates ? "" : "disabled"}>▦ Open plates in Bambu Studio</button>
+            <button onclick="openIn('folder')">📁 Show the files</button>
+            <a href="/export/${d.name}.zip" download>⤓ Download everything (zip)</a>
+            <hr>
+            <button onclick="openDuplicate()">⧉ Duplicate…</button>
+          </div></span>
       </div>
     </div>
-    <nav class="tabs" id="tabs">${tabs.map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}<span class="uline" id="uline"></span></nav>
+    <nav class="tabs" id="tabs">${tabs.map(([k, l]) => `<button class="tab ${S.tab === k || (k === "files" && S.tab === "docs") ? "sel" : ""}" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}<span class="uline" id="uline"></span></nav>
     <div class="body" id="tabbody"></div>`;
   moveUline(); renderTab();
 }
-function moveUline() { const b = document.querySelector(`.tab[data-t="${S.tab}"]`), u = $("#uline"); if (b && u) { u.style.left = b.offsetLeft + "px"; u.style.width = b.offsetWidth + "px"; } }
-function setTab(t) { S.tab = t; document.querySelectorAll(".tab").forEach(b => b.classList.toggle("sel", b.dataset.t === t)); moveUline(); renderTab(); }
+function toggleMenu(ev) { ev.stopPropagation(); const m = ev.currentTarget.nextElementSibling; m.classList.toggle("open"); }
+addEventListener("click", () => document.querySelectorAll(".menu.open").forEach(m => m.classList.remove("open")));
+function moveUline() { const b = document.querySelector(`.tab[data-t="${S.tab === "docs" ? "files" : S.tab}"]`), u = $("#uline"); if (b && u) { u.style.left = b.offsetLeft + "px"; u.style.width = b.offsetWidth + "px"; } }
+function setTab(t) { S.tab = t; document.querySelectorAll(".tab").forEach(b => b.classList.toggle("sel", b.dataset.t === (t === "docs" ? "files" : t))); moveUline(); renderTab(); }
 
 function notBuilt(what) {
   return `<div class="card empty"><b>Not built yet</b>${what}<br><br><button class="primary" onclick="run('build')">⚙ Build now</button>
@@ -443,11 +481,10 @@ function renderTab() {
   el.style.animation = "none"; el.offsetHeight; el.style.animation = "";
   if (t === "model") {
     const vers = (d.history || []).filter(h => h.geom && h.fingerprint !== (d.report || {}).fingerprint);
-    el.innerHTML = d.viewer ? `<div class="cmpbar"><span class="note">Compare with</span>
-        <select id="cmpsel" onchange="compareWith(this.value)"><option value="">nothing</option>${vers.map(h => `<option value="${h.stamp}">${esc(new Date(h.time * 1000).toLocaleString())}${h.ok ? "" : " (had problems)"}</option>`).join("")}</select>
-        <span class="note" id="cmpnote">${vers.length ? "a past build, drawn as a ghost with the changes coloured" : "past builds appear here once there is more than one version"}</span></div>
-      <iframe class="viewer" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>
-      <p class="note">Drag to orbit, scroll to zoom. <b>Build it</b> walks through the assembly step by step; <b>Cut</b> opens the model up; <b>Stress</b> colours the strength-checked parts. Click a face to change it.</p>` : notBuilt("The 3D model appears here after the first build.");
+    el.innerHTML = d.viewer ? `${vers.length ? `<div class="cmpbar"><span class="note">Compare with an earlier build</span>
+        <select id="cmpsel" onchange="compareWith(this.value)"><option value="">—</option>${vers.map(h => `<option value="${h.stamp}">${esc(new Date(h.time * 1000).toLocaleString())}${h.ok ? "" : " (had problems)"}</option>`).join("")}</select>
+        <span class="note" id="cmpnote"></span></div>` : ""}
+      <iframe class="viewer" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>` : notBuilt("The 3D model appears here after the first build.");
   } else if (t === "tune") renderTune(el);
   else if (t === "results") renderResults(el, d.report);
   else if (t === "files") renderFiles(el);
@@ -457,7 +494,7 @@ function renderTab() {
 
 /* ---------- My parts (catalog/inventory.json) */
 async function showParts() {
-  S.newOpen = true; S.sel = null; S.grid = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.sel = null; S.grid = false; S.parts = true; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   const d = await api("/api/inventory"); S.inv = {...d.items}; S.invKeys = d.keys;
   renderParts();
 }
@@ -651,7 +688,10 @@ function renderFiles(el) {
   const d = S.detail, f = d.files;
   if (!f.length) { el.innerHTML = notBuilt("Print plates, STL/3MF parts, drawings, STEP and BOM appear here."); return; }
   const group = (title, pred, icon) => { const g = f.filter(pred); return g.length ? `<h3>${title}</h3>${g.map(x => `<a class="f" href="${fileUrl(d.name, x)}" download>${icon} ${esc(x.split("/").pop())}</a>`).join("")}` : ""; };
+  const DOCN = {"DESIGN.md": "Design notes", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring",
+                "out/firmware/BRINGUP.md": "First power-up", "out/bom.md": "Shopping list", "out/plates/PRINT_SETTINGS.md": "Print settings"};
   el.innerHTML = `<div class="files">
+    ${d.docs.length ? `<h3>Guides (read here)</h3>${d.docs.map(x => `<a class="f" href="#" onclick="S.doc='${x}';setTab('docs');return false">☰ ${DOCN[x] || x}</a>`).join("")}` : ""}
     ${group("Print plates (open in Bambu Studio)", x => x.startsWith("out/plates/") && x.endsWith(".3mf"), "▦")}
     ${group("Single parts", x => x.startsWith("out/parts/"), "◧")}
     ${group("Engineering drawings (PDF)", x => x.startsWith("out/drawings/") && x.endsWith(".pdf"), "📐")}
@@ -670,7 +710,7 @@ async function renderDocs(el) {
   S.doc = S.doc && d.docs.includes(S.doc) ? S.doc : d.docs[0];
   const names = {"DESIGN.md": "Design", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring", "out/firmware/BRINGUP.md": "Bring-up",
                  "out/bom.md": "Shopping list", "out/plates/PRINT_SETTINGS.md": "Print settings"};
-  el.innerHTML = `<div class="docnav">${d.docs.map(x => `<button class="${x === S.doc ? "primary" : ""}" onclick="S.doc='${x}';renderTab()">${names[x] || x}</button>`).join("")}</div><div class="card doc" id="docbody"><div class="sk" style="height:300px"></div></div>`;
+  el.innerHTML = `<div class="docnav"><button onclick="setTab('files')">← Files & guides</button>${d.docs.map(x => `<button class="${x === S.doc ? "primary" : ""}" onclick="S.doc='${x}';renderTab()">${names[x] || x}</button>`).join("")}</div><div class="card doc" id="docbody"><div class="sk" style="height:300px"></div></div>`;
   const txt = await (await fetch(fileUrl(d.name, S.doc))).text();
   const dir = S.doc.includes("/") ? S.doc.slice(0, S.doc.lastIndexOf("/") + 1) : "";
   let html = window.marked ? marked.parse(txt) : `<pre>${esc(txt)}</pre>`;
@@ -800,6 +840,10 @@ async function finished(j) {
   else { toast(j.label, j.state === "stopped" ? "Stopped." : st.fin ? `${st.fin.problems} problem(s) to fix.` : "Finished with an error; see the log.", "bad");
     const mc = $("#mc"); mc.classList.add("shake"); setTimeout(() => mc.classList.remove("shake"), 500); }
   if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) { chime(ok); flashTitle(ok ? `✓ ${j.label}` : `✕ ${j.label}`); }
+  // done: fold the panel down to its title bar after a moment, so it stops covering the page (click to reopen)
+  const fold = (k = 0) => { const mc = $("#mc"); if (S.job !== j.id || !mc.classList.contains("open")) return;
+    if (mc.matches(":hover") && k < 20) return setTimeout(() => fold(k + 1), 1500); mc.classList.add("min"); };
+  setTimeout(fold, 3500);
   if (j.kind === "trial") S.tab = "tune";
   if (j.kind === "quote" && ok) { if (!S.newOpen) showNew(); if ($("#nname") && !$("#nname").value) { $("#nname").value = j.project; $("#nname").dataset.touched = 1; } await showQuote(j.project); return; }
   await loadProjects();
@@ -809,7 +853,8 @@ async function finished(j) {
 async function pollJobs() {
   try {
     const d = await api("/api/jobs");
-    $("#joblist").innerHTML = d.jobs.length ? d.jobs.slice(0, 12).map(j => `<div class="job" onclick="watch('${j.id}')" title="${esc(j.tail[0] || "")}">
+    const J = [...d.jobs.filter(j => j.state === "running"), ...d.jobs.filter(j => j.state !== "running").slice(0, 3)];
+    $("#joblist").innerHTML = J.length ? J.map(j => `<div class="job" onclick="watch('${j.id}')" title="${esc(j.tail[0] || "")}">
       <span class="dot ${j.state}"></span><span class="lab">${esc(j.label)}</span><span class="note">${mmss(j.seconds)}</span></div>`).join("") : "Nothing running.";
   } catch (e) {}
 }
@@ -843,7 +888,7 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
-  S.newOpen = true; S.sel = null; S.grid = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.sel = null; S.grid = false; S.parts = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
       <div id="ready"></div>
@@ -1045,9 +1090,11 @@ async function doDuplicate() {
 
 /* ---------- all projects as big cards */
 function showGrid() {
-  const first = !S.grid; S.grid = true; S.sel = null; S.newOpen = false; renderList();
+  const first = !S.grid; S.grid = true; S.parts = false; S.sel = null; S.newOpen = false; renderList();
   const P = S.projects;
-  $("#main").innerHTML = `<div class="head"><h1>All projects</h1><p class="desc">${P.length} design${P.length == 1 ? "" : "s"}. Click one to open it.</p></div>
+  const unbuilt = P.filter(p => !p.built).length;
+  $("#main").innerHTML = `<div class="head"><h1>All projects</h1><p class="desc">${P.length} design${P.length == 1 ? "" : "s"}. Click one to open it.</p>
+      ${unbuilt ? `<div class="actions"><button onclick="buildAll()">⚙ Build the ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}</button></div>` : ""}</div>
     <div class="body"><div class="pgrid">${P.map((p, i) => {
       const run = p.running && p.running.length, st = run ? `<span class="chip info">● running</span>` : !p.built ? `<span class="chip">not built</span>` : p.ok ? `<span class="chip ok">✓ checks pass</span>` : `<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`;
       return `<div class="pcard" style="${first ? `animation-delay:${i * 40}ms` : "animation:none"}" onclick="select('${p.name}')">
