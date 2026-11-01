@@ -152,6 +152,17 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [ ] `robotic_gripper_desk` — robotic gripper for the desk robot arm (Studio request 2026-10-31): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS
 - [ ] `robotic_gripper_claw` — geared two-finger claw for the desk robot arm (Studio request 2026-10-31, "a robotic gripper claw"): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, tests/test_claw_fits_arm.py
 
+## Studio + viewer features (Spencer's picks, 2026-11-01)
+- [ ] Viewer cut-away: a slider slices the model on X / Y / Z (flip side), cut faces drawn solid so walls, channels and inserts read as a section; works with explode, joints and every other mode
+- [ ] Viewer stress colours: each FEA-checked part coloured on the 3D model by how much of its allowed stress it uses (worst load case), legend, value under the pointer; parts without FEA say so
+- [ ] Studio "Do it": the viewer's edit requests (parameter change or described change) start a Claude Code edit job from Studio instead of being copied; a general "Change something" box too; scoped job: the stop gate judges a Studio job on its own project
+- [ ] Before/after compare: the previous version (any History build, or the saved design next to a Try) drawn as a see-through ghost over the current one, changed areas coloured by how far they moved, per-part change list
+- [ ] Material picker per printed part (catalog materials, with their strength / heat / density): Try re-runs strength, weight and cost with the new materials; Save writes them into project.yaml
+- [ ] Duplicate / remix a project: copy the design (sources only) under a new name, optionally with a described change that starts a Claude Code edit job on the copy
+- [ ] Project thumbnails: a framed picture of the 3D model on every project card (captured from the viewer, kept per geometry fingerprint), and an all-projects grid with big cards
+- [ ] Done notifications: a Mac notification (and Linux notify-send) plus an in-page chime when a long job finishes; one switch turns both off
+- [ ] Step-by-step assembly animation in the viewer: parts fly in along the way they go on, screws turn into their holes, moving joints demonstrate their travel, the camera frames each step, the ASSEMBLY.md text for the step, Next / Back / Play, keyboard, a still-to-come ghost, per-step done ticks
+
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
