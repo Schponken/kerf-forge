@@ -5,6 +5,7 @@ description: >
   directly by two MG90S servos (free steel pins on the opposite sides), and three splayed printed legs.
 printer: Bambu Lab A2L
 supports: allowed
+style: {radii: [1.0, 2.0, 3.0], edge_break: 0.5}   # 1 every inside corner and pad/arm roots, 2 leg roots, 3 lug/bridge roots on the disc; 0.5 bed chamfer
 params:
   ring_r_in: {value: 72, unit: "mm", min: 70, max: 80, step: 0.5, label: Gimbal outer ring inner radius (props are 65.9)}
   ring_r_out: {value: 82, unit: "mm", min: 76, max: 88, step: 0.5, label: Gimbal outer ring outer radius}

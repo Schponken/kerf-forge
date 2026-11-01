@@ -100,6 +100,18 @@ directions and tune on a tether (Risks).
 | ring_top | tube caps, battery tray with strap slots beside the pack, two tie slots for the XT60 pigtail | upside down | x, y |
 | leg_1..3 | splayed legs to r = 150 mm, ground 85 mm under the pivot; pad, strut and foot one 14 mm width (whole side face on the bed), 2 mm root fillet | on its side | x, z |
 
+Inside corners: every sharp inside corner kerf reports is rounded r 1 (r 0.5 where 1 does not fit) by
+kerf.features.fillet_inside (boolean cove fillets), or declared sharp with its reason (report.json `sharp_kept`):
+corners under a ceiling as printed (ring_low prints upside down: a fillet there would overhang), the gimbal_outer
+−Y pin pad's 0.2 mm sliver step, and two ring_low corners OCC cannot round at all (fillet and cove both fail), off
+the yoke_fea / lug_fea hot zones.
+Overbuilt (kerf stress map): motor_hub uses at most about a quarter of its allowable stress in gimbal_fea. Its
+size is set by what it must hold square, not by strength: the 14 mm deep −Y arm is the pitch dowel's bearing
+length, the +Y fork bars carry the horn lug 10 mm thick for the horn's 4 screws, and the disc is the motor's bolt
+pattern plus the motor_plate's three inserts. The idle volume the map shows is the arms' middle; pocketing it would
+save about 1 g on a 781 g vehicle (T/W 2.08 → 2.08) while making the pitch axis less stiff, which a thrust-vectoring
+gimbal needs more than the gram.
+
 Detail (ENGINEERING.md s5): 0.5 mm chamfer on every first-layer edge (`features.bed_chamfer`; 14 gimbal_outer edges
 that OCC cannot chamfer are listed as a build warning: deburr them), 3 mm fillets where the ring_low lugs and bridges
 leave the disc, 1 mm where the motor_hub arms leave the disc and the gimbal_outer pads stand off the ring, 2 mm at the
@@ -113,6 +125,15 @@ MPa), 25 % (legs), 50 % (hub, plate), 30 % (rings).
 Edge distance (holewall warnings, ENGINEERING.md s7): the MG90S tab taps sit 1.5 d from the servo window edge and the
 motor M3 counterbores 1.5 d from the motor's centre hole; both spacings are set by the purchased parts' hole patterns,
 and the walls round them still meet the minimum (no holewall problems).
+
+## Load → section
+| Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
+|---|---|---|---|
+| motor_hub | both motors' thrust, 2 x max = 66 N (gimbal_fea) at the motor seat → +Y fork to the pitch horn, −Y arm to the pitch dowel | bending of the two arms where they leave the disc | arms flush with the disc top, as deep as the disc, r 1 roots; motor seat counterbored for M3 x 5 |
+| gimbal_outer | the hub's 66 N in at the pitch servo pad (+Y) and pitch dowel pad (−Y) → round the ring → roll horn lug (+X) and roll dowel pad (−X) | ring bending between pivots 90° apart (outer_fea) | 17 mm tall flat annulus, every pad full ring height (one flat face on the bed), r 1 pad roots |
+| ring_low | the roll pivots' 66 N → +X servo plate (5 mm) and −X pin plate (8 mm) → bridges → disc → the three mast tubes (yoke_fea); a hard landing: each leg's screws pull 168 N on its lug (lug_fea) | yoke arm roots on the plate; the lug roots where the legs pry | 8 mm disc, 22 mm lugs with 10 x 10 T-ribs, r 3 where lugs and bridges leave the disc, 18 mm webs on the bridges, gussets under both yoke arms |
+| leg_1..3 | 3 g landing on two legs: 11.6 N up + 5.8 N sideways at each foot (leg_fea) → strut → pad screws | strut bending at the pad end | 14 mm wide strut, pad and foot one width (whole side face on the bed), r 2 root; stiffness governs (tip 2.97 of 3 mm) |
+| motor_plate, ring_mid, ring_top | bottom motor's thrust into the hub screws; tubes, stack and battery (light) | – | flat plates sized by their bolt patterns and tubes |
 
 ## Interfaces
 | A | B | How | Group |
