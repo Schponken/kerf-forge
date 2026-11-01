@@ -185,3 +185,62 @@ def test_a_window_still_open_cancels_the_goodbye():
         assert p.poll() is None                           # still running
     finally:
         p.kill()
+
+
+SPENCER_ERRORS = [   # verbatim from the failed run on Spencer's Mac, 2026-10-31
+    ('Ignoring 14 permissions.allow entries from .claude/settings.json: this workspace has not been trusted. Run Claude '
+     'Code interactively here once and accept the trust dialog, or set projects["/Users/x/kerf-forge"].'
+     'hasTrustDialogAccepted: true in /Users/x/.claude.json.', "trust"),
+    ("Failed to authenticate: OAuth session expired and could not be refreshed", "auth"),
+]
+
+
+@pytest.mark.parametrize("line,code", SPENCER_ERRORS)
+def test_claude_setup_problems_are_recognised(line, code):
+    out = studio._claude_lines(line)
+    assert out[0] == line
+    assert json.loads(out[-1][2:]) == {"k": "hint", "code": code}
+
+
+def test_failed_result_is_not_reported_as_success():
+    out = studio._claude_lines(json.dumps({"type": "result", "subtype": "success", "is_error": True, "duration_ms": 10}))
+    assert "stopped with an error" in out[0]
+
+
+def test_claude_ready_checks_install_trust_and_sign_in(tmp_path, monkeypatch):
+    import subprocess as sp
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path))
+    monkeypatch.setattr(studio, "claude_bin", lambda: None)
+    assert studio.claude_ready()["code"] == "missing"
+    monkeypatch.setattr(studio, "claude_bin", lambda: "/bin/claude")
+    assert studio.claude_ready()["code"] == "trust"                      # no config at all
+    (tmp_path / ".claude.json").write_text(json.dumps({"projects": {str(studio.ROOT.parent): {"hasTrustDialogAccepted": True}}}))
+    calls = []
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        return sp.CompletedProcess(cmd, 0, stdout=json.dumps({"loggedIn": False}), stderr="")
+    monkeypatch.setattr(studio.subprocess, "run", fake_run)
+    assert studio.claude_ready()["code"] == "auth"                       # trusted via a parent folder, not signed in
+    assert calls[-1][1:] == ["auth", "status", "--json"]                 # free status check, no model call
+    monkeypatch.setattr(studio.subprocess, "run", lambda cmd, **kw: sp.CompletedProcess(cmd, 0, stdout='{"loggedIn": true}', stderr=""))
+    assert studio.claude_ready()["ok"] is True
+
+
+def test_new_design_refuses_to_start_when_not_ready(monkeypatch):
+    monkeypatch.setattr(studio, "claude_ready", lambda: {"ok": False, "code": "auth", "why": "expired"})
+    with pytest.raises(studio.ClaudeNotReady):
+        studio.new_design("zz_never", "a test")
+    assert not (studio.PROJECTS / "zz_never").exists()
+
+
+def test_a_setup_problem_stops_the_job_as_failed(tmp_path):
+    import sys, time
+    script = tmp_path / "fake.py"
+    script.write_text("import time\nprint('Failed to authenticate: OAuth session expired and could not be refreshed', flush=True)\n"
+                      "time.sleep(30)\n")
+    j = studio.Job("design", "x", [sys.executable, str(script)], "t", parse=studio._claude_lines)
+    for _ in range(50):
+        if j.state != "running":
+            break
+        time.sleep(0.1)
+    assert j.state == "failed" and any(e.get("code") == "auth" for e in j.events)

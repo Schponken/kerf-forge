@@ -58,7 +58,14 @@ class Job:
                     continue
                 if ln.startswith("@@"):
                     try:
-                        self.events.append(json.loads(ln[2:]))
+                        ev = json.loads(ln[2:])
+                        self.events.append(ev)
+                        if ev.get("k") == "hint" and self.state == "running":   # can't succeed: stop now, say why
+                            self.state = "failed"
+                            try:
+                                os.killpg(self.proc.pid, 15)
+                            except Exception:  # noqa: BLE001
+                                self.proc.terminate()
                         continue
                     except Exception:  # noqa: BLE001
                         pass
@@ -261,8 +268,8 @@ def _claude_lines(raw: str):
     try:
         ev = json.loads(raw)
     except Exception:  # noqa: BLE001
-        return [raw]
-    out = []
+        ev = {}
+    out = [] if ev else [raw]
     t = ev.get("type")
     if t == "assistant":
         for c in ev.get("message", {}).get("content", []):
@@ -277,10 +284,87 @@ def _claude_lines(raw: str):
                 out.append("@@" + json.dumps({"k": "tool", "name": c.get("name"), "what": str(what).splitlines()[0][:140] if what else "",
                                                "phase": ph}))
     elif t == "result":
-        out.append(f"== finished: {ev.get('subtype', '')} in {round(ev.get('duration_ms', 0) / 60000, 1)} min ==")
+        bad = ev.get("is_error") or ev.get("subtype") != "success"
+        out.append(f"== {'stopped with an error' if bad else 'finished'} after {round(ev.get('duration_ms', 0) / 60000, 1)} min ==")
         if ev.get("result"):
             out.append(str(ev["result"]))
+    for ln in list(out):
+        code = _claude_problem(ln)
+        if code:
+            out.append("@@" + json.dumps({"k": "hint", "code": code}))
+            break
     return out
+
+
+# Problems that stop a design before it starts, recognised in Claude Code's output. Each one is fixed once, by Spencer,
+# in Terminal (Studio's "Set up Claude Code" button opens it); the design job is stopped at once instead of running on.
+CLAUDE_PROBLEMS = [
+    ("auth", re.compile(r"failed to authenticate|oauth session expired|not logged in|please run /login|invalid api key", re.I)),
+    ("trust", re.compile(r"workspace has not been trusted|hasTrustDialogAccepted", re.I)),
+]
+
+
+def _claude_problem(text: str) -> str | None:
+    for code, rx in CLAUDE_PROBLEMS:
+        if rx.search(text):
+            return code
+    return None
+
+
+def _claude_config() -> Path:
+    d = os.environ.get("CLAUDE_CONFIG_DIR")
+    return Path(d) / ".claude.json" if d else Path.home() / ".claude.json"
+
+
+def claude_ready() -> dict:
+    """Check, before a design starts, everything that would make Claude Code fail or run without Kerf's settings:
+    installed, this folder trusted (otherwise it ignores .claude/settings.json: permissions AND the quality hooks),
+    signed in. Free: no model call."""
+    exe = claude_bin()
+    if not exe:
+        return {"ok": False, "code": "missing", "why": "Claude Code isn't installed on this computer."}
+    try:
+        cfg = json.loads(_claude_config().read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        cfg = {}
+    projects = cfg.get("projects") or {}
+    trusted = any((projects.get(str(p)) or {}).get("hasTrustDialogAccepted") for p in [ROOT, *ROOT.parents])
+    if not trusted:
+        return {"ok": False, "code": "trust", "why": f"Claude Code hasn't been told to trust {ROOT}, so it would ignore "
+                                                      "Kerf's settings and quality checks."}
+    try:
+        r = subprocess.run([exe, "auth", "status", "--json"], capture_output=True, text=True, timeout=30)
+        st = json.loads(r.stdout or "{}")
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "code": "auth", "why": f"couldn't read Claude Code's sign-in status ({type(e).__name__})."}
+    if not st.get("loggedIn"):
+        return {"ok": False, "code": "auth", "why": "Claude Code isn't signed in."}
+    return {"ok": True, "code": None, "why": "ready"}
+
+
+SETUP_SCRIPT = """#!/bin/bash
+cd "{root}"
+clear
+echo "Kerf Studio: one-time Claude Code setup"
+echo "  1. If asked, choose 'Yes, I trust this folder'."
+echo "  2. If it says you're not signed in (or anything about login), type /login and follow it."
+echo "  3. Type /exit when it's ready, close this window, and start your design again in Kerf Studio."
+echo
+claude
+"""
+
+
+def claude_setup() -> dict:
+    """Open Terminal running Claude Code in the repo, where its trust and sign-in prompts appear (macOS)."""
+    cmd = f'cd "{ROOT}" && claude'
+    if platform.system() != "Darwin":
+        return {"opened": False, "command": cmd}
+    f = TRIALS.parent / "setup-claude.command"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(SETUP_SCRIPT.format(root=ROOT))
+    f.chmod(0o755)
+    subprocess.run(["open", str(f)], check=False)
+    return {"opened": True, "command": cmd}
 
 
 DESIGN_PHASES = [("research", "Research"), ("plan", "Plan"), ("contract", "Contract"), ("parts", "Model parts"),
@@ -311,6 +395,12 @@ def _phase(tool: str, inp: dict) -> str | None:
     return None
 
 
+class ClaudeNotReady(ValueError):
+    def __init__(self, ready: dict):
+        super().__init__(ready["why"])
+        self.ready = ready
+
+
 def new_design(name: str, description: str) -> Job:
     if not NAME_RE.match(name):
         raise ValueError("name: lowercase letters, digits and _ (2-41 chars), starting with a letter")
@@ -318,9 +408,10 @@ def new_design(name: str, description: str) -> Job:
         raise ValueError(f"projects/{name} already exists")
     if not description.strip():
         raise ValueError("describe what to design")
+    ready = claude_ready()
+    if not ready["ok"]:
+        raise ClaudeNotReady(ready)
     exe = claude_bin()
-    if not exe:
-        raise ValueError("Claude Code (`claude`) is not installed on this computer: npm install -g @anthropic-ai/claude-code")
     prompt = (f"/kerf {description.strip()}\n\nProject folder name: projects/{name}. Spencer started this from Kerf Studio "
               f"and is not watching the terminal: work autonomously to a finished, built and reviewed project.")
     return start_job("design", name, [exe, "-p", prompt, "--output-format", "stream-json", "--verbose"],
@@ -394,6 +485,8 @@ class Handler(BaseHTTPRequestHandler):
                 if parts[2] not in project_names():
                     return self._err("no such project", 404)
                 return self._json(detail(parts[2]))
+            if parts == ["api", "claude"]:
+                return self._json(claude_ready())
             if parts == ["api", "jobs"]:
                 return self._json({"jobs": [j.info(len(j.lines), len(j.events)) | {"tail": j.lines[-1:]} for j in
                                             sorted(JOBS.values(), key=lambda j: -j.started)]})
@@ -438,8 +531,13 @@ class Handler(BaseHTTPRequestHandler):
         try:
             name = body.get("project")
             if u.path == "/api/new":
-                j = new_design(body.get("name", ""), body.get("description", ""))
+                try:
+                    j = new_design(body.get("name", ""), body.get("description", ""))
+                except ClaudeNotReady as e:
+                    return self._json({"error": str(e), "setup": e.ready["code"]}, 409)
                 return self._json({"job": j.id})
+            if u.path == "/api/claude-setup":
+                return self._json(claude_setup())
             if u.path == "/api/build-all":
                 todo = [n for n in project_names() if body.get("all") or _report(PROJECTS / n) is None]
                 if not todo:

@@ -567,7 +567,10 @@ function renderMc(j) {
     pct = j.state === "done" ? 100 : Math.max(4, ((ci + 1) / PHASES.length) * 100);
     html += `<div class="sect">Design phases</div>` + stepper(PHASES.map(([k, l, ic], i) => ({k, label: l, icon: ic,
       state: j.state === "done" ? "done" : (k === curPhase && j.state === "running") ? "active" : (i < ci || seen.has(k)) ? "done" : ""})), "ph");
-    const thoughts = S.lines.filter(l => !l.startsWith("  > ") && !l.startsWith("==")).slice(-1);
+    const hint = S.ev.find(e => e.k === "hint");
+    if (hint) html += readyCard({code: hint.code, why: hint.code === "auth" ? "Claude Code's sign-in expired, so the design stopped before it began." :
+                                 "Claude Code doesn't trust this folder yet, so it would have ignored Kerf's settings and quality checks; the design was stopped."});
+    const thoughts = S.lines.filter(l => !l.startsWith("  > ") && !l.startsWith("==") && !l.startsWith("(")).slice(-1);
     if (thoughts.length) html += `<div class="sect">Claude is thinking</div><div class="thought">${esc(thoughts[0])}</div>`;
     html += `<div class="sect">Latest actions · ${tools.length} so far</div><div class="feed">${tools.slice(-8).reverse().map((t, n) =>
       `<div class="fi${fresh("mc:tool:" + (tools.length - n))}"><span class="ic">${TOOL_ICON[t.name] || "•"}</span><span class="w"><b>${esc(t.name)}</b>${esc(t.what)}</span></div>`).join("") || `<div class="note">Starting Claude Code…</div>`}</div>`;
@@ -661,14 +664,14 @@ function showNew() {
   S.newOpen = true; S.sel = null; renderList();
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
-      ${S.claude ? "" : `<div class="banner warn">Claude Code isn't installed on this computer, so new designs can't start from here. Install it with <code>npm install -g @anthropic-ai/claude-code</code>, sign in once by running <code>claude</code>, then reopen Kerf Studio.</div>`}
+      <div id="ready"></div>
       <div class="card">
         <label class="note" for="ndesc">What should it be?</label>
         <textarea id="ndesc" placeholder="e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm" oninput="autoname()"></textarea>
         <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname()">${esc(x)}</button>`).join("")}</div>
         <label class="note" for="nname">Project folder name</label>
         <input id="nname" placeholder="desk_arm" oninput="this.dataset.touched=1">
-        <div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="primary" id="nstart" onclick="startNew()" ${S.claude ? "" : "disabled"}>✦ Start designing</button>
+        <div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="primary" id="nstart" onclick="startNew()" disabled>✦ Start designing</button>
           <span class="note">Takes roughly 1–4 hours. It keeps going while Kerf Studio stays open; watch it live in the panel.</span></div>
       </div>
       <div class="howit">
@@ -678,6 +681,7 @@ function showNew() {
         <div style="animation-delay:240ms"><i>◎</i><b>Review</b>An independent reviewer inspects it; findings are fixed before it's called done.</div>
       </div>
     </div>`;
+  checkReady();
 }
 function autoname() {
   const n = $("#nname"); if (n.dataset.touched) return;
@@ -685,8 +689,33 @@ function autoname() {
   n.value = ($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40);
 }
 async function startNew() {
-  try { const r = await api("/api/new", {name: $("#nname").value.trim(), description: $("#ndesc").value}); watch(r.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); }
-  catch (e) { toast("Couldn't start", e.message, "bad"); }
+  const r = await fetch("/api/new", {method: "POST", headers: {"Content-Type": "application/json"},
+                                     body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value})});
+  const j = await r.json().catch(() => ({error: "bad response"}));
+  if (r.ok && j.job) { watch(j.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); return; }
+  if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
+  toast("Couldn't start", j.error || r.statusText, "bad");
+}
+/* ---------- Claude Code readiness: checked before every design, fixed once with one button */
+const SETUP_TEXT = {
+  missing: "Install it once: open Terminal and run <code>npm install -g @anthropic-ai/claude-code</code>, then press Set up.",
+  trust: "One time: click <b>Set up Claude Code</b>, choose “Yes, I trust this folder”, type <code>/exit</code>, then start again.",
+  auth: "Your Claude Code sign-in expired. Click <b>Set up Claude Code</b>, type <code>/login</code> and follow it, then <code>/exit</code> and start again.",
+};
+function readyCard(st) {
+  return `<div class="banner warn" id="readycard"><b>Claude Code needs a one-time fix before designs can run.</b><br>${esc(st.why)}<br>${SETUP_TEXT[st.code] || ""}
+    <div class="row" style="margin-top:10px"><button class="primary" onclick="setupClaude()">Set up Claude Code</button><button onclick="checkReady()">Check again</button></div></div>`;
+}
+function showReady(st) {
+  const el = $("#ready"); if (!el) return;
+  el.innerHTML = st.ok ? `<div class="banner ok">✓ Claude Code is installed, trusts this folder and is signed in.</div>` : readyCard(st);
+  const b = $("#nstart"); if (b) b.disabled = !st.ok;
+}
+async function checkReady() { const el = $("#ready"); if (el) el.innerHTML = `<div class="sk" style="height:44px;margin-bottom:14px"></div>`;
+  try { showReady(await api("/api/claude")); } catch (e) { showReady({ok: false, code: "auth", why: e.message}); } }
+async function setupClaude() {
+  try { const r = await api("/api/claude-setup", {}); toast("Terminal opened", r.opened ? "Follow the steps in the Terminal window, then click Check again." : "Run this in Terminal: " + r.command, "ok"); }
+  catch (e) { toast("Couldn't open Terminal", e.message, "bad"); }
 }
 
 /* ---------- lifetime: closing the window closes the tool (the server waits for running jobs) */

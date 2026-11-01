@@ -978,3 +978,10 @@ pushed for it and what I know:
   = SKIP (GPL-3 web app, single parts, no engineering checks). Three PLAN items added (Phase 4c).
 - Note: in this cloud session running the teardown's weigh.py on downloaded repos was blocked ("code from external"),
   so the method was applied by hand with wc/grep and reading.
+- 2026-11-01 00:40 UTC: Spencer's first New design on his Mac failed: Claude Code ignored .claude/settings.json (folder
+  not trusted, so no permissions and no quality hooks) and its OAuth sign-in had expired; Studio then printed
+  "finished: success". Fixed so it can't recur silently: `studio.claude_ready()` checks installed + folder trusted
+  (~/.claude.json, this folder or a parent) + signed in (`claude auth status --json`, free) before a design may start;
+  the New design page shows the state with a "Set up Claude Code" button (opens Terminal running `claude` in the repo
+  for the trust prompt and /login); the same two errors seen mid-run stop the job at once as failed with the fix shown;
+  a result with is_error is reported as an error. Tests use the verbatim error lines from his run.
