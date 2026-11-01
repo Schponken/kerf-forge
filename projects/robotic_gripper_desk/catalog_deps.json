@@ -1,0 +1,21 @@
+[
+ "boards.arduino_nano",
+ "electronics.connectors.dc_jack_5521_screw",
+ "electronics.connectors.wago_221_415",
+ "electronics.supplies.meanwell_gst60a05",
+ "electronics.wire_misc.servo_ext_300_pololu2184",
+ "fdm_fits.pin",
+ "fdm_holes.M1.6",
+ "fdm_holes.M3",
+ "fdm_holes.M4",
+ "materials.PETG",
+ "rods.ss_rod_4",
+ "screws.M1.6",
+ "screws.M3",
+ "screws.M4",
+ "servo_horns.aluminum_25T",
+ "servos.MG996R",
+ "tools.hex_key",
+ "wire.awg",
+ "wire.silicone"
+]

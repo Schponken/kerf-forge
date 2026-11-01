@@ -17,6 +17,7 @@ import math
 
 from build123d import *
 from kerf import iface
+from kerf.coves import cove_fillets
 from kerf.edges import sharp_inside
 from kerf.features import safe_fillet, teardrop_hole
 
@@ -29,8 +30,6 @@ CHORD = 3.0                  # fork plate top chord
 RAIL = 3.0                   # wing rail (flange) thickness
 ARM = 5.0                    # cheek top arm depth / strut width
 CHEEK_T = 4.0                # cheek arms + strut thickness (the front bar keeps the full cheek_t for the rod seats)
-import os
-FILLET3D = os.environ.get('GW_F3D') == '1'
 KEEP_Y = 10.0                # rod_keeper screws at +-KEEP_Y between the rods (keeper frame)
 
 
@@ -120,17 +119,16 @@ def build(ctx):
     body += _slab(boss, W - t - 3.0, W - t + 0.01)                                     # why: insert depth; 45 deg keel prints without support
 
     # ---- inside-corner fillets on the 3D junctions (not where the servo tabs sit against the bulkhead) ------
+    # why: stress raisers on the load path. OCC's fillet operator crashes (segfault) on this many-slab body, so the
+    # concave fillets are added as cove prisms by union (kerf/coves.py); R2 first, R1 where a face is too short for R2
     def tab_corner(c):
         return abs(c.X - xb0) < 0.2 and (abs(c.Z - t) < 0.2 or abs(c.Z - (W - t)) < 0.2)
-    corners = [Vector(*c["at"]) for c in sharp_inside(body)]
-    edges = [e for e in body.edges() if any((e.center() - c).length < 0.15 for c in corners) and not tab_corner(e.center())]
-    failed = []
-    if FILLET3D:
-        body, failed = safe_fillet(body, [(edges, R2)])                                     # why: stress raisers on the load path
-    if failed:
-        left = [Vector(*c["at"]) for c in sharp_inside(body)]
-        body, failed = safe_fillet(body, [([e for e in body.edges() if any((e.center() - c).length < 0.15 for c in left)
-                                            and not tab_corner(e.center())], R1)])
+
+    def sharp_edges(shape):
+        pts = [Vector(*c["at"]) for c in sharp_inside(shape)]
+        return [e for e in shape.edges() if any((e.center() - c).length < 0.15 for c in pts) and not tab_corner(e.center())]
+    body, failed = cove_fillets(body, sharp_edges(body), R2)
+    body, failed = cove_fillets(body, sharp_edges(body), R1)
 
     # ---- interfaces ---------------------------------------------------------------------------------------
     la = Location((0, 0, t))
@@ -152,8 +150,6 @@ def build(ctx):
     lkp = Location((p.x_rod, 0, zl), (180, 0, 0))
     body -= iface.bolt_pattern(ctx, "keeper", "M3", [(0, KEEP_Y), (0, -KEEP_Y)], lkp, "heatset", p.cheek_t,
                                teardrop=iface.print_up_deg(ctx, lkp))                  # why: rod_keeper screws (2: it cannot swing off)
-    if failed:
-        ctx.notes.append(f"gripper: {len(failed)} inside corner(s) could not take a fillet: " + "; ".join(failed[:3]))
 
     ctx.rigid("horn_mount", Location((0, 0, 0)))
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.mg_tab_t)))

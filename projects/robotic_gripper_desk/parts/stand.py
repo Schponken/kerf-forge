@@ -166,8 +166,9 @@ def build(ctx):
     case_bottom = -(p.mg_tab_t + p.mg_tab_z)
     ctx.rigid("lead_wr", F * Location((-p.mg_out_x + p.mg_L / 2 + ctx.cat.num(cb, "cable_boss_protrusion") + 4.0, -10.0,
                                        case_bottom + ctx.cat.num(cb, "cable_boss_z0") + ctx.cat.num(cb, "cable_boss_h") / 2)))
-    # off-board electronics on the bench behind the stand (S z = 0, Z up), >= 40 mm apart (an LRS-100 sized supply fits)
-    for name, (x, y) in {"desk_nano": (-185.0, 55.0), "desk_driver": (-195.0, 10.0), "desk_bus": (-170.0, -45.0),
+    # bench electronics behind the stand (S z = 0, Z up; DESIGN.md 'Bench electrics'): Nano, barrel-jack adapter and the
+    # 5 V adapter, apart enough for fingers on the screw terminals and the plugs
+    for name, (x, y) in {"desk_nano": (-185.0, 55.0), "desk_jack": (-195.0, -20.0),
                          "desk_psu": (-265.0, -60.0)}.items():
         ctx.rigid(name, Location((x, y, 0)))
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.mg_tab_t)))

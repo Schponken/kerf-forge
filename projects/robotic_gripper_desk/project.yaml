@@ -8,26 +8,26 @@ description: >
 printer: Bambu Lab A2L
 supports: allowed
 params:
-  plate_t: {value: 7, min: 7, max: 8, step: 0.5, label: Wrist fork plate thickness (robot_arm plate_t)}
-  side_gap: {value: 1.5, min: 0.5, max: 2.0, step: 0.1, label: Axial gap at the wrist pivot (robot_arm side_gap)}
-  grip_w: {value: 35, min: 35, max: 35, step: 1, label: Wrist fork width (= robot_arm grip_w; the forearm is built for it)}
-  link_h: {value: 34, min: 34, max: 34, step: 1, label: Wrist disc diameter (robot_arm link_h)}
-  x_bulk: {value: 45, min: 45, max: 55, step: 0.5, label: Bulkhead back face (grip servo tab tops) ahead of the wrist axis}
-  bulk_t: {value: 7, min: 7, max: 7.5, step: 0.5, label: Bulkhead thickness (servo tab pilots; 7 mm gives the M3 x 8 thread-forming screws their engagement, < 7.7 so the case top still passes)}
-  gear_m: {value: 1.5, min: 1.5, max: 1.5, step: 0.25, label: Pinion / rack module}
-  pinion_z: {value: 20, min: 20, max: 20, step: 1, label: Pinion teeth}
-  gear_b: {value: 12, min: 10, max: 14, step: 1, label: Pinion / rack face width}
-  grip_max: {value: 100, min: 90, max: 110, step: 5, label: Servo travel closed -> open (deg)}
-  gap0: {value: 2, min: 1, max: 4, step: 0.5, label: Pad gap when closed}
-  slab_gap: {value: 0.6, min: 0.5, max: 1.0, step: 0.1, label: Gap between the pinion's front face and the carriages}
-  carr_x: {value: 10, min: 8, max: 14, step: 1, label: Carriage depth along the gripper}
-  carr_len: {value: 14, min: 12, max: 20, step: 1, label: Carriage length along the rods}
-  rod_y: {value: 21, min: 18, max: 24, step: 0.5, label: Guide rods above / below the pinion axis}
-  stop_gap: {value: 1.0, min: 0.5, max: 2.0, step: 0.1, label: Extra travel past fully open before the carriage meets the cheek}
-  cheek_t: {value: 9, min: 8, max: 10, step: 0.5, label: End cheek thickness (rod seats; with z_stop it sets the 100 mm rod length)}
-  finger_len: {value: 32, min: 25, max: 40, step: 1, label: Finger length ahead of the carriage}
-  pad_len: {value: 24, min: 15, max: 30, step: 1, label: Grip pad length along the finger}
-  stand_h: {value: 70, min: 55, max: 110, step: 1, label: Bench stand - wrist axis height above the bench}
+  plate_t: {value: 7, unit: "mm", min: 7, max: 8, step: 0.5, label: Wrist fork plate thickness (robot_arm plate_t)}
+  side_gap: {value: 1.5, unit: "mm", min: 0.5, max: 2.0, step: 0.1, label: Axial gap at the wrist pivot (robot_arm side_gap)}
+  grip_w: {value: 35, unit: "mm", min: 35, max: 35, step: 1, label: Wrist fork width (= robot_arm grip_w; the forearm is built for it)}
+  link_h: {value: 34, unit: "mm", min: 34, max: 34, step: 1, label: Wrist disc diameter (robot_arm link_h)}
+  x_bulk: {value: 45, unit: "mm", min: 45, max: 55, step: 0.5, label: Bulkhead back face (grip servo tab tops) ahead of the wrist axis}
+  bulk_t: {value: 7, unit: "mm", min: 7, max: 7.5, step: 0.5, label: Bulkhead thickness (servo tab pilots; 7 mm gives the M3 x 8 thread-forming screws their engagement, < 7.7 so the case top still passes)}
+  gear_m: {value: 1.5, unit: "mm", min: 1.5, max: 1.5, step: 0.25, label: Pinion / rack module}
+  pinion_z: {value: 20, unit: "teeth", min: 20, max: 20, step: 1, label: Pinion teeth}
+  gear_b: {value: 12, unit: "mm", min: 10, max: 14, step: 1, label: Pinion / rack face width}
+  grip_max: {value: 100, unit: "°", min: 90, max: 110, step: 5, label: Servo travel closed -> open (deg)}
+  gap0: {value: 2, unit: "mm", min: 1, max: 4, step: 0.5, label: Pad gap when closed}
+  slab_gap: {value: 0.6, unit: "mm", min: 0.5, max: 1.0, step: 0.1, label: Gap between the pinion's front face and the carriages}
+  carr_x: {value: 10, unit: "mm", min: 8, max: 14, step: 1, label: Carriage depth along the gripper}
+  carr_len: {value: 14, unit: "mm", min: 12, max: 20, step: 1, label: Carriage length along the rods}
+  rod_y: {value: 21, unit: "mm", min: 18, max: 24, step: 0.5, label: Guide rods above / below the pinion axis}
+  stop_gap: {value: 1.0, unit: "mm", min: 0.5, max: 2.0, step: 0.1, label: Extra travel past fully open before the carriage meets the cheek}
+  cheek_t: {value: 9, unit: "mm", min: 8, max: 10, step: 0.5, label: End cheek thickness (rod seats; with z_stop it sets the 100 mm rod length)}
+  finger_len: {value: 32, unit: "mm", min: 25, max: 40, step: 1, label: Finger length ahead of the carriage}
+  pad_len: {value: 24, unit: "mm", min: 15, max: 30, step: 1, label: Grip pad length along the finger}
+  stand_h: {value: 70, unit: "mm", min: 55, max: 110, step: 1, label: Bench stand - wrist axis height above the bench}
 layout: parts/layout.py
 parts:
   gripper: {file: parts/gripper.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
@@ -43,6 +43,19 @@ purchased:
   gr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: gr_servo}, tab_screws_from: bottom, range: [0, 100],
              note: "the arm's grip servo: reuse the one from the arm's old gripper"}
   gr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: gr_horn}}
+  # bench electrics (DESIGN.md 'Bench electrics'): 5 V mains adapter -> barrel-jack adapter -> the grip servo; an
+  # Arduino Nano on USB makes the pulses. Only the grip servo is powered on the bench: the stand's wrist servo stands in
+  # for the arm's wrist and is set by hand, unplugged. On the arm the gripper uses the arm's own supply, splices and
+  # PCA9685 channel 4 (projects/robot_arm wiring pwr_gr / sig_gr): nothing here goes on the arm.
+  psu: {catalog: electronics.supplies.meanwell_gst60a05, proxy: box, render: false, off_board: "on the bench behind the stand"}
+  jack: {catalog: electronics.connectors.dc_jack_5521_screw, proxy: box, off_board: "on the bench behind the stand"}
+  nano: {catalog: boards.arduino_nano, proxy: board, off_board: "on the bench behind the stand, on a non-conductive pad"}
+bom_extra:
+  - {type: electrical, item: "IEC C13 mains cord (country plug)", qty: 1, price_key: "mains_cord:C13", spec: "the MEAN WELL adapter ships without one (element14: mains lead sold separately)"}
+  - {type: electrical, item: USB Mini-B cable, qty: 1, price_key: "cable:usb_mini_b", spec: "programs and powers the Arduino Nano A000005 (Mini-B, PiShop page)"}
+  - {type: fastener, item: "M4 x 20 mm wood screw or M4 bolt + nut through the bench, head <= 8 mm", qty: 2, price_key: "screw:M4x20:socket",
+     spec: "stand to the bench through the two diagonal holes in its bars (a stalled wrist servo would rock it); or a C-clamp on the back bar at a bench corner"}
+  - {type: tool, item: 2.5 mm ball-end hex driver, qty: 1, price_key: "tool:ball_end_hex_set_1.5-5", spec: "the servo tab screws next to each servo's cable boss (a straight key grazes the boss)"}
 assembly:
   root: stand
   joints:
@@ -55,6 +68,9 @@ assembly:
     - {parent: gripper.jaw_r_slide, child: jaw_r.mount, name: jaw_r_slide}
     - {parent: gripper.jaw_l_slide, child: jaw_l.mount, name: jaw_l_slide}
     - {parent: gripper.keeper_seat, child: rod_keeper.origin}
+    - {parent: stand.desk_psu, child: psu.bottom}
+    - {parent: stand.desk_jack, child: jack.bottom}
+    - {parent: stand.desk_nano, child: nano.bottom}
   sweeps:
     # rack and pinion: each jaw travels r * pi / 180 = 15 * pi / 180 = 0.261799 mm per servo degree (layout mm_per_deg)
     - {joint: jaw_r_slide, follows: grip, ratio: 0.261799}
@@ -63,6 +79,19 @@ assembly:
   # horn screws before the jaws slide in over them; the rods + keeper after the jaws
   order: [stand, wr_servo, wr_horn, gr_servo, gripper, gr_horn, pinion, [jaw_r, jaw_l], rod_keeper]
 style: {radii: [1.0, 2.0, 4.0], edge_break: 0.6}
+electrical:
+  supply: psu                # mains adapter: rated by its 6 A, no run time
+  burst_s: 5                 # the grip servo stalled for 5 s (a jammed jaw), for wire heating
+wiring:      # bench test set-up only (on the arm: robot_arm pwr_gr / sig_gr). Ends = item centres; cut length >= routed + 15 %.
+  - {id: psu_cord, from: psu, to: jack, v: 5.0, gauge: 22, color: black/white, length_mm: 1000, supplied: psu,
+     note: "the adapter's own 1 m DC cord with its 5.5 x 2.1 plug; gauge not published, so checked as 22 AWG (the thinnest whose 7 A chassis ampacity covers the adapter's 6 A)"}
+  - {id: pwr_gr, from: jack, to: gr_servo, v: 5.0, gauge: 22, color: red/brown, lead: [gr_servo, electronics.wire_misc.servo_ext_300_pololu2184],
+     ends: {from: screw, to: plug}, route: [stand.lead_down, stand.lead_a, stand.lead_b, gripper.lead_2, gripper.lead_1],
+     note: "grip servo plugged into a 300 mm extension; cut the extension's male end, red / brown into the jack's + / - terminals; up the stand leg (slot pair), over the wrist outside plate A, into the gripper's servo bay"}
+  - {id: sig_gr, from: nano, to: gr_servo, kind: signal, pin: D9, gauge: 22, color: orange, lead: pwr_gr, ends: {from: crimp, to: plug},
+     note: "the extension's orange (signal) wire, crimped, onto Nano D9"}
+  - {id: gnd_ref, from: jack, to: nano, kind: signal, gauge: 22, color: black, length_mm: 150, ends: {from: screw, to: crimp},
+     note: "jack minus terminal (with the brown wire, one twin ferrule) to a Nano GND pin: the servo signal needs a common ground (the Nano runs from the PC's USB)"}
 requirements:
   - {id: grip_open, check: distance, a: jaw_l.pad, b: jaw_r.pad, min_mm: 50, pose: {grip: 100, jaw_l_slide: 26.179, jaw_r_slide: 26.179},
      why: "fully open (servo 100 deg): the pads 2 + 2 x 26.18 = 54.4 mm apart; the arm's brief asks >= 40 mm"}
@@ -83,6 +112,24 @@ requirements:
   - {id: rack_teeth, check: gear_bending, module: gear_m, z_driver: pinion_z, z_driven: 400, width: gear_b, torque_nmm: mg_stall_nmm,
      material: PETG, sf: 3, direction: z,
      why: "the same 61.5 N on the rack teeth, which print standing (they bend across layers); judged with the pinion's smaller form factor, conservative"}
+  - {id: power, check: power_budget, why: "adapter, jack and every wire within rating with the grip servo stalled; the grip servo gets >= its 4.8 V minimum through the 1 m adapter cord and its lead"}
+  - {id: plug_access, check: connector_access, item: jack, direction: [1, 0, 0], length_mm: 30,
+     why: "the adapter plug (11 mm barrel) and fingers reach the jack"}
+  - {id: usb_access, check: connector_access, item: nano, direction: [1, 0, 0], length_mm: 30,
+     why: "the USB cable reaches the Nano to load the bring-up sketch"}
+  - id: stand_fea
+    check: fea_static
+    part: stand
+    why: "the wrist servo stalls (922 N*mm, the gripper jammed on the bench) through its four tab screws while the stand carries 2x the gripper + payload weight (~190 g + 150 g = 3.3 N, x2 = 6.7 N, half on the servo tabs, half on the pivot); base held by the bench; the legs print standing (bending across layers)"
+    direction: z
+    case: crash
+    sf: 3.0
+    max_disp_mm: 1.0
+    fixed: {box: [[-200, -100, -0.1], [0, 100, 0.6]]}
+    loads:
+      - {sites: wr_servo, radius: 4.0, torque_nmm: "mg_stall_nmm", axis: {at: [0, 0, "stand_h"], dir: [0, -1, 0]}}
+      - {sites: wr_servo, radius: 4.0, force_n: [0, 0, -3.35]}
+      - {cylinder: {at: [0, "-w_f", "stand_h"], dir: [0, 1, 0], r: 1.8, tol: 0.4, span: [0, "plate_t"]}, bearing_n: [0, 0, -3.35]}
   - id: gripper_stall_fea
     check: fea_static
     part: gripper

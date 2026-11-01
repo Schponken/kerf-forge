@@ -17,6 +17,7 @@ import math
 
 from build123d import *
 from kerf import drives, features as F, iface
+from kerf.coves import cove_fillets
 
 ROD = "rods.ss_rod_4"
 R1, R2, R4 = 1.0, 2.0, 4.0          # project style radii (project.yaml style.radii)
@@ -79,8 +80,11 @@ def build(ctx):
                                                   and abs(e.center().Y + e.center().Z - (FW + FLAT)) < 0.05
                                                   and e.length > 2]
     body, bad = F.safe_fillet(body, [(root, R4)])  # why: finger root, the highest bending moment, into the carriage
-    body, bad2 = F.safe_fillet(body, [(edge_at(x=0, y=y_root, along=Axis.Z), 0.5),          # why: bridge root; 0.5 = what the 0.6 slab gap allows
-                                      (edge_at(x=-p.slab_gap, z=0, along=Axis.Y), 0.5)])  # why: rack bar into the bridge; same gap limit
+    # why: bridge root and rack bar into the bridge; 0.5 = what the 0.6 slab gap allows. OCC's fillet fails on the
+    # rack-bar edge (it meets the tooth flanks), so that one is a boolean cove (kerf/coves.py)
+    body, bad2 = F.safe_fillet(body, [(edge_at(x=0, y=y_root, along=Axis.Z), 0.5)])
+    body, bad2b = cove_fillets(body, edge_at(x=-p.slab_gap, z=0, along=Axis.Y), 0.5)
+    bad2 += bad2b
     body, bad3 = F.safe_fillet(body, [(edge_at(x=0, y=-h, along=Axis.Z) + edge_at(x=cx, y=-h, along=Axis.Z), R4),  # why: round the top boss over the rod (style r4)
                                       (edge_at(x=x_tip, z=H_TIP, along=Axis.Y), R2)])  # why: blunt fingertip back corner
     body, bad4 = F.safe_fillet(body, [(edge_at(x=x_tip, z=0, along=Axis.Y), LEAD)], kind="chamfer")  # why: lead-in at the tip, slides over an object instead of stubbing on it
