@@ -15,22 +15,22 @@ params:
   gear_z: {value: 16, min: 14, max: 18, step: 1, label: Teeth per gear}
   gear_w: {value: 12, min: 10, max: 14, step: 1, label: Gear face width}
   cover_t: {value: 4, min: 3, max: 6, step: 0.5, label: Cover plate thickness}
-  finger_len: {value: 50, min: 42, max: 60, step: 1, label: Gear axis to pad contact (along the claw)}
+  finger_len: {value: 45, min: 40, max: 55, step: 1, label: Gear axis to pad contact (along the claw); <= 45 keeps the friction hold SF >= 2 at half stall (DESIGN.md)}
   pad_gap: {value: 1.0, min: 0.5, max: 3.0, step: 0.5, label: Pad-to-pad gap when closed}
-  pad_par: {value: 15, min: 0, max: 25, step: 1, label: Finger angle at which the two pads are parallel}
+  pad_par: {value: 21, min: 0, max: 30, step: 1, label: Finger angle at which the two pads are parallel (21 = a 35 mm object)}
   pad_t: {value: 3, min: 2, max: 4, step: 0.5, label: TPU pad thickness}
   grip_open: {value: 40, min: 30, max: 50, step: 1, label: Grip servo travel from closed to open (deg)}
 layout: parts/layout.py
 parts:
-  palm: {file: parts/palm.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: [x, z]}
-  cover: {file: parts/cover.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, load_axis: x}
+  palm: {file: parts/palm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: [x, z]}
+  cover: {file: parts/cover.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: x}
   finger_l: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
   finger_r: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x}
   pad_l: {file: parts/pad.py, material: TPU, print_rot: [0, 0, 0], infill: 1.0,
           insert: {direction: [0, 0, -1], distance: 25}}
   pad_r: {file: parts/pad.py, material: TPU, print_rot: [0, 0, 0], infill: 1.0,
           insert: {direction: [0, 0, -1], distance: 25}}
-  wrist_stand: {file: parts/wrist_stand.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: x,
+  wrist_stand: {file: parts/wrist_stand.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3, load_axis: [x, y],
                 note: "bench stand: copies the arm forearm's wrist end; print it to test the claw before it goes on the arm"}
 purchased:
   wr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: wr_servo}, tab_screws_from: bottom, range: [-75, 75],
@@ -72,33 +72,33 @@ requirements:
      why: "worst case: the whole grip-servo stall torque through the mesh (an object pressed against the idler finger only); teeth printed flat, so the root stress runs along the layers"}
   - {id: claw_mass, check: mass_max, max_g: 130, include: [palm, cover, finger_l, finger_r, pad_l, pad_r, gr_servo, gr_horn],
      why: "what the arm carries past the wrist: the old gripper + finger + servo + horn weighed ~98 g; the arm's shoulder budget (DESIGN.md) holds up to ~130 g"}
-  # --- strength at grip-servo stall (DESIGN.md 'Load -> section'): per pad 9.2 N (922 N*mm / (2 x 50 mm)); the idler's
-  # 460 N*mm comes through the mesh as 38.3 N tangential (claw -X on the idler) + 13.9 N separating; each gear axis then
-  # carries 38.3 / 23.1 N. Each support is loaded with the FULL axis load (the other support may be loose).
+  # --- strength at grip-servo stall (DESIGN.md 'Load -> section'): per pad 10.2 N (922 N*mm / (2 x 45 mm)); the idler's
+  # 461 N*mm comes through the mesh as 38.4 N tangential (claw -X on the idler) + 14.0 N separating; each gear axis then
+  # carries 38.4 / 24.2 N. Each support is loaded with the FULL axis load (the other support may be loose).
   - id: finger_l_fea
     check: fea_static
     part: finger_l
-    why: "drive finger at grip-servo stall: 9.2 N on the jaw (the object pushes the pad outward), held at the 4 horn screws"
+    why: "drive finger at grip-servo stall: 10.2 N on the jaw (the object pushes the pad outward), held at the 4 horn screws"
     direction: xy             # printed flat on its gear face: the finger bends along the layers
     sf: 2.0
     max_disp_mm: 1.0
     fixed: {sites: gr_horn, radius: 4.0}
     loads:
-      - {near_joint: pad_seat, radius: 6.0, force_n: [0, 9.2, 0]}
+      - {near_joint: pad_seat, radius: 6.0, force_n: [0, 10.2, 0]}
   - id: finger_r_fea
     check: fea_static
     part: finger_r
-    why: "idler finger at stall: 9.2 N on the jaw, held on its dowel bore (the gear teeth carry the torque into the drive gear: gears check)"
+    why: "idler finger at stall: 10.2 N on the jaw, held on its dowel bore (the gear teeth carry the torque into the drive gear: gears check)"
     direction: xy
     sf: 2.0
     max_disp_mm: 1.0
     fixed: {cylinder: {at: [0, 0, 0], dir: [0, 0, 1], r: 1.675, tol: 0.3, span: [0, "gear_w"]}}
     loads:
-      - {near_joint: pad_seat, radius: 6.0, force_n: [0, -9.2, 0]}
+      - {near_joint: pad_seat, radius: 6.0, force_n: [0, -10.2, 0]}
   - id: palm_fea
     check: fea_static
     part: palm
-    why: "grip servo at stall: its 922 N*mm reaction on the 4 tab pilots plus the whole drive-axis side load (38.3 N along X, 23.1 N across) through the servo case, and the whole idler-axis load on the pedestal; held at the wrist horn screws and the pivot insert"
+    why: "grip servo at stall: its 922 N*mm reaction on the 4 tab pilots plus the whole drive-axis side load (38.4 N along X, 24.2 N across) through the servo case, and the whole idler-axis load on the pedestal; held at the wrist horn screws and the pivot insert"
     direction: auto
     sf: 3.0
     max_disp_mm: 0.3
@@ -108,19 +108,19 @@ requirements:
         - {cylinder: {at: [0, 0, "W"], dir: [0, 0, -1], r: 2.0, tol: 0.3, span: [0, "plate_t + 3"]}}
     loads:
       - {sites: gr_servo, radius: 4.0, torque_nmm: "stall_nmm", axis: {at: ["x_g", 0, "z_d"], dir: [0, 1, 0]}}
-      - {sites: gr_servo, radius: 4.0, force_n: [38.3, 0, -23.1]}
-      - {cylinder: {at: ["x_g", "y_g0 - 0.5", "z_i"], dir: [0, -1, 0], r: 1.5, tol: 0.3, span: [0, 8]}, bearing_n: [-38.3, 0, 23.1]}
+      - {sites: gr_servo, radius: 4.0, force_n: [38.4, 0, -24.2]}
+      - {cylinder: {at: ["x_g", "y_g0 - 0.5", "z_i"], dir: [0, -1, 0], r: 1.5, tol: 0.3, span: [0, 8]}, bearing_n: [-38.4, 0, 24.2]}
   - id: cover_fea
     check: fea_static
     part: cover
-    why: "both gear axes' full side loads at stall on the cover's two dowel holes (drive 38.3 / -23.1 N, idler -38.3 / 23.1 N), held at the two post screws"
+    why: "both gear axes' full side loads at stall on the cover's two dowel holes (drive 38.4 / -24.2 N, idler -38.4 / 24.2 N), held at the two post screws"
     direction: xy             # printed flat: the plate bends along the layers
     sf: 2.0
     max_disp_mm: 0.2
     fixed: {sites: cover, radius: 4.0}
     loads:
-      - {cylinder: {at: ["x_g", "y_c1", "z_d"], dir: [0, -1, 0], r: 1.5, tol: 0.3, span: [0, "cover_t"]}, bearing_n: [38.3, 0, -23.1]}
-      - {cylinder: {at: ["x_g", "y_c1", "z_i"], dir: [0, -1, 0], r: 1.675, tol: 0.3, span: [0, "cover_t"]}, bearing_n: [-38.3, 0, 23.1]}
+      - {cylinder: {at: ["x_g", "y_c1", "z_d"], dir: [0, -1, 0], r: 1.5, tol: 0.3, span: [0, "cover_t"]}, bearing_n: [38.4, 0, -24.2]}
+      - {cylinder: {at: ["x_g", "y_c1", "z_i"], dir: [0, -1, 0], r: 1.675, tol: 0.3, span: [0, "cover_t"]}, bearing_n: [-38.4, 0, 24.2]}
   - id: stand_fea
     check: fea_static
     part: wrist_stand

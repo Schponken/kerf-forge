@@ -8,7 +8,9 @@ if [ "$(uname)" = "Darwin" ] && [ -d "$HOME/Applications/Kerf Studio.app" ]; the
 fi
 command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; export PATH="$HOME/.local/bin:$PATH"; }
 [ -x .venv/bin/python ] || uv venv -q -p 3.12 .venv
-uv pip install -q --python .venv/bin/python -e .
+# pybullet has no macOS arm64 wheel and its bundled zlib `#define fdopen NULL` breaks against recent Xcode SDKs
+# (stdio.h declares fdopen): pre-defining the macro skips that line. Harmless on Linux.
+CFLAGS="${CFLAGS:-} -Dfdopen=fdopen" uv pip install -q --python .venv/bin/python -e .
 # gmsh (FEA meshing) needs a few X/GL shared libraries even when headless
 if ! .venv/bin/python -c "import gmsh" >/dev/null 2>&1; then
   (apt-get update -q && apt-get install -y -q libglu1-mesa libxcursor1 libxinerama1 libxft2 libxrender1) >/dev/null 2>&1 \
