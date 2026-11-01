@@ -1074,3 +1074,12 @@ pushed for it and what I know:
   rows (the tripod nut) are priced; no catalog ids / repo doc names in BOM text.
 - Known limits: prices are a dated snapshot; WAGO's cheapest clear listing is a 30-piece minimum; PowerPro 100 lb
   diameter is not on the shop page (note says to check it against the bead hole).
+
+## 2026-11-01 ~07:00 UTC — session 01S68R6S (continued): URDF export
+- **URDF export** (kerf/urdf.py, same session, later): `kerf build` writes out/<project>.urdf + urdf_meshes/*.stl +
+  <project>_urdf.zip for every project with moving joints (all 6 do). Links = items moving together, revolute /
+  prismatic joints with the tree's ranges, geared couplings (robot_arm yaw_drive follows base_yaw x -0.667) as <mimic>,
+  inertials from the check masses over each item's mesh, SI units. cadgen's URDF validator: 0 findings on all 6.
+  tests/test_urdf.py loads a test URDF in PyBullet (pybullet added to pyproject) and checks that PyBullet's forward
+  kinematics put every link exactly where Kerf's joint solver puts the items (revolute, prismatic, mimic); flipping one
+  axis sign makes it fail. All 6 project URDFs load in PyBullet. Studio Files tab: "Simulation (URDF + meshes)".

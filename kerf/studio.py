@@ -193,7 +193,7 @@ def detail(name: str) -> dict:
             for f in sorted((out / rel).glob("*")) if (out / rel).exists() else []:
                 if f.suffix in (".3mf", ".stl", ".md", ".pdf"):
                     files.append(str(f.relative_to(d)))
-        for f in ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "viewer.html"):
+        for f in ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "viewer.html", f"{name}_urdf.zip"):
             if (out / f).exists():
                 files.append(f"out/{f}")
     docs = [f for f in ("DESIGN.md", "REFERENCES.md", "out/ASSEMBLY.md", "out/WIRING.md", "out/bom.md",

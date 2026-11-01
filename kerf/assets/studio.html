@@ -487,6 +487,7 @@ function renderFiles(el) {
     ${group("Single parts", x => x.startsWith("out/parts/"), "◧")}
     ${group("Engineering drawings (PDF)", x => x.startsWith("out/drawings/") && x.endsWith(".pdf"), "📐")}
     ${group("CAD + shopping list", x => /assembly\.step|bom\.(csv|md)$/.test(x), "▤")}
+    ${group("Simulation (URDF + meshes, for PyBullet / MuJoCo / Gazebo)", x => x.endsWith("_urdf.zip"), "⚙")}
     ${group("Guides", x => /(ASSEMBLY|WIRING|PRINT_SETTINGS)\.md$/.test(x), "☰")}
     ${d.renders.length ? `<h3>Renders</h3><div class="renders">${d.renders.map((r, i) => `<img loading="lazy" style="animation-delay:${i * 30}ms" src="${fileUrl(d.name, r)}" alt="${esc(r)}" onclick="zoom(this.src)">`).join("")}</div>` : ""}
   </div>`;

@@ -335,6 +335,17 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 dr = drawings.write_all(proj, out / "drawings")
                 rep["files"]["drawings"] = [f"drawings/{d['pdf']}" for d in dr.values() if d.get("pdf")]
                 rep["problems"] += [f"drawing of {k} could not be made: {d['error']}" for k, d in dr.items() if d.get("error")]
+                if asm.movable:                         # out/<project>.urdf + meshes for simulators (kerf/urdf.py)
+                    from . import urdf
+                    try:
+                        masses = {**{k: v["mass_est_g"] for k, v in rep["parts"].items()},
+                                  **{k: v["mass_g"] for k, v in rep["purchased"].items()}}
+                        u = urdf.write(proj, out, asm, masses)
+                        rep["files"]["urdf"] = [u["path"], u["zip"]]
+                        rep["problems"] += [f"URDF {u['path']}: {m} ({c})" for sev, c, m in u["findings"] if sev == "error"]
+                        rep["warnings"] += [f"URDF {u['path']}: {m} ({c})" for sev, c, m in u["findings"] if sev != "error"]
+                    except Exception as e:  # noqa: BLE001
+                        rep["problems"].append(f"URDF could not be written: {type(e).__name__}: {e}")
                 rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj,
                                         extra=wiring_out.bom_rows(emodel) if emodel else None)
                 if emodel:

@@ -90,7 +90,7 @@ tested before handoff.
   `out/drawings/<part>.pdf` for every printed part with `cadgen.eng_drawing` (three views + iso, overall dimensions,
   hole callouts taken from the part's interface sites, material/print orientation in the title block). Test: a drawing
   of a test part has the expected views and a hole callout per hole group; Studio Files tab lists the PDFs
-- [ ] URDF export for every project with moving joints: `kerf build` writes `out/<project>.urdf` (links = items moving
+- [x] URDF export for every project with moving joints: `kerf build` writes `out/<project>.urdf` (links = items moving
   together, joints from the joint tree with limits, inertials from part masses / CG / inertia of the meshes, visual and
   collision meshes from the part STLs, metres + kg), validated with `cadgen.urdf_source.validate_urdf_file`, and loads
   in PyBullet (`pybullet.loadURDF`) in a test. For Spencer's simulators (robot arm, TVC drone RL training)

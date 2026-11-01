@@ -21,7 +21,8 @@ dependencies = [
   "numpy>=1.26",
   "pyyaml>=6",
   "pytest>=8",
-  "cadgen==0.8.4",   # engineering-drawing PDFs (kerf/drawings.py); pins build123d <0.14 (docs/teardowns/text-to-cad.md)
+  "cadgen==0.8.4",
+  "pybullet>=3.2",   # URDF load test (tests/test_urdf.py); Spencer's simulators   # engineering-drawing PDFs (kerf/drawings.py); pins build123d <0.14 (docs/teardowns/text-to-cad.md)
 ]
 [project.scripts]
 kerf = "kerf.cli:main"
