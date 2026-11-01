@@ -40,8 +40,8 @@ parts:
   psu_hood: {file: parts/psu_hood.py, material: PETG, print_rot: [0, -90, 0], infill: 0.3,
              assembly_note: "on the bench, BEFORE the hood goes on the supply: press the two M3 inserts into the bosses behind the end wall, fit the inlet (next step; its flange screws take at most 0.5 N*m), push the three mains jumpers' receptacles onto its L / N / PE tabs and clamp their ferrules in the supply's AC/L, AC/N and FG terminals (WIRING.md), and the two DC pairs in its +V/-V terminals; feed the DC pairs out through the hood's side exit and tie them to its floor bridge (the bridge cannot be reached once the hood is seated); then slide the hood over the terminal end and fit the side screw"}
 purchased:
-  brg_lo: {catalog: bearings.6001, proxy: bearing}
-  brg_hi: {catalog: bearings.6001, proxy: bearing}
+  brg_lo: {catalog: bearings.6001, proxy: bearing, held_by: "press fit in the base tower's bearing seat (+0.05 mm), from below up to its shoulder"}
+  brg_hi: {catalog: bearings.6001, proxy: bearing, held_by: "press fit in the base tower's bearing seat (+0.05 mm), from the top"}
   yaw_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: yaw_servo}, tab_screws_from: bottom, range: [-61, 61]}
   yaw_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: yaw_horn}}
   sh_servo: {catalog: servos.DS3225, proxy: servo, groups: {tabs: sh_servo}, tab_screws_from: bottom, range: [-60, 60]}
@@ -55,7 +55,7 @@ purchased:
   # electrics (DESIGN.md 'Electrics'): 5 V 18 A supply -> two WAGO lever buses (+ and - each) -> every servo's red/brown;
   # Arduino Nano on USB -> I2C -> PCA9685 driver on the base post -> every servo's signal (orange)
   driver: {catalog: boards.pca9685_adafruit, proxy: board, groups: {holes: driver}}
-  nano: {catalog: boards.arduino_nano, proxy: board}
+  nano: {catalog: boards.arduino_nano, proxy: board, off_board: "on the desk near the WAGO splices, in a small case or on a non-conductive pad (DESIGN.md 'Where things sit on the desk')"}
   # supply frame (box proxy, origin at the bottom centre): the terminal-block end is at x = -64.5 (catalog datum x = 0),
   # the datasheet y = 0 side (tapped side holes) at y = -48.5; DC pins 4-7 sit at datum y 23.5-52 (y -25..3.5 here)
   psu: {catalog: electronics.supplies.meanwell_lrs100_5, proxy: box, color: "#9aa0a6",
@@ -65,9 +65,9 @@ purchased:
   # catalog panel range 2.5-8 mm; flange holes d3.4 on 56 mm -> M3
   iec_inlet: {catalog: electronics.connectors.iec_inlet_fused_switched_schurter_dd11, proxy: panel_module, screw: M3,
               groups: {holes: inlet}, note: "fused (2 x T3.15 A) and switched mains inlet in the PSU hood's end wall"}
-  bus_arm: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8",
+  bus_arm: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8", off_board: "on the desk beside the base's rear pad, with the fuse holders",
             note: "two splices (+5 V and GND): supply in, shoulder/elbow/wrist/grip servo red (or brown) out"}
-  bus_yaw: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8",
+  bus_yaw: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8", off_board: "on the desk beside the base's rear pad, with the fuse holders",
             note: "two splices (+5 V and GND): supply in, yaw servo out, PCA9685 GND reference out"}
 bom_extra:
   - {type: fastener, item: "M4 screws or 4 mm wood screws (desk mounting), or two small C-clamps on the rear pad", qty: 4, spec: "length = 6 mm base + desk; the base holes are 4.5 mm"}

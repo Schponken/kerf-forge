@@ -30,9 +30,9 @@ purchased:
          assembly_note: "centre the servo first: wire it up (WIRING.md), run servo.write(90) (1500 us), then press the horn on so the arm will point straight up; fit its centre screw"}
   # electrics (off the rig, on the desk): 5 V mains adapter -> barrel-jack terminal adapter -> servo power; an Arduino
   # Nano on USB makes the 500-2500 us pulses for the full +/-90 deg swing (DESIGN.md 'Electrics')
-  psu: {catalog: electronics.supplies.meanwell_gst60a05, proxy: box}
-  jack: {catalog: electronics.connectors.dc_jack_5521_screw, proxy: box}
-  nano: {catalog: boards.arduino_nano, proxy: board}
+  psu: {catalog: electronics.supplies.meanwell_gst60a05, proxy: box, off_board: "on the desk beside the rig"}
+  jack: {catalog: electronics.connectors.dc_jack_5521_screw, proxy: box, off_board: "on the desk beside the rig"}
+  nano: {catalog: boards.arduino_nano, proxy: board, off_board: "on the desk beside the rig"}
 bom_extra:
   - {type: fastener, item: M3 flat washer (DIN 125), qty: 4, group: bracket_servo, spec: "under the servo tab screw heads (the tab holes are 4.5 mm keyhole slots); counted in the screw grip"}
   - {type: hardware, item: 50 g calibration weight or fishing sinker on a wire loop or S-hook, qty: 1, spec: "hangs from the arm tip hole"}

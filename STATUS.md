@@ -1021,3 +1021,16 @@ pushed for it and what I know:
   scores >= 3 for every printed part. This deliberately makes all six existing reviews stale: re-review with the rubric
   is PLAN Phase 6.
 - servo_link now reports: bracket overbuilt (4 % utilisation) and 12 sharp inside corners, 2 in a stressed zone.
+
+## 2026-11-01 02:30 UTC — planning session 01S68R6Q: PLAN "Report wording for makers" DONE
+- Every requirement result carries `unit` + `bound` (requirements.UNITS covers all 18 checks; describe() ->
+  "0.55 kg·cm (max 4.7)"), used by the CLI summary, problems, viewer and Studio (value/limit columns, margin bars use
+  the declared direction instead of guessing).
+- report.json `mass` (printed / on-board / device / off-board); viewer headline = device mass (+ off-board apart).
+- `off_board:` / `held_by:` item keys; pipeline.unattached warns for any purchased item no screw or pin holds and no key
+  explains (found exactly the reviewer's floating PSU/jack/Nano/Pi, plus press-fit bearings, strapped packs, tied
+  receivers, locked rods); all six projects annotated from their own DESIGN.md / notes (no new claims). Off-board items
+  are no longer "fit onto" steps: ASSEMBLY.md lists them under "Off the device (not mounted)".
+- `maker_notes`: ball-end key and self-tapping-near-an-edge warnings rewritten as instructions; Studio shows them as
+  "For you, when you build it", the rest as notes for the designer.
+- project.yaml edits change fingerprints: reviews were already stale under the intent rubric (Phase 6 re-review).

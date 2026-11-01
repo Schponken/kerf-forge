@@ -202,7 +202,7 @@ def detail(name: str) -> dict:
     trial = TRIALS / name
     trial_rep = _report(trial) if (trial / "out" / "viewer.html").exists() else None
     return {**summary(name), "params": params, "files": files, "docs": docs, "renders": renders[:40],
-            "report": {k: rep.get(k) for k in ("ok", "problems", "warnings", "requirements", "bom", "seconds", "fingerprint")} if rep else None,
+            "report": {k: rep.get(k) for k in ("ok", "problems", "warnings", "maker_notes", "mass", "requirements", "bom", "seconds", "fingerprint")} if rep else None,
             "viewer": "out/viewer.html" if (out / "viewer.html").exists() else None,
             "trial": {"params": trial_rep.get("params") if trial_rep else None, "ok": trial_rep.get("ok") if trial_rep else None,
                       "problems": trial_rep.get("problems") if trial_rep else None,

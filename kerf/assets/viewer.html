@@ -124,7 +124,10 @@ $('status').className = 'pill ' + (R.ok ? 'ok' : 'bad');
 const printed = D.items.filter(i => i.role === 'printed'), bought = D.items.filter(i => i.role === 'purchased');
 const massP = printed.reduce((s, i) => s + ((R.parts || {})[i.id]?.mass_est_g || 0), 0);
 const massB = Object.values(R.purchased || {}).reduce((s, p) => s + (p.mass_g || 0) * (p.qty || 1), 0);
-$('meta').textContent = `${printed.length} printed · ${bought.length} purchased · ~${fmt(massP + massB, 0)} g · ${R.printer || ''} · ${R.fingerprint || ''}`;
+// headline mass = the device (printed + bought parts on it); bench items marked off_board are listed apart
+const M = R.mass || {device_g: massP + massB, off_board_g: 0};
+$('meta').textContent = `${printed.length} printed · ${bought.length} purchased · ~${fmt(M.device_g, 0)} g`
+  + (M.off_board_g ? ` (+${fmt(M.off_board_g, 0)} g off the device)` : '') + ` · ${R.printer || ''}`;
 let theme = null;
 $('theme').onclick = () => { theme = (document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; restyle(); };
 
@@ -416,7 +419,7 @@ function renderChecks() {
       : `Combined motion "${esc(s.joint)}" (${(s.poses || []).length || s.samples || "all"} poses) without hitting anything`,   // coupled-pose sweeps have no single range
     s.clear ? `${s.samples || (s.poses || []).length} poses checked` : esc(JSON.stringify((s.collisions || [])[0])));
   h += '<h2>Engineering requirements</h2>';
-  for (const r of R.requirements || []) h += line(r.ok, r.value == null ? `${esc(r.id)}: did not run` : `${esc(r.id)}: ${fmt(r.value, 2)} (limit ${fmt(r.limit, 2)})`, esc(r.value == null ? r.detail : (r.why || r.detail)));
+  for (const r of R.requirements || []) h += line(r.ok, r.value == null ? `${esc(r.id)}: did not run` : `${esc(r.id)}: ${fmt(r.value, 2)}${r.unit ? ' ' + esc(r.unit) : ''} (${esc(r.bound || 'limit')} ${Array.isArray(r.limit) ? r.limit.map(x => fmt(x, 2)).join('–') : fmt(r.limit, 2)})`, esc(r.value == null ? r.detail : (r.why || r.detail)));
   if (!(R.requirements || []).length) h += '<p class="empty">None declared.</p>';
   $('checks').innerHTML = h;
 }

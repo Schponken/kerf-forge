@@ -33,18 +33,18 @@ purchased:
   motor_3: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_3}}
   motor_4: {catalog: drone.motors.2207_1855kv_6s, proxy: motor, groups: {mount: motor_4}}
   stack: {catalog: drone.stacks.fc_30_5, proxy: stack, groups: {holes: stack}}
-  camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], joints: {pivot: [0, -4.4, 9.5]},
+  camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], joints: {pivot: [0, -4.4, 9.5]}, held_by: "2 x M2 x 6 side screws through the body cheeks into its side holes (the tilt pivot, friction-held)",
            note: "RunCam Phoenix 2; frame: local Z = tilt axis, local +Y = lens; side M2 holes 5.1 mm from the back face"}
-  battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400", joints: {strap: [14.5, 0, 36]}}
-  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000"}
+  battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400", held_by: "the 20 mm strap around the pack and the top plate", joints: {strap: [14.5, 0, 36]}}
+  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "the cradle under the rear tab plus a cable tie through the two slots beside it"}
   vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
-  receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020",
+  receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "heat-shrunk and cable-tied under the camera roof (two tie slots)",
              note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate; T antenna legs tied up and out in a V through the two slots at the roof front (behind the lens, out of its view)"}
-  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 20], color: "#20a0a0",
+  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 20], color: "#20a0a0", held_by: "snapped onto the VTX's MMCX socket; its tube tied through the rear tab's slot pair",
             note: "5.8 GHz antenna, 95 mm tube: from the VTX rear corner outside the rear pillar, outside the rear pillar on the +y side, under the rear tab (one tie through the y +10.5 slot pair), out past the tab end and bent up; about 75 mm of tube path, head (11 mm, 20 mm envelope) above the tab end"}
-  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 40, 3], color: "#303030",
+  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 40, 3], color: "#303030", held_by: "under the pack, clamped by the strap",
         note: "anti-slip pad cut to 80 x 40 mm (the pack's footprint, so the strap's side runs pass beside it)"}
-  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 43.6, 1.8], color: "#404040",
+  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 43.6, 1.8], color: "#404040", held_by: "looped around the pack and under the top plate through the plate-edge notches",
           note: "one loop around the pack's width at x 4.5..24.5: over the pack, down its sides past the plate-edge notches, under the plate (about 170 mm of a 250 mm strap); top run modelled here, side and under runs are keep-outs strap_under / strap_l / strap_r"}
 electrical:
   battery: battery

@@ -121,7 +121,8 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [ ] Showcase rework, fpv_5in arm: fillet the key-ridge roots, move the wire path out of the mid-depth shear zone into
   a covered groove, skid under the motor pad; keep the deflection limit; review PASS
 - [ ] Every project: DESIGN.md "Load → section" table and `style` radii; each part's "overbuilt" and "sharp inside
-  corner" warnings fixed or justified in DESIGN.md; re-review all six with the intent scores (all >= 3). Then make a
+  corner" warnings fixed or justified in DESIGN.md; pan_tilt bracket camera M2 tap holes (22 % edge ring: bosses or
+  through-bolts with nuts); re-review all six with the intent scores (all >= 3). Then make a
   sharp inside corner in a hot zone a problem (not a warning) and keep every project passing
 - [ ] BOM: every catalog item has a priced shop link (not a datasheet); total shown as priced + estimated range plus
   what the packs actually cost; duplicate rows merged and quantities aggregated; human names instead of catalog ids;
@@ -135,9 +136,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [ ] Print package: per plate print time and grams (slice with Bambu Studio / OrcaSlicer CLI when installed, else a
   documented estimate), layer height, temperatures, supports on/off, brim in PRINT_SETTINGS.md; printer/filament
   settings in the 3MF; orientation in words ("on its back face"). Studio shows time, grams and cost per project
-- [ ] Report wording for makers: mass split into printed / on-board / off-board (viewer headline too); every check
-  value with its unit and whether the limit is a min or max; warnings split into "for you" (maker) and "for the
-  designer"; fix pan_tilt's bracket camera tap holes (22 % edge ring) and say "don't overtighten" where self-tapping
+- [x] Report wording for makers: mass split into printed / on-board / off-board (`off_board:` items, viewer headline too); every check value with its unit and whether the limit is a min, max or range; warnings that change what the builder does rewritten as "For you" notes (Studio Checks tab), the rest labelled for the designer; every purchased item held (screw/pin, `held_by:` or `off_board:`) or warned. Tests: tests/test_maker_output.py. (pan_tilt camera tap holes: moved to the per-project warnings item below; it is a geometry change that needs a re-review.)
 - [ ] Renders: assembly-step images framed on the step's parts (off-board items excluded), the step's new parts and
   fasteners highlighted with labels; purchased parts readable on dark; part sheets with overall dimensions and an
   on-the-bed view

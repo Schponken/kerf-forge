@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -17,10 +18,67 @@ def req_line(r):
     """One requirement result; a failure whose rounded value equals its limit says so (it misses by less than the rounding)."""
     if not r['ok'] and r['value'] is None:     # the check could not be evaluated at all (e.g. a bad wiring run)
         return "BAD not evaluated - the reason is in the PROBLEM lines below"
-    t = f"{'ok ' if r['ok'] else 'BAD'} {r['value']} (limit {r['limit']})"
+    t = f"{'ok ' if r['ok'] else 'BAD'} {requirements.describe(r)}"
     if not r['ok'] and r['value'] == r['limit']:
         t += ' - misses the limit by less than the shown rounding; add margin'
     return t
+
+
+def mass_split(proj, rep) -> dict:
+    """Grams: printed parts, purchased items on the device, and items marked `off_board` (bench / desk: a power
+    adapter, a controller beside it). The headline mass is printed + on-board; off-board is reported separately."""
+    printed = sum(((rep["parts"].get(i) or {}).get("mass_est_g") or 0) * int(it.spec.get("qty", 1))
+                  for i, it in proj.printed.items())
+    on = off = 0.0
+    for iid, p in rep["purchased"].items():
+        m = (p.get("mass_g") or 0) * (p.get("qty") or 1)
+        if p.get("off_board"):
+            off += m
+        else:
+            on += m
+    return {"printed_g": round(printed, 1), "on_board_g": round(on, 1), "device_g": round(printed + on, 1),
+            "off_board_g": round(off, 1)}
+
+
+_BALL = re.compile(r"^(M[\d.]+) screw in (\w+) \(group '(\w+)'\) at .*?a straight ([\d.]+) mm hex key hits")
+_THIN_TAP = re.compile(r"^(\w+): (\d+) (M[\d.]+) tap hole\(s\) of group '(\w+)' sit closer than")
+
+
+def maker_notes(warnings: list[str]) -> list[str]:
+    """Warnings that change what the person building it must DO, rewritten as plain instructions (the originals stay
+    in `warnings` for the designer). Only patterns known to be safe to translate; everything else stays designer-only."""
+    notes, seen = [], set()
+    for w in warnings:
+        m = _BALL.match(w)
+        if m and ("ball", m[3]) not in seen:
+            seen.add(("ball", m[3]))
+            notes.append(f"Use a ball-end {m[4]} mm hex key for the {m[1]} screws of `{m[3]}` ({m[2]}): a straight key can't reach "
+                         "every one of them.")
+        m = _THIN_TAP.match(w)
+        if m and ("tap", m[4]) not in seen:
+            seen.add(("tap", m[4]))
+            notes.append(f"The {m[2]} {m[3]} screws of `{m[4]}` cut their own thread close to an edge of **{m[1]}**: turn them by "
+                         "hand with a small driver and stop as soon as they are snug (a power driver or one more turn can split it).")
+    return notes
+
+
+def unattached(proj, fasteners, pins) -> list[str]:
+    """A purchased item no screw or pin holds, and whose project.yaml doesn't say how it is held (`held_by`: press fit,
+    strap, cable tie, glue...) or that it lives off the device (`off_board`), only *looks* mounted in the model: the
+    assembly guide would tell the maker to fit it where nothing holds it."""
+    held = set()
+    for f in fasteners or []:
+        held |= {f.get("male"), f.get("female")}
+    for p in pins or []:
+        held |= set(p.get("fixed_in") or []) | set(p.get("free_in") or [])
+    out = []
+    for iid, it in proj.items.items():
+        if it.role != "purchased" or iid in held or it.spec.get("held_by") or it.spec.get("off_board"):
+            continue
+        out.append(f"{iid}: nothing holds it (no screw or pin, no `held_by`): give it a mount, or say in project.yaml how it "
+                   "is held (`held_by: \"press fit in the bore\"`, strap, cable tie) or that it lives off the device "
+                   "(`off_board: \"on the desk beside it\"`)")
+    return out
 
 
 def render_glb(glb: Path, prefix: Path, views="iso,front,right,top", sheet=True) -> dict:
@@ -150,6 +208,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         if it.role == "purchased" and it.shape is not None:
             rep["purchased"][iid] = {"catalog": it.spec.get("catalog"), "qty": it.spec.get("qty", 1),
                                      "mass_g": round(checks.item_mass_g(it), 1)}
+            if it.spec.get("off_board"):
+                rep["purchased"][iid]["off_board"] = str(it.spec["off_board"])
+    rep["mass"] = mass_split(proj, rep)
     if not any(it.error for it in proj.items.values()):
         try:
             progress.stage("fit")
@@ -174,6 +235,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             keys, kprob, kwarn = access.hex_key_reach(asm)          # can every screw be driven?
             ins, iprob = access.insertion_paths(asm)                # can declared parts slide into their seats?
             rep["assembly"]["hex_keys"], rep["assembly"]["insertion"] = keys, ins
+            rep["warnings"] += unattached(proj, fj, pinj)
             rep["problems"] += kprob + iprob
             rep["warnings"] += kwarn
             if sweeps:
@@ -241,7 +303,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep["warnings"] += bw
             for r in rq:
                 if not r["ok"]:
-                    rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {r['value']} (limit {r['limit']})")
+                    rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}")
             A.solve(asm)
             if do_export or do_render:
                 progress.stage("export")
@@ -305,6 +367,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     if not overrides:           # record what this build read from the catalog, then the fingerprint that depends on it
         P.record_deps(proj)
         rep["fingerprint"] = proj.fingerprint()
+    rep["maker_notes"] = maker_notes(rep["warnings"])
     rep["ok"] = not rep["problems"]
     rep["seconds"] = round(time.time() - t0, 1)
     progress.emit("done", ok=rep["ok"], problems=len(rep["problems"]), seconds=rep["seconds"])

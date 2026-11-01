@@ -41,9 +41,9 @@ purchased:
   # the real parts on the front are the 10.8 mm lens housing only, modelled as the cam_lens keep-out below
   # electrics, off the head (strapped to the tripod column / on the desk): 5 V adapter -> barrel-jack screw terminals
   # -> both servo V+/GND; a Pi Zero 2 W (own USB supply) makes the servo pulses and runs the camera
-  psu: {catalog: electronics.supplies.meanwell_gst60a05, render: false, proxy: box}
-  jack: {catalog: electronics.connectors.dc_jack_5521_screw, render: false, proxy: box}
-  pi: {catalog: boards.rpi_zero_2w, render: false, proxy: board}
+  psu: {catalog: electronics.supplies.meanwell_gst60a05, render: false, proxy: box, off_board: "off the head: strapped to the tripod column or on the desk"}
+  jack: {catalog: electronics.connectors.dc_jack_5521_screw, render: false, proxy: box, off_board: "off the head: strapped to the tripod column or on the desk"}
+  pi: {catalog: boards.rpi_zero_2w, render: false, proxy: board, off_board: "off the head: strapped to the tripod column or on the desk"}
   camera: {catalog: boards.rpi_camera_module_3, proxy: board, groups: {holes: cam_mount}, component_height: 0}
 keepouts:
   cam_lens: {proxy: box, size: [10.8, 10.8, 6.98], owner: camera,

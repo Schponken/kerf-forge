@@ -672,6 +672,27 @@ def prop_clearance(proj, asm, min_mm, min_between_mm=None, props=None, ignore=No
 SLOW = {"fea_static"}
 
 
+# What each check's value and limit mean, for people: unit, and whether the limit is a maximum, a minimum or a range.
+UNITS = {
+    "mass_max": ("g", "max"), "size_max": ("mm", "max"), "distance": ("mm", "range"), "clearance_min": ("mm", "min"),
+    "static_torque": ("kg·cm", "max"), "thrust_to_weight": (":1", "min"), "fea_static": ("MPa", "max"),
+    "cantilever_stress": ("MPa", "max"), "tip_over": ("°", "min"), "channel_clear": ("mm", "min"),
+    "prop_clearance": ("mm", "min"), "hard_stop": ("mm³ overlap", "min"), "gear_bending": ("MPa", "max"),
+    "power_budget": ("× rating", "max"), "flight_time": ("min", "min"), "run_time": ("min", "min"),
+    "cg": ("mm", "max"), "connector_access": ("", "clear"),
+}
+
+
+def describe(r: dict) -> str:
+    """'0.55 kg·cm (max 4.7)', '37.1 ° (min 15)', '44 mm (range 40–48)': value, unit and what kind of limit."""
+    unit, bound = r.get("unit", ""), r.get("bound", "limit")
+    u = f" {unit}" if unit and unit != ":1" else (":1" if unit == ":1" else "")
+    lim = r.get("limit")
+    if bound == "range" and isinstance(lim, (list, tuple)) and len(lim) == 2:
+        lim = "–".join("…" if v is None else f"{v:g}" if isinstance(v, (int, float)) else str(v) for v in lim)
+    return f"{r.get('value')}{u} ({bound} {lim})"
+
+
 def run_all(proj, asm, quick: bool = False) -> list:
     out = []
     for req in proj.data.get("requirements") or []:
@@ -679,7 +700,8 @@ def run_all(proj, asm, quick: bool = False) -> list:
         name = req["check"]
         rid = req.get("id", name)
         if quick and name in SLOW:
-            out.append({"id": rid, "check": name, "why": req.get("why", ""), "ok": True, "skipped": True,
+            unit, bound = UNITS.get(name, ("", "limit"))
+            out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, "ok": True, "skipped": True,
                         "value": None, "limit": None, "detail": "skipped in --quick (runs in full check/build/verify)"})
             from . import progress
             progress.emit("req", id=rid, check=name, ok=True, value=None, limit=None, skipped=True)
@@ -690,9 +712,10 @@ def run_all(proj, asm, quick: bool = False) -> list:
             r = REGISTRY[name](proj, asm, **kw)
         except Exception as e:  # noqa: BLE001
             r = {"ok": False, "value": None, "limit": None, "detail": f"check failed to run: {type(e).__name__}: {e}"}
-        out.append({"id": rid, "check": name, "why": req.get("why", ""), **r})
+        unit, bound = UNITS.get(name, ("", "limit"))
+        out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, **r})
         from . import progress
-        progress.emit("req", id=rid, check=name, ok=bool(r.get("ok")), value=r.get("value"), limit=r.get("limit"),
+        progress.emit("req", id=rid, check=name, unit=unit, bound=bound, ok=bool(r.get("ok")), value=r.get("value"), limit=r.get("limit"),
                       skipped=bool(r.get("skipped")))
     return out
 

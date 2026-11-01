@@ -297,10 +297,11 @@ setTheme(saved || "dark");
 function margin(r) {
   const v = r.value, l = r.limit;
   if (r.skipped || typeof v !== "number" || typeof l !== "number" || l === 0 || v === 0) return null;
-  if (!r.ok) return {pct: 100, cls: "over", label: "over the limit"};
-  const used = v <= l ? v / l : l / v;
+  if (!r.ok) return {pct: 100, cls: "over", label: r.bound === "min" ? "below the minimum" : "over the limit"};
+  const isMin = r.bound ? r.bound === "min" : v > l;          // the check says which way its limit points
+  const used = isMin ? l / v : v / l;
   return {pct: Math.min(100, Math.max(3, used * 100)), cls: used > 0.8 ? "mid" : "",
-          label: v <= l ? `uses ${Math.round(used * 100)} % of the limit` : `${(v / l).toFixed(1)}× the minimum`};
+          label: isMin ? `${(v / l).toFixed(1)}× the minimum` : `uses ${Math.round(used * 100)} % of the limit`};
 }
 function mbar(r, key) {
   const m = margin(r); if (!m) return "";
@@ -397,7 +398,13 @@ function reqTable(reqs) {
   return `<table><tr><th>Requirement</th><th>Result</th><th>Value</th><th>Limit</th><th style="width:24%">Margin</th></tr>${reqs.map((r, i) => `
     <tr class="reqrow" style="animation-delay:${i * 45}ms"><td><b>${esc(r.id)}</b> <span class="why">${esc(r.check)}</span><div class="why">${esc(r.why || "")}</div></td>
     <td>${r.skipped ? `<span class="badge skip">skipped</span>` : r.ok ? `<span class="badge ok">PASS</span>` : `<span class="badge bad">FAIL</span>`}</td>
-    <td class="num">${fmt(r.value)}</td><td class="num">${fmt(r.limit)}</td><td>${mbar(r)}</td></tr>`).join("")}</table>`;
+    <td class="num">${fmt(r.value)}${r.unit && r.value != null ? " " + esc(r.unit) : ""}</td><td class="num">${limitText(r)}</td><td>${mbar(r)}</td></tr>`).join("")}</table>`;
+}
+function limitText(r) {   // "max 4.7 kg·cm", "min 15 °", "40–48 mm"
+  if (r.limit == null) return "–";
+  const u = r.unit ? " " + esc(r.unit) : "";
+  if (r.bound === "range" && Array.isArray(r.limit)) return `${r.limit.map(x => x == null ? "…" : fmt(x)).join("–")}${u}`;
+  return `${r.bound && r.bound !== "limit" ? r.bound + " " : ""}${fmt(r.limit)}${typeof r.limit === "number" ? u : ""}`;
 }
 function ring(pass, total) {
   const C = 2 * Math.PI * 40, f = total ? pass / total : 0;
@@ -418,7 +425,8 @@ function renderResults(el, rep) {
     <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Parts fit, nothing collides at any joint angle, every screw lines up and can be reached, and strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.`}</div>
     ${P.length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Problems</h3><ul class="msgs">${P.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
     <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Engineering requirements</h3>${reqTable(rep.requirements)}</div>
-    ${W.length ? `<details class="card"><summary><b>${W.length} warning${W.length == 1 ? "" : "s"}</b> <span class="note">(worth reading, not blocking)</span></summary><ul class="msgs">${W.map(w => `<li>${esc(w)}</li>`).join("")}</ul></details>` : ""}`;
+    ${(rep.maker_notes || []).length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">For you, when you build it</h3><ul class="msgs">${rep.maker_notes.map(n => `<li>${esc(n).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")}</li>`).join("")}</ul></div>` : ""}
+    ${W.length ? `<details class="card"><summary><b>${W.length} note${W.length == 1 ? "" : "s"} for the designer</b> <span class="note">(design improvements; not blocking)</span></summary><ul class="msgs">${W.map(w => `<li>${esc(w)}</li>`).join("")}</ul></details>` : ""}`;
   requestAnimationFrame(() => requestAnimationFrame(() => el.querySelectorAll(".ring .fg").forEach(c => c.style.strokeDashoffset = c.dataset.off)));
   growBars(el);
 }
@@ -594,7 +602,7 @@ function renderMc(j) {
     if (reqs.length || st.cur === "requirements") {
       const total = st.start ? st.start.reqs.length : reqs.length;
       html += `<div class="sect">Engineering checks · ${reqs.length} of ${total}</div>${reqs.map(r => `<div class="lrow${fresh(`mc:${pkey}:req:${r.id}`)}"><div class="n">${esc(r.id)}<small>${esc(r.check)}</small></div>
-        <div>${r.skipped ? `<span class="note">skipped in quick mode</span>` : mbar(r, `mc:${pkey}:${r.id}`) || `<span class="note">${fmt(r.value)} · limit ${fmt(r.limit)}</span>`}</div>
+        <div>${r.skipped ? `<span class="note">skipped in quick mode</span>` : mbar(r, `mc:${pkey}:${r.id}`) || `<span class="note">${fmt(r.value)}${r.unit ? " " + esc(r.unit) : ""} · ${limitText(r)}</span>`}</div>
         <span class="badge ${r.skipped ? "skip" : r.ok ? "ok" : "bad"}">${r.skipped ? "SKIP" : r.ok ? "PASS" : "FAIL"}</span></div>`).join("")}
         ${st.cur === "requirements" && reqs.length < total ? `<div class="lrow"><div class="n">${esc(st.start.reqs[reqs.length] || "")}<small>computing…</small></div><div class="sk" style="height:7px"></div><span class="badge skip">…</span></div>` : ""}`;
     }

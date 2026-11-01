@@ -129,7 +129,9 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
 def steps(asm) -> list[list[str]]:
     """Ordered build steps, each a list of item ids fitted together (keep-outs excluded)."""
     proj = asm.proj
-    real = {i for i, it in proj.items.items() if it.role != "keepout" and it.shape is not None}
+    # off-board items (a power adapter or controller on the desk) are not fitted to the device: they get their own
+    # section in ASSEMBLY.md, not a "fit onto" step, and stay out of the step pictures
+    real = {i for i, it in proj.items.items() if it.role != "keepout" and it.shape is not None and not it.spec.get("off_board")}
     order = proj.data["assembly"].get("order") or []
     out = [[asm.root]] if asm.root in real else []
     placed = set(out[0]) if out else set()
@@ -344,6 +346,12 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
         L += screw_notes(proj, rep, s["groups"])
         for b in s["bench"]:
             L.append(f"- Bench sub-assembly: do group `{b['group']}` before fitting {', '.join(b['before'])} — {b['why']}.")
+        L.append("")
+    off = [(i, it) for i, it in proj.items.items() if it.spec.get("off_board")]
+    if off:
+        L += ["## Off the device (not mounted)", "",
+              "These are not fitted to the build: place them as described and connect them as `WIRING.md` says.", ""]
+        L += [f"- **{i}** ({it.spec.get('catalog') or 'printed'}): {it.spec['off_board']}." for i, it in off]
         L.append("")
     (outdir / "ASSEMBLY.md").write_text("\n".join(L), encoding="utf-8")
     return {"file": "ASSEMBLY.md", "steps": len(st), "renders": render is not None}
