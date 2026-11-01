@@ -1,7 +1,0 @@
-{
- "item": "Viewer stress colours: each FEA-checked part coloured on the 3D model by how much of its allowed stress it uses (worst load case), legend, value under the pointer; parts without FEA say so",
- "session": "4c4e3822c9",
- "since": 1793559273.5889587,
- "heartbeat": 1793563299.60885,
- "since_utc": "2026-11-01 18:54"
-}
