@@ -196,7 +196,10 @@ def detail(name: str) -> dict:
         for f in ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "viewer.html", f"{name}_urdf.zip"):
             if (out / f).exists():
                 files.append(f"out/{f}")
-    docs = [f for f in ("DESIGN.md", "REFERENCES.md", "out/ASSEMBLY.md", "out/WIRING.md", "out/bom.md",
+        for f in sorted((out / "firmware").rglob("*")) if (out / "firmware").exists() else []:   # bring-up program + BRINGUP.md
+            if f.suffix in (".ino", ".py", ".md"):
+                files.append(str(f.relative_to(d)))
+    docs = [f for f in ("DESIGN.md", "REFERENCES.md", "out/ASSEMBLY.md", "out/WIRING.md", "out/firmware/BRINGUP.md", "out/bom.md",
                         "out/plates/PRINT_SETTINGS.md") if (d / f).exists()]
     renders = sorted(str(p.relative_to(d)) for p in (out / "renders").glob("*.png")) if (out / "renders").exists() else []
     trial = TRIALS / name

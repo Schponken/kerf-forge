@@ -489,6 +489,7 @@ function renderFiles(el) {
     ${group("CAD + shopping list", x => /assembly\.step|bom\.(csv|md)$/.test(x), "▤")}
     ${group("Simulation (URDF + meshes, for PyBullet / MuJoCo / Gazebo)", x => x.endsWith("_urdf.zip"), "⚙")}
     ${group("Guides", x => /(ASSEMBLY|WIRING|PRINT_SETTINGS)\.md$/.test(x), "☰")}
+    ${group("Bring-up program (upload before fitting servo horns)", x => x.startsWith("out/firmware/"), "⌁")}
     ${d.renders.length ? `<h3>Renders</h3><div class="renders">${d.renders.map((r, i) => `<img loading="lazy" style="animation-delay:${i * 30}ms" src="${fileUrl(d.name, r)}" alt="${esc(r)}" onclick="zoom(this.src)">`).join("")}</div>` : ""}
   </div>`;
 }
@@ -498,7 +499,7 @@ async function renderDocs(el) {
   const d = S.detail;
   if (!d.docs.length) { el.innerHTML = `<div class="card empty"><b>No documents yet</b></div>`; return; }
   S.doc = S.doc && d.docs.includes(S.doc) ? S.doc : d.docs[0];
-  const names = {"DESIGN.md": "Design", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring",
+  const names = {"DESIGN.md": "Design", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring", "out/firmware/BRINGUP.md": "Bring-up",
                  "out/bom.md": "Shopping list", "out/plates/PRINT_SETTINGS.md": "Print settings"};
   el.innerHTML = `<div class="docnav">${d.docs.map(x => `<button class="${x === S.doc ? "primary" : ""}" onclick="S.doc='${x}';renderTab()">${names[x] || x}</button>`).join("")}</div><div class="card doc" id="docbody"><div class="sk" style="height:300px"></div></div>`;
   const txt = await (await fetch(fileUrl(d.name, S.doc))).text();

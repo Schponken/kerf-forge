@@ -280,3 +280,16 @@ def test_waking_from_sleep_does_not_close_an_open_window(monkeypatch):
     assert stopped, "watchdog never finished"
     woke = 1006.0 + 3600.0
     assert stopped[0] - woke >= 149, f"closed {stopped[0] - woke:.0f} s after waking; must wait the idle limit"
+
+
+def test_detail_lists_the_bring_up_program_and_guide(tmp_path, monkeypatch):
+    proj = tmp_path / "projects" / "demo"
+    fw = proj / "out" / "firmware" / "demo_bringup"
+    fw.mkdir(parents=True)
+    (proj / "project.yaml").write_text(YAML)
+    (fw / "demo_bringup.ino").write_text("// sketch")
+    (proj / "out" / "firmware" / "BRINGUP.md").write_text("# Bring-up")
+    monkeypatch.setattr(studio, "PROJECTS", tmp_path / "projects")
+    monkeypatch.setattr(studio, "TRIALS", tmp_path / "trials")
+    d = studio.detail("demo")
+    assert "out/firmware/demo_bringup/demo_bringup.ino" in d["files"] and "out/firmware/BRINGUP.md" in d["docs"]
