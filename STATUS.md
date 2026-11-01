@@ -1154,3 +1154,24 @@ pushed for it and what I know:
 - Not verified on hardware: the Arduino sketches compile against stub headers only (arduino-cli could not be installed
   here); the Pi script is tested against a fake sysfs tree.
 - Resumed robotic_gripper_desk / robotic_gripper_claw from the Mac checkout's unpushed work (no restart).
+
+## 2026-11-01 — session 01S68R6Q: Studio, print package, auto-fix, smarter new design (PLAN Phase 6)
+- Studio: welcome page when there are no projects; Build / Build-all time estimates from past runs (.cache/studio/
+  times.json); `unit:` on every parameter of the finished projects, shown in Tune with "affects: <checks>"; History tab
+  (a git-backed snapshot per build with thumbnail and metric diff, one-click restore); cost / filament / print-time
+  chips; Export zip. Fixed two load races (a slower project answer replacing the one just clicked, or replacing New
+  design / My parts).
+- Print package (kerf/printpkg.py): PRINT_SETTINGS.md per project with each plate's grams and time (sliced with the
+  Bambu Studio CLI when ~/.kerf/bambu.json points at one; else grams from the mesh and a documented lower-bound time
+  from the profile's max volumetric flow), layer height, temperatures, supports (on for `supports: needed` or > 5 %
+  overhang area), brim, orientation in words; the same settings written into each 3MF. Profile numbers are Bambu
+  Studio's own filament / process profiles.
+- Auto-fix (`kerf fixes <p> [--apply] [--heatset]`, kerf/autofix.py): round horizontal holes -> `teardrop="auto"`
+  (iface works out the angle from print_rot); a tap hole near an edge -> heat-set insert only with --heatset (its
+  bigger bore can break the insert-wall rule; the check after it must pass); bosses and fillets are listed for the
+  designer. The kerf skill runs it before review.
+- Smarter new design: intake questions (budget, power, mounting, environment, printer, material, notes); "Show me
+  2-3 options first" runs a quote job (kerf skill "Quote mode": options with cost from `kerf price`, print hours, part
+  count, risks) and Spencer picks one, which goes into the design brief; "My parts" (catalog/inventory.json) parts are
+  preferred in the brief and the BOM counts them first and leaves them out of the cost. The quote job itself was not
+  run end-to-end with Claude here (tests stub the quote file).
