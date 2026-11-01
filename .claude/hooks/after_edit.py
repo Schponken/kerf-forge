@@ -31,6 +31,18 @@ if rel == os.path.join("catalog", "hardware.json"):
 m = re.match(r"projects/([^/]+)/(parts/[^/]+\.py|project\.yaml)$", rel)
 if not m or not os.path.exists(kerf):
     sys.exit(0)
+why_note = ""
+if m.group(2).startswith("parts/"):     # design intent: every body boolean says why (kerf/intent.py)
+    try:
+        sys.path.insert(0, root)
+        from kerf import intent
+        miss = intent.unexplained(open(path, encoding="utf-8").read())
+        if miss:
+            why_note = (f"Design intent: {len(miss)} body boolean(s) in {rel} say nothing about why. Wrap the shape in "
+                        "ctx.add(..., why=, kind=) / ctx.cut(..., why=, kind=) or add a `# why:` comment (the load, fit "
+                        "or print need it serves):\n" + "\n".join(f"  line {n}: {l[:110]}" for n, l in miss[:12]))
+    except Exception:
+        pass
 r = subprocess.run([kerf, "check", os.path.join("projects", m.group(1)), "--quick"], cwd=root, capture_output=True,
                    text=True, timeout=880)
 if r.returncode != 0:
@@ -38,7 +50,9 @@ if r.returncode != 0:
     lines = r.stdout.splitlines()
     fixes = [f"{lines[i - 1].strip()}\n  {l.strip()}" for i, l in enumerate(lines) if l.strip().startswith("fix:") and i]
     head = ("FIX THESE FIRST (apply the hint, then re-check):\n" + "\n".join(fixes) + "\n\n") if fixes else ""
-    print(f"kerf check {m.group(1)} --quick FAILED after your edit:\n{head}{r.stdout[-4000:]}{r.stderr[-1500:]}",
-          file=sys.stderr)
+    print(f"kerf check {m.group(1)} --quick FAILED after your edit:\n{head}{r.stdout[-4000:]}{r.stderr[-1500:]}"
+          + (f"\n\n{why_note}" if why_note else ""), file=sys.stderr)
     sys.exit(2)
+if why_note:                            # a warning, not a block: shown to the agent as context
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": why_note}}))
 sys.exit(0)

@@ -19,8 +19,10 @@ Rules:
   root, flanges far from the neutral axis, closed or I/C sections for bending and box/tube for torsion, ribs and
   gussets along the load path), and take it out where it isn't. A prismatic slab of one section is only acceptable for
   a part DESIGN.md says carries no meaningful load.
-- Every feature has a purpose, written as a one-line `# why:` comment on the line that adds or cuts it (load path,
-  fit, print orientation, assembly, wiring, weight). Geometry with no reason is removed, not kept "just in case".
+- Every feature has a purpose, recorded with `body += ctx.add(shape, why=..., kind=...)` / `body -= ctx.cut(...)` (it
+  lands in report.json and the viewer's Feature / Why table) or at least a one-line `# why:` comment on the line that
+  adds or cuts it (load path, fit, print orientation, assembly, wiring, weight); the after-edit hook lists the ones
+  that say nothing. Geometry with no reason is removed, not kept "just in case".
 - Fillet inside corners on load paths (r >= 1 mm) with the project's radius set (`style.radii` in project.yaml when
   present: one consistent design language), keep walls >= 1.6 mm on structural parts, follow the print orientation in
   the contract and design for it (chamfers instead of flat overhangs, no unsupported ceilings).

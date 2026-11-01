@@ -162,6 +162,7 @@ def _print_checks(it, printer, supports) -> dict:
     r = checks.part_checks(it, printer, supports=supports)
     r["sharp_inside"] = edges.sharp_inside(it.shape, getattr(it.shape, "kerf_sites", []))
     r["notes"] = list(getattr(it.shape, "kerf_notes", []))
+    r["features"] = [dict(f) for f in getattr(it.shape, "kerf_features", [])]   # design-intent ledger (ctx.add / cut)
     r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]
     hp, hw, hres = holewall.check(it)                  # wall around every fastener hole (ENGINEERING.md s5/s7)
     r["problems"] += hp

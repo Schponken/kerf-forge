@@ -1120,3 +1120,14 @@ pushed for it and what I know:
 - Not mine, seen in the full test run: tests/test_claw_fits_arm.py::test_stand_contains_the_forearm_wrist_end fails on
   origin/main without my changes too (32.8 mm3 of the forearm outside the claw project's wrist_stand); it belongs to
   the robotic_gripper_claw work another session holds.
+
+## 2026-11-01 ~10:00 UTC — session 01S68R6S (continued): feature intent ledger (PLAN Phase 6)
+- `ctx.add(shape, why=, kind=)` / `ctx.cut(...)` record each feature (op, kind, why, where, volume; an empty why is an
+  error); iface features register themselves via ctx.site / ctx.pin_site (one row per interface group + hole type,
+  with the count). Ledger -> shape.kerf_features (cached with the part) -> report.json parts.<p>.features -> viewer
+  Print tab "Feature / Why" table.
+- kerf/intent.py `unexplained(src)`: body booleans (the variable handed to ctx.finish) with no ctx.add/cut, no
+  iface / idioms / features / sections call and no `# why:` comment. The after-edit hook reports them as context after
+  every part edit (does not block). part-designer.md asks for ctx.add/cut. tests/test_intent.py.
+- Existing parts mostly use plain comments, so the hook will list their booleans until the Phase 6 rework items add
+  why=: e.g. robot_arm base 20+, gripper 10+.

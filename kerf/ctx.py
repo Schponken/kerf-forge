@@ -79,6 +79,7 @@ class Ctx:
         self.pins: list[PinSite] = []
         self.mesh_cuts: list = []
         self.bom: list = []
+        self.features: list = []      # design-intent ledger: what each feature is and why (kerf/intent.py)
 
     # ---- joints (declare in the part's own frame) ----
     def rigid(self, label: str, loc: Location):
@@ -92,9 +93,42 @@ class Ctx:
 
     def site(self, s: Site):
         self.sites.append(s)
+        self._iface_feature("fastener", s.group, f"{s.screw} {s.kind}", "male" if s.role == "male" else "female", s.loc)
 
     def pin_site(self, s: PinSite):
         self.pins.append(s)
+        self._iface_feature("pin", s.group, f"{s.pin.split('.')[-1]} {s.fit} fit", "", s.loc)
+
+    # ---- design-intent ledger ----
+    def add(self, shape, why: str, kind: str = "feature"):
+        """Record a feature added to the body and return it: `body += ctx.add(rib, why="...", kind="rib")`."""
+        return self._feature("add", shape, why, kind)
+
+    def cut(self, shape, why: str, kind: str = "cut"):
+        """Record a feature cut from the body and return the cutter: `body -= ctx.cut(slot, why="...", kind="tie slot")`."""
+        return self._feature("cut", shape, why, kind)
+
+    def _feature(self, op, shape, why, kind):
+        if not why or not str(why).strip():
+            raise PartError(f"{self.id}: ctx.{op}(..., kind={kind!r}) needs a why= (what load / fit / print need it serves)")
+        c = shape.bounding_box().center() if shape is not None else None
+        self.features.append({"op": op, "kind": kind, "why": str(why).strip(), "source": "part",
+                              "at": [round(c.X, 1), round(c.Y, 1), round(c.Z, 1)] if c is not None else None,
+                              "volume_mm3": round(float(shape.volume), 1) if shape is not None else None})
+        return shape
+
+    def _iface_feature(self, what, group, spec, role, loc):
+        """iface features register themselves: one ledger row per interface group and hole type, with the count."""
+        for f in self.features:
+            if f.get("group") == group and f.get("spec") == spec and f["source"] == "iface":
+                f["count"] += 1
+                return
+        mate = "the screw passes through here" if role == "male" else ("the screw threads in here" if role else "")
+        p = loc.position
+        self.features.append({"op": "cut", "kind": f"{what} hole", "source": "iface", "group": group, "spec": spec,
+                              "count": 1, "at": [round(p.X, 1), round(p.Y, 1), round(p.Z, 1)],
+                              "why": f"interface '{group}': {spec}; lines up with the mating part's '{group}' by "
+                                     f"construction{(' - ' + mate) if mate else ''}"})
 
     def bom_item(self, item: str, qty: int = 1, spec: str = "", note: str = "", link: str = "", price_key: str = ""):
         """A purchased bit a feature of this part needs (e.g. the captive tripod nut): one BOM row per part copy.
@@ -134,4 +168,5 @@ class Ctx:
         shape.kerf_pins = list(self.pins)
         shape.kerf_mesh_cuts = list(self.mesh_cuts)
         shape.kerf_bom = list(self.bom)
+        shape.kerf_features = [dict(f) for f in self.features]
         return shape

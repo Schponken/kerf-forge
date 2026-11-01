@@ -114,7 +114,7 @@ class _Pickler(pickle.Pickler):
         return NotImplemented
 
 
-ATTRS = ("kerf_sites", "kerf_joints", "kerf_notes", "kerf_pins", "kerf_mesh_cuts", "kerf_bom")
+ATTRS = ("kerf_sites", "kerf_joints", "kerf_notes", "kerf_pins", "kerf_mesh_cuts", "kerf_bom", "kerf_features")
 
 
 def _dump(shape, deps: list) -> bytes:

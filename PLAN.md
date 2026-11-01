@@ -111,7 +111,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [x] Mechanical idiom library (kerf/features.py or kerf/idioms.py): `yoke_cheek`, `servo_cradle`, `clevis`, `boss`
   (root fillet built in), `cable_saddle` / strain relief, `grip_pad` (serrations or TPU-insert pocket). Replace the
   copy-pasted robot_arm `yoke()` (yoke_l/yoke_r) and `plate()` (upper_arm/forearm) with them. Tests per idiom
-- [ ] Feature intent ledger: `ctx.add(shape, why=, kind=)` / `ctx.cut(shape, why=, kind=)` (iface calls register
+- [x] Feature intent ledger: `ctx.add(shape, why=, kind=)` / `ctx.cut(shape, why=, kind=)` (iface calls register
   themselves); the table goes into report.json and the part sheet; the after-edit hook warns on a body boolean with no
   `why=` and no `# why:` comment. Test
 - [ ] Showcase rework, robot_arm: upper_arm + forearm from `fork_link` (closed section against torsion, depth tapered

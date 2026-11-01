@@ -400,6 +400,9 @@ function renderPrint() {
       <tr><td>Overhang area</td><td class="n">${fmt(p.overhang_pct, 2)}%</td></tr>
       <tr><td>Thinnest wall (2nd pct.)</td><td class="n">${fmt(p.wall_p02_mm, 2)} mm</td></tr>
       <tr><td>One solid, watertight</td><td class="n">${p.solids === 1 && p.watertight ? 'yes' : 'NO'}</td></tr></table>`;
+    const F = p.features || [];
+    if (F.length) h += `<table class="intent"><tr><th>Feature</th><th>Why</th></tr>${F.map(f =>
+      `<tr><td>${f.op === 'cut' ? '−' : '+'} ${esc(f.kind)}${f.count > 1 ? ` ×${f.count}` : ''}</td><td>${esc(f.why)}</td></tr>`).join('')}</table>`;
     for (const w of p.problems || []) h += `<div class="note bad">${esc(w)}</div>`;
     for (const w of p.warnings || []) h += `<div class="note warn">${esc(w)}</div>`;
   }
