@@ -3,6 +3,8 @@ REFERENCES.md links from a design-hosting site is listed there, so later project
 import re
 from pathlib import Path
 
+from kerf.find import SECTION as FIND_SECTION
+
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / "references" / "INDEX.md"
 DESIGN_HOSTS = ("github.com", "printables.com", "thingiverse.com", "makerworld.com", "myminifactory.com",
@@ -41,11 +43,31 @@ def test_index_rows_complete():
     assert len(names) == len(set(names)), "duplicate designs"
 
 
+def _studied_text(text):
+    """REFERENCES.md without the `kerf find` candidates section: those rows are unvetted search hits (and setup
+    links like thingiverse.com/developers), not studied designs; anything the researcher studies is cited again
+    in the project's own references table, which stays enforced."""
+    out, skip = [], False
+    for line in text.splitlines():
+        if line.startswith("## "):
+            skip = line.strip() == FIND_SECTION
+        if not skip:
+            out.append(line)
+    return "\n".join(out)
+
+
 def test_project_design_links_are_indexed():
     indexed = {_norm(u) for u in URL.findall(INDEX.read_text(encoding="utf-8"))}
     missing = []
     for ref in (ROOT / "projects").glob("*/REFERENCES.md"):
-        for u in URL.findall(ref.read_text(encoding="utf-8")):
+        for u in URL.findall(_studied_text(ref.read_text(encoding="utf-8"))):
             if any(h in u for h in DESIGN_HOSTS) and not any(_norm(u).startswith(i) or i.startswith(_norm(u)) for i in indexed):
                 missing.append(f"{ref.parent.name}: {u}")
     assert not missing, f"add these designs to references/INDEX.md: {missing}"
+
+
+def test_find_candidates_exempt_but_studied_links_enforced():
+    text = (f"# R\n\n| a | https://github.com/x/studied |\n\n{FIND_SECTION}\n\n| https://www.printables.com/model/1-hit |\n\n"
+            "## Decisions\n\nsee https://github.com/x/later\n")
+    kept = URL.findall(_studied_text(text))
+    assert kept == ["https://github.com/x/studied", "https://github.com/x/later"]

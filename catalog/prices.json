@@ -815,5 +815,13 @@
     "checked": "2026-11-01",
     "source": "https://www.jameco.com/z/LRS-100-5-MEAN-WELL-90W-5V-18A-Single-Output-High-Efficiency-Power-Supply_2257660.html",
     "note": "MEAN WELL LRS-100-5 at Jameco, $19.20 each at quantity 1. A terminal cover or enclosure is extra (see the catalog note)."
+  },
+  "rods.ss_rod_4": {
+    "buy": "https://www.servocity.com/4mm-stainless-steel-precision-shafting/",
+    "pack_qty": 1,
+    "pack_usd": 2.79,
+    "checked": "2026-10-31",
+    "source": "https://www.servocity.com/4mm-stainless-steel-precision-shafting/",
+    "note": "ServoCity 4 mm stainless precision shafting, 100 mm length (SKU 2100-0004-0100) $2.79 each; other stocked lengths 25 mm $1.99, 50 mm $2.29, 150 mm $3.29, 200 mm $3.79, 250 mm $4.19. Price is per 100 mm piece: re-check if a project uses another length. Stock status not shown on the page."
   }
 }

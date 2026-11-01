@@ -1096,3 +1096,13 @@ pushed for it and what I know:
   in both bed orientations, for fork_link (box / C / rect, with channel) and rib_along; the textbook I / box do
   overhang (so the test can fail); the print-ready forms are never less stiff. ENGINEERING.md s3 says when to use them.
 - No project uses them yet: the robot_arm / fpv_5in showcase reworks (PLAN Phase 6) are where they go in.
+
+## 2026-10-31 — design-researcher for robotic_gripper_desk
+- REFERENCES.md written (8 kerf find blocks + hand-found MakerWorld/GitHub/Pololu adds; references table; 11 decisions;
+  open questions). 8 new designs + 5 engineering sources + a "Grippers" lessons block appended to references/INDEX.md.
+- Catalog: `rods.ss_rod_4` (ServoCity 4 mm stainless shafting, stocked 25-250 mm incl. 100 mm) + price snapshot.
+- tests/test_references.py: `kerf find` candidate tables (section "## Existing designs (kerf find)") are now exempt
+  from the "every linked design is in INDEX.md" rule. Reason: this was the first project to run `kerf find`, and its
+  unvetted search hits plus the thingiverse.com/developers setup link made the test fail for every project that uses
+  the search-first step. Studied designs are still enforced (they are cited again in the project's own table);
+  new test `test_find_candidates_exempt_but_studied_links_enforced` guards both halves.
