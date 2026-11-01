@@ -7,7 +7,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import edges, progress, stressmap
+from . import edges, partcache, progress, stressmap
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -156,6 +156,23 @@ def _fea_hygiene(proj) -> list:
     return out
 
 
+def _print_checks(it, printer, supports) -> dict:
+    """Every per-part check: a function of the built part alone (cached with it by kerf/partcache.py)."""
+    iid = it.id
+    r = checks.part_checks(it, printer, supports=supports)
+    r["sharp_inside"] = edges.sharp_inside(it.shape, getattr(it.shape, "kerf_sites", []))
+    r["notes"] = list(getattr(it.shape, "kerf_notes", []))
+    r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]
+    hp, hw, hres = holewall.check(it)                  # wall around every fastener hole (ENGINEERING.md s5/s7)
+    r["problems"] += hp
+    r["warnings"] += hw
+    r["hole_walls"] = hres
+    tp, tw = hole_axes.check(it)                       # horizontal holes cut round (ENGINEERING.md s4)
+    r["problems"] += tp
+    r["warnings"] += tw
+    return r
+
+
 def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9) -> dict:
     t0 = time.time()
     from . import catalog
@@ -170,7 +187,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     supports = proj.data.get("supports", "allowed")
     rep = {"project": proj.name, "dir": proj.dir.name, "fingerprint": proj.fingerprint(), "printer": printer,
            "params": proj.params, "parts": {}, "purchased": {}, "assembly": {}, "requirements": [],
-           "problems": [], "warnings": []}
+           "problems": [], "warnings": [],
+           "cached_parts": [k for k, it in proj.printed.items() if it.cached]}   # kerf/partcache.py hits
     for iid, it in proj.items.items():
         if it.error:
             rep["problems"].append(f"{iid} failed to build: {it.error}")
@@ -185,18 +203,17 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         if it.shape is None:
             progress.emit("part", id=iid, ok=False)
             continue
-        r = checks.part_checks(it, printer, supports=it.spec.get("supports", supports))
-        r["sharp_inside"] = edges.sharp_inside(it.shape, getattr(it.shape, "kerf_sites", []))
+        sup = it.spec.get("supports", supports)
+        cache_as = f"print-{sup}" if it.cached and it.spec.get("source") != "meshy" else None
+        r = partcache.lookup_extra(it.cache_key, cache_as) if cache_as else None   # unchanged part: same results
+        if r is not None:
+            r["build_ms"] = it.build_ms
+        else:
+            with partcache.recording() as deps:
+                r = _print_checks(it, printer, sup)
+            if it.cache_key and it.spec.get("source") != "meshy":
+                partcache.store_extra(it.cache_key, f"print-{sup}", r, deps)
         progress.emit("part", id=iid, ok=not r.get("problems"), mass=r.get("mass_est_g"))
-        r["notes"] = list(getattr(it.shape, "kerf_notes", []))
-        r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]
-        hp, hw, hres = holewall.check(it)                  # wall around every fastener hole (ENGINEERING.md s5/s7)
-        r["problems"] += hp
-        r["warnings"] += hw
-        r["hole_walls"] = hres
-        tp, tw = hole_axes.check(it)                       # horizontal holes cut round (ENGINEERING.md s4)
-        r["problems"] += tp
-        r["warnings"] += tw
         rep["parts"][iid] = r
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]
@@ -314,6 +331,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 export.glb(proj, out / "assembly_keepouts.glb", include_keepouts=True)
                 rep["files"] = {"parts": export.part_files(proj, out / "parts"),
                                 "plates": export.plates(proj, out / "plates", printer)}
+                from . import drawings                  # out/drawings/<part>.pdf (cadgen eng_drawing)
+                dr = drawings.write_all(proj, out / "drawings")
+                rep["files"]["drawings"] = [f"drawings/{d['pdf']}" for d in dr.values() if d.get("pdf")]
+                rep["problems"] += [f"drawing of {k} could not be made: {d['error']}" for k, d in dr.items() if d.get("error")]
                 rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj,
                                         extra=wiring_out.bom_rows(emodel) if emodel else None)
                 if emodel:
@@ -377,6 +398,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
 
 def summary(rep: dict) -> str:
     L = [f"{'PASS' if rep['ok'] else 'FAIL'}  {rep['project']}  ({rep['seconds']} s, fingerprint {rep['fingerprint']})"]
+    if rep.get("cached_parts"):
+        L.append(f"  {len(rep['cached_parts'])}/{len(rep['parts'])} parts unchanged, taken from the build cache")
     for iid, r in rep["parts"].items():
         L.append(f"  part {iid:18s} {'ok ' if r['ok'] else 'BAD'} {r['size_mm']} mm  {r['mass_est_g']} g  overhang {r['overhang_pct']}%  wall p2 {r['wall_p02_mm']} mm")
     a = rep.get("assembly", {})

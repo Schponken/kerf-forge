@@ -1034,3 +1034,26 @@ pushed for it and what I know:
 - `maker_notes`: ball-end key and self-tapping-near-an-edge warnings rewritten as instructions; Studio shows them as
   "For you, when you build it", the rest as notes for the designer.
 - project.yaml edits change fingerprints: reviews were already stale under the intent rubric (Phase 6 re-review).
+
+## 2026-11-01 ~06:00 UTC — session 01S68R6S: per-part build cache + engineering drawings (PLAN Phase 5)
+- **Build cache** (kerf/partcache.py): each printed part is cached under .cache/parts/ by part source + project helper
+  files + resolved params + spec + printer fit profile + engine version (kerf/*.py, build123d), plus the catalog entries
+  that part read (hashed on lookup). Exact BREP + everything ctx.finish attaches (sites, pins, joints, notes, BOM, colour;
+  locations stored as full doubles, build123d's own pickle is float32), and the part's print-check results next to it.
+  `kerf check` / `build` / Studio "Try" rebuild and re-check only changed parts; the report says "N/M parts unchanged,
+  taken from the build cache". `KERF_NO_CACHE=1` bypasses it; `kerf verify` and kerf/attribution.py always build
+  fresh. Tests prove hit = identical geometry + metadata + identical check report; param / source / helper / catalog
+  entry / engine change = miss; unrelated catalog edit = hit.
+- **robot_arm timing** (this container): `kerf check --quick` 92 s cold → 55 s warm (build stage 7.3 → 0.6 s, per-part
+  print checks 26 → 0 s). Full `kerf check`: 573 s without cache → 410-450 s warm; the rest is assembly-wide (fit,
+  hex-key reach, motion sweeps, requirements/FEA), which depends on every part and is not cached per part.
+- **Engineering drawings** (kerf/drawings.py, cadgen==0.8.4 added to pyproject; Spencer OK'd the install): `kerf build`
+  writes out/drawings/<part>.pdf + index.json: top/front/right (third angle, hidden lines) + iso, overall dimensions,
+  one hole callout per interface hole group with diameter, depth/THRU and counterbore MEASURED on the built part,
+  label (heat-set insert / self-tap pilot / nut trap / clearance / pin fit), title block + notes with material, walls,
+  infill and which face is up for printing. Smallest sheet A4..A2 at the largest scale where views AND annotations
+  stay inside the frame (cadgen only guards views). Two cadgen 0.8.4 workarounds, scoped to Kerf's calls: edges that
+  project to a point are dropped (cadgen's own validation refused bionic_finger sheets), cadgen telemetry is off
+  (CADGEN_TELEMETRY=0). Drawings are cached per part. Studio Files tab has an "Engineering drawings (PDF)" group.
+  All 6 projects' parts draw (bionic_finger parts take 20-50 s each the first time; cached after).
+- Open: the drawings call out interface holes only (e.g. base's desk-mount corner holes are not interface sites).

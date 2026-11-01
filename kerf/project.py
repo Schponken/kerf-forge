@@ -32,6 +32,8 @@ class Item:
     build_ms: int = 0
     error: str | None = None
     diag: object = None       # kerf.diagnose.Diagnosis when the build failed
+    cached: bool = False      # printed part taken from the build cache (kerf/partcache.py)
+    cache_key: str | None = None
 
 
 @dataclass
@@ -154,7 +156,7 @@ def shared_layout(proj: Project) -> dict:
     return out
 
 
-def build(proj: Project, only: list[str] | None = None) -> Project:
+def build(proj: Project, only: list[str] | None = None, cache: bool = True) -> Project:
     from . import proxies
 
     try:
@@ -180,11 +182,18 @@ def build(proj: Project, only: list[str] | None = None) -> Project:
                 f = proj.dir / it.spec.get("file", f"parts/{pid}.py")
                 if not f.exists():
                     raise ProjectError(f"part file {f.relative_to(proj.dir)} not found")
-                mod = _load_module(f)
-                if not hasattr(mod, "build"):
-                    raise ProjectError(f"{f.name} has no build(ctx) function")
-                with calibrate.active(printer, it.spec.get("material")):   # this printer's measured fits
-                    it.shape = mod.build(ctx)
+                from . import partcache
+                ck = it.cache_key = partcache.key(proj, pid, it.spec, params, printer)
+                it.shape = partcache.lookup(ck) if cache else None   # unchanged since its last build: no rebuild
+                it.cached = it.shape is not None
+                if it.shape is None:
+                    mod = _load_module(f)
+                    if not hasattr(mod, "build"):
+                        raise ProjectError(f"{f.name} has no build(ctx) function")
+                    with calibrate.active(printer, it.spec.get("material")), partcache.recording() as deps:
+                        it.shape = mod.build(ctx)          # this printer's measured fits
+                    if it.shape is not None and hasattr(it.shape, "kerf_sites"):
+                        partcache.store(ck, it.shape, deps)
             else:
                 it.shape = proxies.build(ctx, it.spec)
             if it.shape is None or not hasattr(it.shape, "kerf_sites"):

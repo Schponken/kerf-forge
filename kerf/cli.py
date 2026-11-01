@@ -139,6 +139,7 @@ def verify(fast=False) -> int:
     """The definition of done. Exit 0 only when everything passes."""
     t0 = time.time()
     results, fails = {}, []
+    os.environ["KERF_NO_CACHE"] = "1"      # the definition of done builds every part from scratch (kerf/partcache.py)
     # tests read/write UTF-8 text without naming it; a C/POSIX locale (hooks, cron, nohup) would make that ASCII
     r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "--no-header", "-p", "no:cacheprovider"], cwd=ROOT,
                        capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})

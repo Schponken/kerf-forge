@@ -1,6 +1,7 @@
 """Hardware catalog: real, sourced dimensions for purchased parts. Every mating feature is generated from here."""
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 from functools import lru_cache
@@ -42,6 +43,20 @@ def used() -> set:
     return set(_USED or ())
 
 
+_RECORDERS: list = []
+
+
+@contextlib.contextmanager
+def recording():
+    """Collect the paths passed to get() inside the block (kerf/partcache.py: one part's catalog dependencies)."""
+    s: set = set()
+    _RECORDERS.append(s)
+    try:
+        yield s
+    finally:
+        _RECORDERS.remove(s)
+
+
 def deps_hash(paths) -> str:
     """Hash of just these catalog entries (a missing entry hashes as missing), so an edit elsewhere in the catalog
     does not change a project's fingerprint."""
@@ -62,6 +77,8 @@ def get(path: str) -> dict:
     Raises CatalogError with the options available at the failing level."""
     if _USED is not None:
         _USED.add(path)
+    for r in _RECORDERS:
+        r.add(path)
     return _get(path)
 
 

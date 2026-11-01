@@ -189,9 +189,9 @@ def detail(name: str) -> dict:
     files = []
     out = d / "out"
     if out.exists():
-        for rel in ("plates", "parts"):
+        for rel in ("plates", "parts", "drawings"):
             for f in sorted((out / rel).glob("*")) if (out / rel).exists() else []:
-                if f.suffix in (".3mf", ".stl", ".md"):
+                if f.suffix in (".3mf", ".stl", ".md", ".pdf"):
                     files.append(str(f.relative_to(d)))
         for f in ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "viewer.html"):
             if (out / f).exists():

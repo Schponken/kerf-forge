@@ -480,11 +480,12 @@ async function saveParams() {
 
 function renderFiles(el) {
   const d = S.detail, f = d.files;
-  if (!f.length) { el.innerHTML = notBuilt("Print plates, STL/3MF parts, STEP and BOM appear here."); return; }
+  if (!f.length) { el.innerHTML = notBuilt("Print plates, STL/3MF parts, drawings, STEP and BOM appear here."); return; }
   const group = (title, pred, icon) => { const g = f.filter(pred); return g.length ? `<h3>${title}</h3>${g.map(x => `<a class="f" href="${fileUrl(d.name, x)}" download>${icon} ${esc(x.split("/").pop())}</a>`).join("")}` : ""; };
   el.innerHTML = `<div class="files">
     ${group("Print plates (open in Bambu Studio)", x => x.startsWith("out/plates/") && x.endsWith(".3mf"), "▦")}
     ${group("Single parts", x => x.startsWith("out/parts/"), "◧")}
+    ${group("Engineering drawings (PDF)", x => x.startsWith("out/drawings/") && x.endsWith(".pdf"), "📐")}
     ${group("CAD + shopping list", x => /assembly\.step|bom\.(csv|md)$/.test(x), "▤")}
     ${group("Guides", x => /(ASSEMBLY|WIRING|PRINT_SETTINGS)\.md$/.test(x), "☰")}
     ${d.renders.length ? `<h3>Renders</h3><div class="renders">${d.renders.map((r, i) => `<img loading="lazy" style="animation-delay:${i * 30}ms" src="${fileUrl(d.name, r)}" alt="${esc(r)}" onclick="zoom(this.src)">`).join("")}</div>` : ""}

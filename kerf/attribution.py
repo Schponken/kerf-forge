@@ -116,7 +116,7 @@ def trace_lines(proj, pid: str) -> dict:
     old = sys.gettrace()
     sys.settrace(glob)
     try:
-        P.build(proj, only=[pid])
+        P.build(proj, only=[pid], cache=False)          # the tracer must see build() run
     finally:
         sys.settrace(old)
     return first
