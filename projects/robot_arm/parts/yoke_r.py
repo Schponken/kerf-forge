@@ -2,7 +2,7 @@
 foot bolted to the turntable platform (3 x M3) and two gussets. Built in the turntable (world) frame.
 Printed lying on the cheek's outer face: window and tab holes vertical; the foot holes print horizontally (teardrops)."""
 from build123d import *
-from kerf import iface
+from kerf import iface, features
 
 SERVO = "servos.DS3225"
 import importlib.util as _iu
@@ -28,4 +28,8 @@ def build(ctx):
     ctx.rigid("lead_top", Location((x0 + 10.0, p.cheek_out + 4.0, p.z_sh + p.ds_W / 2 + 12.0)))
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.sh_tab_t)))
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

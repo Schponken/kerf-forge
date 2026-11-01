@@ -63,3 +63,32 @@ def advice(part: str, corners: list[dict], hot_zones=(), cell: float = 0.0) -> s
             + (f", {len(hot)} in a highly stressed zone" if hot else "")
             + f", e.g. at {where}: fillet them (stress concentration, weak layer seam) or say in DESIGN.md why one must "
               "stay sharp (a mating part sits in it)")
+
+
+def _near_hot(c, hot_zones, cell):
+    return any(max(abs(a - b) for a, b in zip(c["at"], z["at"])) <= cell for z in hot_zones) if cell else False
+
+
+HOT_PEAK = 0.5   # a hot zone whose peak element reaches half the allowable stress: a sharp corner there is a problem
+
+
+def hot_problem(part: str, corners: list[dict], hot_zones=(), cell: float = 0.0) -> str | None:
+    """A sharp inside corner in a highly stressed zone (kerf/stressmap.py: one of the part's three most-used zones,
+    whose peak reaches HOT_PEAK of the allowable) is a problem, not a warning: round it (kerf.features.fillet_inside)
+    or, if a mating part sits in it, declare it with ctx.keep_sharp(at, why)."""
+    hot = [c for c in corners if _near_hot(c, [z for z in hot_zones if z.get("peak", 1.0) >= HOT_PEAK], cell)]
+    if not hot:
+        return None
+    return (f"{part}: {len(hot)} sharp inside corner(s) in a highly stressed zone, at "
+            + ", ".join(str(c["at"]) for c in hot[:6])
+            + ": round them (kerf.features.fillet_inside) or, where a mating part sits in one, declare it with "
+              "ctx.keep_sharp(at, why)")
+
+
+def kept_hot(part: str, kept: list[dict], hot_zones=(), cell: float = 0.0) -> str | None:
+    """Declared sharp corners that sit in a highly stressed zone, with their reasons, for the reviewer to judge."""
+    hot = [c for c in kept if _near_hot(c, hot_zones, cell)]
+    if not hot:
+        return None
+    return (f"{part}: {len(hot)} corner(s) declared sharp sit in a highly stressed zone: "
+            + "; ".join(f"{c['at']} ({c['why']})" for c in hot[:4]))

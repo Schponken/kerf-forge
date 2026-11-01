@@ -5,7 +5,7 @@ the grip servo's axis (vertical at home) and closes against the fixed finger's j
 Printed standing on the plates' flat lower edges (print_rot [90,0,0]; a 25 mm flat foot at y = -r under the wrist
 discs, then a 45-degree rise); the palm and the fixed finger's jaw print on support."""
 from build123d import *
-from kerf import iface
+from kerf import iface, features
 from kerf.features import safe_fillet
 
 HORN = "servo_horns.aluminum_25T"
@@ -82,4 +82,8 @@ def build(ctx):
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.gr_tab_t)))
     ctx.rigid("tcp", Location((g["x_g"] + p.finger_len - 5.0, g["y_f"] + 3.0, g["z_jaw"] - 0.25)))
     ctx.rigid("fixed_tip", Location((tip_x, g["y_f"] + 3.0, (zj0 + zj1) / 2)))
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

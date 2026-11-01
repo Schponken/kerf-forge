@@ -331,42 +331,17 @@ def _fillet_faces_down(shape, e, up) -> bool:
     return False
 
 
-def _filler(shape, e, r):
-    """The material a radius-r fillet would add in the concave corner along straight edge e, as a solid: the region
-    between the two faces and the fillet arc (corner, tangent point, arc centre, tangent point, minus the circle),
-    swept along the edge. None when the edge is not straight between two flat faces or the corner is nearly flat."""
-    from build123d import Circle, Polygon, extrude
-    fs = [f for f in shape.faces() if any(e.is_same(x) for x in f.edges())]
-    if len(fs) != 2 or e.geom_type.name != "LINE" or any(f.geom_type.name != "PLANE" for f in fs):
-        return None
-    c = e.center()
-    n1, n2 = fs[0].normal_at(c), fs[1].normal_at(c)
-    v0, v1 = (Vector(*v) for v in e.vertices())
-    d = (v1 - v0).normalized()
-    t1, t2 = d.cross(n1).normalized(), d.cross(n2).normalized()   # in each face, perpendicular to the edge
-    t1 = t1 if t1.dot(n2) > 0 else -t1                             # pointing away from the corner, along the face
-    t2 = t2 if t2.dot(n1) > 0 else -t2
-    a = math.acos(max(-1.0, min(1.0, t1.dot(t2))))                 # the corner's open (air) angle
-    if not math.radians(20) < a < math.radians(170):
-        return None
-    k = r / math.tan(a / 2)
-    ctr = (t1 + t2).normalized() * (r / math.sin(a / 2))
-    pl = Plane(origin=v0, x_dir=t1, z_dir=d)
-    loc = lambda v: (v.dot(pl.x_dir), v.dot(pl.y_dir))           # noqa: E731
-    prof = Polygon((0, 0), loc(t1 * k), loc(ctr), loc(t2 * k), align=None) - Pos(*loc(ctr)) * Circle(r)
-    return extrude(pl * prof, amount=(v1 - v0).length)
-
-
 def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
     """Round every sharp inside corner the build check would report (kerf.edges.sharp_inside: straight concave edges
-    between flat faces, the corners of interface features exempt) with radius r, then r / 2 on those r doesn't fit
-    (they run into a hole, a chamfer or a thin strip); fillets whose result OCC or gmsh (kerf.fea's mesher) cannot
-    mesh are dropped (the set is split until the bad ones are found). A corner whose fillet would face more than 45 degrees down as printed (the corner under a ceiling) is
-    left square and declared: rounding it would add an overhang. keep(at) -> a reason string leaves a corner sharp on
-    purpose (a mating part's square corner sits in it); it is declared with ctx.keep_sharp, so the report lists it
-    with that reason instead of warning. Returns (shape, failed): the corners left sharp that were not declared, as
-    "(x, y, z)" strings for ctx.notes."""
-    from build123d import Vector
+    between flat faces, the corners of interface features exempt) with radius r, then r / 2 on those whose faces are
+    too short for r. The fillets are boolean coves (kerf.coves: the fillet's material added by union), not OCC's fillet
+    operator, which can crash the process on bodies built from many unions. Coves that leave a body gmsh (kerf.fea's
+    mesher) cannot mesh are dropped (the set is split until the bad ones are found). A corner whose fillet would face
+    more than 45 degrees down as printed (the corner under a ceiling) is left square and declared: rounding it would
+    add an overhang. keep(at) -> a reason string leaves a corner sharp on purpose (a mating part's square corner sits
+    in it); it is declared with ctx.keep_sharp, so the report lists it with that reason instead of warning.
+    Returns (shape, failed): the corners left sharp that were not declared, as "(x, y, z)" strings for ctx.notes."""
+    from . import coves
     from . import edges as E
     sites = getattr(ctx, "sites", None) or []
     up = _print_up(ctx)
@@ -392,35 +367,26 @@ def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
                 out.append(e)
         return out
 
-    def apply(s, todo, size):
-        """Fillet `todo`; if the result does not mesh, split the set and keep every half that does. A single square
-        corner OCC cannot fillet gets the fillet's material added as a solid instead (_filler)."""
-        new, failed = safe_fillet(s, [(todo, size)])
-        if failed and len(todo) == 1:
-            f = _filler(s, todo[0], size)
-            new = s + f if f is not None else s
-            # it must sit in the corner's air and join the part: same solid count, volume up by the filler's
-            # and leave fewer sharp corners than before (not new ones where it sticks out past the corner's ends)
-            if f is not None and (len(new.solids()) != len(s.solids()) or not new.is_valid
-                                  or abs(new.volume - s.volume - f.volume) > 0.05 * f.volume
-                                  or len(E.sharp_inside(new, sites)) >= len(E.sharp_inside(s, sites))):
-                return s
-        if _meshes(new):
-            return new
-        if len(todo) == 1:
+    def apply(s, prisms):
+        """Union the cove prisms; if the result does not mesh or splits, keep every half of the set that works."""
+        if not prisms:
             return s
-        half = len(todo) // 2
-        s = apply(s, todo[:half], size)
-        return apply(s, [_match(s, e) for e in todo[half:]], size)
+        new = s
+        for cv in prisms:
+            new = new + cv
+        if len(new.solids()) == len(s.solids()) and new.is_valid and _meshes(new):
+            return new
+        if len(prisms) == 1:
+            return s
+        half = len(prisms) // 2
+        return apply(apply(s, prisms[:half]), prisms[half:])
 
     for size in (r, r / 2):
         todo = pick(shape)
         if not todo:
             break
-        shape = apply(shape, todo, size)
-    for e in pick(shape):                       # what is left one at a time: a square one gets the filler solid
-        m = _match(shape, e)
-        shape = apply(shape, [m], r)
+        prisms = [cv for cv in (coves.cove(shape, e, size) for e in todo) if cv is not None and cv.volume > 0]
+        shape = apply(shape, prisms)
     if hasattr(ctx, "keep_sharp"):
         for c in E.sharp_inside(shape, sites):
             w = why_kept(shape, c, edge_of(shape, c))

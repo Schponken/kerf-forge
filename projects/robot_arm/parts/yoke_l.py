@@ -2,7 +2,7 @@
 insert in the upper arm, coaxial with the shoulder servo), with a foot bolted to the turntable platform (3 x M3) and
 two gussets. Built in the turntable (world) frame. Printed lying on the cheek's outer face (-Y)."""
 from build123d import *
-from kerf import iface
+from kerf import iface, features
 
 import importlib.util as _iu
 import pathlib as _pl
@@ -23,4 +23,8 @@ def build(ctx):
     xc = p.x_sh - p.sh_out_x
     body -= Pos(xc - 12.0, -p.cheek_out + p.plate_t / 2, p.z_sh) * Box(18.0, p.plate_t + 2, 18.0)
     ctx.rigid("origin", Location((0, 0, 0)))
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

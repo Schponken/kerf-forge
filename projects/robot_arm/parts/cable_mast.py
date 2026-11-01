@@ -7,7 +7,7 @@ Built in the turntable (world) frame; bolted down with 4 x M3 into heat-set inse
 Printed lying on its side (print_rot [90, 0, 0]) so the layers run along the column; the column is centred on the
 wider foot, so it stands 8 mm above the bed on support (supports: allowed)."""
 from build123d import *
-from kerf import iface
+from kerf import iface, features
 from kerf.features import safe_fillet
 
 TOP = 132.0                 # mm above the desk, level with the base cable post
@@ -37,4 +37,8 @@ def build(ctx):
         body -= Pos(X_COL, sy, TOP - 6.0) * Box(10.0, 1.8, 3.2)
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("cable_top", Location((X_COL, 0, TOP + 3.5)))   # bundle centre, tied across the top
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

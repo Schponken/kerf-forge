@@ -6,7 +6,7 @@ Printed upright; the servo shelf and the bearing-bore ceiling need supports (sup
 import math
 
 from build123d import *
-from kerf import catalog, iface
+from kerf import catalog, iface, features
 
 YAW = "servos.MG996R"
 BRG = "bearings.6001"
@@ -113,4 +113,8 @@ def build(ctx):
     ctx.rigid("desk_bus_arm", Location((-112.0, -5.0, 0)))
     ctx.rigid("desk_bus_yaw", Location((-112.0, -37.0, 0)))
     ctx.rigid("desk_nano", Location((-125.0, 40.0, 0), (0, 0, 90)))   # USB end toward +Y, free to plug in
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

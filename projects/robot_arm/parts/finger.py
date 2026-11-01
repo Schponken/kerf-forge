@@ -1,7 +1,7 @@
 """Moving finger: bolted to the grip servo's horn (4 x M3), swings open about the servo axis away from the fixed jaw.
 Frame: horn face on the grip axis; X toward the tip, Z up (home); the fixed jaw is on the -Y side."""
 from build123d import *
-from kerf import iface
+from kerf import iface, features
 
 HORN = "servo_horns.aluminum_25T"
 T = 6.0
@@ -20,4 +20,8 @@ def build(ctx):
     s -= iface.horn_mount(ctx, HORN, Location((0, 0, T)), group="gr_horn", plate_t=T)
     ctx.rigid("horn_mount", Location((0, 0, 0)))
     ctx.rigid("tip", Location((p.finger_len, 0, T / 2)))
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    s, left = features.fillet_inside(ctx, s, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(s)

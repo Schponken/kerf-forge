@@ -23,7 +23,7 @@ Printed standing on its end wall (print_rot [0, -90, 0]): the insert holes print
 plain opening in the first layers; the side screw hole and the DC exit are the only horizontal holes (the exit is a
 teardrop, roof toward +X = printer up)."""
 from build123d import *
-from kerf import iface
+from kerf import iface, features
 
 T = 3.0                      # walls
 Y_IN_N, Y_IN_P = -48.5, 49.5  # inner faces: -Y bears on the case, +Y leaves 1 mm for the case tolerance
@@ -81,4 +81,10 @@ def build(ctx):
     ctx.rigid("inlet", panel)
     ctx.rigid("dc_exit", Location((X_EXIT, Y_IN_N - T - 2.0, Z_EXIT)))
     ctx.rigid("dc_tie", Location((X_EXIT, Y_IN_N + 8.0, FLOOR + tie_h + 3.0)))
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
+        "sleeve over the supply's case: the case's square edges sit in these corners")
+        if at[0] > -0.5 and Y_IN_N - 0.5 <= at[1] <= Y_IN_P + 0.5 and at[2] <= ZC + 0.5 else None)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

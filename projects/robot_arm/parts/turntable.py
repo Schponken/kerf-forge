@@ -2,7 +2,7 @@
 yaw gear, and the platform the two yokes bolt onto (M3 into heat-set inserts). Its frame is the world frame at
 base_yaw = 0. Printed upside down (platform top on the bed): the gear and spindle grow up from the platform."""
 from build123d import *
-from kerf import drives, iface
+from kerf import drives, iface, features
 
 FOOT_X = (-29.0, -14.0, 7.5)          # front screw 6.5 mm from the foot end (>= 1.5 d + wall, ENGINEERING.md section 7)
 
@@ -46,4 +46,8 @@ def build(ctx):
     ctx.rigid("yoke_r_seat", Location((0, 0, 0)))
     ctx.rigid("yoke_l_seat", Location((0, 0, 0)))
     ctx.rigid("mast_seat", Location((0, 0, 0)))
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

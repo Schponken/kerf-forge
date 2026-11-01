@@ -325,11 +325,17 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     msg = stressmap.advice(part, s)
                     if msg:
                         rep["warnings"].append(msg)
-            for pid, pr in rep["parts"].items():                           # sharp inside corners, stressed ones first
+            for pid, pr in rep["parts"].items():                           # sharp inside corners: stressed ones fail
                 st = pr.get("stress") or {}
-                msg = edges.advice(pid, pr.get("sharp_inside") or [], st.get("hot_zones", []), st.get("zone_mm", 0.0))
-                if msg:
-                    rep["warnings"].append(msg)
+                hz, cell = st.get("hot_zones", []), st.get("zone_mm", 0.0)
+                prob = edges.hot_problem(pid, pr.get("sharp_inside") or [], hz, cell)
+                if prob:
+                    rep["problems"].append(prob)
+                hzp = [z for z in hz if z.get("peak", 1.0) >= edges.HOT_PEAK]
+                cool = [c for c in pr.get("sharp_inside") or [] if not edges._near_hot(c, hzp, cell)]
+                for msg in (edges.advice(pid, cool, hz, cell), edges.kept_hot(pid, pr.get("sharp_kept") or [], hzp, cell)):
+                    if msg:
+                        rep["warnings"].append(msg)
             rep["requirements"] = rq
             _layer_proofs(proj, rep)
             rep["warnings"] += _fea_hygiene(proj)

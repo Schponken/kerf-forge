@@ -4,7 +4,7 @@ the elbow servo (DS3218, hung outside, top-first through a window); plate B turn
 Frame: shoulder horn face on the shoulder axis; X along the arm, Y up (home), Z across the fork (world -Y).
 Printed standing on the plates' lower edges (print_rot [90,0,0]): webs vertical, window top bridges 41 mm."""
 from build123d import *
-from kerf import idioms, iface
+from kerf import idioms, iface, features
 
 HORN = "servo_horns.aluminum_25T"
 SERVO = "servos.DS3218"
@@ -37,4 +37,8 @@ def build(ctx):
     ctx.rigid("servo_seat", loc * Location((0, 0, -p.el_tab_t)))
     # a point on the shoulder axis level with the gripper's tcp (across the fork), so `reach` is measured square to it
     ctx.rigid("shoulder_ref", Location((0, 0, p.face_el + p.face_wr + p.w_g / 2 + 4.25)))
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)
