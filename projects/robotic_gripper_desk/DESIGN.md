@@ -36,8 +36,8 @@ gripper, so the files port to robot_arm by copying):
   with it, one above and one below; the top rack is part of jaw_r, the bottom one of jaw_l (the same printed part
   turned 180° about X). Servo +θ moves both jaws outward by 15 mm × θ (rad) each (kerf.drives.rack_pinion; the sweep
   couples them with ratio 0.2618 mm/deg).
-- Each jaw is a carriage on **two shared 3 mm steel guide rods** across the head (in front of the pinion), plus a
-  finger forward to the grip pad. The rods are pressed into the gripper body's two end cheeks and kept from walking
+- Each jaw is a carriage on **two shared Ø4 mm stainless guide rods** across the head (in front of the pinion), plus a
+  finger forward to the grip pad. The rods (Ø4 stainless) are pressed into the gripper body's two end cheeks and kept from walking
   out by a small printed keeper (1 × M3).
 - The two racks push the pinion in opposite directions, so when both jaws grip, the pinion's tooth forces form a pure
   couple and the servo spline carries torque only (ENGINEERING.md §8). Only when one jaw is blocked alone does the
@@ -53,16 +53,20 @@ bench before it goes on the arm.
 |---|---|---|
 | grip servo | servos.MG996R | the arm already has it (old gripper): 9.4 kg·cm stall @ 4.8 V, 55 g, 0.17 s/60° |
 | grip horn | servo_horns.aluminum_25T | the arm's; pinion bolts to its 4 × M3 holes on Ø 14 |
-| guide rods | (rod entry from the research, REFERENCES.md) | 2 × Ø 3 mm hardened steel |
+| guide rods | rods.ss_rod_4 | 2 × Ø 4 × 100 mm stainless precision shafting (ServoCity 2100-0004-0100, $2.79 each), 9.9 g each; Ø4 is 3.2× stiffer than Ø3 (REFERENCES.md decision 8). Pressed into blind/through seats in the two end cheeks, kept in by the rod keeper |
 | stand wrist servo + horn | servos.MG996R, servo_horns.aluminum_25T | only for the bench stand (on the arm it is the arm's wrist servo) |
 
 **Grip force.** MG996R stall T = 9.4 kg·cm = 922 N·mm (catalog, 4.8 V). The pinion pitch radius is r = 15 mm.
 With both jaws on the object the torque splits over two meshes: F = T / (2 r) = 922 / 30 = **30.7 N per jaw at stall**,
-15.4 N at half stall. Holding the 150 g payload by friction with both jaws: 2 μ N ≥ S · m g. With μ = 0.3 (PETG on a
-smooth object, conservative; REFERENCES.md) and a slip factor S = 2 (covers ~1 g of arm acceleration):
-N ≥ 2 × 1.47 / (2 × 0.3) = 4.9 N per jaw = 16 % of the stall grip; at half stall the grip is 3.1× that.
-Command the jaws to the object's width minus ~2 mm (≈ 4° of servo past contact): the servo's proportional band then
-squeezes with a fraction of stall instead of stalling.
+15.4 N at half stall. Holding the 150 g payload by friction with both jaws: 2 μ N ≥ S · m g. With μ = 0.24 (bare
+PETG, the low end of Stoimenov 2024's printed-polymer-on-steel values; REFERENCES.md decision 6) and a slip factor
+S = 2 (covers ~1 g of arm acceleration): N ≥ 2 × 1.47 / (2 × 0.24) = 6.1 N per jaw = 20 % of the stall grip; at half
+stall the grip is 2.5× that (1.7× even at S = 3). The ridged pad face does not raise μ on hard smooth objects, it
+bites into soft ones (card, wood, foam); a separately printed TPU 95A pad (2–3.5 mm, μ ≈ 0.5 class) is the documented
+upgrade for slippery objects (REFERENCES.md decision 7), not needed for the requirement.
+Hold by position, not by stalling (every reference gripper limits force in software; a stalled MG996R draws ~2.5 A
+and heats): command the jaws to the object's width minus ~2 mm (≈ 4° of servo past contact), so the servo's
+proportional band squeezes with a fraction of stall.
 
 **Opening.** Closed gap 2 mm (servo 0°), each jaw travels 15 × 100° × π/180 = 26.2 mm → open 2 + 52.4 = **54.4 mm**
 at 100° of servo travel, inside the MG996R's standard 1000–2000 µs (~120°) range, so no extended pulses are needed.
@@ -113,7 +117,7 @@ Style: radii 1.0 / 2.0 / 4.0 mm (inside load-path corners ≥ 1), 0.6 mm edge br
 | stand plate A (arm: forearm) | wrist MG996R | `servo_mount` top_through, tap | wr_servo | 4 × M3 |
 | gripper bulkhead | grip MG996R | `servo_mount` top_through, tap | gr_servo | 4 × M3 |
 | gr_horn | pinion | `horn_mount` (counterbored) | gr_horn | 4 × M3 |
-| gripper cheeks | guide rods | `pin_hole` press (blind on +Z, through on −Z) | rod_top, rod_bot | 2 × Ø 3 rod |
+| gripper cheeks | guide rods | `pin_hole` press (blind on +Z, through on −Z) | rod_top, rod_bot | 2 × Ø4 × 100 rod |
 | jaw carriages | guide rods | `pin_hole` free (linear joint along the rod) | rod_top, rod_bot | — |
 | gripper −Z cheek | rod_keeper | `bolt_pattern` heatset / clearance | keeper | M3 + insert |
 
@@ -122,7 +126,28 @@ stand → wr_servo → **wrist** (−75…75°) → wr_horn → gripper → (gr_
 pinion; jaw_r / jaw_l on linear slides along ±Z (0…26.18 mm) that follow grip × 0.2618 mm/deg; rod_keeper).
 
 ## Assembly order
-(written out after the parts exist)
+0. Print the gripper body first and test-fit: the grip servo in its bay and a rod in a cheek seat and a jaw bore (the
+   rod's diameter tolerance is not published: `kerf calibrate --material PETG` and `kerf feedback`, then rebuild, if
+   the seats are loose or the bores tight).
+1. Heat-set inserts: the M3 pivot insert in plate B's boss and the two keeper inserts in the −Z cheek.
+2. Grip servo: lower it into the bay from above (between the fork plates), slide it forward until its case top passes
+   the bulkhead window, 4 × M3 thread-forming screws from behind through the tabs (the two by the cable boss need a
+   ball-end key). Lead up out of the bay.
+3. Power the servo and send the centre pulse (1500 µs = grip 50°, jaws half open); press the aluminium horn on the
+   spline and fit its centre screw.
+4. Pinion onto the horn (its rim centres it on the horn's disc), 4 × M3 counterbored screws.
+5. Jaws: with the servo still at centre, slide both jaws in from the front, racks meshing (jaw_r's rack above the
+   pinion, jaw_l's below), with the pads 28 mm apart (a 28 mm block between them sets it: 2 + 2 × 13.1 mm).
+6. Rods: push each rod through the −Z cheek, through both carriages, into the +Z cheek's blind seat (a drop of light
+   oil on the rod where the carriages run); then the rod keeper (2 × M3) over the rod ends.
+7. Mount on the wrist (the arm's forearm, or the bench stand): wrist servo at centre, horn on, the gripper's plate A
+   onto the horn (4 × M3 from inside the fork, hex key through the access holes in plate B), M3 pivot screw through the
+   forearm/stand plate B into the insert with washers to take up the side gap, then back it off 1/8 turn (a drop of
+   medium threadlocker on the screw TIP only).
+8. Lead: the grip servo lead goes over the wrist (tie point at the top of plate A) and on along the arm's existing
+   route; on the arm nothing is rewired (same channel, extension, fuse).
+9. Calibrate: find the pulse where the pads just touch (grip 0°) and where they reach full open (grip 100°); hold
+   objects by commanding their width minus ~2 mm, never by stalling.
 
 ## Risks / measure first
 - MG996R stall torque and tab height are catalog figures (UNVERIFIED tab height, see the arm's DESIGN.md); print the

@@ -13,7 +13,7 @@ params:
   grip_w: {value: 35, min: 35, max: 35, step: 1, label: Wrist fork width (= robot_arm grip_w; the forearm is built for it)}
   link_h: {value: 34, min: 34, max: 34, step: 1, label: Wrist disc diameter (robot_arm link_h)}
   x_bulk: {value: 45, min: 45, max: 55, step: 0.5, label: Bulkhead back face (grip servo tab tops) ahead of the wrist axis}
-  bulk_t: {value: 6, min: 5, max: 7, step: 0.5, label: Bulkhead thickness (servo tab pilots)}
+  bulk_t: {value: 7, min: 7, max: 7.5, step: 0.5, label: Bulkhead thickness (servo tab pilots; 7 mm gives the M3 x 8 thread-forming screws their engagement, < 7.7 so the case top still passes)}
   gear_m: {value: 1.5, min: 1.5, max: 1.5, step: 0.25, label: Pinion / rack module}
   pinion_z: {value: 20, min: 20, max: 20, step: 1, label: Pinion teeth}
   gear_b: {value: 12, min: 10, max: 14, step: 1, label: Pinion / rack face width}
@@ -24,14 +24,14 @@ params:
   carr_len: {value: 14, min: 12, max: 20, step: 1, label: Carriage length along the rods}
   rod_y: {value: 21, min: 18, max: 24, step: 0.5, label: Guide rods above / below the pinion axis}
   stop_gap: {value: 1.0, min: 0.5, max: 2.0, step: 0.1, label: Extra travel past fully open before the carriage meets the cheek}
-  cheek_t: {value: 8, min: 6, max: 10, step: 0.5, label: End cheek thickness (rod seats)}
+  cheek_t: {value: 9, min: 8, max: 10, step: 0.5, label: End cheek thickness (rod seats; with z_stop it sets the 100 mm rod length)}
   finger_len: {value: 32, min: 25, max: 40, step: 1, label: Finger length ahead of the carriage}
   pad_len: {value: 24, min: 15, max: 30, step: 1, label: Grip pad length along the finger}
   stand_h: {value: 70, min: 55, max: 110, step: 1, label: Bench stand - wrist axis height above the bench}
 layout: parts/layout.py
 parts:
   gripper: {file: parts/gripper.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
-  pinion: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0}
+  pinion: {file: parts/pinion.py, material: PETG, print_rot: [180, 0, 0], infill: 1.0, load_axis: X}
   jaw_r: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: 1}}
   jaw_l: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: -1}}
   rod_keeper: {file: parts/rod_keeper.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}
@@ -59,4 +59,91 @@ assembly:
     # rack and pinion: each jaw travels r * pi / 180 = 15 * pi / 180 = 0.261799 mm per servo degree (layout mm_per_deg)
     - {joint: jaw_r_slide, follows: grip, ratio: 0.261799}
     - {joint: jaw_l_slide, follows: grip, ratio: 0.261799}
-requirements: []
+  # horn centre screws are driven when their horn goes on (before the part that covers them); the pinion's four
+  # horn screws before the jaws slide in over them; the rods + keeper after the jaws
+  order: [stand, wr_servo, wr_horn, gr_servo, gripper, gr_horn, pinion, [jaw_r, jaw_l], rod_keeper]
+style: {radii: [1.0, 2.0, 4.0], edge_break: 0.6}
+requirements:
+  - {id: grip_open, check: distance, a: jaw_l.pad, b: jaw_r.pad, min_mm: 50, pose: {grip: 100, jaw_l_slide: 26.179, jaw_r_slide: 26.179},
+     why: "fully open (servo 100 deg): the pads 2 + 2 x 26.18 = 54.4 mm apart; the arm's brief asks >= 40 mm"}
+  - {id: grip_closed, check: distance, a: jaw_l.pad, b: jaw_r.pad, max_mm: 3, pose: {},
+     why: "closed (servo 0 deg) the pads are 2 mm apart, so thin objects (a 3 mm card) can be picked"}
+  - {id: torque_wrist, check: static_torque, joint: wrist, actuator: wr_servo, payload_g: 150, payload_at: gripper.tcp,
+     max_fraction: 0.30, poses: [{}, {wrist: -75}, {wrist: 75}, {grip: 100, jaw_l_slide: 26.179, jaw_r_slide: 26.179}],
+     why: "<= 2.82 kg*cm with 150 g at the tool point and the gripper horizontal: with the mass limit this keeps the arm's shoulder at <= 49 % of stall (DESIGN.md 'Arm torque budget')"}
+  - {id: gripper_mass, check: mass_max, max_g: 130, include: [gripper, pinion, jaw_r, jaw_l, rod_keeper, gr_servo, gr_horn],
+     why: "printed parts + grip servo + horn; + 19.8 g of rods and ~8 g of screws and inserts (not items) = <= 158 g on the wrist (DESIGN.md 'Arm torque budget')"}
+  - {id: stop_open_r, check: hard_stop, joint: jaw_r_slide, beyond: 27.6,
+     why: "past fully open the carriage meets the +Z cheek (1 mm of over-travel), so the rack can never leave the pinion"}
+  - {id: stop_open_l, check: hard_stop, joint: jaw_l_slide, beyond: 27.6,
+     why: "same for the -Z cheek"}
+  - {id: pinion_teeth, check: gear_bending, module: gear_m, z_driver: pinion_z, z_driven: 400, width: gear_b, torque_nmm: mg_stall_nmm,
+     material: PETG, sf: 3, direction: xy,
+     why: "one jaw blocked alone at stall: the whole 922 N*mm on one mesh (61.5 N); the pinion prints flat (teeth in the layer plane); a rack is z = infinity (400 = the Lewis table's last row)"}
+  - {id: rack_teeth, check: gear_bending, module: gear_m, z_driver: pinion_z, z_driven: 400, width: gear_b, torque_nmm: mg_stall_nmm,
+     material: PETG, sf: 3, direction: z,
+     why: "the same 61.5 N on the rack teeth, which print standing (they bend across layers); judged with the pinion's smaller form factor, conservative"}
+  - id: gripper_stall_fea
+    check: fea_static
+    part: gripper
+    why: "the grip servo at stall with one jaw blocked: its 922 N*mm case reaction goes from the four tab screws through the bulkhead and wings to the cheeks, where the guide rods hand it back from the jaws (closed internal load loop)"
+    direction: z
+    sf: 3.0
+    max_disp_mm: 0.3
+    fixed:
+      any:
+        - {cylinder: {at: ["x_rod", "rod_y", "z_c + z_stop"], dir: [0, 0, 1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+        - {cylinder: {at: ["x_rod", "-rod_y", "z_c + z_stop"], dir: [0, 0, 1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+        - {cylinder: {at: ["x_rod", "rod_y", "z_c - z_stop"], dir: [0, 0, -1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+        - {cylinder: {at: ["x_rod", "-rod_y", "z_c - z_stop"], dir: [0, 0, -1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+    loads:
+      - {sites: gr_servo, radius: 4.0, torque_nmm: "mg_stall_nmm", axis: {at: ["x_bulk", 0, "z_c"], dir: [1, 0, 0]}}
+  - id: gripper_wrist_fea
+    check: fea_static
+    part: gripper
+    why: "fault case: the arm drives the closed gripper into the desk and the wrist servo stalls (922 N*mm) against the head: the fork plates carry the whole wrist torque from the horn screws and the pivot to the cheeks"
+    direction: z
+    case: crash
+    sf: 3.0
+    max_disp_mm: 1.0
+    fixed:
+      any:
+        - {cylinder: {at: ["x_rod", "rod_y", "z_c + z_stop"], dir: [0, 0, 1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+        - {cylinder: {at: ["x_rod", "-rod_y", "z_c + z_stop"], dir: [0, 0, 1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+        - {cylinder: {at: ["x_rod", "rod_y", "z_c - z_stop"], dir: [0, 0, -1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+        - {cylinder: {at: ["x_rod", "-rod_y", "z_c - z_stop"], dir: [0, 0, -1], r: 2.0, tol: 0.4, span: [0, "cheek_t"]}}
+    loads:
+      - {sites: wr_horn, radius: 4.0, torque_nmm: "mg_stall_nmm", axis: {at: [0, 0, 0], dir: [0, 0, 1]}}
+  - id: jaw_fea
+    check: fea_static
+    part: jaw_r
+    why: "one jaw blocked alone with the grip servo at stall: the whole 922 N*mm on its rack = 61.5 N at the pad, held by the rack teeth at the far mesh point (fully open) and the two rod bores"
+    direction: xy
+    sf: 2.0
+    max_disp_mm: 0.5
+    fixed:
+      any:
+        - {cylinder: {at: ["carr_x / 2", "rod_y", 0], dir: [0, 0, 1], r: 2.2, tol: 0.4, span: [0, "carr_len"]}}
+        - {cylinder: {at: ["carr_x / 2", "-rod_y", 0], dir: [0, 0, 1], r: 2.2, tol: 0.4, span: [0, "carr_len"]}}
+        - {box: [["-(gear_b + slab_gap) - 0.1", "r_p - gear_m - 0.1", "-z_in - s_max - 3"], ["-slab_gap + 0.1", "r_p + 1.2 * gear_m + 0.1", "-z_in - s_max + 3"]]}
+    loads:
+      - {near_joint: pad, radius: 6.0, force_n: [0, 0, 61.5]}
+  - id: finger_root
+    check: cantilever_stress
+    part: jaw_r
+    section: {name: finger root, at: ["carr_x + 0.5", 0, 4], normal: [1, 0, 0]}
+    loads: [{at: pad, force_n: [0, 0, 61.5]}]
+    load_case: one jaw blocked alone at grip-servo stall
+    sf: 2.0
+    kt: 1.0
+    direction: auto
+  - id: pinion_fea
+    check: fea_static
+    part: pinion
+    why: "stall torque from the four horn screws into the teeth (tooth-root bending is gear_bending; this proves the gear body and the counterbored screw seats)"
+    direction: xy
+    sf: 3.0
+    max_disp_mm: 0.1
+    fixed: {sites: gr_horn, radius: 3.0}
+    loads:
+      - {cylinder: {at: [0, 0, 0], dir: [0, 0, 1], r: "r_p + gear_m", tol: 0.6, span: [0, "gear_b"]}, torque_nmm: "mg_stall_nmm", axis: {at: [0, 0, 0], dir: [0, 0, 1]}}
