@@ -14,7 +14,7 @@ params:
   gear_m: {value: 1.5, unit: "mm", min: 1.5, max: 2.0, step: 0.25, label: Gear module}
   gear_z: {value: 16, unit: "teeth", min: 14, max: 18, step: 1, label: Teeth per gear}
   gear_w: {value: 12, unit: "mm", min: 10, max: 14, step: 1, label: Gear face width}
-  cover_t: {value: 4, unit: "mm", min: 3, max: 6, step: 0.5, label: Cover plate thickness}
+  cover_t: {value: 6, unit: "mm", min: 3, max: 6, step: 0.5, label: Cover plate thickness}
   finger_len: {value: 45, unit: "mm", min: 40, max: 55, step: 1, label: Gear axis to pad contact (along the claw); <= 45 keeps the friction hold SF >= 2 at half stall (DESIGN.md)}
   pad_gap: {value: 1.0, unit: "mm", min: 0.5, max: 3.0, step: 0.5, label: Pad-to-pad gap when closed}
   pad_par: {value: 21, unit: "°", min: 0, max: 30, step: 1, label: Finger angle at which the two pads are parallel (21 = a 35 mm object)}
@@ -113,11 +113,15 @@ requirements:
   - id: cover_fea
     check: fea_static
     part: cover
-    why: "both gear axes' full side loads at stall on the cover's two dowel holes (drive 38.4 / -24.2 N, idler -38.4 / 24.2 N), held at the two post screws"
+    why: "both gear axes' full side loads at stall on the cover's two dowel holes (drive 38.4 / -24.2 N, idler -38.4 / 24.2 N), held where it is bolted: the two post screws (head + bore) and the faces they clamp onto the palm post tops"
     direction: xy             # printed flat: the plate bends along the layers
     sf: 2.0
     max_disp_mm: 0.2
-    fixed: {sites: cover, radius: 4.0}
+    fixed:
+      any:
+        - {sites: cover, radius: 4.0}
+        - {box: [["x_post - post_r", "y_c0 - 0.05", "z_post_a - post_r - 0.5"], ["x_post + post_r", "y_c0 + 0.05", "z_post_a + post_r"]]}
+        - {box: [["x_post - post_r", "y_c0 - 0.05", "z_post_b - post_r"], ["x_post + post_r", "y_c0 + 0.05", "z_post_b + post_r + 0.5"]]}
     loads:
       - {cylinder: {at: ["x_g", "y_c1", "z_d"], dir: [0, -1, 0], r: 1.5, tol: 0.3, span: [0, "y_c1 - y_cb"]}, bearing_n: [38.4, 0, -24.2]}
       - {cylinder: {at: ["x_g", "y_c1", "z_i"], dir: [0, -1, 0], r: 1.675, tol: 0.3, span: [0, "y_c1 - y_cb"]}, bearing_n: [-38.4, 0, 24.2]}

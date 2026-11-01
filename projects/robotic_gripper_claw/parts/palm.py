@@ -16,7 +16,8 @@ from kerf import iface
 HORN = "servo_horns.aluminum_25T"
 SERVO = "servos.MG996R"
 Y_BED = -17.0                  # = -r_w: the wrist discs' lowest point, the print bed
-IDLER_PRESS = 10.0             # idler dowel pressed this deep: 10 + 0.5 + finger 12 + 0.5 + cover 7 = a stocked 3 x 30
+IDLER_PRESS = 8.0              # idler dowel pressed this deep: 8 + 0.5 + finger 12 + 0.5 + cover 9 = a stocked 3 x 30
+FAR_T = 3.0                    # far web thickness (6 mm was tried: no gain, the compliance is at the root)
 TAN50 = 1.19                   # 50 deg rise for the web ends (prints without support: steeper than 45 deg)
 
 
@@ -51,16 +52,33 @@ def build(ctx):
     body = side(foot + [(xa, Y_BED), (xa, 0.5), (xp + POST_R, 0.5), (xp + POST_R, p.y_c0), (xp - POST_R, p.y_c0), (0, r)], 0, t, r)
     # plate B: same, plus the keel under the palm and the pedestal (z 28..35) to the front
     xk = 50.0
-    keel = foot + [(xk, Y_BED), (xk - Y_BED / TAN50, 0.5), (xp + POST_R, 0.5), (xp + POST_R, p.y_c0), (xp - POST_R, p.y_c0), (0, r)]
+    # why: above the palm plate plate B rises as a wall to 0.5 mm under the idler gear (y_top) from its cheek past the
+    # pedestal, then drops at 45 deg: the pedestal's pin moment goes straight into a 30 mm deep web, and the deeper
+    # channel stiffens the palm in bending and twist (palm_fea deflection)
+    y_top = p.y_g0 - 0.5
+    x_ped = p.x_g + 5.0
+    keel = foot + [(xk, Y_BED), (xk - Y_BED / TAN50, 0.5), (x_ped + (y_top - t), t), (x_ped, y_top), (xp + POST_R, y_top),
+                   (xp + POST_R, p.y_c0), (xp - POST_R, p.y_c0), (0, r)]
     body += side(keel, W - t, W, r)
-    # far web (other side of the servo): z <= -6 is only allowed > 30 mm from the wrist axis (forearm clearance)
+    # far web (other side of the servo): below z -6.9 the claw passes the forearm's plate A, whose outline reaches at
+    # most 24.1 mm from the wrist axis (21.55 long, r 8.5 front corners); the web starts 25.5 out and overlaps the root
+    # beam, so no section between the wrist and the gear axes lacks a wall on this side (the wrist sweep proves it)
     zw = -6.5                                        # why: the window lead-in cone overshoots 1 mm below the palm to z -6.3
-    xw0, xw1 = 30.5, x_front - 2.0
-    body += side([(xw0, Y_BED), (xw1 + Y_BED / TAN50, Y_BED), (xw1, 0.5), (xw0, 0.5)], zw - 3.0, zw)
+    xw0, xw1 = 25.5, x_front - 2.0
+    # why: the far web also rises to 0.5 mm under the drive finger (y_top): the channel's second deep wall; its front
+    # edge drops at 45 deg above the plate and runs back at 50 deg below it (prints unsupported, the end stays low)
+    body += side([(xw0, Y_BED), (xw1 + Y_BED / TAN50, Y_BED), (xw1, 0.5), (xw1 - (y_top - 0.5), y_top), (xw0, y_top)], zw - FAR_T, zw)
     # palm plate y 0..t
     with BuildSketch(Plane.XZ) as s:
-        Polygon((8.0, 0.0), (8.0, W), (x_front, W), (x_front, zw - 3.0), (xw0, zw - 3.0), (xw0, -6.0), (xa, -6.0), (xa, 0.0), align=None)
+        Polygon((8.0, 0.0), (8.0, W), (x_front, W), (x_front, zw - FAR_T), (xw0, zw - FAR_T), (xw0, -6.0), (xa, -6.0), (xa, 0.0), align=None)
     body += extrude(s.sketch, -t)
+    # why: root beam across the claw on top of the palm plate, between plate A's end (xa) and the servo case / grip horn
+    # (0.5-1 mm clear), up to 0.5 mm under the gears: behind the servo the channel had no wall on the servo side, so
+    # everything forward of the gear axes rotated about this root (palm_fea deflection); the beam ties both cheeks,
+    # both cover posts and the keel wall into one deep section
+    x_rb = p.x_g - iface.horn_dims(HORN)["od"] / 2 - 1.0
+    body += ctx.add(Pos(xa, t - 0.01, -6.0) * Box(x_rb - xa, y_top - t + 0.01, W - t + 6.0 + 0.01, align=(Align.MIN, Align.MIN, Align.MIN)),
+                    why="root beam: deep section between the wrist fork and the gear axes (stiffness, palm_fea)", kind="beam")
     # idler pedestal
     body += Pos(p.x_g, t - 0.01, p.z_i) * Rot(-90, 0, 0) * Cylinder(5.0, p.y_g0 - 0.5 - t + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
     for z0, z1, inner in ((0.0, zpa + POST_R, 1), (zpb - POST_R, W, 0)):

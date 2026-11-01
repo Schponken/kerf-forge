@@ -6,7 +6,7 @@ The arm is drawn once in an "inward" frame (u = toward the claw's centre line) a
 
 Load path (DESIGN.md 'Load -> section'): the object pushes the pad outward; the jaw carries it to the arm, the arm
 bends back to the hub (moment 0 at the pad -> 461 N*mm at the hub), the hub hands it to the horn screws (drive) or the
-dowel + gear teeth (idler). So the arm tapers from 8 mm deep at the hub to 6 mm at the jaw, 12 mm tall (= the gear),
+dowel + gear teeth (idler). So the arm is 6 mm deep from the hub to the jaw, 12 mm tall (= the gear),
 printed flat on the gear face so it bends along the layers.
 
 Pad geometry (DESIGN.md 'Jaw angle'): the pad face passes through the contact point P (finger_len along the finger,
@@ -31,7 +31,7 @@ HORN = "servo_horns.aluminum_25T"
 JAW_T = 6.5          # jaw behind the pad's back face: dovetail groove 3.9 deep + 2.6 wall (>= 2.4, ENGINEERING.md s5)
 SLIDE = 0.15         # dovetail clearance all round (measured on the Clamp-On Vise, REFERENCES.md D7)
 HUB_R = 11.5         # smooth hub outside the toothed sector: clears the other gear (its tips reach r 10.5 only at the mesh)
-ARM_D0 = 8.0         # arm depth at the hub (at the jaw end it is set by the jaw's corners: ~6 mm)
+ARM_D0 = 6.0         # arm depth at the hub (8 ran at 15 % of allowable: overbuilt); the jaw end is set by the jaw corners
 RAMP = 8.0           # jaw top rises from the arm top (gear_w) to PAD_H over this length (45 deg-ish, prints as a slope)
 MESH_MARGIN = 35.0   # deg of teeth kept beyond the meshing arc (90..90+grip_open in the inward frame): ~1.5 teeth each side
 RECESS = 0.5         # extra depth over the horn centre screw's head
@@ -120,7 +120,7 @@ def build(ctx):
         body -= iface.horn_mount(ctx, HORN, Location((0, 0, gw)), group="gr_horn", plate_t=gw, kind="clearance", start_deg=start)
         rec = p.head_h + RECESS
         body += Cylinder(iface.screw_spec("M3")["head_d"] / 2 + 0.85, gw - rec, align=(Align.CENTER, Align.CENTER, Align.MIN)).moved(Location((0, 0, rec)))  # why: closes the centre-screw access above the horn screw's head recess (the top dowel bore needs the material)
-        # why: blind bore for the cover's top dowel: the second support of the drive axis (span 7 + 0.5 + bore = 12.5)
+        # why: blind bore for the cover's top dowel: the second support of the drive axis (span 9 + 0.5 + bore 7 = 16.5)
         body -= iface.pin_hole(ctx, "motion.pin_3mm", Location((0, 0, gw)), "gr_top", depth=p.top_bore, fit="free", through=False)
         ctx.rigid("horn_mount", Location((0, 0, 0), (0, 0, 180)))
     else:

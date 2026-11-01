@@ -25,7 +25,7 @@ ARM = {"plate_t": 7.0, "side_gap": 1.5, "grip_w": 35.0, "link_h": 34.0}
 FA_WEB_BACK = 9.0          # robot_arm forearm.py: rear web centre = servo body rear end - 9 mm
 FA_WEB_T = 4.0             # robot_arm forearm.py: web thickness
 FA_TAB_MARGIN = 5.0        # robot_arm forearm.py: plate A runs 5 mm past the servo's front tab
-TOP_DOWEL = 12.0           # drive-axis top dowel, a stocked motion.pin_3mm length (pressed in the cover)
+TOP_DOWEL = 16.0           # drive-axis top dowel, a stocked motion.pin_3mm length (pressed in the cover: 9 + 0.5 gap + 7 bore)
 PAD_H = 20.0               # TPU pad height along the gear axis (= pad.py PAD_H; finger.py asserts it)
 POST_R = 4.4               # cover post radius: M3 insert hole r 2.0 + 2.4 wall (docs/ENGINEERING.md s5)
 
@@ -66,7 +66,7 @@ def layout(p, cat):
         "W": W, "plate_t": t, "side_gap": gap, "r_w": r, "face": face, "w_f": w_f,
         "gear_c": c, "z_d": z_d, "z_i": z_i, "r_tip": r_tip, "y_g0": y_g0, "y_g1": y_g1, "y_c0": y_c0, "y_c1": y_c1,
         "y_cb": y_cb, "head_h": head_h, "pad_h": PAD_H, "post_r": POST_R,
-        "top_bore": TOP_DOWEL - (y_c1 - y_cb),                       # cover 7 + 0.5 gap + this bore = a 12.5 mm span
+        "top_bore": TOP_DOWEL - (y_c1 - y_cb),                       # cover 9 + 0.5 gap + this bore = a 16.5 mm span
         # cover posts (palm heat-set inserts, cover screws): 1 mm behind the gear tips, 2.6 mm of wall to each fork face
         "x_post": p.x_g - r_tip - 1.0 - POST_R, "z_post_a": POST_R + 0.2, "z_post_b": W - POST_R - 0.2,
         "x_sc": x_sc, "out_x": s["out_x"], "mg_L": s["L"], "mg_W": s["W"], "mg_span": s["span"], "mg_hx": s["hx"],

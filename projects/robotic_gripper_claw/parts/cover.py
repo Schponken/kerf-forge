@@ -20,8 +20,9 @@ R_POST = 4.4         # plate around each post screw (= the palm post, layout pos
 R_DRIVE = 5.5        # plate around the drive dowel
 R_IDLER = 5.5        # plate around the idler dowel
 BOSS_DRIVE = 3.7     # drive boss: the horn-screw heads sweep r 4.25..9.75 about the drive axis, so <= 3.75 (0.55 clear)
-BOSS_IDLER = 5.0     # idler boss: nothing turns over the idler gear's top
-RIM = 4.5            # frame member width around the window (in-plane bending: FEA cover_fea)
+BOSS_IDLER = 5.0     # idler boss: nothing turns over the idler gear's top (r 7 was tried: no stiffer, the node turns as a whole)
+MEMBER = 6.0         # frame member width (centre line +-3); window corners rounded WIN_R
+WIN_R = 2.0
 
 
 def up(x, y, z):
@@ -39,22 +40,35 @@ def build(ctx):
                 Circle(r)
         make_hull()                          # why: outline wraps the four load points (two posts, two dowels)
     plate = extrude(sk.sketch, p.cover_t)
-    # why: window where no load flows (between the members joining posts and dowels)
-    x0, x1 = p.x_post + R_POST + 1.0, p.x_g - R_DRIVE - 1.0
-    z0, z1 = p.z_d + R_DRIVE + RIM - 1.0, p.z_i - R_IDLER - RIM + 1.0
-    with BuildSketch(pl) as wk:
-        with Locations(((x0 + x1) / 2, -(z0 + z1) / 2)):
-            RectangleRounded(x1 - x0, z1 - z0, 2.0)
-    plate -= ctx.cut(extrude(wk.sketch, p.cover_t), why="window: the frame members carry the in-plane dowel loads, the middle idles", kind="lightening")
+    # Triangulated frame: members on the lines post A - post B (rear), post B - idler (side), post A - idler (diagonal),
+    # post A - drive (side), drive - idler (front tie); two triangular windows where nothing flows.
+    A, B, D, I = ((p.x_post, p.z_post_a), (p.x_post, p.z_post_b), (p.x_g, p.z_d), (p.x_g, p.z_i))
+    for tri in ((A, B, I), (A, D, I)):
+        with BuildSketch(pl) as wk:
+            Polygon(*[(x, -z) for x, z in tri], align=None)
+            offset(amount=-(MEMBER / 2 + WIN_R), mode=Mode.REPLACE)
+            offset(amount=WIN_R, kind=Kind.ARC, mode=Mode.REPLACE)
+        plate -= ctx.cut(extrude(wk.sketch, p.cover_t), why="window: the frame members carry the dowel loads, the middle idles", kind="lightening")
     edges = plate.edges().filter_by(lambda e: abs(e.center().Y - p.y_c0) < 1e-6 or abs(e.center().Y - p.y_c1) < 1e-6)
     plate, failed = safe_fillet(plate, [(edges, 0.6)], kind="chamfer")   # why: edge break, outline and window
     if failed:
         raise ValueError(f"cover edge break: {failed}")
     body = plate
     for z, r, why in ((p.z_d, BOSS_DRIVE, "drive dowel boss: holds the top dowel 0.5 mm over the drive finger (r < the horn-screw heads' sweep)"),
-                      (p.z_i, BOSS_IDLER, "idler dowel boss: the idler dowel runs in 7 mm of cover 0.5 mm over the idler finger")):
+                      (p.z_i, BOSS_IDLER, "idler dowel boss: the idler dowel runs in 9 mm of cover 0.5 mm over the idler finger")):
         boss = Pos(p.x_g, p.y_cb, z) * Rot(-90, 0, 0) * Cylinder(r, p.y_c0 - p.y_cb + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
         body += ctx.add(boss, why=why, kind="boss")
+    # why: the members on the idler side run the full 7 mm down to the boss faces (0.5 mm over the gears): the dowels'
+    # lever moments bend the cover out of its plane, and depth goes in cubed (cover_fea deflection). The drive side
+    # stays plate-deep: the drive finger's horn-screw heads turn under it.
+    deep = None
+    for (x0, z0), (x1, z1) in ((A, B), (B, I), (A, I)):
+        L, ang = math.hypot(x1 - x0, z1 - z0), math.atan2(z1 - z0, x1 - x0)
+        bar = Pos((x0 + x1) / 2, p.y_cb, (z0 + z1) / 2) * Rot(0, -math.degrees(ang), 0) * Box(L, p.y_c0 - p.y_cb + 0.01, MEMBER, align=(Align.CENTER, Align.MIN, Align.CENTER))
+        deep = bar if deep is None else deep + bar
+    for z in (p.z_post_a, p.z_post_b):          # the palm posts stand under the plate there: keep 0.2 mm off them
+        deep -= Pos(p.x_post, p.y_cb - 1, z) * Box(2 * p.post_r + 0.4, p.y_c0 - p.y_cb + 1.0, 2 * (p.post_r + 0.2) + 2 * 0.4 + 0.01, align=(Align.CENTER, Align.MIN, Align.CENTER))
+    body += ctx.add(deep, why="deep members on the idler side: out-of-plane stiffness where the dowel moments enter", kind="rib")
     roots = [e for e in body.edges() if abs(e.center().Y - p.y_c0) < 1e-6
              and min(math.hypot(e.center().X - p.x_g, e.center().Z - z) for z in (p.z_d, p.z_i)) < BOSS_IDLER + 0.1
              and e.geom_type == GeomType.CIRCLE and e.radius in (BOSS_DRIVE, BOSS_IDLER)]
