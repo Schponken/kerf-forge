@@ -250,7 +250,19 @@ def analyse(proj, fm=None, eta=None) -> dict:
     motors = [i for i in proj.items if "max_current_a" in _cat(proj, i)[1] and proj.items[i].role == "purchased"]
     if discs and mains:
         raise ElectricalError("prop discs on a mains supply (tethered flight) are not modelled; use a battery")
-    if discs:
+    cruise = el.get("cruise")
+    if cruise:      # fixed wing: the motor holds level cruise, P = W V / (L/D) / eta (docs/ENGINEERING.md "Fixed wing")
+        for k in ("speed_kmh", "l_over_d", "eta"):
+            if k not in cruise:
+                raise ElectricalError(f"electrical.cruise needs {k} (and a `why` with its source)")
+        if not motors:
+            raise ElectricalError("electrical.cruise but no motor (catalog max_current_a) in the power tree")
+        v = float(cruise["speed_kmh"]) / 3.6
+        p = mass / 1000 * 9.80665 * v / float(cruise["l_over_d"]) / float(cruise["eta"])
+        hover = {"mode": "cruise", "mass_g": round(mass, 1), "speed_kmh": float(cruise["speed_kmh"]),
+                 "l_over_d": float(cruise["l_over_d"]), "eta": float(cruise["eta"]), "power_w": round(p, 1),
+                 "v_nom": cells * LIPO_V_NOM}
+    if discs and not cruise:
         dset = {d[3] for d in discs}
         if len(dset) > 1:
             raise ElectricalError(f"prop discs of different diameters {sorted(dset)} are not modelled")
@@ -273,7 +285,7 @@ def analyse(proj, fm=None, eta=None) -> dict:
             pk = float(e["max_current_a"])
             if hover:
                 v = feed[i]["v"] if i in feed else v_bat
-                return hover["power_w"] / len(motors) / hover["v_nom"] * (v_bat / v), pk, "hover (momentum theory) / catalog max_current_a"
+                return hover["power_w"] / len(motors) / hover["v_nom"] * (v_bat / v), pk, ("level cruise" if hover.get("mode") == "cruise" else "hover (momentum theory)") + " / catalog max_current_a"
             return pk, pk, "catalog max_current_a (no props: run at max)"
         if "stall_current_a" in e:
             return float(e.get("running_current_a", e["stall_current_a"])), float(e["stall_current_a"]), "catalog running/stall current"

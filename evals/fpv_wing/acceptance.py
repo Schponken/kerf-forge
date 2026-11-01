@@ -7,7 +7,7 @@ def accept(rep, proj_dir):
     need_joint(rep, "elevon_l", fails, covers=(-20, 20))
     need_joint(rep, "elevon_r", fails, covers=(-20, 20))
     for rid, chk in (("static_margin", "static_margin"), ("wing_loading", "wing_loading"), ("stall_speed", "stall_speed"),
-                     ("spar_bending", "spar_bending"), ("twr", "thrust_to_weight"), ("flight_time", "flight_time"),
+                     ("spar_bending", "spar_bending"), ("twr", "thrust_to_weight"), ("flight_time", ("flight_time",)),
                      ("prop_clear", "prop_clearance"), ("span", "size_max"), ("auw", "mass_max")):
         need_req(rep, rid, chk, fails)
     reqs = {r["id"]: r for r in rep.get("requirements", [])}

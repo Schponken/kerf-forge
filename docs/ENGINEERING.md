@@ -119,6 +119,27 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
 - Battery: strap slots for a 20 mm strap, non-slip pad area, CG within 5 mm of the thrust center (X/Y) (`cg` check,
   `max_lateral_mm: 5` about the vertical line through the frame centre).
 
+## 9b. Fixed wing (flying wings first; kerf/aero.py, kerf/req_aero.py)
+- One planform in params (`wing_span`, `wing_root_chord`, `wing_tip_chord`, `wing_sweep_le_deg`, `wing_twist_tip_deg`,
+  `wing_x_le0`, `wing_airfoil`, ...) builds the wing parts AND feeds the checks, so they judge the wing that is printed.
+- Mean aerodynamic chord of a straight-tapered wing: MAC = 2/3 c_r (1 + l + l^2) / (1 + l), at y = b/6 (1 + 2l) / (1 + l),
+  l = taper. Neutral point of a tailless wing = its aerodynamic centre = 25 % of the MAC (thin-airfoil theory; Nickel &
+  Wohlfahrt, Tailless Aircraft in Theory and Practice). `static_margin` = (x_NP - x_CG) / MAC: positive = stable;
+  5-15 % for a flying wing (references in the project's REFERENCES.md). The CG is the assembled one, so the battery
+  position decides it - move the battery bay, not the number.
+- A flying wing needs a reflexed (or near-zero Cm0) airfoil and washout (tip nose down, `wing_twist_tip_deg` < 0) so
+  the tips stall last.
+- `stall_speed`: V = sqrt(2 W / (rho S CLmax)), sea level; wing CLmax = 0.9 x 2D clmax x cos(quarter-chord sweep)
+  (Raymer, Aircraft Design: A Conceptual Approach, eq. 12.15). 2D clmax from catalog/airfoils/airfoils.json at the
+  wing's Reynolds number, with its source.
+- `spar_bending`: all-up mass x load factor (>= 6 g for an FPV wing: pull-outs and hand launches) on an elliptical
+  lift distribution; bending at the station where the spar leaves the centre section; tubes share the moment by E I;
+  stress <= flexural (else tensile) strength / 1.5. The printed skin is not counted on: the spar carries the wing.
+- `flight_time` on a wing: `electrical.cruise` (speed, L/D, motor x prop x ESC efficiency, each with a source in
+  `why`): P = W V / (L/D) / eta. `prop_clearance` keeps the pusher prop disc clear of the elevons at full throw.
+- Thin-wall wing sections (1 wall, a few % infill or vase mode) are light but carry nothing: bolt or glue them onto
+  the spar tubes; TPU on whatever lands first (nose, wingtips).
+
 ## 10. Robot arm specifics
 - Static torque at every joint, worst pose (arm horizontal, full reach, payload), <= 50% of stall (check).
 - Base yaw carries the arm's weight and moment on a bearing or turntable, never on the servo spline alone.

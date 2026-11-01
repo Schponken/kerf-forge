@@ -223,6 +223,17 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             if it.cache_key and it.spec.get("source") != "meshy":
                 partcache.store_extra(it.cache_key, f"print-{sup}", r, deps)
         progress.emit("part", id=iid, ok=not r.get("problems"), mass=r.get("mass_est_g"))
+        if it.spec.get("airfoil"):          # a wing part names its airfoil: it must exist (catalog/airfoils or NACA)
+            from . import aero
+            r["airfoil"] = str(it.spec["airfoil"]).lower()
+            try:
+                aero.airfoil(r["airfoil"])
+            except ValueError as e:
+                r = {**r, "problems": [*r["problems"], f"{iid}: {e}"]}
+            pa = str(proj.params.get("wing_airfoil", "")).lower()
+            if pa and r["airfoil"] not in (pa, str(proj.params.get("wing_tip_airfoil", "")).lower()):
+                r = {**r, "problems": [*r["problems"], f"{iid}: airfoil {r['airfoil']} is not the planform's ({pa}): "
+                                                       f"the checks would judge a different wing"]}
         rep["parts"][iid] = r
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]

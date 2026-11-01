@@ -224,10 +224,16 @@ def wiring_md(proj, model) -> str:
         L = [f"# Wiring — {proj.name}", "",
              f"Battery: **{model['battery']}** ({model['cells']}S, {model['capacity_ah'] * 1000:g} mAh, {model['v_bat']:g} V full). "
              f"Average draw {model['avg_a']} A, peak {model['peak_a']} A; "
-             + (f"hover time **{model['minutes']} min** ({model['usable']:.0%} of capacity; an ideal steady-hover "
+             + (f"cruise time **{model['minutes']} min** ({model['usable']:.0%} of capacity; level cruise at "
+                f"{model['hover']['speed_kmh']:g} km/h: climbing and fast flying draw more)." if model["hover"] and model["hover"].get("mode") == "cruise"
+                else f"hover time **{model['minutes']} min** ({model['usable']:.0%} of capacity; an ideal steady-hover "
                 f"estimate: real flying draws more and gives less)." if model["hover"]
                 else f"run time **{model['minutes']} min** ({model['usable']:.0%} of capacity)."), ""]
-    if model["hover"]:
+    if model["hover"] and model["hover"].get("mode") == "cruise":
+        h = model["hover"]
+        L += [f"Cruise power {h['power_w']} W: {h['mass_g']} g at {h['speed_kmh']:g} km/h with L/D {h['l_over_d']:g} and "
+              f"{h['eta']:g} motor x prop x ESC efficiency (docs/ENGINEERING.md 'Fixed wing').", ""]
+    elif model["hover"]:
         h = model["hover"]
         L += [f"Hover power {h['power_w']} W for {h['mass_g']} g on {h['rotors']} x {h['prop_d_mm']:g} mm props "
               f"(momentum theory, figure of merit and motor efficiency in docs/ENGINEERING.md).", ""]

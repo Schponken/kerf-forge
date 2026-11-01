@@ -34,8 +34,9 @@ def _time(proj, min_min, fm, eta, label):
                 "detail": f"{label}: '{m['battery']}' is a mains supply (no capacity); remove this requirement or use a battery"}
     t = m["minutes"]
     h = m["hover"]
-    how = (f"hover: {h['power_w']} W for {h['mass_g']} g on {h['rotors']} x {h['prop_d_mm']:g} mm props" if h
-           else "average draw of every load")
+    how = ("average draw of every load" if not h else
+           f"cruise: {h['power_w']} W = {h['mass_g']} g x {h['speed_kmh']:g} km/h / L/D {h['l_over_d']:g} / eta {h['eta']:g}"
+           if h.get("mode") == "cruise" else f"hover: {h['power_w']} W for {h['mass_g']} g on {h['rotors']} x {h['prop_d_mm']:g} mm props")
     return {"ok": t is not None and t >= min_min, "value": t, "limit": min_min,
             "detail": f"{label} (min): {m['capacity_ah'] * 1000:g} mAh x {m['usable']:g} usable / {m['avg_a']} A ({how})"}
 

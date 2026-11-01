@@ -39,6 +39,8 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/electrical.py` | Complete electrical system from `electrical:` + `wiring:`: power tree, current per item and run (avg + peak), hover power (momentum theory), ratings (battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltage), routed wire lengths |
 | `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
 | `kerf/req_gears.py` | Requirement `gear_bending`: Lewis tooth bending of a spur pair at actuator stall |
+| `kerf/aero.py` | Fixed wings: airfoils (NACA 4-digit generated; UIUC .dat files in catalog/airfoils, Selig or Lednicer, data in airfoils.json), `Planform` (straight-tapered swept wing from the centreline: chord, LE, twist, sections; `geometry()` = area, AR, taper, MAC, its station and LE x, neutral point at quarter MAC), `wing_solid` (ruled loft of polygon sections, TE thickened to `te_min`: exact volumes), `spar_point` / `spar_line` / `spar_channel`, `elevon_split` (bottom hinge at a chord fraction, top V gap, ends square to the hinge), stall speed, Reynolds number, elliptical-lift root moment. Tests: tests/test_aero.py |
+| `kerf/req_aero.py` | Requirements `static_margin`, `wing_loading`, `stall_speed`, `spar_bending`, judged on the planform in params (`wing_` prefix) |
 | `kerf/hole_axes.py` | Horizontal holes cut round (iface knows whether it cut a teardrop): pin holes = problem, fastener holes = warning (ENGINEERING s4) |
 | `kerf/req_stops.py` | Requirement `hard_stop`: a joint moved past an end of its range must collide (proves a mechanical stop) |
 | `kerf/wiring_out.py` | `out/WIRING.md`, `out/wiring.svg`, the solder/wiring steps appended to `out/ASSEMBLY.md`, and the BOM rows for wire and heat-shrink; buy links from catalog sources. Routes are told by landmarks (`landmarks`: a waypoint `item.joint` is "item's joint", a free point is "along/near" the nearest part and its nearest named feature within 12 mm; never coordinates); a signal run's `pin:` is named at the controller end with the Pi's physical header pin (and the GND pin next to it for a 2-conductor run); every electrical `bom_extra` row (a capacitor, a USB supply) gets its own fitting step |
@@ -76,7 +78,9 @@ derived:                        # python expressions over params (math functions
 layout: parts/layout.py         # optional: def layout(p, cat) -> dict of shared values computed from params + catalog
                                 # (hole positions, seat heights) that several parts must agree on; added to ctx.p
 parts:                          # printed parts
-  bracket: {file: parts/bracket.py, material: PETG, qty: 1, print_rot: [0, 0, 0], infill: 0.3, load_axis: X}   # load_axis: main stress direction (part frame); warned if > 30 deg across layers
+  bracket: {file: parts/bracket.py, material: PETG, qty: 1, print_rot: [0, 0, 0], infill: 0.3, load_axis: X}
+  # wing parts add `airfoil: mh45` (catalog/airfoils or a NACA 4-digit name; must be the planform's wing_airfoil or wing_tip_airfoil);
+  # thin-wall printed wings set `walls: 1` and a low `infill` so the mass estimate matches the print   # load_axis: main stress direction (part frame); warned if > 30 deg across layers
   # any part or purchased item may add  insert: {direction: [0, 0, -1], distance: 30}  (own frame, the way it moves
   # going IN): kerf check slides it (and what is mounted on it) in from that far and reports collisions on the way;
   # with assembly.order, parts installed after it neither ride along nor block
@@ -156,6 +160,10 @@ Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each funct
 | `tip_over` | `min_deg`, `support`, `poses`, `payload_g`, `payload_at` | smallest tip-over angle (deg) |
 | `channel_clear` | `path`, `diameter`, `poses`, `ignore` | largest diameter that passes (mm) |
 | `hard_stop` | `joint`, `beyond` (a value past an end of the range), `min_mm3` (default 1) | parent/child overlap at `beyond` (mm3) |
+| `static_margin` | `min` (0.05), `max` (0.15), `wing` (param prefix, `wing_`) | (neutral point x - assembled CG x) / MAC (range) |
+| `wing_loading` | `max_g_dm2`, `wing` | all-up mass / wing area (g/dm²) |
+| `stall_speed` | `max_kmh`, `cl_max` (wing; else 0.9 x airfoil clmax x cos quarter-chord sweep), `airfoil`, `wing` | sea-level stall speed (km/h) |
+| `spar_bending` | `tubes` (catalog tube paths in one half), `y_root` (mm, where they leave the centre section), `load_factor` (6), `sf` (1.5), `wing` | spar stress at y_root under load_factor g, elliptical lift, tubes sharing by E I / (strength / sf) |
 | `gear_bending` | `module`, `z_driver`, `z_driven`, `width`, `torque_nmm` (the driving actuator's stall), `material`, `sf` (3), `direction` | Lewis tooth-root stress (MPa, Shigley Table 14-2 form factor) vs strength / sf |
 | `prop_clearance` | `min_mm`, `min_between_mm`, `props`, `ignore`, `joints`, `poses` | tightest prop-disc gap (mm) |
 | `power_budget` | (`fm`, `eta`) — reads `electrical:` / `wiring:` | worst load / rating (must be <= 1) |
@@ -192,6 +200,7 @@ electrical:
   # supply: psu               # ...or a mains adapter (catalog output_v, current_a): rated by current, no run time
   burst_s: 5                  # longest full-power burst (s) for wire heating; default 5
   usable: 0.8                 # usable capacity fraction (80 % rule); fm / eta / bec_eff override the defaults
+  # cruise: {speed_kmh: 70, l_over_d: 8, eta: 0.5, why: "..."}   # fixed wing: motor draw = W V / (L/D) / eta instead of hover
   draw: {rx: {avg_a: 0.1, peak_a: 0.1, why: "..."}}         # only where the catalog has no current figure
   limits: {stack: {peak_a: 100, why: "ESC current limit configured to 25 A per motor"}}   # a real, set cap
   # kind: current_limit (default: configured and enforced) | throttle_estimate (how hard it will be driven: the wiring
