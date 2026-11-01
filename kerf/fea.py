@@ -221,7 +221,13 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
     bf = mesh.boundary_facets()
     vm_el = vm.mean(axis=1)
     viz = {"tris": mesh.p[:, mesh.facets[:, bf]].transpose(2, 1, 0), "vm": vm_el[mesh.f2t[0, bf]]}
-    res = {"applied_force_n": Fapp.round(4).tolist(), "applied_moment_nmm": Mapp.round(3).tolist(), "_viz": viz,
+    # the stress FIELD, not just its peak: element centroids, volumes and mean von Mises, so callers can say where
+    # material works and where it idles (requirements.stress_map)
+    P = mesh.p[:, mesh.t]                                       # 3 x 4 corners x elements
+    vol = np.abs(np.einsum("ij...,ij...->...", np.cross(P[:, 1] - P[:, 0], P[:, 2] - P[:, 0], axis=0)[None],
+                           (P[:, 3] - P[:, 0])[None])) / 6.0
+    field = {"c": P.mean(axis=1).T.astype(np.float32), "vol": vol.astype(np.float32), "vm": vm_el.astype(np.float32)}
+    res = {"applied_force_n": Fapp.round(4).tolist(), "applied_moment_nmm": Mapp.round(3).tolist(), "_viz": viz, "_field": field,
             "max_vm_mpa": float(np.percentile(vm, 99.9)), "max_vm_peak_mpa": float(vm.max()), "median_vm_mpa": float(np.median(vm)),
             "max_disp_mm": float(np.linalg.norm(disp, axis=1).max()),
             "max_disp_at": mesh.p[:, int(np.argmax(np.linalg.norm(disp, axis=1)))].round(1).tolist(),

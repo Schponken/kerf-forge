@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import progress
+from . import progress, stressmap
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -215,6 +215,18 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             progress.stage("requirements")
             rq = requirements.run_all(proj, asm, quick=not sweeps)
             fea_viz = {r["id"]: r.pop("_viz") for r in rq if "_viz" in r}   # meshes stay out of report.json
+            fields: dict[str, list] = {}
+            for r in rq:                                                   # stress fields too, summarised per part
+                f = r.pop("_field", None)
+                if f:
+                    fields.setdefault(f["part"], []).append(f)
+            for part, cases in fields.items():
+                s = stressmap.summarize(cases)
+                if s and part in rep["parts"]:
+                    rep["parts"][part]["stress"] = s
+                    msg = stressmap.advice(part, s)
+                    if msg:
+                        rep["warnings"].append(msg)
             rep["requirements"] = rq
             _layer_proofs(proj, rep)
             rep["warnings"] += _fea_hygiene(proj)

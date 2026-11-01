@@ -94,6 +94,7 @@ def test_yaml_load_cases_and_render(tmp_path):
     Fa, M = np.array(r["applied_force_n"]), np.array(r["applied_moment_nmm"])
     assert (M - np.cross([0, 0, 20.0], Fa))[1] == pytest.approx(200.0, abs=1.0)   # about the shaft centre
     assert "_viz" not in r and "_viz" not in (d / "out" / "report.json").read_text()
+    assert "_field" not in r and "_field" not in (d / "out" / "report.json").read_text()
     # the reviewer's picture, from the same solve
     from kerf import assembly as A, project as P, requirements
     proj = P.build(P.load(str(d)))
@@ -104,7 +105,7 @@ def test_yaml_load_cases_and_render(tmp_path):
     assert res["_viz"]["p999"] == pytest.approx(r["value"], abs=0.01) and res["_viz"]["peak"] >= res["_viz"]["p999"]
     h = fea_render.heading(res["_viz"], "seat", 3.21)
     assert f"volume p99.9 {r['value']:.2f}" in h and f"volume peak {res['_viz']['peak']:.2f}" in h and "surface peak 3.21" in h
-    json.dumps({k: v for k, v in res.items() if k != "_viz"})
+    json.dumps({k: v for k, v in res.items() if not k.startswith("_")})   # private keys (_viz, _field) never reach JSON
 
 
 def test_region_union():

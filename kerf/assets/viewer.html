@@ -412,7 +412,9 @@ function renderChecks() {
   h += '<h2>Assembly</h2>';
   h += line(!(a.interference || []).length, 'No parts overlap', (a.interference || []).map(i => `${esc(i.a)} / ${esc(i.b)}: ${fmt(i.volume_mm3)} mm³`).join('<br>'));
   h += line(true, `${(a.fasteners || []).length} screws line up through both parts`, [...new Set((a.fasteners || []).map(f => `${f.screw}×${f.length_mm} (${f.group})`))].map(esc).join(' · '));
-  for (const s of a.sweeps || []) h += line(s.clear, `Joint ${esc(s.joint)} moves ${fmt(s.range[0])} to ${fmt(s.range[1])} without hitting anything`, s.clear ? `${s.samples} poses checked` : esc(JSON.stringify(s.collisions[0])));
+  for (const s of a.sweeps || []) h += line(s.clear, s.range ? `Joint ${esc(s.joint)} moves ${fmt(s.range[0])} to ${fmt(s.range[1])} without hitting anything`
+      : `Combined motion "${esc(s.joint)}" (${(s.poses || []).length || s.samples || "all"} poses) without hitting anything`,   // coupled-pose sweeps have no single range
+    s.clear ? `${s.samples || (s.poses || []).length} poses checked` : esc(JSON.stringify((s.collisions || [])[0])));
   h += '<h2>Engineering requirements</h2>';
   for (const r of R.requirements || []) h += line(r.ok, r.value == null ? `${esc(r.id)}: did not run` : `${esc(r.id)}: ${fmt(r.value, 2)} (limit ${fmt(r.limit, 2)})`, esc(r.value == null ? r.detail : (r.why || r.detail)));
   if (!(R.requirements || []).length) h += '<p class="empty">None declared.</p>';
@@ -420,7 +422,11 @@ function renderChecks() {
 }
 
 // ---------- go ----------
-restyle(); renderMotion(); renderParts(); renderBom(); renderPrint(); renderChecks(); pose(); resize(); view('iso'); fit();
+// one broken side panel must never blank the 3D view: each panel renders on its own and reports its own error
+for (const f of [restyle, renderMotion, renderParts, renderBom, renderPrint, renderChecks]) {
+  try { f(); } catch (e) { console.error(`viewer: ${f.name} failed`, e); }
+}
+pose(); resize(); view('iso'); fit();
 // Draw only when something changed (camera, pose, selection, visibility, theme, size): idle pages cost nothing.
 ctl.addEventListener('change', redraw);
 (function loop(t) {

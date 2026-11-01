@@ -96,3 +96,29 @@ def test_html_is_self_contained(proj, tmp_path):
     assert not re.search(r"""(src|href)=["']https?://""", s)          # no network resources
     data = s.split('id="kerf-data">', 1)[1].split("</script>", 1)[0]  # the data block ends at the real tag
     assert json.loads(data)["report"]["project"] == "t </script> & <b>"
+
+
+def test_page_renders_with_a_combined_pose_sweep(proj, tmp_path):
+    """Regression: a coupled-pose sweep (no 'range') crashed the side panel and left the 3D view blank, silently."""
+    import subprocess
+    from pathlib import Path
+    asm = A.plan(proj)
+    rep = {"project": "t", "problems": [], "assembly": {"sweeps": [
+        {"joint": "corners", "poses": [{"slide": 0, "tilt": 0}, {"slide": 40, "tilt": 60}], "clear": True, "samples": 2},
+        {"joint": "slide", "range": [0, 40], "clear": True, "samples": 9}]}}
+    page = viewer.write(proj, asm, rep, tmp_path / "v.html")
+    root = Path(__file__).resolve().parent.parent
+    js = tmp_path / "check.mjs"
+    js.write_text(f"""import {{ chromium }} from '{root}/tools/render/node_modules/playwright/index.mjs';
+const b = await chromium.launch({{ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }});
+const p = await b.newPage({{ viewport: {{ width: 1000, height: 700 }} }}); const errs = [];
+p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
+await p.goto('file://{page}'); await p.waitForFunction(() => window.__kerf, null, {{ timeout: 30000 }}); await p.waitForTimeout(500);
+const lit = await p.evaluate(() => {{ const c = document.querySelector('canvas'); const g = c.getContext('webgl2') || c.getContext('webgl');
+  const px = new Uint8Array(4 * 64 * 64); g.readPixels(c.width / 2 - 32, c.height / 2 - 32, 64, 64, g.RGBA, g.UNSIGNED_BYTE, px);
+  let n = 0; for (let i = 0; i < px.length; i += 4) if (px[i] + px[i + 1] + px[i + 2] > 0) n++; return n; }});
+const text = await p.evaluate(() => document.body.textContent);
+console.log(JSON.stringify({{ errs, lit, combined: text.includes('Combined motion') }})); await b.close();""")
+    r = subprocess.run(["node", str(js)], capture_output=True, text=True, timeout=120)
+    out = json.loads(r.stdout.strip().splitlines()[-1])
+    assert out["errs"] == [] and out["combined"], out

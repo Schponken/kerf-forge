@@ -1,4 +1,5 @@
 """FEA must match hand calculations before any project relies on it."""
+import numpy as np
 import pytest
 from build123d import Align, Box, Cylinder
 
@@ -79,3 +80,22 @@ def test_stalled_solver_coarsens_and_solves_exactly(tmp_path, monkeypatch):
     r = fea.static(bar, 2000, 0.38, fixed, [(tip, (0, 0, -10.0))])
     assert "coarser mesh" in r["solver_note"] and r["elements"] < ref["elements"]
     assert r["max_disp_mm"] == pytest.approx(2.0, rel=0.03)          # beam theory: F L^3 / 3EI = 2.0 mm
+
+
+def test_stress_map_finds_idle_material_and_overbuilt_parts():
+    from build123d import Box, Align
+    from kerf import stressmap
+    import os
+    os.environ["KERF_FEA_CACHE"] = "0"
+    bar = Box(100, 10, 10, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    r = fea.static(bar, 2000, 0.38, lambda x, y, z: x < 0.01, [(lambda x, y, z: x > 99.99, (0, 0, -10.0))])
+    os.environ.pop("KERF_FEA_CACHE")
+    assert r["_field"]["vol"].sum() == pytest.approx(10000, rel=1e-6)          # element volumes add up to the bar
+    peak = float(np.percentile(r["_field"]["vm"], 99.9))
+    tight = stressmap.summarize([{"field": r["_field"], "allow": peak * 1.1}])
+    assert not tight["overbuilt"] and tight["hot_zones"][0]["at"][0] < 20       # hot spot at the clamped root
+    loose = stressmap.summarize([{"field": r["_field"], "allow": peak * 20}])
+    assert loose["overbuilt"] and loose["cold_zones"][0]["at"][0] > 50           # idle material toward the free end
+    assert "overbuilt" in stressmap.advice("bar", loose)
+    stiff = stressmap.summarize([{"field": r["_field"], "allow": peak * 20, "disp_use": 0.9}])
+    assert not stiff["overbuilt"]                                                # stiffness governs: not overbuilt
