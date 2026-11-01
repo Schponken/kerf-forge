@@ -3,9 +3,9 @@ and in the plate 3MFs' per-object settings.
 
 Settings come from Bambu Studio's own profiles (bambulab/BambuStudio, resources/profiles/BBL, read 2026-11-01):
 filament temperatures and max volumetric speed from the filament profiles, layer height / support type / brim width
-from fdm_process_common.json. Print time: when a Bambu Studio or OrcaSlicer command line is found (KERF_SLICER, or the
-usual install paths) each plate is sliced and the slicer's own prediction and weight are read back from the sliced
-3MF (Metadata/slice_info.config). Without a slicer the time is a documented lower bound: the plate's plastic volume
+from fdm_process_common.json. Print time: when `kerf print` is set up to slice (kerf/bambu.py: slicer binary plus the
+full exported machine / process / filament settings in ~/.kerf/bambu.json) each plate is sliced with that same
+command line and the slicer's own prediction and weight are read back from the sliced 3MF (Metadata/slice_info.config). Without a slicer the time is a documented lower bound: the plate's plastic volume
 extruded at the filament's max volumetric speed (no slicer prints faster), so the real print is longer.
 """
 from __future__ import annotations
@@ -74,14 +74,17 @@ def part_settings(rep_part: dict, spec: dict, supports: str = "allowed") -> dict
             "overhang_pct": oh, "slender": round(slender, 2)}
 
 
-def slicer() -> str | None:
-    """A Bambu Studio / OrcaSlicer command line, if installed (KERF_SLICER overrides)."""
-    for c in (os.environ.get("KERF_SLICER"), "/Applications/BambuStudio.app/Contents/MacOS/BambuStudio",
-              "/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer", shutil.which("bambu-studio"),
-              shutil.which("orca-slicer"), shutil.which("OrcaSlicer")):
-        if c and Path(c).exists():
-            return c
-    return None
+def slicer() -> tuple[str, dict] | None:
+    """The slicer command line and its settings, when `kerf print` is set up for it (kerf/bambu.py: ~/.kerf/bambu.json
+    names the Bambu Studio / OrcaSlicer binary and the FULL machine / process / filament settings exported from it;
+    the CLI does not slice with partial profiles)."""
+    from . import bambu
+    cfg = bambu.load_config()
+    exe = bambu.find_slicer(cfg)
+    sl = cfg.get("slicer") or {}
+    if not exe or not sl.get("machine") or not sl.get("process") or not sl.get("filaments"):
+        return None
+    return exe, sl
 
 
 def read_slice_info(sliced_3mf: Path) -> dict | None:
@@ -98,14 +101,16 @@ def read_slice_info(sliced_3mf: Path) -> dict | None:
     return {"seconds": float(pred.group(1)), "grams": float(wt.group(1)) if wt else None}
 
 
-def slice_plate(exe: str, plate: Path, timeout: int = 600) -> dict | None:
-    """Slice one plate with the slicer's command line; None when it fails (the estimate is used instead)."""
+def slice_plate(sl: tuple[str, dict], plate: Path, materials: list[str], timeout: int = 900) -> dict | None:
+    """Slice one plate with the same command line `kerf print` uses; None when it cannot (the estimate is used)."""
+    from . import bambu
+    exe, settings = sl
     with tempfile.TemporaryDirectory() as td:
-        out = Path(td) / "sliced.3mf"
+        out = Path(td) / "sliced.gcode.3mf"
         try:
-            r = subprocess.run([exe, "--slice", "0", "--export-3mf", str(out), str(plate)], capture_output=True,
-                               text=True, timeout=timeout)
-        except Exception:  # noqa: BLE001
+            cmd = bambu.slice_cmd(exe, plate, out, settings, materials)
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        except Exception:  # noqa: BLE001 - a missing filament setting or a slicer crash: fall back to the estimate
             return None
         if r.returncode != 0 or not out.exists():
             return None
@@ -137,11 +142,11 @@ def write(proj, rep: dict, plates: list, outdir: Path, use_slicer: bool = True) 
     supports and brim into each plate 3MF's per-object settings. Returns {plates: [...], slicer: path|None}."""
     from .export import part_print_settings, _write_part_settings
     supports = proj.data.get("supports", "allowed")
-    exe = slicer() if use_slicer else None
+    sl = slicer() if use_slicer else None
     rows = []
     for pl in plates:
         nums = plate_numbers(pl, proj, rep)
-        sliced = slice_plate(exe, outdir / pl["file"]) if exe else None
+        sliced = slice_plate(sl, outdir / pl["file"], nums["materials"]) if sl else None
         rows.append({**pl, **nums, "sliced": sliced})
         specs = {}
         for name in pl["parts"]:
@@ -168,7 +173,7 @@ def write(proj, rep: dict, plates: list, outdir: Path, use_slicer: bool = True) 
         L += ["", "Print time without a slicer: the lower bound is the plastic volume pushed at the filament's maximum "
               "volumetric speed (Bambu profile value), which no slicer exceeds; walls, travel, the first layer and "
               "cooling make the real print several times longer. Open the plate in Bambu Studio and Slice for the "
-              "real time (Studio does this automatically when its command line is installed)."]
+              "real time (Kerf slices automatically once `kerf print` is set up with your exported Bambu Studio settings, see kerf/bambu.py)."]
     L += ["", "## Material settings", "", "| Material | Bambu profile | Nozzle | Bed / plate | Part fan | Note |", "|---|---|---|---|---|---|"]
     for mat in sorted({it.spec.get("material", "PETG") for it in proj.printed.values()}):
         p = profile(mat)
@@ -190,4 +195,4 @@ def write(proj, rep: dict, plates: list, outdir: Path, use_slicer: bool = True) 
     L += ["", "The mass estimate and the strength checks assume these infill and wall settings: keep them."]
     (outdir / "PRINT_SETTINGS.md").write_text("\n".join(L) + "\n", encoding="utf-8")
     return {"plates": [{k: r[k] for k in ("file", "parts", "grams", "min_seconds", "materials", "sliced")} for r in rows],
-            "slicer": exe, "filament_g": round(total_g, 1)}
+            "slicer": sl[0] if sl else None, "filament_g": round(total_g, 1)}

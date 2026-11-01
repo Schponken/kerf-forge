@@ -115,6 +115,12 @@ pockets. Keep the features reaching into the shell so the result is one body; th
    key access and exports all run on the fused body. Look at its part render; if the shell hides a feature or
    looks wrong, change the prompt or bounds and regenerate.
 
+**Auto-fix pass** (before the build and the review): `.venv/bin/kerf fixes <p>` turns the last check's common
+findings into edits of the part code: horizontal holes cut round get `teardrop="auto"` (`--apply` writes these),
+self-tapping holes near an edge can become heat-set inserts (`--apply --heatset`; the insert's bore is larger, so the
+check that follows must still pass, else revert and grow a boss), and it lists what needs you (bosses, fillets).
+Re-run `kerf check <p>` after applying.
+
 ## 6. Build and look
 `kerf build <p>`. Read the assembly sheet, exploded sheet, keep-out render, every joint pose (min/max) and every
 part sheet in `out/renders/`, and `out/report.json` warnings (layer direction, overhang, thin walls, part notes).

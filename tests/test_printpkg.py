@@ -62,15 +62,24 @@ def test_write_estimate_and_slicer_paths(tmp_path, monkeypatch):
     assert "at least 42 min" in md and "on its bottom (-Z) face" in md and "255 C" in md and "0.2 mm" in md
     cfg = zipfile.ZipFile(tmp_path / "plate_1.3mf").read("Metadata/model_settings.config").decode()
     assert 'key="layer_height" value="0.2"' in cfg and 'key="enable_support" value="0"' in cfg and 'key="wall_loops" value="4"' in cfg
-    # a slicer command line: its own prediction and weight win
+    # a slicer set up for `kerf print` (binary + full exported settings): its own prediction and weight win
     fake = tmp_path / "fake_slicer.py"
     fake.write_text("import sys, zipfile\nout = sys.argv[sys.argv.index('--export-3mf') + 1]\n"
+                    "assert '--load-settings' in sys.argv and '--load-filaments' in sys.argv\n"
                     "z = zipfile.ZipFile(out, 'w')\nz.writestr('Metadata/slice_info.config', "
                     "'<config><plate><metadata key=\"prediction\" value=\"7200\"/><metadata key=\"weight\" value=\"26.5\"/></plate></config>')\nz.close()\n")
     sh = tmp_path / "slicer"
     sh.write_text(f"#!/bin/sh\nexec {sys.executable} {fake} \"$@\"\n")
     sh.chmod(sh.stat().st_mode | stat.S_IEXEC)
-    monkeypatch.setenv("KERF_SLICER", str(sh))
+    for f in ("m.json", "p.json", "petg.json"):
+        (tmp_path / f).write_text("{}")
+    cfg = tmp_path / "bambu.json"
+    cfg.write_text(json.dumps({"slicer": {"bin": str(sh), "machine": str(tmp_path / "m.json"), "process": str(tmp_path / "p.json"),
+                                          "filaments": {"PETG": str(tmp_path / "petg.json")}}}))
+    monkeypatch.setenv("KERF_BAMBU_CONFIG", str(cfg))
     r = printpkg.write(proj, rep, plates, tmp_path)
     assert r["slicer"] == str(sh) and r["plates"][0]["sliced"] == {"seconds": 7200.0, "grams": 26.5}
     assert "2.0 h (sliced)" in (tmp_path / "PRINT_SETTINGS.md").read_text()
+    # a binary without the exported settings does not slice (the CLI needs full configs): estimate
+    cfg.write_text(json.dumps({"slicer": {"bin": str(sh)}}))
+    assert printpkg.write(proj, rep, plates, tmp_path)["plates"][0]["sliced"] is None

@@ -121,6 +121,19 @@ def print_up_deg(ctx, loc: Location, vertical_tol_deg: float = 30.0) -> float | 
     return math.degrees(math.atan2(up.dot(ax[1]), up.dot(ax[0])))
 
 
+TEARDROP_KINDS = ("clearance", "tap", "heatset")
+
+
+def _auto_td(ctx, loc: Location, teardrop, kind: str | None = None):
+    """teardrop="auto": work the angle out from the part's print_rot (print_up_deg) - None when the hole prints near
+    vertical or its kind cannot be teardropped - so a hole is never cut round because a designer forgot it."""
+    if teardrop != "auto":
+        return teardrop
+    if kind is not None and kind not in TEARDROP_KINDS:
+        return None
+    return print_up_deg(ctx, loc)
+
+
 def _teardrop(r, z0, z1, up_deg):
     """Horizontal-hole shape for FDM: a circle with a 45-degree pointed roof toward `up_deg` (direction that is UP
     on the printer, measured in the hole's XY plane). Prints without sagging or supports."""
@@ -194,7 +207,9 @@ def bolt_pattern(ctx, group: str, screw: str, points, loc: Location, kind: str, 
                  counterbore_depth: float | None = None, teardrop: float | None = None, nut_recess: float = 0.0,
                  relief: float = 0.0):
     """Holes at `points` (in loc's XY plane) through/into `depth` mm of material below loc.
-    Registers one site per hole: male for clearance/counterbore/countersink, female for heatset/tap/nut_trap."""
+    Registers one site per hole: male for clearance/counterbore/countersink, female for heatset/tap/nut_trap.
+    teardrop="auto" picks the angle from the part's print orientation (or none when the holes print vertical)."""
+    teardrop = _auto_td(ctx, loc, teardrop, kind)
     role = "male" if kind in KINDS_MALE else "female"
     cut = None
     for (x, y) in points:
@@ -248,6 +263,7 @@ def servo_mount(ctx, servo: str, loc: Location, group: str, plate_t: float, kind
       wall between the widened window and every tab screw hole keeps docs/ENGINEERING.md section 5's minimum.
     teardrop: when the plate prints standing (tab screw holes horizontal), the direction (deg in loc's XY plane) that
       is UP on the printer; see print_up_deg."""
+    teardrop = _auto_td(ctx, loc, teardrop, kind)
     d = servo_dims(servo)
     clearance += calibrate.offset("servo_window")
     wx, wy = d["L"] + clearance, d["W"] + clearance
@@ -377,6 +393,7 @@ def horn_mount(ctx, horn: str, loc: Location, group: str, plate_t: float, kind: 
     servo axis. plate_t: link thickness at the hub. teardrop: for a link printed with the horn axis horizontal, the
     direction (deg, in loc's XY plane) that is UP on the printer; every hole gets a 45-degree roof.
     start_deg / use: which horn holes (see horn_holes); give the horn item the same `hole_start_deg` / `use_holes`."""
+    teardrop = _auto_td(ctx, loc, teardrop, kind)
     h = horn_dims(horn)
     pts = horn_holes(horn, start_deg, use)
     cut = bolt_pattern(ctx, group, h["screw"], pts, loc, kind, plate_t, teardrop=teardrop)
@@ -503,6 +520,7 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
     teardrop: for horizontal holes, the direction (deg in loc's XY plane) that is UP on the printer.
     The assembled check (kerf/pins.py) proves all holes of a group are coaxial, that the pin is held on one side and
     free on the other side of every moving joint, that the joint turns about the pin axis, and picks the pin length."""
+    teardrop = _auto_td(ctx, loc, teardrop)
     if fit not in PIN_FITS:
         raise ValueError(f"unknown pin fit '{fit}' (use {PIN_FITS})")
     pd = pin_dims(pin)

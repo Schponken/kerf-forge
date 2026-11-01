@@ -225,6 +225,9 @@ def main(argv=None) -> int:
     pr = sub.add_parser("print"); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
     pr.add_argument("--send", type=int, default=None, metavar="PLATE"); pr.add_argument("--open", action="store_true")
     fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
+    fx = sub.add_parser("fixes", help="turn the last check's common findings into edits (--apply writes the mechanical ones)")
+    fx.add_argument("project"); fx.add_argument("--apply", action="store_true")
+    fx.add_argument("--heatset", action="store_true", help="with --apply: also turn edge-near self-tapping holes into heat-set inserts")
     fd.add_argument("--limit", type=int, default=8); fd.add_argument("--measure", type=int, default=4)
     for k in ("--add", "--title", "--license", "--dims", "--source"):
         fd.add_argument(k, default=None)
@@ -266,6 +269,19 @@ def main(argv=None) -> int:
         r = gallery.build(a.projects or None)
         _p(f"gallery: {r['index']} + {len(r['files'])} files (out/gallery/files.json) for "
            f"{len(r['projects'])} projects; publish index.html with those files as one Artifact")
+        return 0
+    if a.cmd == "fixes":
+        from . import autofix
+        d = ROOT / "projects" / a.project if not Path(a.project).exists() else Path(a.project)
+        if not (d / "out" / "report.json").exists():
+            _p(f"FAIL no report for {a.project}: run `kerf check {a.project}` first")
+            return 1
+        fs = autofix.fixes(d, apply=a.apply, heatset=a.heatset)
+        for f in fs:
+            tag = "applied" if f.get("applied") else ("can apply" if f["kind"] in ("teardrop", "heatset") and f.get("edits") else "by hand")
+            _p(f"[{tag}] {f['fix']}" + (f"  ({f['file']})" if f.get("file") else ""))
+        _p(f"{len(fs)} finding(s); " + ("run `kerf check` now" if a.apply and any(f.get("applied") for f in fs) else
+                                          "nothing to apply" if not any(f.get("edits") for f in fs) else "use --apply to write them"))
         return 0
     if a.cmd == "find":
         from . import find as F, project as P
