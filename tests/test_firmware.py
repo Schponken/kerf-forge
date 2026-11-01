@@ -104,3 +104,12 @@ def test_bench_sub_assembly_joins_at_its_parents_step():
     assert when(["horn", "bracket"]) == (2, 1)          # their screws: on the bench
     assert when(["bracket", "yoke"]) == (4, 2)          # the pivot: after the sub-assembly is pressed on
     assert when(["servo", "yoke"]) == (4, 1)            # the servo's tab screws: before it
+
+
+def test_wing_flight_controller_counts_as_a_flight_controller():
+    """A stand-alone wing FC (drone.fcs.*) drives servos like an FC stack: bring-up names its outputs, no sketch."""
+    from types import SimpleNamespace as S
+    proj = S(items={"fc": S(spec={"catalog": "drone.fcs.f405_wmo"}), "stack": S(spec={"catalog": "drone.stacks.fc_20"}),
+                    "nano": S(spec={"catalog": "boards.arduino_nano"})})
+    assert firmware._kind(proj, "fc") == "fc" and firmware._kind(proj, "stack") == "fc"
+    assert firmware._kind(proj, "nano") == "nano"

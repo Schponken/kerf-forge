@@ -219,6 +219,8 @@ def item_mass_g(item) -> float:
             pass
         # rods / tubes: catalog density (g/cm3) x cross-section x the item's length
         L = item.spec.get("length", e.get("length"))
+        if isinstance(L, str) and e.get("density") and item.shape is not None:   # a param expression: the built tube
+            return item.shape.volume / 1000 * float(e["density"])
         if e.get("density") and e.get("od") and L:
             od, i_d = float(e["od"]), float(e.get("id") or 0.0)
             return math.pi / 4 * (od ** 2 - i_d ** 2) * float(L) / 1000 * float(e["density"])

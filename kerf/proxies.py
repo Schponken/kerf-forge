@@ -148,12 +148,14 @@ def bearing(ctx, spec):
 
 @proxy("rod")
 def rod(ctx, spec):
-    """Rod or tube of length spec['length'] (mm). Frame: origin at the centre of one end, +Z along the rod.
-    Joints: end_a (origin), end_b (far end), mid."""
+    """Rod or tube of length spec['length'] (mm; a number, or an expression over params / layout values such as
+    "main_len", so a tube cut to a computed length stays in step with the parts it runs through).
+    Frame: origin at the centre of one end, +Z along the rod. Joints: end_a (origin), end_b (far end), mid."""
+    from .requirements import _ev
     e = catalog.get(spec["catalog"])
     od = catalog.num(e, "od", "outer_d", "diameter")
     idd = catalog.num(e, "id", "inner_d", default=0.0)
-    L = float(spec["length"])
+    L = _ev(spec["length"], getattr(ctx, "params", {}) or {})
     s = _cyl(od / 2, L)
     if idd > 0:
         s -= Pos(0, 0, -1) * Cylinder(idd / 2, L + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))

@@ -29,7 +29,7 @@ SWEEP_STEP_MS = 30
 
 KINDS = {"boards.arduino_nano": "nano", "boards.pca9685_adafruit": "pca9685"}
 PI_PREFIX = "boards.rpi_"
-FC_PREFIX = "drone.stacks."
+FC_PREFIX = ("drone.stacks.", "drone.fcs.")      # FC + ESC stacks, and stand-alone (wing) flight controllers
 PI_HEADER = {"GPIO18": 12, "GPIO19": 35}   # pwm-2chan's default hardware-PWM pins -> physical header pin
 
 

@@ -118,6 +118,8 @@ def test_cruise_power_and_time_by_hand(tmp_path):
     assert m["hover"]["mode"] == "cruise" and m["hover"]["power_w"] == pytest.approx(12.79, abs=0.05)
     assert m["avg_a"] == pytest.approx(1.2013, abs=0.002)
     assert m["minutes"] == pytest.approx(59.9, abs=0.1)
+    from kerf import req_electrical
+    assert req_electrical.flight_time(proj, asm, 10)["detail"].startswith("cruise flight time (min)")
 
 
 def test_clmax_from_the_catalog_picks_a_safe_reynolds_number():

@@ -12,6 +12,7 @@ pocket open to the bottom surface; the outer one has the fin's slot in its tip.
 from build123d import *
 import numpy as np
 from kerf import aero, iface
+from kerf.features import fillet_inside
 
 import importlib.util, pathlib
 _spec = importlib.util.spec_from_file_location("wing_layout", pathlib.Path(__file__).with_name("layout.py"))
@@ -50,6 +51,18 @@ def build(ctx):
         # plane: x = world X, z = towards the pod (-s Y), so y = z x x = s * world Z
         local = [(p.root_bolt_x1, s * p.root_bolt_z1), (p.root_bolt_x2, s * p.root_bolt_z2)]
         body = body - iface.bolt_pattern(ctx, f"wing_root_{'l' if s < 0 else 'r'}", "M3", local, loc, kind="heatset", depth=40)
+        # elevon servo pocket: the KST X08 lies flat (8 mm across the wing), output inboard; the pocket is open to the
+        # bottom skin so the servo drops in from below (glued by its case, covered with tape) and its arm hangs out
+        sd = iface.servo_dims(L.SERVO)
+        lead_h = ctx.cat.num(ctx.cat.get(L.SERVO), "lead_bump_h")
+        y_in, y_out = p.servo_out_y - 3.0, p.servo_y + sd["tab_z"] + lead_h + 0.5
+        yy = sorted((s * y_in, s * y_out))
+        pocket = Pos(p.servo_x, (yy[0] + yy[1]) / 2, p.servo_z - 40) * Box(sd["span"] + 1.0, yy[1] - yy[0], 40 + sd["W"] / 2 + 0.4,
+                                                                     align=(Align.CENTER, Align.CENTER, Align.MIN))
+        body = body - ctx.cut(pocket, why="elevon servo pocket, open to the bottom skin (servo in from below, arm out)", kind="pocket")
+        a, b = L.lead_line(p, s)
+        body = body - ctx.cut(aero.cylinder_between(a, b, 8.0, extend=1.0), why="servo lead (and its plug) to the pod", kind="wire channel")
+        ctx.rigid("servo", L.servo_location(p, s))
         ctx.rigid("root", Location())
     else:
         _f = importlib.util.spec_from_file_location("wing_fin", pathlib.Path(__file__).with_name("fin.py"))
@@ -58,4 +71,13 @@ def build(ctx):
         body = body - ctx.cut(slot, why="the fin's tab is glued in here", kind="fin slot")
         ctx.rigid("joint", Location())
         ctx.rigid("tip", Location())
+
+    def keep(at):
+        if inner and abs(at[0] - p.servo_x) < 20 and p.servo_out_y - 5 < abs(at[1]) < p.servo_y + 25:
+            return "the servo's square case and tabs sit in the pocket's corners"
+        if not inner and abs(at[1]) > p.semi - 60:
+            return "the fin's square tab sits in its slot"
+        return None
+    body, failed = fillet_inside(ctx, body, r=1.0, keep=keep)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     return ctx.finish(body)

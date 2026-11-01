@@ -37,6 +37,8 @@ def _time(proj, min_min, fm, eta, label):
     how = ("average draw of every load" if not h else
            f"cruise: {h['power_w']} W = {h['mass_g']} g x {h['speed_kmh']:g} km/h / L/D {h['l_over_d']:g} / eta {h['eta']:g}"
            if h.get("mode") == "cruise" else f"hover: {h['power_w']} W for {h['mass_g']} g on {h['rotors']} x {h['prop_d_mm']:g} mm props")
+    if h and h.get("mode") == "cruise" and label.startswith("hover"):
+        label = "cruise flight time"
     return {"ok": t is not None and t >= min_min, "value": t, "limit": min_min,
             "detail": f"{label} (min): {m['capacity_ah'] * 1000:g} mAh x {m['usable']:g} usable / {m['avg_a']} A ({how})"}
 

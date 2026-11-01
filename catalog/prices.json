@@ -166,6 +166,110 @@
     "source": "https://www.walmart.com/ip/4-Piece-5mm-x-3mm-x-1000mm-Carbon-Fiber-Tube-Pultruded-Round-Tube-Super-High-Strength-for-RC-Hobbies-Drones-Special-Projects/210800529",
     "note": "Walmart 'KARBXON 4 Piece - 5mm x 3mm x 1000mm Carbon Fiber Tube - Pultruded Round Tube', $20.99 for 4. pack_qty 4, so the unit cost is ONE 1000 mm tube ($5.25), and one tube yields four 228 mm rods. The page does not state stock but shows Add to cart."
   },
+  "drone.motors.2806_5_1300kv_7in": {
+    "buy": "https://shop.iflight.com/xing-x2806-5-fpv-nextgen-motor-pro1001",
+    "pack_qty": 1,
+    "pack_usd": 33.99,
+    "checked": "2026-11-01",
+    "source": "https://shop.iflight.com/xing-x2806-5-fpv-nextgen-motor-pro1001",
+    "note": "iFlight store 'XING 2806.5 FPV NextGen Motor', 1 motor (packing list: 1 x XING 2806.5 motor), $33.99, 'Availability: In Stock'; the page shows one price for both KV versions."
+  },
+  "drone.props.7in": {
+    "buy": "https://pyrodrone.com/collections/all-props/products/gemfan-flash-7040-tri-blade-7-prop-4-pack-choose-color",
+    "pack_qty": 4,
+    "pack_usd": 4.99,
+    "checked": "2026-11-01",
+    "source": "https://pyrodrone.com/collections/all-props/products/gemfan-flash-7040-tri-blade-7-prop-4-pack-choose-color",
+    "note": "Pyrodrone 'Gemfan Flash 7040 Tri-Blade 7\" Prop 4 Pack', 4 props (2 CW + 2 CCW: the wing uses one of the pusher-direction pair, the rest are spares), $4.99; out of stock on the check date."
+  },
+  "drone.batteries.6S_2200": {
+    "buy": "https://chinahobbyline.com/products/cnhl-black-series-2200mah-6s-22-2v-40c-lipo-battery-with-xt60-plug",
+    "pack_qty": 1,
+    "pack_usd": 25.99,
+    "checked": "2026-11-01",
+    "source": "https://chinahobbyline.com/products/cnhl-black-series-2200mah-6s-22-2v-40c-lipo-battery-with-xt60-plug",
+    "note": "CNHL store 'CNHL Black Series 2200mAh 6S 22.2V 40C Lipo Battery with XT60 Plug', 1 pack, $25.99 (store search listing and product page)."
+  },
+  "drone.escs.skywalker_60a_v2": {
+    "buy": "https://www.racedayquads.com/products/hobbywing-skywalker-v2-2-6s-wing-60a-esc",
+    "pack_qty": 1,
+    "pack_usd": 41.99,
+    "checked": "2026-11-01",
+    "source": "https://www.racedayquads.com/products/hobbywing-skywalker-v2-2-6s-wing-60a-esc",
+    "note": "RaceDayQuads 'HobbyWing Skywalker V2 ... Wing 60A ESC', 1 ESC, $41.99; stock not stated on the page."
+  },
+  "drone.fcs.f405_wmo": {
+    "buy": "https://pyrodrone.com/collections/flight-controllers/products/matek-f405-wmo-wing-flight-controller",
+    "pack_qty": 1,
+    "pack_usd": 69.99,
+    "checked": "2026-11-01",
+    "source": "https://pyrodrone.com/collections/flight-controllers/products/matek-f405-wmo-wing-flight-controller",
+    "note": "Pyrodrone 'Matek F405-WMO Wing Flight Controller' (SKU M2-14483), 1 board, $69.99; sold out on the check date (board ships unsoldered)."
+  },
+  "drone.gps.m9n_5883": {
+    "buy": "https://www.readymaderc.com/products/details/Matek-GPS-Compass-Module-M9N-5883",
+    "pack_qty": 1,
+    "pack_usd": 55.76,
+    "checked": "2026-11-01",
+    "source": "https://www.readymaderc.com/products/details/Matek-GPS-Compass-Module-M9N-5883",
+    "note": "ReadyMadeRC 'Matek GPS & Compass Module M9N-5883', 1 module + 20 cm JST-GH-6P lead, $55.76; unavailable on the check date (OneDrone EU lists 57.90 EUR, in stock in 3 days: https://www.onedrone.com/store/matek-gps-and-compass-m9n-5883.html)."
+  },
+  "servos.KST_X08_Plus": {
+    "buy": "https://kstservos.com/products/x08-plus-v6-0-micro-servo-5-3kgf-cm-0-09sec-9-0g-8mm-for-rc-gliders",
+    "pack_qty": 1,
+    "pack_usd": 39.99,
+    "checked": "2026-11-01",
+    "source": "https://kstservos.com/products/x08-plus-v6-0-micro-servo-5-3kgf-cm-0-09sec-9-0g-8mm-for-rc-gliders",
+    "note": "KST store 'X08 Plus V6.0 Micro Servo 5.3Kgf.cm 0.09sec 9.0g 8mm for RC Gliders', 1 servo, $39.99."
+  },
+  "rods.cf_tube_8x6": {
+    "buy": "https://www.readymaderc.com/products/details/carbon-fiber-tube-8mm-x-6mm-1m-long",
+    "pack_qty": 1,
+    "pack_usd": 8.5,
+    "checked": "2026-11-01",
+    "source": "https://www.readymaderc.com/products/details/carbon-fiber-tube-8mm-x-6mm-1m-long",
+    "note": "ReadyMadeRC 'Carbon Fiber Tube: 8mm x 6mm, 1m Long', 1 tube, $8.50, In Stock. One 1 m tube gives BOTH 508 mm main spars (cut in half), so the BOM's two pieces overstate this by one tube."
+  },
+  "rods.cf_tube_6x4": {
+    "buy": "https://www.readymaderc.com/products/details/86487-carbon-fiber-tube-6mm-x-4mm-1m-long",
+    "pack_qty": 1,
+    "pack_usd": 4.4,
+    "checked": "2026-11-01",
+    "source": "https://www.readymaderc.com/products/details/86487-carbon-fiber-tube-6mm-x-4mm-1m-long",
+    "note": "ReadyMadeRC 'Carbon Fiber Tube: 6mm x 4mm, 1m Long', 1 tube, $4.40, backorder on the check date. One 1 m tube gives both 419 mm rear spars."
+  },
+  "wire:music_1.2": {
+    "buy": "https://hemlockhardware.com/products/277983-ks-047-in-x-36-in-steel-music-wire",
+    "pack_qty": 1,
+    "pack_usd": 2.79,
+    "checked": "2026-11-01",
+    "source": "https://hemlockhardware.com/products/277983-ks-047-in-x-36-in-steel-music-wire",
+    "note": "Hemlock Hardware 'K&S .047 In. x 36 In. Steel Music Wire' (1.19 mm), one 36 in (914 mm) length, $2.79; sold out on the check date. One length makes many 60 mm pushrods."
+  },
+  "tape:hinge_blenderm_1in": {
+    "buy": "https://alofthobbies.com/3m-blenderm-1-tape.html",
+    "pack_qty": 1,
+    "pack_usd": 2.15,
+    "checked": "2026-11-01",
+    "source": "https://alofthobbies.com/3m-blenderm-1-tape.html",
+    "note": "Aloft Hobbies '3M Blenderm 1\" Tape', one roll 1 in x 15 ft, $2.15, in stock."
+  },
+  "glue:epoxy_5min": {
+    "buy": "https://www.homedepot.com/p/Loctite-Quick-Set-5-Minute-Epoxy-0-85-oz-Clear-Syringe-1943587/205761597",
+    "pack_qty": 1,
+    "pack_usd": 8.98,
+    "checked": "2026-11-01",
+    "source": "https://www.homedepot.com/p/Loctite-Quick-Set-5-Minute-Epoxy-0-85-oz-Clear-Syringe-1943587/205761597",
+    "note": "Home Depot 'Loctite Quick Set 5-Minute Epoxy 0.85 oz. Clear Syringe' (model 1943587), $8.98; stock not stated."
+  },
+  "tape:foam_3m_4466": {
+    "buy": "https://www.walmart.com/ip/3m-Double-Sided-Foam-Tape-5-yd-L-3-4-W-4466/373315909",
+    "pack_qty": 1,
+    "pack_usd": 18.32,
+    "checked": "2026-11-01",
+    "source": "https://www.walmart.com/ip/3m-Double-Sided-Foam-Tape-5-yd-L-3-4-W-4466/373315909",
+    "note": "Walmart '3M Double Sided Foam Tape, 5 yd L, 3/4 in W 4466' (62 mil), one roll, $18.32; out of stock on the check date."
+  },
   "dowel:3x16": {
     "buy": "https://www.zoro.com/i/G3411725/",
     "pack_qty": 10,

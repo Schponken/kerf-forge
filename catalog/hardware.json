@@ -413,7 +413,11 @@
    "density": 1.5,
    "source": "https://stgaws.robu.in/?p=679169",
    "confidence": "multiple-vendors",
-   "note": "Pultruded; density spread 1.5-1.78 as above."
+   "note": "Pultruded; density spread 1.5-1.78 as above.",
+   "tensile_strength_mpa": 400,
+   "modulus_gpa": 28,
+   "source_strength": "https://www.easycomposites.co.uk/6mm-pultruded-carbon-fibre-tube",
+   "strength_note": "Easy Composites pultruded carbon fibre tube of this exact size (100% unidirectional, epoxy, 1 mm wall; product data opened 2026-11-01): tensile strength (lengthways) 400-500 MPa, tensile modulus 28-40 GPa, Tg onset 80 C. The LOW ends are used (conservative). No flexural strength is published for the tube, so bending is checked against the tensile figure. Rock West T700 pultruded rod lists 1.72 GPa tensile / 1.83 GPa flexural (https://www.rockwestcomposites.com/47317-2.html) - typical hobby tubes vary that much, which is why the low figure is used."
   },
   "cf_tube_8x6": {
    "od": 8,
@@ -421,7 +425,11 @@
    "density": 1.5,
    "source": "https://stgaws.robu.in/?p=653504",
    "confidence": "multiple-vendors",
-   "note": "Pultruded; density spread 1.5-1.78 as above."
+   "note": "Pultruded; density spread 1.5-1.78 as above.",
+   "tensile_strength_mpa": 400,
+   "modulus_gpa": 28,
+   "source_strength": "https://www.easycomposites.co.uk/8mm-pultruded-carbon-fibre-tube",
+   "strength_note": "Easy Composites pultruded carbon fibre tube of this exact size (100% unidirectional, epoxy, 1 mm wall; product data opened 2026-11-01): tensile strength (lengthways) 400-500 MPa, tensile modulus 28-40 GPa, Tg onset 80 C. The LOW ends are used (conservative). No flexural strength is published for the tube, so bending is checked against the tensile figure. Rock West T700 pultruded rod lists 1.72 GPa tensile / 1.83 GPa flexural (https://www.rockwestcomposites.com/47317-2.html) - typical hobby tubes vary that much, which is why the low figure is used."
   },
   "cf_rod_3": {
    "od": 3,
@@ -659,6 +667,40 @@
    "lead_length_mm": 300,
    "source_lead": "https://wiki-md.52pi.com/docs/D-0001",
    "lead_note": "DSSERVO DS3225 mechanical specification on the 52Pi wiki D-0001 (opened 2026-10-31): 'Connector wire 300+/-5mm', 'Connector: JR-3Pin-2.54mm'."
+
+  },
+  "KST_X08_Plus": {
+   "model": "KST X08 Plus V6.0 micro wing servo (8 mm thick, metal gears, 2BB)",
+   "body_l": 23.5,
+   "body_w": 8.0,
+   "body_h": 16.8,
+   "tab_span": 29.5,
+   "hole_spacing_l": 26.5,
+   "hole_spacing_w": 5.0,
+   "hole_d": 1.5,
+   "tab_t": 1.0,
+   "tab_z": 10.55,
+   "shaft_offset": 6.14,
+   "shaft_h": 3.2,
+   "spline_d": 3.9,
+   "spline_teeth": 15,
+   "lead_bump_h": 7.1,
+   "lead_bump_l": 6.7,
+   "stall_torque_kgcm": 2.4,
+   "stall_voltage": 3.8,
+   "torque_6v_kgcm": 3.85,
+   "speed_s_per_60": 0.15,
+   "voltage_min": 3.8,
+   "voltage_max": 8.4,
+   "weight_g": 9.0,
+   "stall_current_a": 0.9,
+   "running_current_a": 0.35,
+   "pulse_us": [1000, 2000],
+   "pulse_travel_deg": 120,
+   "source": "https://kstservos.com/products/x08-plus-v6-0-micro-servo-5-3kgf-cm-0-09sec-9-0g-8mm-for-rc-gliders",
+   "source_detail": "https://cdn.shopify.com/s/files/1/0712/1472/7353/files/X08_Plus_V6.0_echnical_Specifcation.pdf?v=1785466426",
+   "confidence": "datasheet",
+   "note": "KST X08 Plus V6.0 Technical Specification (2025-04, opened 2026-11-01): case 23.5 x 8 x 16.8 mm +/-0.2, 9 g +/-10 %, 3.8-8.4 V, torque 2.4 kgf.cm @3.8 V / 3.85 @6 V / 4.84 @7.4 V / 5.3 @8.4 V, 0.15 s/60 deg @6 V, 15T 4 mm spline (crown 3.90), 1000/1500/2000 us = -60/0/+60 deg. Drawing: tab span 29.5, tab hole pitch 26.5 x 5 (4 x 1.5 mm holes, plus 2 x 2 mm), tab 1 mm thick with its top 5.25 below the case top (tab_z = 16.8 - 5.25 - 1 = 10.55, tab underside above the case bottom), output axis 6.14 from the nearer body end, spline 3.2 above the case top, 27.1 overall from spline top to the bottom of the lead exit: a 7.1 mm bump under the case at the end AWAY from the output (lead_bump_h; its length 6.7 mm is scaled from the side view, lead_bump_l). Current: the datasheet curve at 7.4 V runs from ~0.03 A (no load) to ~0.9 A at 4.8 kgf.cm (stall_current_a 0.9); ~0.35 A at 2 kgf.cm (running_current_a, the short-time zone). Price on the product page: $39.99. The X08H Plus is the same servo with horizontal lugs."
   }
  },
  "servo_horns": {
@@ -1112,6 +1154,22 @@
     "cells": 4,
     "c_rating": 130,
     "c_burst": 260
+
+   },
+   "6S_2200": {
+    "model": "CNHL Black Series 2200mAh 6S 22.2V 40C (XT60)",
+    "length": 108,
+    "width": 35,
+    "height": 55,
+    "weight_g": 372,
+    "connector": "XT60",
+    "note": "CNHL page (stock no. 220406BK, opened 2026-11-01): 'Size (1-5mm difference): 35 X55X108mm', 'Approx Weight (+/-5g): 372g/each', 40C continual / 80C burst, 5C max charge, XT60, 12 AWG, JST-XH balance lead. Width/height here are 35 / 55 as listed; a pack lies on either face (the box proxy is rotated at its joint). Price on the page: $25.99.",
+    "source": "https://chinahobbyline.com/products/cnhl-black-series-2200mah-6s-22-2v-40c-lipo-battery-with-xt60-plug",
+    "confidence": "datasheet",
+    "capacity_mah": 2200,
+    "cells": 6,
+    "c_rating": 40,
+    "c_burst": 80
    }
   },
   "connectors": {
@@ -1129,6 +1187,59 @@
     "current_rating_note": "Holybro 'Connector & Wire Rating' (docs.holybro.com): XT60 on 12 AWG 30 A continuous (4 h, temperature rise < 60 C) and 60 A burst (1 minute, rise < 60 C). No shorter-time rating is published, so 60 A is the peak limit.",
     "weight_g": 3.5,
     "weight_note": "getfpv lists the Amass XT60H at 3.50 g per piece (https://www.getfpv.com/amass-xt60h-power-connectors-male-female-5-sets-10-pcs.html, opened 2026-10-31); the plain XT60 has no published weight and is slightly lighter, so 3.5 g is conservative."
+   }
+  },
+  "escs": {
+   "skywalker_60a_v2": {
+    "model": "Hobbywing Skywalker 60A V2 (3-6S, 5 V 7 A switch BEC)",
+    "length": 73,
+    "width": 30,
+    "height": 12,
+    "weight_g": 68,
+    "esc_current_a": 60,
+    "esc_burst_a": 80,
+    "bec_5v_a": 7.0,
+    "cells_min": 3,
+    "cells_max": 6,
+    "note": "Hobbywing Skywalker V2 series comparison table (opened 2026-11-01): Skywalker 60A V2, product no. 30216101, BL, 60A/80A cont./peak, 3-6S LiPo, BEC switch mode 5 V 7 A, wires red/black 12 AWG 100 mm input, 3 x black 14 AWG 100 mm output, 4.0 gold connectors (female) on the output, size 73 x 30 x 12 mm, 68 g (the table's size/weight rows read in product order: 100A 85x36x9/92 g, 80A 85x36x9/79 g, 60A 73x30x12/68 g). RaceDayQuads lists it at $41.99.",
+    "source": "https://www.hobbywing.com/en/products/skywalker-v2-series",
+    "confidence": "datasheet"
+   }
+  },
+  "fcs": {
+   "f405_wmo": {
+    "model": "Matek F405-WMO wing flight controller (INAV / ArduPilot)",
+    "length": 32,
+    "width": 22,
+    "height": 12.7,
+    "weight_g": 9,
+    "voltage_min": 5.4,
+    "voltage_max": 30,
+    "esc_current_a": 90,
+    "esc_burst_a": 132,
+    "bec_4v5_a": 2.0,
+    "bec_vx_a": 4.5,
+    "vx_burst_a": 7.0,
+    "pwm_outputs": 10,
+    "note": "Matek F405-WMO page (opened 2026-11-01): STM32F405, ICM42688-P, SPL06, AT7456E OSD, SD card, 4 UARTs, 10 PWM, 1 I2C; 5.4-30 V DC in (2-6S); PDB / current sense resistor 90 A continuous, 132 A burst (battery in on BAT +/-, the ESC on the ESC +/- pads, so the main current passes through the board: esc_current_a / esc_burst_a); BEC 5 V (4V5, 4.4-5 V) 2 A for FC and peripherals; BEC Vx 4.5 A cont. (7 A peak) for servos, 5 V default / 6 V jumper; filtered Vbat for VTX and camera; LDO 3.3 V 200 mA; 32 x 22 x 12.7 mm, 9 g. Manual (F405-WMO_Manual.pdf, AUG 2025): S1-S4 motor outputs, S5-S8 servo outputs (INAV Plane). Mounting-hole pitch is not dimensioned: mount it on foam tape (wing FCs usually are). Own current draw not published. Pyrodrone lists it at $69.99.",
+    "source": "https://www.mateksys.com/?portfolio=f405-wmo",
+    "source_detail": "https://www.mateksys.com/downloads/Manual/F405-WMO_Manual.pdf",
+    "confidence": "datasheet"
+   }
+  },
+  "gps": {
+   "m9n_5883": {
+    "model": "Matek M9N-5883 GNSS (u-blox NEO-M9N) + QMC5883 compass",
+    "length": 32,
+    "width": 32,
+    "height": 10,
+    "weight_g": 14.5,
+    "voltage_min": 4.0,
+    "voltage_max": 5.5,
+    "current_a": 0.05,
+    "note": "Matek M9N-5883 page (opened 2026-11-01): NEO-M9N, QMC5883L/P compass, 25 x 25 x 4 mm patch antenna, 4-5.5 V, 50 mA, UART 38400 default, JST-GH-6P, 32 x 32 x 10 mm, 14.5 g. Matek's own STEP (M9N-5883_step.zip) measures 32.0 x 32.0 x 9.47 mm. Mount flat with the arrow forward, away from the ESC and power wires (compass); never tilted.",
+    "source": "https://www.mateksys.com/?portfolio=m9n-5883",
+    "confidence": "datasheet"
    }
   },
   "frames_reference": {

@@ -15,7 +15,7 @@ params:
   seg_split_y: {value: 280, unit: mm, min: 250, max: 300, step: 5, label: Where the inner and outer wing segments meet}
   spar_y0: {value: 8, unit: mm, min: 5, max: 20, step: 1, label: Spar tube inner end (off the centreline)}
   spar_main_frac: {value: 0.28, unit: "", min: 0.22, max: 0.33, step: 0.01, label: Main spar position (fraction of chord)}
-  spar_main_y1: {value: 470, unit: mm, min: 400, max: 485, step: 5, label: Main spar outer end}
+  spar_main_y1: {value: 455, unit: mm, min: 400, max: 485, step: 5, label: Main spar outer end}
   spar_rear_frac: {value: 0.6, unit: "", min: 0.5, max: 0.66, step: 0.01, label: Rear spar position (fraction of chord)}
   spar_rear_y1: {value: 400, unit: mm, min: 300, max: 470, step: 5, label: Rear spar outer end}
   hinge_frac: {value: 0.76, unit: "", min: 0.7, max: 0.82, step: 0.01, label: Elevon hinge line (fraction of chord)}
@@ -32,11 +32,18 @@ params:
   fin_inset: {value: 6, unit: mm, min: 4, max: 15, step: 1, label: Fin inset from the wing tip}
   pod_x0: {value: -45, unit: mm, min: -70, max: -20, step: 5, label: Pod front face}
   pod_x1: {value: 265, unit: mm, min: 250, max: 290, step: 5, label: Pod rear face (motor mount)}
-  pod_bottom: {value: -58, unit: mm, min: -70, max: -45, step: 1, label: Pod bottom}
+  pod_bottom: {value: -65, unit: mm, min: -72, max: -60, step: 1, label: Pod bottom}
   pod_top: {value: 22, unit: mm, min: 16, max: 30, step: 1, label: Pod top}
   tail_hw: {value: 24, unit: mm, min: 18, max: 30, step: 1, label: Pod tail half width}
-  tail_h: {value: 44, unit: mm, min: 36, max: 56, step: 1, label: Pod tail height}
+  tail_h: {value: 50, unit: mm, min: 36, max: 56, step: 1, label: Pod tail height}
   tail_z: {value: -6, unit: mm, min: -20, max: 5, step: 1, label: Pod tail centre height (motor axis)}
+  bay_top: {value: -21.5, unit: mm, min: -26, max: -18, step: 0.5, label: Battery bay top (shelf underside)}
+  shelf_x1: {value: 215, unit: mm, min: 190, max: 230, step: 5, label: Shelf rear end}
+  bat_x: {value: 118, unit: mm, min: 50, max: 120, step: 1, label: Battery centre x (sets the CG)}
+  fc_x: {value: 52, unit: mm, min: 40, max: 60, step: 1, label: Flight controller centre x}
+  esc_x: {value: 125, unit: mm, min: 115, max: 135, step: 1, label: ESC centre x}
+  vtx_x: {value: 192, unit: mm, min: 180, max: 200, step: 1, label: VTX centre x}
+  ant_x: {value: 172, unit: mm, min: 160, max: 174, step: 1, label: VTX antenna x (through the pod top)}
 parts:
   pod: {file: parts/pod.py, material: PLA, print_rot: [0, 90, 0], infill: 0.15, walls: 2, load_axis: Y}
   wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
@@ -47,7 +54,31 @@ parts:
   elevon_r: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45}
   fin_l: {file: parts/fin.py, material: TPU, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
   fin_r: {file: parts/fin.py, material: TPU, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
-purchased: {}
+  nose: {file: parts/nose.py, material: TPU, print_rot: [0, 90, 0], infill: 0.15, walls: 2}
+  motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: Y}
+purchased:
+  motor: {catalog: drone.motors.2806_5_1300kv_7in, proxy: motor, groups: {mount: motor}}
+  battery: {catalog: drone.batteries.6S_2200, proxy: box, color: "#c8a400",
+            held_by: "the bay itself: floor below, shelf above (1 mm over the pack), side walls, nose in front; a strip of anti-slip pad on the floor stops it sliding"}
+  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, lying on the bay floor in front of the pack"}
+  esc: {catalog: drone.escs.skywalker_60a_v2, proxy: box, color: "#2050a0", held_by: "double-sided foam tape on the shelf plus one cable tie round the shelf"}
+  fc: {catalog: drone.fcs.f405_wmo, proxy: box, color: "#204080", held_by: "double-sided foam tape (soft-mounts the gyro) on the shelf, arrow forward"}
+  receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "double-sided tape on the shelf beside the FC; T antenna along the pod side wall"}
+  gps: {catalog: drone.gps.m9n_5883, proxy: box, color: "#303030", held_by: "double-sided foam tape on the front of the shelf, flat, arrow forward, under plain PLA (no carbon above it)"}
+  vtx: {catalog: drone.vtx.tx800, proxy: box, size: [28, 28, 8], color: "#1a1a1a", held_by: "double-sided foam tape on the rear of the shelf, heatsink up"}
+  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 20], color: "#20a0a0",
+            held_by: "screwed onto the VTX's MMCX; its tube up through the hole in the pod top, head standing on the pod"}
+  camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], held_by: "2 x M2 x 6 through the nose cheeks into its side holes"}
+  servo_l: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+            held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
+  servo_r: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+            held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
+  main_l: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
+  main_r: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
+  rear_l: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
+  rear_r: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
+keepouts:
+  prop: {catalog: drone.props.7in, proxy: prop_disc, owner: motor, h: 8}
 assembly:
   root: pod
   joints:
@@ -59,4 +90,124 @@ assembly:
     - {parent: wing_r2.elevon, child: elevon_r.hinge, name: elevon_r, home: 0}
     - {parent: wing_l2.tip, child: fin_l.tip}
     - {parent: wing_r2.tip, child: fin_r.tip}
-requirements: []
+    - {parent: pod.nose, child: nose.base}
+    - {parent: pod.motor_mount, child: motor_mount.base}
+    - {parent: motor_mount.motor, child: motor.base}
+    - {parent: motor.prop, child: prop.hub}
+    - {parent: pod.main_l, child: main_l.end_a}
+    - {parent: pod.main_r, child: main_r.end_a}
+    - {parent: pod.rear_l, child: rear_l.end_a}
+    - {parent: pod.rear_r, child: rear_r.end_a}
+    - {parent: wing_l1.servo, child: servo_l.tabs}
+    - {parent: wing_r1.servo, child: servo_r.tabs}
+    - {parent: pod.battery, child: battery.bottom}
+    - {parent: pod.xt60, child: xt60.bottom}
+    - {parent: pod.esc, child: esc.bottom}
+    - {parent: pod.fc, child: fc.bottom}
+    - {parent: pod.rx, child: receiver.bottom}
+    - {parent: pod.gps, child: gps.bottom}
+    - {parent: pod.vtx, child: vtx.bottom}
+    - {parent: pod.vtx_ant, child: vtx_ant.bottom}
+    - {parent: nose.camera, child: camera.bottom}
+  order: [pod, [main_l, main_r, rear_l, rear_r], [wing_l1, wing_r1], [servo_l, servo_r], [wing_l2, wing_r2], [elevon_l, elevon_r],
+          [fin_l, fin_r], motor_mount, motor, gps, fc, receiver, esc, vtx, vtx_ant, xt60, battery, camera, nose]
+  key_access:
+    - {group: motor, before: [pod], why: "the motor is screwed to the mount on the bench (heads sunk in the mount's front face) before the mount goes on the pod"}
+  sweeps:
+    - {joint: elevon_l, samples: 7}
+    - {joint: elevon_r, samples: 7}
+electrical:
+  battery: battery
+  burst_s: 10
+  # Level cruise: P = W V / (L/D) / eta (kerf/electrical.py). L/D 6 and eta 0.5 are deliberately low for a small
+  # pod-and-wing FPV airframe with fins and a camera; cross-check: SonicModell's AR Wing Pro (1 m, ~1 kg) is published
+  # cruising at 75-80 km/h on 5.5 A at 4S = ~81 W (REFERENCES.md); this model gives ~90 W at 80 km/h for ~1.25 kg.
+  cruise: {speed_kmh: 80, l_over_d: 6, eta: 0.5,
+           why: "80 km/h FPV cruise; L/D 6, motor+prop+ESC 50 %: conservative against the AR Wing Pro's published 81 W at 75-80 km/h (REFERENCES.md)"}
+  draw:
+    fc: {avg_a: 0.25, peak_a: 0.3, why: "Matek publishes no own draw for the F405-WMO; an F405 + gyro + OSD board draws ~0.15-0.25 A at 5 V, 0.3 A taken as the peak (UNVERIFIED: same bound as the catalog's fc_20)"}
+wiring:
+  # world points [x, y, z]: x aft from the root leading edge, y right, z up from the root chord plane
+  - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, length_mm: 120, supplied: battery,
+     note: "the pack's own lead (comes with the battery)"}
+  - {id: main, from: xt60, to: fc, v: 25.2, gauge: 12, color: red/black, length_mm: 230,
+     route: [[-25, 0, -48], [-25, -12, -5], [30, -12, -5]],
+     note: "XT60 pigtail up the front of the bay, over the GPS, to the FC's BAT pads; the FC's current sensor sees everything"}
+  - {id: esc_pwr, from: fc.esc, to: esc, v: 25.2, gauge: 12, color: red/black, length_mm: 120,
+     note: "FC ESC pads to the ESC's input leads (cut the ESC's leads to length, no connector)"}
+  - {id: phases, from: esc.esc, to: motor, v: 25.2, gauge: 14, conductors: 3, color: black, length_mm: 190,
+     route: [[175, 0, -8], [250, 0, -6]],
+     note: "ESC output leads (14 AWG, 4 mm bullets) back along the shelf, through the rear-wall hole and the mount's centre hole to the motor; swap two phases if it spins the wrong way (pusher)"}
+  - {id: gps_5v, from: fc.4v5, to: gps, v: 5.0, gauge: 28, color: red/black, length_mm: 90}
+  - {id: rx_5v, from: fc.4v5, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 60}
+  - {id: vtx_5v, from: fc.4v5, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 190,
+     route: [[75, 0, -6], [170, 0, -6]],
+     note: "over the ESC (between the spar sleeves' inner ends) to the VTX"}
+  - {id: cam_pwr, from: fc.vbat, to: camera, v: 25.2, gauge: 28, color: red/black, length_mm: 180,
+     route: [[-20, 0, -10]], note: "filtered Vbat pad to the camera (5-36 V), out through the front opening into the nose"}
+  - {id: servo_l_pwr, from: fc.vx, to: servo_l, v: 5.0, gauge: 26, color: red/brown, length_mm: 360,
+     route: [[100, -30, -8], [lead_x1, "-(pod_hw - 3)", lead_z1], [lead_x0, "-lead_y0", lead_z0]],
+     note: "the servo's own lead (+ an extension if short) out of the pocket, along the wing's channel, through the pod side wall to the FC's Vx/S5 header"}
+  - {id: servo_r_pwr, from: fc.vx, to: servo_r, v: 5.0, gauge: 26, color: red/brown, length_mm: 360,
+     route: [[100, 30, -8], [lead_x1, "pod_hw - 3", lead_z1], [lead_x0, lead_y0, lead_z0]],
+     note: "as the left one, to the S6 header"}
+  - {id: esc_sig, from: fc, to: esc, kind: signal, gauge: 28, color: white, length_mm: 120, pin: S1,
+     note: "ESC signal + ground to S1 (INAV Plane: motor 1); leave the ESC lead's red (BEC) wire unconnected - the FC's own BECs power everything"}
+  - {id: servo_l_sig, from: fc, to: servo_l, kind: signal, gauge: 28, color: orange, length_mm: 360, pin: S5,
+     route: [[100, -30, -8], [lead_x1, "-(pod_hw - 3)", lead_z1], [lead_x0, "-lead_y0", lead_z0]]}
+  - {id: servo_r_sig, from: fc, to: servo_r, kind: signal, gauge: 28, color: orange, length_mm: 360, pin: S6,
+     route: [[100, 30, -8], [lead_x1, "pod_hw - 3", lead_z1], [lead_x0, lead_y0, lead_z0]]}
+  - {id: gps_uart, from: fc, to: gps, kind: signal, gauge: 28, color: white/green, length_mm: 90, note: "GNSS TX/RX to UART3, compass SDA/SCL to I2C"}
+  - {id: crsf, from: fc, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 60, note: "CRSF to UART2"}
+  - {id: vtx_video, from: fc, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 190, route: [[75, 0, -6], [170, 0, -6]],
+     note: "FC VTx video out + SmartAudio/MSP UART, same path as vtx_5v"}
+  - {id: cam_video, from: camera, to: fc, kind: signal, gauge: 28, color: yellow, length_mm: 180, route: [[-20, 0, -10]]}
+bom_extra:
+  - {type: hardware, item: M3 flat washer, qty: 4, group: nose, price_key: "washer:M3", spec: "under the nose screw heads: the lugs are TPU, so tighten them snug only"}
+  - {type: hardware, item: 1.2 mm music wire pushrod with Z-bend, qty: 2, price_key: "wire:music_1.2", spec: "about 60 mm: servo arm to elevon horn; Z-bend at the horn, a Z-bend or EZ connector at the servo arm"}
+  - {type: hardware, item: hinge tape (Blenderm / 3M polyester), qty: 1, price_key: "tape:hinge_blenderm_1in", spec: "one 25 mm strip along each elevon's bottom hinge line, plus a top strip with the elevon fully up"}
+  - {type: hardware, item: 5-minute epoxy, qty: 1, price_key: "glue:epoxy_5min", spec: "spar tubes into the wing segments, inner to outer segment joint, fins into their slots"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 4, price_key: "tie:2.5mm", spec: "ESC to shelf, phase leads, servo leads"}
+  - {type: hardware, item: "double-sided foam tape (3M, 1.6 mm)", qty: 1, price_key: "tape:foam_3m_4466", spec: "FC, ESC, GPS, VTX and receiver on the shelf"}
+  - {type: hardware, item: M2 x 6 mm socket head screw, qty: 2, price_key: "screw:M2x6:socket", spec: "camera side screws through the nose cheeks"}
+requirements:
+  - {id: static_margin, check: static_margin, min: 0.05, max: 0.15,
+     why: "stable but not nose-heavy: 5-15 % of the MAC between the CG and the neutral point (Hepperle 2-5 %, eCalc 5-12.5 %; 10 % aimed for a first flight)"}
+  - {id: wing_loading, check: wing_loading, max_g_dm2: 75,
+     why: "no heavier per area than 3DLabPrint's RazorBlade (72.7 g/dm2, flies well hand-launched); the Darkwing-1 is ~76 at 1400 g"}
+  - {id: stall_speed, check: stall_speed, max_kmh: 45,
+     why: "hand-launchable: brief asks <= 55 km/h (Darkwing-1: 50); CLmax from MH 45 at Re 200 000 with Raymer's swept-wing factor"}
+  - {id: spar_bending, check: spar_bending, tubes: [rods.cf_tube_8x6, rods.cf_tube_6x4], y_root: 50, load_factor: 6, sf: 1.5,
+     why: "6 g pull-out / hand-launch on an elliptical lift distribution, where the tubes leave the pod (y 50 = pod_hw); tubes share by E I; SF 1.5 on the catalog's LOW strength figure"}
+  - {id: twr, check: thrust_to_weight, motors: [motor], min_ratio: 1.5,
+     why: "brief: >= 1.5 for a fast FPV wing (climbs out of a hand launch); catalog thrust at 23.42 V scaled to the 22.2 V nominal pack"}
+  - {id: flight_time, check: flight_time, min_min: 12,
+     why: "long-range FPV: at least 12 min at 80 km/h cruise on 80 % of the 2200 mAh pack"}
+  - {id: prop_clear, check: prop_clearance, min_mm: 5, joints: [elevon_l, elevon_r],
+     why: "the 7 in prop clears every part by 5 mm, also with the elevons at full throw"}
+  - {id: span, check: size_max, max_mm: [600, 1050, 250], why: "brief: span 950-1050 mm; fits on the bench / in a car"}
+  - {id: auw, check: mass_max, max_g: 1400, why: "brief: all-up mass <= 1400 g"}
+  - id: mount_strength
+    check: fea_static
+    part: motor_mount
+    case: crash
+    why: "twice the motor's full thrust (2 x 2319 g = 45.5 N) pulling the motor screws away from the pod (a nose-in crash throws the motor + prop aft with less: 62 g x 50 g = 30 N); plate held only at its four pod bolts"
+    direction: xy            # the plate prints flat: its bending stress lies in the layers
+    sf: 3.0
+    max_disp_mm: 0.5
+    fixed: {sites: motor_mount, radius: 5.0}
+    loads: [{sites: motor, radius: 3.5, force_n: [45.5, 0, 0]}]
+  - id: pod_strength
+    check: fea_static
+    part: pod
+    why: "6 g pull-out: the right wing half's lift (1331 g x 6 g / 2 = 39.2 N) and its 6.48 N m root moment (spar_bending, at the pod side) enter through the right spar sleeves; the left sleeves hold the other half's equal and opposite share"
+    direction: xy            # pod prints standing on its rear face: the skins' bending stress runs along y, in the layers
+    sf: 2.0
+    max_disp_mm: 1.0
+    fixed: {box: [[55, -48, -6], [175, -8, 14]]}
+    loads:
+      - {box: [[55, 8, -6], [175, 48, 14]], force_n: [0, 0, 39.2]}
+      - {box: [[55, 8, -6], [175, 48, 14]], torque_nmm: 6480, axis: {at: [115, 28, 4], dir: [1, 0, 0]}}
+  - {id: power, check: power_budget, why: "pack C rating, FC current sensor / PDB, ESC, BECs, XT60 and every wire inside their ratings in cruise and at full throttle"}
+  - {id: xt60_plug, check: connector_access, item: xt60, direction: [-1, 0, 0], length_mm: 25,
+     why: "with the nose off, the pack plugs in from the front of the bay"}

@@ -184,3 +184,17 @@ def test_board_proxy_keeps_mounting_holes_clear():
         assert (s & probe).volume < 1e-6
     # ... while the parts block still exists between the holes
     assert s.bounding_box().size.Z == pytest.approx(t + comp, abs=0.01)
+
+
+def test_rod_length_may_be_a_param_expression():
+    """A tube cut to a length the layout computes (fpv_wing spars) follows the params."""
+    s = proxies.build(Ctx("t", {"main_len": 250.0}), {"catalog": "rods.cf_tube_8x6", "proxy": "rod", "length": "main_len + 10"})
+    assert s.bounding_box().size.Z == pytest.approx(260, abs=0.01)
+
+
+def test_rod_mass_follows_an_expression_length():
+    from types import SimpleNamespace as S
+    from kerf import checks
+    s = proxies.build(Ctx("t", {"main_len": 500.0}), {"catalog": "rods.cf_tube_8x6", "proxy": "rod", "length": "main_len"})
+    it = S(role="purchased", spec={"catalog": "rods.cf_tube_8x6", "length": "main_len"}, shape=s)
+    assert checks.item_mass_g(it) == pytest.approx(3.14159 / 4 * (64 - 36) * 500 / 1000 * 1.5, rel=1e-3)

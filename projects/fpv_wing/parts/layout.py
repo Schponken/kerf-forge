@@ -11,6 +11,11 @@ from kerf import aero
 AIRFOIL = "mh45"
 MAIN_TUBE = "rods.cf_tube_8x6"      # bending spar (strength data: catalog, REFERENCES.md)
 REAR_TUBE = "rods.cf_tube_6x4"
+MOTOR = "drone.motors.2806_5_1300kv_7in"
+SERVO = "servos.KST_X08_Plus"
+SERVO_X = 200.0          # servo tab-plane centre x: between the spars at its station (DESIGN.md)
+SERVO_Y = 228.0          # |y| of the servo's tab plane; the output points inboard, the arm sits at |y| ~217
+LEAD_ROOT_X = 130.0      # where the servo lead's channel meets the root face (between the root bolts and the rear spar)
 
 
 TE_MIN = 1.0                           # printed trailing edge: two perimeters of a 0.4 mm nozzle plus margin
@@ -36,7 +41,36 @@ def layout(p, cat):
     for k, x in (("1", p.root_bolt_x1), ("2", p.root_bolt_x2)):
         out[f"root_bolt_z{k}"] = aero.spar_point(pf, p.pod_hw, x / pf.chord(p.pod_hw))[2]
     out["cg_target_x"] = g["x_np_mm"] - 0.10 * g["mac_mm"]
+    # elevon servo: lies flat in the inner segment (8 mm across the thickness), output shaft spanwise and inboard;
+    # tab plane at |y| SERVO_Y, centred on the thickness centre at SERVO_X
+    out["servo_x"], out["servo_y"] = SERVO_X, SERVO_Y
+    out["servo_z"] = aero.spar_point(pf, SERVO_Y, (SERVO_X - pf.x_le(SERVO_Y)) / pf.chord(SERVO_Y))[2]
+    sd = _servo_dims(cat)
+    out["servo_out_y"] = SERVO_Y - (sd["top"] + sd["shaft_h"])       # |y| of the spline tip (arm just outboard of it)
+    out["horn_y"] = out["servo_out_y"] + 1.5
+    out["servo_out_x"] = SERVO_X + sd["out_x"]
+    # servo lead channel: pocket (inboard end) to the root face, diagonally between the two spars
+    ys = SERVO_Y - 12
+    a = aero.spar_point(pf, ys, (SERVO_X - 8 - pf.x_le(ys)) / pf.chord(ys))
+    b = aero.spar_point(pf, p.pod_hw, (LEAD_ROOT_X - pf.x_le(p.pod_hw)) / pf.chord(p.pod_hw))
+    out.update({"lead_x0": float(a[0]), "lead_y0": ys, "lead_z0": float(a[2]), "lead_x1": float(b[0]), "lead_z1": float(b[2])})
     return out
+
+
+def _servo_dims(cat):
+    from kerf import iface
+    return iface.servo_dims(SERVO)
+
+
+def servo_location(p, side):
+    """Servo proxy 'tabs' joint in the wing: proxy X = world X (output end aft), proxy Z (output) = inboard."""
+    from build123d import Location, Plane
+    return Location(Plane(origin=(p.servo_x, side * p.servo_y, p.servo_z), x_dir=(1, 0, 0), z_dir=(0, -side, 0)))
+
+
+def lead_line(p, side):
+    """Servo lead channel (pocket end, root end), world points."""
+    return ((p.lead_x0, side * p.lead_y0, p.lead_z0), (p.lead_x1, side * (p.pod_hw - 3.0), p.lead_z1))
 
 
 def planform(p):

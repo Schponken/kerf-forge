@@ -3,27 +3,63 @@ battery, ESC, flight controller, receiver, GPS and VTX; the nose (TPU, camera) b
 mount to its rear face. PLA, printed standing on its rear face (the fuselage's long axis along the build plate's Z,
 so its rounded sides print without supports); 2 walls, 15 % infill.
 
-Inside: one cavity from the front face to the motor mount, 2.4 mm skin. The battery slides in from the front
-(nose off) onto the floor; the spar tubes cross the cavity in printed sleeves that reach to 8 mm off the centreline
-(left and right tubes end apart), so the bending moment goes tube - sleeve - side wall. Each inner wing segment is
-held by two M3 from inside the cavity through the side wall into its root inserts. The rear wall carries the motor
-mount's four M3 heat-set inserts, the front face the nose's four.
+Inside: one cavity from the front face to the motor mount, 2.4 mm skin, split by a 2 mm shelf. Under the shelf the
+battery bay: the pack slides in from the front (nose off) onto the floor and the nose closes the bay. On the shelf,
+front to back: GPS (under plain PLA, nothing carbon above it), flight controller + receiver, ESC (under the spar
+sleeves), VTX; its antenna leaves through the top. The spar tubes cross the cavity in printed sleeves that reach to
+8 mm off the centreline (left and right tubes end apart), so a wing half's bending moment goes tube - sleeve - side
+wall - pod (the pod box is ~2.3e6 mm^4 in bending: DESIGN.md). Each inner wing segment is held by two M3 from inside
+the cavity through the side wall into its root inserts. Four bosses in the tail take the motor mount's M3 heat-set
+inserts, four round the front opening the nose's; the boss ends facing the bed are 45 deg cones (no overhang).
 """
 from build123d import *
 import numpy as np
 from kerf import aero, iface
+from kerf.features import fillet_inside
 
 import importlib.util, pathlib
 _spec = importlib.util.spec_from_file_location("wing_layout", pathlib.Path(__file__).with_name("layout.py"))
 L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 
 SKIN = 2.4
+SHELF_T = 2.0
+BOSS_D = 10.0         # M3 heat-set insert (4.0 mm hole) + 3 mm wall each side (ENGINEERING.md s5: >= 2.4; s7 edge distance 1.5 d)
+BOSS_L = 9.0
+
+
+def shelf_z(p):
+    """Top of the electronics shelf."""
+    return p.bay_top + SHELF_T
+
+
+def nose_bolts(p):
+    """(y, z) of the nose's four M3 at the front face: two in the side frames, two in the top frame."""
+    return [(-37, -27), (37, -27), (-18, 11), (18, 11)]
+
+
+def mount_bolts(p):
+    """(y, z) of the motor mount's four M3 in the tail (outside the motor bell, inside the tail outline)."""
+    return [(sy * 16, p.tail_z + sz * 14) for sy in (-1, 1) for sz in (-1, 1)]
+
+
+LEAD_HOLE_D = 8.0
+
+
+def lead_hole_z(p):
+    """Motor phase leads: below the motor axis between the lower mount bolts, half under the bell's base edge (r 16),
+    so the leads that leave the motor base sideways drop straight in."""
+    return p.tail_z - 16.0
+
+
+def opening(p):
+    """Front opening (y half width, z bottom, z top): the battery (and hands, for the shelf) go in here."""
+    return 30.0, p.pod_bottom + SKIN, 6.0
 
 
 def fuselage_sections(p):
     """(x, half width, z bottom, z top, corner radius) stations of the fuselage outside."""
     hw = p.pod_hw
-    return [(p.pod_x0, hw - 8, p.pod_bottom + 10, p.pod_top - 6, 14),
+    return [(p.pod_x0, hw - 6, p.pod_bottom + 3, p.pod_top - 6, 14),
             (p.pod_x0 + 40, hw, p.pod_bottom, p.pod_top, 16),
             (p.pod_x1 - 90, hw, p.pod_bottom, p.pod_top, 16),
             (p.pod_x1, p.tail_hw, p.tail_z - p.tail_h / 2, p.tail_z + p.tail_h / 2, 10)]
@@ -50,13 +86,38 @@ def cavity(p):
     st = [(x + (SKIN if i == 0 else -SKIN if i == len(st) - 1 else 0), hw, zb, zt, r) for i, (x, hw, zb, zt, r) in enumerate(st)]
     cav = _loft(st, SKIN)
     # open to the front face, so the battery slides in with the nose off
-    return cav + Pos(p.pod_x0 - 1, 0, (st[0][2] + st[0][3]) / 2) * Box(SKIN + 2, 2 * (st[0][1] - SKIN) - 8,
-                                                                        (st[0][3] - st[0][2]) - 2 * SKIN - 8, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    hw, zb, zt = opening(p)
+    return cav + Pos(p.pod_x0 - 1, 0, zb) * Box(SKIN + 2, 2 * hw, zt - zb, align=(Align.MIN, Align.CENTER, Align.MIN))
+
+
+def boss(x0, y, z, length, d, toward):
+    """Insert boss along X from the wall at x0, `toward` = +1 / -1; a 45 deg cone at its free end."""
+    from build123d import Cone
+    cyl = Pos(x0 + toward * length / 2, y, z) * Rot(0, 90, 0) * Cylinder(d / 2, length)
+    cone = Pos(x0 + toward * (length + d / 4), y, z) * Rot(0, 90 if toward > 0 else -90, 0) * Cone(d / 2, 0, d / 2)
+    return cyl + cone
 
 
 def build(ctx):
     p = ctx.p
-    body = outer(p) - ctx.cut(cavity(p), why="battery and electronics bay", kind="cavity")
+    cav = cavity(p)
+    body = outer(p) - ctx.cut(cav, why="battery and electronics bay", kind="cavity")
+    # electronics shelf over the battery bay (prints standing: a vertical plate, no overhang)
+    shelf = Pos(p.pod_x0 + 30, 0, p.bay_top) * Box(p.shelf_x1 - p.pod_x0 - 30, 200, SHELF_T, align=(Align.MIN, Align.CENTER, Align.MIN))
+    body = body + ctx.add(shelf & _loft(fuselage_sections(p)), why="shelf: electronics above, battery bay below", kind="shelf")
+    # front bosses + inserts for the nose; rear bosses + inserts for the motor mount
+    for (y, z) in nose_bolts(p):
+        body = body + ctx.add(boss(p.pod_x0, y, z, BOSS_L, BOSS_D, +1) & _loft(fuselage_sections(p)), why="nose insert boss", kind="boss")
+    for (y, z) in mount_bolts(p):
+        body = body + ctx.add(boss(p.pod_x1, y, z, BOSS_L, BOSS_D, -1) & _loft(fuselage_sections(p)), why="motor-mount insert boss", kind="boss")
+    front = Location(Plane(origin=(p.pod_x0, 0, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))     # local (u, v) = world (y, -z)
+    body = body - iface.bolt_pattern(ctx, "nose", "M3", [(y, -z) for (y, z) in nose_bolts(p)], front, kind="heatset", depth=BOSS_L)
+    rear = Location(Plane(origin=(p.pod_x1, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))       # local (u, v) = world (y, z)
+    body = body - iface.bolt_pattern(ctx, "motor_mount", "M3", mount_bolts(p), rear, kind="heatset", depth=BOSS_L)
+    # why: the motor's three phase leads pass through the rear wall (and the mount's lead hole) from the ESC
+    body = body - Pos(p.pod_x1, 0, lead_hole_z(p)) * Rot(0, 90, 0) * Cylinder(LEAD_HOLE_D / 2, 12)
+    # why: VTX antenna MMCX lead out through the top skin to the antenna standing on the pod
+    body = body - Pos(p.ant_x, 0, p.pod_top) * Cylinder(3.5, 12)
     for s in (1, -1):
         for which, od in (("main", p.main_od), ("rear", p.rear_od)):
             a, b = L.tube_line(p, which, s)
@@ -70,8 +131,28 @@ def build(ctx):
         local = [(p.root_bolt_x1, s * p.root_bolt_z1), (p.root_bolt_x2, s * p.root_bolt_z2)]
         body = body - iface.bolt_pattern(ctx, f"wing_root_{'l' if s < 0 else 'r'}", "M3", local, loc, kind="clearance", depth=SKIN + 0.01,
                                    teardrop="auto")
+        a, b = L.lead_line(p, s)
+        body = body - ctx.cut(aero.cylinder_between(a, b, 8.0, extend=1.0), why="elevon servo lead into the bay", kind="wire hole")
         ctx.rigid(f"wing_{'l' if s < 0 else 'r'}", Location())
-    for k in ("nose", "motor", "battery", "esc", "fc", "rx", "gps", "vtx", "servo_l", "servo_r",
-              "main_l", "main_r", "rear_l", "rear_r"):
-        ctx.rigid(k, Location())
+    body, failed = fillet_inside(ctx, body, r=2.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
+    # spar tubes: rod proxy frame = origin at one end, +Z along the tube
+    for s in (1, -1):
+        for which in ("main", "rear"):
+            a, b = (np.array(v) for v in L.tube_line(p, which, s))
+            ctx.rigid(f"{which}_{'l' if s < 0 else 'r'}", Location(Plane(origin=tuple(a), z_dir=tuple(b - a))))
+    ctx.rigid("nose", Location())
+    ctx.rigid("motor_mount", Location())
+    floor = p.pod_bottom + SKIN
+    # battery: catalog 108 x 35 x 55 box laid on its 108 x 55 face (proxy z -> world -y)
+    bw = 35.0
+    ctx.rigid("battery", Location((p.bat_x, 27.5, floor + bw / 2)) * Rot(90, 0, 0))
+    ctx.rigid("xt60", Location((p.bat_x - 54 - 14, 0, floor)))
+    zs = shelf_z(p)
+    ctx.rigid("gps", Location((p.pod_x0 + 50, 0, zs)))
+    ctx.rigid("fc", Location((p.fc_x, -12, zs)))
+    ctx.rigid("rx", Location((p.fc_x, 12, zs)))
+    ctx.rigid("esc", Location((p.esc_x, 0, zs)))
+    ctx.rigid("vtx", Location((p.vtx_x, 0, zs)))
+    ctx.rigid("vtx_ant", Location((p.ant_x, 0, p.pod_top)))
     return ctx.finish(body)
