@@ -89,6 +89,7 @@ wiring:      # bench test set-up only (on the arm: robot_arm pwr_gr / sig_gr). E
      ends: {from: screw, to: plug}, route: [stand.lead_down, stand.lead_a, stand.lead_b, stand.lead_c, gripper.lead_2, gripper.lead_top, gripper.lead_1],
      note: "grip servo plugged into a 300 mm extension; cut the extension's male end, red / brown into the jack's + / - terminals; up the stand leg (slot pair), over the wrist outside plate A, into the gripper's servo bay"}
   - {id: sig_gr, from: nano, to: gr_servo, kind: signal, pin: D9, gauge: 22, color: orange, lead: pwr_gr, ends: {from: crimp, to: plug},
+     route: [stand.lead_down, stand.lead_a, stand.lead_b, stand.lead_c, gripper.lead_2, gripper.lead_top, gripper.lead_1],
      note: "the extension's orange (signal) wire, crimped, onto Nano D9"}
   - {id: gnd_ref, from: jack, to: nano, kind: signal, gauge: 22, color: black, length_mm: 150, ends: {from: screw, to: crimp},
      note: "jack minus terminal (with the brown wire, one twin ferrule) to a Nano GND pin: the servo signal needs a common ground (the Nano runs from the PC's USB)"}

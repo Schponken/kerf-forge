@@ -130,6 +130,36 @@ The tool point moves from 100.5 to ~101.5 mm ahead of the wrist axis (reach +1 m
 
 Style: radii 1.0 / 2.0 / 4.0 mm (inside load-path corners ≥ 1), 0.6 mm edge break on outside edges.
 
+## Strength and detail (kerf check results)
+| Check | Load case | Result | Limit |
+|---|---|---|---|
+| `gripper_stall_fea` | grip servo stalled, one jaw blocked: 922 N·mm on the tab screws, held at the four rod seats | 1.7 MPa (p99.9), 0.07 mm | 13 MPa (PETG across layers / SF 3), 0.3 mm |
+| `gripper_wrist_fea` | crash: wrist servo stalled against the closed head, 922 N·mm through the horn screws | 3.9 MPa, 0.57 mm | 13 MPa, 1.0 mm |
+| `jaw_fea` | one jaw blocked at stall: 61.5 N at the pad, held by the rack teeth (fully open) and both rod bores | 5.2 MPa, 0.47 mm | 24 MPa (in-plane / SF 2), 0.5 mm |
+| `finger_root` | same, beam theory at the finger root | 3.1 MPa | 24 MPa |
+| `pinion_fea` / `pinion_teeth` / `rack_teeth` | stall torque through the horn screws / Lewis, one mesh | 1.4 / 10.6 / 10.6 MPa | 16 / 16 / 13 MPa |
+| `stand_fea` | wrist servo stalled + 2 × (gripper + payload) weight, base on the bench | 4.6 MPa, 0.66 mm | 13 MPa, 1.0 mm |
+Stiffness, not strength, sets the gripper body and the jaws: the jaw's 0.47 mm (rack bar springing away from the
+pinion under the separating force is what costs tooth contact) and the fork's 0.57 mm in the crash case are near their
+limits, so neither is thinned further although the stresses are low. The pinion's body works at 7 % (the stress map
+calls it overbuilt): its size is set by 20 teeth of module 1.5 (Lewis 66 % of allowable) and the horn's Ø14 bolt circle
+inside the Ø26 root circle, so there is nothing to pocket between them.
+
+Detail pass:
+- Inside corners: the gripper body is ~20 unioned slabs; OCC's fillet operator crashes the process on it (segfault,
+  not an exception), so its load-path junctions get R2 (else R1) fillets as boolean coves (kerf/coves.py). The earlier
+  coves left a 0.02 mm sliver at each tangent point, which showed as a 217 MPa spike in `gripper_stall_fea`; with
+  exact tangent points the same case reads 1.7 MPa. Rack tooth roots get the ISO 53 basic-rack root fillet 0.38 m.
+- Corners left sharp on purpose (the `sharp inside corner` warning lists them): the 2 mm triangle ends where a cove
+  runs out at an open edge (a fillet run-out, no load crosses it); the servo window's 1.1 mm relief into the fork plates
+  (iface `servo_mount` top-through: the MG996R case is wider than the 21 mm gap with its clearance) and the tab-seat
+  corners on the bulkhead's back face, where the servo tabs must sit flat; the apex lines of teardrop bores (rod seats
+  and jaw rod bores, pivot hole, hex-key holes: they print round only with the apex); rack roots where the root land is
+  shorter than the fillet (the rack's two ends).
+- Grip pad: round-bottom grooves (r 0.5, 1.5 pitch) instead of V grooves: same texture, no crack-starting roots.
+- Edge distance warnings (horn screws Ø14, servo tabs 49.5 × 10): the purchased parts' hole patterns fix them; the
+  plates and bulkhead are as large around them as the wrist fork and the servo bay allow.
+
 ## Interfaces
 | A | B | Call | Group | Hardware |
 |---|---|---|---|---|
