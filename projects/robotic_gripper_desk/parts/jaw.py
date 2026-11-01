@@ -97,6 +97,10 @@ def build(ctx):
         pts = [Vector(*c["at"]) for c in sharp_inside(body)]
         body, _ = cove_fillets(body, [e for e in body.edges() if any((e.center() - c).length < 0.15 for c in pts)
                                       and not (e.center().X < 0 and abs(e.center().Y - y_root) < 0.05)], rr)
+    # why: the rack-bar ends where the 0.57 root cove has no room (the root land meets the bridge): the largest that fits
+    left = [e for e in edge_at(y=y_root) if e.center().X < 0
+            and any((e.center() - Vector(*c["at"])).length < 0.15 for c in sharp_inside(body))]
+    body, bad5 = cove_fillets(body, left, 0.3)
     bad4 += bad5
 
     # ---- grip pad: round-bottom grooves across the last pad_len of the pad face, ridge lands stay in z = 0

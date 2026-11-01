@@ -31,7 +31,7 @@ params:
 layout: parts/layout.py
 parts:
   gripper: {file: parts/gripper.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
-  pinion: {file: parts/pinion.py, material: PETG, print_rot: [180, 0, 0], infill: 1.0, load_axis: X}
+  pinion: {file: parts/pinion.py, material: PETG, print_rot: [180, 0, 0], infill: 0.6, load_axis: X}   # teeth are all perimeter (4 loops = 1.7 mm > half the 2.4 mm tooth); the web idles at 7 %
   jaw_r: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: 1}}
   jaw_l: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: -1}}
   rod_keeper: {file: parts/rod_keeper.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}

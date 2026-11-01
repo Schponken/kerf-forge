@@ -31,6 +31,7 @@ RAIL = 3.0                   # wing rail (flange) thickness
 ARM = 5.0                    # cheek top arm depth / strut width
 CHEEK_T = 4.0                # cheek arms + strut thickness (the front bar keeps the full cheek_t for the rod seats)
 KEEP_Y = 10.0                # rod_keeper screws at +-KEEP_Y between the rods (keeper frame)
+TIE_X, TIE_Y, TIE_DX = 12.0, 20.0, 3.0   # lead tie-slot pair on plate A: centre and half spacing (solid fan, clear of the horn screws)
 
 
 def _poly(*pts):
@@ -138,6 +139,12 @@ def build(ctx):
     for (hx, hy) in iface.circle(4, p.horn_bc, 45.0):
         lk = Location((hx, hy, W))
         body -= lk * teardrop_hole(4.0, t + 4.0, iface.print_up_deg(ctx, lk))          # why: hex-key access to the wr_horn screws through plate B
+    for dx in (-TIE_DX, TIE_DX):
+        # why: cable-tie slot pair through plate A where the grip-servo lead rises from its cable boss to the fork top:
+        # a 2.5 mm tie (catalog wire.cable_tie_2_5) cinches the lead to the plate's inner face so the wrist's +-75 deg
+        # swing pulls on the tie, not on the servo's cable boss (strain relief); 1.8 mm round slot ends bridge in print
+        body -= ctx.cut(Pos(TIE_X + dx, TIE_Y, t / 2) * extrude(SlotOverall(3.2, 1.8, rotation=90), t + 2, both=True),
+                        why="cable-tie slot pair: strain relief for the grip-servo lead before it crosses the wrist", kind="tie slot")
     loc = Location(Plane((p.x_bulk, p.y_s, zc), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))
     body -= iface.servo_mount(ctx, SERVO, loc, group="gr_servo", plate_t=p.bulk_t, kind="tap", top_through=True,
                               teardrop=iface.print_up_deg(ctx, loc))                   # why: grip servo, case top through the bulkhead
@@ -157,7 +164,7 @@ def build(ctx):
     ctx.linear("jaw_l_slide", Axis((p.x_c0, 0, zc - p.z_in), (0, 0, -1)), range=(0, p.s_max))
     ctx.rigid("keeper_seat", lkp)
     ctx.rigid("tcp", Location((p.x_tcp, 0, zc)))
-    ctx.rigid("lead_1", Location((p.x_case0 + 6.5, 24, zc)))      # grip-servo lead rises out of the bay over its cable boss
+    ctx.rigid("lead_1", Location((TIE_X, TIE_Y, t + 1.0)))        # grip-servo lead tied to plate A's inner face (tie slots)
     ctx.rigid("lead_top", Location((6, top + 3, zc)))               # over the fork plates' top edge, between them
     ctx.rigid("lead_2", Location((0, 30, -3)))                      # over the wrist outside plate A (forearm lead_4 lands here)
     return ctx.finish(body)

@@ -59,7 +59,10 @@ Only the grip servo is powered on the bench. With both servos on the adapter the
 checked as 22 AWG) drops the servos to 4.72 V at their running current, under the MG996R's 4.8 V minimum (`power`
 fails), and the only fixes were an unsourced cord gauge or a second regulator stage. The stand's wrist servo stands in
 for the arm's wrist servo mechanically (it carries the horn and pivot the gripper bolts onto); on the bench it stays
-unplugged and you set the wrist angle by turning the gripper slowly by hand. One servo at 0.9 A: 5.0 V minus 0.10 V in
+unplugged and you set the wrist angle by turning the gripper slowly by hand.
+The stand is not free-standing with the gripper on it (the head and payload sit ~110 mm ahead of the base's front
+edge): screw it to the bench through the two M4 holes in its bars, or clamp the back bar at a bench corner, BEFORE
+powering the grip servo. One servo at 0.9 A: 5.0 V minus 0.10 V in
 the cord, 0.06 V in the 600 mm lead = 4.83 V >= 4.8 V; stalled 2.5 A of the adapter's 6 A.
 
 ## Purchased parts and sizing
@@ -105,7 +108,8 @@ tightened to what this gripper actually needs: items ≤ 166 g (+ 19.8 g rods + 
 As built (163 g, 2.29 kg·cm) the shoulder is at 10.21 kg·cm (48.6 %). The margin is thin: the arm should not take
 anything heavier on its wrist. The arm's own `torque_*` checks are not re-run with the new gripper (separate project);
 this hand check is the proof, the two limits make every build re-check it.
-The tool point moves from 100.5 to ~101.5 mm ahead of the wrist axis (reach +1 mm).
+The tool point moves from 100.5 to ~101.5 mm ahead of the wrist axis (reach +1 mm). The arm's own mass cap
+(robot_arm `arm_mass` ≤ 900 g, today 792 g) would see about 888 g with this gripper: inside, by 12 g.
 
 ## Part list
 | Part | Job | Material | Print orientation | Approx. |
@@ -150,7 +154,12 @@ Detail pass:
   not an exception), so its load-path junctions get R2 (else R1) fillets as boolean coves (kerf/coves.py). The earlier
   coves left a 0.02 mm sliver at each tangent point, which showed as a 217 MPa spike in `gripper_stall_fea`; with
   exact tangent points the same case reads 1.7 MPa. Rack tooth roots get the ISO 53 basic-rack root fillet 0.38 m.
-- Corners left sharp on purpose (the `sharp inside corner` warning lists them): the 2 mm triangle ends where a cove
+- Corners left sharp on purpose (the `sharp inside corner` warning lists them): the rack bar's end under the bridge
+  (jaw [-0.6, 16.8, z]): it is inside the 0.6 mm slot between the rack bar and the carriage that the pinion's front
+  face runs past, too narrow for any fillet (0.3 mm does not fit); FEA puts the jaw's peak there at 7.5 MPa, 0.3 of the
+  allowable; the step where each cheek's 4 mm frame arms meet its 9 mm rod bar ([72, ±, -28.7 / 63.7], [52, …, -24.7 /
+  59.7]): the frame window runs right up to the bar, so a cove has no face to land on; the gripper's stall FEA reads
+  1.7 MPa there; the 2 mm triangle ends where a cove
   runs out at an open edge (a fillet run-out, no load crosses it); the servo window's 1.1 mm relief into the fork plates
   (iface `servo_mount` top-through: the MG996R case is wider than the 21 mm gap with its clearance) and the tab-seat
   corners on the bulkhead's back face, where the servo tabs must sit flat; the apex lines of teardrop bores (rod seats
@@ -159,6 +168,9 @@ Detail pass:
 - Grip pad: round-bottom grooves (r 0.5, 1.5 pitch) instead of V grooves: same texture, no crack-starting roots.
 - Edge distance warnings (horn screws Ø14, servo tabs 49.5 × 10): the purchased parts' hole patterns fix them; the
   plates and bulkhead are as large around them as the wrist fork and the servo bay allow.
+
+- Rod keeper: each rod is bottomed in the +Z cheek's blind seat and sits 0.86 mm inside the −Z cheek's outer face, so
+  the 3 mm keeper is a lid that only stops a pressed rod backing out (axial load ≈ 0).
 
 ## Interfaces
 | A | B | Call | Group | Hardware |
@@ -177,9 +189,12 @@ stand → wr_servo → **wrist** (−75…75°) → wr_horn → gripper → (gr_
 pinion; jaw_r / jaw_l on linear slides along ±Z (0…26.18 mm) that follow grip × 0.2618 mm/deg; rod_keeper).
 
 ## Assembly order
-0. Print the gripper body first and test-fit: the grip servo in its bay and a rod in a cheek seat and a jaw bore (the
+0. First article: print the gripper body and ONE jaw (jaw_l is jaw_r printed a second time: one STL, the other turned
+   180° about X at assembly) and test-fit: the grip servo in its bay and a rod in a cheek seat and a jaw bore (the
    rod's diameter tolerance is not published: `kerf calibrate --material PETG` and `kerf feedback`, then rebuild, if
-   the seats are loose or the bores tight).
+   the seats are loose or the bores tight). Fit the pinion on the horn and slide the jaw on a rod with its rack in
+   mesh: it must run with a little backlash (≈ 0.3 mm at the pad) and not touch the wing rail ends 0.5 mm away. The
+   centre distance is set by two printed interfaces with no adjustment, so check this before printing the rest.
 1. Heat-set inserts: the M3 pivot insert in plate B's boss and the two keeper inserts in the −Z cheek.
 2. Grip servo: lower it into the bay from above (between the fork plates), slide it forward until its case top passes
    the bulkhead window, 4 × M3 thread-forming screws from behind through the tabs (the two by the cable boss need a
@@ -195,8 +210,10 @@ pinion; jaw_r / jaw_l on linear slides along ±Z (0…26.18 mm) that follow grip
    onto the horn (4 × M3 from inside the fork, hex key through the access holes in plate B), M3 pivot screw through the
    forearm/stand plate B into the insert with washers to take up the side gap, then back it off 1/8 turn (a drop of
    medium threadlocker on the screw TIP only).
-8. Lead: the grip servo lead goes over the wrist (tie point at the top of plate A) and on along the arm's existing
-   route; on the arm nothing is rewired (same channel, extension, fuse).
+8. Lead: a 2.5 mm cable tie through the slot pair in plate A (x 9 / 15, 20 mm above the wrist axis) cinches the grip
+   servo lead to the plate's inner face, so the wrist swing pulls on the tie, not on the servo's cable boss; then over
+   the fork top and across the wrist outside plate A, and on along the arm's existing route (on the arm nothing is
+   rewired: same channel, extension, fuse) or down the stand's leg through its slot pair.
 9. Calibrate: find the pulse where the pads just touch (grip 0°) and where they reach full open (grip 100°); hold
    objects by commanding their width minus ~2 mm, never by stalling.
 
