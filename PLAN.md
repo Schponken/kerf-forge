@@ -124,26 +124,26 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
   corner" warnings fixed or justified in DESIGN.md; pan_tilt bracket camera M2 tap holes (22 % edge ring: bosses or
   through-bolts with nuts); re-review all six with the intent scores (all >= 3). Then make a
   sharp inside corner in a hot zone a problem (not a warning) and keep every project passing
-- [ ] BOM: every catalog item has a priced shop link (not a datasheet); total shown as priced + estimated range plus
+- [x] BOM: every catalog item has a priced shop link (not a datasheet); total shown as priced + estimated range plus
   what the packs actually cost; duplicate rows merged and quantities aggregated; human names instead of catalog ids;
   units on sizes; no internal notes or TODOs leak to the maker. Shoulder screws: a part number per length (sourced)
-- [ ] ASSEMBLY.md: off-board items (PSU, jack, Pi on the bench) under "Bench electronics (not mounted)"; steps ordered
+- [x] ASSEMBLY.md: off-board items (PSU, jack, Pi on the bench) under "Bench electronics (not mounted)"; steps ordered
   by sub-assembly with no forward references; servo centring before horns; step 0 = test-fit / `kerf calibrate`
   advice; long steps split; tightening in feel terms ("snug, then 1/8 turn") alongside N·m. Generate a bring-up and
   sweep-test program (Arduino .ino or Pi Python) for every project with a controller, referenced by the steps
-- [ ] WIRING.md: routes described by landmarks, not coordinates; physical pin numbers next to GPIO/BCM; every
+- [x] WIRING.md: routes described by landmarks, not coordinates; physical pin numbers next to GPIO/BCM; every
   electrical BOM item used in a step and every wire/extension a step uses in the BOM
-- [ ] Print package: per plate print time and grams (slice with Bambu Studio / OrcaSlicer CLI when installed, else a
+- [x] Print package: per plate print time and grams (slice with Bambu Studio / OrcaSlicer CLI when installed, else a
   documented estimate), layer height, temperatures, supports on/off, brim in PRINT_SETTINGS.md; printer/filament
   settings in the 3MF; orientation in words ("on its back face"). Studio shows time, grams and cost per project
 - [x] Report wording for makers: mass split into printed / on-board / off-board (`off_board:` items, viewer headline too); every check value with its unit and whether the limit is a min, max or range; warnings that change what the builder does rewritten as "For you" notes (Studio Checks tab), the rest labelled for the designer; every purchased item held (screw/pin, `held_by:` or `off_board:`) or warned. Tests: tests/test_maker_output.py. (pan_tilt camera tap holes: moved to the per-project warnings item below; it is a geometry change that needs a re-review.)
-- [ ] Renders: assembly-step images framed on the step's parts (off-board items excluded), the step's new parts and
+- [x] Renders: assembly-step images framed on the step's parts (off-board items excluded), the step's new parts and
   fasteners highlighted with labels; purchased parts readable on dark; part sheets with overall dimensions and an
   on-the-bed view
-- [ ] Studio: welcome / empty state; time estimates on Build and Build-all (from past runs); units on parameters;
+- [x] Studio: welcome / empty state; time estimates on Build and Build-all (from past runs); units on parameters;
   versions (git-backed history with renders and metric diffs, one-click revert) and tried-vs-saved comparison; cost /
   print time / filament summary; export a zip; which checks a parameter affects
-- [ ] Smarter new design: intake questions before the run (budget, parts on hand, power, mounting, environment,
+- [x] Smarter new design: intake questions before the run (budget, parts on hand, power, mounting, environment,
   printer, material), then 2–3 candidate architectures with estimated cost, print hours and part count to pick from
   ("quote first"); parts-on-hand inventory the BOM prefers; auto-fix common findings (edge distance -> boss, round ->
   teardrop hole, risky tap -> heat-set insert) before the reviewer sees them
