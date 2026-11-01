@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+# Stand-in for Claude Code in tests: signed in, and a -p run that streams a few tool calls then succeeds.
+import json, sys, time
+a = sys.argv[1:]
+if a[:2] == ["auth", "status"]:
+    print(json.dumps({"loggedIn": True})); sys.exit(0)
+open(__file__ + ".last_prompt", "w").write(a[a.index("-p") + 1] if "-p" in a else "")
+def say(c): print(json.dumps({"type": "assistant", "message": {"content": c}}), flush=True); time.sleep(0.6)
+say([{"type": "text", "text": "Making the requested change."}])
+say([{"type": "tool_use", "name": "Read", "input": {"file_path": "projects/servo_link/project.yaml"}}])
+say([{"type": "tool_use", "name": "Edit", "input": {"file_path": "projects/servo_link/parts/arm.py"}}])
+say([{"type": "tool_use", "name": "Bash", "input": {"command": ".venv/bin/kerf check servo_link"}}])
+say([{"type": "tool_use", "name": "Bash", "input": {"command": ".venv/bin/kerf build servo_link"}}])
+say([{"type": "tool_use", "name": "Agent", "input": {"subagent_type": "design-reviewer", "description": "review"}}])
+print(json.dumps({"type": "result", "subtype": "success", "duration_ms": 4000, "result": "Done: change made, checks pass."}), flush=True)

@@ -242,10 +242,10 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 #modal .row{justify-content:flex-end;margin-top:16px}
 /* compare bar over the 3D view */
 .cmpbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-.cmpbar select{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:6px 10px}
+.cmpbar select{width:auto;flex:0 1 340px;min-width:0;font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:6px 10px}
 /* materials */
 .mats td,.mats th{padding:6px 8px}
-.mats select{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.mats select{width:auto;font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
 .mats tr.changed td:first-child{color:var(--accent);font-weight:650}
 /* all-projects grid */
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
@@ -328,7 +328,7 @@ const fresh = key => { if (S.shown.has(key)) return ""; S.shown.add(key); return
 function setTheme(t) { document.documentElement.dataset.theme = t; $("#themebtn").textContent = t === "dark" ? "☀" : "☾"; try { localStorage.setItem("kerf-theme", t); } catch (e) {} document.querySelectorAll("iframe.viewer").forEach(syncTheme); }
 function syncTheme(f) {   // the 3D viewer follows the studio's theme (same origin, so the page can be told directly)
   try { const d = f.contentDocument; if (!d || !d.documentElement) return; d.documentElement.dataset.theme = document.documentElement.dataset.theme;
-        if (typeof f.contentWindow.restyle === "function") f.contentWindow.restyle(); } catch (e) {}
+        const k = f.contentWindow.__kerf; if (k && k.restyle) k.restyle(); else if (typeof f.contentWindow.restyle === "function") f.contentWindow.restyle(); } catch (e) {}
 }
 function toggleTheme() { setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"); }
 let saved = null; try { saved = localStorage.getItem("kerf-theme"); } catch (e) {}

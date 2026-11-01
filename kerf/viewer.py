@@ -139,7 +139,7 @@ def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None 
             "joints": chain[iid], "verts": _b64(v), "tris": _b64(t), "nv": int(len(v)), "nt": int(len(t)),
             "faceStart": _b64(fs), "src": it.spec.get("file"), "attr": _attr_compact(attr.get(iid), len(fs)),
             "catalog_source": _cat_source(it.spec.get("catalog")),
-            "label": _label(it),
+            "label": _label(it), "off_board": bool(it.spec.get("off_board")),
         })
         if iid in stress:
             out_items[-1]["stress"] = _stress_on(v, stress[iid])

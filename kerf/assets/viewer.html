@@ -90,9 +90,11 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .lab{position:absolute;transform:translate(10px,-50%);white-space:nowrap;font-size:12px;padding:3px 8px 3px 7px;border-radius:7px;background:var(--panel);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.18);transition:opacity .25s}
 .lab::before{content:"";position:absolute;left:-10px;top:50%;width:7px;height:7px;margin-top:-4px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
 .lab b{font-weight:650}.lab span{color:var(--mute)}
+.lab.screw,.lab.ins{transform:translate(10px,20%)}
 .lab.screw::before{background:#c63d2f}.lab.ins::before{background:#c9a24a}.lab.move::before{background:var(--good)}
 #abar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:3;max-width:calc(100% - 24px)}
 #abar[hidden]{display:none}
+#abar button{white-space:nowrap}
 #abar .t{font-size:13px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
 #abar .t b{font-variant-numeric:tabular-nums}
 #asm .tl{display:flex;gap:3px;margin:2px 0 12px}
@@ -142,8 +144,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div id="slegend" class="float" hidden></div>
     <div id="clegend" class="float" hidden></div>
     <div id="labels"></div>
-    <div id="abar" hidden><button id="ab_prev" title="Back (←)">◀</button><button id="ab_play" title="Play every step (space)">▶</button>
-      <span class="t" id="ab_t"></span><button id="ab_re" title="Replay this step (R)">↻</button><button id="ab_next" title="Next (→)">▶▶</button></div>
+    <div id="abar" hidden><button id="ab_prev" title="Back (←)">‹ Back</button><button id="ab_play" title="Play every step (space)">▶ Play</button>
+      <span class="t" id="ab_t"></span><button id="ab_re" title="Replay this step (R)">↻</button><button id="ab_next" title="Next (→)">Next ›</button></div>
     <div id="tip"></div>
     <div class="legend" id="hint">Drag to orbit, right-drag to pan, scroll to zoom, click a face to inspect it</div>
   </div>
@@ -635,7 +637,8 @@ function renderStressLegend() {
   $('slegend').querySelectorAll('[data-f]').forEach(r => r.onclick = () => focusPart(r.dataset.f));
 }
 if (STRESS.length) { $('stressb').hidden = false; renderStressLegend(); }
-$('stressb').onclick = () => { if (AS.on) return; colorMode = colorMode === 'stress' ? 'normal' : 'stress'; paint(); };
+$('stressb').onclick = () => { if (AS.on) return; colorMode = colorMode === 'stress' ? 'normal' : 'stress'; paint();
+  if (colorMode === 'stress') frameBox(boxOf(STRESS.map(i => i.id)), cam.position.clone().sub(ctl.target), 600); };   // frame the checked parts
 function nearestVertex(h) {
   const g = groups.get(h.object.userData.id), inv = g.matrixWorld.clone().invert(), p = h.point.clone().applyMatrix4(inv);
   const pos = h.object.geometry.getAttribute('position'), v = new T.Vector3();
@@ -698,11 +701,13 @@ function snapshot(w = 480, h = 360) {
   const p0 = cam.position.clone(), t0 = ctl.target.clone(), bg = scene.background, gv = grid && grid.visible, cv = cutViz.visible;
   renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
   scene.background = null; if (grid) grid.visible = false; cutViz.visible = false; renderer.setClearColor(0x000000, 0);
+  const off = [...groups.values()].filter(g => g.visible && g.userData.it.off_board); for (const g of off) g.visible = false;   // the device, not the desk
   const box = visibleBox(), c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 5);
   const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.02;
   cam.position.copy(c).add(new T.Vector3(...VIEWS.iso).normalize().multiplyScalar(d)); cam.lookAt(c); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix();
   renderer.render(scene, cam);
   const url = renderer.domElement.toDataURL('image/png');
+  for (const g of off) g.visible = true;
   scene.background = bg; if (grid) grid.visible = gv; cutViz.visible = cv;
   cam.position.copy(p0); ctl.target.copy(t0); resize(); ctl.update(); redraw();
   return url;
@@ -731,7 +736,7 @@ function setGlow(id, k) {
 }
 function itemLook(id) {   // full / ghost (still to come) / hidden, by the step's sets
   const g = groups.get(id); if (!g) return;
-  if (AS.future.has(id) && !AS.vis.has(id)) { look(g, 0.07); g.userData.edges.material.opacity = 0.12; }
+  if (AS.future.has(id) && !AS.vis.has(id)) { look(g, 0.045); g.userData.edges.material.opacity = 0.09; }
   else look(g, 1);
 }
 const STEEL = new T.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 0.75, roughness: 0.32, clippingPlanes: CLIP });
@@ -938,7 +943,7 @@ function chipsFor(s) {
 function renderBar() {
   const c = AS.cards[AS.i], n = SD.steps.length;
   $('ab_t').innerHTML = c.kind === 'intro' ? '<b>Before you start</b>' : c.kind === 'finish' ? '<b>Finished</b>' : `<b>Step ${c.s.n}/${n}</b> · ${esc(c.s.title)}`;
-  $('ab_play').textContent = AS.playing ? '❚❚' : '▶';
+  $('ab_play').textContent = AS.playing ? '❚❚ Pause' : '▶ Play';
   $('ab_prev').disabled = AS.i === 0; $('ab_next').disabled = AS.i === AS.cards.length - 1;
 }
 function renderAsm() {

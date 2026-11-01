@@ -1175,3 +1175,24 @@ pushed for it and what I know:
   count, risks) and Spencer picks one, which goes into the design brief; "My parts" (catalog/inventory.json) parts are
   preferred in the brief and the BOM counts them first and leaves them out of the cost. The quote job itself was not
   run end-to-end with Claude here (tests stub the quote file).
+
+## 2026-11-01 — Studio + viewer features Spencer picked (cut-away, stress, Do it, compare, materials, duplicate, pictures, notifications, build-it animation)
+- Viewer: **Cut** (X/Y/Z plane, starts through the printed parts, keeps the side away from the camera, hatched cut faces),
+  **Stress** (each fea_static surface field mapped onto the part's vertices, worst load case; legend, % under the pointer,
+  frames the checked parts), **Build it** tab (ASSEMBLY.md order animated: parts fly in along their insert path, bench
+  sub-assemblies join as one piece, heat-set inserts press in with a heat glow, screws turn home, joints demonstrate their
+  travel, occlusion-tested camera per step, step text, ghost of parts to come, Play all / speed / keys / done ticks, finish
+  turntable). viewer.html is now written after ASSEMBLY.md (pipeline.py) so it carries the step text.
+- Studio: **Do it** in the viewer's inspector + **Change something** (Claude Code edit job, shown like a design job),
+  **Duplicate** (design files only, optional change), **Materials** per printed part in Tune (try + save), **Compare**
+  (every Studio build keeps its geometry; past build as a ghost in 3D model; a Try is drawn over the saved design),
+  **pictures** captured from the viewer for every built project + **All projects** grid, **notifications** (osascript /
+  notify-send for jobs >= 20 s and every Claude Code job, chime + flashing title; bell switch).
+- Tests: tests/test_studio_features.py (9), tests/test_viewer.py (+2, one in Chromium); tools/studio_smoke/run.sh drives
+  Studio end to end with a stand-in Claude Code (all steps pass, no page errors).
+- Needs Spencer: a Studio-started Claude Code job (new design or change) still meets the repo-wide stop gate, which
+  pushes it on to open PLAN items after its own work. Fix = a scoped mode in .claude/hooks/stop_gate.py when
+  KERF_STUDIO_JOB is set (done = that project built, passing, reviewed, pushed). Studio already sets the variable; the
+  hook edit was refused for an agent session, so it needs his go-ahead.
+- Found, not mine: a Try of servo_link with arm_len 120 + arm in PLA sat in arm_fea for 5+ min and was OOM-killed
+  (8 GB container) — worth a look by whoever owns kerf/fea.py.

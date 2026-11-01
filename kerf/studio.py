@@ -1031,8 +1031,8 @@ def save_inventory(items: dict) -> dict:
         note = json.loads(INVENTORY.read_text(encoding="utf-8")).get("_note")
     except Exception:  # noqa: BLE001
         note = None
-    INVENTORY.write_text(json.dumps({"_note": note or "Parts on hand: {key: quantity}.", "items": clean}, indent=2) + "\n",
-                         encoding="utf-8")
+    body = json.dumps({"_note": note or "Parts on hand: {key: quantity}.", "items": clean}, indent=2) + "\n"
+    INVENTORY.write_text(body, encoding="utf-8")
     return clean
 
 
