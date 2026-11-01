@@ -1,0 +1,7 @@
+{
+ "item": "Studio \"Do it\": the viewer's edit requests (parameter change or described change) start a Claude Code edit job from Studio instead of being copied; a general \"Change something\" box too; scoped job: the stop gate judges a Studio job on its own project",
+ "session": "4c4e3822c9",
+ "since": 1793559275.9301236,
+ "heartbeat": 1793559275.9301236,
+ "since_utc": "2026-11-01 18:54"
+}
