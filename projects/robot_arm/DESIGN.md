@@ -137,6 +137,24 @@ in tension.
 The arm links are stiffness-limited, not strength-limited; the stresses are low because a fork of two 7 mm plates
 34 mm tall is deep in bending.
 
+## Load → section
+| Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
+|---|---|---|---|
+| base | the arm's weight and tipping moment through the two yaw bearings (±91 N couple over 20.5 mm), the 34 N gear-mesh force, the yaw servo at stall (9.4 kg·cm) → bearing tower → plate → desk (base_fea) | the bearing tower's root on the plate | tower walls round the 2 bearings, shelf and open-bottomed servo pocket, plate on the desk |
+| turntable | 13.8 N on the yoke feet + the 1.87 N·m tipping moment → spindle → the two bearing seats (turntable_fea) | spindle bending between the bearings | spindle through both bearings, 24 T gear and platform one piece |
+| yoke_r / yoke_l | shoulder servo stall 21 kg·cm as a couple on yoke_r's 4 tab screws + 6.3 N down; the pivot side 6.3 N (yoke_r_fea / yoke_l_fea) | the cheek's base where the foot ends (local peak 17.7 MPa) | cheeks on feet screwed to the platform |
+| upper_arm | elbow servo and the 359 g beyond, 4.2 N + 4.2 N + 900 N·mm static (upper_arm_fea); the elbow servo at stall in a crash (upper_arm_stall_fea, 13.3 of 16 MPa: the governing case) | the fork root at the shoulder horn | fork L1 = 85 mm of two plates (kerf.idioms), the elbow servo's tab pilots and the free pivot at the far end |
+| forearm | wrist servo and beyond, 3.1 N x 2 + 380 N·mm; wrist stall in a crash (5.3 of 16 MPa) | the fork root at the elbow | fork L2 = 80 mm, same idiom |
+| gripper | grip stall 18.4 N on the jaw tip, held at the servo tabs (gripper_fea) | the fixed jaw's root (local peak 14.6 MPa at its side corners) | fork + palm + fixed jaw post |
+| finger | 18.4 N at the finger tip (finger_fea) | the finger root at the horn | tapered finger on the grip horn |
+
+## Detail: radii and corners
+- One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside, boolean
+  coves; r 0.5 where 1 does not fit), the idioms' built-in root fillets, chamfered bed edges.
+- Declared sharp (report.json `sharp_kept`, with the reason): the psu_hood's sleeve (the supply's square case edges
+  sit in it) and corners under a ceiling as printed (a fillet there would overhang). The showcase rework (PLAN) redoes
+  upper_arm, forearm, gripper and base with closed sections and tapered depth.
+
 ## Cables
 The five servo leads form one bundle that crosses the yaw joint ABOVE the arm: from the desk, up behind the PCA9685
 board on the base's cable post (132 mm tall, on the rear pad, outside the circle the turntable sweeps), across the

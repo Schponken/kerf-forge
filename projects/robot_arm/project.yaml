@@ -6,6 +6,7 @@ description: >
   fork with the servo on one side and an M3 socket-screw pivot (into a heat-set insert) on the other. Bolts (4x M4) or clamps to a desk.
 printer: Bambu Lab A2L
 supports: allowed
+style: {radii: [1.0, 2.0], edge_break: 0.5}   # 1 every inside corner, 2 link-root fillets (kerf.idioms); 0.5 bed chamfers
 params:
   plate_t: {value: 7, unit: "mm", min: 7, max: 8, step: 0.5, label: Side-plate thickness}
   side_gap: {value: 1.5, unit: "mm", min: 0.5, max: 2.0, step: 0.1, label: Axial gap between a fork and the link inside it (takes a 4.5-5.5 mm horn; shim with M3 washers)}
