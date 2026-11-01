@@ -41,3 +41,12 @@ def test_rack_tooth_roots_leave_no_slivers():
     _, rack, _ = drives.rack_pinion(1.5, 20, 7, 12)
     out, skipped = cove_fillets(rack, _sharp_edges(rack), 0.38 * 1.5)
     assert not skipped and out.is_valid and sharp_inside(out) == []
+
+
+def test_cove_sharp_boxes():
+    from kerf.coves import cove_sharp
+    L = Box(20, 10, 4, align=Align.MIN) + Box(4, 10, 20, align=Align.MIN)
+    same, _ = cove_sharp(L, (2.0,), skip=[((3, -1, 3), (5, 11, 5))])          # the only corner is skipped
+    assert abs(same.volume - L.volume) < 1e-6
+    out, skipped = cove_sharp(L, (2.0, 1.0), only=[((3, -1, 3), (5, 11, 5))])
+    assert not skipped and sharp_inside(out) == []

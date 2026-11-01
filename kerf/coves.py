@@ -68,3 +68,23 @@ def cove_fillets(shape, edges, r: float):
     for cv in coves:
         shape = shape + cv
     return shape, skipped
+
+
+def _in(c, box):
+    (x0, y0, z0), (x1, y1, z1) = box
+    return x0 <= c.X <= x1 and y0 <= c.Y <= y1 and z0 <= c.Z <= z1
+
+
+def cove_sharp(shape, radii, only=(), skip=()):
+    """Cove every sharp inside corner (kerf/edges.py) of `shape`, trying each radius in turn (largest first), limited
+    to edges whose centre lies in one of the `only` boxes (if given) and outside every `skip` box; boxes are
+    ((x0, y0, z0), (x1, y1, z1)). One call from the part file: kerf/attribution.py line-traces part files, so a
+    per-edge loop written there is traced (and slowed) line by line. Returns (shape, skipped from the last radius)."""
+    from .edges import sharp_inside
+    skipped = []
+    for r in radii:
+        pts = [Vector(*c["at"]) for c in sharp_inside(shape)]
+        edges = [e for e in shape.edges() if any((e.center() - p).length < 0.15 for p in pts)
+                 and (not only or any(_in(e.center(), b) for b in only)) and not any(_in(e.center(), b) for b in skip)]
+        shape, skipped = cove_fillets(shape, edges, r)
+    return shape, skipped

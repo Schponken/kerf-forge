@@ -17,8 +17,7 @@ import math
 
 from build123d import *
 from kerf import drives, features as F, iface
-from kerf.coves import cove_fillets
-from kerf.edges import sharp_inside
+from kerf.coves import cove_fillets, cove_sharp
 
 ROD = "rods.ss_rod_4"
 R1, R2, R4 = 1.0, 2.0, 4.0          # project style radii (project.yaml style.radii)
@@ -91,16 +90,11 @@ def build(ctx):
     body, bad4 = F.safe_fillet(body, [(edge_at(x=x_tip, z=0, along=Axis.Y), LEAD)], kind="chamfer")  # why: lead-in at the tip, slides over an object instead of stubbing on it
     # why: rack tooth roots get the ISO 53 basic-rack root fillet (0.38 x module): the root corner is where a tooth
     # cracks when one jaw is blocked at stall (rack_teeth); the pinion tip clearance (0.25 m) is the standard one for it
-    body, bad5 = cove_fillets(body, [e for e in edge_at(y=y_root, along=Axis.X) if e.center().X < 0], 0.38 * p.gear_m)
-    # why: every other junction left sharp (rack end into the bridge, finger side into the carriage): R2, else R1
-    for rr in (R2, R1):
-        pts = [Vector(*c["at"]) for c in sharp_inside(body)]
-        body, _ = cove_fillets(body, [e for e in body.edges() if any((e.center() - c).length < 0.15 for c in pts)
-                                      and not (e.center().X < 0 and abs(e.center().Y - y_root) < 0.05)], rr)
-    # why: the rack-bar ends where the 0.57 root cove has no room (the root land meets the bridge): the largest that fits
-    sharp = [Vector(*c["at"]) for c in sharp_inside(body)]
-    left = [e for e in edge_at(y=y_root) if e.center().X < 0 and any((e.center() - c).length < 0.15 for c in sharp)]
-    body, bad5 = cove_fillets(body, left, 0.3)
+    # (0.3 where the 0.57 has no room: the root land's ends, where it meets the bridge)
+    roots = [((-1e3, y_root - 0.05, -1e3), (0.0, y_root + 0.05, 1e3))]
+    body, bad5 = cove_sharp(body, (0.38 * p.gear_m, 0.3), only=roots)
+    # why: every other junction left sharp (finger side into the carriage, ...): R2, else R1
+    body, _ = cove_sharp(body, (R2, R1), skip=roots)
     bad4 += bad5
 
     # ---- grip pad: round-bottom grooves across the last pad_len of the pad face, ridge lands stay in z = 0

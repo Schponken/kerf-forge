@@ -17,8 +17,7 @@ import math
 
 from build123d import *
 from kerf import iface
-from kerf.coves import cove_fillets
-from kerf.edges import sharp_inside
+from kerf.coves import cove_sharp
 from kerf.features import safe_fillet, teardrop_hole
 
 HORN = "servo_horns.aluminum_25T"
@@ -122,14 +121,8 @@ def build(ctx):
     # ---- inside-corner fillets on the 3D junctions (not where the servo tabs sit against the bulkhead) ------
     # why: stress raisers on the load path. OCC's fillet operator crashes (segfault) on this many-slab body, so the
     # concave fillets are added as cove prisms by union (kerf/coves.py); R2 first, R1 where a face is too short for R2
-    def tab_corner(c):
-        return abs(c.X - xb0) < 0.2 and (abs(c.Z - t) < 0.2 or abs(c.Z - (W - t)) < 0.2)
-
-    def sharp_edges(shape):
-        pts = [Vector(*c["at"]) for c in sharp_inside(shape)]
-        return [e for e in shape.edges() if any((e.center() - c).length < 0.15 for c in pts) and not tab_corner(e.center())]
-    body, failed = cove_fillets(body, sharp_edges(body), R2)
-    body, failed = cove_fillets(body, sharp_edges(body), R1)
+    tabs = [((xb0 - 0.2, -1e3, z - 0.2), (xb0 + 0.2, 1e3, z + 0.2)) for z in (t, W - t)]   # servo tab seats stay sharp
+    body, failed = cove_sharp(body, (R2, R1), skip=tabs)
 
     # ---- interfaces ---------------------------------------------------------------------------------------
     la = Location((0, 0, t))
