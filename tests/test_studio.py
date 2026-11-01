@@ -351,6 +351,7 @@ await p.goto('{url}'); const out = {{}};
 {steps_js}
 console.log(JSON.stringify({{ errs, ...out }})); await b.close();""")
     r = subprocess.run(["node", str(js)], capture_output=True, text=True, timeout=180)
+    assert r.stdout.strip(), r.stderr[-2000:]
     return json.loads(r.stdout.strip().splitlines()[-1])
 
 
@@ -388,3 +389,70 @@ def test_every_finished_project_states_its_param_units():
                for k, v in (yaml.safe_load((root / n / "project.yaml").read_text(encoding="utf-8")).get("params") or {}).items()
                if isinstance(v, dict) and "unit" not in v]
     assert missing == []
+
+
+def test_brief_carries_intake_inventory_and_the_picked_option(tmp_path, monkeypatch):
+    from kerf import ship
+    inv = tmp_path / "inv.json"
+    inv.write_text(json.dumps({"items": {"servos.SG90": 2}}))
+    monkeypatch.setattr(ship, "INVENTORY", inv)
+    b = studio.brief("a desk gripper", {"budget": "40", "power": "USB", "bogus": "x"},
+                     {"title": "Rack jaws", "summary": "two racks", "purchased": [{"key": "servos.SG90", "qty": 1}]})
+    assert "a desk gripper" in b and "40" in b and "USB" in b and "bogus" not in b
+    assert "servos.SG90 x2" in b and "Rack jaws" in b and "servos.SG90 x1" in b
+
+
+def test_read_quote_checks_its_options(tmp_path, monkeypatch):
+    monkeypatch.setattr(studio, "QUOTES", tmp_path)
+    with pytest.raises(ValueError, match="no quote yet"):
+        studio.read_quote("arm")
+    (tmp_path / "arm.json").write_text(json.dumps({"options": [{"title": "A", "summary": "s", "parts_printed": 3,
+                                                                "cost_usd": 20}]}))
+    with pytest.raises(ValueError, match="print_hours"):
+        studio.read_quote("arm")
+    good = {"title": "A", "summary": "s", "parts_printed": 3, "cost_usd": 20, "print_hours": 4}
+    (tmp_path / "arm.json").write_text(json.dumps({"options": [good, good | {"title": "B"}], "recommended": 1}))
+    assert [o["title"] for o in studio.read_quote("arm")["options"]] == ["A", "B"]
+    (tmp_path / "arm.json").write_text(json.dumps({"options": [good] * 4}))
+    with pytest.raises(ValueError, match="1-3"):
+        studio.read_quote("arm")
+
+
+def test_save_inventory_keeps_only_known_parts(tmp_path, monkeypatch):
+    from kerf import ship
+    inv = tmp_path / "inv.json"
+    inv.write_text(json.dumps({"_note": "mine", "items": {}}))
+    monkeypatch.setattr(ship, "INVENTORY", inv)
+    assert studio.save_inventory({"servos.SG90": "2", "screw:M3x8:socket": 0}) == {"servos.SG90": 2}
+    assert json.loads(inv.read_text()) == {"_note": "mine", "items": {"servos.SG90": 2}}
+    assert ship.load_inventory() == {"servos.SG90": 2.0}
+    with pytest.raises(ValueError, match="unknown part"):
+        studio.save_inventory({"servos.NOPE": 1})
+    with pytest.raises(ValueError, match="0 or more"):
+        studio.save_inventory({"servos.SG90": -1})
+    assert any(k["key"] == "servos.SG90" for k in studio.inventory_keys())
+
+
+def test_new_design_page_has_intake_quote_options_and_my_parts(server, tmp_path, monkeypatch):
+    from kerf import ship
+    inv = tmp_path / "inv.json"
+    inv.write_text(json.dumps({"items": {}}))
+    monkeypatch.setattr(ship, "INVENTORY", inv)
+    qd = tmp_path / "quotes"
+    qd.mkdir()
+    monkeypatch.setattr(studio, "QUOTES", qd)
+    good = {"title": "Rack jaws", "summary": "two racks", "parts_printed": 5, "cost_usd": 21.5, "print_hours": 6,
+            "risks": ["servo stall"]}
+    (qd / "grip.json").write_text(json.dumps({"options": [good, good | {"title": "Linkage claw"}], "recommended": 1,
+                                              "assumptions": ["USB power"]}))
+    out = _browser(server + "/", """
+await p.waitForSelector('.pitem'); await p.click('#newbtn'); await p.waitForSelector('#i_budget', { timeout: 90000 });
+out.intake = await p.$$eval('.igrid label', e => e.length);
+await p.evaluate(() => showQuote('grip')); await p.waitForSelector('.qopt');
+out.opts = await p.$$eval('.qopt b', e => e.map(x => x.textContent)); out.rec = await p.$eval('.qopt.rec b', e => e.textContent);
+await p.click('#partsbtn'); await p.waitForSelector('#invadd');
+await p.fill('#invadd', 'servos.SG90'); await p.fill('#invqty', '2'); await p.click('text=Add');
+await p.click('button.primary:has-text("Save")'); await p.waitForTimeout(500);""", tmp_path)
+    assert out["errs"] == [] and out["intake"] == 6, out
+    assert out["opts"] == ["Rack jaws", "Linkage claw"] and out["rec"] == "Linkage claw", out
+    assert json.loads(inv.read_text())["items"] == {"servos.SG90": 2}

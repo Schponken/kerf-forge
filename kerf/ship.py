@@ -70,10 +70,28 @@ def price_key(row: dict) -> list[str]:
     return []
 
 
-def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) -> dict:
+INVENTORY = Path(__file__).resolve().parent.parent / "catalog" / "inventory.json"
+
+
+def load_inventory(path: Path | None = None) -> dict:
+    """Parts Spencer already has: {key: qty}, keyed like the BOM (a catalog path such as servos.MG996R, or a price key
+    such as screw:M3x8:socket). Edited in Kerf Studio ("My parts")."""
+    p = Path(path or INVENTORY)
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+    items = d.get("items", d) if isinstance(d, dict) else {}
+    return {str(k): float(v) for k, v in items.items() if not str(k).startswith("_") and isinstance(v, (int, float)) and v > 0}
+
+
+def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None, inventory: dict | None = None) -> dict:
     """Adds buy / unit_usd / total_usd / price_key to every row in place. Printed rows are priced as filament
-    (estimated mass x material price per gram). Returns the summary."""
+    (estimated mass x material price per gram). Parts on hand (`inventory`, {key: qty}) cover rows of the exact same
+    key first: those pieces cost nothing and need no pack. Returns the summary."""
     part_reports = part_reports or {}
+    left = dict(inventory or {})
+    on_hand = []
     total, unpriced, approx = 0.0, [], []
     need = defaultdict(float)                     # per price key: how much of it the build uses (pieces or grams)
     for r in rows:
@@ -101,21 +119,30 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
             continue
         e = prices[key]
         unit = float(e["pack_usd"]) / float(e["pack_qty"])
-        r.update(buy=e["buy"], unit_usd=round(unit, 2), total_usd=round(unit * qty, 2), price_key=key)
+        have_key = next((k for k in (cands[:1] + [r.get("spec") or ""]) if k and left.get(k, 0) > 0), None)
+        have = min(qty, left[have_key]) if have_key else 0.0
+        if have:
+            left[have_key] -= have
+            on_hand.append(r["item"])
+            r["on_hand"] = have
+            r["note"] = (f"{r.get('note')}; " if r.get("note") else "") + f"you have {have:g} (My parts)"
+        qty_buy = qty - have
+        r.update(buy=e["buy"], unit_usd=round(unit, 2), total_usd=round(unit * qty_buy, 2), price_key=key)
         if key != cands[0]:
             # size-only fallback (e.g. screw:M3:socket for an M3 x 12): the price is indicative, the link is for another
             # length; say so on the row so a wrong length is never bought silently
             r["note"] = (f"{r.get('note') or ''} " if r.get("note") else "") + \
                 f"PRICE FROM A DIFFERENT PACK ({key}): the link is not this length, buy {r['item']}"
             approx.append(r["item"])
-        total += unit * qty
-        need[key] += qty
+        total += unit * qty_buy
+        need[key] += qty_buy
     # what the shopper actually pays: whole packs (a 100-pack of screws, a 1 kg spool), one pack per started pack
     import math
     packs = {k: math.ceil(n / float(prices[k]["pack_qty"]) - 1e-9) for k, n in need.items() if n > 0}
     pack_cost = {k: round(c * float(prices[k]["pack_usd"]), 2) for k, c in packs.items()}
     packs_usd = sum(pack_cost.values())
     return {"total_usd": round(total, 2), "packs_usd": round(packs_usd, 2), "packs": packs, "pack_cost": pack_cost,
+            "on_hand": on_hand,
             "pack_qty": {k: float(prices[k]["pack_qty"]) for k in packs}, "unpriced": unpriced,
             "approximate": approx, "rows": len(rows)}
 
@@ -138,6 +165,8 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
                if summary["unpriced"] else f"**Total: ${summary['total_usd']:.2f}**")
               + (f" — {len(summary['approximate'])} row(s) priced from a different pack (see their notes): "
                  f"{', '.join(summary['approximate'])}" if summary.get("approximate") else "")
+              + (f" — {len(summary['on_hand'])} row(s) partly or wholly from your parts on hand (not counted): "
+                 f"{', '.join(summary['on_hand'])}" if summary.get("on_hand") else "")
               + ". Fasteners are priced per piece from assortment packs; printed parts as filament only. Prices are a "
                 "dated snapshot (catalog/prices.json), shipping and tax excluded.")
     if summary.get("packs_usd"):
@@ -634,7 +663,7 @@ def write(proj, asm, rep: dict, outdir: Path, render=None, prices: dict | None =
     for r in rep.get("bom", []):
         if r["item"] in extra_keys:
             r["price_key"] = extra_keys[r["item"]]
-    summary = price_bom(rep.get("bom", []), prices, rep.get("parts", {}))
+    summary = price_bom(rep.get("bom", []), prices, rep.get("parts", {}), load_inventory())
     write_bom(rep.get("bom", []), summary, outdir)
     from . import firmware
     fw = firmware.write(proj, asm, outdir)        # bring-up / sweep-test program (None: no controller-driven servo)

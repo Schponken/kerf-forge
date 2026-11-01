@@ -225,6 +225,9 @@ def main(argv=None) -> int:
     pr = sub.add_parser("print"); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
     pr.add_argument("--send", type=int, default=None, metavar="PLATE"); pr.add_argument("--open", action="store_true")
     fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
+    pc = sub.add_parser("price", help="price parts for a quote: kerf price servos.MG996R:2 screw:M3x8:socket:20 --grams 120")
+    pc.add_argument("items", nargs="*"); pc.add_argument("--grams", type=float, default=0.0); pc.add_argument("--material", default="PETG")
+    pc.add_argument("--json", action="store_true")
     fx = sub.add_parser("fixes", help="turn the last check's common findings into edits (--apply writes the mechanical ones)")
     fx.add_argument("project"); fx.add_argument("--apply", action="store_true")
     fx.add_argument("--heatset", action="store_true", help="with --apply: also turn edge-near self-tapping holes into heat-set inserts")
@@ -270,6 +273,40 @@ def main(argv=None) -> int:
         _p(f"gallery: {r['index']} + {len(r['files'])} files (out/gallery/files.json) for "
            f"{len(r['projects'])} projects; publish index.html with those files as one Artifact")
         return 0
+    if a.cmd == "price":
+        from . import ship, printpkg
+        prices, inv = ship.load_prices(), ship.load_inventory()
+        rows, missing, total, have = [], [], 0.0, []
+        for it in a.items:
+            # "key:qty"; a key that itself ends in a number (dowel:3) is taken whole when it is a known price key
+            key, _, q = (it, "", "1") if it in prices or not it.rsplit(":", 1)[-1].replace(".", "", 1).isdigit() else it.rpartition(":")
+            q = float(q or 1)
+            e = prices.get(key)
+            if e is None:
+                missing.append(key)
+                continue
+            unit = float(e["pack_usd"]) / float(e["pack_qty"])
+            own = min(q, inv.get(key, 0.0))
+            rows.append({"key": key, "qty": q, "unit_usd": round(unit, 2), "total_usd": round(unit * (q - own), 2), "on_hand": own})
+            total += unit * (q - own)
+        fil = None
+        if a.grams:
+            e = prices.get(f"material:{a.material}")
+            from . import catalog
+            dens = float(catalog.get(f"materials.{a.material}")["density"])
+            fil = {"grams": a.grams, "usd": round(float(e["pack_usd"]) / float(e["pack_qty"]) * a.grams, 2) if e else None,
+                   "min_print_hours": round(a.grams / dens * 1000 / printpkg.profile(a.material)["max_flow"] / 3600, 2)}
+            total += fil["usd"] or 0.0
+        out = {"items": rows, "missing": missing, "filament": fil, "total_usd": round(total, 2)}
+        if a.json:
+            _p(json.dumps(out))
+        else:
+            for r in rows:
+                _p(f"{r['key']:42s} {r['qty']:g} x ${r['unit_usd']:.2f} = ${r['total_usd']:.2f}" + (f" ({r['on_hand']:g} on hand)" if r["on_hand"] else ""))
+            if fil:
+                _p(f"filament {a.material} {a.grams:g} g = ${fil['usd']}; printing at least {fil['min_print_hours']} h (lower bound)")
+            _p(f"total ${out['total_usd']:.2f}" + (f"; not in catalog/prices.json: {', '.join(missing)}" if missing else ""))
+        return 0 if not missing else 1
     if a.cmd == "fixes":
         from . import autofix
         d = ROOT / "projects" / a.project if not Path(a.project).exists() else Path(a.project)

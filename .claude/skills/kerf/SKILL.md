@@ -35,6 +35,23 @@ A review takes ~10 min, the Bash tool's foreground limit, so start it with `nohu
 (`sleep 240; pgrep -f "agent design-reviewer"`) until it has exited and review.json is written. Never finish while
 it (or a `kerf verify` its session started) is still running.
 
+## Quote mode ("QUOTE ONLY" in the request)
+Kerf Studio asks for options before a long run. Do step 0's research (light: the reference index, catalog, a few
+searches), then write the JSON file the request names and STOP (no project folder, no part files):
+```json
+{"request": "<the request in one line>",
+ "options": [{"title": "Rack-and-pinion parallel jaws", "summary": "<2-3 plain sentences: how it works, why>",
+              "parts_printed": 6, "purchased": [{"key": "servos.MG996R", "qty": 1}, {"key": "screw:M3x8:socket", "qty": 12}],
+              "cost_usd": 24.5, "cost_note": "kerf price total; 2 parts not priced yet", "print_g": 120,
+              "print_hours": 6.5, "print_note": "how you estimated it (kerf price gives the lower bound)",
+              "risks": ["<what could make it fail or cost more>"]}],
+ "recommended": 0, "assumptions": ["<anything you had to decide>"]}
+```
+2-3 genuinely different architectures (not sizes of one). Price them with `.venv/bin/kerf price <key:qty ...>
+--grams <estimated printed grams> --material <m>` (it counts Spencer's parts on hand and prints the filament cost and
+the print-time lower bound); keys come from catalog/prices.json. Prefer the parts on hand the brief lists. Say in
+`cost_note` / `print_note` what is estimated. When he picks one, the full design starts with that option in the brief.
+
 ## 0. Research first
 Read `references/INDEX.md` — the library of open designs already studied (dimensions, licenses, failure lessons per
 device type). Then run the design-researcher subagent with the brief: it reuses the index, studies what is missing,

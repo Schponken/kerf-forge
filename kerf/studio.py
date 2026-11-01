@@ -585,7 +585,31 @@ class ClaudeNotReady(ValueError):
         self.ready = ready
 
 
-def new_design(name: str, description: str) -> Job:
+INTAKE_FIELDS = {"budget": "Budget (USD, purchased parts + filament)", "power": "Power", "mounting": "Mounting",
+                 "environment": "Environment", "printer": "Printer", "material": "Material", "notes": "Other constraints"}
+QUOTES = ROOT / ".cache" / "studio" / "quotes"
+
+
+def brief(description: str, intake: dict | None = None, option: dict | None = None) -> str:
+    """The design brief Claude gets: the request, Spencer's answers to the intake questions, the parts he has on hand,
+    and (after a quote) the option he picked."""
+    from .ship import load_inventory
+    L = [description.strip()]
+    answers = [f"- {INTAKE_FIELDS[k]}: {str(v).strip()}" for k, v in (intake or {}).items() if k in INTAKE_FIELDS and str(v).strip()]
+    if answers:
+        L += ["", "Spencer's answers to the intake questions:", *answers]
+    inv = load_inventory()
+    if inv:
+        L += ["", "Parts on hand (prefer these where they fit; the BOM counts them first): "
+              + ", ".join(f"{k} x{v:g}" for k, v in sorted(inv.items()))]
+    if option:
+        L += ["", f"Spencer picked this option from the quote: {option.get('title', '')} - {option.get('summary', '')}"]
+        if option.get("purchased"):
+            L.append("Its purchased parts: " + ", ".join(f"{x.get('key')} x{x.get('qty', 1)}" for x in option["purchased"]))
+    return "\n".join(L)
+
+
+def _check_new(name: str, description: str):
     if not NAME_RE.match(name):
         raise ValueError("name: lowercase letters, digits and _ (2-41 chars), starting with a letter")
     if (PROJECTS / name).exists():
@@ -595,11 +619,44 @@ def new_design(name: str, description: str) -> Job:
     ready = claude_ready()
     if not ready["ok"]:
         raise ClaudeNotReady(ready)
+
+
+def new_design(name: str, description: str, intake: dict | None = None, option: dict | None = None) -> Job:
+    _check_new(name, description)
     exe = claude_bin()
-    prompt = (f"/kerf {description.strip()}\n\nProject folder name: projects/{name}. Spencer started this from Kerf Studio "
-              f"and is not watching the terminal: work autonomously to a finished, built and reviewed project.")
+    prompt = (f"/kerf {brief(description, intake, option)}\n\nProject folder name: projects/{name}. Spencer started this from "
+              f"Kerf Studio and is not watching the terminal: work autonomously to a finished, built and reviewed project.")
     return start_job("design", name, [exe, "-p", prompt, "--output-format", "stream-json", "--verbose"],
                      f"New design: {description.strip()[:60]}", parse=_claude_lines)
+
+
+def quote(name: str, description: str, intake: dict | None = None) -> Job:
+    """Quote first: Claude researches and writes 2-3 candidate architectures with cost, print time and part count to
+    .cache/studio/quotes/<name>.json (kerf skill, "Quote mode") and stops; nothing is designed until one is picked."""
+    _check_new(name, description)
+    QUOTES.mkdir(parents=True, exist_ok=True)
+    out = QUOTES / f"{name}.json"
+    out.unlink(missing_ok=True)
+    prompt = (f"/kerf QUOTE ONLY. {brief(description, intake)}\n\nWrite the quote to {out} as the kerf skill's Quote mode "
+              f"says and stop: do not create projects/{name} or any design files.")
+    return start_job("quote", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"],
+                     f"Options for: {description.strip()[:60]}", parse=_claude_lines)
+
+
+def read_quote(name: str) -> dict:
+    """The quote file, checked: 1-3 options, each with a title, summary, part count, cost and print hours."""
+    f = QUOTES / f"{name}.json"
+    if not NAME_RE.match(name) or not f.exists():
+        raise ValueError("no quote yet")
+    q = json.loads(f.read_text(encoding="utf-8"))
+    opts = q.get("options") if isinstance(q, dict) else None
+    if not isinstance(opts, list) or not 1 <= len(opts) <= 3:
+        raise ValueError("the quote has no options (expected 1-3)")
+    for o in opts:
+        missing = [k for k in ("title", "summary", "parts_printed", "cost_usd", "print_hours") if o.get(k) in (None, "")]
+        if missing:
+            raise ValueError(f"quote option '{o.get('title', '?')}' is missing {', '.join(missing)}")
+    return q
 
 
 # ---------------------------------------------------------------- open in apps
@@ -625,6 +682,38 @@ def open_in_app(name: str, what: str) -> dict:
 
 
 # ---------------------------------------------------------------- http
+def inventory_keys() -> list[dict]:
+    """Everything that can go in "My parts": every priced key (catalog parts and fastener / wire packs)."""
+    from .ship import load_prices
+    from .export import human_name
+    out = []
+    for k in sorted(load_prices()):
+        name = human_name(k, k) if "." in k and ":" not in k else k
+        out.append({"key": k, "name": name})
+    return out
+
+
+def save_inventory(items: dict) -> dict:
+    from .ship import INVENTORY, load_prices
+    known = set(load_prices())
+    clean = {}
+    for k, v in items.items():
+        if k not in known:
+            raise ValueError(f"unknown part key {k} (pick one from the list)")
+        q = float(v)
+        if q < 0:
+            raise ValueError(f"{k}: quantity must be 0 or more")
+        if q > 0:
+            clean[k] = int(q) if q.is_integer() else q
+    try:
+        note = json.loads(INVENTORY.read_text(encoding="utf-8")).get("_note")
+    except Exception:  # noqa: BLE001
+        note = None
+    INVENTORY.write_text(json.dumps({"_note": note or "Parts on hand: {key: quantity}.", "items": clean}, indent=2) + "\n",
+                         encoding="utf-8")
+    return clean
+
+
 def _safe(base: Path, rel: str) -> Path | None:
     p = (base / unquote(rel)).resolve()
     return p if p.is_file() and (p == base.resolve() or base.resolve() in p.parents) else None
@@ -671,6 +760,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(detail(parts[2]))
             if parts == ["api", "claude"]:
                 return self._json(claude_ready())
+            if parts == ["api", "inventory"]:
+                from .ship import load_inventory
+                return self._json({"items": load_inventory(), "keys": inventory_keys()})
+            if parts[:2] == ["api", "quote"] and len(parts) == 3:
+                return self._json(read_quote(parts[2]))
             if parts == ["api", "jobs"]:
                 return self._json({"jobs": [j.info(len(j.lines), len(j.events)) | {"tail": j.lines[-1:]} for j in
                                             sorted(JOBS.values(), key=lambda j: -j.started)]})
@@ -732,12 +826,17 @@ class Handler(BaseHTTPRequestHandler):
             return self._err("bad json")
         try:
             name = body.get("project")
-            if u.path == "/api/new":
+            if u.path in ("/api/new", "/api/quote"):
                 try:
-                    j = new_design(body.get("name", ""), body.get("description", ""))
+                    if u.path == "/api/quote":
+                        j = quote(body.get("name", ""), body.get("description", ""), body.get("intake"))
+                    else:
+                        j = new_design(body.get("name", ""), body.get("description", ""), body.get("intake"), body.get("option"))
                 except ClaudeNotReady as e:
                     return self._json({"error": str(e), "setup": e.ready["code"]}, 409)
                 return self._json({"job": j.id})
+            if u.path == "/api/inventory":
+                return self._json({"items": save_inventory(body.get("items") or {})})
             if u.path == "/api/claude-setup":
                 return self._json(claude_setup())
             if u.path == "/api/build-all":

@@ -255,3 +255,30 @@ def test_no_project_assembly_step_refers_to_a_later_part():
                 if a["parent"] not in seen:
                     bad.append(f"{f.parent.name} step {s['step']}: join onto {a['parent']}")
     assert bad == []
+
+
+def test_parts_on_hand_are_counted_first(tmp_path):
+    rows = [{"type": "purchased", "item": "servo", "qty": 3, "spec": "servos.MG996R", "note": ""},
+            {"type": "fastener", "item": "M3 x 8 mm socket head screw", "qty": 4, "spec": "", "note": ""},
+            {"type": "fastener", "item": "M3 x 12 mm socket head screw", "qty": 5, "spec": "", "note": ""}]
+    inv = {"servos.MG996R": 2, "screw:M3x8:socket": 10, "screw:M3:socket": 100}
+    s = ship.price_bom(rows, PRICES, None, inv)
+    assert rows[0]["on_hand"] == 2 and rows[0]["total_usd"] == 9.0 and "you have 2" in rows[0]["note"]
+    assert rows[1]["on_hand"] == 4 and rows[1]["total_usd"] == 0
+    # an M3 x 12 is not an M3 x 8: only the exact key (or the catalog part) counts, never the size fallback
+    assert "on_hand" not in rows[2] and rows[2]["total_usd"] == 0.4
+    assert s["total_usd"] == pytest.approx(9.0 + 0.4) and s["on_hand"] == ["servo", "M3 x 8 mm socket head screw"]
+    assert s["packs"] == {"servos.MG996R": 1, "screw:M3:socket": 1}               # nothing bought for the M3 x 8
+    f = tmp_path / "inv.json"
+    f.write_text('{"_note": "x", "items": {"servos.MG996R": 2, "bad": "x", "zero": 0}}')
+    assert ship.load_inventory(f) == {"servos.MG996R": 2.0}
+
+
+def test_kerf_price_cli_for_quotes(capsys):
+    import json as _json
+    from kerf import cli
+    assert cli.main(["price", "servos.MG996R:2", "dowel:3", "--grams", "100", "--json"]) == 0
+    out = _json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    keys = {r["key"]: r["qty"] for r in out["items"]}
+    assert keys == {"servos.MG996R": 2, "dowel:3": 1} and out["filament"]["grams"] == 100 and out["missing"] == []
+    assert cli.main(["price", "nope.part", "--json"]) == 1

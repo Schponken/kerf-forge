@@ -1,0 +1,4 @@
+{
+  "_note": "Parts Spencer already has on the bench: {key: quantity}. Keys are catalog paths (servos.MG996R) or price keys (screw:M3x8:socket). The BOM counts these first and leaves them out of the cost; new designs prefer them. Edit in Kerf Studio: My parts.",
+  "items": {}
+}

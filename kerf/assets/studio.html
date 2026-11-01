@@ -28,12 +28,16 @@ a.btn{display:inline-block;text-decoration:none;font:inherit;white-space:nowrap;
 a.btn:hover{border-color:var(--muted)}
 button small{opacity:.75;font-weight:500;margin-left:4px}
 .param .unit{color:var(--muted);font-size:12px;min-width:30px}
+.intake{margin-top:12px}.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:10px 0}
+.igrid label,.intake>label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+.qopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.qopt.rec{border-color:var(--accent)}
+#partsbtn{margin:0 14px 10px;width:calc(100% - 28px)}
 .param .affects{margin-top:2px;opacity:.85}
 button:active{transform:scale(.97)}
 button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:var(--accent-ink);font-weight:650}
 button.primary:hover{box-shadow:0 0 22px var(--glow)}
 button:disabled{opacity:.45;cursor:default;box-shadow:none;transform:none}
-input,textarea{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;transition:border-color .15s,box-shadow .15s}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;transition:border-color .15s,box-shadow .15s}
 input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
 textarea{min-height:120px;resize:vertical}
 a{color:var(--info)}
@@ -253,6 +257,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
     <button class="themebtn" onclick="quitApp()" title="Quit Kerf Studio" style="margin-left:4px">⏻</button>
   </div>
   <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
+  <button id="partsbtn" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button>
   <input id="search" placeholder="Search projects" oninput="renderList()">
   <div id="plist"></div>
   <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
@@ -411,6 +416,29 @@ function renderTab() {
   else if (t === "docs") renderDocs(el);
   else if (t === "history") renderHistory(el);
 }
+
+/* ---------- My parts (catalog/inventory.json) */
+async function showParts() {
+  S.newOpen = true; S.sel = null; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  const d = await api("/api/inventory"); S.inv = {...d.items}; S.invKeys = d.keys;
+  renderParts();
+}
+function renderParts() {
+  const rows = Object.entries(S.inv).sort();
+  $("#main").innerHTML = `<div class="head"><h1>My parts</h1><p class="desc">What you already have on the bench. New designs prefer these, and every shopping list counts them first and leaves them out of the cost.</p></div>
+    <div class="body"><div class="card">
+      <table><tr><th>Part</th><th style="width:120px">Have</th><th></th></tr>${rows.map(([k, v]) => `<tr><td><b>${esc((S.invKeys.find(x => x.key === k) || {}).name || k)}</b> <span class="note">${esc(k)}</span></td>
+        <td><input type="number" min="0" step="1" value="${v}" onchange="S.inv['${k}']=parseFloat(this.value)||0"></td><td><button onclick="delete S.inv['${k}'];renderParts()">Remove</button></td></tr>`).join("") || `<tr><td colspan="3" class="note">Nothing yet.</td></tr>`}</table>
+      <div class="row" style="margin-top:12px"><input id="invadd" list="invkeys" placeholder="Add a part: start typing (servo, M3x8, PETG…)" style="flex:1">
+        <datalist id="invkeys">${S.invKeys.map(x => `<option value="${esc(x.key)}">${esc(x.name)}</option>`).join("")}</datalist>
+        <input id="invqty" type="number" min="1" value="1" style="width:90px"><button onclick="addPart()">Add</button></div>
+      <div class="row" style="margin-top:14px"><button class="primary" onclick="saveParts()">Save</button></div></div></div>`;
+}
+function addPart() { const k = $("#invadd").value.trim(), q = parseFloat($("#invqty").value) || 1;
+  if (!S.invKeys.some(x => x.key === k)) { toast("Unknown part", "Pick one from the list (they are the parts Kerf can price).", "bad"); return; }
+  S.inv[k] = (S.inv[k] || 0) + q; renderParts(); }
+async function saveParts() { try { const r = await api("/api/inventory", {items: S.inv}); S.inv = {...r.items}; renderParts(); toast("Saved", "My parts updated. Rebuild a project to see its shopping list change.", "ok"); }
+  catch (e) { toast("Not saved", e.message, "bad"); } }
 
 /* ---------- welcome / empty state */
 function welcome() {
@@ -703,6 +731,7 @@ async function finished(j) {
   else { toast(j.label, j.state === "stopped" ? "Stopped." : st.fin ? `${st.fin.problems} problem(s) to fix.` : "Finished with an error; see the log.", "bad");
     const mc = $("#mc"); mc.classList.add("shake"); setTimeout(() => mc.classList.remove("shake"), 500); }
   if (j.kind === "trial") S.tab = "tune";
+  if (j.kind === "quote" && ok) { if (!S.newOpen) showNew(); if ($("#nname") && !$("#nname").value) { $("#nname").value = j.project; $("#nname").dataset.touched = 1; } await showQuote(j.project); return; }
   await loadProjects();
   if (j.project === S.sel || j.project === "*") await refreshDetail();
   else if (j.kind === "design" && S.projects.some(p => p.name === j.project)) select(j.project);
@@ -744,7 +773,7 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
-  S.newOpen = true; S.sel = null; renderList();
+  S.newOpen = true; S.sel = null; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
       <div id="ready"></div>
@@ -754,8 +783,22 @@ function showNew() {
         <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname()">${esc(x)}</button>`).join("")}</div>
         <label class="note" for="nname">Project folder name</label>
         <input id="nname" placeholder="desk_arm" oninput="this.dataset.touched=1">
-        <div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="primary" id="nstart" onclick="startNew()" disabled>✦ Start designing</button>
-          <span class="note">Takes roughly 1–4 hours. It keeps going while Kerf Studio stays open; watch it live in the panel.</span></div>
+        <details class="intake" open><summary><b>A few questions</b> <span class="note">(optional; they steer the design)</span></summary>
+          <div class="igrid">
+            <label>Budget, USD<input id="i_budget" placeholder="e.g. 60"></label>
+            <label>Power<select id="i_power"><option value="">not sure</option><option>USB</option><option>Mains adapter</option><option>Battery (LiPo)</option><option>Battery (AA / 18650)</option><option>None (passive)</option></select></label>
+            <label>Mounting<input id="i_mounting" placeholder="desk, wall, tripod, on the robot arm…"></label>
+            <label>Environment<select id="i_environment"><option value="">indoors</option><option>Outdoors</option><option>Hot (car, near a heater)</option><option>Wet / splashes</option></select></label>
+            <label>Printer<input id="i_printer" value="Bambu Lab A2L"></label>
+            <label>Material<select id="i_material"><option>PETG</option><option>PLA</option><option>CF-PETG</option><option>TPU (flexible parts)</option></select></label>
+          </div>
+          <label class="note">Anything else (sizes, parts you own, must-haves)<input id="i_notes"></label>
+          <p class="note">Parts in <a href="#" onclick="showParts();return false">My parts</a> are preferred and not counted in the cost.</p>
+        </details>
+        <div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="primary" id="nquote" onclick="startQuote()" disabled>✦ Show me 2–3 options first</button>
+          <button id="nstart" onclick="startNew()" disabled>Start designing now</button>
+          <span class="note">Options take a few minutes; the full design roughly 1–4 hours. It keeps going while Kerf Studio stays open.</span></div>
+        <div id="quote"></div>
       </div>
       <div class="howit">
         <div style="animation-delay:60ms"><i>🔎</i><b>Research</b>Finds proven open designs and datasheets, then picks real parts with the sizing math.</div>
@@ -771,9 +814,35 @@ function autoname() {
   const stop = new Set(["a","an","the","for","my","with","that","and","of","to","in","on","at","it","is"]);
   n.value = ($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40);
 }
-async function startNew() {
+function intake() {
+  const o = {}; for (const k of ["budget","power","mounting","environment","printer","material","notes"]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
+  return o;
+}
+async function startQuote() {
+  const r = await fetch("/api/quote", {method: "POST", headers: {"Content-Type": "application/json"},
+                                       body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value, intake: intake()})});
+  const j = await r.json().catch(() => ({error: "bad response"}));
+  if (r.ok && j.job) { S.quoteFor = $("#nname").value.trim(); watch(j.job); toast("Working out options", "Claude Code is researching 2–3 ways to build it, with cost and print time.", "ok"); return; }
+  if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
+  toast("Couldn't start", j.error || r.statusText, "bad");
+}
+async function showQuote(name) {
+  const el = $("#quote"); if (!el) return;
+  try {
+    const q = await api(`/api/quote/${name}`); S.quote = q;
+    el.innerHTML = `<h3>Options</h3><div class="qopts">${q.options.map((o, i) => `<div class="card qopt ${i === q.recommended ? "rec" : ""}">
+      <b>${esc(o.title)}</b>${i === q.recommended ? ` <span class="chip ok">recommended</span>` : ""}<p>${esc(o.summary)}</p>
+      <div class="chips"><span class="chip">$${fmt(o.cost_usd)}</span><span class="chip">${fmt(o.print_hours)} h printing</span><span class="chip">${fmt(o.parts_printed)} printed parts</span></div>
+      ${o.cost_note || o.print_note ? `<p class="note">${esc([o.cost_note, o.print_note].filter(Boolean).join(" · "))}</p>` : ""}
+      ${(o.risks || []).length ? `<p class="note">Risks: ${o.risks.map(esc).join("; ")}</p>` : ""}
+      <button class="primary" onclick="startNew(${i})">Design this one</button></div>`).join("")}</div>
+      ${(q.assumptions || []).length ? `<p class="note">Assumed: ${q.assumptions.map(esc).join("; ")}</p>` : ""}`;
+  } catch (e) { el.innerHTML = `<div class="banner bad">No options yet: ${esc(e.message)}</div>`; }
+}
+async function startNew(opt) {
+  const option = typeof opt === "number" && S.quote ? S.quote.options[opt] : null;
   const r = await fetch("/api/new", {method: "POST", headers: {"Content-Type": "application/json"},
-                                     body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value})});
+                                     body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value, intake: intake(), option})});
   const j = await r.json().catch(() => ({error: "bad response"}));
   if (r.ok && j.job) { watch(j.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
@@ -792,7 +861,7 @@ function readyCard(st) {
 function showReady(st) {
   const el = $("#ready"); if (!el) return;
   el.innerHTML = st.ok ? `<div class="banner ok">✓ Claude Code is installed, trusts this folder and is signed in.</div>` : readyCard(st);
-  const b = $("#nstart"); if (b) b.disabled = !st.ok;
+  for (const id of ["#nstart", "#nquote"]) { const b = $(id); if (b) b.disabled = !st.ok; }
 }
 async function checkReady() { const el = $("#ready"); if (el) el.innerHTML = `<div class="sk" style="height:44px;margin-bottom:14px"></div>`;
   try { showReady(await api("/api/claude")); } catch (e) { showReady({ok: false, code: "auth", why: e.message}); } }
