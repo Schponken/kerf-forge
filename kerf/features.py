@@ -274,3 +274,5 @@ def bed_chamfer(ctx, shape, size: float = 0.5):
 # ---------------------------------------------------------------- structural sections (kerf/sections.py)
 from .sections import (beam, bending_I, cavity_profile, fork_link, rib_along, section_profile,  # noqa: E402,F401
                        teardrop_channel)
+from .idioms import (boss, cable_saddle, clevis, grip_pad, servo_cradle, side_plate,  # noqa: E402,F401
+                     yoke_cheek)

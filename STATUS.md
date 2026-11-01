@@ -1106,3 +1106,17 @@ pushed for it and what I know:
   unvetted search hits plus the thingiverse.com/developers setup link made the test fail for every project that uses
   the search-first step. Studied designs are still enforced (they are cited again in the project's own table);
   new test `test_find_candidates_exempt_but_studied_links_enforced` guards both halves.
+## 2026-11-01 ~09:00 UTC — session 01S68R6S (continued): mechanical idiom library (PLAN Phase 6)
+- kerf/idioms.py (re-exported in kerf.features): `boss` (revolved root fillet, optional bore), `side_plate` +
+  `clevis` (fork of two side plates with 1.5 mm web-root fillets; raises if one fails), `yoke_cheek` (cheek on a foot,
+  root + foot-end fillets, gussets), `servo_cradle` (plate sized to a catalog servo's tab screws + its window/holes),
+  `cable_saddle` (round groove + peaked-roof tunnel for a catalog cable tie; new catalog entry wire.cable_tie_2_5,
+  HellermannTyton T18R 100 x 2.5 x 1 mm, sourced from Buerklin + RS), `grip_pad` (90 deg serrations or a dovetailed
+  TPU-insert pocket). tests/test_idioms.py: fit / wall / support-free per idiom.
+- robot_arm: the copy-pasted `yoke()` (yoke_l / yoke_r) now lives once in parts/armlib.py on idioms.yoke_cheek, and
+  `plate()` + webs + fillets in upper_arm / forearm is idioms.clevis. Geometry is bit-identical (volume, faces, bbox,
+  sites and pins of all four parts compared before/after); `kerf check robot_arm --quick` PASS. Fingerprint changes
+  (part sources) - the reviews were already stale for the Phase 6 rubric re-review.
+- Not mine, seen in the full test run: tests/test_claw_fits_arm.py::test_stand_contains_the_forearm_wrist_end fails on
+  origin/main without my changes too (32.8 mm3 of the forearm outside the claw project's wrist_stand); it belongs to
+  the robotic_gripper_claw work another session holds.

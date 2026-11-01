@@ -1482,6 +1482,16 @@
    "confidence": "typical",
    "note": "PowerStream 'Max Amps for Chassis Wiring' column; diameter_mm is the bare solid-conductor diameter (stranded wire is slightly larger; insulation not included). The page says the chassis rating is 'meant for wiring in air, and not in a bundle' (i.e. single conductor in free air); it gives no ambient/insulation temperature assumption and calls these rules of thumb. Derate for bundles/enclosed runs (the same page's 'power transmission' column is ~4-6x lower: 12 AWG 9.3 A, 18 AWG 2.3 A, 22 AWG 0.92 A). FPV practice runs short silicone leads (200 C insulation) above these figures for seconds-long bursts; this table is the conservative continuous limit. mass_g_per_m omitted: no manufacturer silicone-wire mass table was found and opened."
   },
+  "cable_tie_2_5": {
+   "width": 2.5,
+   "thickness": 1.0,
+   "length": 100.0,
+   "max_bundle_d": 22.0,
+   "loop_tensile_n": 80.0,
+   "source": "https://www.buerklin.com/en/p/12H4723/ ; https://uk.rs-online.com/web/p/cable-ties/1825596",
+   "confidence": "multiple-vendors",
+   "note": "HellermannTyton T18R (111-01929): 100 x 2.5 x 1 mm (Buerklin, opened 2026-11-01: width 2.5, thickness 1, bundle 1.5-22 mm); RS 182-5596 (T18R-HS) gives 80 N tensile, 22 mm bundle. Miniature tie used for printed tie slots and cable saddles (kerf/idioms.py)."
+  },
   "silicone": {
    "model": "Silicone-insulated tinned stranded hook-up wire, UL 3672 style (letronic SiF/UL 3672 data sheet)",
    "od_mm": {"10": 4.8, "12": 3.6, "14": 3.0, "16": 2.4, "18": 2.1, "20": 1.7, "22": 1.5, "24": 1.4},
