@@ -99,3 +99,13 @@ def test_stress_map_finds_idle_material_and_overbuilt_parts():
     assert "overbuilt" in stressmap.advice("bar", loose)
     stiff = stressmap.summarize([{"field": r["_field"], "allow": peak * 20, "disp_use": 0.9}])
     assert not stiff["overbuilt"]                                                # stiffness governs: not overbuilt
+
+
+def test_sliver_tets_are_dropped():
+    """A flat (zero-volume) tet would make the stiffness NaN; drop_slivers removes it and keeps the good one."""
+    import numpy as np
+    from kerf import fea
+    pts = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0]], float)
+    tets = np.array([[0, 1, 2, 3], [0, 1, 2, 4]])            # the second lies flat in z = 0
+    out = fea.drop_slivers(pts, tets, 1.0)
+    assert out.tolist() == [[0, 1, 2, 3]]

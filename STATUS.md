@@ -1235,3 +1235,22 @@ pushed for it and what I know:
 - Open: full builds of all six with the final engine are running; then re-reviews (the subagent quota hit its
   5-hour limit at 17:47 ET, resets 19:30 ET). robotic_gripper_desk needs its round-3 review; robotic_gripper_claw
   has a current PASS review.
+
+
+## 2026-11-01 ~18:30 UTC-5 — flying wings + calmer Studio (session 01S68R6P)
+- Studio layout (PLAN item, done): one primary Build button + "✎ Change something" + a More menu; one status pill and
+  a quiet facts line; Files & guides in one tab; short activity list; the job panel folds itself when done; the
+  embedded 3D viewer drops the header/tabs Studio already shows. Smoke test (tools/studio_smoke) passes.
+- Fixed wings (PLAN item, done): kerf/aero.py (UIUC/NACA airfoils, planform + MAC/NP, exact ruled lofts, spars,
+  elevon split) and kerf/req_aero.py (static_margin, wing_loading, stall_speed with clmax by Reynolds number,
+  spar_bending), cruise power in the electrical model; tests/test_aero.py.
+- E7 fpv_wing: full 1 m 6S FPV wing — pod (shelf, wall-to-wall teardrop spar sleeves, insert bosses), 4 wing segments
+  (servo pockets, lead channels), elevons with horns, TPU fins and nose (camera), PETG motor mount; every purchased
+  part from the catalog. New sourced catalog entries: 6S 2200 pack, Skywalker 60A V2, Matek F405-WMO
+  (`drone.fcs`), M9N-5883 (`drone.gps`), KST X08 Plus servo, carbon tube strength/modulus; prices for all.
+  Results: SM 10.5 % MAC, 72 g/dm², stall 39 km/h, spar 52 % of allowable at 6 g, TWR 1.54, 20 min cruise, AUW 1349 g.
+- Engine: rod `length` may be a param expression (+ mass from the built tube); `drone.fcs.*` counts as a flight
+  controller for bring-up; flight_time says "cruise" for wings; kerf/fea.py drops sliver tets (the pod's thin skins
+  gave a singular mesh / NaN); attribution only rebuilds parts a param reaches, with a time budget (export 15+ -> 8.6 min).
+  Tests added for each.
+- Still open for Spencer: the Studio-job scoped mode in .claude/hooks/stop_gate.py (see the entry above).

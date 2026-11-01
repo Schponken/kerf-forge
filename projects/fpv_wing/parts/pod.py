@@ -14,7 +14,7 @@ inserts, four round the front opening the nose's; the boss ends facing the bed a
 """
 from build123d import *
 import numpy as np
-from kerf import aero, iface
+from kerf import aero, iface, sections
 from kerf.features import fillet_inside
 
 import importlib.util, pathlib
@@ -23,6 +23,7 @@ L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 
 SKIN = 2.4
 SHELF_T = 2.0
+SLEEVE_WALL = {"main": 6.0, "rear": 5.0}   # PLA round the tubes: main 8 -> 20 mm, rear 6 -> 16 mm (DESIGN.md)
 BOSS_D = 10.0         # M3 heat-set insert (4.0 mm hole) + 3 mm wall each side (ENGINEERING.md s5: >= 2.4; s7 edge distance 1.5 d)
 BOSS_L = 9.0
 
@@ -118,13 +119,22 @@ def build(ctx):
     body = body - Pos(p.pod_x1, 0, lead_hole_z(p)) * Rot(0, 90, 0) * Cylinder(LEAD_HOLE_D / 2, 12)
     # why: VTX antenna MMCX lead out through the top skin to the antenna standing on the pod
     body = body - Pos(p.ant_x, 0, p.pod_top) * Cylinder(3.5, 12)
+    # spar sleeves: ONE V-shaped sleeve per tube pair, wall to wall, so a wing half's bending moment goes tube ->
+    # sleeve -> the other half's tube (the side walls only see shear); teardrop section with its point toward the
+    # bed (+X: the pod prints standing on its rear face), so the sleeve's underside needs no support
+    hull = _loft(fuselage_sections(p))
+    for which, od in (("main", p.main_od), ("rear", p.rear_od)):
+        ends = []
+        for s in (-1, 1):
+            a, b = (np.array(v) for v in L.tube_line(p, which, s))
+            u = (b - a) / np.linalg.norm(b - a)
+            ends.append(a + u * ((p.pod_hw - abs(a[1])) / abs(u[1])))           # where the line meets the side face
+            centre = a - u * (abs(a[1]) / abs(u[1]))                              # where it meets the centreline
+        sleeve = sections.teardrop_channel([tuple(ends[0]), tuple(centre), tuple(ends[1])], od + SLEEVE_WALL[which] * 2, up=(1, 0, 0))
+        body = body + ctx.add(sleeve & hull, why=f"{which} spar sleeve, wall to wall: carries the wing's root moment across", kind="sleeve")
     for s in (1, -1):
         for which, od in (("main", p.main_od), ("rear", p.rear_od)):
             a, b = L.tube_line(p, which, s)
-            a, b = np.array(a), np.array(b)
-            u = (b - a) / np.linalg.norm(b - a)
-            out_pt = a + u * ((p.pod_hw - 0.3 - (od + 6) / 2 * abs(u[0]) - abs(a[1])) / abs(u[1]))   # sleeve ends inside the side wall
-            body = body + ctx.add(aero.cylinder_between(a, out_pt, od + 6.0), why=f"{which} spar sleeve: tube bending into the side wall", kind="sleeve")
             body = body - ctx.cut(aero.cylinder_between(a, b, od + 0.2, extend=0.0), why=f"{which} spar tube, close fit", kind="spar bore")
         # wing root bolts: from inside, through the side wall into the inner segment's inserts
         loc = Location(Plane(origin=(0, s * (p.pod_hw - SKIN), 0), x_dir=(1, 0, 0), z_dir=(0, -s, 0)))

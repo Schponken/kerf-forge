@@ -164,8 +164,8 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [x] Step-by-step assembly animation in the viewer: parts fly in along the way they go on, screws turn into their holes, moving joints demonstrate their travel, the camera frames each step, the ASSEMBLY.md text for the step, Next / Back / Play, keyboard, a still-to-come ghost, per-step done ticks
 
 ## Fixed-wing aircraft + calmer Studio (Spencer, 2026-11-01: "build things like the Darkwing-1 on MakerWorld")
-- [ ] Studio layout: calmer and less overwhelming: one primary action, secondary actions in a menu, fewer chips and banners, plainer tabs, the 3D viewer's own header and button rows trimmed when it sits inside Studio
-- [ ] Flying wings (kerf/aero.py): airfoils from the UIUC database (catalog/airfoils, sourced) and NACA 4-digit, swept / tapered / twisted wing lofts, split into printable segments, spar-tube channels, elevon cut + hinge joint, servo bays; wing geometry (area, MAC, neutral point); checks `static_margin`, `wing_loading`, `stall_speed`, `spar_bending`, each with a hand-calculated test
+- [x] Studio layout: calmer and less overwhelming: one primary action, secondary actions in a menu, fewer chips and banners, plainer tabs, the 3D viewer's own header and button rows trimmed when it sits inside Studio
+- [x] Flying wings (kerf/aero.py): airfoils from the UIUC database (catalog/airfoils, sourced) and NACA 4-digit, swept / tapered / twisted wing lofts, split into printable segments, spar-tube channels, elevon cut + hinge joint, servo bays; wing geometry (area, MAC, neutral point); checks `static_margin`, `wing_loading`, `stall_speed`, `spar_bending`, each with a hand-calculated test
 - [ ] E7 `fpv_wing` — 1 m 6S FPV flying wing in the class of MakerWorld's Darkwing-1 (evals/fpv_wing/brief.md): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, acceptance.py PASS
 
 ## Phase 5 — final audit

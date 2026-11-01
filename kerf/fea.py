@@ -87,10 +87,23 @@ def _mesh(shape, size: float):
     k = list(etypes).index(4)  # 4-node tetrahedron
     tets = idx[np.asarray(enodes[k], dtype=np.int64)].reshape(-1, 4)
     pts = coords.reshape(-1, 3)
+    tets = drop_slivers(pts, tets, size)
     used = np.unique(tets)
     remap = -np.ones(len(pts), dtype=np.int64)
     remap[used] = np.arange(len(used))
     return pts[used], remap[tets]
+
+
+SLIVER_REL = 1e-6     # a tet below this fraction of size^3 counts as a sliver
+
+
+def drop_slivers(pts, tets, size: float):
+    """Near-flat sliver tets (a thin skin meshed coarse) make the element mapping singular: NaN stiffness, and the
+    solver dies (fpv_wing pod). They hold no volume to speak of (< SLIVER_REL x size^3 each), so drop them; a mesh
+    without slivers comes back unchanged."""
+    a, b, c, d = (pts[tets[:, i]] for i in range(4))
+    vol = np.abs(np.einsum("ij,ij->i", np.cross(b - a, c - a), d - a)) / 6
+    return tets[vol >= SLIVER_REL * size ** 3]
 
 
 def stiffness(basis, lam: float, mu: float, chunk: int = 8000):

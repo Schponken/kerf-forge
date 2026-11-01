@@ -135,16 +135,16 @@ wiring:
      note: "XT60 pigtail up the front of the bay, over the GPS, to the FC's BAT pads; the FC's current sensor sees everything"}
   - {id: esc_pwr, from: fc.esc, to: esc, v: 25.2, gauge: 12, color: red/black, length_mm: 120,
      note: "FC ESC pads to the ESC's input leads (cut the ESC's leads to length, no connector)"}
-  - {id: phases, from: esc.esc, to: motor, v: 25.2, gauge: 14, conductors: 3, color: black, length_mm: 190,
-     route: [[175, 0, -8], [250, 0, -6]],
-     note: "ESC output leads (14 AWG, 4 mm bullets) back along the shelf, through the rear-wall hole and the mount's centre hole to the motor; swap two phases if it spins the wrong way (pusher)"}
+  - {id: phases, from: esc.esc, to: motor, v: 25.2, gauge: 14, conductors: 3, color: black, length_mm: 220,
+     route: [[175, 0, -8], [212, 0, -8], [250, 0, -22], [272, 0, -22]],
+     note: "ESC output leads (14 AWG, 4 mm bullets) back along the shelf, through the hole low in the rear wall and the same hole in the mount, up to the motor base; swap two phases if it spins the wrong way (pusher)"}
   - {id: gps_5v, from: fc.4v5, to: gps, v: 5.0, gauge: 28, color: red/black, length_mm: 90}
   - {id: rx_5v, from: fc.4v5, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 60}
-  - {id: vtx_5v, from: fc.4v5, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 190,
-     route: [[75, 0, -6], [170, 0, -6]],
-     note: "over the ESC (between the spar sleeves' inner ends) to the VTX"}
+  - {id: vtx_5v, from: fc.4v5, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 210,
+     route: [[75, -17, -9], [170, -17, -9]],
+     note: "beside the ESC, under the spar sleeves, to the VTX"}
   - {id: cam_pwr, from: fc.vbat, to: camera, v: 25.2, gauge: 28, color: red/black, length_mm: 180,
-     route: [[-20, 0, -10]], note: "filtered Vbat pad to the camera (5-36 V), out through the front opening into the nose"}
+     route: [[30, -12, -5], [-20, 0, -5]], note: "filtered Vbat pad to the camera (5-36 V), out through the front opening into the nose"}
   - {id: servo_l_pwr, from: fc.vx, to: servo_l, v: 5.0, gauge: 26, color: red/brown, length_mm: 360,
      route: [[100, -30, -8], [lead_x1, "-(pod_hw - 3)", lead_z1], [lead_x0, "-lead_y0", lead_z0]],
      note: "the servo's own lead (+ an extension if short) out of the pocket, along the wing's channel, through the pod side wall to the FC's Vx/S5 header"}
@@ -159,9 +159,9 @@ wiring:
      route: [[100, 30, -8], [lead_x1, "pod_hw - 3", lead_z1], [lead_x0, lead_y0, lead_z0]]}
   - {id: gps_uart, from: fc, to: gps, kind: signal, gauge: 28, color: white/green, length_mm: 90, note: "GNSS TX/RX to UART3, compass SDA/SCL to I2C"}
   - {id: crsf, from: fc, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 60, note: "CRSF to UART2"}
-  - {id: vtx_video, from: fc, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 190, route: [[75, 0, -6], [170, 0, -6]],
+  - {id: vtx_video, from: fc, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 210, route: [[75, -17, -9], [170, -17, -9]],
      note: "FC VTx video out + SmartAudio/MSP UART, same path as vtx_5v"}
-  - {id: cam_video, from: camera, to: fc, kind: signal, gauge: 28, color: yellow, length_mm: 180, route: [[-20, 0, -10]]}
+  - {id: cam_video, from: camera, to: fc, kind: signal, gauge: 28, color: yellow, length_mm: 180, route: [[-20, 0, -5], [30, -12, -5]]}
 bom_extra:
   - {type: hardware, item: M3 flat washer, qty: 4, group: nose, price_key: "washer:M3", spec: "under the nose screw heads: the lugs are TPU, so tighten them snug only"}
   - {type: hardware, item: 1.2 mm music wire pushrod with Z-bend, qty: 2, price_key: "wire:music_1.2", spec: "about 60 mm: servo arm to elevon horn; Z-bend at the horn, a Z-bend or EZ connector at the servo arm"}
@@ -200,14 +200,14 @@ requirements:
   - id: pod_strength
     check: fea_static
     part: pod
-    why: "6 g pull-out: the right wing half's lift (1331 g x 6 g / 2 = 39.2 N) and its 6.48 N m root moment (spar_bending, at the pod side) enter through the right spar sleeves; the left sleeves hold the other half's equal and opposite share"
-    direction: xy            # pod prints standing on its rear face: the skins' bending stress runs along y, in the layers
+    why: "6 g pull-out: the right wing half's lift (1336 g x 6 g / 2 = 39.3 N) and its 6.48 N m root moment (spar_bending, at the pod side) enter through the right tubes' bores; the left bores hold the other half's equal and opposite share"
+    direction: xy            # pod prints standing on its rear face: the sleeves' and skins' bending stress runs along y, in the layers
     sf: 2.0
     max_disp_mm: 1.0
-    fixed: {box: [[55, -48, -6], [175, -8, 14]]}
+    fixed: {any: [{cylinder: {at: main_l, r: 4.1, tol: 0.4}}, {cylinder: {at: rear_l, r: 3.1, tol: 0.4}}]}
     loads:
-      - {box: [[55, 8, -6], [175, 48, 14]], force_n: [0, 0, 39.2]}
-      - {box: [[55, 8, -6], [175, 48, 14]], torque_nmm: 6480, axis: {at: [115, 28, 4], dir: [1, 0, 0]}}
+      - {any: [{cylinder: {at: main_r, r: 4.1, tol: 0.4}}, {cylinder: {at: rear_r, r: 3.1, tol: 0.4}}], bearing_n: [0, 0, 39.3]}
+      - {any: [{cylinder: {at: main_r, r: 4.1, tol: 0.4}}, {cylinder: {at: rear_r, r: 3.1, tol: 0.4}}], torque_nmm: 6480, axis: {at: [115, 0, 4], dir: [1, 0, 0]}}
   - {id: power, check: power_budget, why: "pack C rating, FC current sensor / PDB, ESC, BECs, XT60 and every wire inside their ratings in cruise and at full throttle"}
   - {id: xt60_plug, check: connector_access, item: xt60, direction: [-1, 0, 0], length_mm: 25,
      why: "with the nose off, the pack plugs in from the front of the bay"}

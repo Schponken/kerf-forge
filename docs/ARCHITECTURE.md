@@ -23,7 +23,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/holewall.py` | Material around every fastener hole of a printed part: a ring at hole radius + min wall (insert: catalog `insert_wall`, else 0.8 mm) must be >= 95 % material over the working depth (PROBLEM: the hole breaks out), and a ring at 1.5 d from the centre >= 90 % (WARNING: s7 edge distance) |
 | `kerf/checks.py` | Per-part print checks in print orientation (solids, validity, bed fit, watertight, overhang, wall thickness, `load_axis` across layers, mass) |
 | `kerf/requirements.py` | Engineering checks named in project.yaml (`@check("name")` registry), incl. `fea_static` |
-| `kerf/fea.py` | Linear static FEA of one part (gmsh quadratic tets + scikit-fem); force, pressure, torque and bearing loads; validated in tests/test_fea.py, tests/test_fea_loads.py |
+| `kerf/fea.py` | Linear static FEA of one part (gmsh quadratic tets + scikit-fem); force, pressure, torque and bearing loads; near-flat sliver tets (thin skins meshed coarse) are dropped before solving (`drop_slivers`); validated in tests/test_fea.py, tests/test_fea_loads.py |
 | `kerf/fea_render.py` | Von Mises colour picture per FEA check (`out/renders/fea_<id>.png`) |
 | `kerf/geom.py` | Geometry helpers: volumes, exact overlaps, meshes, mesh-based overhang / wall-thickness analysis, world points/directions of a Location |
 | `kerf/req_balance.py` | Balance requirement `cg` (assembled centre of gravity incl. purchased parts and payload, vs a reference line, over poses) |

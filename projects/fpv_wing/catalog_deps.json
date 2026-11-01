@@ -10,6 +10,7 @@
  "drone.vtx.tx800",
  "electronics.antennas.lollipop4p_mmcx_95",
  "electronics.receivers.elrs_nano",
+ "electronics.wire_misc.heatshrink_3mm",
  "fdm_holes.M3",
  "materials.PETG",
  "materials.PLA",

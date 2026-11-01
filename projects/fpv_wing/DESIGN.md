@@ -28,8 +28,8 @@ lands. Every number below is either a param in project.yaml, a catalog value, or
 - **Pod + 4 wing segments**, each fits the A2L standing on its end (wing segments 230 / 220 mm tall), so a crashed
   segment is reprinted alone. The pod carries the battery, avionics and motor; the wing halves bolt to its sides.
 - **Two carbon spars per side**: 8 x 6 mm at 28 % chord carries bending, 6 x 4 mm at 60 % holds twist and lines the
-  segments up. Left and right tubes stop 8 mm off the centreline in printed sleeves; the pod box carries the moment
-  across the middle (below).
+  segments up. Left and right tubes stop 8 mm off the centreline inside one wall-to-wall printed sleeve per pair, which
+  carries the moment across the middle (below).
 - **One pusher 2806.5 / 7 in tri-blade on 6S**, behind the pod so the prop is out of the camera view and clear of the
   ground on a belly landing; elevons inboard of the fins, clear of the 178 mm disc.
 
@@ -59,13 +59,22 @@ publishes 81 W at 75-80 km/h for its 1 m AR Wing Pro, so L/D 6 / eta 0.5 is on t
 - **Spar** (`spar_bending`): 1331 g x 6 g on an elliptical lift distribution gives 6.48 N m per half where the tubes
   leave the pod (y 50). The tubes share it by E I (same modulus): 8 x 6 mm 137 MPa, 6 x 4 mm 103 MPa against
   400 MPa / 1.5 = 267 MPa (Easy Composites' LOW figure for these exact tubes): 52 % of allowable.
-- **Across the middle**: each tube's moment goes tube -> PLA sleeve (42 mm of engagement, bearing ~2 MPa) -> side wall
-  -> the pod box (top and bottom skins ~300 mm wide at +-40 mm: I ~ 2.3e6 mm^4, ~0.1 MPa from the root moment).
-  `pod_strength` checks it by FEA (right sleeves loaded with the half-wing's lift and root moment, left sleeves held).
+- **Across the middle**: left and right tubes stop 8 mm off the centreline, inside ONE V-shaped PLA sleeve per tube
+  pair that runs from side wall to side wall (main 20 mm, rear 16 mm round, teardrop underside so it prints without
+  support). The moment goes tube -> sleeve -> the other half's tube; the side walls only carry shear. Hand check at the
+  centreline: main share 73 % x 6.48 N m = 4.73 N m on a 20 / 8.2 mm PLA tube (I = 7630 mm^4) = 6.2 MPa against PLA
+  48 MPa / 2. `pod_strength` (FEA, right bores loaded with the half-wing's lift + root moment, left bores held): peak
+  5.7 MPa, p99.9 1.5 MPa, 0.04 mm. (A first version with separate sleeves ending at the side walls put the whole
+  moment into the wall junction: 28.6 MPa p99.9, 2.3 mm - it failed and was replaced.)
+- **Pod skins**: the build calls the pod overbuilt for the 6 g case (8 % of allowable). The 2.4 mm skin is set by
+  the other jobs it has: belly landings on grass and gravel, the battery's inertia in a nose-in arrival, heat-set
+  insert bosses and a stiff enough box for the root bolts; a thinner skin would also print poorly standing 310 mm tall.
 - **Wing skins**: 1 wall + 3 % infill, like the Darkwing; the spars take the bending, the skin only air pressure and
   handling. The wing segments' layers are the airfoil outlines (printed standing), so skin stress lies in the layers.
 - **Motor mount** (`mount_strength`): 6 mm PETG plate, 45.5 N (2 x full thrust) on the motor screws, held at the 4 pod
-  bolts, crash SF 3.0.
+  bolts, crash SF 3.0: 1.5 MPa of 16. The build calls it overbuilt; it stays 6 mm on purpose: the motor screws need
+  3 mm counterbores (heads flush against the pod) over 3 mm of grip for a stock M3 x 6, and a stiff plate keeps prop
+  imbalance from buzzing the tail. It weighs 11.5 g.
 - **Wing root**: two M3 per side from inside the pod into heat-set inserts in the inner segment's root face; they only
   keep the segment on the tubes (the tubes carry lift and moment). **Maker note:** add a 100 % infill modifier
   (10 mm cylinder) round each root insert and round the servo pocket - the 3 % infill gives an insert nothing to grip.
