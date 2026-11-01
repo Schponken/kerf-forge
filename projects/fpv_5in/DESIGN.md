@@ -58,6 +58,13 @@
 | arm_1..4 | carry each motor to the body; key ridges on top (0.5 mm root fillets); covered wire channel; skid chamfer under the motor pad | flat, top face up | x (along the arm) | 103 × 32 × 12.6 |
 | top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm, r 2 root fillets) | upside down (plate on bed) | z (pillar bending, across layers: proven by top_plate_x/_y with direction z) | 130 × 42 × 41 |
 
+## Load → section
+| Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
+|---|---|---|---|
+| arm_1..4 | crash: 2 x one motor's max thrust, 33.1 N up at the motor screws → the arm → its two clamp screws (r 38 / 52) and the two key ridges (side hits) | cantilever from the outer clamp screw: 0 at the motor → 2017 N·mm at r 52 | 20 x 11 mm over the clamp and ridges, tapering to 14 mm at the motor pad (the moment falls to zero there); wire rails on the top (compression side) stiffen the outer arm; 1 % tip-deflection limit governs (arm_strength) |
+| body | each arm's crash load as a lever couple on its two screws: the inner nut pulls the body down 144 N, the arm top presses up 177 N round the outer screw (body_strength, body_strength_3 with the opposite arm's clamp) | the plate between an arm's two screws and under its ribs | 7 mm plate with two 3 x 5 mm ribs either side of each arm's screws (ramped ends, r 1 roots), key grooves for the ridges; lightening windows only where body_strength shows idle plate |
+| top_plate | a 50 g battery crash hit front/rear or sideways → battery deck → two 9 x 25 mm post pillars → the body (top_plate_x / _y) | pillar bending at the pillar roots, across the layers | 9 x 25 mm webbed pillars with r 2 roots, 4 walls; two deck windows away from the pillars (mass for T/W) |
+
 ## Interfaces
 | A | B | How | Group | Screws |
 |---|---|---|---|---|
@@ -145,6 +152,15 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   stop 0.5 mm under the top face (kerf's wire-route check also tests every screw, review round 6).
 - Slicer: set infill and wall loops per object as out/plates/PRINT_SETTINGS.md lists (4 walls on every part); the
   strength numbers assume them.
+
+## Detail: radii and corners
+- One fillet language (`style` in project.yaml): r 0.5 on the arm's channel-scale corners, r 1 on every other inside
+  corner (kerf.features.fillet_inside, boolean coves), r 1 rib roots, r 2 pillar roots, r 4 motor-pad blend, r 8 body
+  plan corners; 0.4–0.5 mm groove-mouth and bed chamfers.
+- Declared sharp (report.json `sharp_kept`, with the reason): the body's key-groove floors (the arm ridges' square
+  tops sit in them), the XT60 cradle (the connector's square body), the top-rib ends 0.5 mm inside the plate edge and
+  one cheek/gusset toe where three blends meet (too narrow to fillet, low load), the arm's cable-tie slot corners and
+  ridge inner ends, and corners under a ceiling as printed (a fillet there would overhang).
 
 ## Arm details (showcase rework, 2026-11-01)
 - Wire path: the motor's 3 phase wires (18 AWG silicone, about 2 mm across) lie side by side in a 7 mm channel on the
