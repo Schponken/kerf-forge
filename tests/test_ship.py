@@ -234,3 +234,24 @@ def test_bom_extra_keys_accept_every_key_the_pricer_reads():
     """A project.yaml bom_extra row may use every key price_bom / tidy read (`included` failed the build once)."""
     from kerf import export
     assert {"price_key", "included", "link", "group"} <= export.BOM_EXTRA_KEYS
+
+
+def test_no_project_assembly_step_refers_to_a_later_part():
+    """In every project's ASSEMBLY.md plan a part is only ever fitted onto something already on the bench or the build
+    (a bench sub-assembly is joined at its parent's step), and a servo horn always follows its servo."""
+    from kerf import assembly as A, project as P
+    root = Path(__file__).resolve().parents[1] / "projects"
+    bad = []
+    for f in sorted(root.glob("*/project.yaml")):
+        proj = P.build(P.load(str(f.parent)))
+        asm = A.plan(proj)
+        seen = set()
+        for s in ship.plan(asm, [], []):
+            seen |= set(s["items"])
+            for x in s["fits"]:
+                if x["onto"] and x["onto"]["parent"] not in seen:
+                    bad.append(f"{f.parent.name} step {s['step']}: {x['item']} onto {x['onto']['parent']}")
+            for a in s["attach"]:
+                if a["parent"] not in seen:
+                    bad.append(f"{f.parent.name} step {s['step']}: join onto {a['parent']}")
+    assert bad == []
