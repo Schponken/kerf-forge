@@ -69,15 +69,15 @@ wiring:
      route: [[-44, 0, 37], [-43, -16, 34], [-25, -16, 30]],
      note: "XT60 pigtail to the ESC battery pads; hold the XT60 with a finger when unplugging the pack (a cable tie is all that holds it rearward); pre-bend the leads toward -y before soldering and use 8-10 mm heat-shrink on the XT60 cups (20 mm reaches the rear pillar); 35 V 1000 uF low-ESR cap (ships with the stack) soldered across the pads"}
   # motor phases: 3 wires each over the body top between the arm's two ribs, down onto the arm top past the body
-  # corner, along the arm (2 ties through the arm slots) to the motor
+  # corner, into the covered channel on the arm top (floor 1 mm under the top face, 2 ties through the rail feet) to the motor
   - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
-     route: [{item: arm_1, at: [24, 0, 9]}, {item: arm_1, at: [64, 0, 9]}, {item: arm_1, at: [70, 0, 1.5]}, {item: arm_1, at: [96, 0, 1.5]}]}
+     route: [{item: arm_1, at: [24, 0, 9]}, {item: arm_1, at: [64, 0, 9]}, {item: arm_1, at: [68, 0, 0.1]}, {item: arm_1, at: [94, 0, 0.1]}]}
   - {id: ph2, from: stack.esc, to: motor_2, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
-     route: [{item: arm_2, at: [24, 0, 9]}, {item: arm_2, at: [64, 0, 9]}, {item: arm_2, at: [70, 0, 1.5]}, {item: arm_2, at: [96, 0, 1.5]}]}
+     route: [{item: arm_2, at: [24, 0, 9]}, {item: arm_2, at: [64, 0, 9]}, {item: arm_2, at: [68, 0, 0.1]}, {item: arm_2, at: [94, 0, 0.1]}]}
   - {id: ph3, from: stack.esc, to: motor_3, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
-     route: [{item: arm_3, at: [24, 0, 9]}, {item: arm_3, at: [64, 0, 9]}, {item: arm_3, at: [70, 0, 1.5]}, {item: arm_3, at: [96, 0, 1.5]}]}
+     route: [{item: arm_3, at: [24, 0, 9]}, {item: arm_3, at: [64, 0, 9]}, {item: arm_3, at: [68, 0, 0.1]}, {item: arm_3, at: [94, 0, 0.1]}]}
   - {id: ph4, from: stack.esc, to: motor_4, v: 25.2, gauge: 18, conductors: 3, color: black, length_mm: 175,
-     route: [{item: arm_4, at: [24, 0, 9]}, {item: arm_4, at: [64, 0, 9]}, {item: arm_4, at: [70, 0, 1.5]}, {item: arm_4, at: [96, 0, 1.5]}]}
+     route: [{item: arm_4, at: [24, 0, 9]}, {item: arm_4, at: [64, 0, 9]}, {item: arm_4, at: [68, 0, 0.1]}, {item: arm_4, at: [94, 0, 0.1]}]}
   # FC 5 V rail: VTX (0.75 A at 800 mW) + receiver (0.1 A) of the 3 A BEC; camera (5-36 V) on the 9 V pad, so the
   # lead's voltage drop can't take it under its 5 V minimum
   - {id: vtx_5v, from: stack.5v, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 80,

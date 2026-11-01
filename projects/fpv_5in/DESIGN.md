@@ -25,9 +25,9 @@
 - Thrust/weight: 4 × 1685 = 6740 g at full output, but the XT60 is rated 60 A burst (Holybro: 1 minute) and four
   motors at full output draw 4 × 35.08 = 140 A. Betaflight `set motor_output_limit = 74` caps each motor: by the
   propeller law (thrust ~ rpm², power ~ rpm³) 1685 × 0.74² = 923 g and 35.08 × 0.74³ = 14.22 A per motor →
-  3691 g / 613 g all-up (4-perimeter mass model, wire included) = **6.02**, peak 57.5 A (the `power` requirement).
+  3691 g / 612 g all-up (4-perimeter mass model, wire included) = **6.03**, peak 57.5 A (the `power` requirement).
   Raise the limit only with a bigger connector. T/W margin is thin: a frame that prints 3 g heavier than estimated
-  drops under 6.0 — weigh the printed parts (161 g estimate) before setting expectations.
+  drops to 6.0 — weigh the printed parts (161 g estimate) before setting expectations.
 - **The 14.22 A per motor is an ESTIMATE, not a current limit** (audit F6): BLHeli_S has no firmware current limit, the
   cube law is a steady-state propeller relation and a punch-out transient overshoots it, so the real peak may reach
   ~60 A on a full pack. The gate before freestyle: log one full-pack punch-out (Blackbox or OSD max current) and
@@ -47,7 +47,7 @@
 - FEA is on the solid model, the parts print at 30-50 % infill: per ENGINEERING.md s5 the stress peaks at the surface
   and every strength-checked part prints with 4 wall loops (out/plates/PRINT_SETTINGS.md and the plate 3MF carry
   infill + wall loops per object; mass counts them), so set those per object in the slicer (audit F3).
-- Mass: printed parts 161 g (limit 250, 4-perimeter estimate); all-up 613 g including wire. Lightened for T/W
+- Mass: printed parts 161 g (limit 250, 4-perimeter estimate); all-up 612 g including wire. Lightened for T/W
   (audit F3): arms taper from 20 mm at the ridges to 14 mm at the motor pad, two 26 × 11 side windows and a 16 mm
   centre window in the body, two windows in the top plate.
 
@@ -55,7 +55,7 @@
 | Part | Job | Print orientation | load_axis | Envelope |
 |---|---|---|---|---|
 | body | 7 mm centre plate + ribs, stack, arm clamps with key grooves, camera cage, post seats | flat, cheeks and ribs up | both diagonals | 114 × 92 × 25 |
-| arm_1..4 | carry each motor to the body; key ridges on top | flat, top face up | x (along the arm) | 103 × 32 × 12.5 |
+| arm_1..4 | carry each motor to the body; key ridges on top (0.5 mm root fillets); covered wire channel; skid chamfer under the motor pad | flat, top face up | x (along the arm) | 103 × 32 × 12.6 |
 | top_plate | battery deck, camera roof, VTX bosses, XT60 cradle, receiver/antenna tie slots, 2 post pillars (9 × 25 mm, r 2 root fillets) | upside down (plate on bed) | z (pillar bending, across layers: proven by top_plate_x/_y with direction z) | 130 × 42 × 41 |
 
 ## Interfaces
@@ -98,7 +98,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   cups end 9 mm behind the rear pillar; pre-bend the 12 AWG pigtail toward −y before soldering and use 8–10 mm
   heat-shrink on the cups (20 mm would reach the pillar); it turns out of the cradle front, passes the pillar at
   y −16 under the VTX and drops to the ESC pads. Motor phases run over the body top between each arm's ribs and
-  along the arm top (2 ties per arm). Camera and receiver leads pass the front pillar at y +15. The VTX 5 V and video
+  down into the covered channel on the arm top (2 ties per arm through the rail feet; see Arm details). Camera and receiver leads pass the front pillar at y +15. The VTX 5 V and video
   leads go up from the FC's rear-right pads through the gap over the stack to the VTX (routed, audit F10).
 - FC USB (audit F1b, `usb_access`): fit the FC with its USB-C port facing +Y; a USB-C plug (12 × 7 mm) and 45 mm of
   cable are clear from the board centre out past the body edge. The SpeedyBee manual text gives no port position, so
@@ -145,6 +145,27 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
   stop 0.5 mm under the top face (kerf's wire-route check also tests every screw, review round 6).
 - Slicer: set infill and wall loops per object as out/plates/PRINT_SETTINGS.md lists (4 walls on every part); the
   strength numbers assume them.
+
+## Arm details (showcase rework, 2026-11-01)
+- Wire path: the motor's 3 phase wires (18 AWG silicone, about 2 mm across) lie side by side in a 7 mm channel on the
+  arm top from r 64 (past the body corner, r 61.7 on the arm line) to r 95 (short of the motor bell). Its floor is
+  1 mm under the top face and two 2.5 mm rails rise 1.6 mm beside it, so the 2 mm wires sit 0.6 mm below the rail tops, out of
+  reach of a skid or prop strike. The old tie slots went through the arm at mid-depth, where the crash load's shear
+  peaks; the two 2.5 mm ties now pass through the rail feet (slot 1 mm under to 0.4 mm over the top face, leaving a
+  1.2 mm roof of rail) under the wires and over the rails. Rails: 60° outer flanks and 45° end ramps, channel ends ramp
+  45° (no sharp roots, the wires bend in gently); every concave edge of the channel is a 0.5 mm fillet except the tie
+  slots' own corners (3 mm slots the tie bears on, at r 68 / 88 where the crash moment is 74 % / 41 % of its value at the outer clamp screw).
+  Rails add about what the channel removes (arm 21.36 cm³, was 21.32), on the compression side for the crash case:
+  arm_strength FEA tip deflection 0.826 mm (limit 0.87; was 0.833), p99.9 stress 9.47 MPa (limit 11.67; was 8.99,
+  the peak moved to the rail ends). Lower rails (1.2 mm) gave 0.855 mm.
+- Key ridges: 0.5 mm fillets along each ridge's inner root and outer end, so a side hit does not bend the ridge across
+  one sharp layer line. 0.5 mm is the most the body grooves take: 0.4 mm mouth chamfer + 0.2 mm clearance − 0.1 mm
+  margin (kerf check: 0 overlapping pairs). The ridges' inner ends (x = 36, on the round root) stay square: they sit
+  against the groove's closed end.
+- Skid: the motor pad's outer bottom edge is a 1 mm 45° chamfer, printable on the bed face, so a landing or a
+  tumble slides on it instead of catching the edge; the motor screw heads sit 0.5 mm deep in their counterbores. A 2 mm chamfer
+  took the pad lip's deflection to 0.883 mm, over the limit. (A separate TPU skid like the Source One's would cost the
+  T/W margin: about 5 g of extra mass takes T/W under 6.)
 
 ## Audit B fixes (2026-10-31, session dafdd49d)
 F1 rebuilt (WIRING/ASSEMBLY show `cam_9v`); F1b `usb_access`; F2 pillar root fillets r 2 + rib root fillets r 1
