@@ -1,0 +1,62 @@
+name: 1 m FPV flying wing
+description: >-
+  A 1000 mm span, 6S pusher FPV flying wing in the class of MakerWorld's Darkwing-1 (its published specs only; its files
+  are not used). MH 45 reflexed airfoil, 28 deg leading-edge sweep, 2.5 deg washout, elevons, wingtip fins. Thin-wall
+  PLA wing segments (1 wall, 3 % infill) on carbon spar tubes, bolted to a PLA centre pod; TPU nose and fins.
+printer: Bambu Lab A2L
+layout: parts/layout.py
+params:
+  wing_span: {value: 1000, unit: mm, min: 900, max: 1060, step: 10, label: Wing span (tip to tip)}
+  wing_root_chord: {value: 250, unit: mm, min: 220, max: 280, step: 5, label: Root chord (at the centreline)}
+  wing_tip_chord: {value: 120, unit: mm, min: 100, max: 160, step: 5, label: Tip chord}
+  wing_sweep_le_deg: {value: 28, unit: "°", min: 18, max: 35, step: 1, label: Leading-edge sweep}
+  wing_twist_tip_deg: {value: -2.5, unit: "°", min: -4, max: 0, step: 0.5, label: Washout at the tip (nose down)}
+  pod_hw: {value: 50, unit: mm, min: 45, max: 60, step: 1, label: Pod half width (inner wing roots)}
+  seg_split_y: {value: 280, unit: mm, min: 250, max: 300, step: 5, label: Where the inner and outer wing segments meet}
+  spar_y0: {value: 8, unit: mm, min: 5, max: 20, step: 1, label: Spar tube inner end (off the centreline)}
+  spar_main_frac: {value: 0.28, unit: "", min: 0.22, max: 0.33, step: 0.01, label: Main spar position (fraction of chord)}
+  spar_main_y1: {value: 470, unit: mm, min: 400, max: 485, step: 5, label: Main spar outer end}
+  spar_rear_frac: {value: 0.6, unit: "", min: 0.5, max: 0.66, step: 0.01, label: Rear spar position (fraction of chord)}
+  spar_rear_y1: {value: 400, unit: mm, min: 300, max: 470, step: 5, label: Rear spar outer end}
+  hinge_frac: {value: 0.76, unit: "", min: 0.7, max: 0.82, step: 0.01, label: Elevon hinge line (fraction of chord)}
+  elevon_y0: {value: 160, unit: mm, min: 120, max: 200, step: 5, label: Elevon inner end}
+  elevon_y1: {value: 460, unit: mm, min: 420, max: 480, step: 5, label: Elevon outer end}
+  elevon_gap_deg: {value: 32, unit: "°", min: 26, max: 40, step: 1, label: Elevon top V gap}
+  elevon_throw: {value: 25, unit: "°", min: 15, max: 30, step: 1, label: Elevon throw each way}
+  root_bolt_x1: {value: 42, unit: mm, min: 20, max: 60, step: 1, label: Front wing-root bolt x}
+  root_bolt_x2: {value: 112, unit: mm, min: 90, max: 150, step: 1, label: Rear wing-root bolt x}
+  fin_h: {value: 90, unit: mm, min: 60, max: 120, step: 5, label: Fin height}
+  fin_root: {value: 110, unit: mm, min: 80, max: 120, step: 5, label: Fin root chord}
+  fin_tip: {value: 55, unit: mm, min: 40, max: 80, step: 5, label: Fin tip chord}
+  fin_sweep_deg: {value: 35, unit: "°", min: 20, max: 45, step: 1, label: Fin leading-edge sweep}
+  fin_inset: {value: 6, unit: mm, min: 4, max: 15, step: 1, label: Fin inset from the wing tip}
+  pod_x0: {value: -45, unit: mm, min: -70, max: -20, step: 5, label: Pod front face}
+  pod_x1: {value: 265, unit: mm, min: 250, max: 290, step: 5, label: Pod rear face (motor mount)}
+  pod_bottom: {value: -58, unit: mm, min: -70, max: -45, step: 1, label: Pod bottom}
+  pod_top: {value: 22, unit: mm, min: 16, max: 30, step: 1, label: Pod top}
+  tail_hw: {value: 24, unit: mm, min: 18, max: 30, step: 1, label: Pod tail half width}
+  tail_h: {value: 44, unit: mm, min: 36, max: 56, step: 1, label: Pod tail height}
+  tail_z: {value: -6, unit: mm, min: -20, max: 5, step: 1, label: Pod tail centre height (motor axis)}
+parts:
+  pod: {file: parts/pod.py, material: PLA, print_rot: [0, 90, 0], infill: 0.15, walls: 2, load_axis: Y}
+  wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
+  wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
+  wing_l2: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
+  wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
+  elevon_l: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45}
+  elevon_r: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45}
+  fin_l: {file: parts/fin.py, material: TPU, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
+  fin_r: {file: parts/fin.py, material: TPU, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
+purchased: {}
+assembly:
+  root: pod
+  joints:
+    - {parent: pod.wing_l, child: wing_l1.root}
+    - {parent: pod.wing_r, child: wing_r1.root}
+    - {parent: wing_l1.root, child: wing_l2.joint}
+    - {parent: wing_r1.root, child: wing_r2.joint}
+    - {parent: wing_l2.elevon, child: elevon_l.hinge, name: elevon_l, home: 0}
+    - {parent: wing_r2.elevon, child: elevon_r.hinge, name: elevon_r, home: 0}
+    - {parent: wing_l2.tip, child: fin_l.tip}
+    - {parent: wing_r2.tip, child: fin_r.tip}
+requirements: []

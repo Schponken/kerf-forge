@@ -79,7 +79,7 @@ layout: parts/layout.py         # optional: def layout(p, cat) -> dict of shared
                                 # (hole positions, seat heights) that several parts must agree on; added to ctx.p
 parts:                          # printed parts
   bracket: {file: parts/bracket.py, material: PETG, qty: 1, print_rot: [0, 0, 0], infill: 0.3, load_axis: X}
-  # wing parts add `airfoil: mh45` (catalog/airfoils or a NACA 4-digit name; must be the planform's wing_airfoil or wing_tip_airfoil);
+  # wing / fin parts add `airfoil: mh45` (catalog/airfoils or a NACA 4-digit name; reported per part, must exist);
   # thin-wall printed wings set `walls: 1` and a low `infill` so the mass estimate matches the print   # load_axis: main stress direction (part frame); warned if > 30 deg across layers
   # any part or purchased item may add  insert: {direction: [0, 0, -1], distance: 30}  (own frame, the way it moves
   # going IN): kerf check slides it (and what is mounted on it) in from that far and reports collisions on the way;

@@ -118,3 +118,11 @@ def test_cruise_power_and_time_by_hand(tmp_path):
     assert m["hover"]["mode"] == "cruise" and m["hover"]["power_w"] == pytest.approx(12.79, abs=0.05)
     assert m["avg_a"] == pytest.approx(1.2013, abs=0.002)
     assert m["minutes"] == pytest.approx(59.9, abs=0.1)
+
+
+def test_clmax_from_the_catalog_picks_a_safe_reynolds_number():
+    cl, re = aero.clmax_2d("mh45")                      # no Re given: the lowest listed (lower clmax = conservative)
+    assert re == 200000 and cl == pytest.approx(1.185)
+    assert aero.clmax_2d("MH45", 600000)[1] == 500000 and aero.clmax_2d("mh45", 300000)[1] == 200000
+    assert aero.thickness(aero.airfoil("mh45")) == pytest.approx(0.0985, abs=0.001)
+    assert aero.mid_z(aero.airfoil("mh45"), 0.98)[0] + aero.mid_z(aero.airfoil("mh45"), 0.98)[1] < 0   # reflexed TE

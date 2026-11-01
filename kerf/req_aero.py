@@ -55,18 +55,19 @@ def wing_loading(proj, asm, max_g_dm2, wing="wing_"):
 
 
 @check("stall_speed")
-def stall_speed(proj, asm, max_kmh, cl_max=None, airfoil=None, wing="wing_"):
+def stall_speed(proj, asm, max_kmh, cl_max=None, airfoil=None, re=None, wing="wing_"):
     """Level-flight stall speed sqrt(2 W / (rho S CLmax)) at sea level. CLmax of the wing = 0.9 x the airfoil's 2D
     clmax x cos(quarter-chord sweep) (Raymer, Aircraft Design: A Conceptual Approach, eq. 12.15) from
-    catalog/airfoils/airfoils.json, unless `cl_max` (the wing's) is given."""
+    catalog/airfoils/airfoils.json at the highest listed Reynolds number not above `re` (default: the lowest listed,
+    the conservative one), unless `cl_max` (the wing's) is given."""
     pf = _pf(proj, wing)
     g = pf.geometry()
     how = "given"
     if cl_max is None:
         af = airfoil or pf.root_airfoil
-        cl2 = float(aero.airfoil_data(af)["cl_max"])
+        cl2, at = aero.clmax_2d(af, re)
         cl_max = 0.9 * cl2 * math.cos(math.radians(g["sweep_c4_deg"]))
-        how = f"0.9 x {af} clmax {cl2:g} x cos({g['sweep_c4_deg']:.1f} deg quarter-chord sweep)"
+        how = f"0.9 x {af} clmax {cl2:g} (Re {at:,.0f}) x cos({g['sweep_c4_deg']:.1f} deg quarter-chord sweep)"
     m = _mass(proj)
     v = aero.stall_speed_kmh(m, g["area_mm2"] / 1e6, cl_max)
     return {"ok": v <= max_kmh, "value": round(v, 1), "limit": max_kmh, "bound": "max", "unit": "km/h",

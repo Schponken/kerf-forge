@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "units": "thickness_pct and camber_pct in % chord; angles in deg; Cm about the quarter chord",
+    "method": "XFOIL polars from airfoiltools.com (Ncrit 9, Mach 0), NOT wind-tunnel data. Values derived from the polar CSV that was downloaded (the 'source_polar_*' URL): clmax = largest Cl in the polar; alpha_0 and cm0 = linear interpolation at Cl = 0; cl_alpha_per_deg = least-squares slope over alpha -2..4 deg; cm_range = min..max Cm over alpha -2..6 deg (the normal flight range). XFOIL tends to over-predict 2D CLmax by ~0.05-0.15 at these Re; a 3D swept wing reaches ~0.8-0.9 of the 2D value (see projects/fpv_wing/REFERENCES.md).",
+    "retrieved": "2026-11-01",
+    "thickness_method": "max thickness from the .dat resampled on 2001 chord stations (numpy.interp of upper and lower surfaces)"
+  },
+  "MH45": {
+    "file": "catalog/airfoils/mh45.dat",
+    "designer": "Martin Hepperle",
+    "thickness_pct": 9.85,
+    "thickness_x_pct": 27.6,
+    "camber_pct": 1.71,
+    "reflexed": true,
+    "re": {
+      "200000": {"clmax": 1.185, "alpha_clmax": 12.5, "alpha_0": -1.12, "cm0": -0.0123, "cm_range": [-0.0205, -0.0068], "cl_alpha_per_deg": 0.1129, "max_cl_cd": 60.6, "alpha_max_cl_cd": 6.0},
+      "500000": {"clmax": 1.293, "alpha_clmax": 13.25, "alpha_0": -0.63, "cm0": 0.0001, "cm_range": [-0.0124, 0.0007], "cl_alpha_per_deg": 0.1218, "max_cl_cd": 81.1, "alpha_max_cl_cd": 5.75}
+    },
+    "source": "https://m-selig.ae.illinois.edu/ads/coord/mh45.dat",
+    "source_details": "http://airfoiltools.com/airfoil/details?airfoil=mh45-il",
+    "source_polar_200k": "http://airfoiltools.com/polar/csv?polar=xf-mh45-il-200000",
+    "source_polar_500k": "http://airfoiltools.com/polar/csv?polar=xf-mh45-il-500000",
+    "source_designer": "https://mh-aerotools.de/airfoils/foil_flyingwings.htm",
+    "confidence": "datasheet",
+    "note": "XFOIL, Ncrit 9. Designer: MH 40/60 series aim at 'small torsion (cm c/4) coefficients' and higher CLmax than older low-cm sections; the MH 44/45/46/49 group 'seem to work quite well, even at Reynolds numbers below 200000'. airfoiltools lists max thickness 9.8 % at 26.9 %, camber 1.7 % at 36.6 %. At a 1 m wing's 70 km/h cruise the root (~250 mm) runs Re ~330k and the tip (~170 mm) ~220k, so the 200k figures are the conservative design values."
+  },
+  "MH60": {
+    "file": "catalog/airfoils/mh60.dat",
+    "designer": "Martin Hepperle",
+    "thickness_pct": 10.08,
+    "thickness_x_pct": 27.7,
+    "camber_pct": 1.82,
+    "reflexed": true,
+    "re": {
+      "200000": {"clmax": 1.155, "alpha_clmax": 12.0, "alpha_0": -1.2, "cm0": -0.0143, "cm_range": [-0.0242, -0.0097], "cl_alpha_per_deg": 0.1128, "max_cl_cd": 61.4, "alpha_max_cl_cd": 6.0},
+      "500000": {"clmax": 1.246, "alpha_clmax": 12.0, "alpha_0": -0.7, "cm0": -0.0015, "cm_range": [-0.0152, -0.0005], "cl_alpha_per_deg": 0.1229, "max_cl_cd": 82.8, "alpha_max_cl_cd": 6.25}
+    },
+    "source": "https://m-selig.ae.illinois.edu/ads/coord/mh60.dat",
+    "source_details": "http://airfoiltools.com/airfoil/details?airfoil=mh60-il",
+    "source_polar_200k": "http://airfoiltools.com/polar/csv?polar=xf-mh60-il-200000",
+    "source_polar_500k": "http://airfoiltools.com/polar/csv?polar=xf-mh60-il-500000",
+    "source_designer": "https://mh-aerotools.de/airfoils/foil_flyingwings.htm",
+    "confidence": "datasheet",
+    "note": "XFOIL, Ncrit 9. airfoiltools: 10.1 % at 26.9 %, camber 1.7 % at 36.6 %, 'designed for flying wings'. Slightly thicker than MH 45 (more spar depth), very slightly more nose-down Cm and lower CLmax at Re 200k; an alternative root section, not needed at this size."
+  }
+}

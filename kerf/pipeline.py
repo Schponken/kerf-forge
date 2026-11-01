@@ -231,10 +231,6 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 aero.airfoil(r["airfoil"])
             except ValueError as e:
                 r = {**r, "problems": [*r["problems"], f"{iid}: {e}"]}
-            pa = str(proj.params.get("wing_airfoil", "")).lower()
-            if pa and r["airfoil"] not in (pa, str(proj.params.get("wing_tip_airfoil", "")).lower()):
-                r = {**r, "problems": [*r["problems"], f"{iid}: airfoil {r['airfoil']} is not the planform's ({pa}): "
-                                                       f"the checks would judge a different wing"]}
         rep["parts"][iid] = r
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]

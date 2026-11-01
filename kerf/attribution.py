@@ -145,19 +145,36 @@ def compute(proj, only: list[str] | None = None) -> dict:
         out[pid] = {"file": str(Path(proj.items[pid].spec["file"])), "faces": faces, "whole": [],
                     "lines": {ln: src[ln - 1].strip() for ln in sorted({f["line"] for f in faces if f["line"]}) if 0 < ln <= len(src)}}
     params = proj.data.get("params") or {}
+    # only rebuild the parts a param can reach: their own file names it, or the shared layout does (then all of them)
+    import os
+    import re
+    import time
+    lay = proj.data.get("layout")
+    lay_src = (proj.dir / lay).read_text(encoding="utf-8") if lay and (proj.dir / lay).exists() else ""
+    srcs = {pid: (proj.dir / proj.items[pid].spec["file"]).read_text(encoding="utf-8") for pid in pids}
+    budget = float(os.environ.get("KERF_ATTR_BUDGET", "240"))      # s; big lofted parts rebuild slowly
+    t0 = time.time()
     for name, spec in params.items():
         v = spec["value"] if isinstance(spec, dict) else spec
         if not isinstance(v, (int, float)) or isinstance(v, bool):
+            continue
+        if time.time() - t0 > budget:
+            for pid in pids:
+                out[pid]["partial"] = True       # the rest of the params get no face links (viewer says so)
+            break
+        word = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])")
+        reach = pids if word.search(lay_src) else [pid for pid in pids if word.search(srcs[pid])]
+        if not reach:
             continue
         step = float(spec.get("step", 0) or 0) if isinstance(spec, dict) else 0.0
         step = step or max(abs(v) * 0.02, 0.5)
         hi = spec.get("max") if isinstance(spec, dict) else None
         nv = v + step if hi is None or v + step <= hi else v - step
         try:
-            p2 = P.build(P.load(str(proj.dir), {name: nv}), only=pids)
+            p2 = P.build(P.load(str(proj.dir), {name: nv}), only=reach)
         except Exception:  # noqa: BLE001 - a param that breaks the build at +1 step simply gets no attribution
             continue
-        for pid in pids:
+        for pid in reach:
             sh = p2.items[pid].shape
             if sh is None:
                 continue

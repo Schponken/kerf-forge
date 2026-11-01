@@ -93,9 +93,26 @@ def airfoil(name: str) -> np.ndarray:
 def airfoil_data(name: str) -> dict:
     f = AIRFOILS / "airfoils.json"
     data = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
-    if name.lower() not in data:
+    hit = {k.lower(): v for k, v in data.items() if not k.startswith("_")}.get(name.lower())
+    if hit is None:
         raise ValueError(f"airfoil '{name}' has no entry in catalog/airfoils/airfoils.json (thickness, Cm0, CLmax, sources)")
-    return data[name.lower()]
+    return hit
+
+
+def clmax_2d(name: str, re: float | None = None) -> tuple[float, float]:
+    """(2D clmax, Reynolds number it is for) from airfoils.json `re: {"200000": {"clmax": ...}}`: the highest listed
+    Reynolds number not above `re` (the lowest listed when re is None or below all: lower Re = lower clmax = safe)."""
+    d = airfoil_data(name)
+    rows = sorted((float(k), v) for k, v in (d.get("re") or {}).items())
+    if not rows:
+        if "cl_max" in d:
+            return float(d["cl_max"]), float(d.get("re_ref", 0))
+        raise ValueError(f"airfoil '{name}': no clmax in catalog/airfoils/airfoils.json")
+    pick = rows[0]
+    for r, v in rows:
+        if re is not None and r <= re:
+            pick = (r, v)
+    return float(pick[1]["clmax"]), pick[0]
 
 
 def thickness(af: np.ndarray) -> float:
