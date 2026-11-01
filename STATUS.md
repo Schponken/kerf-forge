@@ -1219,3 +1219,19 @@ pushed for it and what I know:
   unchanged). `kerf check` full PASS on fingerprint 3e378b8754e0faf1; `kerf build` PASS on the identical geometry.
   #3 NOT RUN: the headless reviewer hit the account's usage limit (resets 19:30 ET). NEXT: run the design-reviewer
   on robotic_gripper_desk (out/ is current), then `kerf review-status robotic_gripper_desk`.
+
+## 2026-11-01 (evening) — session 01S68R6Q: "Every project" detail pass, fpv arm rework
+- Engine: `kerf.features.fillet_inside(ctx, body, r, keep=)` rounds every sharp inside corner kerf.edges reports with
+  kerf.coves prisms (boolean, so no OCC fillet crash), r then r/2, a cove that stops 1.5 mm short of both ends where
+  a face is interrupted, coves gmsh cannot mesh dropped (bisected), corners under a ceiling as printed left square
+  and declared (a fillet there would overhang). `ctx.keep_sharp(at, why)` declares a corner sharp on purpose
+  (report.json `sharp_kept`). A sharp corner in a stressed hot zone (zone peak >= 0.5 of allowable) is now a
+  PROBLEM; declared ones in such a zone are listed for the reviewer. Print package names X/Y faces by axis.
+- Every finished project: detail pass, `style:` radii, DESIGN.md "Load → section" + detail/overbuilt notes. pan_tilt
+  camera standoffs grown to r 3.6 bosses (edge ring 22 -> 73 %). servo_link reviewed PASS on the pre-fix geometry;
+  its findings (edge breaks, Load->section text) are fixed, so it needs a re-review.
+- fpv_5in arm: motor wires in a covered channel (rails + tie slots through the rail feet; no mid-depth slots),
+  0.5 mm ridge root fillets, 1 mm skid chamfer; arm FEA 0.826 mm / 9.47 MPa (limits 0.87 / 11.67).
+- Open: full builds of all six with the final engine are running; then re-reviews (the subagent quota hit its
+  5-hour limit at 17:47 ET, resets 19:30 ET). robotic_gripper_desk needs its round-3 review; robotic_gripper_claw
+  has a current PASS review.
