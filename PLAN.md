@@ -150,6 +150,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 
 ## Requests from Spencer (Kerf Studio)
 - [ ] `robotic_gripper_desk` — robotic gripper for the desk robot arm (Studio request 2026-10-31): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS
+- [ ] `robotic_gripper_claw` — geared two-finger claw for the desk robot arm (Studio request 2026-10-31, "a robotic gripper claw"): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, tests/test_claw_fits_arm.py
 
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
