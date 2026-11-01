@@ -1,0 +1,95 @@
+{
+ "verdict": "FAIL",
+ "fingerprint": "87a0e385868ce278",
+ "reviewer": "design-reviewer",
+ "date": "2026-11-01",
+ "summary": "The earlier major (no lead strain relief) is fixed: plate A now has a tie-slot pair. The architecture is sound, and the gripper, pinion, jaw and stand are loaded where the load path says (FEA hot spots at the finger root, cheek rod seats and plate roots, 1.4-7.9 MPa peaks against 13-24 MPa limits). One major gap blocks a PASS. The jaw carriage rides on 14 mm bores with a 25-36 mm lever to the pad, so guide friction cuts the pad force to about a third at mu = 0.24, and DESIGN.md's 30.7 N / 2.5x grip margin ignores it. The mechanism only meets the 150 g requirement at half stall if the rods are oiled, and nothing states or checks that. The remaining items are minor.",
+ "findings": [
+  {
+   "severity": "major",
+   "part": "jaw_r",
+   "issue": "The claimed grip force ignores friction and tilt in the guide bores. In DESIGN.md 'Grip force' the pad force is 30.7 N per jaw at stall and 15.4 N at half stall, a 2.5x margin over the 6.1 N needed to hold 150 g. But the carriage rides on two 14 mm bores. The rack drive acts at x about -6.6 (jaw frame) and the object load at the pad centre, x about 30. The rod axes are at x = 5, so the pad load has a 25 mm lever and the drive a 11.6 mm lever. Together they tilt the carriage with about 36 N*mm per N of grip force, reacted by radial contact at the four bore ends (L = 14 mm, L/d = 3.5). Summing the moments gives a bore friction of mu*(25P + 11.6D)/7 for a pad force P and rack force D. At mu = 0.24, the PETG-on-steel value the design uses for the pads, closing against the load gives P = D/3.1. That is about 10 N per jaw at stall, and about 5 N at the 'half stall' the DESIGN tells the owner to command. 5 N is below the 6.1 N needed for S = 2. With the light oil of assembly step 6 (mu about 0.1) P is about 0.6 D, about 9 N at half stall, which passes. So the requirement is probably met, but only if the guides are oiled, and nothing in the project says so or checks it. The jaw's bearing length / lever geometry is the weakest point of the mechanism, and DESIGN.md's 2.5x claim is wrong by 2-3x for dry bores.",
+   "fix": "Add the friction-corrected derivation to DESIGN.md 'Grip force' (P = D(1 - 1.66 mu)/(1 + 3.6 mu), with the lever arms above) and re-state the margin for mu = 0.24 dry and about 0.1 oiled. Make the oil/PTFE grease on the rods a mandatory assembly and maintenance step with the reason, and add a hand-check requirement or note for the oiled case. Better, cut the tilt: lengthen the bores (carr_len up to 20 needs the 150 mm rod, so check the stop and mass limits), shorten the finger toward finger_len 25 to cut the pad lever, or add a 3 mm ledge to the carriage at x = 0..cx so the bearing length grows without changing the stops. Then re-run jaw_fea."
+  },
+  {
+   "severity": "minor",
+   "part": "jaw_l",
+   "issue": "Same STL as jaw_r, so the guide-bore finding above applies equally. Jaw deflection use is 0.93 (0.47 of 0.5 mm) with no stiffness margin, and the rack bar passes 0.5 mm from the wing rail ends. The stress hot spot (7.9 MPa volume peak) sits at the finger root / bridge junction, on the carriage side.",
+   "fix": "Keep the first-article fit step (already in DESIGN step 0) and add a note that the same print adds the oiled sliding check (the jaw must slide on a rod with the pad loaded by hand)."
+  },
+  {
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "Margins of the swap on the real arm are thin and only hand-checked: gripper_mass passes at 162.5 of 166 g (3.5 g spare, slicer estimate), the shoulder is at 10.21 of 10.5 kg*cm, and robot_arm's own torque_* and arm_mass checks (about 888 of 900 g) are not re-run. A 5 % slicer mass error eats the whole mass margin.",
+   "fix": "Weigh the first-article gripper before mounting it on the arm and re-run robot_arm with it before anyone swaps hardware; keep the note that nothing else may be added to the wrist."
+  },
+  {
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "78 sharp inside corners remain (19 in a stressed zone, e.g. [52, 21, -24.7], [72, -17.6, 63.7]). DESIGN.md explains why (cove run-outs, servo window relief, tab seats, teardrop apexes, cheek frame-to-bar steps) and the stall FEA reads 1.7 MPa (p99.9) and 2.8 MPa volume peak against 13 MPa. Press-fit rod seats are teardrops, so the rod has less grip than a round hole would give. Rod and bore tolerances are unpublished.",
+   "fix": "Keep step 0's rod-fit coupon (bores 4.05 / 4.15 / 4.25) as a mandatory first print; if the seats are loose, glue the rod with a drop of cyanoacrylate in the seat, not in the jaw bores."
+  },
+  {
+   "severity": "minor",
+   "part": "pinion",
+   "issue": "The part docstring and DESIGN say the pinion prints flat on its horn (back) face, but print_rot [180, 0, 0] puts the front (tooth-chamfered) face on the bed and the registration rim up, which is what the render shows. The part still prints fine (bed chamfer on the front face, counterbore steps bridge 1.5 mm). The overbuilt warning stays (7 % utilisation), reasonably justified by the 20 T / horn bolt-circle geometry.",
+   "fix": "Make the docstring, DESIGN part-list row and print_rot agree (front face down), or flip print_rot if the rim-down orientation was intended."
+  },
+  {
+   "severity": "minor",
+   "part": "rod_keeper",
+   "issue": "A plain 3 mm bar: it has no locating feature, and the rods sit 0.86 mm below the cheek face, so it only stops a rod after it has backed out 0.86 mm. Two M3 clearance holes sit 2.2 mm from the bar edge.",
+   "fix": "Optional 0.5 mm locating boss into the cheek's front-bar recess so the screws are not the only registration; acceptable as is for a lid."
+  },
+  {
+   "severity": "minor",
+   "part": "stand",
+   "issue": "The stand is not free-standing with the gripper on it (head and payload about 110 mm ahead of the base); it must be screwed or clamped before power, which DESIGN.md now says. stand_fea still warns that its fixed box holds none of the stand's fastener sites (it clamps the base underside, not the two M4 holes). The two flat 7 mm bands ahead of the column need support (4.6 % of the surface). One sharp inside corner at [0, -53.9, 72.4].",
+   "fix": "Make the stand_fea fixed region the two M4 hole sites plus the bar underside, or say in the requirement's why that the whole base underside is the bench. Keep the support note in PRINT_SETTINGS; cove the one corner at R1."
+  },
+  {
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "There is no mechanical stop at the closed end: if the servo is driven past 0 deg the pads meet at 7.6 deg below it and the servo stalls against the pads (61 N at the pad ridges). Software limits are the only protection.",
+   "fix": "State the 0 deg software limit (grip pulse floor = pads just touching) in the calibration step of DESIGN.md, which already finds the touching pulse."
+  }
+ ],
+ "scores": {
+  "gripper": {
+   "load_path": 4,
+   "feature_purpose": 4,
+   "print_intent": 4,
+   "finish": 3
+  },
+  "pinion": {
+   "load_path": 4,
+   "feature_purpose": 4,
+   "print_intent": 4,
+   "finish": 4
+  },
+  "jaw_r": {
+   "load_path": 3,
+   "feature_purpose": 4,
+   "print_intent": 4,
+   "finish": 3
+  },
+  "jaw_l": {
+   "load_path": 3,
+   "feature_purpose": 4,
+   "print_intent": 4,
+   "finish": 3
+  },
+  "rod_keeper": {
+   "load_path": 3,
+   "feature_purpose": 3,
+   "print_intent": 5,
+   "finish": 4
+  },
+  "stand": {
+   "load_path": 4,
+   "feature_purpose": 4,
+   "print_intent": 3,
+   "finish": 4
+  }
+ }
+}

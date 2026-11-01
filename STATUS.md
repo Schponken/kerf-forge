@@ -1212,3 +1212,10 @@ pushed for it and what I know:
 - Open: robot_arm's own torque/mass checks are not re-run with this gripper (hand check only; arm_mass would be ~888 of
   900 g). The cove run-out ends add many 2 mm "sharp corner" entries to the gripper's warning (listed in DESIGN.md).
   `kerf build` spends ~25 min in viewer attribution (one rebuild per param); one build was OOM-killed with other builds running.
+- Reviews (design-reviewer, headless): #1 FAIL - major: no lead strain relief on the gripper -> tie-slot pair on plate A
+  (fixed, rebuilt). #2 FAIL - major: DESIGN.md grip force ignored the carriage cocking on its 14 mm rod bores (dry:
+  pad force = 0.32 x drive, 9.9 N/jaw at stall = slip factor 3.3, but only 1.6 at half stall) -> friction-corrected
+  derivation, mandatory rod lubrication, a 300 g bench hold test, closed-end software floor (DESIGN.md only; geometry
+  unchanged). `kerf check` full PASS on fingerprint 3e378b8754e0faf1; `kerf build` PASS on the identical geometry.
+  #3 NOT RUN: the headless reviewer hit the account's usage limit (resets 19:30 ET). NEXT: run the design-reviewer
+  on robotic_gripper_desk (out/ is current), then `kerf review-status robotic_gripper_desk`.
