@@ -124,12 +124,13 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
 | base | pan stall 176.5 N·mm + the 30 N knock × 42 mm (deck to tilt axis) at the 2 tab screws → 5 mm deck → end walls → floor → tripod screw/nut | deck at the tab pilots (base_fea peak 9.2 MPa at a pilot) | 5 mm deck bridging the cavity between the end walls, 4 mm plan corners; 1.5 mm floor under the 1/4-20 nut (pure compression: 5 MPa hand check) |
 
 ## 7c. Detail: radii, corners, edge distance
-- One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside, r 0.5 where
-  1 does not fit), r 1.5 at the wall and arm roots, r 2.5 yoke plate corners, r 3 wall tops, r 4 base plan corners;
+- One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside, boolean
+  coves, r 0.5 where 1 does not fit), r 1.5 at the wall and arm roots, r 2.5 yoke plate corners, r 3 wall tops, r 4 base plan corners;
   0.4–0.8 mm chamfers on bed and top edges.
 - Corners left sharp on purpose (declared with ctx.keep_sharp, listed with the reason in report.json `sharp_kept`):
   base: the servo cavity and deck window (the SG90's square case and tabs slide along them), the 1/4-20 nut's hex
-  pocket, the 0.6 mm "PT1" label letters; yoke: the label letters; bracket: the two flank corners where the pivot
+  pocket, the 0.6 mm "PT1" label letters; yoke: the label letters and two short (4-5 mm) corners boxed in by
+  a neighbouring blend, where no fillet or cove fits (their long neighbours are filleted); bracket: the two flank corners where the pivot
   knuckle's 52° teardrop point meets the −Y arm (too narrow to fillet; not in a stressed zone of bracket_fea).
 - Edge distance: the SG90 tab pilots (base, yoke: 79 % of the 1.5 d ring is material) are where the servo's own hole
   pattern puts them, and they take the self-tapping screws that come with the servo. The camera's M2 pilots were in
