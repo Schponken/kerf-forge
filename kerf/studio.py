@@ -8,6 +8,13 @@ Everything goes through the same engine and CLI as the terminal; the studio only
   - actions: check, build, open plates in Bambu Studio, show the folder
   - new design: a description goes to Claude Code (`claude -p "/kerf ..."`) running in the repo; its progress streams
     into the page and the project appears in the list when its folder exists
+  - change something: an edit request (from the 3D viewer's "Do it" or typed) goes to Claude Code as a scoped job on that
+    project (KERF_STUDIO_JOB: the stop gate judges it on that project alone)
+  - duplicate / remix: copy a project's design files under a new name, optionally with a change for Claude Code
+  - materials: per printed part, tried and saved like parameters
+  - compare: any build's geometry (kept per version) or the saved design next to a Try, as per-vertex distances
+  - thumbnails: the viewer's own picture of the model, kept per geometry fingerprint
+  - notifications: a desktop notification (macOS / notify-send) when a long job ends; the page also chimes
 Stdlib only (http.server + subprocess). Binds to 127.0.0.1: nothing is reachable from other machines.
 """
 from __future__ import annotations
@@ -155,6 +162,14 @@ def snapshot(name: str) -> dict | None:
     if th:
         shutil.copy2(d / th, dst / "thumb.png")
         entry["thumb"] = f"{stamp}/thumb.png"
+    try:                                  # the geometry, so any later build can be compared with this one
+        g = viewer_geom(d / "out" / "viewer.html")
+        if g:
+            import gzip
+            (dst / "geom.json.gz").write_bytes(gzip.compress(json.dumps(g).encode()))
+            entry["geom"] = True
+    except Exception:  # noqa: BLE001 - a version without geometry still lists its values and results
+        pass
     (dst / "version.json").write_text(json.dumps(entry, indent=1, default=str), encoding="utf-8")
     return entry
 
@@ -170,7 +185,16 @@ def history(name: str) -> list[dict]:
 
 
 def on_finished(job) -> None:
-    if job.state != "done" or job.project in ("*", None) or job.kind not in ("build", "check"):
+    try:
+        notify_job(job)
+    except Exception:  # noqa: BLE001 - a notification never breaks a job
+        pass
+    if job.state != "done" or job.project in ("*", None):
+        return
+    if job.kind == "edit" and (PROJECTS / job.project / "out" / "report.json").exists():
+        snapshot(job.project)            # Claude Code rebuilt it: a version entry, so the change can be compared
+        return
+    if job.kind not in ("build", "check"):
         return
     record_time(job.project, job.kind, (job.ended or time.time()) - job.started)
     if job.kind == "build":
@@ -322,8 +346,13 @@ def summary(name: str) -> dict:
     rep = _report(d)
     rv = _review(name)
     running = [j.info()["label"] for j in JOBS.values() if j.project == name and j.state == "running"]
+    th = thumb_info(name)
     return {"name": name, "title": data.get("name", name), "description": (data.get("description") or "").strip(),
             "built": rep is not None, "ok": bool(rep and rep.get("ok")),
+            "picture": th["url"], "picture_stale": bool(rep and rep.get("fingerprint") != th["fingerprint"]),
+            "fingerprint": rep.get("fingerprint") if rep else None, "has_viewer": (d / "out" / "viewer.html").exists(),
+            "cost_usd": (_numbers(rep) or {}).get("cost_usd"), "device_g": ((rep or {}).get("mass") or {}).get("device_g"),
+            "built_at": (d / "out" / "report.json").stat().st_mtime if rep else None,
             "problems": len(rep.get("problems", [])) if rep else None,
             "stale": bool(rep and rv.get("fingerprint") and rep.get("fingerprint") != rv.get("fingerprint")),
             "review": rv, "thumb": _thumb(d), "running": running, "build_s": estimate(name, "build")}
@@ -373,7 +402,10 @@ def detail(name: str) -> dict:
             "history": history(name),
             "estimate": {"build": estimate(name, "build"), "check": estimate(name, "check")},
             "summary_numbers": _numbers(rep),
+            "materials": materials(), "part_materials": part_materials(name),
             "trial": {"params": trial_rep.get("params") if trial_rep else None, "ok": trial_rep.get("ok") if trial_rep else None,
+                      "materials": {k: v.get("material") for k, v in (trial_rep.get("parts") or {}).items()} if trial_rep else None,
+                      "mass": trial_rep.get("mass") if trial_rep else None,
                       "problems": trial_rep.get("problems") if trial_rep else None,
                       "requirements": trial_rep.get("requirements") if trial_rep else None} if trial_rep else None}
 
@@ -430,13 +462,15 @@ def write_params(path: Path, values: dict) -> list[str]:
     return changed
 
 
-def trial_copy(name: str, values: dict) -> Path:
-    """Scratch copy of a project (sources only) with new param values; the real project is never touched."""
+def trial_copy(name: str, values: dict, mats: dict | None = None) -> Path:
+    """Scratch copy of a project (sources only) with new param values and part materials; the real project is never touched."""
     src, dst = PROJECTS / name, TRIALS / name
     if dst.exists():
         shutil.rmtree(dst)
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("out", "__pycache__", "review.json"))
     write_params(dst / "project.yaml", values)
+    if mats:
+        write_materials(dst / "project.yaml", mats)
     return dst
 
 
@@ -627,7 +661,7 @@ def new_design(name: str, description: str, intake: dict | None = None, option: 
     prompt = (f"/kerf {brief(description, intake, option)}\n\nProject folder name: projects/{name}. Spencer started this from "
               f"Kerf Studio and is not watching the terminal: work autonomously to a finished, built and reviewed project.")
     return start_job("design", name, [exe, "-p", prompt, "--output-format", "stream-json", "--verbose"],
-                     f"New design: {description.strip()[:60]}", parse=_claude_lines)
+                     f"New design: {description.strip()[:60]}", parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
 
 
 def quote(name: str, description: str, intake: dict | None = None) -> Job:
@@ -679,6 +713,294 @@ def open_in_app(name: str, what: str) -> dict:
     if r.returncode != 0:
         raise ValueError((r.stderr or r.stdout or "open failed").strip()[:300])
     return {"opened": True, "paths": files}
+
+
+# ---------------------------------------------------------------- settings + notifications
+SETTINGS = ROOT / ".cache" / "studio_settings.json"
+DEFAULT_SETTINGS = {"notify": True, "sound": True}
+NOTIFY_MIN_S = 20.0          # quick checks finish while you watch: no notification for those
+
+
+def settings() -> dict:
+    try:
+        return {**DEFAULT_SETTINGS, **json.loads(SETTINGS.read_text(encoding="utf-8"))}
+    except Exception:  # noqa: BLE001
+        return dict(DEFAULT_SETTINGS)
+
+
+def save_settings(new: dict) -> dict:
+    s = settings()
+    s.update({k: bool(v) for k, v in new.items() if k in DEFAULT_SETTINGS})
+    SETTINGS.parent.mkdir(parents=True, exist_ok=True)
+    SETTINGS.write_text(json.dumps(s), encoding="utf-8")
+    return s
+
+
+def job_outcome(job) -> tuple[bool, str]:
+    """(good, one line) for a finished job: the report's verdict for builds / checks / tries, else how it ended."""
+    secs = (job.ended or time.time()) - job.started
+    took = f"{int(secs // 60)}:{int(secs % 60):02d}"
+    if job.state == "stopped":
+        return False, f"stopped after {took}"
+    if job.kind in ("build", "check", "trial") and job.project not in ("*", None):
+        rep = _report((TRIALS if job.kind == "trial" else PROJECTS) / job.project)
+        if rep is not None and job.state in ("done", "failed"):
+            n = len(rep.get("problems") or [])
+            return (not n), (f"every check passes ({took})" if not n else f"{n} problem{'s' if n > 1 else ''} to fix ({took})")
+    if job.state == "done":
+        return True, f"finished ({took})" + (": Claude Code is done" if job.kind in ("design", "edit") else "")
+    return False, f"stopped with an error after {took}"
+
+
+def _osa(text: str) -> str:
+    """An AppleScript string literal."""
+    return '"' + str(text).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def notify(title: str, message: str, good: bool = True) -> bool:
+    """A desktop notification: macOS (osascript, with a sound) or Linux (notify-send). False when there is no way."""
+    try:
+        if platform.system() == "Darwin":
+            script = (f"display notification {_osa(message)} with title \"Kerf Studio\" subtitle {_osa(title)} "
+                      f"sound name \"{'Glass' if good else 'Basso'}\"")
+            return subprocess.run(["osascript", "-e", script], capture_output=True, timeout=10).returncode == 0
+        if shutil.which("notify-send"):
+            return subprocess.run(["notify-send", "-a", "Kerf Studio", f"Kerf Studio: {title}", message],
+                                  capture_output=True, timeout=10).returncode == 0
+    except Exception:  # noqa: BLE001 - no notification is better than a broken job
+        return False
+    return False
+
+
+def notify_job(job) -> bool:
+    """Notify about a finished job that ran long enough to have been left alone, unless switched off or stopped by hand."""
+    secs = (job.ended or time.time()) - job.started
+    if not settings()["notify"] or job.state == "stopped" or (secs < NOTIFY_MIN_S and job.kind not in ("design", "edit")):
+        return False
+    good, line = job_outcome(job)
+    return notify(job.label, line, good)
+
+
+# ---------------------------------------------------------------- change something (Claude Code edit job)
+def edit_job(name: str, request: str, title: str = "") -> Job:
+    """A change to one project, done by Claude Code in the repo: make it, check, build, review, commit and push. The job
+    is scoped: KERF_STUDIO_JOB tells the stop gate to judge it on this project, not on every open PLAN item."""
+    if name not in project_names():
+        raise ValueError("no such project")
+    if not request.strip():
+        raise ValueError("describe the change")
+    ready = claude_ready()
+    if not ready["ok"]:
+        raise ClaudeNotReady(ready)
+    prompt = (f"{request.strip()}\n\nThis change request comes from Kerf Studio for projects/{name}; Spencer is not watching "
+              f"the terminal. Do exactly this change, following CLAUDE.md, for projects/{name} only: make it, run "
+              f"`.venv/bin/kerf check {name}` until it passes, `.venv/bin/kerf build {name}`, read the renders, get a "
+              f"design-reviewer pass, append a dated STATUS.md entry, commit and push. Do not start other PLAN work. "
+              f"If the change can't be made without breaking a check, say why and leave the design as it was.")
+    label = f"Change {name}: {(title or request).strip().splitlines()[0][:60]}"
+    return start_job("edit", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"], label,
+                     parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
+
+
+# ---------------------------------------------------------------- duplicate / remix
+COPY_SKIP = ("out", "__pycache__", "review.json", ".pytest_cache")
+
+
+def duplicate(src: str, name: str, title: str = "") -> Path:
+    """Copy a project's design files (project.yaml, parts, DESIGN.md, REFERENCES.md, ...) to projects/<name>; built
+    files and the review stay behind (a copy is a new design: it is built and reviewed on its own)."""
+    if src not in project_names():
+        raise ValueError("no such project")
+    if not NAME_RE.match(name):
+        raise ValueError("name: lowercase letters, digits and _ (2-41 chars), starting with a letter")
+    dst = PROJECTS / name
+    if dst.exists():
+        raise ValueError(f"projects/{name} already exists")
+    new_title = (title or "").strip() or f"{_read_yaml(src).get('name', src)} (copy)"
+    shutil.copytree(PROJECTS / src, dst, ignore=shutil.ignore_patterns(*COPY_SKIP))
+    y = dst / "project.yaml"
+    text = y.read_text(encoding="utf-8")
+    if re.search(r"^name:", text, re.M):
+        new = re.sub(r"^name:[^\n#]*?(\s*#.*)?$", lambda m: f"name: {json.dumps(new_title)}" + (m.group(1) or ""), text, count=1, flags=re.M)
+    else:
+        new = f"name: {json.dumps(new_title)}\n" + text
+    if (yaml.safe_load(new) or {}).get("name") != new_title:
+        shutil.rmtree(dst)
+        raise ValueError("could not set the copy's name in project.yaml")
+    y.write_text(new, encoding="utf-8")
+    return dst
+
+
+# ---------------------------------------------------------------- materials per printed part
+def materials() -> list[dict]:
+    """Catalog materials with the numbers the checks use, plus the filament price when catalog/prices.json has one."""
+    from . import catalog
+    try:
+        prices = json.loads((ROOT / "catalog" / "prices.json").read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        prices = {}
+    out = []
+    for k, m in (catalog.load().get("materials") or {}).items():
+        if not isinstance(m, dict) or k.startswith("_"):
+            continue
+        pr = prices.get(f"material:{k}") or {}
+        usd = round(pr["pack_usd"] / pr["pack_qty"] * 1000, 2) if pr.get("pack_usd") and pr.get("pack_qty") else None
+        out.append({"key": k, "density": m.get("density"), "xy_mpa": m.get("tensile_strength_xy_mpa"),
+                    "z_mpa": m.get("tensile_strength_z_mpa"), "modulus_mpa": m.get("youngs_modulus_mpa"), "usd_per_kg": usd,
+                    "source": m.get("source")})
+    return out
+
+
+def part_materials(name: str) -> dict:
+    return {k: v.get("material", "PETG") for k, v in (_read_yaml(name).get("parts") or {}).items() if isinstance(v, dict)}
+
+
+def write_materials(path: Path, values: dict) -> list[str]:
+    """Set parts.<part>.material in a project.yaml in place (flow `{...}` or block style), keeping every comment."""
+    text = path.read_text(encoding="utf-8")
+    data = yaml.safe_load(text) or {}
+    parts = data.get("parts") or {}
+    known = {m["key"] for m in materials()}
+    changed = []
+    for part, mat in values.items():
+        if part not in parts or not isinstance(parts[part], dict):
+            raise ValueError(f"unknown printed part {part}")
+        if mat not in known:
+            raise ValueError(f"unknown material {mat}")
+        if parts[part].get("material", "PETG") == mat:
+            continue
+        sec = re.search(r"^parts:[ \t]*(#.*)?$", text, re.M)
+        m = re.compile(rf"^(?P<ind>[ \t]+){re.escape(part)}:[ \t]*(?P<rest>.*)$", re.M).search(text, sec.end() if sec else 0)
+        if not m:
+            raise ValueError(f"could not find parts.{part} in {path.name}")
+        ind = len(m.group("ind"))
+        nxt = re.compile(rf"^[ \t]{{0,{ind}}}\S", re.M).search(text, m.end())
+        end = nxt.start() if nxt else len(text)
+        seg = text[m.start():end]
+        if re.search(r"\bmaterial:", seg):
+            seg2 = re.sub(r"(\bmaterial:[ \t]*)([^,}\n#]+?)([ \t]*[,}\n#])", lambda x: x.group(1) + mat + x.group(3), seg, count=1)
+        elif m.group("rest").lstrip().startswith("{"):
+            seg2 = seg.replace("{", "{material: " + mat + ", ", 1)
+        else:
+            child = re.search(r"\n([ \t]+)\S", seg)
+            pad = child.group(1) if child else " " * (ind + 2)
+            nl = seg.index("\n") if "\n" in seg else len(seg)
+            seg2 = seg[:nl] + f"\n{pad}material: {mat}" + seg[nl:]
+        text = text[:m.start()] + seg2 + text[end:]
+        changed.append(part)
+    check = yaml.safe_load(text) or {}
+    for part, mat in values.items():
+        if ((check.get("parts") or {}).get(part) or {}).get("material", "PETG") != mat:
+            raise ValueError(f"material write check failed for {part}")
+    if changed:
+        path.write_text(text, encoding="utf-8")
+    return changed
+
+
+# ---------------------------------------------------------------- geometry for compare + thumbnails
+THUMBS = ROOT / ".cache" / "studio_thumbs"
+
+
+def viewer_geom(path: Path) -> dict | None:
+    """The solid items' meshes a viewer.html carries (world, home pose): {fingerprint, items: [{id, role, verts, tris}]}."""
+    if not Path(path).exists():
+        return None
+    from .viewer import embedded
+    d = embedded(path)
+    if not d:
+        return None
+    return {"fingerprint": (d.get("report") or {}).get("fingerprint"),
+            "items": [{k: it[k] for k in ("id", "role", "verts", "tris")} for it in d["items"] if it.get("role") != "keepout"]}
+
+
+def _geom_of(name: str, which: str) -> tuple[dict | None, str]:
+    """'saved' = the project's current build, 'trial' = the last Try, else a History stamp. (geometry, label)"""
+    if which == "saved":
+        return viewer_geom(PROJECTS / name / "out" / "viewer.html"), "the saved design"
+    if which == "trial":
+        return viewer_geom(TRIALS / name / "out" / "viewer.html"), "the tried values"
+    if not re.fullmatch(r"\d{8}-\d{6}", which or ""):
+        raise ValueError("no such version")
+    f = HISTORY / name / which / "geom.json.gz"
+    if not f.exists():
+        raise ValueError("that version has no stored geometry (built before compare existed)")
+    import gzip
+    v = json.loads(gzip.decompress(f.read_bytes()))
+    return v, time.strftime("the build of %b %d, %H:%M", time.strptime(which, "%Y%m%d-%H%M%S"))
+
+
+def _mesh(it: dict):
+    import base64
+    import numpy as np
+    import trimesh
+    v = np.frombuffer(base64.b64decode(it["verts"]), np.float32).reshape(-1, 3).astype(float)
+    t = np.frombuffer(base64.b64decode(it["tris"]), np.uint32).reshape(-1, 3)
+    return trimesh.Trimesh(v, t, process=False), v
+
+
+def _dist_b64(mesh, pts) -> tuple[str, float]:
+    """Distance (mm) of each point to a mesh surface, stored as round(mm * 20) in one byte (0.05 mm steps, 12.75 max)."""
+    import base64
+    import numpy as np
+    from trimesh.proximity import closest_point
+    if len(pts) == 0 or len(mesh.faces) == 0:
+        return base64.b64encode(np.full(len(pts), 255, np.uint8).tobytes()).decode(), float("inf") if len(pts) else 0.0
+    _, d, _ = closest_point(mesh, pts)
+    q = np.clip(np.round(d * 20), 0, 255).astype(np.uint8)
+    return base64.b64encode(q.tobytes()).decode(), float(np.max(d))
+
+
+def compare(name: str, source: str, target: str = "saved") -> dict:
+    """What the viewer needs to draw `source` as a ghost over `target`: the ghost meshes, per-vertex distances both ways
+    and a per-part summary (0.05 mm steps). A part on one side only is 'added' / 'removed'."""
+    src, label = _geom_of(name, source)
+    tgt, _ = _geom_of(name, target)
+    if not src or not tgt:
+        raise ValueError("build first: there is no 3D model to compare")
+    S = {it["id"]: it for it in src["items"]}
+    Tg = {it["id"]: it for it in tgt["items"]}
+    dist, gdist, summary = {}, {}, []
+    for iid, it in Tg.items():
+        if iid not in S:
+            summary.append({"id": iid, "status": "added", "max_mm": None})
+            continue
+        if it["verts"] == S[iid]["verts"] and it["tris"] == S[iid]["tris"]:
+            summary.append({"id": iid, "status": "same", "max_mm": 0.0})
+            continue
+        m_s, v_s = _mesh(S[iid])
+        m_t, v_t = _mesh(it)
+        dist[iid], a = _dist_b64(m_s, v_t)
+        gdist[iid], b = _dist_b64(m_t, v_s)
+        mx = max(a, b)
+        summary.append({"id": iid, "status": "changed" if mx > 0.05 else "same", "max_mm": round(mx, 2)})
+    summary += [{"id": i, "status": "removed", "max_mm": None} for i in S if i not in Tg]
+    moved = {x["id"] for x in summary if x["status"] in ("changed", "removed")}
+    return {"label": label, "items": [S[i] for i in S if i in moved], "dist": dist, "gdist": gdist, "summary": summary,
+            "fingerprints": [src.get("fingerprint"), tgt.get("fingerprint")]}
+
+
+def save_thumb(name: str, data_url: str, fingerprint: str | None) -> dict:
+    import base64
+    if not data_url.startswith("data:image/png;base64,"):
+        raise ValueError("expected a PNG data URL")
+    raw = base64.b64decode(data_url.split(",", 1)[1])
+    if not raw.startswith(b"\x89PNG") or len(raw) > 4_000_000:
+        raise ValueError("not a PNG (or too big)")
+    THUMBS.mkdir(parents=True, exist_ok=True)
+    (THUMBS / f"{name}.png").write_bytes(raw)
+    (THUMBS / f"{name}.json").write_text(json.dumps({"fingerprint": fingerprint, "time": time.time()}), encoding="utf-8")
+    return {"ok": True}
+
+
+def thumb_info(name: str) -> dict:
+    f = THUMBS / f"{name}.png"
+    if not f.exists():
+        return {"url": None, "fingerprint": None}
+    try:
+        meta = json.loads((THUMBS / f"{name}.json").read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        meta = {}
+    return {"url": f"/thumb/{name}.png?v={int(f.stat().st_mtime)}", "fingerprint": meta.get("fingerprint")}
 
 
 # ---------------------------------------------------------------- http
@@ -765,6 +1087,19 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"items": load_inventory(), "keys": inventory_keys()})
             if parts[:2] == ["api", "quote"] and len(parts) == 3:
                 return self._json(read_quote(parts[2]))
+            if parts == ["api", "settings"]:
+                return self._json(settings())
+            if parts == ["api", "compare"]:
+                nm = q.get("project", [""])[0]
+                if nm not in project_names():
+                    return self._err("no such project", 404)
+                try:
+                    return self._json(compare(nm, q.get("source", ["saved"])[0], q.get("target", ["saved"])[0]))
+                except ValueError as e:
+                    return self._err(e)
+            if parts[0] == "thumb" and len(parts) == 2 and parts[1].endswith(".png"):
+                f = _safe(THUMBS, parts[1])
+                return self._send(200, f.read_bytes(), "image/png") if f else self._err("not found", 404)
             if parts == ["api", "jobs"]:
                 return self._json({"jobs": [j.info(len(j.lines), len(j.events)) | {"tail": j.lines[-1:]} for j in
                                             sorted(JOBS.values(), key=lambda j: -j.started)]})
@@ -839,6 +1174,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"items": save_inventory(body.get("items") or {})})
             if u.path == "/api/claude-setup":
                 return self._json(claude_setup())
+            if u.path == "/api/settings":
+                return self._json(save_settings(body))
+            if u.path == "/api/notify-test":
+                return self._json({"shown": notify("Notifications are on", "You'll get one like this when a long job finishes.")})
             if u.path == "/api/build-all":
                 todo = [n for n in project_names() if body.get("all") or _report(PROJECTS / n) is None]
                 if not todo:
@@ -863,7 +1202,7 @@ class Handler(BaseHTTPRequestHandler):
                     j = start_job("build", name, kerf_cmd("build", name), f"Build {name}", env=PROGRESS_ENV)
                 elif action == "trial":
                     vals = {k: float(v) for k, v in (body.get("values") or {}).items()}
-                    trial_copy(name, vals)
+                    trial_copy(name, vals, {str(k): str(v) for k, v in (body.get("materials") or {}).items()})
                     j = start_job("trial", name, [PY, "-m", "kerf.studio", "_trial", name], f"Try new values on {name}", env=PROGRESS_ENV)
                 else:
                     return self._err(f"unknown action {action}")
@@ -875,6 +1214,26 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(open_in_app(name, body.get("what")))
             if u.path == "/api/restore":
                 return self._json({"changed": restore(name, str(body.get("stamp", "")))})
+            if u.path == "/api/edit":
+                try:
+                    j = edit_job(name, str(body.get("request", "")), str(body.get("title", "")))
+                except ClaudeNotReady as e:
+                    return self._json({"error": str(e), "setup": e.ready["code"]}, 409)
+                return self._json({"job": j.id})
+            if u.path == "/api/duplicate":
+                dst = duplicate(name, str(body.get("name", "")), str(body.get("title", "")))
+                out = {"name": dst.name}
+                if str(body.get("change", "")).strip():
+                    try:
+                        out["job"] = edit_job(dst.name, str(body["change"]), str(body.get("change", ""))[:60]).id
+                    except ClaudeNotReady as e:
+                        out["setup"] = e.ready["code"]
+                        out["error"] = f"copied, but the change didn't start: {e}"
+                return self._json(out)
+            if u.path == "/api/save-materials":
+                return self._json({"changed": write_materials(PROJECTS / name / "project.yaml", {str(k): str(v) for k, v in (body.get("materials") or {}).items()})})
+            if u.path == "/api/thumb":
+                return self._json(save_thumb(name, str(body.get("png", "")), body.get("fingerprint")))
             return self._err("not found", 404)
         except ValueError as e:
             return self._err(e)

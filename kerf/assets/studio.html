@@ -232,6 +232,34 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;place-items:center;z-index:11;cursor:zoom-out}
 .lightbox img{max-width:92vw;max-height:92vh;background:#fff;border-radius:12px}
 
+/* modal (change something, duplicate) */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;place-items:center;z-index:12;padding:20px}
+#modal.open{display:grid;animation:fadeIn .2s both}
+#modal .box{width:min(620px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px;animation:popIn .3s cubic-bezier(.2,.9,.3,1.2) both}
+#modal h2{margin:0 0 6px;font-size:18px}
+#modal label{display:block;margin:12px 0 5px;font-size:12.5px;color:var(--muted)}
+#modal textarea{min-height:110px}
+#modal .row{justify-content:flex-end;margin-top:16px}
+/* compare bar over the 3D view */
+.cmpbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.cmpbar select{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:6px 10px}
+/* materials */
+.mats td,.mats th{padding:6px 8px}
+.mats select{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.mats tr.changed td:first-child{color:var(--accent);font-weight:650}
+/* all-projects grid */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;animation:fadeUp .4s both}
+.pcard:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 12px 34px var(--glow)}
+.pcard .pic{aspect-ratio:4/3;background:radial-gradient(circle at 50% 40%,var(--panel2),var(--bg2)) center/contain no-repeat;display:grid;place-items:center;color:var(--muted);font-size:34px;position:relative}
+.pcard .pic img{width:100%;height:100%;object-fit:contain}
+.pcard .pic .st{position:absolute;left:10px;top:10px}
+.pcard .meta{padding:12px 14px}
+.pcard .meta b{display:block;font-size:15px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .meta span{font-size:12px;color:var(--muted)}
+.sidebtns{display:flex;gap:6px;margin:0 14px 8px}
+.sidebtns button{flex:1;padding:6px 8px;font-size:12.5px}
+.bell.off{opacity:.45}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{50%{opacity:.35}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -258,6 +286,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   </div>
   <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
   <button id="partsbtn" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button>
+  <div class="sidebtns"><button onclick="showGrid()" title="Every project as a big card">▦ All projects</button><button class="bell" id="bellbtn" onclick="toggleBell()" title="Notify me when a long job finishes" style="flex:0 0 auto">🔔</button></div>
   <input id="search" placeholder="Search projects" oninput="renderList()">
   <div id="plist"></div>
   <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
@@ -275,9 +304,10 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 <div id="toasts"></div>
 <canvas id="burst"></canvas>
 <div class="lightbox" id="lb" onclick="this.style.display='none'"><img id="lbimg" alt=""></div>
+<div id="modal" onclick="if(event.target===this)closeModal()"><div class="box" id="modalbox"></div></div>
 
 <script>
-const S = {projects: [], claude: false, platform: "", sel: null, detail: null, tab: "model", edits: {}, job: null, since: 0, esince: 0,
+const S = {projects: [], claude: false, platform: "", sel: null, detail: null, tab: "model", edits: {}, medits: {}, job: null, since: 0, esince: 0, settings: {notify: true, sound: true},
            ev: [], lines: [], doc: null, newOpen: false, seenDone: new Set(), shown: new Set(), listed: false, fails: 0, closed: false};
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -338,7 +368,9 @@ async function loadProjects() {
     const d = await api("/api/projects");
     S.projects = d.projects; S.claude = d.claude; S.platform = d.platform;
     renderList();
-    if (!S.sel && S.projects.length && !S.newOpen) select(S.projects[0].name);
+    if (!S.sel && S.projects.length && !S.newOpen && !S.grid) select(S.projects[0].name);
+    if (S.grid) showGrid();
+    fillPictures();
     if (!S.projects.length && !S.newOpen) welcome();
     S.fails = 0;
   } catch (e) { if (++S.fails >= 3 && !S.closed) closedScreen(); }
@@ -352,13 +384,13 @@ function renderList() {
   $("#plist").innerHTML = S.projects.filter(p => !q || (p.title + p.name + p.description).toLowerCase().includes(q)).map((p, i) => {
     const run = p.running && p.running.length;
     return `<div class="pitem ${p.name === S.sel ? "sel" : ""}" style="${first ? `animation:fadeUp .35s ${i * 40}ms both` : ""}" onclick="select('${p.name}')">
-      <div class="thumb ${run ? "running" : ""}" style="${p.thumb ? `background-image:url('${fileUrl(p.name, p.thumb)}')` : ""}">${p.thumb ? "" : "◇"}</div>
+      <div class="thumb ${run ? "running" : ""}" style="${pic(p) ? `background-image:url('${pic(p)}');background-size:contain;background-color:var(--panel2)` : ""}">${pic(p) ? "" : "◇"}</div>
       <div class="pmeta"><b>${esc(p.title)}</b><span><i class="sdot ${run ? "run" : !p.built ? "" : p.ok ? "ok" : "bad"}"></i>${run ? "working…" : !p.built ? "not built yet" : p.ok ? "checks pass" : p.problems + " problems"}${p.review && p.review.ok ? " · reviewed" : ""}</span></div>
     </div>`; }).join("") || `<div class="note" style="padding:10px">No projects.</div>`;
 }
 
 async function select(name, keepTab) {
-  S.sel = name; S.newOpen = false; S.edits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
+  S.sel = name; S.newOpen = false; S.grid = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
   let d;
@@ -390,6 +422,8 @@ function renderProject() {
         <button onclick="openIn('plates')" ${plates ? "" : "disabled"} title="Open the print plates in Bambu Studio">▦ Open plates in Bambu Studio</button>
         <button onclick="openIn('folder')">📁 Show files</button>
         <a class="btn" href="/export/${d.name}.zip" download title="Plates, parts, STEP, BOM, guides, drawings, bring-up program and the design files in one zip">⤓ Export zip</a>
+        <button onclick="openEdit('', {})" title="Describe a change; Claude Code makes it, re-checks, rebuilds and gets it reviewed">✎ Change something</button>
+        <button onclick="openDuplicate()" title="Copy this design under a new name, optionally with a change">⧉ Duplicate</button>
       </div>
     </div>
     <nav class="tabs" id="tabs">${tabs.map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}<span class="uline" id="uline"></span></nav>
@@ -408,8 +442,12 @@ function renderTab() {
   if (!el) return;
   el.style.animation = "none"; el.offsetHeight; el.style.animation = "";
   if (t === "model") {
-    el.innerHTML = d.viewer ? `<iframe class="viewer" onload="syncTheme(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>
-      <p class="note">Drag to orbit, scroll to zoom. The joint sliders move the real kinematics; "Spread parts apart" explodes the assembly.</p>` : notBuilt("The 3D model appears here after the first build.");
+    const vers = (d.history || []).filter(h => h.geom && h.fingerprint !== (d.report || {}).fingerprint);
+    el.innerHTML = d.viewer ? `<div class="cmpbar"><span class="note">Compare with</span>
+        <select id="cmpsel" onchange="compareWith(this.value)"><option value="">nothing</option>${vers.map(h => `<option value="${h.stamp}">${esc(new Date(h.time * 1000).toLocaleString())}${h.ok ? "" : " (had problems)"}</option>`).join("")}</select>
+        <span class="note" id="cmpnote">${vers.length ? "a past build, drawn as a ghost with the changes coloured" : "past builds appear here once there is more than one version"}</span></div>
+      <iframe class="viewer" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>
+      <p class="note">Drag to orbit, scroll to zoom. <b>Build it</b> walks through the assembly step by step; <b>Cut</b> opens the model up; <b>Stress</b> colours the strength-checked parts. Click a face to change it.</p>` : notBuilt("The 3D model appears here after the first build.");
   } else if (t === "tune") renderTune(el);
   else if (t === "results") renderResults(el, d.report);
   else if (t === "files") renderFiles(el);
@@ -419,7 +457,7 @@ function renderTab() {
 
 /* ---------- My parts (catalog/inventory.json) */
 async function showParts() {
-  S.newOpen = true; S.sel = null; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.sel = null; S.grid = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   const d = await api("/api/inventory"); S.inv = {...d.items}; S.invKeys = d.keys;
   renderParts();
 }
@@ -519,10 +557,10 @@ function renderResults(el, rep) {
 
 function renderTune(el) {
   const d = S.detail;
-  if (!d.params.length) { el.innerHTML = `<div class="card empty"><b>No tunable parameters</b>This project has no numeric params in project.yaml.</div>`; return; }
-  const changed = Object.keys(S.edits).length, tr = d.trial;
+  if (!d.params.length && !Object.keys(d.part_materials || {}).length) { el.innerHTML = `<div class="card empty"><b>Nothing to tune</b>This project has no numeric params or printed parts in project.yaml.</div>`; return; }
+  const changed = Object.keys(S.edits).length + Object.keys(S.medits).length, tr = d.trial;
   el.innerHTML = `<div class="grid2">
-    <div class="card">
+    <div><div class="card">
       <div class="row" style="justify-content:space-between;margin-bottom:6px"><b>Parameters</b><span class="note">${changed ? changed + " changed" : "file values"}</span></div>
       ${d.params.some(p => p.unit_assumed) ? `<p class="note" style="margin-top:0">* unit assumed (mm for lengths, ° when the label says deg); project.yaml can state it with <code>unit:</code>.</p>` : ""}
       ${d.params.map(p => {
@@ -540,13 +578,15 @@ function renderTune(el) {
       </div>
       <p class="note">"Try" rebuilds a scratch copy with every check (fit, motion, strength) and you can watch it work live; your design files stay untouched.
         "Save" writes the values into project.yaml, then Build; a saved change needs a fresh design review.</p>
-    </div>
+    </div>${matCard(d)}</div>
     <div>${tr ? `
       <div class="banner ${tr.ok ? "ok" : "bad"}">Last try: ${tr.ok ? "every check passes" : (tr.problems || []).length + " problem(s)"} with
-        ${Object.entries(tr.params || {}).filter(([k, v]) => d.params.some(p => p.key === k && p.value != v)).map(([k, v]) => `${esc(k)} = ${fmt(v)}`).join(", ") || "the file values"}</div>
-      <iframe class="viewer" onload="syncTheme(this)" style="height:520px" src="/trial/${d.name}/out/viewer.html?t=${Date.now()}"></iframe>
+        ${[...Object.entries(tr.params || {}).filter(([k, v]) => d.params.some(p => p.key === k && p.value != v)).map(([k, v]) => `${esc(k)} = ${fmt(v)}`),
+           ...Object.entries(tr.materials || {}).filter(([k, v]) => v && (d.part_materials || {})[k] && d.part_materials[k] !== v).map(([k, v]) => `${esc(k)} in ${esc(v)}`)].join(", ") || "the file values"}</div>
+      <label class="note" style="display:flex;gap:6px;align-items:center;margin:-4px 0 8px"><input type="checkbox" id="trialcmp" style="width:auto" ${S.noTrialCmp ? "" : "checked"} onchange="S.noTrialCmp=!this.checked;renderTab()"> show the saved design as a ghost and colour what the try changed</label>
+      <iframe class="viewer" id="trialviewer" onload="trialLoaded(this)" style="height:520px" src="/trial/${d.name}/out/viewer.html?t=${Date.now()}"></iframe>
       ${(tr.problems || []).length ? `<div class="card" style="margin-top:12px"><b>Problems</b><ul class="msgs">${tr.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
-      <div class="card" style="margin-top:12px"><b>Tried vs saved</b>${compareTable(d.report && d.report.requirements, tr.requirements)}</div>
+      <div class="card" style="margin-top:12px"><b>Tried vs saved</b>${massRow(d, tr)}${compareTable(d.report && d.report.requirements, tr.requirements)}</div>
       <div class="card" style="margin-top:12px"><b>Requirements with these values</b>${reqTable(tr.requirements)}</div>`
       : `<div class="card empty"><b>Move a slider, then "Try these values"</b>The tried design shows here in 3D with every check re-run.</div>`}</div>
   </div>`;
@@ -571,11 +611,40 @@ function setParam(k, v, live) {
   renderTab();
 }
 document.addEventListener("change", e => { if (e.target.type === "range") renderTab(); });
-async function tryParams() { try { const r = await api("/api/run", {project: S.sel, action: "trial", values: S.edits}); watch(r.job); } catch (e) { toast("Couldn't start", e.message, "bad"); } }
+async function tryParams() { try { const r = await api("/api/run", {project: S.sel, action: "trial", values: S.edits, materials: S.medits}); watch(r.job); } catch (e) { toast("Couldn't start", e.message, "bad"); } }
 async function saveParams() {
-  if (!confirm("Write these values into the design (project.yaml)? Build again afterwards; the design review will need to be redone.")) return;
-  try { await api("/api/save", {project: S.sel, values: S.edits}); S.edits = {}; await refreshDetail(); setTab("tune"); toast("Saved", "Values written to project.yaml. Build to update the files.", "ok"); }
+  if (!confirm("Write these values" + (Object.keys(S.medits).length ? " and materials" : "") + " into the design (project.yaml)? Build again afterwards; the design review will need to be redone.")) return;
+  try {
+    if (Object.keys(S.edits).length) await api("/api/save", {project: S.sel, values: S.edits});
+    if (Object.keys(S.medits).length) await api("/api/save-materials", {project: S.sel, materials: S.medits});
+    S.edits = {}; S.medits = {}; await refreshDetail(); setTab("tune"); toast("Saved", "Written to project.yaml. Build to update the files.", "ok"); }
   catch (e) { toast("Not saved", e.message, "bad"); }
+}
+/* ---------- materials per printed part: tried and saved like parameters */
+function matCard(d) {
+  const pm = d.part_materials || {}, M = d.materials || [], ids = Object.keys(pm);
+  if (!ids.length || !M.length) return "";
+  const byKey = Object.fromEntries(M.map(m => [m.key, m]));
+  const opt = cur => M.map(m => `<option value="${esc(m.key)}" ${m.key === cur ? "selected" : ""}>${esc(m.key)}</option>`).join("");
+  const num = (v, d_ = 0) => v == null ? "–" : (+v).toFixed(d_);
+  return `<div class="card mats" style="margin-top:14px">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><b>Materials</b><span class="note">${Object.keys(S.medits).length ? Object.keys(S.medits).length + " changed" : "file values"}</span></div>
+    <table><tr><th>Part</th><th>Material</th><th title="Tensile strength along the layers / across them">Strength XY / Z</th><th>Weight</th></tr>${ids.map(id => {
+      const cur = S.medits[id] || pm[id], m = byKey[cur] || {};
+      return `<tr class="${id in S.medits ? "changed" : ""}"><td>${esc(id)}</td><td><select onchange="setMat('${id}', this.value)">${opt(cur)}</select></td>
+        <td class="num">${num(m.xy_mpa)} / ${num(m.z_mpa)} MPa</td><td class="num">${num(m.density, 2)} g/cm³</td></tr>`; }).join("")}</table>
+    <details style="margin-top:8px"><summary class="note" style="cursor:pointer">What the numbers mean, all materials</summary>
+      <table style="margin-top:6px"><tr><th>Material</th><th>XY</th><th>Z</th><th>Stiffness</th><th>Density</th><th>Price</th></tr>${M.map(m => `<tr><td>${m.source ? `<a href="${esc(m.source)}" target="_blank" rel="noopener">${esc(m.key)}</a>` : esc(m.key)}</td>
+        <td class="num">${num(m.xy_mpa)}</td><td class="num">${num(m.z_mpa)}</td><td class="num">${m.modulus_mpa != null ? (m.modulus_mpa / 1000).toFixed(1) + " GPa" : "–"}</td><td class="num">${num(m.density, 2)}</td><td class="num">${m.usd_per_kg != null ? "$" + m.usd_per_kg + "/kg" : "–"}</td></tr>`).join("")}</table>
+      <p class="note">Strength in MPa from each material's data sheet (linked): XY along the printed layers, Z across them (layers are the weak direction). Stiffness = how much it bends under load. "Try" re-runs every strength check, the weight and the cost with the new materials.</p></details>
+  </div>`;
+}
+function setMat(id, v) { if (v === (S.detail.part_materials || {})[id]) delete S.medits[id]; else S.medits[id] = v; renderTab(); }
+function massRow(d, tr) {
+  const a = (d.summary_numbers || {}).filament_g, b = tr.mass && tr.mass.printed_g;
+  if (a == null || b == null) return "";
+  const dl = b - a;
+  return `<p class="note" style="margin:6px 0">Printed plastic: ${fmt(a)} g saved → ${fmt(b)} g tried${Math.abs(dl) > 0.05 ? ` (${dl > 0 ? "+" : ""}${fmt(dl)} g)` : ""}</p>`;
 }
 
 function renderFiles(el) {
@@ -671,7 +740,7 @@ function renderMc(j) {
   $("#mcstop").style.display = j.state === "running" ? "" : "none";
   const body = $("#mcbody"), atEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 40;
   let html = "", pct = 0;
-  if (j.kind === "design") {
+  if (j.kind === "design" || j.kind === "edit") {
     const tools = S.ev.filter(e => e.k === "tool"), seen = new Set(tools.map(e => e.phase).filter(Boolean));
     const curPhase = [...tools].reverse().find(e => e.phase)?.phase;
     const ci = PHASES.findIndex(p => p[0] === curPhase);
@@ -727,9 +796,10 @@ async function finished(j) {
   if (S.seenDone.has(j.id)) return; S.seenDone.add(j.id);
   const st = stageState(lastProjectEvents(S.ev));
   const ok = j.state === "done" && (!st.fin || st.fin.ok);
-  if (ok) { toast(j.label, j.kind === "design" ? "Claude Code finished the design." : "Every check passes.", "ok"); burst(); }
+  if (ok) { toast(j.label, j.kind === "design" ? "Claude Code finished the design." : j.kind === "edit" ? "Claude Code made the change." : "Every check passes.", "ok"); burst(); }
   else { toast(j.label, j.state === "stopped" ? "Stopped." : st.fin ? `${st.fin.problems} problem(s) to fix.` : "Finished with an error; see the log.", "bad");
     const mc = $("#mc"); mc.classList.add("shake"); setTimeout(() => mc.classList.remove("shake"), 500); }
+  if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) { chime(ok); flashTitle(ok ? `✓ ${j.label}` : `✕ ${j.label}`); }
   if (j.kind === "trial") S.tab = "tune";
   if (j.kind === "quote" && ok) { if (!S.newOpen) showNew(); if ($("#nname") && !$("#nname").value) { $("#nname").value = j.project; $("#nname").dataset.touched = 1; } await showQuote(j.project); return; }
   await loadProjects();
@@ -773,7 +843,7 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
-  S.newOpen = true; S.sel = null; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.sel = null; S.grid = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
       <div id="ready"></div>
@@ -870,6 +940,151 @@ async function setupClaude() {
   catch (e) { toast("Couldn't open Terminal", e.message, "bad"); }
 }
 
+/* ---------- pictures for project cards: the 3D viewer's own picture of the model, kept per geometry fingerprint */
+const pic = p => p.picture || (p.thumb ? fileUrl(p.name, p.thumb) : null);
+function kv(f) { try { return f.contentWindow.__kerf || null; } catch (e) { return null; } }
+async function waitKerf(f, ms = 20000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { const k = kv(f); if (k) return k; await new Promise(r => setTimeout(r, 120)); } return null; }
+async function savePicture(name, K, fp) {
+  try {
+    await new Promise(r => setTimeout(r, 250));
+    await api("/api/thumb", {project: name, png: K.snapshot(480, 360), fingerprint: fp});
+    const p = S.projects.find(x => x.name === name);
+    if (p) { p.picture = `/thumb/${name}.png?v=${Date.now()}`; p.picture_stale = false; renderList(); if (S.grid) showGrid(); }
+  } catch (e) {}
+}
+async function viewerLoaded(f) {
+  syncTheme(f);
+  const d = S.detail, K = await waitKerf(f); if (!K || !d) return;
+  const p = S.projects.find(x => x.name === d.name);
+  if (p && (!p.picture || p.picture_stale)) savePicture(d.name, K, d.report && d.report.fingerprint);
+}
+let picBusy = false; const picTried = new Set();
+async function fillPictures() {   // one hidden viewer at a time, for every built project without a current picture
+  if (picBusy) return;
+  const p = S.projects.find(x => x.has_viewer && (!x.picture || x.picture_stale) && !picTried.has(x.name + x.fingerprint));
+  if (!p) return;
+  picBusy = true; picTried.add(p.name + p.fingerprint);
+  const f = document.createElement("iframe");
+  f.style.cssText = "position:fixed;left:-3000px;top:0;width:480px;height:360px;border:0";
+  f.src = fileUrl(p.name, "out/viewer.html") + "?t=" + Date.now(); document.body.appendChild(f);
+  try { const K = await waitKerf(f, 40000); if (K) await savePicture(p.name, K, p.fingerprint); }
+  finally { f.remove(); picBusy = false; setTimeout(fillPictures, 400); }
+}
+
+/* ---------- compare: a past build (or the saved design next to a Try) as a ghost, changes coloured */
+async function compareWith(stamp) {
+  const f = $("#mainviewer"), K = f && kv(f); if (!K) return;
+  if (!stamp) { K.clearCompare(); $("#cmpnote").textContent = "a past build, drawn as a ghost with the changes coloured"; return; }
+  $("#cmpnote").textContent = "working out what changed…";
+  try {
+    const c = await api(`/api/compare?project=${encodeURIComponent(S.sel)}&source=${encodeURIComponent(stamp)}&target=saved`);
+    K.compare(c);
+    const n = c.summary.filter(x => x.status !== "same").length;
+    $("#cmpnote").textContent = n ? `${n} part${n > 1 ? "s" : ""} differ from that build` : "no part changed shape or place since that build";
+  } catch (e) { toast("Couldn't compare", e.message, "bad"); $("#cmpsel").value = ""; $("#cmpnote").textContent = ""; }
+}
+async function trialLoaded(f) {
+  syncTheme(f);
+  if (S.noTrialCmp) return;
+  const K = await waitKerf(f); if (!K) return;
+  try { const c = await api(`/api/compare?project=${encodeURIComponent(S.sel)}&source=saved&target=trial`); if (c.summary.some(x => x.status !== "same")) K.compare(c); } catch (e) {}
+}
+// the 3D viewer (same origin) hands its "Do it" requests and compare events to the studio through this
+window.kerfStudio = {edit: (text, ctx) => openEdit(text, ctx || {}), compareCleared() { const s = $("#cmpsel"); if (s) s.value = ""; }};
+
+/* ---------- modal: change something, duplicate */
+function modal(html) { $("#modalbox").innerHTML = html; $("#modal").classList.add("open"); const t = $("#modalbox textarea") || $("#modalbox input"); if (t) t.focus(); }
+function closeModal() { $("#modal").classList.remove("open"); }
+addEventListener("keydown", e => { if (e.key === "Escape" && $("#modal").classList.contains("open")) closeModal(); });
+async function postJson(path, body) {
+  const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  return [r, await r.json().catch(() => ({error: "bad response"}))];
+}
+function openEdit(text, ctx) {
+  const d = S.detail; if (!d) return;
+  S.editTitle = ctx.title || "";
+  modal(`<h2>${ctx.title ? "Do it: " + esc(ctx.title) : "Change something"}</h2>
+    <p class="note">Claude Code makes this change to <b>${esc(d.title)}</b>, runs every check until it passes, rebuilds, gets an independent design review, then saves and pushes it.
+      Watch it work in the panel; the History tab keeps the version before, so you can compare or go back.</p>
+    <label for="edtxt">What to change${ctx.part ? ` (clicked: ${esc(ctx.part)})` : ""}</label>
+    <textarea id="edtxt" placeholder="e.g. make the arm 20 mm longer and keep it under 30 % of its allowed stress">${esc(text)}</textarea>
+    <div id="edready" style="margin-top:10px"></div>
+    <div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" id="edgo" onclick="startEdit()">✦ Do it</button></div>`);
+}
+async function startEdit() {
+  const t = $("#edtxt").value.trim(); if (!t) return $("#edtxt").focus();
+  $("#edgo").disabled = true;
+  const [r, j] = await postJson("/api/edit", {project: S.sel, request: t, title: S.editTitle}).catch(e => [{ok: false}, {error: e.message}]);
+  if (r.ok && j.job) { closeModal(); watch(j.job); toast("Change started", "Claude Code is on it. Watch it work in the panel.", "ok"); return; }
+  $("#edgo").disabled = false;
+  if (j.setup) { $("#edready").innerHTML = readyCard({code: j.setup, why: j.error}); return; }
+  toast("Couldn't start", j.error || "error", "bad");
+}
+function openDuplicate() {
+  const d = S.detail; if (!d) return;
+  let n = `${d.name}_v2`, k = 2; while (S.projects.some(p => p.name === n)) n = `${d.name}_v${++k}`;
+  modal(`<h2>Duplicate ${esc(d.title)}</h2>
+    <p class="note">Copies the design files (project.yaml, part files, design notes) under a new name. Built files and the review stay with the original: build the copy to get its own.</p>
+    <label for="dname">New project folder</label><input id="dname" value="${esc(n)}">
+    <label for="dtitle">Title</label><input id="dtitle" value="${esc(d.title)} (copy)">
+    <label for="dchange">Change it while copying (optional: Claude Code makes the change, checks, builds and reviews it)</label>
+    <textarea id="dchange" placeholder="e.g. same design, but for an MG90S servo instead of the MG996R"></textarea>
+    <div id="edready" style="margin-top:10px"></div>
+    <div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" id="dgo" onclick="doDuplicate()">⧉ Duplicate</button></div>`);
+}
+async function doDuplicate() {
+  $("#dgo").disabled = true;
+  try {
+    const r = await api("/api/duplicate", {project: S.sel, name: $("#dname").value.trim(), title: $("#dtitle").value.trim(), change: $("#dchange").value.trim()});
+    closeModal(); await loadProjects(); await select(r.name);
+    if (r.job) { watch(r.job); toast("Copied, change started", `projects/${r.name}: Claude Code is making the change.`, "ok"); }
+    else if (r.error) toast("Copied", r.error, "bad");
+    else toast("Copied", `projects/${r.name} is ready. Build it to get its 3D model and files.`, "ok");
+  } catch (e) { $("#dgo").disabled = false; toast("Not copied", e.message, "bad"); }
+}
+
+/* ---------- all projects as big cards */
+function showGrid() {
+  const first = !S.grid; S.grid = true; S.sel = null; S.newOpen = false; renderList();
+  const P = S.projects;
+  $("#main").innerHTML = `<div class="head"><h1>All projects</h1><p class="desc">${P.length} design${P.length == 1 ? "" : "s"}. Click one to open it.</p></div>
+    <div class="body"><div class="pgrid">${P.map((p, i) => {
+      const run = p.running && p.running.length, st = run ? `<span class="chip info">● running</span>` : !p.built ? `<span class="chip">not built</span>` : p.ok ? `<span class="chip ok">✓ checks pass</span>` : `<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`;
+      return `<div class="pcard" style="${first ? `animation-delay:${i * 40}ms` : "animation:none"}" onclick="select('${p.name}')">
+        <div class="pic">${pic(p) ? `<img src="${pic(p)}" alt="" loading="lazy">` : "◇"}<span class="st">${st}</span></div>
+        <div class="meta"><b>${esc(p.title)}</b><span>${p.review && p.review.ok ? "reviewed" : "review needed"}${p.cost_usd != null ? ` · $${fmt(p.cost_usd)}` : ""}${p.device_g != null ? ` · ${fmt(p.device_g)} g` : ""}${p.built_at ? ` · built ${new Date(p.built_at * 1000).toLocaleDateString()}` : ""}</span></div></div>`; }).join("") || `<div class="note">No projects yet.</div>`}</div></div>`;
+}
+
+/* ---------- done notifications: desktop notification (server) + a chime and a flashing title here; one switch */
+async function loadSettings() { try { S.settings = await api("/api/settings"); } catch (e) {} paintBell(); }
+function paintBell() {
+  const b = $("#bellbtn"); if (!b) return;
+  b.classList.toggle("off", !S.settings.notify); b.textContent = S.settings.notify ? "🔔" : "🔕";
+  b.title = S.settings.notify ? "On: a desktop notification and a chime when a long job finishes. Click to turn off." : "Notifications off. Click to turn on.";
+}
+async function toggleBell() {
+  const on = !S.settings.notify;
+  try { S.settings = await api("/api/settings", {notify: on, sound: on}); } catch (e) { return toast("Couldn't change it", e.message, "bad"); }
+  paintBell();
+  if (on) { chime(true); api("/api/notify-test", {}).then(r => toast("Notifications on", r.shown ? "A test notification was sent to this computer." : "This computer can't show desktop notifications here; you'll still hear a chime.", "ok")).catch(() => {}); }
+  else toast("Notifications off", "No desktop notification or chime when jobs finish.", "ok");
+}
+let actx = null;
+addEventListener("pointerdown", () => { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch (e) {} }, {passive: true});
+function chime(good) {   // three rising notes when it worked, two falling when it didn't
+  if (!S.settings.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const t0 = actx.currentTime + 0.02;
+    (good ? [523.25, 659.25, 783.99] : [392.0, 311.13]).forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(); o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(actx.destination);
+      const s = t0 + i * 0.13; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.16, s + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.5);
+      o.start(s); o.stop(s + 0.55); });
+  } catch (e) {}
+}
+let titleT = null;
+function flashTitle(t) { if (document.hasFocus()) return; clearInterval(titleT); let on = false; titleT = setInterval(() => { document.title = (on = !on) ? t : "Kerf Studio"; }, 1100); }
+addEventListener("focus", () => { clearInterval(titleT); document.title = "Kerf Studio"; });
+
 /* ---------- lifetime: closing the window closes the tool (the server waits for running jobs) */
 addEventListener("pagehide", () => { try { navigator.sendBeacon("/api/bye", "{}"); } catch (e) {} });
 async function quitApp() {
@@ -890,7 +1105,7 @@ function closedScreen() {
 }
 
 addEventListener("resize", moveUline);
-loadProjects(); pollJobs();
+loadProjects(); pollJobs(); loadSettings();
 setInterval(loadProjects, 5000); setInterval(pollJobs, 3000);
 </script>
 </body>

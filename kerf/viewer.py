@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -94,8 +95,10 @@ def joint_motion(asm, e) -> dict:
     return out
 
 
-def data(proj, asm, rep: dict) -> dict:
-    """Everything the page shows. Leaves the assembly at its home pose."""
+def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None = None) -> dict:
+    """Everything the page shows. Leaves the assembly at its home pose.
+    fea: the build's FEA surface fields by requirement id (pipeline `fea_viz`), for the stress colours.
+    assembly_md: out/ASSEMBLY.md text, for the build-it-step-by-step mode."""
     A.solve(asm)
     items = proj.items
     solid = [it.shape for it in items.values() if it.shape is not None and it.role != "keepout"]
@@ -117,6 +120,7 @@ def data(proj, asm, rep: dict) -> dict:
     except Exception as e:  # noqa: BLE001 - the viewer still works without it; the page says why
         attr, attr_error = {}, f"{type(e).__name__}: {e}"
     A.solve(asm)
+    stress = _stress_cases(proj, fea or {})
     out_items = []
     for k, (iid, it) in enumerate(items.items()):
         if it.shape is None:
@@ -135,7 +139,10 @@ def data(proj, asm, rep: dict) -> dict:
             "joints": chain[iid], "verts": _b64(v), "tris": _b64(t), "nv": int(len(v)), "nt": int(len(t)),
             "faceStart": _b64(fs), "src": it.spec.get("file"), "attr": _attr_compact(attr.get(iid), len(fs)),
             "catalog_source": _cat_source(it.spec.get("catalog")),
+            "label": _label(it),
         })
+        if iid in stress:
+            out_items[-1]["stress"] = _stress_on(v, stress[iid])
     keep = ("project", "dir", "fingerprint", "printer", "params", "parts", "purchased", "requirements", "problems",
             "warnings", "bom", "files", "seconds")
     rp = {k: rep.get(k) for k in keep}
@@ -146,8 +153,13 @@ def data(proj, asm, rep: dict) -> dict:
     for name, spec in (proj.data.get("params") or {}).items():
         sp = spec if isinstance(spec, dict) else {"value": spec}
         params[name] = {k: sp.get(k) for k in ("value", "min", "max", "step", "label", "unit")}
+    try:   # build it step by step: parts, screws, inserts and the ASSEMBLY.md text per step
+        steps, steps_error = assembly_steps(proj, asm, rep, assembly_md), None
+    except Exception as e:  # noqa: BLE001 - the rest of the viewer works without it; the page says why
+        steps, steps_error = None, f"{type(e).__name__}: {e}"
+    A.solve(asm)
     return {"items": out_items, "joints": joints, "report": rp, "params": params, "attr_error": attr_error,
-            "project_dir": f"projects/{proj.dir.name}",
+            "steps": steps, "steps_error": steps_error, "project_dir": f"projects/{proj.dir.name}",
             "bounds": [[round(float(x), 3) for x in lo], [round(float(x), 3) for x in hi]]}
 
 
@@ -181,7 +193,164 @@ def html(d: dict) -> str:
     return page.replace("/*KV3*/", lib.replace("</script", "<\\/script"), 1)
 
 
-def write(proj, asm, rep: dict, path) -> Path:
+def write(proj, asm, rep: dict, path, fea: dict | None = None) -> Path:
     path = Path(path)
-    path.write_text(html(data(proj, asm, rep)), encoding="utf-8")
+    md = path.parent / "ASSEMBLY.md"
+    path.write_text(html(data(proj, asm, rep, fea=fea, assembly_md=md.read_text(encoding="utf-8") if md.exists() else None)),
+                    encoding="utf-8")
     return path
+
+
+def embedded(path) -> dict | None:
+    """The data a written viewer.html carries (meshes, report, steps), or None when it has none."""
+    t = Path(path).read_text(encoding="utf-8")
+    a = t.find('id="kerf-data">')
+    if a < 0:
+        return None
+    a = t.index(">", a) + 1
+    return json.loads(t[a:t.index("</script>", a)])
+
+
+# ---------------------------------------------------------------- stress colours
+STRESS_SCALE = 200.0   # stored per vertex as round(utilisation * 200) in one byte: 0..1.275 of the allowed stress
+
+
+def _stress_cases(proj, fea: dict) -> dict:
+    """Per printed part: every FEA case's surface triangles (centroids moved to the world home pose) and their
+    utilisation (von Mises / allowed stress)."""
+    out = {}
+    for rid, viz in fea.items():
+        part = viz.get("part")
+        it = proj.items.get(part)
+        if it is None or it.shape is None or viz.get("tris") is None or not viz.get("allow"):
+            continue
+        tris = np.asarray(viz["tris"], float)
+        cen = tris.mean(axis=1)
+        m = _mat(it.shape.location)
+        world = cen @ m[:3, :3].T + m[:3, 3]
+        util = np.asarray(viz["vm"], float) / float(viz["allow"])
+        out.setdefault(part, []).append({"id": rid, "c": world, "u": util, "p999": viz.get("p999"), "allow": viz["allow"],
+                                         "peak": viz.get("peak")})
+    return out
+
+
+def _stress_on(verts: np.ndarray, cases: list[dict]) -> dict:
+    """Utilisation at every viewer vertex: worst case over the part's load cases, each from its 4 nearest FEA surface
+    triangles (inverse-distance weighted)."""
+    from scipy.spatial import cKDTree
+    v = np.asarray(verts, float)
+    best = np.zeros(len(v))
+    for c in cases:
+        k = min(4, len(c["c"]))
+        d, i = cKDTree(c["c"]).query(v, k=k)
+        if k == 1:
+            d, i = d[:, None], i[:, None]
+        w = 1.0 / np.maximum(d, 1e-3)
+        best = np.maximum(best, (c["u"][i] * w).sum(axis=1) / w.sum(axis=1))
+    q = np.clip(np.round(best * STRESS_SCALE), 0, 255).astype(np.uint8)
+    return {"u": _b64(q), "scale": STRESS_SCALE,
+            "cases": [{"id": c["id"], "use": round(float(c["p999"]) / float(c["allow"]), 4) if c.get("p999") is not None else None,
+                       "allow_mpa": round(float(c["allow"]), 2), "p999_mpa": c.get("p999"), "peak_mpa": c.get("peak")} for c in cases]}
+
+
+def _label(it) -> str:
+    if it.role == "printed":
+        return f"printed, {it.spec.get('material', 'PETG')}"
+    if it.role == "keepout":
+        return "clearance volume"
+    from .ship import human_item
+    try:
+        return human_item(it)
+    except Exception:  # noqa: BLE001
+        return it.spec.get("catalog") or it.role
+
+
+# ---------------------------------------------------------------- build it step by step
+STEP_RE = re.compile(r"^Step ([1-9]\d*) — ")   # step 0 / 0b (test fit, centre servos) stay in the intro
+
+
+def _sections(md: str) -> list[dict]:
+    """ASSEMBLY.md split at its `## ` headings: [{title, lines}] (pictures dropped: the viewer shows the real model)."""
+    out, cur = [], None
+    for ln in md.splitlines():
+        if ln.startswith("## "):
+            cur = {"title": ln[3:].strip(), "lines": []}
+            out.append(cur)
+        elif cur is not None and not ln.startswith("!["):
+            cur["lines"].append(ln)
+    for c in out:
+        while c["lines"] and not c["lines"][0].strip():
+            c["lines"].pop(0)
+        while c["lines"] and not c["lines"][-1].strip():
+            c["lines"].pop()
+    return out
+
+
+def _pt(a) -> list:
+    return [round(float(x), 3) for x in a]
+
+
+def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
+    """The ASSEMBLY.md build order as data for the viewer's step-by-step mode: per step the parts already on, the
+    part(s) going on with the direction they come from (same rule as the step pictures: kerf/ship.py), the heat-set
+    inserts pressed first, the screws (seat point + axis, from the fastener check) and the joints that must then move
+    freely, plus the step's own ASSEMBLY.md text. Intro / outro sections (tools, test fit, wiring) come along as text."""
+    from . import ship
+    from .iface import screw_spec
+    a = rep.get("assembly") or {}
+    A.solve(asm)
+    st = ship.plan(asm, a.get("fasteners") or [], a.get("pins") or [])
+    if not st:
+        return None
+    secs = _sections(md) if md else []
+    by_step = {int(m.group(1)): c for c in secs if (m := STEP_RE.match(c["title"]))}
+    first = next((k for k, c in enumerate(secs) if STEP_RE.match(c["title"])), len(secs))
+    last = max((k for k, c in enumerate(secs) if STEP_RE.match(c["title"])), default=len(secs) - 1)
+    intro = [c for c in secs[:first]]
+    outro = [c for c in secs[last + 1:]]
+    movable = {e.name for e in asm.movable}
+    out = []
+    for s in st:
+        k = s["step"]
+        joined = [i for x in s["attach"] for i in x["items"]]
+        if s["bench_for"]:
+            present = list(s["items"])
+        else:
+            present = [i for x in st[:k] if not x["bench_for"] or x["bench_for"] <= k for i in x["items"]]
+            present += [i for i in joined if i not in present]
+        groups = [{"items": [i], "off": _pt(ship._explode_offset(proj, asm, i, present)), "phase": 1} for i in s["items"]]
+        groups += [{"items": list(x["items"]), "off": _pt(ship._explode_offset(proj, asm, x["via"], present)), "phase": 2,
+                    "via": x["via"], "from_step": x["step"]} for x in s["attach"]]
+        late = set(joined)
+        screws = [{"at": _pt(j["at"]), "dir": _pt(j["dir"]), "screw": j["screw"], "len": float(j.get("length_mm") or 6),
+                   "head": j.get("head"), "group": j["group"], "male": j["male"], "female": j["female"],
+                   "phase": 2 if (j["male"] in late or j["female"] in late) else 1}
+                  for j in s["fastener_joints"] if j.get("at") is not None and j.get("dir") is not None]
+        inserts = []
+        for x in s["inserts"]:
+            it = proj.items[x["item"]]
+            for site in getattr(it.shape, "kerf_sites", []) or []:
+                if site.role != "female" or site.kind != "heatset":
+                    continue
+                w = it.shape.location * site.loc
+                try:
+                    sp = screw_spec(site.screw)
+                except Exception:  # noqa: BLE001 - a size the catalog doesn't know gets a proportional glyph
+                    sp = {"d": float(site.screw.lstrip("M") or 3)}
+                d = float(sp.get("d") or 3)
+                inserts.append({"item": x["item"], "at": _pt(geom.world_point(w, (0, 0, 0))),
+                                "dir": _pt(-np.asarray(geom.world_dir(w, (0, 0, 1)))), "screw": site.screw,
+                                "od": round(float(sp.get("insert_hole") or 1.4 * d), 2),
+                                "len": round(float(sp.get("insert_len") or 1.5 * d), 2)})
+        demos = []
+        for f in s["fits"]:
+            o = f.get("onto")
+            if o and o.get("range") and o["joint"] in movable:
+                demos.append(o["joint"])
+        demos += [x["joint"] for x in s["attach"] if x.get("range") and x["joint"] in movable]
+        sec = by_step.get(k)
+        out.append({"n": k, "title": sec["title"].split(" — ", 1)[1] if sec and " — " in sec["title"] else ", ".join(s["items"]),
+                    "items": list(s["items"]), "present": present, "groups": groups, "screws": screws, "inserts": inserts,
+                    "demos": list(dict.fromkeys(demos)), "bench_for": s["bench_for"],
+                    "lines": sec["lines"] if sec else []})
+    return {"steps": out, "intro": intro, "outro": outro}

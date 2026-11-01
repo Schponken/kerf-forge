@@ -303,7 +303,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     rep["problems"].append(f"electrical: {e}")
             progress.stage("requirements")
             rq = requirements.run_all(proj, asm, quick=not sweeps)
-            fea_viz = {r["id"]: r.pop("_viz") for r in rq if "_viz" in r}   # meshes stay out of report.json
+            fea_viz = {r["id"]: {**r.pop("_viz"), "part": (r.get("_field") or {}).get("part")}   # meshes stay out of report.json
+                       for r in rq if "_viz" in r}
             fields: dict[str, list] = {}
             for r in rq:                                                   # stress fields too, summarised per part
                 f = r.pop("_field", None)
@@ -366,11 +367,6 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     (out / "WIRING.md").write_text(wiring_out.wiring_md(proj, emodel), encoding="utf-8")
                     (out / "wiring.svg").write_text(wiring_out.svg(proj, emodel), encoding="utf-8")
                     rep["files"]["wiring"] = ["WIRING.md", "wiring.svg"]
-                try:  # self-contained assembly viewer (kerf/viewer.py); a failure here is a build problem, not silent
-                    rep["files"]["viewer"] = "viewer.html"
-                    viewer.write(proj, asm, rep, out / "viewer.html")
-                except Exception as e:  # noqa: BLE001
-                    rep["problems"].append(f"viewer.html could not be written: {type(e).__name__}: {e}")
                 try:  # ship package (kerf/ship.py): priced BOM + ASSEMBLY.md with a render per step when rendering
                     rnd = (lambda g, pre, **kw: render_glb(g, pre, views="iso", sheet=False, **kw)) if do_render else None
                     rep["files"]["ship"] = ship.write(proj, asm, rep, out, render=rnd)
@@ -378,6 +374,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         wiring_out.append_assembly(out / "ASSEMBLY.md", emodel, proj)
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"ship package (priced BOM / ASSEMBLY.md) could not be written: {type(e).__name__}: {e}")
+                try:  # self-contained assembly viewer (kerf/viewer.py), after ASSEMBLY.md: its build-it-step-by-step mode
+                    rep["files"]["viewer"] = "viewer.html"   # reads the step text; FEA fields colour the stress view
+                    viewer.write(proj, asm, rep, out / "viewer.html", fea=fea_viz)
+                except Exception as e:  # noqa: BLE001 - a failure here is a build problem, not silent
+                    rep["problems"].append(f"viewer.html could not be written: {type(e).__name__}: {e}")
             if do_render:
                 progress.stage("renders")
                 out = proj.out("renders")

@@ -70,6 +70,51 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 #insp .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 #insp .ok{color:var(--good);font-size:12px}
 #insp a{color:var(--accent)}
+/* floating panels on the 3D view: cut-away, stress legend, compare legend */
+.float{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:12.5px;z-index:3}
+.float[hidden]{display:none}
+.float h3{margin:0 0 6px;font-size:12px;font-weight:650}
+.float .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.float .seg button{border:0;border-radius:0;padding:3px 10px}
+.float input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0 2px}
+#cutp{left:12px;top:52px;width:250px}
+#slegend,#clegend{left:12px;bottom:34px;width:270px;max-height:calc(100% - 110px);overflow:auto}
+.ramp{height:10px;border-radius:5px;margin:4px 0 2px}
+.rampl{display:flex;justify-content:space-between;color:var(--mute);font-size:11px}
+.prow{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid var(--soft);cursor:pointer}
+.prow:hover b{color:var(--accent)}
+.prow .v{font-variant-numeric:tabular-nums;color:var(--mute)}
+.views button[hidden]{display:none}
+/* build it step by step */
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.lab{position:absolute;transform:translate(10px,-50%);white-space:nowrap;font-size:12px;padding:3px 8px 3px 7px;border-radius:7px;background:var(--panel);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.18);transition:opacity .25s}
+.lab::before{content:"";position:absolute;left:-10px;top:50%;width:7px;height:7px;margin-top:-4px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.lab b{font-weight:650}.lab span{color:var(--mute)}
+.lab.screw::before{background:#c63d2f}.lab.ins::before{background:#c9a24a}.lab.move::before{background:var(--good)}
+#abar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:3;max-width:calc(100% - 24px)}
+#abar[hidden]{display:none}
+#abar .t{font-size:13px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+#abar .t b{font-variant-numeric:tabular-nums}
+#asm .tl{display:flex;gap:3px;margin:2px 0 12px}
+#asm .tl button{flex:1;height:8px;padding:0;border-radius:4px;border:0;background:var(--soft);min-width:8px}
+#asm .tl button.done{background:color-mix(in srgb,var(--good) 55%,var(--soft))}
+#asm .tl button.cur{background:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+#asm .ah{display:flex;align-items:baseline;gap:8px}#asm .ah .n{color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
+#asm h3{margin:2px 0 8px;font-size:17px;letter-spacing:-.01em}
+#asm .ctrls{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px;align-items:center}
+#asm .ctrls .sp{flex:1}
+#asm .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+#asm .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px 2px 4px;cursor:default}
+#asm .chip .sw{width:12px;height:12px;border-radius:50%}
+#asm .chip.screw .sw{background:#9aa3ad}#asm .chip.ins .sw{background:#c9a24a}#asm .chip.move .sw{background:var(--good)}
+#asm .txt{font-size:13px;line-height:1.5}
+#asm .txt ul{margin:0 0 8px;padding-left:18px}#asm .txt li{margin:3px 0}#asm .txt li li{color:var(--mute)}
+#asm .txt code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);padding:0 4px;border-radius:4px}
+#asm .txt h4{margin:12px 0 4px;font-size:13px}
+#asm .opt{display:flex;gap:6px;align-items:center;color:var(--mute);font-size:12px;margin:4px 0}
+#asm .donebox{display:flex;gap:8px;align-items:center;margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--soft);cursor:pointer}
+#asm .donebox.on{background:var(--goodbg);color:var(--good)}
+#asm .fin{font-size:15px;font-weight:650;color:var(--good)}
 @media (max-width:760px){body{display:block}main{grid-template-columns:1fr;grid-template-rows:56vh auto;height:auto}
   aside{border-left:0;border-top:1px solid var(--line)}header{padding:10px 16px}.views{left:16px}.legend{display:none}}
 </style>
@@ -87,16 +132,28 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
       <button data-view="top">Top</button><button data-view="fit">Fit</button>
       <button id="edges" class="on" title="Outline edges">Edges</button>
       <button id="keep" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button>
+      <button id="cutb" title="Cut the model open to see inside (walls, channels, inserts)">Cut</button>
+      <button id="stressb" title="Colour each strength-checked part by how hard its material works" hidden>Stress</button>
     </div>
+    <div id="cutp" class="float" hidden><h3>Cut-away</h3>
+      <div style="display:flex;gap:8px;align-items:center"><span class="seg" id="cutax"><button data-ax="x">X</button><button data-ax="y" class="on">Y</button><button data-ax="z">Z</button></span>
+        <button id="cutflip" title="Keep the other side">⇄ Flip</button><span class="sp"></span></div>
+      <input type="range" id="cutpos" min="0" max="1000" value="500"><div class="rampl"><span id="cutval"></span><span>drag to move the cut</span></div></div>
+    <div id="slegend" class="float" hidden></div>
+    <div id="clegend" class="float" hidden></div>
+    <div id="labels"></div>
+    <div id="abar" hidden><button id="ab_prev" title="Back (←)">◀</button><button id="ab_play" title="Play every step (space)">▶</button>
+      <span class="t" id="ab_t"></span><button id="ab_re" title="Replay this step (R)">↻</button><button id="ab_next" title="Next (→)">▶▶</button></div>
     <div id="tip"></div>
-    <div class="legend">Drag to orbit, right-drag to pan, scroll to zoom, click a face to inspect it</div>
+    <div class="legend" id="hint">Drag to orbit, right-drag to pan, scroll to zoom, click a face to inspect it</div>
   </div>
   <aside>
     <nav class="tabs">
-      <button data-tab="motion" class="on">Motion</button><button data-tab="parts">Parts</button>
+      <button data-tab="motion" class="on">Motion</button><button data-tab="asm" id="tabAsm" hidden>Build it</button><button data-tab="parts">Parts</button>
       <button data-tab="bom">Parts list</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button><button data-tab="insp" id="tabInsp" hidden>Inspect</button>
     </nav>
     <section class="pane on" id="motion"></section>
+    <section class="pane" id="asm"></section>
     <section class="pane" id="parts"></section>
     <section class="pane" id="bom"></section>
     <section class="pane" id="print"></section>
@@ -111,6 +168,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 const T = window.KV3, D = JSON.parse(document.getElementById('kerf-data').textContent);
 const R = D.report, $ = id => document.getElementById(id), esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// Inside Kerf Studio (same origin) the page can hand an edit request straight to Claude Code ("Do it").
+const HOST = (() => { try { return window.parent !== window && window.parent.kerfStudio && window.parent.kerfStudio.edit ? window.parent.kerfStudio : null; } catch (e) { return null; } })();
 const ICON = {
   ok: '<svg viewBox="0 0 16 16" width="14" height="14" aria-label="pass"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   bad: '<svg viewBox="0 0 16 16" width="14" height="14" aria-label="fail"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
@@ -133,7 +192,8 @@ $('theme').onclick = () => { theme = (document.documentElement.dataset.theme || 
 
 // ---------- scene ----------
 const stage = $('stage');
-const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
+renderer.localClippingEnabled = true;   // the cut-away plane
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputColorSpace = T.SRGBColorSpace;
 stage.prepend(renderer.domElement);
 const scene = new T.Scene();
@@ -156,6 +216,14 @@ function restyle() {
   redraw();
 }
 
+// Cut-away: one plane, shared by every part's surface and edges. Inside a cut solid you see its back faces: drawn
+// darker and hatched, they read as the cut face (a cheap, exact section cap for closed parts).
+const cutPlane = new T.Plane(new T.Vector3(0, 0, -1), 0), CLIP = [], CAP = { value: 0 };
+function capShader(sh) {
+  sh.uniforms.uCut = CAP;
+  sh.fragmentShader = 'uniform float uCut;\n' + sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+    if (uCut > 0.5 && !gl_FrontFacing) { float h = step(0.5, fract((gl_FragCoord.x + gl_FragCoord.y) / 10.0)); diffuseColor.rgb = diffuseColor.rgb * (0.5 + 0.2 * h); }`);
+}
 const b64 = (s, Type) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Type(u.buffer); };
 const groups = new Map(), pickables = [];
 for (const it of D.items) {
@@ -165,9 +233,10 @@ for (const it of D.items) {
   geo.computeVertexNormals();
   const keep = it.role === 'keepout';
   const mat = new T.MeshStandardMaterial({ color: it.color, roughness: it.role === 'purchased' ? 0.55 : 0.78, metalness: it.role === 'purchased' ? 0.15 : 0.02,
-    side: T.DoubleSide, transparent: keep, opacity: keep ? 0.18 : 1, depthWrite: !keep, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+    side: T.DoubleSide, transparent: keep, opacity: keep ? 0.18 : 1, depthWrite: !keep, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, clippingPlanes: CLIP });
+  mat.onBeforeCompile = capShader;
   const mesh = new T.Mesh(geo, mat); mesh.userData.id = it.id;
-  const edges = new T.LineSegments(new T.EdgesGeometry(geo, 28), new T.LineBasicMaterial({ color: 0x1a1e21, transparent: true, opacity: 0.55 }));
+  const edges = new T.LineSegments(new T.EdgesGeometry(geo, 28), new T.LineBasicMaterial({ color: 0x1a1e21, transparent: true, opacity: 0.55, clippingPlanes: CLIP }));
   const g = new T.Group(); g.matrixAutoUpdate = false; g.add(mesh); g.add(edges);
   g.userData = { it, mesh, edges, base: new T.Color(it.color) };
   geo.computeBoundingBox(); g.userData.box = geo.boundingBox;
@@ -179,6 +248,7 @@ for (const it of D.items) {
 const J = new Map(D.joints.map(j => [j.name, j]));
 const val = new Map(D.joints.map(j => [j.name, j.home]));
 let explode = 0;
+const asmOff = new Map();   // build-it mode: where a part is on its way in (world mm, added to its pose)
 const tmp = new T.Matrix4(), tr = new T.Matrix4(), q = new T.Quaternion();
 function jointMatrix(j, v) {
   const d = v - j.home, m = new T.Matrix4();
@@ -196,8 +266,8 @@ function pose() {
   for (const g of groups.values()) {
     const it = g.userData.it, m = new T.Matrix4();
     for (const n of it.joints) m.multiply(jm.get(n));
-    const e = it.explode;
-    g.matrix.copy(new T.Matrix4().makeTranslation(e[0] * explode, e[1] * explode, e[2] * explode).multiply(m));
+    const e = it.explode, a = asmOff.get(it.id);
+    g.matrix.copy(new T.Matrix4().makeTranslation(e[0] * explode + (a ? a.x : 0), e[1] * explode + (a ? a.y : 0), e[2] * explode + (a ? a.z : 0)).multiply(m));
     g.matrixWorldNeedsUpdate = true;
   }
   if (grid) { let z = Infinity; for (const g of groups.values()) if (g.userData.it.role !== 'keepout') z = Math.min(z, g.userData.box.min.z + g.userData.it.explode[2] * explode); grid.position.z = Math.min(z, lo.z) - 0.01; }
@@ -221,7 +291,7 @@ function fit() {
 }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { if (b.dataset.view !== 'fit') view(b.dataset.view); fit(); });
 $('edges').onclick = e => { e.target.classList.toggle('on'); for (const g of groups.values()) g.userData.edges.visible = e.target.classList.contains('on'); redraw(); };
-$('keep').onclick = e => { e.target.classList.toggle('on'); const on = e.target.classList.contains('on'); for (const g of groups.values()) if (g.userData.it.role === 'keepout') g.visible = on && !hidden.has(g.userData.it.id); renderParts(); redraw(); };
+$('keep').onclick = e => { e.target.classList.toggle('on'); applyVis(); renderParts(); };
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(h, 1); cam.updateProjectionMatrix(); redraw(); }
 new ResizeObserver(resize).observe(stage);
 
@@ -238,7 +308,7 @@ function select(id) {
   selected = selected === id ? null : id;
   for (const [k, g] of groups) {
     const m = g.userData.mesh.material;
-    m.emissive.set(k === selected ? 0x2f6fb0 : 0x000000); m.emissiveIntensity = k === selected ? 0.35 : 0;
+    if (k === selected) { m.emissive.set(0x2f6fb0); m.emissiveIntensity = 0.35; } else if (!g.userData.glow) { m.emissive.set(0x000000); m.emissiveIntensity = 0; }
   }
   renderParts(); redraw();
 }
@@ -251,7 +321,7 @@ renderer.domElement.addEventListener('pointermove', e => {
   const h = e.buttons ? null : pick(e), id = h && h.object.userData.id, tip = $('tip');
   if (!id) { tip.style.display = 'none'; return; }
   const it = groups.get(id).userData.it, pr = (R.parts || {})[id];
-  tip.innerHTML = `<b>${esc(id)}</b> · ${esc(it.role)}${pr ? ` · ${fmt(pr.mass_est_g)} g ${esc(pr.material || '')}` : it.catalog ? ` · ${esc(it.catalog)}` : ''}`;
+  tip.innerHTML = `<b>${esc(id)}</b> · ${esc(it.role)}${pr ? ` · ${fmt(pr.mass_est_g)} g ${esc(pr.material || '')}` : it.catalog ? ` · ${esc(it.catalog)}` : ''}` + pointNote(h);
   const r = stage.getBoundingClientRect(); tip.style.left = (e.clientX - r.left + 14) + 'px'; tip.style.top = (e.clientY - r.top + 12) + 'px'; tip.style.display = 'block';
 });
 
@@ -306,29 +376,35 @@ function inspect(id, tri) {
   for (const [n, how] of drive) {
     const p = P[n] || {}, u = p.unit || 'mm';
     h += `<div class="prm"><span><span class="k">${esc(n)}</span> = ${fmt(p.value, 2)} ${esc(u)}</span>
-      <span class="row"><input type="number" data-p="${esc(n)}" value="${p.value}" ${p.min != null ? `min="${p.min}"` : ''} ${p.max != null ? `max="${p.max}"` : ''} step="${p.step || 'any'}"><button data-cp="${esc(n)}">Copy edit request</button></span>
+      <span class="row"><input type="number" data-p="${esc(n)}" value="${p.value}" ${p.min != null ? `min="${p.min}"` : ''} ${p.max != null ? `max="${p.max}"` : ''} step="${p.step || 'any'}">${HOST ? `<button data-do="${esc(n)}" class="on" title="Claude Code makes this change, re-checks and rebuilds">Do it</button>` : ''}<button data-cp="${esc(n)}">Copy edit request</button></span>
       <span class="l">${esc(p.label || '')}${p.min != null ? ` · allowed ${fmt(p.min, 2)} to ${fmt(p.max, 2)} ${esc(u)}` : ''} · ${how} this face</span></div>`;
   }
   if (A.whole && A.whole.length) h += `<p class="pd">Moves the whole part: ${A.whole.map(esc).join(', ')}</p>`;
   h += `<div class="pd" style="margin:10px 0 4px">Or describe a change to this feature:</div><textarea id="free" placeholder="e.g. make this hole a counterbore for an M3 socket head"></textarea>
-    <div class="row" style="margin-top:6px"><button id="cpf">Copy request</button><span class="pd">Paste into Claude Code in the kerf-forge repo.</span></div>`;
+    <div class="row" style="margin-top:6px">${HOST ? '<button id="dof" class="on" title="Claude Code makes this change, re-checks and rebuilds">Do it</button>' : ''}<button id="cpf">Copy request</button><span class="pd">${HOST ? 'Do it: Claude Code makes the change, re-checks and rebuilds.' : 'Paste into Claude Code in the kerf-forge repo.'}</span></div>`;
   box.innerHTML = h; highlight(id, f);
   $('ix').onclick = () => inspect(null);
   $('cpw').onclick = e => copy(where, e.target);
   const ctx = `the ${id} face made at ${where}${code ? ` (\`${code}\`)` : ''}`;
-  box.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => {
-    const n = b.dataset.cp, p = P[n] || {}, inp = box.querySelector(`[data-p="${CSS.escape(n)}"]`);
+  const paramReq = n => {
+    const p = P[n] || {}, inp = box.querySelector(`[data-p="${CSS.escape(n)}"]`);
     let v = +inp.value; if (p.min != null) v = Math.max(p.min, v); if (p.max != null) v = Math.min(p.max, v); inp.value = v;
-    if (v === p.value) { inp.focus(); return; }
-    copy(`${proj}/project.yaml: ${n} ${p.value} -> ${v}${p.unit ? ' ' + p.unit : ''} (${p.label || n}; changes ${ctx}). Then run \`.venv/bin/kerf build ${proj.split('/').pop()}\` and get a design-reviewer pass.`, b);
-  });
-  $('cpf').onclick = e => { const t = $('free').value.trim(); if (!t) return $('free').focus(); copy(`${where}: ${t}\nContext: ${ctx}. Keep every check passing; rebuild and get a design-reviewer pass.`, e.target); };
+    if (v === p.value) { inp.focus(); return null; }
+    return { text: `${proj}/project.yaml: ${n} ${p.value} -> ${v}${p.unit ? ' ' + p.unit : ''} (${p.label || n}; changes ${ctx}). Then run \`.venv/bin/kerf build ${proj.split('/').pop()}\` and get a design-reviewer pass.`,
+             title: `${n}: ${fmt(p.value, 2)} → ${fmt(v, 2)}${p.unit ? ' ' + p.unit : ''}` };
+  };
+  const freeReq = () => { const t = $('free').value.trim(); if (!t) { $('free').focus(); return null; } return { text: `${where}: ${t}\nContext: ${ctx}. Keep every check passing; rebuild and get a design-reviewer pass.`, title: `${id}: ${t}` }; };
+  box.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { const r = paramReq(b.dataset.cp); if (r) copy(r.text, b); });
+  box.querySelectorAll('[data-do]').forEach(b => b.onclick = () => { const r = paramReq(b.dataset.do); if (r) HOST.edit(r.text, { title: r.title, part: id, where }); });
+  $('cpf').onclick = e => { const r = freeReq(); if (r) copy(r.text, e.target); };
+  if ($('dof')) $('dof').onclick = () => { const r = freeReq(); if (r) HOST.edit(r.text, { title: r.title, part: id, where }); };
 }
 
 // ---------- panels ----------
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
   document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === b.dataset.tab));
+  if (b.dataset.tab === 'asm') asmEnter(); else if (AS.on) asmExit();
 });
 const anim = new Map();
 function renderMotion() {
@@ -379,7 +455,7 @@ function renderParts() {
   $('showall').onclick = () => { hidden.clear(); applyVis(); renderParts(); };
   $('isolate').onclick = () => { for (const it of D.items) if (it.id !== selected && it.role !== 'keepout') hidden.add(it.id); hidden.delete(selected); applyVis(); renderParts(); };
 }
-function applyVis() { const keepOn = $('keep').classList.contains('on'); for (const [k, g] of groups) g.visible = !hidden.has(k) && (g.userData.it.role !== 'keepout' || keepOn); redraw(); }
+function applyVis() { const keepOn = $('keep').classList.contains('on'); for (const [k, g] of groups) g.visible = !hidden.has(k) && (g.userData.it.role !== 'keepout' || keepOn) && asmVisible(k); redraw(); }
 function renderBom() {
   const b = R.bom || [];
   if (!b.length) { $('bom').innerHTML = '<p class="empty">No parts list in this build.</p>'; return; }
@@ -427,6 +503,501 @@ function renderChecks() {
   $('checks').innerHTML = h;
 }
 
+// ---------- one clock for every animation (drawing stays on demand: nothing moving = nothing drawn)
+const TW = [];
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, easeOut = t => 1 - Math.pow(1 - t, 3), lin = t => t;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let speed = 1;
+function tween(ms, fn, ease = easeIO) { return new Promise(res => TW.push({ t0: performance.now(), dur: Math.max(1, reduced ? 1 : ms / speed), fn, ease, res })); }
+const wait = ms => tween(ms, () => {});
+function cancelTweens() { for (const t of TW.splice(0)) t.res(); }
+function stepTweens(now) {
+  if (!TW.length) return;
+  for (const t of [...TW]) {
+    const p = Math.min(1, (now - t.t0) / t.dur);
+    try { t.fn(t.ease(p), p); } catch (e) { console.error(e); }
+    if (p >= 1) { TW.splice(TW.indexOf(t), 1); t.res(); }
+  }
+  redraw();
+}
+function camTo(target, pos, ms) {
+  const t0 = ctl.target.clone(), p0 = cam.position.clone();
+  return tween(ms, k => { ctl.target.lerpVectors(t0, target, k); cam.position.lerpVectors(p0, pos, k); });
+}
+function frameBox(box, dir, ms = 900) {
+  const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 8);
+  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.12;
+  const pos = c.clone().add(dir.clone().normalize().multiplyScalar(d));
+  cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix();
+  return ms ? camTo(c, pos, ms) : (ctl.target.copy(c), cam.position.copy(pos), ctl.update(), redraw(), Promise.resolve());
+}
+const solidIds = D.items.filter(i => i.role !== 'keepout').map(i => i.id);
+function boxOf(ids, offs) {
+  const b = new T.Box3();
+  for (const id of ids) { const g = groups.get(id); if (!g) continue; const x = g.userData.box.clone(); const o = offs && offs.get(id); if (o) x.translate(o); b.union(x); }
+  return b;
+}
+
+// ---------- cut-away
+const CUT = { on: false, ax: 'y', flip: false, t: 0.5, box: null };
+const AX = { x: 0, y: 1, z: 2 };
+const cutViz = new T.Group(); cutViz.visible = false; scene.add(cutViz);
+function visibleBox() { const b = new T.Box3(); for (const g of groups.values()) if (g.visible && g.userData.it.role !== 'keepout') { g.updateMatrixWorld(true); b.expandByObject(g.userData.mesh); } return b.isEmpty() ? new T.Box3(lo.clone(), hi.clone()) : b; }
+function applyCut() {
+  CLIP.length = 0; CAP.value = CUT.on ? 1 : 0; cutViz.visible = CUT.on;
+  $('cutp').hidden = !CUT.on; $('cutb').classList.toggle('on', CUT.on);
+  if (!CUT.on) return redraw();
+  const b = CUT.box || (CUT.box = visibleBox()), a = AX[CUT.ax];
+  const lo_ = b.min.getComponent(a) - 0.5, hi_ = b.max.getComponent(a) + 0.5, v = lo_ + (hi_ - lo_) * CUT.t;
+  const n = new T.Vector3(); n.setComponent(a, CUT.flip ? 1 : -1);
+  cutPlane.normal.copy(n); cutPlane.constant = CUT.flip ? -v : v; CLIP.push(cutPlane);
+  $('cutval').textContent = `${CUT.ax.toUpperCase()} = ${fmt(v, 1)} mm · keeping the ${CUT.flip ? '+' : '−'}${CUT.ax.toUpperCase()} side`;
+  cutViz.clear();
+  const sz = b.getSize(new T.Vector3()), c = b.getCenter(new T.Vector3()), w = [sz.y, sz.x, sz.x][a] + 20, h = [sz.z, sz.z, sz.y][a] + 20;
+  const pg = new T.PlaneGeometry(w, h), mat = new T.MeshBasicMaterial({ color: css('--accent'), transparent: true, opacity: 0.07, side: T.DoubleSide, depthWrite: false });
+  const quad = new T.Mesh(pg, mat), edge = new T.LineSegments(new T.EdgesGeometry(pg), new T.LineBasicMaterial({ color: css('--accent'), transparent: true, opacity: 0.7 }));
+  for (const o of [quad, edge]) {
+    if (a === 0) o.rotation.set(0, Math.PI / 2, 0); else if (a === 1) o.rotation.set(Math.PI / 2, 0, 0);
+    o.position.copy(c); o.position.setComponent(a, v); cutViz.add(o);
+  }
+  redraw();
+}
+function cutDefaults() {   // through the middle of the printed parts, keeping the far side so the cut faces the camera
+  CUT.box = visibleBox();
+  const a = AX[CUT.ax], pb = boxOf(printed.map(i => i.id).filter(id => groups.get(id).visible));
+  const src = pb.isEmpty() ? CUT.box : pb, lo_ = CUT.box.min.getComponent(a) - 0.5, hi_ = CUT.box.max.getComponent(a) + 0.5;
+  CUT.t = Math.min(1, Math.max(0, ((src.min.getComponent(a) + src.max.getComponent(a)) / 2 - lo_) / (hi_ - lo_)));
+  CUT.flip = cam.position.getComponent(a) < ctl.target.getComponent(a);
+  $('cutpos').value = Math.round(CUT.t * 1000);
+}
+$('cutb').onclick = () => { CUT.on = !CUT.on; if (CUT.on) cutDefaults(); applyCut(); };
+document.querySelectorAll('#cutax [data-ax]').forEach(b => b.onclick = () => { CUT.ax = b.dataset.ax; cutDefaults(); document.querySelectorAll('#cutax [data-ax]').forEach(x => x.classList.toggle('on', x === b)); applyCut(); });
+$('cutflip').onclick = () => { CUT.flip = !CUT.flip; applyCut(); };
+$('cutpos').oninput = e => { CUT.t = +e.target.value / 1000; applyCut(); };
+
+// ---------- colour modes: normal, stress (FEA use of the allowed stress), compare (what changed vs another version)
+let colorMode = 'normal';
+const STRESS = D.items.filter(i => i.stress);
+const RAMP = [[0, '#2f5fd0'], [0.35, '#27b3a3'], [0.6, '#e8d24a'], [0.85, '#f0892c'], [1, '#d7263d']].map(([k, c]) => [k, new T.Color(c)]);
+function rampColor(u, out) {
+  u = Math.max(0, Math.min(1, u));
+  for (let i = 1; i < RAMP.length; i++) if (u <= RAMP[i][0]) { const [a, ca] = RAMP[i - 1], [b, cb] = RAMP[i]; return out.lerpColors(ca, cb, (u - a) / (b - a)); }
+  return out.copy(RAMP[RAMP.length - 1][1]);
+}
+function stressU(it) { return it._su || (it._su = b64(it.stress.u, Uint8Array)); }
+function stressCols(g) {
+  const it = g.userData.it;
+  if (g.userData.scol) return g.userData.scol;
+  const u = stressU(it), a = new Float32Array(u.length * 3), c = new T.Color();
+  for (let i = 0; i < u.length; i++) { rampColor(u[i] / it.stress.scale, c); a[3 * i] = c.r; a[3 * i + 1] = c.g; a[3 * i + 2] = c.b; }
+  return (g.userData.scol = new T.BufferAttribute(a, 3));
+}
+const CMP = { label: '', ghosts: [], dist: new Map(), summary: [], showGhost: true, showChange: true };
+const CHANGE = new T.Color('#e040fb'), CMM = 2.0;   // full highlight at 2 mm of change
+function cmpCols(g) {
+  const it = g.userData.it, d = CMP.dist.get(it.id), n = it.nv, a = new Float32Array(n * 3), c = new T.Color();
+  const st = (CMP.summary.find(x => x.id === it.id) || {}).status;
+  for (let i = 0; i < n; i++) {
+    const t = st === 'added' ? 1 : d ? Math.min(1, (d[i] / 20) / CMM) : 0;
+    c.copy(g.userData.base).lerp(CHANGE, t > 0.025 ? 0.25 + 0.75 * t : 0); a[3 * i] = c.r; a[3 * i + 1] = c.g; a[3 * i + 2] = c.b;
+  }
+  return new T.BufferAttribute(a, 3);
+}
+function look(g, op) {
+  const m = g.userData.mesh.material, e = g.userData.edges.material;
+  m.transparent = op < 1; m.opacity = op; m.depthWrite = op > 0.5; e.opacity = 0.55 * Math.min(1, op * 1.4);
+}
+function paint() {
+  for (const g of groups.values()) {
+    const it = g.userData.it, m = g.userData.mesh.material, geo = g.userData.mesh.geometry;
+    if (it.role === 'keepout') continue;
+    let cols = null, op = 1;
+    if (colorMode === 'stress') { if (it.stress) cols = stressCols(g); else op = 0.2; }
+    else if (colorMode === 'compare' && CMP.showChange) cols = cmpCols(g);
+    if (cols) { geo.setAttribute('color', cols); m.vertexColors = true; m.color.set(0xffffff); }
+    else { m.vertexColors = false; m.color.copy(g.userData.base); }
+    m.needsUpdate = true; if (!AS.on) look(g, op);
+  }
+  for (const gh of CMP.ghosts) gh.visible = colorMode === 'compare' && CMP.showGhost;
+  $('stressb').classList.toggle('on', colorMode === 'stress');
+  $('slegend').hidden = colorMode !== 'stress'; $('clegend').hidden = colorMode !== 'compare';
+  redraw();
+}
+function focusPart(id) { if (selected !== id) select(id); const g = groups.get(id); if (g) { g.updateMatrixWorld(true); const b = new T.Box3().expandByObject(g.userData.mesh); frameBox(b, cam.position.clone().sub(ctl.target), 600); } }
+function renderStressLegend() {
+  const grad = RAMP.map(([k, c]) => `#${c.clone().convertLinearToSRGB().getHexString()} ${k * 100}%`).join(',');
+  const none = printed.filter(i => !i.stress);
+  $('slegend').innerHTML = `<h3>Stress: share of the allowed stress used</h3><div class="ramp" style="background:linear-gradient(90deg,${grad})"></div>
+    <div class="rampl"><span>0 %</span><span>50 %</span><span>100 % = at its limit</span></div>
+    <p class="pd" style="margin:6px 0">Allowed stress = the material's strength ÷ the safety factor. Worst load case per point. Hover the model for the value there.</p>
+    ${STRESS.map(i => { const w = Math.max(...i.stress.cases.map(c => c.use || 0)); return `<div class="prow" data-f="${esc(i.id)}"><b>${esc(i.id)}</b><span class="v">peak ${fmt(w * 100, 0)} % · ${i.stress.cases.map(c => esc(c.id)).join(', ')}</span></div>`; }).join('')}
+    ${none.length ? `<p class="pd" style="margin:6px 0 0">No strength check (shown faded): ${none.map(i => esc(i.id)).join(', ')}</p>` : ''}`;
+  $('slegend').querySelectorAll('[data-f]').forEach(r => r.onclick = () => focusPart(r.dataset.f));
+}
+if (STRESS.length) { $('stressb').hidden = false; renderStressLegend(); }
+$('stressb').onclick = () => { if (AS.on) return; colorMode = colorMode === 'stress' ? 'normal' : 'stress'; paint(); };
+function nearestVertex(h) {
+  const g = groups.get(h.object.userData.id), inv = g.matrixWorld.clone().invert(), p = h.point.clone().applyMatrix4(inv);
+  const pos = h.object.geometry.getAttribute('position'), v = new T.Vector3();
+  let best = h.face.a, bd = Infinity;
+  for (const k of [h.face.a, h.face.b, h.face.c]) { v.fromBufferAttribute(pos, k); const d = v.distanceToSquared(p); if (d < bd) { bd = d; best = k; } }
+  return best;
+}
+function pointNote(h) {
+  const it = groups.get(h.object.userData.id).userData.it;
+  if (colorMode === 'stress' && it.stress) return ` · <b>${fmt(stressU(it)[nearestVertex(h)] / it.stress.scale * 100, 0)} %</b> of its allowed stress here`;
+  if (colorMode === 'compare') { const d = CMP.dist.get(it.id); if (d) { const mm = d[nearestVertex(h)] / 20; return mm > 0.05 ? ` · moved <b>${fmt(mm, 2)} mm</b> vs ${esc(CMP.label)}` : ' · unchanged here'; } }
+  return '';
+}
+
+// ---------- compare with another version (Kerf Studio sends the ghost meshes and per-vertex distances)
+function clearCompare(repaint = true) {
+  for (const gh of CMP.ghosts) { gh.parent && gh.parent.remove(gh); gh.geometry.dispose(); }
+  CMP.ghosts = []; CMP.dist.clear(); CMP.summary = []; CMP.label = '';
+  if (colorMode === 'compare') colorMode = 'normal';
+  if (repaint) paint();
+}
+function compare(c) {
+  clearCompare(false);
+  CMP.label = c.label || 'the other version'; CMP.summary = c.summary || [];
+  const red = new T.Color('#ff3b5c'), blue = new T.Color('#7aa2ff'), col = new T.Color();
+  for (const it of c.items || []) {
+    const geo = new T.BufferGeometry(), v = b64(it.verts, Float32Array);
+    geo.setAttribute('position', new T.BufferAttribute(v, 3)); geo.setIndex(new T.BufferAttribute(b64(it.tris, Uint32Array), 1)); geo.computeVertexNormals();
+    const gd = c.gdist && c.gdist[it.id] ? b64(c.gdist[it.id], Uint8Array) : null, n = v.length / 3, a = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { col.copy(blue).lerp(red, gd ? Math.min(1, gd[i] / 20 / CMM) : 0); a[3 * i] = col.r; a[3 * i + 1] = col.g; a[3 * i + 2] = col.b; }
+    geo.setAttribute('color', new T.BufferAttribute(a, 3));
+    const gm = new T.Mesh(geo, new T.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.22, depthWrite: false, side: T.DoubleSide, clippingPlanes: CLIP }));
+    gm.add(new T.LineSegments(new T.EdgesGeometry(geo, 28), new T.LineBasicMaterial({ color: blue, transparent: true, opacity: 0.35, clippingPlanes: CLIP })));
+    gm.renderOrder = 2; gm.userData.ghostOf = it.id;
+    (groups.get(it.id) || scene).add(gm); CMP.ghosts.push(gm);
+  }
+  for (const [id, s] of Object.entries(c.dist || {})) CMP.dist.set(id, b64(s, Uint8Array));
+  colorMode = 'compare'; renderCmpLegend(); paint();
+}
+function renderCmpLegend() {
+  const S = CMP.summary, word = x => x.status === 'added' ? 'new part' : x.status === 'removed' ? 'removed' : x.status === 'same' ? 'unchanged' : `changed, up to ${+(+x.max_mm).toFixed(2)} mm`;
+  const ch = S.filter(x => x.status !== 'same');
+  $('clegend').innerHTML = `<h3>Compared with ${esc(CMP.label)}</h3>
+    <div class="ramp" style="background:linear-gradient(90deg,#9aa4aa,#e040fb)"></div><div class="rampl"><span>unchanged</span><span>${CMM} mm or more</span></div>
+    <p class="pd" style="margin:6px 0">Pink = moved or reshaped. Blue see-through = the other version; red there = material that is gone now.</p>
+    <div class="opt"><label><input type="checkbox" id="cg" ${CMP.showGhost ? 'checked' : ''}> other version as a ghost</label></div>
+    <div class="opt"><label><input type="checkbox" id="cc" ${CMP.showChange ? 'checked' : ''}> colour the changes</label></div>
+    ${ch.length ? '' : '<p class="pd">No part changed shape or place.</p>'}
+    ${S.map(x => `<div class="prow" data-f="${esc(x.id)}"><b>${esc(x.id)}</b><span class="v">${word(x)}</span></div>`).join('')}
+    <p style="margin:8px 0 0"><button id="cx">Stop comparing</button></p>`;
+  $('cg').onchange = e => { CMP.showGhost = e.target.checked; paint(); };
+  $('cc').onchange = e => { CMP.showChange = e.target.checked; paint(); };
+  $('cx').onclick = () => { clearCompare(); if (HOST && HOST.compareCleared) HOST.compareCleared(); };
+  $('clegend').querySelectorAll('[data-f]').forEach(r => r.onclick = () => { if (groups.get(r.dataset.f)) focusPart(r.dataset.f); });
+}
+
+// ---------- picture for project cards: the model alone, framed, transparent background
+function snapshot(w = 480, h = 360) {
+  const s0 = new T.Vector2(); renderer.getSize(s0);
+  const p0 = cam.position.clone(), t0 = ctl.target.clone(), bg = scene.background, gv = grid && grid.visible, cv = cutViz.visible;
+  renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+  scene.background = null; if (grid) grid.visible = false; cutViz.visible = false; renderer.setClearColor(0x000000, 0);
+  const box = visibleBox(), c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 5);
+  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.02;
+  cam.position.copy(c).add(new T.Vector3(...VIEWS.iso).normalize().multiplyScalar(d)); cam.lookAt(c); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix();
+  renderer.render(scene, cam);
+  const url = renderer.domElement.toDataURL('image/png');
+  scene.background = bg; if (grid) grid.visible = gv; cutViz.visible = cv;
+  cam.position.copy(p0); ctl.target.copy(t0); resize(); ctl.update(); redraw();
+  return url;
+}
+
+// ---------- build it, step by step (data: kerf/viewer.py assembly_steps, text: ASSEMBLY.md)
+const SD = D.steps, AS = { on: false, i: 0, tok: 0, cards: [], vis: new Set(), future: new Set(), ghostOn: true, playing: false, userCam: false, glyphs: [], labels: [], done: new Set() };
+const DKEY = `kerf-done:${D.project_dir}:${R.fingerprint || ''}`;
+try { AS.done = new Set(JSON.parse(localStorage.getItem(DKEY) || '[]')); } catch (e) {}
+const saveDone = () => { try { localStorage.setItem(DKEY, JSON.stringify([...AS.done])); } catch (e) {} };
+const stepItems = new Set();
+if (SD && SD.steps && SD.steps.length) {
+  $('tabAsm').hidden = false;
+  AS.cards = [{ kind: 'intro' }, ...SD.steps.map(s => ({ kind: 'step', s })), { kind: 'finish' }];
+  for (const s of SD.steps) for (const i of s.present) stepItems.add(i);
+} else if (D.steps_error) console.warn('viewer: no step-by-step mode:', D.steps_error);
+function asmVisible(id) {
+  if (!AS.on) return true;
+  return AS.vis.has(id) || (AS.ghostOn && AS.future.has(id));
+}
+function setGlow(id, k) {
+  const g = groups.get(id); if (!g) return;
+  const m = g.userData.mesh.material; g.userData.glow = k > 0.01;
+  if (selected === id) return;
+  m.emissive.set(css('--accent') || '#2f6fb0'); m.emissiveIntensity = 0.55 * k;
+}
+function itemLook(id) {   // full / ghost (still to come) / hidden, by the step's sets
+  const g = groups.get(id); if (!g) return;
+  if (AS.future.has(id) && !AS.vis.has(id)) { look(g, 0.07); g.userData.edges.material.opacity = 0.12; }
+  else look(g, 1);
+}
+const STEEL = new T.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 0.75, roughness: 0.32, clippingPlanes: CLIP });
+const DARK = new T.MeshStandardMaterial({ color: 0x15181a, roughness: 0.6, clippingPlanes: CLIP });
+const BRASS = new T.MeshStandardMaterial({ color: 0xc9a24a, metalness: 0.8, roughness: 0.3, clippingPlanes: CLIP });
+const Y = new T.Vector3(0, 1, 0);
+function screwGlyph(sc) {
+  const d = parseFloat(String(sc.screw).replace(/[^\d.]/g, '')) || 3, L = sc.len, g = new T.Group(), mat = STEEL.clone();
+  const shank = new T.Mesh(new T.CylinderGeometry(d * 0.46, d * 0.46, L, 18), mat); shank.position.y = L / 2; g.add(shank);
+  if (sc.head === 'countersink') { const hd = new T.Mesh(new T.CylinderGeometry(d * 0.46, d, d * 0.6, 24), mat); hd.position.y = d * 0.3; g.add(hd); const so = new T.Mesh(new T.CylinderGeometry(d * 0.32, d * 0.32, 0.05, 6), DARK); so.position.y = -0.03; g.add(so); }
+  else { const hd = new T.Mesh(new T.CylinderGeometry(d * 0.85, d * 0.85, d, 28), mat); hd.position.y = -d / 2; g.add(hd); const so = new T.Mesh(new T.CylinderGeometry(d * 0.42, d * 0.42, 0.06, 6), DARK); so.position.y = -d - 0.03; g.add(so); }
+  g.userData = { mat, dir: new T.Vector3(...sc.dir).normalize(), at: new T.Vector3(...sc.at), back: L + 6, spin: 0 };
+  g.userData.q = new T.Quaternion().setFromUnitVectors(Y, g.userData.dir);
+  return g;
+}
+function placeScrew(g, out, spin) {   // out = mm backed out of the hole, spin = turns
+  const u = g.userData; g.position.copy(u.at).addScaledVector(u.dir, -out);
+  g.quaternion.copy(u.q).multiply(new T.Quaternion().setFromAxisAngle(Y, spin * 2 * Math.PI));
+}
+function insertGlyph(x) {
+  const g = new T.Group(), mat = BRASS.clone(), r = x.od / 2;
+  const body = new T.Mesh(new T.CylinderGeometry(r, r * 0.92, x.len, 22), mat); body.position.y = x.len / 2; g.add(body);
+  const hole = new T.Mesh(new T.CylinderGeometry(r * 0.55, r * 0.55, 0.06, 18), DARK); hole.position.y = -0.03; g.add(hole);
+  g.userData = { mat, dir: new T.Vector3(...x.dir).normalize(), at: new T.Vector3(...x.at) };
+  g.quaternion.setFromUnitVectors(Y, g.userData.dir);
+  return g;
+}
+function placeInsert(g, out) { g.position.copy(g.userData.at).addScaledVector(g.userData.dir, -out); }
+function addGlyph(parentId, obj) { (groups.get(parentId) || scene).add(obj); AS.glyphs.push(obj); return obj; }
+function clearGlyphs() { for (const o of AS.glyphs) o.parent && o.parent.remove(o); AS.glyphs = []; for (const L of AS.labels) L.el.remove(); AS.labels = []; }
+function label(html, cls, at) { const el = document.createElement('div'); el.className = 'lab ' + (cls || ''); el.innerHTML = html; $('labels').appendChild(el); const L = { el, at, kill() { el.remove(); const k = AS.labels.indexOf(L); if (k >= 0) AS.labels.splice(k, 1); } }; AS.labels.push(L); return L; }
+const centreOf = id => () => { const g = groups.get(id); if (!g || !g.visible) return null; return g.userData.box.getCenter(new T.Vector3()).applyMatrix4(g.matrix); };
+const worldOf = (obj) => () => obj.parent ? obj.getWorldPosition(new T.Vector3()) : null;
+function updLabels() {
+  if (!AS.labels.length) return;
+  const w = stage.clientWidth, h = stage.clientHeight;
+  for (const L of AS.labels) {
+    const p = L.at(); if (!p) { L.el.style.opacity = 0; continue; }
+    const v = p.project(cam), ok = v.z < 1 && Math.abs(v.x) < 1.02 && Math.abs(v.y) < 1.02;
+    L.el.style.opacity = ok ? 1 : 0; L.el.style.left = ((v.x + 1) / 2 * w) + 'px'; L.el.style.top = ((1 - v.y) / 2 * h) + 'px';
+  }
+}
+function pathLine(a, b) {
+  const geo = new T.BufferGeometry().setFromPoints([a, b]);
+  const ln = new T.Line(geo, new T.LineDashedMaterial({ color: css('--accent'), dashSize: 2.2, gapSize: 1.6, transparent: true, opacity: 0.9, depthTest: false }));
+  ln.computeLineDistances(); ln.renderOrder = 5; scene.add(ln); AS.glyphs.push(ln); return ln;
+}
+const VIEWDIRS = [[1, -1.25, 0.9], [-1, -1.25, 0.9], [1, 1.25, 0.9], [-1, 1.25, 0.9], [1.4, -0.4, 0.7], [-0.4, -1.4, 0.7], [0.3, -1, 1.6]].map(v => new T.Vector3(...v).normalize());
+const occRay = new T.Raycaster();
+function viewFor(s, box) {
+  // Best view for a step: the new parts not hidden behind the parts already on (rays from each candidate camera to
+  // points on the new parts, blocked = hidden), then the parts sliding across the screen rather than at the camera,
+  // then the smallest camera swing.
+  const nu = s.groups.flatMap(g => g.items), offs = s.groups.map(g => new T.Vector3(...g.off).normalize());
+  const mesh = id => { const g = groups.get(id); if (!g) return null; g.updateMatrixWorld(true); return g.userData.mesh; };
+  const before = s.present.filter(id => !nu.includes(id)).map(mesh).filter(Boolean), all = s.present.map(mesh).filter(Boolean);
+  const pts = [];   // [point, blockers]: the new parts against the parts already on; screws and inserts against everything
+  for (const id of nu) { const b = groups.get(id).userData.box, c = b.getCenter(new T.Vector3()); pts.push([c, before]);
+    for (const sx of [0.3, 0.7]) for (const sz of [0.3, 0.7]) pts.push([new T.Vector3(b.min.x + (b.max.x - b.min.x) * sx, (b.min.y + b.max.y) / 2, b.min.z + (b.max.z - b.min.z) * sz), before]); }
+  for (const x of [...s.screws, ...s.inserts]) pts.push([new T.Vector3(...x.at).addScaledVector(new T.Vector3(...x.dir), -(x.len * 0.5 + 3)), all]);
+  const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 8), d = r / Math.sin(cam.fov * Math.PI / 360) * 1.12;
+  const cur = cam.position.clone().sub(ctl.target).normalize();
+  let best = VIEWDIRS[0], bs = Infinity;
+  for (const v of VIEWDIRS) {
+    const eye = c.clone().addScaledVector(v, d);
+    let hid = 0;
+    for (const [p, bl] of pts) {
+      if (!bl.length) continue;
+      const dir = p.clone().sub(eye), L = dir.length(); occRay.set(eye, dir.normalize()); occRay.far = L - 0.5;
+      if (occRay.intersectObjects(bl, false).length) hid++;
+    }
+    const sc = (pts.length ? hid / pts.length : 0) * 2 + 0.5 * Math.max(0, ...offs.map(o => Math.abs(v.dot(o)))) - 0.15 * v.dot(cur);
+    if (sc < bs) { bs = sc; best = v; }
+  }
+  return best;
+}
+function resetPose() { asmOff.clear(); for (const j of D.joints) val.set(j.name, j.home); explode = 0; const ex = $('ex'); if (ex) { ex.value = 0; $('exv').textContent = '0 mm'; } pose(); }
+function setSets(vis, future) { AS.vis = new Set(vis); AS.future = new Set(future); for (const id of solidIds) itemLook(id); applyVis(); }
+async function demoJoint(name, tok) {
+  const j = J.get(name); if (!j) return;
+  const u = j.kind === 'revolute' ? '°' : ' mm', c = groups.get(j.child) ? centreOf(j.child) : null;
+  const L = label(`<b>${esc(name)}</b> <span>moves freely ${fmt(j.range[0])} to ${fmt(j.range[1])}${u}</span>`, 'move', c || (() => ctl.target.clone()));
+  const a = j.home, lo_ = j.range[0], hi_ = j.range[1];
+  await tween(3200, k => { const s = Math.sin(k * Math.PI * 2); setJ(name, s >= 0 ? a + (hi_ - a) * s : a + (a - lo_) * s); }, lin);
+  if (tok !== AS.tok) return; setJ(name, a);
+  setTimeout(() => L.kill(), 400);
+}
+async function flyIn(grp, tok, k) {   // parts appear back along the way they go on, then slide home together
+  const off = new T.Vector3(...grp.off), from = new Map();
+  for (const id of grp.items) { asmOff.set(id, off.clone()); from.set(id, off.clone()); AS.vis.add(id); AS.future.delete(id); look(groups.get(id), 0); }
+  applyVis(); pose();
+  for (const id of grp.items) label(`<b>${esc(id)}</b> <span>${esc(groups.get(id).userData.it.label || '')}</span>`, '', centreOf(id));
+  await tween(300, t => { for (const id of grp.items) { look(groups.get(id), t); setGlow(id, t); } }, lin);
+  return async () => {
+    if (tok !== AS.tok) return;
+    const lines = grp.items.map(id => { const g = groups.get(id), c = g.userData.box.getCenter(new T.Vector3()); return pathLine(c.clone().add(off), c); });
+    await tween(1400, t => { if (tok !== AS.tok) return; for (const id of grp.items) { const o = asmOff.get(id); if (o) o.copy(off).multiplyScalar(1 - t); } pose(); });
+    if (tok !== AS.tok) return;
+    for (const id of grp.items) asmOff.delete(id); pose();
+    tween(500, t => { for (const l of lines) l.material.opacity = 0.9 * (1 - t); }, lin);
+  };
+}
+async function driveScrews(list, tok, label_) {
+  if (!list.length) return;
+  const gs = list.map(sc => { const g = addGlyph(AS.vis.has(sc.female) ? sc.female : sc.male, screwGlyph(sc)); placeScrew(g, g.userData.back, 0); g.userData.mat.transparent = true; g.userData.mat.opacity = 0; return g; });
+  const cnt = {}; for (const sc of list) { const k = `${sc.screw} × ${fmt(sc.len)} mm ${sc.head === 'countersink' ? 'flat head' : 'socket head'}`; cnt[k] = (cnt[k] || 0) + 1; }
+  label(Object.entries(cnt).map(([k, n]) => `<b>${n} × ${esc(k)}</b>`).join('<br>') + (label_ ? `<br><span>${esc(label_)}</span>` : ''), 'screw', worldOf(gs[0]));
+  await tween(250, t => { for (const g of gs) g.userData.mat.opacity = t; }, lin);
+  for (const g of gs) { g.userData.mat.transparent = false; g.userData.mat.emissive.set(0xc63d2f); }
+  await Promise.all(gs.map((g, i) => wait(i * 90).then(() => tween(1300, t => { placeScrew(g, g.userData.back * (1 - t), 4 * t); g.userData.mat.emissiveIntensity = 0.5 * (1 - t); }))));
+}
+async function pressInserts(list, tok) {
+  if (!list.length) return;
+  const gs = list.map(x => { const g = addGlyph(x.item, insertGlyph(x)); placeInsert(g, x.len + 8); g.userData.mat.emissive.set(0xff5a00); g.userData.mat.emissiveIntensity = 1; return g; });
+  const by = {}; for (const x of list) by[x.screw] = (by[x.screw] || 0) + 1;
+  label(Object.entries(by).map(([s, n]) => `<b>${n} × ${esc(s)} heat-set insert${n > 1 ? 's' : ''}</b>`).join('<br>') + '<br><span>hot iron, press flush, hold flat while it cools</span>', 'ins', worldOf(gs[0]));
+  const L = list.map(x => x.len + 8);
+  await Promise.all(gs.map((g, i) => wait(i * 70).then(() => tween(800, t => { placeInsert(g, L[i] * (1 - t)); }))));
+  await tween(700, t => { for (const g of gs) g.userData.mat.emissiveIntensity = 1 - t; }, lin);
+}
+async function showCard(i, animate = true) {
+  const tok = ++AS.tok; cancelTweens(); clearGlyphs();
+  for (const id of solidIds) setGlow(id, 0);
+  AS.i = Math.max(0, Math.min(AS.cards.length - 1, i)); AS.userCam = false;
+  resetPose(); renderAsm();
+  const c = AS.cards[AS.i];
+  if (c.kind !== 'step') {
+    const all = solidIds.filter(id => stepItems.has(id) || c.kind === 'finish');
+    setSets(all, []);
+    for (const id of all) if (!stepItems.has(id)) look(groups.get(id), 0.45);   // bench items, not fitted to the build
+    await frameBox(boxOf(all), new T.Vector3(...VIEWS.iso), animate ? 900 : 0);
+    if (c.kind === 'intro' && AS.playing) { await wait(1200); if (tok === AS.tok && AS.playing) showCard(AS.i + 1); return; }
+    if (c.kind === 'finish' && animate && tok === AS.tok) {
+      for (const n of D.joints.map(j => j.name)) { if (tok !== AS.tok) return; await demoJoint(n, tok); }
+      if (tok === AS.tok && !AS.userCam) await turntable(tok);
+      AS.playing = false; renderBar();
+    }
+    return;
+  }
+  const s = c.s, nu = new Set(s.groups.flatMap(g => g.items));
+  const future = s.bench_for ? [] : [...stepItems].filter(id => !s.present.includes(id));
+  setSets(s.present.filter(id => !nu.has(id)), [...future, ...nu]);
+  // what earlier steps left in place: their screws driven home, their inserts pressed in (steel / brass, no glow)
+  for (const t of SD.steps) {
+    if (t.n >= s.n || (t.bench_for && t.bench_for > s.n && !s.bench_for)) continue;
+    for (const sc of t.screws) if (s.present.includes(sc.male) && s.present.includes(sc.female)) placeScrew(addGlyph(sc.female, screwGlyph(sc)), 0, 0);
+    for (const x of t.inserts) if (s.present.includes(x.item)) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
+  }
+  const offs = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)])));
+  const box = boxOf(s.present).union(boxOf([...nu], offs));
+  if (!animate) {
+    setSets(s.present, future);
+    for (const sc of s.screws) placeScrew(addGlyph(AS.vis.has(sc.female) ? sc.female : sc.male, screwGlyph(sc)), 0, 0);
+    for (const x of s.inserts) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
+    return frameBox(box, viewFor(s, box), 0);
+  }
+  const cam_ = frameBox(box, viewFor(s, box), 900);
+  await wait(250); if (tok !== AS.tok) return;
+  const p1 = s.groups.filter(g => g.phase === 1), p2 = s.groups.filter(g => g.phase === 2);
+  const slides1 = await Promise.all(p1.map(g => flyIn(g, tok)));
+  await cam_; if (tok !== AS.tok) return;
+  await pressInserts(s.inserts, tok); if (tok !== AS.tok) return;
+  await Promise.all(slides1.map(f => f())); if (tok !== AS.tok) return;
+  await wait(300); if (tok !== AS.tok) return;
+  await driveScrews(s.screws.filter(x => x.phase === 1), tok, 'snug, then stop'); if (tok !== AS.tok) return;
+  for (const g of p2) { const f = await flyIn(g, tok); if (tok !== AS.tok) return; await f(); if (tok !== AS.tok) return; }
+  await driveScrews(s.screws.filter(x => x.phase === 2), tok, 'snug, then stop'); if (tok !== AS.tok) return;
+  for (const n of s.demos) { await demoJoint(n, tok); if (tok !== AS.tok) return; }
+  await tween(600, t => { for (const id of nu) setGlow(id, 1 - t); }, lin);
+  if (tok !== AS.tok) return;
+  if (AS.playing) { await wait(1300); if (tok === AS.tok && AS.playing) showCard(AS.i + 1); }
+}
+async function turntable(tok) {
+  const p0 = cam.position.clone().sub(ctl.target), t0 = ctl.target.clone();
+  await tween(7000, k => { if (AS.userCam) return; const a = k * Math.PI * 2; cam.position.copy(t0).add(p0.clone().applyAxisAngle(new T.Vector3(0, 0, 1), a)); }, easeIO);
+}
+const mdInline = t => esc(t).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+function mdLite(lines) {   // the bullets ASSEMBLY.md uses: "- " lists nested by 2 spaces, "1." lists, plain lines
+  let h = '', depth = -1;
+  const close = d => { while (depth > d) { h += '</li></ul>'; depth--; } };
+  for (const raw of lines) {
+    if (!raw.trim()) { close(-1); continue; }
+    const m = raw.match(/^(\s*)(?:[-*]|\d+\.)\s+(.*)$/);
+    if (m) {
+      const d = Math.floor(m[1].length / 2);
+      if (d > depth) { while (depth < d) { h += '<ul>'; depth++; if (depth < d) h += '<li>'; } }
+      else { close(d); h += '</li>'; }
+      h += '<li>' + mdInline(m[2]);
+    } else { close(-1); h += `<p style="margin:4px 0">${mdInline(raw)}</p>`; }
+  }
+  close(-1);
+  return h;
+}
+function chipsFor(s) {
+  const nu = s.groups.flatMap(g => g.items);
+  let h = nu.map(id => { const it = groups.get(id).userData.it; return `<span class="chip" data-hl="${esc(id)}"><span class="sw" style="background:${esc(it.color)}"></span>${esc(id)}</span>`; }).join('');
+  const sc = {}; for (const x of s.screws) { const k = `${x.screw}×${fmt(x.len)}`; sc[k] = (sc[k] || 0) + 1; }
+  h += Object.entries(sc).map(([k, n]) => `<span class="chip screw"><span class="sw"></span>${n} × ${esc(k)} screw${n > 1 ? 's' : ''}</span>`).join('');
+  const ins = {}; for (const x of s.inserts) ins[x.screw] = (ins[x.screw] || 0) + 1;
+  h += Object.entries(ins).map(([k, n]) => `<span class="chip ins"><span class="sw"></span>${n} × ${esc(k)} insert${n > 1 ? 's' : ''}</span>`).join('');
+  h += s.demos.map(n => `<span class="chip move"><span class="sw"></span>${esc(n)} must move freely</span>`).join('');
+  return h;
+}
+function renderBar() {
+  const c = AS.cards[AS.i], n = SD.steps.length;
+  $('ab_t').innerHTML = c.kind === 'intro' ? '<b>Before you start</b>' : c.kind === 'finish' ? '<b>Finished</b>' : `<b>Step ${c.s.n}/${n}</b> · ${esc(c.s.title)}`;
+  $('ab_play').textContent = AS.playing ? '❚❚' : '▶';
+  $('ab_prev').disabled = AS.i === 0; $('ab_next').disabled = AS.i === AS.cards.length - 1;
+}
+function renderAsm() {
+  if (!AS.cards.length) return;
+  const c = AS.cards[AS.i], n = SD.steps.length;
+  let h = `<div class="tl">${AS.cards.map((x, k) => `<button data-go="${k}" class="${k === AS.i ? 'cur' : ''} ${x.kind === 'step' && AS.done.has(x.s.n) ? 'done' : ''}" title="${x.kind === 'step' ? `Step ${x.s.n}: ${esc(x.s.title)}` : x.kind === 'intro' ? 'Before you start' : 'Finished'}"></button>`).join('')}</div>`;
+  if (c.kind === 'intro') {
+    h += `<div class="ah"><h3>Build it, step by step</h3></div>
+      <p class="pd" style="margin-top:0">${printed.length} printed part${printed.length === 1 ? '' : 's'}, ${bought.length} bought part${bought.length === 1 ? '' : 's'}, ${n} step${n === 1 ? '' : 's'}. Each step flies the new parts in the way they go on, drives the screws and shows any joint that must move freely.</p>`;
+    h += `<div class="txt">${SD.intro.map(x => `<h4>${esc(x.title)}</h4>${mdLite(x.lines)}`).join('')}</div>`;
+  } else if (c.kind === 'finish') {
+    const k = SD.steps.filter(x => AS.done.has(x.n)).length;
+    h += `<div class="ah"><h3>Finished</h3><span class="n">${k} of ${n} steps ticked off</span></div>
+      <p class="fin">${k === n ? '✓ Every step done: it\'s built.' : 'That\'s the whole build.'}</p>
+      <div class="txt">${SD.outro.map(x => `<h4>${esc(x.title)}</h4>${mdLite(x.lines)}`).join('') || '<p class="pd">Every joint is shown moving through its range.</p>'}</div>`;
+  } else {
+    const s = c.s;
+    h += `<div class="ah"><span class="n">Step ${s.n} of ${n}</span>${s.bench_for ? `<span class="tag">on the bench · joins in step ${s.bench_for}</span>` : ''}</div><h3>${esc(s.title)}</h3>
+      <div class="chips">${chipsFor(s)}</div><div class="txt">${mdLite(s.lines)}</div>
+      <div class="donebox ${AS.done.has(s.n) ? 'on' : ''}" id="dbx">${AS.done.has(s.n) ? '✓ Done' : '☐ Mark this step done'}</div>`;
+  }
+  h += `<div class="ctrls"><button id="a_prev" ${AS.i === 0 ? 'disabled' : ''}>◀ Back</button><button id="a_re">↻ Replay</button>
+      <button id="a_next" class="on" ${AS.i === AS.cards.length - 1 ? 'disabled' : ''}>Next ▶</button><span class="sp"></span>
+      <button id="a_play">${AS.playing ? '❚❚ Pause' : '▶ Play all'}</button></div>
+    <div class="opt"><label><input type="checkbox" id="a_ghost" ${AS.ghostOn ? 'checked' : ''}> show parts still to come (faint)</label></div>
+    <div class="opt">Speed <select id="a_speed">${[0.5, 1, 2].map(v => `<option value="${v}" ${v === speed ? 'selected' : ''}>${v}×</option>`).join('')}</select>
+      <span class="pd">· keys: ← → space R</span></div>`;
+  const el = $('asm'); el.innerHTML = h;
+  el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { AS.playing = false; showCard(+b.dataset.go); });
+  $('a_prev').onclick = () => go(-1); $('a_next').onclick = () => go(1); $('a_re').onclick = () => showCard(AS.i);
+  $('a_play').onclick = togglePlay;
+  $('a_ghost').onchange = e => { AS.ghostOn = e.target.checked; for (const id of solidIds) itemLook(id); applyVis(); };
+  $('a_speed').onchange = e => { speed = +e.target.value; };
+  if ($('dbx')) $('dbx').onclick = () => { const k = c.s.n; AS.done.has(k) ? AS.done.delete(k) : AS.done.add(k); saveDone(); renderAsm(); };
+  el.querySelectorAll('[data-hl]').forEach(x => { x.onmouseenter = () => setGlow(x.dataset.hl, 1); x.onmouseleave = () => setGlow(x.dataset.hl, 0); });
+  renderBar();
+}
+function go(d) { AS.playing = false; if (AS.i + d >= 0 && AS.i + d < AS.cards.length) showCard(AS.i + d); }
+function togglePlay() { AS.playing = !AS.playing; if (AS.playing) showCard(AS.i === AS.cards.length - 1 || AS.cards[AS.i].kind === 'intro' ? 1 : AS.i); else renderAsm(); }
+function asmEnter() {
+  if (AS.on || !AS.cards.length) return;
+  AS.on = true; colorMode = 'normal'; paint(); $('abar').hidden = false; $('hint').style.display = 'none';
+  if (anim.size) anim.clear();
+  showCard(AS.i, true);
+}
+function asmExit() {
+  AS.on = false; AS.playing = false; ++AS.tok; cancelTweens(); clearGlyphs();
+  for (const id of solidIds) { setGlow(id, 0); look(groups.get(id), 1); }
+  resetPose(); applyVis(); $('abar').hidden = true; $('hint').style.display = '';
+  renderMotion(); paint();
+}
+$('ab_prev').onclick = () => go(-1); $('ab_next').onclick = () => go(1); $('ab_re').onclick = () => showCard(AS.i); $('ab_play').onclick = togglePlay;
+ctl.addEventListener('start', () => { AS.userCam = true; });
+document.addEventListener('keydown', e => {
+  if (!AS.on || /input|textarea|select/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') { go(1); e.preventDefault(); } else if (e.key === 'ArrowLeft') { go(-1); e.preventDefault(); }
+  else if (e.key === ' ') { togglePlay(); e.preventDefault(); } else if (e.key === 'r' || e.key === 'R') showCard(AS.i);
+});
+
 // ---------- go ----------
 // one broken side panel must never blank the 3D view: each panel renders on its own and reports its own error
 for (const f of [restyle, renderMotion, renderParts, renderBom, renderPrint, renderChecks]) {
@@ -437,11 +1008,15 @@ pose(); resize(); view('iso'); fit();
 ctl.addEventListener('change', redraw);
 (function loop(t) {
   for (const [n, t0] of anim) { const j = J.get(n), ph = ((t - t0) / 4000) % 1, s = 0.5 - 0.5 * Math.cos(ph * 2 * Math.PI); setJ(n, j.range[0] + s * (j.range[1] - j.range[0])); }
+  stepTweens(t);
   ctl.update();
-  if (dirty) { renderer.render(scene, cam); dirty = false; }
+  if (dirty) { if (AS.on) updLabels(); renderer.render(scene, cam); dirty = false; }
   requestAnimationFrame(loop);
 })(performance.now());
-window.__kerf = { D, setJ, pose, groups, view, fit, inspect, faceOf, camera: cam, set explode(v) { explode = v; pose(); } };
+window.__kerf = { D, setJ, pose, groups, view, fit, inspect, faceOf, camera: cam, set explode(v) { explode = v; pose(); },
+  snapshot, compare, clearCompare, paint, restyle, get colorMode() { return colorMode; }, set colorMode(m) { colorMode = m; paint(); },
+  cut(on, ax = 'y', t = null, flip = null) { CUT.on = on; CUT.ax = ax; if (on) cutDefaults(); if (t != null) CUT.t = t; if (flip != null) CUT.flip = flip; applyCut(); },
+  asm: { get on() { return AS.on; }, get i() { return AS.i; }, cards: AS.cards, show: showCard, go, get busy() { return TW.length > 0; }, set speed(v) { speed = v; } } };
 })();
 </script>
 </body>
