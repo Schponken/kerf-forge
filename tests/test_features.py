@@ -156,3 +156,16 @@ def test_fillet_inside_rounds_concave_corners_and_keeps_the_ones_asked():
     assert sharp == [] and ok[0]["why"] == "the fixture's square corner sits here"
     with pytest.raises(Exception, match="why"):
         c.keep_sharp((0, 0, 0), "")
+
+
+def test_fillet_inside_leaves_a_ceiling_corner_square():
+    """Upside down, the L's inside corner sits under a ceiling: a fillet there would overhang, so it stays square and
+    is declared (no support material for a cosmetic radius)."""
+    from build123d import Rot
+    from kerf import edges as E
+    from kerf.ctx import Ctx
+    L = Box(30, 20, 4, align=(Align.MIN, Align.MIN, Align.MIN)) + Box(4, 20, 20, align=(Align.MIN, Align.MIN, Align.MIN))
+    c = Ctx("t", {}, {"spec": {"print_rot": [0, 0, 0]}})
+    out, failed = F.fillet_inside(c, Rot(180, 0, 0) * L, 2.0)
+    assert failed == [] and out.volume == pytest.approx(L.volume)
+    assert "overhang" in c.sharp_ok[0]["why"]

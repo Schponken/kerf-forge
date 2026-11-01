@@ -15,7 +15,6 @@ edge; the motor screw heads sit 0.5 mm deep in their counterbores.
 """
 from build123d import *
 from kerf import iface, features as F
-from kerf.edges import sharp_inside
 
 MOTOR = "drone.motors.2207_1855kv_6s"
 TIP_W = 14.0                                    # arm width where it meets the motor pad (20 at the root)
@@ -81,20 +80,26 @@ def build(ctx):
         body -= ctx.cut(Pos(x - 1.5, 0, 0) * extrude(Plane.YZ * make_face(tside), amount=3.0),
                         why="cable tie under the wires and over the rails; cuts only the rail feet near the top face",
                         kind="tie slot")
-    # every concave edge the channel, rails and tie slots made: filleted (kerf.edges finds them)
-    # (the tie slots' own corners stay sharp: 3 mm slots the tie bears on, in the outer arm where the crash moment is
-    # at most 74 % of its value at the outer clamp screw; DESIGN.md)
-    pts = {tuple(c["at"]) for c in sharp_inside(body) if WIRE_X0 - 2 < c["at"][0] < WIRE_X1 + 2
-           and min(abs(c["at"][0] - x) for x in TIE_X) > 1.6}
-    conc = [e for e in body.edges() if tuple(round(v, 1) for v in e.center()) in pts]
-    body, failed = F.safe_fillet(body, [(conc, 0.5)])
-    for f in failed:
-        ctx.notes.append(f"channel fillet skipped: {f}")
     under = Location((0, 0, -t), (180, 0, 0))       # bottom face, +Z toward the screw heads (down)
     body -= iface.bolt_pattern(ctx, f"arm_{n}", "M3", [(p.arm_hole_1, 0), (p.arm_hole_2, 0)], under, "counterbore",
                                depth=t, counterbore_depth=t - 6.0)  # grip 6 -> M3 x 12 into the sunk body nut
     body -= iface.motor_mount(ctx, MOTOR, Location((p.motor_r, 0, -t), (180, 0, 0)), f"motor_{n}", plate_t=t,
                               kind="counterbore", counterbore_depth=t - 7.5)  # grip 7.5 -> M3 x 10, 2.5 mm in the motor
+    # why: every remaining sharp inside corner rounded (r 0.5, the channel's scale; ENGINEERING.md s5). Left square: the
+    # tie slots' own corners (3 mm slots the tie bears on, in the outer arm where the crash moment is at most 74 % of its
+    # value at the outer clamp screw) and the ridges' inner ends (against the body groove's closed end)
+    def keep(at):
+        x, y, z = at
+        if min(abs(x - xt) for xt in TIE_X) < 1.6 and z > -CH_FLOOR - 0.05:
+            return "cable-tie slot corner: the tie bears on it; outer arm, at most 74 % of the clamp-screw crash moment"
+        if abs(x - p.arm_r0) < 0.3 and z > -0.05:
+            return "key ridge's inner end, square against the body groove's closed end"
+        if abs(z) < 0.05 and min(abs(x - WIRE_X0), abs(x - WIRE_X1)) < 1.6 and abs(y) > CH_W / 2:
+            return ("rail end: an open 135-degree corner where the 45-degree end ramp meets the arm top beside the 60-degree "
+                    "flank; OCC cannot fillet the junction (the mirror one takes it); outer arm, compression side")
+        return None
+    body, left = F.fillet_inside(ctx, body, 0.5, keep=keep)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     ctx.rigid("root", Location((0, 0, 0)))
     ctx.rigid("motor", Location((p.motor_r, 0, 0)))
     return ctx.finish(body, color="#2a2d31")

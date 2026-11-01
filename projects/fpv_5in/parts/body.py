@@ -102,6 +102,23 @@ def build(ctx):
     # (not F.bed_chamfer: chamfering the post counterbore mouths moved the body FEA hot spot at the post feet)
     body -= iface.bolt_pattern(ctx, "posts", "M3", [(x, -y) for x, y in POSTS], Location((0, 0, 0), (180, 0, 0)),
                                "counterbore", depth=t)
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); the arm key
+    # grooves stay square (the arm ridges' square tops sit in them), corners under a ceiling stay square (overhang)
+    import math as _m
+
+    def keep(at):
+        x, y, z = at
+        if 0.05 < z < RIDGE_H + 0.3:
+            return "arm key groove floor: the arm ridge's square top sits in it (0.2 mm clearance)"
+        if abs(z - t) < 0.05 and abs(_m.hypot(x, y) - 57.6) < 1.5:
+            return ("top rib end, 0.5 mm inside the plate edge: the strip left is too narrow for a fillet; past the outer arm "
+                    "screw the rib carries little (its sides have r 1 roots)")
+        if abs(z - t) < 0.05 and 40 < x < 45 and 11 < abs(y) < 18:
+            return ("cheek back end / gusset toe on the plate top, where three blends meet: OCC cannot fillet it; the cheek "
+                    "carries only the camera (4 g) and its sides have fillets")
+        return None
+    body, left = F.fillet_inside(ctx, body, 1.0, keep=keep)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     ctx.rigid("stack", Location((0, 0, t)))
     ctx.rigid("top", Location((0, 0, t)))
     ctx.revolute("cam_tilt", Axis((p.cam_x, 0, p.cam_z), (0, -1, 0)), range=(0, 40))

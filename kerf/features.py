@@ -309,26 +309,60 @@ def _meshes(shape) -> bool:
         return False
 
 
+def _print_up(ctx):
+    """The printer's up direction in the part frame (from the part's print_rot), as bed_edges uses it."""
+    rot = ((getattr(ctx, "meta", None) or {}).get("spec") or {}).get("print_rot") or [0, 0, 0]
+    return (Location((0, 0, 0), tuple(float(a) for a in rot)).inverse() * Location((0, 0, 1))).position
+
+
+def _fillet_faces_down(shape, e, up) -> bool:
+    """True when a fillet on concave edge e would face more than 45 degrees down on the printer (an overhang): its
+    surface normals sweep from one face's normal to the other's."""
+    fs = [f for f in shape.faces() if any(e.is_same(x) for x in f.edges())]
+    if len(fs) != 2:
+        return False
+    c = e.center()
+    n1, n2 = fs[0].normal_at(c), fs[1].normal_at(c)
+    for k in range(11):
+        t = k / 10
+        v = n1 * (1 - t) + n2 * t
+        if v.length > 1e-9 and v.normalized().dot(up) < -0.7072:
+            return True
+    return False
+
+
 def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
     """Round every sharp inside corner the build check would report (kerf.edges.sharp_inside: straight concave edges
     between flat faces, the corners of interface features exempt) with radius r, then r / 2 on those r doesn't fit
     (they run into a hole, a chamfer or a thin strip); a pass whose result OCC or gmsh (kerf.fea's mesher) cannot mesh
-    is dropped. keep(at) -> a reason string leaves a corner sharp on purpose
-    (a mating part's square corner sits in it); it is declared with ctx.keep_sharp, so the report lists it with that
-    reason instead of warning. Returns (shape, failed): the
-    corners left sharp that keep() did not ask for, as "(x, y, z)" strings for ctx.notes."""
+    is dropped. A corner whose fillet would face more than 45 degrees down as printed (the corner under a ceiling) is
+    left square and declared: rounding it would add an overhang. keep(at) -> a reason string leaves a corner sharp on
+    purpose (a mating part's square corner sits in it); it is declared with ctx.keep_sharp, so the report lists it
+    with that reason instead of warning. Returns (shape, failed): the corners left sharp that were not declared, as
+    "(x, y, z)" strings for ctx.notes."""
     from build123d import Vector
     from . import edges as E
     sites = getattr(ctx, "sites", None) or []
+    up = _print_up(ctx)
+    DOWN = "a fillet here would face down as printed (an overhang under a ceiling); left square"
+
+    def why_kept(s, c, e):
+        if keep is not None:
+            w = keep(c["at"])
+            if w:
+                return w
+        return DOWN if e is not None and _fillet_faces_down(s, e, up) else None
+
+    def edge_of(s, c):
+        at = Vector(*c["at"])
+        e = min(s.edges(), key=lambda x: (x.center() - at).length + abs(x.length - c["len"]))
+        return e if (e.center() - at).length < 0.1 else None
 
     def pick(s):
         out = []
         for c in E.sharp_inside(s, sites):
-            if keep is not None and keep(c["at"]):
-                continue
-            at = Vector(*c["at"])
-            e = min(s.edges(), key=lambda x: (x.center() - at).length + abs(x.length - c["len"]))
-            if (e.center() - at).length < 0.1:
+            e = edge_of(s, c)
+            if e is not None and not why_kept(s, c, e):
                 out.append(e)
         return out
 
@@ -339,9 +373,9 @@ def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
         new, _ = safe_fillet(shape, [(todo, size)])
         if _meshes(new):
             shape = new
-    if keep is not None and hasattr(ctx, "keep_sharp"):
+    if hasattr(ctx, "keep_sharp"):
         for c in E.sharp_inside(shape, sites):
-            why = keep(c["at"])
-            if why:
-                ctx.keep_sharp(c["at"], why)
+            w = why_kept(shape, c, edge_of(shape, c))
+            if w:
+                ctx.keep_sharp(c["at"], w)
     return shape, [f"({e.center().X:.1f}, {e.center().Y:.1f}, {e.center().Z:.1f})" for e in pick(shape)]
