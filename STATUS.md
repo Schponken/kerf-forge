@@ -1137,3 +1137,20 @@ pushed for it and what I know:
   textured PEI, dry 65 C / 8 h (https://shop3duniverse.com/products/bambu-lab-petg-hf-1-75mm-1kg). Max volumetric
   speeds still need a source (Bambu Studio filament profiles `filament_max_volumetric_speed`); the Bambu TDS PDFs on
   polyalkemi.no needed a fetch permission that was not answered in this unattended run.
+
+## 2026-11-01 — session 01S68R6Q: ASSEMBLY.md, WIRING.md, Renders (PLAN Phase 6)
+- ASSEMBLY.md: Step 0 test-fit / `kerf calibrate` (or "your profile is applied"); Step 0b centres every servo before
+  any horn, with the generated bring-up program (kerf/firmware.py: Nano sketch, Nano + PCA9685 sketch, or Pi hardware
+  PWM script, from the new `pin:` key on servo signal runs; datasheet-minimum us/deg so a joint never overshoots;
+  flight-controller projects get a props-off checklist). A step whose part mates onto a later parent is a bench
+  sub-assembly joined at the parent's step; screws/pins go where their parts first form one piece (pan_tilt's tilt
+  horn + bracket now go on after the tilt servo). Screws in hand-feel terms, shoulder pivot split into short lines,
+  long notes split, human part names, "Bench electronics (not mounted)". Test: no project fits a part onto a later one.
+- WIRING: routes told by landmarks (part / feature names), Pi pins with physical header numbers and the GND pin
+  beside them, a fitting step for every electrical bom_extra row.
+- Renders: plastic, not glTF-default metal (a black part: median 17 -> 105 grey); near-black parts lifted with light
+  edges; floor grid fixed (it was sized in mm on a metre model and never showed) as a 10 mm plate; step images framed
+  on the step's parts with call-outs, this step's screws in red; part sheets titled with the overall size.
+- Not verified on hardware: the Arduino sketches compile against stub headers only (arduino-cli could not be installed
+  here); the Pi script is tested against a fake sysfs tree.
+- Resumed robotic_gripper_desk / robotic_gripper_claw from the Mac checkout's unpushed work (no restart).
