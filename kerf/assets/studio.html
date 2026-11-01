@@ -24,6 +24,11 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;display:flex;overflow:hidden}
 button{font:inherit;cursor:pointer;white-space:nowrap;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:9px;padding:7px 13px;transition:border-color .15s,transform .1s,background .15s,box-shadow .2s}
 button:hover{border-color:var(--muted)}
+a.btn{display:inline-block;text-decoration:none;font:inherit;white-space:nowrap;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:9px;padding:7px 13px}
+a.btn:hover{border-color:var(--muted)}
+button small{opacity:.75;font-weight:500;margin-left:4px}
+.param .unit{color:var(--muted);font-size:12px;min-width:30px}
+.param .affects{margin-top:2px;opacity:.85}
 button:active{transform:scale(.97)}
 button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:var(--accent-ink);font-weight:650}
 button.primary:hover{box-shadow:0 0 22px var(--glow)}
@@ -280,6 +285,7 @@ const api = async (path, body) => {
 const fileUrl = (p, rel) => `/files/${p}/${rel.split("/").map(encodeURIComponent).join("/")}`;
 const fmt = v => v == null ? "–" : (typeof v === "number" ? (Math.abs(v) >= 100 ? v.toFixed(0) : +v.toFixed(3)) : esc(Array.isArray(v) ? v.join(", ") : v));
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const about = s => s == null ? "" : s < 90 ? `~${Math.max(10, Math.round(s / 10) * 10)} s` : `~${Math.round(s / 60)} min`;
 // elements animate in only the first time they appear (polling re-renders must not replay animations)
 const fresh = key => { if (S.shown.has(key)) return ""; S.shown.add(key); return " new-in"; };
 
@@ -328,13 +334,15 @@ async function loadProjects() {
     S.projects = d.projects; S.claude = d.claude; S.platform = d.platform;
     renderList();
     if (!S.sel && S.projects.length && !S.newOpen) select(S.projects[0].name);
+    if (!S.projects.length && !S.newOpen) welcome();
     S.fails = 0;
   } catch (e) { if (++S.fails >= 3 && !S.closed) closedScreen(); }
 }
 function renderList() {
   const unbuilt = S.projects.filter(p => !p.built).length;
   $("#buildall").style.display = unbuilt ? "" : "none";
-  $("#buildall button").textContent = `⚙ Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}`;
+  const est = S.projects.filter(p => !p.built).reduce((a, p) => a + (p.build_s || 0), 0);
+  $("#buildall button").textContent = `⚙ Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}${est ? " (" + about(est) + ")" : ""}`;
   const q = ($("#search").value || "").toLowerCase(), first = !S.listed; S.listed = true;
   $("#plist").innerHTML = S.projects.filter(p => !q || (p.title + p.name + p.description).toLowerCase().includes(q)).map((p, i) => {
     const run = p.running && p.running.length;
@@ -347,26 +355,35 @@ function renderList() {
 async function select(name, keepTab) {
   S.sel = name; S.newOpen = false; S.edits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
-  try { S.detail = await api(`/api/project/${name}`); } catch (e) { $("#main").innerHTML = `<div class="body"><div class="banner bad">${esc(e.message)}</div></div>`; return; }
+  const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
+  let d;
+  try { d = await api(`/api/project/${name}`); } catch (e) { if (ticket === S.ticket) $("#main").innerHTML = `<div class="body"><div class="banner bad">${esc(e.message)}</div></div>`; return; }
+  if (ticket !== S.ticket) return;
+  S.detail = d;
   renderProject();
 }
-async function refreshDetail() { if (S.sel && !S.newOpen) { try { S.detail = await api(`/api/project/${S.sel}`); renderProject(); } catch (e) {} } }
+async function refreshDetail() { if (S.sel && !S.newOpen) { const name = S.sel; try { const d = await api(`/api/project/${name}`); if (name === S.sel) { S.detail = d; renderProject(); } } catch (e) {} } }
 
 function renderProject() {
   const d = S.detail; if (!d) return;
   const plates = d.files.some(f => f.startsWith("out/plates/") && f.endsWith(".3mf"));
-  const tabs = [["model","3D model"],["tune","Tune"],["results","Checks"],["files","Files"],["docs","Docs"]];
+  const tabs = [["model","3D model"],["tune","Tune"],["results","Checks"],["files","Files"],["docs","Docs"],["history","History"]];
+  const n = d.summary_numbers, e = d.estimate || {};
   $("#main").innerHTML = `
     <div class="head">
       <h1>${esc(d.title)}</h1>
       <p class="desc">${esc(d.description)}</p>
       <div class="chips">${statusChips(d)}${d.report && d.report.seconds ? `<span class="chip">last run ${Math.round(d.report.seconds)} s</span>` : ""}</div>
+      ${n ? `<div class="chips">${n.cost_usd != null ? `<span class="chip" title="Priced shopping list (bom.md), per piece used; whole packs cost $${fmt(n.packs_usd)}">$${fmt(n.cost_usd)}${n.unpriced ? ` + ${n.unpriced} unpriced` : ""}</span>` : ""}
+        ${n.filament_g != null ? `<span class="chip" title="Printed parts, estimated">${fmt(n.filament_g)} g filament · ${n.print_parts} part${n.print_parts == 1 ? "" : "s"}</span>` : ""}
+        ${n.device_g != null ? `<span class="chip" title="Everything mounted on the device">device ${fmt(n.device_g)} g</span>` : ""}</div>` : ""}
       <div class="actions">
-        <button class="primary" onclick="run('build')" title="Every check, then STEP/STL/3MF plates, BOM, assembly guide and renders">⚙ Build</button>
-        <button onclick="run('check')" title="Every check incl. motion sweeps and strength, no files">✓ Check</button>
+        <button class="primary" onclick="run('build')" title="Every check, then STEP/STL/3MF plates, BOM, assembly guide and renders">⚙ Build${e.build ? ` <small>${about(e.build)}</small>` : ""}</button>
+        <button onclick="run('check')" title="Every check incl. motion sweeps and strength, no files">✓ Check${e.check ? ` <small>${about(e.check)}</small>` : ""}</button>
         <button onclick="run('quick')" title="Fast check without motion sweeps and FEA">⚡ Quick check</button>
         <button onclick="openIn('plates')" ${plates ? "" : "disabled"} title="Open the print plates in Bambu Studio">▦ Open plates in Bambu Studio</button>
         <button onclick="openIn('folder')">📁 Show files</button>
+        <a class="btn" href="/export/${d.name}.zip" download title="Plates, parts, STEP, BOM, guides, drawings, bring-up program and the design files in one zip">⤓ Export zip</a>
       </div>
     </div>
     <nav class="tabs" id="tabs">${tabs.map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}<span class="uline" id="uline"></span></nav>
@@ -391,6 +408,46 @@ function renderTab() {
   else if (t === "results") renderResults(el, d.report);
   else if (t === "files") renderFiles(el);
   else if (t === "docs") renderDocs(el);
+  else if (t === "history") renderHistory(el);
+}
+
+/* ---------- welcome / empty state */
+function welcome() {
+  $("#main").innerHTML = `<div class="body"><div class="card empty" style="text-align:left;max-width:760px">
+    <h2 style="margin-top:0">Welcome to Kerf Studio</h2>
+    <p>Describe a device in plain words and Kerf designs every printed part, picks the purchased parts, proves it fits,
+      moves and holds, and writes print plates, a priced shopping list and an assembly guide.</p>
+    <ol><li><b>+ New design</b>: say what it should do ("a pan-tilt camera head for a Pi camera").</li>
+      <li>Watch it work; when it finishes, the 3D model, checks and files appear here.</li>
+      <li><b>Tune</b> a dimension, <b>Try</b> it (your files stay untouched), then <b>Build</b> and print.</li></ol>
+    <button class="primary" onclick="showNew()">+ New design</button></div></div>`;
+}
+
+/* ---------- history: one entry per build from Studio, with what changed */
+function renderHistory(el) {
+  const d = S.detail, H = d.history || [];
+  if (!H.length) { el.innerHTML = `<div class="card empty"><b>No versions yet</b>Every build from Studio saves a version here: its values, results, cost and picture, so you can compare and go back.</div>`; return; }
+  const cur = d.report || {}, curReq = Object.fromEntries((cur.requirements || []).map(r => [r.id, r]));
+  const curParams = Object.fromEntries(d.params.map(p => [p.key, p.value]));
+  el.innerHTML = H.map((h, i) => {
+    const pch = Object.entries(h.params || {}).filter(([k, v]) => k in curParams && Math.abs(curParams[k] - v) > 1e-9);
+    const rch = Object.entries(h.requirements || {}).filter(([k, r]) => curReq[k] && typeof r.value === "number" && typeof curReq[k].value === "number" && Math.abs(curReq[k].value - r.value) > 1e-6 * Math.max(1, Math.abs(r.value)));
+    return `<div class="card hist" style="margin-bottom:12px;display:flex;gap:14px">
+      ${h.thumb ? `<img src="/history/${d.name}/${h.stamp}/thumb.png" alt="" style="width:150px;height:112px;object-fit:cover;border-radius:8px" onclick="zoom(this.src)">` : ""}
+      <div style="flex:1"><b>${new Date(h.time * 1000).toLocaleString()}</b> <span class="chip ${h.ok ? "ok" : "bad"}">${h.ok ? "checks pass" : h.problems + " problems"}</span>
+        <span class="note">commit ${esc(h.commit || "?")}${h.dirty ? " + uncommitted edits" : ""}${i === 0 ? " · latest" : ""}</span>
+        <div class="note">${h.cost != null ? "$" + fmt(h.cost) + " · " : ""}${h.mass && h.mass.device_g != null ? fmt(h.mass.device_g) + " g device" : ""}</div>
+        <div>${pch.length ? `<b>Values that differ from now:</b> ${pch.map(([k, v]) => `${esc(k)} ${fmt(v)} (now ${fmt(curParams[k])})`).join(", ")}` : `<span class="note">Same values as now.</span>`}</div>
+        ${rch.length ? `<div><b>Results then vs now:</b> ${rch.slice(0, 8).map(([k, r]) => `${esc(k)} ${fmt(r.value)} → ${fmt(curReq[k].value)}${r.unit ? " " + esc(r.unit) : ""}`).join(", ")}</div>` : ""}
+        ${pch.length ? `<button style="margin-top:8px" onclick="restoreVersion('${h.stamp}')">↶ Restore these values</button>` : ""}
+      </div></div>`;
+  }).join("");
+}
+async function restoreVersion(stamp) {
+  if (!confirm("Write this version's parameter values back into project.yaml? Part code is not changed. Build again afterwards.")) return;
+  try { const r = await api("/api/restore", {project: S.sel, stamp}); await refreshDetail(); setTab("history");
+        toast("Restored", r.changed.length ? `Changed: ${r.changed.join(", ")}. Build to update the files.` : "Nothing to change.", "ok"); }
+  catch (e) { toast("Not restored", e.message, "bad"); }
 }
 
 function reqTable(reqs) {
@@ -438,12 +495,15 @@ function renderTune(el) {
   el.innerHTML = `<div class="grid2">
     <div class="card">
       <div class="row" style="justify-content:space-between;margin-bottom:6px"><b>Parameters</b><span class="note">${changed ? changed + " changed" : "file values"}</span></div>
+      ${d.params.some(p => p.unit_assumed) ? `<p class="note" style="margin-top:0">* unit assumed (mm for lengths, ° when the label says deg); project.yaml can state it with <code>unit:</code>.</p>` : ""}
       ${d.params.map(p => {
         const v = S.edits[p.key] ?? p.value, ch = p.key in S.edits;
+        const unit = p.unit ? `<span class="unit" title="${p.unit_assumed ? "unit assumed: add unit: to this param in project.yaml" : "unit from project.yaml"}">${esc(p.unit)}${p.unit_assumed ? "*" : ""}</span>` : "";
+        const fx = p.affects ? `<div class="note affects">Affects ${p.affects.layout ? "the shared layout, so " : ""}${p.affects.parts.length ? esc(p.affects.parts.join(", ")) : "no part directly"}${p.affects.checks.length ? ` · checks: ${esc(p.affects.checks.join(", "))}` : ""}</div>` : "";
         return `<div class="param ${ch ? "changed" : ""}"><div class="top"><label for="r_${p.key}">${esc(p.label)}</label><span class="key">${esc(p.key)}</span></div>
           <div class="rng"><input type="range" id="r_${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" oninput="setParam('${p.key}', this.value, true)">
-          <input type="number" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" onchange="setParam('${p.key}', this.value)"></div>
-          <div class="note">${p.min} – ${p.max}${p.bounded ? "" : " (no range in project.yaml: ±50 %)"}${ch ? ` · file: ${p.value}` : ""}</div></div>`;}).join("")}
+          <input type="number" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" onchange="setParam('${p.key}', this.value)">${unit}</div>
+          <div class="note">${p.min} – ${p.max}${p.unit ? " " + esc(p.unit) : ""}${p.bounded ? "" : " (no range in project.yaml: ±50 %)"}${ch ? ` · file: ${p.value}` : ""}</div>${fx}</div>`;}).join("")}
       <div class="row" style="margin-top:14px;flex-wrap:wrap">
         <button class="primary" onclick="tryParams()" ${changed ? "" : "disabled"}>▶ Try these values</button>
         <button onclick="saveParams()" ${changed ? "" : "disabled"}>Save to design</button>
@@ -457,10 +517,21 @@ function renderTune(el) {
         ${Object.entries(tr.params || {}).filter(([k, v]) => d.params.some(p => p.key === k && p.value != v)).map(([k, v]) => `${esc(k)} = ${fmt(v)}`).join(", ") || "the file values"}</div>
       <iframe class="viewer" onload="syncTheme(this)" style="height:520px" src="/trial/${d.name}/out/viewer.html?t=${Date.now()}"></iframe>
       ${(tr.problems || []).length ? `<div class="card" style="margin-top:12px"><b>Problems</b><ul class="msgs">${tr.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
+      <div class="card" style="margin-top:12px"><b>Tried vs saved</b>${compareTable(d.report && d.report.requirements, tr.requirements)}</div>
       <div class="card" style="margin-top:12px"><b>Requirements with these values</b>${reqTable(tr.requirements)}</div>`
       : `<div class="card empty"><b>Move a slider, then "Try these values"</b>The tried design shows here in 3D with every check re-run.</div>`}</div>
   </div>`;
   growBars(el);
+}
+function compareTable(saved, tried) {   // the saved build's result next to the tried one, per requirement
+  if (!tried || !tried.length) return `<p class="note">No requirement results for the try.</p>`;
+  const sv = Object.fromEntries((saved || []).map(r => [r.id, r]));
+  return `<table><tr><th>Requirement</th><th>Saved</th><th>Tried</th><th>Change</th></tr>${tried.filter(r => !r.skipped).map(r => {
+    const s = sv[r.id], a = s && typeof s.value === "number" ? s.value : null, b = typeof r.value === "number" ? r.value : null;
+    const dlt = a != null && b != null ? b - a : null, u = r.unit ? " " + esc(r.unit) : "";
+    return `<tr><td><b>${esc(r.id)}</b></td><td class="num">${s ? fmt(s.value) + u + (s.ok ? "" : " ✗") : "–"}</td>
+      <td class="num">${fmt(r.value)}${u}${r.ok ? "" : " ✗"}</td>
+      <td class="num">${dlt == null || Math.abs(dlt) < 1e-9 ? "–" : (dlt > 0 ? "+" : "") + fmt(dlt) + u}</td></tr>`; }).join("")}</table>`;
 }
 function setParam(k, v, live) {
   const p = S.detail.params.find(x => x.key === k); v = parseFloat(v);

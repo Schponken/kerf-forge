@@ -76,6 +76,10 @@ class Job:
             self.lines.append(f"(stopped by signal {-rc}: out of memory or killed)" if rc < 0 else f"(exit code {rc})")
         if self.state == "running":
             self.state = "done" if rc == 0 else "failed"
+        try:
+            on_finished(self)
+        except Exception:  # noqa: BLE001 - bookkeeping never breaks a job
+            pass
 
     def stop(self):
         if self.state == "running":
@@ -93,6 +97,159 @@ class Job:
 
 
 JOBS: dict[str, Job] = {}
+
+# ---------------------------------------------------------------- run times + version history (.cache/studio)
+TIMES = ROOT / ".cache" / "studio_times.json"
+HISTORY = ROOT / ".cache" / "studio_history"
+
+
+def _times() -> dict:
+    try:
+        return json.loads(TIMES.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def record_time(project: str, kind: str, seconds: float):
+    t = _times()
+    runs = t.setdefault(project, {}).setdefault(kind, [])
+    runs.append(round(float(seconds), 1))
+    del runs[:-5]
+    TIMES.parent.mkdir(parents=True, exist_ok=True)
+    TIMES.write_text(json.dumps(t, indent=1), encoding="utf-8")
+
+
+def estimate(project: str, kind: str) -> float | None:
+    """Seconds a build / check of this project usually takes: median of its last runs from Studio, else the last
+    report's own run time for a build."""
+    runs = _times().get(project, {}).get(kind) or []
+    if runs:
+        return float(sorted(runs)[len(runs) // 2])
+    rep = _report(PROJECTS / project)
+    return float(rep["seconds"]) if kind == "build" and rep and rep.get("seconds") else None
+
+
+def _git(*args) -> str:
+    r = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=20)
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
+def snapshot(name: str) -> dict | None:
+    """One version entry after a build: the values, results and picture of this build, and the commit it was built
+    from (with a flag if the project had uncommitted edits), under .cache/studio_history/<project>/<stamp>/."""
+    d = PROJECTS / name
+    rep = _report(d)
+    if not rep:
+        return None
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    dst = HISTORY / name / stamp
+    dst.mkdir(parents=True, exist_ok=True)
+    ship = (rep.get("files") or {}).get("ship") or {}
+    entry = {"stamp": stamp, "time": time.time(), "commit": _git("rev-parse", "--short", "HEAD"),
+             "dirty": bool(_git("status", "--porcelain", "--", f"projects/{name}")),
+             "fingerprint": rep.get("fingerprint"), "ok": rep.get("ok"), "problems": len(rep.get("problems") or []),
+             "params": rep.get("params") or {}, "mass": rep.get("mass"), "cost": (ship.get("bom") or {}).get("total_usd"),
+             "requirements": {r["id"]: {"value": r.get("value"), "ok": r.get("ok"), "unit": r.get("unit")}
+                              for r in rep.get("requirements") or [] if not r.get("skipped")}}
+    th = _thumb(d)
+    if th:
+        shutil.copy2(d / th, dst / "thumb.png")
+        entry["thumb"] = f"{stamp}/thumb.png"
+    (dst / "version.json").write_text(json.dumps(entry, indent=1, default=str), encoding="utf-8")
+    return entry
+
+
+def history(name: str) -> list[dict]:
+    out = []
+    for f in sorted((HISTORY / name).glob("*/version.json"), reverse=True)[:30]:
+        try:
+            out.append(json.loads(f.read_text(encoding="utf-8")))
+        except Exception:  # noqa: BLE001
+            continue
+    return out
+
+
+def on_finished(job) -> None:
+    if job.state != "done" or job.project in ("*", None) or job.kind not in ("build", "check"):
+        return
+    record_time(job.project, job.kind, (job.ended or time.time()) - job.started)
+    if job.kind == "build":
+        snapshot(job.project)
+
+
+def restore(name: str, stamp: str) -> list[str]:
+    """One-click revert of a version's parameter values (project.yaml params only; part code is never touched)."""
+    f = HISTORY / name / stamp / "version.json"
+    if not re.fullmatch(r"\d{8}-\d{6}", stamp) or not f.exists():
+        raise ValueError("no such version")
+    vals = json.loads(f.read_text(encoding="utf-8")).get("params") or {}
+    known = {k for k, v in ((_read_yaml(name).get("params") or {}).items())
+             if isinstance((v.get("value") if isinstance(v, dict) else v), (int, float))}
+    return write_params(PROJECTS / name / "project.yaml", {k: v for k, v in vals.items() if k in known})
+
+
+EXPORT_DIRS = ("plates", "parts", "drawings", "firmware", "assembly_steps")
+EXPORT_FILES = ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "wiring.svg", "viewer.html")
+
+
+def export_zip(name: str) -> bytes:
+    """Everything a maker needs in one zip: print plates and parts, STEP, BOM, guides, drawings, bring-up program,
+    plus the design files (project.yaml, DESIGN.md, part sources)."""
+    import io
+    import zipfile
+    d = PROJECTS / name
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for rel in EXPORT_DIRS:
+            for f in sorted((d / "out" / rel).rglob("*")) if (d / "out" / rel).exists() else []:
+                if f.is_file() and f.suffix != ".glb":
+                    z.write(f, f"{name}/{f.relative_to(d / 'out')}")
+        for rel in EXPORT_FILES:
+            if (d / "out" / rel).exists():
+                z.write(d / "out" / rel, f"{name}/{rel}")
+        for f in ["project.yaml", "DESIGN.md", "REFERENCES.md", *[str(x.relative_to(d)) for x in sorted((d / "parts").glob("*.py"))]]:
+            if (d / f).exists():
+                z.write(d / f, f"{name}/design/{f}")
+    return buf.getvalue()
+
+
+UNIT_HINTS = (("deg", "°"), ("angle", "°"), ("teeth", "teeth"), ("count", ""))
+
+
+def param_unit(key: str, spec: dict) -> tuple[str, bool]:
+    """(unit, assumed). `unit:` in project.yaml wins; otherwise degrees/teeth when the label says so, else mm (every
+    length in Kerf is mm) - flagged as assumed so the page can say so."""
+    if spec.get("unit") is not None:
+        return str(spec["unit"]), False
+    words = f"{key} {spec.get('label', '')}".lower()
+    for hint, unit in UNIT_HINTS:
+        if hint in words:
+            return unit, True
+    return "mm", True
+
+
+def param_effects(name: str) -> dict:
+    """Which parts and requirement checks each parameter reaches: a part whose source (or the shared layout) names the
+    parameter, and every requirement on those parts or whose own fields name it."""
+    d = PROJECTS / name
+    data = _read_yaml(name)
+    params = list((data.get("params") or {}).keys())
+    srcs = {f.stem: f.read_text(encoding="utf-8") for f in (d / "parts").glob("*.py")} if (d / "parts").exists() else {}
+    layout = srcs.pop("layout", "")
+    parts_of = {}
+    for item, spec in (data.get("parts") or {}).items():
+        src_name = (spec or {}).get("source", item) if isinstance(spec, dict) else item
+        parts_of.setdefault(Path(str(src_name)).stem, []).append(item)
+    derived = " ".join(str(v) for v in (data.get("derived") or {}).values())
+    out = {}
+    for k in params:
+        word = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(k)}(?![A-Za-z0-9_])")
+        via_layout = bool(word.search(layout) or word.search(derived))
+        parts = sorted({it for src, txt in srcs.items() if word.search(txt) or via_layout for it in parts_of.get(src, [src])})
+        checks = sorted({r.get("id") for r in data.get("requirements") or []
+                         if r.get("part") in parts or word.search(json.dumps({x: y for x, y in r.items() if x not in ("id", "why")}))})
+        out[k] = {"parts": parts, "checks": checks, "layout": via_layout}
+    return out
 
 # Lifetime: with an idle limit the server quits on its own once no window has talked to it for that long (pages poll
 # every few seconds; a closing page says goodbye, which shortens the wait to a few seconds) and no job is running.
@@ -169,13 +326,17 @@ def summary(name: str) -> dict:
             "built": rep is not None, "ok": bool(rep and rep.get("ok")),
             "problems": len(rep.get("problems", [])) if rep else None,
             "stale": bool(rep and rv.get("fingerprint") and rep.get("fingerprint") != rv.get("fingerprint")),
-            "review": rv, "thumb": _thumb(d), "running": running}
+            "review": rv, "thumb": _thumb(d), "running": running, "build_s": estimate(name, "build")}
 
 
 def detail(name: str) -> dict:
     d = PROJECTS / name
     data = _read_yaml(name)
     rep = _report(d) or {}
+    try:
+        effects = param_effects(name)
+    except Exception:  # noqa: BLE001 - a hint, never a failed page
+        effects = {}
     params = []
     for k, v in (data.get("params") or {}).items():
         spec = v if isinstance(v, dict) else {"value": v}
@@ -184,8 +345,10 @@ def detail(name: str) -> dict:
             continue
         lo = spec.get("min", round(val * 0.5, 3) if val else 0)
         hi = spec.get("max", round(val * 1.5, 3) if val else 10)
+        unit, assumed = param_unit(k, spec)
         params.append({"key": k, "value": val, "min": lo, "max": hi, "step": spec.get("step", 0.1 if isinstance(val, float) else 1),
-                       "label": spec.get("label", k), "bounded": "min" in spec and "max" in spec})
+                       "label": spec.get("label", k), "bounded": "min" in spec and "max" in spec, "unit": unit,
+                       "unit_assumed": assumed, "affects": effects.get(k)})
     files = []
     out = d / "out"
     if out.exists():
@@ -207,9 +370,23 @@ def detail(name: str) -> dict:
     return {**summary(name), "params": params, "files": files, "docs": docs, "renders": renders[:40],
             "report": {k: rep.get(k) for k in ("ok", "problems", "warnings", "maker_notes", "mass", "requirements", "bom", "seconds", "fingerprint")} if rep else None,
             "viewer": "out/viewer.html" if (out / "viewer.html").exists() else None,
+            "history": history(name),
+            "estimate": {"build": estimate(name, "build"), "check": estimate(name, "check")},
+            "summary_numbers": _numbers(rep),
             "trial": {"params": trial_rep.get("params") if trial_rep else None, "ok": trial_rep.get("ok") if trial_rep else None,
                       "problems": trial_rep.get("problems") if trial_rep else None,
                       "requirements": trial_rep.get("requirements") if trial_rep else None} if trial_rep else None}
+
+
+def _numbers(rep: dict) -> dict | None:
+    """What it costs and weighs: priced BOM total, whole-pack cost, filament grams (printed mass)."""
+    if not rep:
+        return None
+    b = ((rep.get("files") or {}).get("ship") or {}).get("bom") or {}
+    m = rep.get("mass") or {}
+    return {"cost_usd": b.get("total_usd"), "packs_usd": b.get("packs_usd"), "unpriced": len(b.get("unpriced") or []),
+            "filament_g": m.get("printed_g"), "device_g": m.get("device_g"),
+            "print_parts": len(rep.get("parts") or {})}
 
 
 # ---------------------------------------------------------------- params
@@ -496,6 +673,24 @@ class Handler(BaseHTTPRequestHandler):
             if parts[:2] == ["api", "job"] and len(parts) == 3:
                 j = JOBS.get(parts[2])
                 return self._json(j.info(int(q.get("since", ["0"])[0]), int(q.get("esince", ["0"])[0]))) if j else self._err("no such job", 404)
+            if parts[0] == "export" and len(parts) == 2 and parts[1].endswith(".zip"):
+                nm = parts[1][:-4]
+                if nm not in project_names():
+                    return self._err("no such project", 404)
+                body = export_zip(nm)
+                try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/zip")
+                    self.send_header("Content-Disposition", f'attachment; filename="{nm}.zip"')
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+                return
+            if parts[0] == "history" and len(parts) == 4 and parts[3] == "thumb.png":
+                f = _safe(HISTORY / parts[1], f"{parts[2]}/thumb.png")
+                return self._send(200, f.read_bytes(), "image/png") if f else self._err("not found", 404)
             if parts[0] in ("files", "trial") and len(parts) >= 3:
                 base = (PROJECTS if parts[0] == "files" else TRIALS) / parts[1]
                 f = _safe(base, "/".join(parts[2:]))
@@ -575,6 +770,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"changed": changed})
             if u.path == "/api/open":
                 return self._json(open_in_app(name, body.get("what")))
+            if u.path == "/api/restore":
+                return self._json({"changed": restore(name, str(body.get("stamp", "")))})
             return self._err("not found", 404)
         except ValueError as e:
             return self._err(e)
@@ -595,6 +792,7 @@ def _buildall(names: list[str]) -> int:
     for i, n in enumerate(names, 1):
         print(f"[{i}/{len(names)}] building {n} ...", flush=True)
         print("@@" + json.dumps({"k": "project", "name": n, "i": i, "n": len(names)}), flush=True)
+        t0 = time.time()
         p = subprocess.Popen(kerf_cmd("build", n), cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                              env={**os.environ, **PROGRESS_ENV})
         first = None
@@ -603,7 +801,14 @@ def _buildall(names: list[str]) -> int:
                 print(ln.rstrip("\n"), flush=True)
             elif first is None and ln.strip() and ln.split()[0] in ("PASS", "FAIL"):
                 first = ln.strip()
-        bad += p.wait() != 0
+        rc = p.wait()
+        bad += rc != 0
+        if rc == 0:                       # same bookkeeping as a single Studio build: run time + a version entry
+            try:
+                record_time(n, "build", time.time() - t0)
+                snapshot(n)
+            except Exception:  # noqa: BLE001
+                pass
         print(f"    {first or 'finished'}", flush=True)
     print(f"done: {len(names) - bad} passed, {bad} with problems", flush=True)
     return 1 if bad else 0

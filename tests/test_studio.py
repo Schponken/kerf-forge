@@ -293,3 +293,88 @@ def test_detail_lists_the_bring_up_program_and_guide(tmp_path, monkeypatch):
     monkeypatch.setattr(studio, "TRIALS", tmp_path / "trials")
     d = studio.detail("demo")
     assert "out/firmware/demo_bringup/demo_bringup.ino" in d["files"] and "out/firmware/BRINGUP.md" in d["docs"]
+
+
+def test_times_history_restore_and_export(tmp_path, monkeypatch):
+    proj = tmp_path / "projects" / "demo"
+    (proj / "parts").mkdir(parents=True)
+    (proj / "out" / "plates").mkdir(parents=True)
+    (proj / "project.yaml").write_text(YAML)
+    (proj / "parts" / "arm.py").write_text("def build(ctx):\n    return ctx.finish(box(ctx.p.arm_len))\n")
+    (proj / "out" / "plates" / "plate_1.3mf").write_bytes(b"3mf")
+    (proj / "out" / "bom.md").write_text("# BOM")
+    (proj / "out" / "report.json").write_text(json.dumps({"ok": True, "params": {"arm_len": 120, "plain": 7.5, "other": 3},
+                                                          "requirements": [{"id": "r1", "value": 2.0, "ok": True}],
+                                                          "mass": {"printed_g": 10, "device_g": 30}, "seconds": 50,
+                                                          "files": {"ship": {"bom": {"total_usd": 12.5, "packs_usd": 40}}}}))
+    monkeypatch.setattr(studio, "PROJECTS", tmp_path / "projects")
+    monkeypatch.setattr(studio, "TRIALS", tmp_path / "trials")
+    monkeypatch.setattr(studio, "TIMES", tmp_path / "times.json")
+    monkeypatch.setattr(studio, "HISTORY", tmp_path / "hist")
+    assert studio.estimate("demo", "build") == 50                 # no Studio runs yet: the last report's time
+    for s in (100, 300, 200):
+        studio.record_time("demo", "build", s)
+    assert studio.estimate("demo", "build") == 200                # median of the recorded runs
+    e = studio.snapshot("demo")
+    assert e["cost"] == 12.5 and e["params"]["arm_len"] == 120 and studio.history("demo")[0]["stamp"] == e["stamp"]
+    assert studio.restore("demo", e["stamp"]) == ["arm_len"]       # file value 100 -> the version's 120
+    assert yaml.safe_load((proj / "project.yaml").read_text())["params"]["arm_len"]["value"] == 120
+    assert "# pivot to tip" in (proj / "project.yaml").read_text()  # comments kept
+    with pytest.raises(ValueError):
+        studio.restore("demo", "../../x")
+    import io
+    import zipfile
+    names = zipfile.ZipFile(io.BytesIO(studio.export_zip("demo"))).namelist()
+    assert {"demo/plates/plate_1.3mf", "demo/bom.md", "demo/design/project.yaml", "demo/design/parts/arm.py"} <= set(names)
+    d = studio.detail("demo")
+    arm = next(p for p in d["params"] if p["key"] == "arm_len")
+    assert arm["unit"] == "mm" and arm["unit_assumed"] and arm["affects"]["parts"] == ["arm"]
+    assert d["summary_numbers"]["cost_usd"] == 12.5 and d["summary_numbers"]["filament_g"] == 10
+
+
+def test_param_units():
+    assert studio.param_unit("x", {"unit": "N"}) == ("N", False)
+    assert studio.param_unit("mcp_max", {"label": "mcp flexion range (deg)"}) == ("°", True)
+    assert studio.param_unit("gear_z", {"label": "Pinion teeth"}) == ("teeth", True)
+    assert studio.param_unit("arm_t", {"label": "Arm thickness"}) == ("mm", True)
+
+
+def _browser(url, steps_js, tmp_path):
+    import subprocess
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent
+    js = tmp_path / "b.mjs"
+    js.write_text(f"""import {{ chromium }} from '{root}/tools/render/node_modules/playwright/index.mjs';
+const b = await chromium.launch(); const p = await b.newPage({{ viewport: {{ width: 1300, height: 900 }} }}); const errs = [];
+p.on('pageerror', e => errs.push(e.message));
+await p.goto('{url}'); const out = {{}};
+{steps_js}
+console.log(JSON.stringify({{ errs, ...out }})); await b.close();""")
+    r = subprocess.run(["node", str(js)], capture_output=True, text=True, timeout=180)
+    return json.loads(r.stdout.strip().splitlines()[-1])
+
+
+def test_studio_page_shows_numbers_units_effects_history_and_export(server, tmp_path):
+    out = _browser(server + "/", """
+await p.waitForSelector('.pitem'); await p.waitForSelector('#tabs'); await p.click('text=Servo test rig');
+await p.waitForFunction(() => (document.querySelector('.head h1') || {}).textContent === 'Servo test rig');
+out.export = await p.getAttribute('a.btn[download]', 'href');
+await p.click('.tab[data-t=tune]'); await p.waitForSelector('.param');
+out.units = await p.$$eval('.param .unit', e => e.length); out.affects = await p.$$eval('.param .affects', e => e.length);
+await p.click('.tab[data-t=history]'); await p.waitForTimeout(300);
+out.history = await p.evaluate(() => document.querySelector('#tabbody').textContent.length > 20);""", tmp_path)
+    assert out["errs"] == [] and out["export"] == "/export/servo_link.zip", out
+    assert out["units"] > 0 and out["affects"] > 0 and out["history"], out
+
+
+def test_welcome_when_there_are_no_projects(tmp_path, monkeypatch):
+    (tmp_path / "projects").mkdir()
+    monkeypatch.setattr(studio, "PROJECTS", tmp_path / "projects")
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), studio.Handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        out = _browser(f"http://127.0.0.1:{srv.server_address[1]}/", """
+await p.waitForSelector('text=Welcome to Kerf Studio', { timeout: 15000 }); out.welcome = true;""", tmp_path)
+    finally:
+        srv.shutdown()
+    assert out["errs"] == [] and out["welcome"], out
