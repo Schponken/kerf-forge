@@ -361,7 +361,7 @@ def claude_setup() -> dict:
         return {"opened": False, "command": cmd}
     f = TRIALS.parent / "setup-claude.command"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(SETUP_SCRIPT.format(root=ROOT))
+    f.write_text(SETUP_SCRIPT.format(root=ROOT), encoding="utf-8")
     f.chmod(0o755)
     subprocess.run(["open", str(f)], check=False)
     return {"opened": True, "command": cmd}
