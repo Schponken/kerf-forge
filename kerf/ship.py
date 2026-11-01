@@ -202,11 +202,70 @@ def _step_of(seq) -> dict:
     return {i: k for k, grp in enumerate(seq, start=1) for i in grp}
 
 
+def joins(asm, seq) -> tuple[dict, dict]:
+    """When items become one piece. A step whose part mates onto a parent that is only fitted LATER is a bench
+    sub-assembly (e.g. a horn screwed to a bracket on the bench, pressed onto its servo once the servo is in): it is
+    joined to the device at its parent's step, after that step's own parts. Returns (bench, attach):
+    bench[k] = step where bench step k joins; attach[m] = [(k, item, parent)] joined at step m.
+    Steps are walked in order with a union-find, so chained sub-assemblies resolve too."""
+    at = _step_of(seq)
+    bench, attach = {}, defaultdict(list)
+    for k, grp in enumerate(seq, start=1):
+        for i in grp:
+            e = asm.by_child.get(i)
+            if e is not None and e.parent not in grp and at.get(e.parent, 0) > k:
+                m = at[e.parent]
+                bench[k] = max(bench.get(k, 0), m)
+                attach[m].append((k, i, e.parent))
+    return bench, dict(attach)
+
+
+def _connect_steps(asm, seq, attach) -> dict:
+    """A function: at which (step, phase) a set of items first forms one piece. Phase 1 = with the step's own parts,
+    phase 2 = after the bench sub-assemblies that join at this step are on."""
+    parent = {}
+
+    def find(x):
+        while parent.get(x, x) != x:
+            parent[x] = parent.get(parent[x], parent[x])
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        parent[find(a)] = find(b)
+
+    events = []                                   # (step, phase, snapshot of roots) after each phase
+    placed = set()
+    for k, grp in enumerate(seq, start=1):
+        placed.update(grp)
+        for i in grp:
+            e = asm.by_child.get(i)
+            if e is not None and e.parent in placed:
+                union(i, e.parent)
+        events.append((k, 1, {i: find(i) for i in placed}))
+        for _, c, p in attach.get(k, []):
+            union(c, p)
+        events.append((k, 2, {i: find(i) for i in placed}))
+
+    def when(items):
+        items = [i for i in items if i in placed]
+        for k, ph, roots in events:
+            if all(i in roots for i in items) and len({roots[i] for i in items}) <= 1:
+                return k, ph
+        at = _step_of(seq)
+        return max([at.get(i, 0) for i in items] or [0]), 2
+    return when
+
+
 def plan(asm, fasteners: list, pins: list) -> list[dict]:
-    """Per step: items, how each attaches, inserts to press first, pins, screws to drive."""
+    """Per step: items, how each attaches, inserts to press first, pins, screws to drive. Screws and pins go in at the
+    step (and phase) where the parts they join first form one piece, so a bench sub-assembly's own screws are driven
+    on the bench and the screws that hold it to the device come after it is joined (no forward references)."""
     proj = asm.proj
     seq = steps(asm)
     at = _step_of(seq)
+    bench, attach = joins(asm, seq)
+    when = _connect_steps(asm, seq, attach)
     later = {k["group"]: k for k in proj.data["assembly"].get("key_access") or []}
     inserts = defaultdict(Counter)
     for iid, it in proj.items.items():
@@ -219,32 +278,36 @@ def plan(asm, fasteners: list, pins: list) -> list[dict]:
                 inserts[iid][pin_dims(s.pin).get("thread", s.pin)] += 1
     screws = defaultdict(list)
     for j in fasteners:
-        k = max(at.get(j["male"], 0), at.get(j["female"], 0))
-        screws[k].append(j)
+        screws[when([j["male"], j["female"]])].append(j)
     pin_at = defaultdict(list)
     for pj in pins:
-        k = max([at.get(i, 0) for i in pj.get("fixed_in", []) + pj.get("free_in", [])] or [0])
-        pin_at[k].append(pj)
+        pin_at[when(pj.get("fixed_in", []) + pj.get("free_in", []))].append(pj)
+
+    def how(e):
+        return {"parent": e.parent, "joint": e.name, "kind": e.kind, "range": list(e.range) if e.kind != "rigid" else None}
+
+    def screw_rows(js):
+        sc = Counter((j["screw"], j["length_mm"], "flat head" if j["head"] == "countersink" else "socket head") for j in js)
+        return [{"screw": s, "length_mm": L, "head": h, "qty": n} for (s, L, h), n in sorted(sc.items(), key=str)]
+
     out = []
     for k, grp in enumerate(seq, start=1):
         fits = []
         for i in grp:
             e = asm.by_child.get(i)
             it = proj.items[i]
-            what = it.spec.get("catalog") if it.role == "purchased" else f"printed, {it.spec.get('material', 'PETG')}"
-            how = None
-            if e is not None:
-                how = {"parent": e.parent, "joint": e.name, "kind": e.kind,
-                       "range": list(e.range) if e.kind != "rigid" else None}
-            fits.append({"item": i, "what": what, "qty": it.spec.get("qty", 1), "onto": how})
-        sc = Counter((j["screw"], j["length_mm"], "flat head" if j["head"] == "countersink" else "socket head") for j in screws[k])
-        groups = sorted({j["group"] for j in screws[k]})
+            what = human_item(it) if it.role == "purchased" else f"printed, {it.spec.get('material', 'PETG')}"
+            later_parent = e is not None and e.parent not in grp and at.get(e.parent, 0) > k   # joined at its parent's step
+            fits.append({"item": i, "what": what, "qty": it.spec.get("qty", 1),
+                         "onto": None if e is None or later_parent else how(e), "joins_later": later_parent})
+        js1, js2 = screws[(k, 1)], screws[(k, 2)]
+        groups = sorted({j["group"] for j in js1 + js2})
         out.append({
-            "step": k, "items": grp, "fits": fits,
+            "step": k, "items": grp, "fits": fits, "bench_for": bench.get(k),
             "inserts": [{"item": i, "screw": s, "qty": n} for i in grp for s, n in sorted(inserts[i].items())],
-            "pins": pin_at[k],
-            "screws": [{"screw": s, "length_mm": L, "head": h, "qty": n} for (s, L, h), n in sorted(sc.items(), key=str)],
-            "groups": groups,
+            "pins": pin_at[(k, 1)], "screws": screw_rows(js1), "groups": sorted({j["group"] for j in js1}),
+            "attach": [{"step": b, "items": seq[b - 1], "via": c, **how(asm.by_child[c])} for b, c, _ in attach.get(k, [])],
+            "pins_after": pin_at[(k, 2)], "screws_after": screw_rows(js2), "groups_after": sorted({j["group"] for j in js2}),
             "bench": [later[g] for g in groups if g in later],
         })
     return out
@@ -317,9 +380,56 @@ def wiring_tools(model) -> list:
     return out
 
 
-def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
+ELECTRONIC_PREFIXES = ("electronics.", "boards.", "drone.stacks.", "drone.batteries.", "drone.receivers.", "drone.vtx")
+
+
+def feel(screw: str) -> str:
+    """How tight, in hand terms (a printed part strips long before a steel screw is hurt)."""
+    d = float(re.sub(r"[^\d.]", "", screw) or 3)
+    return ("snug: turn with the short arm of the key until the head seats, then stop" if d <= 3
+            else "firm: the short arm of the key, a solid pull once the head seats, then stop")
+
+
+def _split(note: str, indent: str = "  ") -> list[str]:
+    """A long note becomes one sub-bullet per sentence or clause, so no step line is a wall of text."""
+    if len(note) <= 160:
+        return [f"{indent}- {note}"]
+    parts = [x.strip() for x in re.split(r"(?<=[.;:])\s+(?=[A-Za-z(])", note) if x.strip()]
+    return [f"{indent}- {x[0].upper() + x[1:]}" for x in parts]
+
+
+def _is_horn_on_servo(proj, child: str, parent: str) -> bool:
+    c = proj.items[child].spec.get("catalog", "") if child in proj.items else ""
+    pa = proj.items[parent].spec.get("catalog", "") if parent in proj.items else ""
+    return c.startswith("servo_horns.") and pa.startswith("servos.")
+
+
+def _test_fit_step(proj) -> list[str]:
+    """Step 0: make the printer's fits match before printing every part (kerf/calibrate.py)."""
+    from . import calibrate as C
+    printer = proj.data.get("printer") or C.DEFAULT_PRINTER
+    mats = sorted({it.spec.get("material", "PETG") for it in proj.printed.values()})
+    have = C.load_profile(printer).get("materials", {})
+    L = ["## Step 0 — test-fit before printing everything", ""]
+    for m in mats:
+        if C.mat_key(m) in have:
+            L.append(f"- {printer} / {m}: your measured fit offsets are already applied (calibration profile), so holes, "
+                     "insert bores and servo pockets are sized for your printer.")
+        else:
+            L += [f"- {printer} / {m}: no calibration yet, so holes use textbook sizes. Skipping this risks loose or tight "
+                  "fits on every part:",
+                  f"  - run `kerf calibrate --material {m}` and print the coupon;",
+                  "  - try a screw, an insert, a pin and a servo tab in it;",
+                  f"  - report what fit with `kerf feedback {m} hole_M3=ok ...` (the coupon's CARD.md lists the names), then rebuild."]
+    L += ["- Then print the smallest part with a screw hole or servo pocket first and try the real screw / servo in it "
+          "before printing the rest.", ""]
+    return L
+
+
+def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_info: dict | None = None) -> dict:
     """out/ASSEMBLY.md (+ out/assembly_steps/step_NN_iso.png when `render` is given: render(glb, prefix))."""
     from .access import key_spec
+    from . import firmware
     st = plan(asm, rep.get("assembly", {}).get("fasteners", []), rep.get("assembly", {}).get("pins", []))
     sd = outdir / "assembly_steps"
     sd.mkdir(exist_ok=True)
@@ -330,20 +440,66 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
         except Exception:  # noqa: BLE001 - a size without a key entry is listed without one
             keys.add(f"driver for {j['screw']}")
     any_insert = any(s["inserts"] for s in st)
+    all_pins = [p for s in st for p in s["pins"] + s["pins_after"]]
     L = [f"# Assembly — {proj.data.get('name', proj.name)}", "",
          "Generated by `kerf build` from the joint tree, `assembly.order` and the fastener/pin checks. Each picture shows "
          "the parts already fitted in grey and this step's part(s) in colour, moved back along the way they go on.", "",
          "## Before you start", "",
-         f"- Print every part in `plates/` (orientation is already set). Parts: {', '.join(proj.printed)}.",
-         "- Tools: " + ("; ".join(sorted(keys)
-                                  + (["soldering iron with a heat-set insert tip", "a flat plate to press inserts flush"] if any_insert else [])
-                                  + (["a vise or small hammer to press dowel pins"] if any(not p.get('screw_pivot') for s in st for p in s['pins']) else [])
-                                  + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for s in st for p in s['pins']) else [])
-                                  + wiring_tools(rep.get("electrical")))
-                         or "none") + ".", "- Shopping list with links and prices: `bom.md`.", ""]
+         f"- Print every part in `plates/` (orientation is already set). Parts: {', '.join(proj.printed)}."]
+    tools = (sorted(keys) + (["soldering iron with a heat-set insert tip", "a flat plate to press inserts flush"] if any_insert else [])
+             + (["a vise or small hammer to press dowel pins"] if any(not p.get('screw_pivot') and not p.get('shoulder') for p in all_pins) else [])
+             + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for p in all_pins) else [])
+             + wiring_tools(rep.get("electrical")))
+    L += ["- Tools:" + ("" if tools else " none")] + [f"  - {t}" for t in tools]
+    L += ["- Shopping list with links and prices: `bom.md`."]
+    if firmware_info:
+        L.append("- First power-up and test: `firmware/BRINGUP.md`" + (f" with the program `{firmware_info['program']}`."
+                                                                      if firmware_info.get("program") else "."))
+    L.append("")
+    L += _test_fit_step(proj)
+    horns = any(_is_horn_on_servo(proj, e.child, e.parent) for e in asm.edges)
+    if firmware_info and horns:
+        L += firmware.centre_step(firmware_info)
+    elif horns:
+        L += ["## Step 0b — centre the servos (before any horn goes on)", "",
+              "- Power each servo with a servo tester (or its controller) at 1500 us so it sits at its centre; do not turn "
+              "the shaft by hand afterwards.", ""]
+
+    def pin_lines(pins):
+        out = []
+        for p in pins:
+            if p.get("shoulder"):
+                out += [f"- Pivot `{p['group']}`: {p['d_mm']:g} x {p['length_mm']:g} mm shoulder screw through "
+                        f"{', '.join(p['free_in'])} into {', '.join(p['fixed_in'])}.",
+                        "  - Tighten finger-tight on the short arm of the driver (about 0.2-0.3 N·m) until the shoulder "
+                        "bottoms; more only pulls the heat-set insert back out.",
+                        "  - Check the joint turns freely: an insert left proud only adds play, but one set too deep lets "
+                        "the shoulder clamp the stack and stop the joint (reseat it flush)."]
+            elif p.get("screw_pivot"):
+                out += [f"- Pivot `{p['group']}`: {p['pin']} x {p['length_mm']:g} mm screw through {', '.join(p['free_in'])} "
+                        f"into {', '.join(p['fixed_in'])}.",
+                        "  - Snug it, then back off about 1/8 turn so the joint turns freely.",
+                        f"  - Lock it: {lock_advice(p.get('fixed_fit'))}."]
+            else:
+                out.append(f"- Hinge `{p['group']}`: press the {p['d_mm']:g} x {p['length_mm']:g} mm dowel into "
+                           f"{', '.join(p['fixed_in'])}; it turns in {', '.join(p['free_in'])}.")
+        return out
+
+    def screw_lines(screws, groups):
+        out = [f"- Drive {x['qty']} x {x['screw']} x {x['length_mm']:g} mm {x['head']} screw(s) (groups: {', '.join(groups)}) "
+               f"— {feel(x['screw'])}." for x in screws]
+        return out + screw_notes(proj, rep, groups)
+
+    def horn_note(child, parent):
+        return ([f"  - The servo is centred (Step 0b): press **{child}** onto the spline so the parts sit as in the "
+                 "picture (the middle of the joint's travel), then fit the horn's centre screw."]
+                if _is_horn_on_servo(proj, child, parent) else [])
+
     for s in st:
-        L.append(f"## Step {s['step']} — {', '.join(s['items'])}")
-        L.append("")
+        title = ", ".join(s["items"])
+        if s["bench_for"]:
+            title += f" (bench sub-assembly, joins the build in step {s['bench_for']})"
+        L += [f"## Step {s['step']} — {title}", ""]
         if render is not None:
             present = [i for x in st[: s["step"]] for i in x["items"]]
             glb = sd / f"step_{s['step']:02d}.glb"
@@ -352,42 +508,47 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None) -> dict:
             glb.unlink(missing_ok=True)
             L += [f"![step {s['step']}](assembly_steps/step_{s['step']:02d}_iso.png)", ""]
         for x in s["inserts"]:
-            L.append(f"- First press {x['qty']} x {x['screw']} heat-set insert(s) into **{x['item']}** (iron tip, press square until flush with or just below the face, hold a flat plate on it while it cools, trim any plastic lip).")
+            L.append(f"- First press {x['qty']} x {x['screw']} heat-set insert(s) into **{x['item']}**: iron tip, press "
+                     "square until flush with or just below the face, hold a flat plate on it while it cools, trim any lip.")
         for f in s["fits"]:
             qty = f" x{f['qty']}" if f["qty"] != 1 else ""
-            if f["onto"] is None:
+            if f["onto"] is None and f.get("joins_later"):
+                L.append(f"- Take **{f['item']}**{qty} ({f['what']}); it goes onto the build in step {s['bench_for']}.")
+            elif f["onto"] is None:
                 L.append(f"- Start with **{f['item']}**{qty} ({f['what']}).")
             else:
                 o = f["onto"]
                 moves = f" — it must then move freely over {o['range'][0]:g} to {o['range'][1]:g}" + (" deg" if o["kind"] == "revolute" else " mm") if o["range"] else ""
                 L.append(f"- Fit **{f['item']}**{qty} ({f['what']}) onto **{o['parent']}** (joint `{o['joint']}`){moves}.")
+                L += horn_note(f["item"], o["parent"])
             L += fit_notes(proj, rep, f["item"])
-        for p in s["pins"]:
-            if p.get("shoulder"):
-                L.append(f"- Pivot `{p['group']}`: {p['d_mm']:g} x {p['length_mm']:g} mm shoulder screw through {', '.join(p['free_in'])} "
-                         f"into {', '.join(p['fixed_in'])}; tighten gently (0.2-0.3 N m: more only pulls a heat-set insert back out) until the shoulder bottoms, then check the joint "
-                         f"turns freely (the shoulder bottoms on the insert, so an insert left proud only adds play; one set deeper "
-                         f"than the free band's length lets the shoulder clamp the stack and stop the joint).")
-            elif p.get("screw_pivot"):
-                L.append(f"- Pivot `{p['group']}`: {p['pin']} x {p['length_mm']:g} mm screw through {', '.join(p['free_in'])} into "
-                         f"{', '.join(p['fixed_in'])}; back off ~1/8 turn so it turns freely and lock it: {lock_advice(p.get('fixed_fit'))}.")
-            else:
-                L.append(f"- Hinge `{p['group']}`: press the {p['d_mm']:g} x {p['length_mm']:g} mm dowel into {', '.join(p['fixed_in'])}; "
-                         f"it turns in {', '.join(p['free_in'])}.")
-        for x in s["screws"]:
-            L.append(f"- Drive {x['qty']} x {x['screw']} x {x['length_mm']:g} mm {x['head']} screw(s) (groups: {', '.join(s['groups'])}).")
-        L += screw_notes(proj, rep, s["groups"])
+        L += pin_lines(s["pins"])
+        L += screw_lines(s["screws"], s["groups"])
+        for a in s["attach"]:
+            moves = (f" — it must then move freely over {a['range'][0]:g} to {a['range'][1]:g}"
+                     + (" deg" if a["kind"] == "revolute" else " mm")) if a["range"] else ""
+            L.append(f"- Now join the step-{a['step']} sub-assembly ({', '.join(a['items'])}): fit **{a['via']}** onto "
+                     f"**{a['parent']}** (joint `{a['joint']}`){moves}.")
+            L += horn_note(a["via"], a["parent"])
+        L += pin_lines(s["pins_after"])
+        L += screw_lines(s["screws_after"], s["groups_after"])
         for b in s["bench"]:
             L.append(f"- Bench sub-assembly: do group `{b['group']}` before fitting {', '.join(b['before'])} — {b['why']}.")
         L.append("")
     off = [(i, it) for i, it in proj.items.items() if it.spec.get("off_board")]
     if off:
-        L += ["## Off the device (not mounted)", "",
+        elec = all(str(it.spec.get("catalog", "")).startswith(ELECTRONIC_PREFIXES) for _, it in off)
+        L += [f"## {'Bench electronics' if elec else 'Off the device'} (not mounted)", "",
               "These are not fitted to the build: place them as described and connect them as `WIRING.md` says.", ""]
-        L += [f"- **{i}** ({it.spec.get('catalog') or 'printed'}): {it.spec['off_board']}." for i, it in off]
+        L += [f"- **{i}** ({human_item(it)}): {it.spec['off_board']}." for i, it in off]
         L.append("")
     (outdir / "ASSEMBLY.md").write_text("\n".join(L), encoding="utf-8")
     return {"file": "ASSEMBLY.md", "steps": len(st), "renders": render is not None}
+
+
+def human_item(it) -> str:
+    from .export import human_name
+    return human_name(it.spec.get("catalog", ""), "") if it.spec.get("catalog") else "printed"
 
 
 def _dir_words(d) -> str:
@@ -401,7 +562,7 @@ def fit_notes(proj, rep: dict, iid: str) -> list[str]:
     out = []
     note = proj.items[iid].spec.get("assembly_note")
     if note:
-        out.append(f"  - {note}")
+        out += _split(note)
     for r in rep.get("assembly", {}).get("insertion", []) or []:
         if r["item"] == iid:
             out.append(f"  - It goes in moving {_dir_words(np.asarray(r['direction'], float))} (world), from "
@@ -432,4 +593,7 @@ def write(proj, asm, rep: dict, outdir: Path, render=None, prices: dict | None =
             r["price_key"] = extra_keys[r["item"]]
     summary = price_bom(rep.get("bom", []), prices, rep.get("parts", {}))
     write_bom(rep.get("bom", []), summary, outdir)
-    return {"bom": summary, "assembly": write_assembly(proj, asm, rep, outdir, render=render)}
+    from . import firmware
+    fw = firmware.write(proj, asm, outdir)        # bring-up / sweep-test program (None: no controller-driven servo)
+    return {"bom": summary, "firmware": fw and {"program": fw["program"], "servos": len(fw["rows"])},
+            "assembly": write_assembly(proj, asm, rep, outdir, render=render, firmware_info=fw)}

@@ -96,13 +96,13 @@ wiring:      # ends = item centres; tie points move with their item; cut lengths
   - {id: pan_pwr, from: jack, to: pan_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
      route: [{item: base, at: [14, -20, 14]}, {item: base, at: [14, -4, 14]}],
      note: "the SG90's own lead (it leaves the servo's output end) out of the base's open -Y side, plus a 300 mm servo extension; red/brown to the jack terminals"}
-  - {id: pan_sig, from: pi, to: pan_servo, kind: signal, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
+  - {id: pan_sig, from: pi, to: pan_servo, kind: signal, pin: GPIO18, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
      route: [{item: base, at: [14, -20, 14]}, {item: base, at: [14, -4, 14]}],
      note: "Pi GPIO18 (PWM0) to the pan servo signal, Pi GND to the supply minus (common ground)"}
   - {id: tilt_pwr, from: jack, to: tilt_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
      route: [{item: yoke, at: [0, 47.5, 7]}, {item: yoke, at: [0, 39.5, 7]}],
      note: "tilt SG90 lead tied on the yoke ledge, then a free loop down to the tripod column (it swings with pan)"}
-  - {id: tilt_sig, from: pi, to: tilt_servo, kind: signal, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
+  - {id: tilt_sig, from: pi, to: tilt_servo, kind: signal, pin: GPIO19, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
      route: [{item: yoke, at: [0, 47.5, 7]}, {item: yoke, at: [0, 39.5, 7]}],
      note: "Pi GPIO19 (PWM1) to the tilt servo signal"}
 requirements:

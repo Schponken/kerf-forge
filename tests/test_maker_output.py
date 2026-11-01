@@ -80,7 +80,8 @@ def test_off_board_items_get_their_own_assembly_section(proj, tmp_path):
     assert not any("brick" in grp for grp in seq)                      # never a "fit onto" step
     ship.write_assembly(pr, asm, {"assembly": {}}, tmp_path)
     md = (tmp_path / "ASSEMBLY.md").read_text()
-    assert "## Off the device (not mounted)" in md and "**brick**" in md and "on the desk" in md
+    assert "## Bench electronics (not mounted)" in md and "**brick**" in md and "on the desk" in md
+    assert "electronics.supplies" not in md                             # a human name, not the catalog id
     assert "Fit **brick**" not in md
 
 

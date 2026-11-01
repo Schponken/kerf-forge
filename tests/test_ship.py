@@ -166,19 +166,27 @@ def test_whole_pack_cost():
 
 
 def test_every_project_purchase_has_a_price():
-    """Every purchased item and every extra BOM row of every project resolves to a priced shop entry (or is marked
-    as included with another item) - the maker never meets an unpriced line or a datasheet posing as a shop."""
+    """Every purchased item, extra BOM row and wiring-generated row (wire, heat-shrink, ferrules, leads, fuses) of every
+    project resolves to a priced shop entry (or is marked as included with another item), and every extra row uses
+    only keys the BOM understands - the maker never meets an unpriced line or a datasheet posing as a shop."""
     import yaml
+    from kerf import assembly as A, electrical, export, project as P, wiring_out
     prices = ship.load_prices()
     root = Path(__file__).resolve().parents[1] / "projects"
-    missing = []
+    missing, bad_keys = [], []
     for f in sorted(root.glob("*/project.yaml")):
         d = yaml.safe_load(f.read_text(encoding="utf-8"))
         rows = [{"type": "purchased", "spec": it["catalog"], "item": iid} for iid, it in (d.get("items") or {}).items()
                 if isinstance(it, dict) and it.get("catalog")]
         rows += [{**r, "spec": r.get("spec", "")} for r in d.get("bom_extra") or [] if not r.get("included")]
+        bad_keys += [f"{f.parent.name}: {r['item']}" for r in d.get("bom_extra") or [] if set(r) - export.BOM_EXTRA_KEYS]
+        if d.get("wiring"):
+            proj = P.build(P.load(str(f.parent)))
+            asm = A.plan(proj)
+            A.solve(asm)
+            rows += [{**r, "spec": r.get("spec", "")} for r in wiring_out.bom_rows(electrical.analyse(proj))]
         missing += [f"{f.parent.name}: {r['item']}" for r in rows if not any(k in prices for k in ship.price_key(r))]
-    assert missing == []
+    assert missing == [] and bad_keys == []
 
 
 def test_bom_text_has_no_internal_references():
@@ -206,3 +214,23 @@ def test_bom_names_the_biggest_packs(tmp_path):
     md = (tmp_path / "bom.md").read_text()
     assert "Biggest packs: 0.34 mm2 ferrule, 1 x pack of 1000 = $112.60; PETG filament, 1 x 1 kg spool = $20.00; " \
            "M3 x 8 mm socket head screw, 1 x pack of 100 = $7.00." in md
+
+
+def test_assembly_md_step0_feel_and_short_lines(tmp_path):
+    """Step 0 = test-fit / calibrate first; screws say how tight in hand terms; no step line is a wall of text."""
+    proj, asm, fj = _bolt(tmp_path)
+    proj.items["plate"].spec["assembly_note"] = ("first sentence explains the slot and why it is there, at length, so the note "
+                                                 "runs long; second sentence says to deburr; third says to check it slides; "
+                                                 "fourth repeats that you should not force it at all, ever, under any load.")
+    ship.write_assembly(proj, asm, {"assembly": {"fasteners": fj, "pins": []}, "parts": {}, "bom": []}, tmp_path)
+    md = (tmp_path / "ASSEMBLY.md").read_text()
+    assert "## Step 0 — test-fit before printing everything" in md and "kerf calibrate --material" in md
+    assert "— snug: turn with the short arm of the key until the head seats, then stop." in md
+    assert max(len(x) for x in md.splitlines()) <= 300
+    assert "  - Second sentence says to deburr;" in md
+
+
+def test_bom_extra_keys_accept_every_key_the_pricer_reads():
+    """A project.yaml bom_extra row may use every key price_bom / tidy read (`included` failed the build once)."""
+    from kerf import export
+    assert {"price_key", "included", "link", "group"} <= export.BOM_EXTRA_KEYS

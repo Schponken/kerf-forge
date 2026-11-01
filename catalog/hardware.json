@@ -468,6 +468,9 @@
  },
  "servos": {
   "SG90": {
+   "pulse_us": [1000, 2000],
+   "pulse_travel_deg": 180,
+   "source_pulse": "TowerPro SG90 datasheet (electronicoscaldas.com/datasheet/SG90_Tower-Pro.pdf, opened 2026-11-01): position 0 = 1.5 ms (middle), 90 = ~2 ms, -90 = ~1 ms. Real SG90s and clones often need 500-2400 us for 180 deg (more us per degree), so this table gives the least us/deg: commanded angles are an upper bound.",
    "body_l": 22.6,
    "body_w": 12.2,
    "body_h": 22.1,
@@ -586,6 +589,9 @@
    "lead_note": "TowerPro MG996R datasheet text (components101-hosted copy, opened 2026-10-31): 'The unit comes complete with 30cm wire and 3 pin 'S' type female header connector that fits most receivers, including Futaba, JR, ...'. Length is measured from the case to the plug; clones vary, so measure before cutting a tight cable path. towerpro.com.tw could not be opened from this session to cross-check."
   },
   "DS3218": {
+   "pulse_us": [500, 2500],
+   "pulse_travel_deg": [180, 270],
+   "source_pulse": "DSSERVO DS3218MG table on the AIFITLAB listing (opened 2026-11-01): pulse 500-2500 usec, neutral 1500 usec, running degree 180 deg or 270 deg (two versions sold under one name); the 270 deg version gives the least us/deg.",
    "body_l": 40.0,
    "body_w": 20.0,
    "body_h": 40.5,
@@ -618,6 +624,9 @@
    "lead_note": "DSSERVO DS3218MG spec table on the AIFITLAB listing (opened 2026-10-31): 'Connector wire 300+/-5mm' (5 V and 6.8 V columns). Connector not named there; the DS3225 table (52Pi) gives 'JR-3Pin-2.54mm'."
   },
   "DS3225": {
+   "pulse_us": [500, 2500],
+   "pulse_travel_deg": [180, 270],
+   "source_pulse": "DSSERVO DS3225 table on the 52Pi wiki D-0001 (opened 2026-11-01): pulse 500~2500 usec, neutral 1500 usec, dead band 3 usec, running degree 180 deg or 270 deg (when 500~2500 usec).",
    "body_l": 40.0,
    "body_w": 20.0,
    "body_h": 40.5,

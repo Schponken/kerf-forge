@@ -4,8 +4,6 @@
     "checked": "2026-10-30",
     "note": "Dated price snapshot for BOM costing (unit = pack_usd / pack_qty). Every price was read from the linked page with WebFetch on the check date; prices exclude shipping and sales tax unless stated. Store pages change often, so re-check before ordering. Amazon blocked automated reading, so no Amazon prices are used.",
     "missing": {
-      "servos.SG90": "no US store page selling the TowerPro SG90 itself could be read on 2026-11-01 (Adafruit 169 is the SG92R; Solarbotics 25504 is listed as SG90 / HXT900, a different servo); price it from a store page for the exact model",
-      "electronics.connectors.fdisc_187_insulated_18awg": "TE 2-520275-2: no USD price page could be opened on 2026-10-31 (RS UK: GBP 20.30 per 100, i.e. GBP 0.203 each, https://uk.rs-online.com/web/p/crimp-receptacles/7820735; Carlton-Bates lists it without a price). Need 3 per arm."
     }
   },
   "servos.MG996R": {
@@ -777,12 +775,12 @@
     "note": "'Calibration, Weight 50 gram ASTM Class 6 Stainless Steel', $16.25 at Labfilterz (US store: US phone number and US FedEx shipping on its pages). A 50 g fishing sinker weighed on a kitchen scale also works."
   },
   "servos.SG90": {
-    "buy": "https://solarbotics.com/?p=87577",
+    "buy": "https://electropeak.com/towerpro-mini-servo-sg-90-9g-servo",
     "pack_qty": 1,
-    "pack_usd": 5.85,
+    "pack_usd": 0.75,
     "checked": "2026-11-01",
-    "source": "https://solarbotics.com/?p=87577",
-    "note": "Solarbotics \"SG90 9g / 1.6kg / .12sec Micro Servo\", USD $5.85, one servo (listed weight 13 g). Generic SG90s from other sellers vary; check the spline is the 21-tooth micro type the catalog assumes."
+    "source": "https://electropeak.com/towerpro-mini-servo-sg-90-9g-servo",
+    "note": "ElectroPeak 'TowerPro Mini Servo SG-90 9G Servo' (SKU MTR-06-006), $0.75 USD (read in a browser); ships internationally in about 2 weeks. The listing's own specs (1.2 kg-cm, 0.12 s/60 deg at 4.8 V) are below TowerPro's datasheet (1.8 kg-cm, 0.1 s); the projects' torque checks use the catalog figure. Not Solarbotics 25504, which is an HXT900 sold under the SG90 name."
   },
   "boards.pca9685_adafruit": {
     "buy": "https://www.adafruit.com/product/815",
@@ -823,5 +821,53 @@
     "checked": "2026-10-31",
     "source": "https://www.servocity.com/4mm-stainless-steel-precision-shafting/",
     "note": "ServoCity 4 mm stainless precision shafting, 100 mm length (SKU 2100-0004-0100) $2.79 each; other stocked lengths 25 mm $1.99, 50 mm $2.29, 150 mm $3.29, 200 mm $3.79, 250 mm $4.19. Price is per 100 mm piece: re-check if a project uses another length. Stock status not shown on the page."
+  },
+  "wire:AWG14": {
+    "buy": "https://protosupplies.com/product/silicone-wire-14awg-ultra-flexible-2-conductor/",
+    "pack_qty": 0.6096,
+    "pack_usd": 2.25,
+    "checked": "2026-11-01",
+    "source": "https://protosupplies.com/product/silicone-wire-14awg-ultra-flexible-2-conductor/",
+    "note": "ProtoSupplies 'Silicone Wire, 14AWG, Ultra Flexible, 2-Conductor' (red/black parallel pair), $2.25 per foot; 1 ft of pair = 0.6096 m of conductor."
+  },
+  "wire:AWG16": {
+    "buy": "https://protosupplies.com/product/silicone-wire-16awg-ultra-flexible-2-conductor/",
+    "pack_qty": 0.6096,
+    "pack_usd": 1.59,
+    "checked": "2026-11-01",
+    "source": "https://protosupplies.com/?s=silicone+wire+2-conductor&post_type=product",
+    "note": "ProtoSupplies 'Silicone Wire, 16AWG, Ultra Flexible, 2-Conductor' (red/black parallel pair), $1.59 per foot (search listing, read in a browser); 1 ft of pair = 0.6096 m of conductor."
+  },
+  "wire:AWG24": {
+    "buy": "https://www.walmart.com/ip/3875513726",
+    "pack_qty": 6,
+    "pack_usd": 8.14,
+    "checked": "2026-11-01",
+    "source": "https://www.walmart.com/ip/3875513726",
+    "note": "Walmart listing '24 Gauge Silicone Wire 24AWG ... Black/Red 3.0m/10ft 2pcs', $8.14: 3 m red + 3 m black = 6 m of conductor."
+  },
+  "electronics.wire_misc.servo_ext_300_pololu2184": {
+    "buy": "https://www.pololu.com/product/2184",
+    "pack_qty": 1,
+    "pack_usd": 4.64,
+    "checked": "2026-11-01",
+    "source": "https://www.pololu.com/product/2184",
+    "note": "Pololu #2184 'Servo Extension Cable 12\" Male - Female', US$4.64 at quantity 1."
+  },
+  "electronics.fuses.ato_holder_littelfuse_fhac0001zxj": {
+    "buy": "https://www.futureelectronics.com/p/9391574",
+    "pack_qty": 10,
+    "pack_usd": 40.6,
+    "checked": "2026-11-01",
+    "source": "https://www.futureelectronics.com/p/9391574",
+    "note": "Littelfuse FHAC0001ZXJ at Future Electronics: $4.06 each, minimum order 10 (bulk), so the smallest buy is 10 x $4.06."
+  },
+  "electronics.connectors.fdisc_187_insulated_18awg": {
+    "buy": "https://www.heilind.com/amp2-520275-2.html",
+    "pack_qty": 1,
+    "pack_usd": 0.1553,
+    "checked": "2026-11-01",
+    "source": "https://www.heilind.com/amp2-520275-2.html",
+    "note": "TE Connectivity 2-520275-2 Ultra-Fast 187 insulated receptacle, 22-18 AWG, red, at Heilind: $0.1553 each, minimum/multiple 1/1 (read in a browser)."
   }
 }

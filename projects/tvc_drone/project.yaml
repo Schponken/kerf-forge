@@ -143,10 +143,10 @@ wiring:
      route: [[26.8, 15.5, 182], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
              {item: gimbal_outer, at: [78, 16, 12.5]}, {item: gimbal_outer, at: [66.7, 38.5, 11.5]},
              {item: gimbal_outer, at: [44.2, 63.1, 11.5]}, {item: gimbal_outer, at: [20, 74, 13]}, {item: gimbal_outer, at: [6, 64, 12]}]}
-  - {id: servo_roll_sig, from: stack, to: servo_roll, kind: signal, gauge: 28, color: orange, length_mm: 370,
+  - {id: servo_roll_sig, from: stack, to: servo_roll, kind: signal, pin: M4, gauge: 28, color: orange, length_mm: 370,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12], [95.8, 18, 11], [95.8, 8, 9], [94.8, -5, 8]],
      note: "FC PWM output 4 (M4 pad, timer group 2 at 50 Hz)"}
-  - {id: servo_pitch_sig, from: stack, to: servo_pitch, kind: signal, gauge: 28, color: orange, length_mm: 500,
+  - {id: servo_pitch_sig, from: stack, to: servo_pitch, kind: signal, pin: M3, gauge: 28, color: orange, length_mm: 500,
      route: [[26.8, 15.5, 197], [26.8, 15.5, 180], [26.8, 20, 100], [100.8, 18.5, 85], [100.8, 18.5, 12],
              {item: gimbal_outer, at: [78, 16, 12.5]}, {item: gimbal_outer, at: [66.7, 38.5, 11.5]},
              {item: gimbal_outer, at: [44.2, 63.1, 11.5]}, {item: gimbal_outer, at: [20, 74, 13]}, {item: gimbal_outer, at: [6, 64, 12]}],

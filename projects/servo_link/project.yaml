@@ -66,10 +66,10 @@ wiring:      # ends = item centres; cut lengths = routed + 15 %, rounded up. Wor
   - {id: servo_pwr, from: jack, to: servo, v: 5.0, gauge: 22, color: red/black, length_mm: 250, ends: {to: header},
      route: [[76.3, -63, 6], [70, -63, 13], [40, -30, 12], [5, -24, 66], [31, -46, 80]],
      note: "jack screw terminals (+ / -) to the 3-pin male header's middle (red) and outer (brown) pins; the servo's own plug pushes onto the header; tie the lead through the wall's cable-tie slots"}
-  - {id: servo_sig, from: nano, to: servo, kind: signal, gauge: 26, color: orange, length_mm: 240, ends: {to: header},
+  - {id: servo_sig, from: nano, to: servo, kind: signal, pin: D9, gauge: 26, color: orange, length_mm: 240, ends: {to: header},
      route: [[78, -13, 3], [70, -13, 13], [40, -30, 12], [5, -24, 66], [31, -46, 80]],
      note: "Nano D9 to the header's signal pin (servo orange); Nano powered from USB"}
-  - {id: gnd_common, from: nano, to: jack, kind: signal, gauge: 26, color: black, length_mm: 110,
+  - {id: gnd_common, from: nano, to: jack, kind: signal, gauge: 22, color: black, length_mm: 110,   # 22 AWG: same ferrule as servo_pwr in the jack's minus terminal
      route: [[78, -13, 3], [76.3, -63, 6]],
      note: "Nano GND into the jack's minus screw terminal (common ground), next to the servo_pwr black wire"}
 requirements:

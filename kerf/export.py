@@ -188,7 +188,7 @@ def horn_screw_rows(proj) -> list:
             for cs, q in sorted(n.items())]
 
 
-BOM_EXTRA_KEYS = {"type", "item", "qty", "spec", "note", "link", "group", "price_key"}
+BOM_EXTRA_KEYS = {"type", "item", "qty", "spec", "note", "link", "group", "price_key", "included"}   # included: ships with another item, costs 0
 
 
 def bom_extra_check(proj, fasteners) -> tuple[list, list]:
