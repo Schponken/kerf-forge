@@ -18,13 +18,14 @@ import math
 from build123d import *
 from kerf import drives, features as F, iface
 from kerf.coves import cove_fillets
+from kerf.edges import sharp_inside
 
 ROD = "rods.ss_rod_4"
 R1, R2, R4 = 1.0, 2.0, 4.0          # project style radii (project.yaml style.radii)
 FW = 8.5                            # finger half-width in Y: the gripper's keep-out envelope for the fingers
 H_TIP = 5.0                         # finger depth in Z (bending direction) at the tip; at the root = carr_len
 FLAT = 2.0                          # finger underside strip left under the 45 deg chamfer (the only supported line)
-G_PITCH, G_W, G_D = 1.5, 1.0, 0.5   # grip grooves: pitch, width at the face, depth (45 deg flanks, 0.5 mm lands)
+G_PITCH, G_D = 1.5, 0.5            # grip grooves: pitch, depth = radius (1.0 wide at the face, 0.5 mm lands)
 LEAD = 1.0                          # lead-in chamfer at the finger tip
 
 
@@ -88,16 +89,24 @@ def build(ctx):
     body, bad3 = F.safe_fillet(body, [(edge_at(x=0, y=-h, along=Axis.Z) + edge_at(x=cx, y=-h, along=Axis.Z), R4),  # why: round the top boss over the rod (style r4)
                                       (edge_at(x=x_tip, z=H_TIP, along=Axis.Y), R2)])  # why: blunt fingertip back corner
     body, bad4 = F.safe_fillet(body, [(edge_at(x=x_tip, z=0, along=Axis.Y), LEAD)], kind="chamfer")  # why: lead-in at the tip, slides over an object instead of stubbing on it
+    # why: rack tooth roots get the ISO 53 basic-rack root fillet (0.38 x module): the root corner is where a tooth
+    # cracks when one jaw is blocked at stall (rack_teeth); the pinion tip clearance (0.25 m) is the standard one for it
+    body, bad5 = cove_fillets(body, [e for e in edge_at(y=y_root, along=Axis.X) if e.center().X < 0], 0.38 * p.gear_m)
+    # why: every other junction left sharp (rack end into the bridge, finger side into the carriage): R2, else R1
+    for rr in (R2, R1):
+        pts = [Vector(*c["at"]) for c in sharp_inside(body)]
+        body, _ = cove_fillets(body, [e for e in body.edges() if any((e.center() - c).length < 0.15 for c in pts)
+                                      and not (e.center().X < 0 and abs(e.center().Y - y_root) < 0.05)], rr)
+    bad4 += bad5
 
-    # ---- grip pad: V grooves across the last pad_len of the pad face, ridge lands stay in z = 0
+    # ---- grip pad: round-bottom grooves across the last pad_len of the pad face, ridge lands stay in z = 0
     x_p = x_tip - p.pad_len
     n_g = int((p.pad_len - LEAD) / G_PITCH)
-    zig = [(x_p, -1.0)]
     for i in range(n_g):
         xg = x_p + G_PITCH / 2 + i * G_PITCH
-        zig += [(xg - G_W / 2 - 0.01, -0.01), (xg, G_D), (xg + G_W / 2 + 0.01, -0.01)]
-    zig += [(x_p + n_g * G_PITCH, -1.0)]
-    body -= _xz(zig, -FW - 1, FW + 1)  # why: grip texture; grooves run along Y = up the layers, so they print crisp
+        # why: grip texture that bites into card / wood / foam; round roots (r = depth = 0.5, 1.0 wide) leave no sharp
+        # inside corner to start a crack; grooves run along Y = up the layers, so they print crisp
+        body -= Pos(xg, 0, 0) * Rot(90, 0, 0) * Cylinder(G_D, 2 * FW + 2)
 
     # ---- guide-rod bores (free fit: the jaw slides on the rods), horizontal in print -> teardrops
     for y in (ry, -ry):

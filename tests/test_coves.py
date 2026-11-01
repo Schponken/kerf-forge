@@ -33,3 +33,11 @@ def test_short_face_is_skipped_not_lumped():
     L = Box(20, 10, 4, align=Align.MIN) + Pos(0, 0, 4) * Box(4, 10, 1, align=Align.MIN)
     out, skipped = cove_fillets(L, _sharp_edges(L), 2.0)
     assert len(skipped) == 1 and abs(out.volume - L.volume) < 1e-6
+
+
+def test_rack_tooth_roots_leave_no_slivers():
+    # tangent points must stay exactly on the faces: a sunk tangent point left a sliver facet (a new sharp corner)
+    from kerf import drives
+    _, rack, _ = drives.rack_pinion(1.5, 20, 7, 12)
+    out, skipped = cove_fillets(rack, _sharp_edges(rack), 0.38 * 1.5)
+    assert not skipped and out.is_valid and sharp_inside(out) == []

@@ -159,6 +159,9 @@ def build(ctx):
         # why: cable-tie slot pair through plate A's column: ties the lead bundle to the leg (forearm.py)
         body -= F * (Pos(xt + dx, 0, LEG_T / 2) * extrude(SlotOverall(3.2, 1.8, rotation=90), LEG_T + 2, both=True))
     ctx.rigid("lead_b", F * Location((0, 30, LEAD_Z)))
+    # over the wrist servo into the gripper's lead plane (3 mm outside its plate A), as the forearm's lead_4: the lead
+    # then swings across the wrist in that plane, clear of the wrist servo and horn
+    ctx.rigid("lead_c", F * Location((0, 30, p.face + LEAD_Z)))
     ctx.rigid("lead_a", F * Location((xt + (xt - xd) / (0 - yd) * 24, 24, LEAD_Z)))   # on the line lead_down -> slots
     ctx.rigid("lead_down", F * Location((xd, yd, LEAD_Z)))
     cb = ctx.cat.get(SERVO)

@@ -12,7 +12,7 @@ servos past half their stall torque.
 | Clears the arm over the wrist range | wrist −75…+75° | wrist sweep against the stand (= forearm end) and the wrist servo |
 | Payload | hold 150 g (the arm's payload) by friction, slip factor ≥ 2 | grip-force math below |
 | Opening | ≥ 40 mm (robot_arm brief), target ~54 mm; jaws stay parallel, object stays centred on the tool point | `grip_open`, `grip_closed` |
-| Arm torque budget | gripper + grip servo + horn ≤ 150 g incl. rods and screws, wrist gravity torque with 150 g at the tool point ≤ 2.8 kg·cm (30 % of the wrist MG996R) | `gripper_mass`, `torque_wrist`; the shoulder hand check below |
+| Arm torque budget | no arm servo past half stall: gripper + grip servo + horn ≤ 166 g (≤ 194 g incl. rods and screws), wrist gravity torque with 150 g at the tool point ≤ 2.35 kg·cm (25 % of the wrist MG996R) | `gripper_mass`, `torque_wrist`; the shoulder hand check below |
 | Strength | FEA on every structural part at the grip servo's stall, SF per ENGINEERING.md §3; teeth by Lewis at stall | `*_fea`, `pinion_teeth`, `rack_teeth` |
 | Motion | no collision over the grip and wrist ranges; mechanical stop at full open | sweeps, `stop_open_*` |
 | Electrics | the arm's own: grip servo on its 5 A-fused lead, PWM from the arm's PCA9685 | `power`, WIRING.md |
@@ -48,6 +48,20 @@ free pivot hole, 57.4 mm apart, as robot_arm/parts/forearm.py) on a base you cla
 the checks prove the gripper fits and clears the real wrist, and so you can test and calibrate the gripper on the
 bench before it goes on the arm.
 
+## Bench electrics (testing on the stand)
+On the arm the gripper needs nothing new: its servo stays on the arm's 5 A-fused lead (robot_arm `pwr_gr`) and PCA9685
+channel 4 (`sig_gr`), proven by the arm's own `power` check. For the bench stand the project carries a small set of its
+own, the one servo_link already proves for one MG996R: MEAN WELL GST60A05 5 V 6 A adapter -> SparkFun barrel-jack
+screw-terminal adapter -> the grip servo through a 300 mm Pololu extension (male end cut off, red/brown into the jack's
+screw terminals, orange crimped onto Nano D9); Nano GND to the jack minus (common ground); the Nano runs from the PC's
+USB and `out/firmware/` has its bring-up sketch.
+Only the grip servo is powered on the bench. With both servos on the adapter the 1 m DC cord (gauge unpublished, so
+checked as 22 AWG) drops the servos to 4.72 V at their running current, under the MG996R's 4.8 V minimum (`power`
+fails), and the only fixes were an unsourced cord gauge or a second regulator stage. The stand's wrist servo stands in
+for the arm's wrist servo mechanically (it carries the horn and pivot the gripper bolts onto); on the bench it stays
+unplugged and you set the wrist angle by turning the gripper slowly by hand. One servo at 0.9 A: 5.0 V minus 0.10 V in
+the cord, 0.06 V in the 600 mm lead = 4.83 V >= 4.8 V; stalled 2.5 A of the adapter's 6 A.
+
 ## Purchased parts and sizing
 | Item | Catalog | Notes |
 |---|---|---|
@@ -79,21 +93,28 @@ smaller pinion form factor (conservative) against 39 / 3 = 13 MPa: 10.6 MPa ✓.
 
 **Arm torque budget** (projects/robot_arm/out/report.json): today the old gripper + finger + grip servo + horn weigh
 94 g and the wrist sees 1.91 kg·cm with 150 g at the tool point; the shoulder uses 8.23 of its 10.5 kg·cm half-stall
-limit, the elbow 4.47 of 9.5. The shoulder axis is 16.5 cm behind the wrist, the elbow 8.0 cm, at full reach. A
-gripper of mass m with wrist torque τ changes the shoulder torque by (m − 94 g) × 16.5 cm + (τ − 1.91). With the two
-limits in project.yaml (m ≤ 150 g, τ ≤ 2.82 kg·cm): shoulder ≤ 8.23 + 0.92 + 0.91 = 10.06 kg·cm (48 % of stall ✓),
-elbow ≤ 4.47 + 0.45 + 0.91 = 5.83 of 9.5 ✓, wrist ≤ 2.82 of 4.7 ✓. The arm's own `torque_*` checks are not re-run with
-the new gripper (it is a separate project); this hand check is the proof, the limits make the build re-check it.
+limit (DS3225, 21 kg·cm), the elbow 4.47 of 9.5. The shoulder axis is 16.5 cm behind the wrist, the elbow 8.0 cm, at
+full reach. A gripper of mass m (everything on the wrist) with wrist torque τ changes the shoulder torque by
+(m − 94 g) × 16.5 cm + (τ − 1.91 kg·cm).
+The first plan capped the items at 130 g (wrist torque ≤ 2.82). The parts as engineered (FEA-sized walls, 4 perimeters,
+two steel rods) weigh more: items 163 g, wrist torque 2.29 kg·cm. The cap was a budget, not the requirement; the
+requirement is "no arm servo past half stall". So both limits are re-derived together from it, the wrist-torque cap
+tightened to what this gripper actually needs: items ≤ 166 g (+ 19.8 g rods + ~8 g screws/inserts = 194 g) and
+τ ≤ 2.35 kg·cm (25 % of the wrist MG996R) give shoulder ≤ 8.23 + (194 − 94) × 0.165 / 10 + (2.35 − 1.91) =
+**10.32 kg·cm = 49 % of stall** ✓; elbow ≤ 4.47 + 1.00 × 0.80 + 0.44 = 5.71 of 9.5 ✓; wrist ≤ 2.35 of 4.7 ✓.
+As built (163 g, 2.29 kg·cm) the shoulder is at 10.21 kg·cm (48.6 %). The margin is thin: the arm should not take
+anything heavier on its wrist. The arm's own `torque_*` checks are not re-run with the new gripper (separate project);
+this hand check is the proof, the two limits make every build re-check it.
 The tool point moves from 100.5 to ~101.5 mm ahead of the wrist axis (reach +1 mm).
 
 ## Part list
 | Part | Job | Material | Print orientation | Approx. |
 |---|---|---|---|---|
-| gripper | wrist fork (2 × 7 mm plates), bulkhead holding the grip servo, wings + two end cheeks holding the guide rods | PETG | on its top face (print_rot [-90, 0, 0]: Y down); rod seats and tab pilots horizontal (teardrops) | ~45 g |
-| pinion | 20 T m1.5 pinion on the grip horn, 4 counterbored M3 | PETG 100 % | flat on its horn face (teeth in the layer plane) | ~8 g |
-| jaw_r / jaw_l | carriage on the two rods + rack + finger with grip pad (one STL, printed twice) | PETG | on its rack side (rack teeth up, pad face vertical) | ~12 g each |
+| gripper | wrist fork (2 × 7 mm plates), bulkhead holding the grip servo, wings + two end cheeks holding the guide rods | PETG | on its top face (print_rot [-90, 0, 0]: Y down); rod seats and tab pilots horizontal (teardrops) | 60 g |
+| pinion | 20 T m1.5 pinion on the grip horn, 4 counterbored M3 | PETG 100 % | flat on its horn face (teeth in the layer plane) | 9 g |
+| jaw_r / jaw_l | carriage on the two rods + rack + finger with grip pad (one STL, printed twice) | PETG | on its rack side (rack teeth up, pad face vertical) | 17 g each |
 | rod_keeper | covers both rod ends on the −Z cheek | PETG | flat | ~2 g |
-| stand | bench stand = the forearm's wrist end on a clamp base | PETG | on its base | ~70 g |
+| stand | bench stand = the forearm's wrist end on a clamp base | PETG | on its base | 44 g |
 
 ## Load → section
 | Part | Loads in → out | Moment / torque along it (peak) | Section and why | How it changes |

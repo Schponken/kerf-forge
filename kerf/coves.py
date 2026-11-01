@@ -47,8 +47,9 @@ def cove(shape, e, r: float):
     x = (t1_off - (t1_off.dot(d)) * d).normalized()
     pl = Plane(origin=p0, x_dir=x, z_dir=d)
     to2 = lambda v: (v.dot(pl.x_dir), v.dot(pl.y_dir))        # noqa: E731
-    eps = 0.02                                                # sink the straight sides into the material: a clean fuse
-    tri = Polygon(to2(-(n1 + n2) * eps), to2(t1_off - n1 * eps), to2(t2_off - n2 * eps), align=None)
+    # the corner vertex sinks 0.02 into the material (a clean fuse, no coplanar sides); the tangent points stay exact,
+    # since moving them off the faces leaves a sliver outside the arc
+    tri = Polygon(to2(-(n1 + n2) * 0.02), to2(t1_off), to2(t2_off), align=None)
     disc = Location(to2(centre_off) + (0,)) * Circle(r)
     prof = tri - disc
     return extrude(pl * prof, e.length, dir=(d.X, d.Y, d.Z))

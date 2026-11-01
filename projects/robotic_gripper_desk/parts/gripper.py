@@ -158,5 +158,6 @@ def build(ctx):
     ctx.rigid("keeper_seat", lkp)
     ctx.rigid("tcp", Location((p.x_tcp, 0, zc)))
     ctx.rigid("lead_1", Location((p.x_case0 + 6.5, 24, zc)))      # grip-servo lead rises out of the bay over its cable boss
+    ctx.rigid("lead_top", Location((6, top + 3, zc)))               # over the fork plates' top edge, between them
     ctx.rigid("lead_2", Location((0, 30, -3)))                      # over the wrist outside plate A (forearm lead_4 lands here)
     return ctx.finish(body)

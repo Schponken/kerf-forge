@@ -86,7 +86,7 @@ wiring:      # bench test set-up only (on the arm: robot_arm pwr_gr / sig_gr). E
   - {id: psu_cord, from: psu, to: jack, v: 5.0, gauge: 22, color: black/white, length_mm: 1000, supplied: psu,
      note: "the adapter's own 1 m DC cord with its 5.5 x 2.1 plug; gauge not published, so checked as 22 AWG (the thinnest whose 7 A chassis ampacity covers the adapter's 6 A)"}
   - {id: pwr_gr, from: jack, to: gr_servo, v: 5.0, gauge: 22, color: red/brown, lead: [gr_servo, electronics.wire_misc.servo_ext_300_pololu2184],
-     ends: {from: screw, to: plug}, route: [stand.lead_down, stand.lead_a, stand.lead_b, gripper.lead_2, gripper.lead_1],
+     ends: {from: screw, to: plug}, route: [stand.lead_down, stand.lead_a, stand.lead_b, stand.lead_c, gripper.lead_2, gripper.lead_top, gripper.lead_1],
      note: "grip servo plugged into a 300 mm extension; cut the extension's male end, red / brown into the jack's + / - terminals; up the stand leg (slot pair), over the wrist outside plate A, into the gripper's servo bay"}
   - {id: sig_gr, from: nano, to: gr_servo, kind: signal, pin: D9, gauge: 22, color: orange, lead: pwr_gr, ends: {from: crimp, to: plug},
      note: "the extension's orange (signal) wire, crimped, onto Nano D9"}
@@ -98,10 +98,10 @@ requirements:
   - {id: grip_closed, check: distance, a: jaw_l.pad, b: jaw_r.pad, max_mm: 3, pose: {},
      why: "closed (servo 0 deg) the pads are 2 mm apart, so thin objects (a 3 mm card) can be picked"}
   - {id: torque_wrist, check: static_torque, joint: wrist, actuator: wr_servo, payload_g: 150, payload_at: gripper.tcp,
-     max_fraction: 0.30, poses: [{}, {wrist: -75}, {wrist: 75}, {grip: 100, jaw_l_slide: 26.179, jaw_r_slide: 26.179}],
-     why: "<= 2.82 kg*cm with 150 g at the tool point and the gripper horizontal: with the mass limit this keeps the arm's shoulder at <= 49 % of stall (DESIGN.md 'Arm torque budget')"}
-  - {id: gripper_mass, check: mass_max, max_g: 130, include: [gripper, pinion, jaw_r, jaw_l, rod_keeper, gr_servo, gr_horn],
-     why: "printed parts + grip servo + horn; + 19.8 g of rods and ~8 g of screws and inserts (not items) = <= 158 g on the wrist (DESIGN.md 'Arm torque budget')"}
+     max_fraction: 0.25, poses: [{}, {wrist: -75}, {wrist: 75}, {grip: 100, jaw_l_slide: 26.179, jaw_r_slide: 26.179}],
+     why: "<= 2.35 kg*cm with 150 g at the tool point and the gripper horizontal: together with gripper_mass this keeps the arm's shoulder at <= 49 % of stall (DESIGN.md 'Arm torque budget')"}
+  - {id: gripper_mass, check: mass_max, max_g: 166, include: [gripper, pinion, jaw_r, jaw_l, rod_keeper, gr_servo, gr_horn],
+     why: "printed parts + grip servo + horn; + 19.8 g of rods and ~8 g of screws and inserts (not items) = <= 194 g on the wrist; with torque_wrist <= 2.35 kg*cm the shoulder stays <= 10.32 of its 10.5 kg*cm half-stall limit (DESIGN.md 'Arm torque budget')"}
   - {id: stop_open_r, check: hard_stop, joint: jaw_r_slide, beyond: 27.6,
      why: "past fully open the carriage meets the +Z cheek (1 mm of over-travel), so the rack can never leave the pinion"}
   - {id: stop_open_l, check: hard_stop, joint: jaw_l_slide, beyond: 27.6,
