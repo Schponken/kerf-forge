@@ -77,13 +77,24 @@ the cord, 0.06 V in the 600 mm lead = 4.83 V >= 4.8 V; stalled 2.5 A of the adap
 With both jaws on the object the torque splits over two meshes: F = T / (2 r) = 922 / 30 = **30.7 N per jaw at stall**,
 15.4 N at half stall. Holding the 150 g payload by friction with both jaws: 2 μ N ≥ S · m g. With μ = 0.24 (bare
 PETG, the low end of Stoimenov 2024's printed-polymer-on-steel values; REFERENCES.md decision 6) and a slip factor
-S = 2 (covers ~1 g of arm acceleration): N ≥ 2 × 1.47 / (2 × 0.24) = 6.1 N per jaw = 20 % of the stall grip; at half
-stall the grip is 2.5× that (1.7× even at S = 3). The ridged pad face does not raise μ on hard smooth objects, it
+S = 2 (covers ~1 g of arm acceleration): N ≥ 2 × 1.47 / (2 × 0.24) = 6.1 N per jaw.
+*Guide friction (the carriage cocks on its rods).* The rack pushes each jaw at x ≈ −6.6 mm (jaw frame) and the object
+pushes back at the pad centre, x ≈ 30; the rod bores (centre x = 5) are only 14 mm long. The two forces, 11.6 and 25 mm
+either side of the bores, make a couple the bores take as two edge loads 14 mm apart, and their friction eats drive
+force. Force balance along the rods with bore friction μ: D = P + μ·2·(11.6 D + 25 P)/14, so
+**P = D (1 − 1.66 μ) / (1 + 3.57 μ)**. Dry PETG on steel (μ 0.24, the same Stoimenov value): P = 0.32 D, so the pad
+force is **9.9 N per jaw at stall** (1.6× the 6.1 N that S = 2 needs; S = 3.3 at stall) but only 5.0 N at half
+stall (S = 1.6). So the requirement holds dry only when the servo squeezes with ≥ 62 % of stall. (A carriage long
+enough for half stall dry, 18 mm, makes the rods longer than the stocked 100 mm, so it was not taken.) Two things
+follow and are in the assembly steps: the rods are lubricated where the carriages run (dry PTFE spray or a drop of
+light machine oil; it lowers μ below the dry value, which only raises P — no margin above is claimed from it), and
+the hold command is found on the bench, not assumed: step 9 hangs 300 g (150 g × S 2) in the closed jaws and raises
+the squeeze until it does not slip. The ridged pad face does not raise μ on hard smooth objects, it
 bites into soft ones (card, wood, foam); a separately printed TPU 95A pad (2–3.5 mm, μ ≈ 0.5 class) is the documented
 upgrade for slippery objects (REFERENCES.md decision 7), not needed for the requirement.
 Hold by position, not by stalling (every reference gripper limits force in software; a stalled MG996R draws ~2.5 A
-and heats): command the jaws to the object's width minus ~2 mm (≈ 4° of servo past contact), so the servo's
-proportional band squeezes with a fraction of stall.
+and heats): command the jaws to the object's width minus a few mm (servo degrees past contact), so the servo's
+proportional band squeezes with a fraction of stall; how far past contact is the bench-measured value of step 9.
 
 **Opening.** Closed gap 2 mm (servo 0°), each jaw travels 15 × 100° × π/180 = 26.2 mm → open 2 + 52.4 = **54.4 mm**
 at 100° of servo travel, inside the MG996R's standard 1000–2000 µs (~120°) range, so no extended pulses are needed.
@@ -115,7 +126,7 @@ The tool point moves from 100.5 to ~101.5 mm ahead of the wrist axis (reach +1 m
 | Part | Job | Material | Print orientation | Approx. |
 |---|---|---|---|---|
 | gripper | wrist fork (2 × 7 mm plates), bulkhead holding the grip servo, wings + two end cheeks holding the guide rods | PETG | on its top face (print_rot [-90, 0, 0]: Y down); rod seats and tab pilots horizontal (teardrops) | 60 g |
-| pinion | 20 T m1.5 pinion on the grip horn, 4 counterbored M3 | PETG 100 % | flat on its horn face (teeth in the layer plane) | 9 g |
+| pinion | 20 T m1.5 pinion on the grip horn, 4 counterbored M3 | PETG 60 % infill, 4 walls | flat on its front (tooth-chamfered) face, registration rim up: print_rot [180, 0, 0] (teeth in the layer plane) | 9 g |
 | jaw_r / jaw_l | carriage on the two rods + rack + finger with grip pad (one STL, printed twice) | PETG | on its rack side (rack teeth up, pad face vertical) | 17 g each |
 | rod_keeper | covers both rod ends on the −Z cheek | PETG | flat | ~2 g |
 | stand | bench stand = the forearm's wrist end on a clamp base | PETG | on its base | 44 g |
@@ -205,7 +216,9 @@ pinion; jaw_r / jaw_l on linear slides along ±Z (0…26.18 mm) that follow grip
 5. Jaws: with the servo still at centre, slide both jaws in from the front, racks meshing (jaw_r's rack above the
    pinion, jaw_l's below), with the pads 28 mm apart (a 28 mm block between them sets it: 2 + 2 × 13.1 mm).
 6. Rods: push each rod through the −Z cheek, through both carriages, into the +Z cheek's blind seat (a drop of light
-   oil on the rod where the carriages run); then the rod keeper (2 × M3) over the rod ends.
+   oil on the rod where the carriages run); then the rod keeper (2 × M3) over the rod ends. Lubricating the rods
+   is NOT optional (dry PTFE spray or light machine oil where the carriages run, renewed when the jaws feel rough):
+   the carriages cock on their 14 mm bores and dry friction costs two thirds of the pad force ('Grip force').
 7. Mount on the wrist (the arm's forearm, or the bench stand): wrist servo at centre, horn on, the gripper's plate A
    onto the horn (4 × M3 from inside the fork, hex key through the access holes in plate B), M3 pivot screw through the
    forearm/stand plate B into the insert with washers to take up the side gap, then back it off 1/8 turn (a drop of
@@ -214,8 +227,13 @@ pinion; jaw_r / jaw_l on linear slides along ±Z (0…26.18 mm) that follow grip
    servo lead to the plate's inner face, so the wrist swing pulls on the tie, not on the servo's cable boss; then over
    the fork top and across the wrist outside plate A, and on along the arm's existing route (on the arm nothing is
    rewired: same channel, extension, fuse) or down the stand's leg through its slot pair.
-9. Calibrate: find the pulse where the pads just touch (grip 0°) and where they reach full open (grip 100°); hold
-   objects by commanding their width minus ~2 mm, never by stalling.
+9. Calibrate: find the pulse where the pads just touch (grip 0°) and where they reach full open (grip 100°). Set
+   the touching pulse as the software floor: there is no mechanical stop at the closed end (past it the servo
+   stalls against the pads). Hold test: grip a 25 mm block hanging 300 g (150 g × slip factor 2) and raise the
+   command past contact one degree at a time until it holds without slipping; use that overdrive (never a stall)
+   for every hold. If it slips even at full stall, re-lubricate the rods. Weigh the finished gripper (items +
+   rods + screws) before it goes on the arm: ≤ 194 g ('Arm torque budget'), nothing else may go on the wrist.
+   First article (step 0) adds the sliding check: the jaw must slide on an oiled rod while you press the pad.
 
 ## Risks / measure first
 - MG996R stall torque and tab height are catalog figures (UNVERIFIED tab height, see the arm's DESIGN.md); print the

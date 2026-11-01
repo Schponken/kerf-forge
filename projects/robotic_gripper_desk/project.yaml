@@ -121,7 +121,7 @@ requirements:
   - id: stand_fea
     check: fea_static
     part: stand
-    why: "the wrist servo stalls (922 N*mm, the gripper jammed on the bench) through its four tab screws while the stand carries 2x the gripper + payload weight (~190 g + 150 g = 3.3 N, x2 = 6.7 N, half on the servo tabs, half on the pivot); base held by the bench; the legs print standing (bending across layers)"
+    why: "the wrist servo stalls (922 N*mm, the gripper jammed on the bench) through its four tab screws while the stand carries 2x the gripper + payload weight (~190 g + 150 g = 3.3 N, x2 = 6.7 N, half on the servo tabs, half on the pivot); the whole base underside is held: it rests on the bench and is screwed down through the two M4 holes in the bars (or clamped) before power, as DESIGN.md says; the legs print standing (bending across layers)"
     direction: z
     case: crash
     sf: 3.0

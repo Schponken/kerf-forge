@@ -1,7 +1,8 @@
 """Pinion: 20-tooth module-1.5 spur pinion (pitch dia 30, face 12) bolted to the grip servo's aluminium 25T horn with
 4 counterbored M3; it drives both jaws' racks (kerf.drives.rack_pinion phases it with them).
 Frame: origin on the horn face on the servo axis, +Z forward (away from the horn), a tooth on +Y at angle 0.
-Printed flat on its back face (teeth in the layer plane: the tooth roots bend along the layers)."""
+Printed flat on its front face (print_rot [180, 0, 0]: the tooth-chamfered face on the bed, registration rim up;
+teeth in the layer plane, so the tooth roots bend along the layers)."""
 from build123d import *
 from kerf import drives, iface
 
