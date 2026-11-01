@@ -23,6 +23,9 @@ from build123d import *
 from kerf import drives, iface
 from kerf.features import safe_fillet
 
+_d = _iu.spec_from_file_location("claw_detail", _pl.Path(__file__).with_name("detail.py"))
+detail = _iu.module_from_spec(_d)
+_d.loader.exec_module(detail)
 _s = _iu.spec_from_file_location("claw_pad", _pl.Path(__file__).with_name("pad.py"))
 pad = _iu.module_from_spec(_s)
 _s.loader.exec_module(pad)
@@ -86,10 +89,8 @@ def build(ctx):
     roots = plan.vertices().filter_by(lambda v: 9.0 < math.hypot(v.X, v.Y) < 12.5 and abs(v.Y) < ARM_D0 / 2 + 0.1)
     plan = fillet(roots, 2.0)                       # why: r 2 where the arm leaves the hub (peak bending moment)
     arm = extrude(plan, gw)
-    top = [e for e in arm.edges() if abs(e.center().Z - gw) < 1e-6 and math.hypot(e.position_at(0.5).X, e.position_at(0.5).Y) > HUB_R - 0.6]
-    arm, failed = safe_fillet(arm, [(top, 0.6)], kind="chamfer")   # why: edge break on the arm's top edges
-    if failed:
-        raise ValueError(f"arm edge break failed: {failed}")
+    # (no top-edge chamfer on hub + arm: OCC runs it along the tangent hub arc into the toothed-sector step and leaves a
+    # notch there; the hub is part of the gear disc, whose tooth edges stay square for an accurate mesh)
 
     # jaw: plate behind the pad, PAD_H tall; its top ramps up from the arm so no step stands at the root
     side = Polygon((-pad.PAD_L / 2, 0), (pad.PAD_L / 2, 0), (pad.PAD_L / 2, H), (-pad.PAD_L / 2 + RAMP, H),
@@ -114,6 +115,11 @@ def build(ctx):
     teeth_sector = gear & extrude(wedge2d(), gw) if not drive else gear & mirror(extrude(wedge2d(), gw), Plane.XZ)
     body = (mirror(body_u, Plane.XZ) if drive else body_u) + teeth_sector   # why: teeth only on the arc that meshes (0..grip_open + margin)
 
+    # why: r 1 on the remaining inside corners; the pad's root end sits in the corner at the jaw root (kept square)
+    pad_corner = lambda at: abs(at[0] - A_b[0]) < 0.3 and abs(abs(at[1]) - A_b[1]) < 0.3  # noqa: E731
+    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0, keep=pad_corner)
+    if half_r or failed:
+        ctx.notes.append(f"inside corners at r 0.5 (r 1 does not fit): {half_r}; left sharp: {failed}")
     if drive:
         # why: 4 x M3 into the grip horn, heads on the gear's top face; holes centred under teeth (most root material)
         start = teeth[0] % 90.0                     # teeth repeat every 90 / 4 deg, so all 4 holes land under one

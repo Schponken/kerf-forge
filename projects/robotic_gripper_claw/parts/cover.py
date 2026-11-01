@@ -14,6 +14,12 @@ import math
 
 from build123d import *
 from kerf import iface
+import importlib.util as _iu
+import pathlib as _pl
+
+_d = _iu.spec_from_file_location("claw_detail", _pl.Path(__file__).with_name("detail.py"))
+detail = _iu.module_from_spec(_d)
+_d.loader.exec_module(detail)
 from kerf.features import safe_fillet
 
 R_POST = 4.4         # plate around each post screw (= the palm post, layout post_r)
@@ -49,11 +55,8 @@ def build(ctx):
             offset(amount=-(MEMBER / 2 + WIN_R), mode=Mode.REPLACE)
             offset(amount=WIN_R, kind=Kind.ARC, mode=Mode.REPLACE)
         plate -= ctx.cut(extrude(wk.sketch, p.cover_t), why="window: the frame members carry the dowel loads, the middle idles", kind="lightening")
-    edges = plate.edges().filter_by(lambda e: abs(e.center().Y - p.y_c0) < 1e-6 or abs(e.center().Y - p.y_c1) < 1e-6)
-    plate, failed = safe_fillet(plate, [(edges, 0.6)], kind="chamfer")   # why: edge break, outline and window
-    if failed:
-        raise ValueError(f"cover edge break: {failed}")
-    body = plate
+    # why: 0.6 edge break on the bed face (top face, printed down): elephant's foot and a clean first layer
+    body, f0 = safe_fillet(plate, [([e for e in plate.edges() if abs(e.center().Y - p.y_c1) < 1e-6], 0.6)], kind="chamfer")
     for z, r, why in ((p.z_d, BOSS_DRIVE, "drive dowel boss: holds the top dowel 0.5 mm over the drive finger (r < the horn-screw heads' sweep)"),
                       (p.z_i, BOSS_IDLER, "idler dowel boss: the idler dowel runs in 9 mm of cover 0.5 mm over the idler finger")):
         boss = Pos(p.x_g, p.y_cb, z) * Rot(-90, 0, 0) * Cylinder(r, p.y_c0 - p.y_cb + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
@@ -76,10 +79,17 @@ def build(ctx):
     if failed:
         raise ValueError(f"boss roots: {failed}")
     ends = [e for e in body.edges() if abs(e.center().Y - p.y_cb) < 1e-6]
-    body, failed = safe_fillet(body, [(ends, 0.4)], kind="chamfer")   # why: edge break on the boss faces (last layer)
+    body, failed = safe_fillet(body, [(ends, 0.4)], kind="chamfer")   # why: edge break on the boss and member faces (last layers)
     if failed:
         raise ValueError(f"boss end break: {failed}")
-
+    # why: r 1 on the inside corners (members into the plate and bosses); not where a palm post's top edge sits beside
+    # a member (a fillet there would sit on the post)
+    near_post = lambda at: abs(at[0] - p.x_post) < p.post_r + 1.2 and min(abs(at[2] - p.z_post_a), abs(at[2] - p.z_post_b)) < p.post_r + 1.5  # noqa: E731
+    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0, keep=near_post)
+    if half_r or failed:
+        ctx.notes.append(f"inside corners at r 0.5 (r 1 does not fit): {half_r}; left sharp: {failed}")
+    if f0:
+        ctx.notes.append(f"edge breaks skipped: {f0}")
     span = p.y_c1 - p.y_cb
     body -= iface.pin_hole(ctx, "motion.pin_3mm", up(p.x_g, p.y_c1, p.z_d), "gr_top", depth=span, fit="press")
     body -= iface.pin_hole(ctx, "motion.pin_3mm", up(p.x_g, p.y_c1, p.z_i), "gr_idler", depth=span, fit="free")

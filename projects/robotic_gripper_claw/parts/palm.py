@@ -12,6 +12,12 @@ closes the U, and plates A/B rise as cheeks behind the gears to carry the cover 
 """
 from build123d import *
 from kerf import iface
+import importlib.util as _iu
+import pathlib as _pl
+
+_d = _iu.spec_from_file_location("claw_detail", _pl.Path(__file__).with_name("detail.py"))
+detail = _iu.module_from_spec(_d)
+_d.loader.exec_module(detail)
 
 HORN = "servo_horns.aluminum_25T"
 SERVO = "servos.MG996R"
@@ -70,14 +76,15 @@ def build(ctx):
     body += side([(xw0, Y_BED), (xw1 + Y_BED / TAN50, Y_BED), (xw1, 0.5), (xw1 - (y_top - 0.5), y_top), (xw0, y_top)], zw - FAR_T, zw)
     # palm plate y 0..t
     with BuildSketch(Plane.XZ) as s:
-        Polygon((8.0, 0.0), (8.0, W), (x_front, W), (x_front, zw - FAR_T), (xw0, zw - FAR_T), (xw0, -6.0), (xa, -6.0), (xa, 0.0), align=None)
+        Polygon((8.0, 0.0), (8.0, W), (x_front, W), (x_front, zw - FAR_T), (xw0, zw - FAR_T), (xw0, zw), (xa, zw), (xa, 0.0), align=None)
     body += extrude(s.sketch, -t)
     # why: root beam across the claw on top of the palm plate, between plate A's end (xa) and the servo case / grip horn
     # (0.5-1 mm clear), up to 0.5 mm under the gears: behind the servo the channel had no wall on the servo side, so
     # everything forward of the gear axes rotated about this root (palm_fea deflection); the beam ties both cheeks,
     # both cover posts and the keel wall into one deep section
     x_rb = p.x_g - iface.horn_dims(HORN)["od"] / 2 - 1.0
-    body += ctx.add(Pos(xa, t - 0.01, -6.0) * Box(x_rb - xa, y_top - t + 0.01, W - t + 6.0 + 0.01, align=(Align.MIN, Align.MIN, Align.MIN)),
+    x_rb0 = xp - POST_R                              # flush with the posts' rear faces (no step against their round edges)
+    body += ctx.add(Pos(x_rb0, t - 0.01, zw) * Box(x_rb - x_rb0, y_top - t + 0.01, W - t - zw + 0.01, align=(Align.MIN, Align.MIN, Align.MIN)),
                     why="root beam: deep section between the wrist fork and the gear axes (stiffness, palm_fea)", kind="beam")
     # idler pedestal
     body += Pos(p.x_g, t - 0.01, p.z_i) * Rot(-90, 0, 0) * Cylinder(5.0, p.y_g0 - 0.5 - t + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
@@ -102,6 +109,9 @@ def build(ctx):
     body -= Pos(p.x_g, (Y_BED - 1) / 2, p.z_i - 1.25) * Box(2.0, -Y_BED + 1, 2.5)   # why: the push-out hole runs on as a groove open to the keel's inner face (no 0.5 mm skin)
     for (x, z) in posts(p):
         body -= iface.bolt_pattern(ctx, "cover", "M3", [(0, 0)], up(x, p.y_c0, z), kind="heatset", depth=p.y_c0 - t)
+    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0)   # why: r 1 on every inside corner (ENGINEERING.md s5; style radii)
+    if half_r or failed:
+        ctx.notes.append(f"inside corners at r 0.5 (r 1 does not fit): {half_r}; left sharp: {failed}")
     ctx.rigid("horn_mount", Location((0, 0, 0)))
     ctx.rigid("servo_seat", sloc * Location((0, 0, -p.mg_tab_t)))
     ctx.revolute("idler", Axis((p.x_g, p.y_g0, p.z_i), (0, 1, 0)), range=(-p.grip_open, 0))
