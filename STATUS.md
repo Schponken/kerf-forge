@@ -1131,3 +1131,9 @@ pushed for it and what I know:
   every part edit (does not block). part-designer.md asks for ctx.add/cut. tests/test_intent.py.
 - Existing parts mostly use plain comments, so the hook will list their booleans until the Phase 6 rework items add
   why=: e.g. robot_arm base 20+, gripper 10+.
+- Print package item (claimed, then released unstarted at the end of this run): notes for whoever takes it. No
+  slicer CLI exists in the cloud container (neither orca-slicer nor bambu-studio), so a test must cover the estimate
+  path and mock the CLI path. Sourced so far: Bambu PETG HF nozzle 230-260 C, bed 65-75 C with glue, smooth or
+  textured PEI, dry 65 C / 8 h (https://shop3duniverse.com/products/bambu-lab-petg-hf-1-75mm-1kg). Max volumetric
+  speeds still need a source (Bambu Studio filament profiles `filament_max_volumetric_speed`); the Bambu TDS PDFs on
+  polyalkemi.no needed a fetch permission that was not answered in this unattended run.
