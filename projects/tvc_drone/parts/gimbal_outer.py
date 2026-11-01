@@ -52,4 +52,10 @@ def build(ctx):
     ctx.rigid("roll_horn", Location(Plane(origin=(p.roll_face, 0, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))))
     ctx.rigid("pitch_servo", tab)
     body, _ = features.bed_chamfer(ctx, body)                   # 0.5 mm elephant's-foot chamfer on the first layer
+    # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
+    # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
+    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
+        "-Y pin pad's 0.2 mm step against the ring's inner curve: a sliver, no corner to round")
+        if at[1] < -70 and abs(abs(at[0]) - 7.0) < 0.3 else None)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

@@ -169,3 +169,19 @@ def test_fillet_inside_leaves_a_ceiling_corner_square():
     out, failed = F.fillet_inside(c, Rot(180, 0, 0) * L, 2.0)
     assert failed == [] and out.volume == pytest.approx(L.volume)
     assert "overhang" in c.sharp_ok[0]["why"]
+
+
+def test_filler_adds_the_fillet_material_in_a_square_corner():
+    """Where OCC refuses a fillet, fillet_inside adds the same material as a solid: an r x r square minus the circle."""
+    from kerf import edges as E
+    L = Box(30, 20, 4, align=(Align.MIN, Align.MIN, Align.MIN)) + Box(4, 20, 20, align=(Align.MIN, Align.MIN, Align.MIN))
+    e = [x for x in L.edges() if abs(x.center().X - 4) < 0.01 and abs(x.center().Z - 4) < 0.01][0]
+    f = F._filler(L, e, 2.0)
+    assert f.volume == pytest.approx(2 * 2 * 20 * (1 - math.pi / 4), rel=1e-4)
+    assert E.sharp_inside(L + f) == [] and (L + f).volume == pytest.approx(L.fillet(2.0, [e]).volume, rel=1e-4)
+    # an open 120-degree corner (a wall leaning back 30 degrees): the same material as OCC's fillet
+    from build123d import Plane, Polygon, Vector, extrude
+    s = extrude(Plane.XZ * Polygon((-3.46, 15.32), (0, 17.32), (10, 0), (40, 0), (40, -4), (2, -4), align=None), amount=20)
+    e = min(s.edges(), key=lambda x: (x.center() - Vector(*E.sharp_inside(s)[0]["at"])).length)
+    f = F._filler(s, e, 2.0)
+    assert E.sharp_inside(s + f) == [] and f.volume == pytest.approx(s.fillet(2.0, [e]).volume - s.volume, rel=1e-3)
