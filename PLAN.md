@@ -148,6 +148,9 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
   ("quote first"); parts-on-hand inventory the BOM prefers; auto-fix common findings (edge distance -> boss, round ->
   teardrop hole, risky tap -> heat-set insert) before the reviewer sees them
 
+## Requests from Spencer (Kerf Studio)
+- [ ] `robotic_gripper_desk` — robotic gripper for the desk robot arm (Studio request 2026-10-31): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS
+
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
