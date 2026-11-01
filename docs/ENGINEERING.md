@@ -34,6 +34,11 @@ DESIGN.md says why.
   `out/renders/fea_<id>.png`: the hot spot must sit where the load path says it should.
 - Quick hand checks (`cantilever_stress`, beam formulas in DESIGN.md) are for sizing; FEA is the proof.
 - If FEA fails, fix geometry (section depth, ribs, fillets, orientation) before reaching for a stronger material.
+- Shape the section to the load (kerf/sections.py via `features.beam / fork_link / rib_along`): material far from the
+  neutral axis (I grows with depth cubed: an I, C or box of the same area is several times stiffer than a flat bar),
+  a closed `box` or `tube` wherever the part also twists (a closed section resists torsion ~100x better than an open
+  one), depth tapered with the bending moment (deepest at the loaded root). The generators make every section
+  print-ready for its side on the bed (45 deg chamfers, peaked hollows); `bending_I` measures area and I of a cut.
 - Balance: `cg` gives the assembled CG (every item incl. purchased, plus a payload) against a reference line. Use it
   for a multirotor (CG within a few mm of the thrust centre, lateral) and for anything standing on a base (CG height
   `along`, worst over the arm's extreme poses). Printed parts act at their solid centroid, so keep ~1 mm margin.

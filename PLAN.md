@@ -104,7 +104,7 @@ Spencer: "not just simple parts slapped together; every design choice should hav
 already added: FEA stress map + "overbuilt" warning (kerf/stressmap.py), sharp-inside-corner warning (kerf/edges.py),
 design-intent scores required on every review (cli.intent_scores), Load → section table + `# why:` comments in the
 workflow. Each item below: implement, test, update docs, then re-check the projects it touches.
-- [ ] Section generators in kerf/features.py: `beam(path, section="I|T|C|box|tube", depth=f(s), width=f(s), wall)` by
+- [x] Section generators in kerf/features.py: `beam(path, section="I|T|C|box|tube", depth=f(s), width=f(s), wall)` by
   sweep/loft, `fork_link(L, ends, section, taper)` (pivot bosses, closed/I body, root fillets, cable channel) and
   `rib_along(face, path, h)`. Tests: area and second moment against hand formulas via requirements.section_props;
   prints on its intended side with no support

@@ -1083,3 +1083,16 @@ pushed for it and what I know:
   tests/test_urdf.py loads a test URDF in PyBullet (pybullet added to pyproject) and checks that PyBullet's forward
   kinematics put every link exactly where Kerf's joint solver puts the items (revolute, prismatic, mimic); flipping one
   axis sign makes it fail. All 6 project URDFs load in PyBullet. Studio Files tab: "Simulation (URDF + meshes)".
+
+## 2026-11-01 ~08:00 UTC — session 01S68R6S (continued): section generators (PLAN Phase 6)
+- kerf/sections.py, re-exported in kerf.features: `section_profile` (rect / I / T / C / box / tube, textbook or
+  print-ready for the side on the bed), `beam(path, section, depth=f(s), width=f(s), wall, up, bed)` (sweep, or loft
+  when tapered), `fork_link(L, ends, section, depth, taper, channel_d)` (round vertical bores in pivot bosses, root
+  fillets, body hollowed between the bosses so the ends stay solid, teardrop wire channel), `rib_along`,
+  `teardrop_channel`, `bending_I`. Print-ready = 45 deg chamfers under flanges, peaked hollow ceilings, teardrop tube;
+  an I or T lying on its side is refused with the alternative (C opens upward, or box).
+- tests/test_sections.py (22): area + second moment of every textbook section within 0.2 % of the hand formulas
+  (measured on a cut of the built beam with requirements.section_props); zero overhang for every print-ready section
+  in both bed orientations, for fork_link (box / C / rect, with channel) and rib_along; the textbook I / box do
+  overhang (so the test can fail); the print-ready forms are never less stiff. ENGINEERING.md s3 says when to use them.
+- No project uses them yet: the robot_arm / fpv_5in showcase reworks (PLAN Phase 6) are where they go in.

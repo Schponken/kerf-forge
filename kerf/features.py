@@ -269,3 +269,8 @@ def bed_chamfer(ctx, shape, size: float = 0.5):
                          f"chamfer (deburr them after printing): " + "; ".join(f.split(" chamfer")[0] for f in failed[:4])
                          + (" ..." if len(failed) > 4 else ""))
     return shape, failed
+
+
+# ---------------------------------------------------------------- structural sections (kerf/sections.py)
+from .sections import (beam, bending_I, cavity_profile, fork_link, rib_along, section_profile,  # noqa: E402,F401
+                       teardrop_channel)
