@@ -21,6 +21,8 @@ if [ "$SUM" != "$(cat "$STATE/deps.sum" 2>/dev/null)" ] || [ ! -x .venv/bin/kerf
   if ./setup.sh 2>&1 | while IFS= read -r l; do echo "  $l"; done; [ "${PIPESTATUS[0]}" -eq 0 ]; then echo "$SUM" > "$STATE/deps.sum"
   else echo "ERROR Setup failed. Details are in ~/Library/Logs/KerfStudio.log"; exit 1; fi
 fi
+# a newer app shell in the repo: rebuild it in the background (it reopens itself when done)
+./tools/mac/install_app.sh --if-outdated 2>&1 | while IFS= read -r l; do echo "  $l"; done
 echo "STATUS Starting the engine…"
 # --idle-exit is only a safety net if the app crashes; while the app runs it checks in every 5 s
 exec .venv/bin/kerf studio --no-open --port 8765 --idle-exit 150

@@ -14,6 +14,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigation
     var base = URL(string: "http://127.0.0.1:8765/")!
     var log: FileHandle?
     var loaded = false, starting = false, quitting = false, fails = 0
+    var outBuf = ""                 // server output not yet split into lines (main thread only)
 
     // MARK: launch
     func applicationDidFinishLaunching(_ n: Notification) {
@@ -89,16 +90,11 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigation
         let pipe = Pipe()
         p.standardOutput = pipe
         p.standardError = pipe
-        var buf = ""
-        pipe.fileHandleForReading.readabilityHandler = { h in
+        outBuf = ""
+        pipe.fileHandleForReading.readabilityHandler = { h in   // runs on a background thread
             let d = h.availableData
             if d.isEmpty { h.readabilityHandler = nil; return }
-            self.log?.write(d)
-            buf += String(decoding: d, as: UTF8.self)
-            while let nl = buf.firstIndex(of: "\n") {
-                let line = String(buf[..<nl]); buf = String(buf[buf.index(after: nl)...])
-                DispatchQueue.main.async { self.serverLine(line) }
-            }
+            DispatchQueue.main.async { self.serverOutput(d) }
         }
         p.terminationHandler = { proc in
             DispatchQueue.main.async {
@@ -112,6 +108,15 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigation
         do { try p.run(); server = p } catch {
             starting = false
             status("Couldn't run the start script.", detail: "\(repo)/tools/mac/start.sh — \(error.localizedDescription)", retry: true)
+        }
+    }
+
+    func serverOutput(_ d: Data) {
+        log?.write(d)
+        outBuf += String(decoding: d, as: UTF8.self)
+        while let nl = outBuf.firstIndex(of: "\n") {
+            let line = String(outBuf[..<nl]); outBuf = String(outBuf[outBuf.index(after: nl)...])
+            serverLine(line)
         }
     }
 

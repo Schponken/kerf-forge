@@ -1004,3 +1004,9 @@ pushed for it and what I know:
   the server if it dies while the window is open, saves downloads to ~/Downloads, opens outside links in the browser,
   has Edit menu copy/paste. Re-run ./tools/mac/install_app.sh once to switch over (it closes the old windows).
 - Server: the idle watchdog no longer shuts down right after the Mac wakes from sleep (test proves the old code did).
+- Self-update: setup.sh (on a Mac with the app installed) and the app's start.sh run `install_app.sh --if-outdated`,
+  which rebuilds the app in the background when tools/mac/KerfStudio.swift or install_app.sh changed (stamp in
+  ~/Library/Application Support/KerfStudio/app.sum). So the old launcher upgrades itself to the native app on the next
+  Dock click, and later app changes ship the same way. A failed compile leaves the existing app untouched (built in a
+  temp dir first). Simulated with stub macOS tools: fresh install, up-to-date no-op, background rebuild, start.sh →
+  server → /api/quit. Swift source passes `swiftc -parse`; AppKit/WebKit compile happens on the Mac.
