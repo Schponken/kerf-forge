@@ -74,7 +74,9 @@ def test_tripod_socket_cutter():
     from kerf.ctx import Ctx
     ctx = Ctx("base", {})
     cut = iface.tripod_socket(ctx, Location((0, 0, 0)), floor_t=1.5)
-    assert len(ctx.bom) == 1 and "tripod_nut_1_4_20" in ctx.bom[0]["spec"]   # blind run 2 #4: the nut is in the BOM
+    assert len(ctx.bom) == 1 and "hex nut" in ctx.bom[0]["item"] and "catalog" not in ctx.bom[0]["spec"]   # blind run 2 #4: the nut is in the BOM
+    from kerf import ship
+    assert ship.price_key(ctx.bom[0]) == ["nut:1/4-20"] and "nut:1/4-20" in ship.load_prices()   # and it is priced
     with pytest.raises(TypeError, match="ctx first"):
         iface.tripod_socket(Location((0, 0, 0)), Location((0, 0, 0)))
     out = blk - cut

@@ -82,3 +82,26 @@ def test_off_board_items_get_their_own_assembly_section(proj, tmp_path):
     md = (tmp_path / "ASSEMBLY.md").read_text()
     assert "## Off the device (not mounted)" in md and "**brick**" in md and "on the desk" in md
     assert "Fit **brick**" not in md
+
+
+def test_bom_merges_same_items_and_keeps_included_rows_out_of_unpriced():
+    from kerf import export, ship
+    rows = export.tidy([
+        {"type": "purchased", "item": "SG90 (servo)", "qty": 1, "spec": "servos.SG90", "for": ["pan_servo"], "note": ""},
+        {"type": "purchased", "item": "SG90 (servo)", "qty": 1, "spec": "servos.SG90", "for": ["tilt_servo"], "note": ""},
+        {"type": "fastener", "item": "4 x 6 mm shoulder screw, M3 thread (pivot)", "qty": 1, "note": "hinge 'a'; tighten gently; order X"},
+        {"type": "fastener", "item": "4 x 6 mm shoulder screw, M3 thread (pivot)", "qty": 1, "note": "hinge 'b'; tighten gently; order X"},
+        {"type": "printed", "item": "base", "qty": 1, "spec": "PETG", "note": ""}])
+    sg = next(r for r in rows if r["spec"] == "servos.SG90")
+    assert sg["qty"] == 2 and "pan_servo, tilt_servo" in sg["note"]
+    sh = next(r for r in rows if "shoulder" in r["item"])
+    assert sh["qty"] == 2 and sh["note"] == "hinges 'a', 'b'; tighten gently; order X"     # shared advice said once
+    assert len(rows) == 3
+    s = ship.price_bom([{"type": "fastener", "item": "M2 horn centre screw", "qty": 2, "included": True, "note": "comes with the servo"}], {})
+    assert s["unpriced"] == []
+
+
+def test_shoulder_screw_row_names_the_part_number_for_its_length():
+    from kerf import catalog
+    pn = catalog.get("motion.shoulder_4_m3")["part_numbers"]
+    assert pn["6"] == "97505A105" and pn["8"] == "97505A106"    # McMaster family table, 2026-11-01

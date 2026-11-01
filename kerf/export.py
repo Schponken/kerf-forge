@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import re
 from collections import Counter
 
 from build123d import Compound, Location, Mesher, Pos, export_step, export_stl, Color
@@ -176,13 +177,13 @@ def horn_screw_rows(proj) -> list:
     row per size (it comes with the servo; access to it is checked in kerf/access.py)."""
     from collections import Counter
     n = Counter()
-    for it in proj.items.values():
+    for it in getattr(proj, "items", {}).values():
         cat = str(it.spec.get("catalog", ""))
         if it.role == "purchased" and cat.startswith("servo_horns."):
             cs = catalog.get(cat).get("center_screw")
             if cs:
                 n[str(cs)] += int(it.spec.get("qty", 1))
-    return [{"type": "fastener", "item": f"{cs} horn centre screw", "qty": q, "spec": "",
+    return [{"type": "fastener", "item": f"{cs} horn centre screw", "qty": q, "spec": "", "included": True,
              "note": "comes with the servo; holds the horn on the spline (a drop of medium threadlocker: metal into metal)"}
             for cs, q in sorted(n.items())]
 
@@ -196,6 +197,7 @@ def bom_extra_check(proj, fasteners) -> tuple[list, list]:
     duplicate of an automatic fastener row, e.g. 'M2 x 8' by hand next to the auto 'M2 x 5')."""
     import re
     problems, warnings = [], []
+    engine_rows = {r["item"].strip().lower() for r in horn_screw_rows(proj)}
     auto = {}
     for j in fasteners or []:
         auto.setdefault(j["screw"], set()).add(j.get("length_mm"))
@@ -203,6 +205,9 @@ def bom_extra_check(proj, fasteners) -> tuple[list, list]:
         if not isinstance(x, dict) or "item" not in x:
             problems.append(f"bom_extra row {k + 1}: needs an 'item' ({x!r})")
             continue
+        if str(x["item"]).strip().lower() in engine_rows:
+            warnings.append(f"bom_extra '{x['item']}' duplicates the row kerf adds by itself; it is left out of the BOM: "
+                            "delete it from project.yaml")
         bad = sorted(set(x) - BOM_EXTRA_KEYS)
         if bad:
             problems.append(f"bom_extra '{x['item']}': unknown key(s) {bad} (allowed {sorted(BOM_EXTRA_KEYS)}); a comma "
@@ -218,19 +223,83 @@ def bom_extra_check(proj, fasteners) -> tuple[list, list]:
     return problems, warnings
 
 
+def human_name(cat_key: str, iid: str) -> str:
+    """What a shopper searches for: the catalog's name/model, else the catalog key's last part ("SG90 (servo)")."""
+    if not cat_key:
+        return iid
+    try:
+        e = catalog.get(cat_key)
+    except Exception:  # noqa: BLE001 - an unknown key is reported by the checks; the BOM still lists the item
+        e = {}
+    for k in ("name", "model", "title"):
+        if e.get(k):
+            return str(e[k])
+    group, _, leaf = cat_key.rpartition(".")
+    kind = group.rsplit(".", 1)[-1].rstrip("s").replace("_", " ") if group else ""
+    return f"{leaf.replace('_', ' ')} ({kind})" if kind else leaf
+
+
+def _segs(note: str) -> list[str]:
+    return [s.strip() for s in (note or "").split("; ") if s.strip()]
+
+
+def _merge_notes(segs: list[list[str]]) -> str:
+    """Notes of merged rows: what differs per row first (hinge names folded into one 'hinges ...'), then what every row
+    shares, said once - not the same instruction repeated per hinge."""
+    common = [s for s in dict.fromkeys(x for row in segs for x in row) if all(s in row for row in segs)]
+    own = [s for s in dict.fromkeys(x for row in segs for x in row) if s not in common]
+    hinges = [m.group(1) for s in own if (m := re.fullmatch(r"hinge '([^']+)'", s))]
+    own = [s for s in own if not re.fullmatch(r"hinge '([^']+)'", s)]
+    if hinges:
+        own.insert(0, ("hinges " if len(hinges) > 1 else "hinge ") + ", ".join(f"'{h}'" for h in hinges))
+    return "; ".join(own + common)
+
+
+def tidy(rows: list[dict]) -> list[dict]:
+    """One row per thing to buy: identical purchased items (same catalog entry) and identical fastener/pin rows (same
+    item text, e.g. a shoulder screw per hinge) are merged with their quantities added and their notes combined."""
+    out, index = [], {}
+    for r in rows:
+        if r["type"] == "printed":
+            out.append(r)
+            continue
+        key = (r["type"], r.get("spec", "") if r["type"] == "purchased" else r["item"], str(r.get("price_key", "")))
+        if key not in index:
+            index[key] = len(out)
+            out.append({**r, "for": list(r.get("for") or []), "_segs": [_segs(r.get("note", ""))]})
+            continue
+        m = out[index[key]]
+        m["qty"] = round(m["qty"] + r["qty"], 6) if isinstance(m["qty"], (int, float)) and isinstance(r["qty"], (int, float)) else m["qty"]
+        m["for"] = m["for"] + [i for i in (r.get("for") or []) if i not in m["for"]]
+        m["_segs"].append(_segs(r.get("note", "")))
+        m["link"] = m.get("link") or r.get("link", "")
+    for r in out:
+        segs = r.pop("_segs", None)
+        if segs and len(segs) > 1:
+            r["note"] = _merge_notes(segs)
+        if r.get("for"):
+            who = f"for {', '.join(r['for'])}"
+            r["note"] = f"{who}; {r['note']}" if r.get("note") else who
+        r.pop("for", None)
+    return out
+
+
 def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
     rows = []
     for iid, it in proj.printed.items():
         r = part_reports.get(iid, {})
+        size = r.get("size_mm")
+        size = " × ".join(f"{v:.0f}" for v in size) + " mm" if size else "size ?"
         rows.append({"type": "printed", "item": iid, "qty": it.spec.get("qty", 1), "spec": it.spec.get("material", "PETG"),
-                     "note": f"{r.get('mass_est_g', '?')} g each, {r.get('size_mm')}"})
+                     "note": f"{r.get('mass_est_g', '?')} g each, {size}"})
     for iid, it in proj.printed.items():      # bits a part's features need (ctx.bom_item, e.g. the tripod nut)
         for b in getattr(it.shape, "kerf_bom", None) or []:
             rows.append({**b, "qty": b["qty"] * it.spec.get("qty", 1), "note": f"{iid}: {b['note']}".rstrip(": ")})
     for iid, it in proj.items.items():
         if it.role == "purchased":
             from .wiring_out import link
-            rows.append({"type": "purchased", "item": iid, "qty": it.spec.get("qty", 1), "spec": it.spec.get("catalog", ""),
+            rows.append({"type": "purchased", "item": human_name(it.spec.get("catalog", ""), iid), "qty": it.spec.get("qty", 1),
+                         "spec": it.spec.get("catalog", ""), "for": [iid],
                          "note": it.spec.get("note", ""), "link": link(it.spec.get("catalog", ""))})
     screws = Counter((j["screw"], j["length_mm"], {"countersink": "flat head"}.get(j["head"], "socket head")) for j in fastener_joints)
     for (size, length, head), n in sorted(screws.items(), key=lambda x: str(x)):
@@ -245,10 +314,15 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
         if pj.get("shoulder"):
             from .iface import pin_dims
             pd = pin_dims(pj["pin"])
+            ce = catalog.get(pj["pin"])
+            pn = (ce.get("part_numbers") or {}).get(g(pj["length_mm"]))   # the exact order number for THIS length
             rows.append({"type": "fastener", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm shoulder screw, {pd['thread']} thread (pivot)",
-                         "qty": 1, "spec": pj["pin"], "link": catalog.get(pj["pin"]).get("buy", ""),
+                         "qty": 1, "spec": pj["pin"],
+                         "link": f"https://www.mcmaster.com/products/{pn}/" if pn and "mcmaster" in ce.get("buy", "") else ce.get("buy", ""),
+                         "price_key": f"shoulder:{g(pj['d_mm'])}x{g(pj['length_mm'])}:{pd['thread']}",
                          "note": f"hinge '{pj['group']}'; tighten gently until the shoulder bottoms"
-                                 + (f"; {catalog.get(pj['pin'])['buy_note']}" if catalog.get(pj["pin"]).get("buy_note") else "")})
+                                 + (f"; order {pn} (McMaster, {g(pj['d_mm'])} x {g(pj['length_mm'])} mm, pack of 10)" if pn
+                                    else (f"; {ce['buy_note']}" if ce.get("buy_note") else ""))})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
         elif pj["screw_pivot"]:
@@ -261,9 +335,13 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
                          "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})
     rows += extra or []
     rows += horn_screw_rows(proj)
+    auto = {r["item"].strip().lower() for r in rows}
     for x in proj.data.get("bom_extra") or []:
+        if x["item"].strip().lower() in auto:      # the engine already buys it (bom_extra_check warns the designer)
+            continue
         rows.append({"type": x.get("type", "extra"), "item": x["item"], "qty": x.get("qty", 1), "spec": x.get("spec", ""),
                      "note": x.get("note", ""), "link": x.get("link", "")})
+    rows = tidy(rows)
     for r in rows:
         r.setdefault("link", "")
     with open(outdir / "bom.csv", "w", newline="", encoding="utf-8") as fh:

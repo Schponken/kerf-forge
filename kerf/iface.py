@@ -538,8 +538,9 @@ def tripod_socket(ctx, loc: Location, floor_t: float = 1.5, nut: str = "tripod_n
         raise TypeError("tripod_socket(ctx, loc, ...): pass the part's ctx first (it puts the nut in the BOM)")
     n = catalog.get(nut)
     if ctx is not None:
-        ctx.bom_item(str(n.get("name", "1/4-20 UNC hex nut")), 1, f"catalog {nut}",
-                     "captive in the tripod socket; drop it in before closing the pocket", str(n.get("buy", n.get("source", ""))))
+        ctx.bom_item(str(n.get("name", f"{n['thread']} hex nut")), 1, f"standard hex nut, {n['across_flats']:g} mm max across flats",
+                     "captive in the tripod socket; drop it in before closing the pocket", "",
+                     price_key=f"nut:{n['thread'].split()[0]}")    # priced shop link from prices.json, not the size table
     af, h = float(n["across_flats"]) + slip, float(n["thickness"])
     top = floor_t + (h + 0.3 if pocket_h is None else pocket_h)
     r = TRIPOD_SCREW_D / 2 + free / 2

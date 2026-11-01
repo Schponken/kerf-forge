@@ -1057,3 +1057,20 @@ pushed for it and what I know:
   (CADGEN_TELEMETRY=0). Drawings are cached per part. Studio Files tab has an "Engineering drawings (PDF)" group.
   All 6 projects' parts draw (bionic_finger parts take 20-50 s each the first time; cached after).
 - Open: the drawings call out interface holes only (e.g. base's desk-mount corner holes are not interface sites).
+
+## 2026-11-01 — session 01S68R6Q: PLAN "BOM" item
+- Every purchased item and every extra BOM row of all six projects now resolves to a priced shop page (not a datasheet)
+  or is marked `included: true` (ships with another item: stack grommets/capacitor, servo horn screws). New
+  sourced entries in catalog/prices.json, each opened on 2026-11-01 (PCA9685, UBEC, WAGO 221-415, LRS-100-5, SG90,
+  M4 x 20 screws, M3 nylon-tip set screws, 1/4-20 nut, Pi Zero camera cable, 1000 uF cap, Pi PSU, braid, beads, CA,
+  ball-end key set, 50 g weight, shoulder screws per length, Pi, camera). Guard tests: tests/test_ship.py
+  `test_every_project_purchase_has_a_price`, `test_bom_text_has_no_internal_references`.
+- bom.md: "Total" when everything is priced, else "Priced so far" + the unpriced list; rows priced from a pack of
+  another length are flagged on the row and in the total line (bionic_finger's frame screws: length depends on the
+  hand frame); a "Buying whole packs" line gives the up-front cost. Since nothing is left unpriced, no estimated range
+  is shown (the range was for unpriced rows).
+- Merged rows say shared advice once ("hinges 'pin_dip', 'pin_mcp', 'pin_pip'; tighten gently ...; order 97505A106").
+- `price_key` may be a list (exact pack, then a flagged fallback); `ctx.bom_item(..., price_key=)` so feature-added
+  rows (the tripod nut) are priced; no catalog ids / repo doc names in BOM text.
+- Known limits: prices are a dated snapshot; WAGO's cheapest clear listing is a 30-piece minimum; PowerPro 100 lb
+  diameter is not on the shop page (note says to check it against the bead hole).

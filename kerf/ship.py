@@ -44,8 +44,9 @@ def load_prices(path: Path | None = None) -> dict:
 def price_key(row: dict) -> list[str]:
     """Candidate price keys for one BOM row, most specific first."""
     item, spec, typ = row.get("item", ""), row.get("spec", ""), row.get("type", "")
-    if row.get("price_key"):
-        return [row["price_key"]]
+    if row.get("price_key"):              # a list = exact pack first, then a fallback (flagged as a different pack)
+        pk = row["price_key"]
+        return list(pk) if isinstance(pk, (list, tuple)) else [pk]
     if typ == "purchased" and spec:
         return [spec]
     m = re.match(r"(M[\d.]+) x ([\d.]+) mm (socket|flat) head screw", item)
@@ -72,10 +73,14 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
     (estimated mass x material price per gram). Returns the summary."""
     part_reports = part_reports or {}
     total, unpriced, approx = 0.0, [], []
+    need = defaultdict(float)                     # per price key: how much of it the build uses (pieces or grams)
     for r in rows:
         cands = price_key(r)                      # before clearing: a bom_extra row may carry its own price_key
         r.update(buy=r.get("link", ""), unit_usd="", total_usd="", price_key="")   # unpriced rows keep the catalog link
         qty = float(r.get("qty") or 1)
+        if r.get("included"):                     # ships with another item (a horn's centre screw with the servo)
+            r.update(unit_usd=0, total_usd=0, note=r.get("note") or "included")
+            continue
         if r["type"] == "printed":
             mat = r.get("spec") or "PETG"
             e = prices.get(f"material:{mat}")
@@ -84,6 +89,7 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
                 unit = e["pack_usd"] / e["pack_qty"] * mass
                 r.update(buy=e["buy"], unit_usd=round(unit, 2), total_usd=round(unit * qty, 2), price_key=f"material:{mat}")
                 total += unit * qty
+                need[f"material:{mat}"] += mass * qty
             else:
                 unpriced.append(r["item"])
             continue
@@ -101,7 +107,15 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None) 
                 f"PRICE FROM A DIFFERENT PACK ({key}): the link is not this length, buy {r['item']}"
             approx.append(r["item"])
         total += unit * qty
-    return {"total_usd": round(total, 2), "unpriced": unpriced, "approximate": approx, "rows": len(rows)}
+        need[key] += qty
+    # what the shopper actually pays: whole packs (a 100-pack of screws, a 1 kg spool), one pack per started pack
+    import math
+    packs = {k: math.ceil(n / float(prices[k]["pack_qty"]) - 1e-9) for k, n in need.items() if n > 0}
+    pack_cost = {k: round(c * float(prices[k]["pack_usd"]), 2) for k, c in packs.items()}
+    packs_usd = sum(pack_cost.values())
+    return {"total_usd": round(total, 2), "packs_usd": round(packs_usd, 2), "packs": packs, "pack_cost": pack_cost,
+            "pack_qty": {k: float(prices[k]["pack_qty"]) for k in packs}, "unpriced": unpriced,
+            "approximate": approx, "rows": len(rows)}
 
 
 def write_bom(rows: list[dict], summary: dict, outdir: Path):
@@ -112,15 +126,34 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
         w.writerows(rows)
     md = ["| Type | Item | Qty | Spec | Note | Buy | Unit $ | Total $ |", "|---|---|---|---|---|---|---|---|"]
     for r in rows:
-        buy = f"[link]({r['buy']})" if r.get("buy") else ""
+        # a priced row links where to buy; an unpriced one only has its datasheet / source page, and says so
+        buy = (f"[buy]({r['buy']})" if r.get("price_key") or r.get("type") == "printed" and r.get("unit_usd") != ""
+               else f"[source]({r['buy']})") if r.get("buy") else ""
         md.append(f"| {r['type']} | {r['item']} | {r['qty']} | {r['spec']} | {r['note']} | {buy} | {r['unit_usd']} | {r['total_usd']} |")
     md.append("")
-    md.append(f"**Total: ${summary['total_usd']:.2f}**"
-              + (f" — {len(summary['unpriced'])} row(s) not priced: {', '.join(summary['unpriced'])}" if summary["unpriced"] else "")
+    md.append((f"**Priced so far: ${summary['total_usd']:.2f}**. Not priced yet ({len(summary['unpriced'])}): "
+               f"{', '.join(summary['unpriced'])}, so the real total is higher"
+               if summary["unpriced"] else f"**Total: ${summary['total_usd']:.2f}**")
               + (f" — {len(summary['approximate'])} row(s) priced from a different pack (see their notes): "
                  f"{', '.join(summary['approximate'])}" if summary.get("approximate") else "")
               + ". Fasteners are priced per piece from assortment packs; printed parts as filament only. Prices are a "
                 "dated snapshot (catalog/prices.json), shipping and tax excluded.")
+    if summary.get("packs_usd"):
+        md.append("")
+        md.append(f"**Buying whole packs** (a 100-pack of screws, a filament spool, ...) for the priced rows costs "
+                  f"**${summary['packs_usd']:.2f}** up front; the per-piece total above is what this build uses of them.")
+        # say which packs make that number, so a maker who already has screws or can buy a smaller pack knows
+        cost = summary.get("pack_cost") or {}
+        names = {r["price_key"]: r["item"] for r in rows if r.get("price_key") and r.get("type") != "printed"}
+
+        def pack(k):
+            n, q = summary["packs"][k], summary["pack_qty"][k]
+            what = (f"{k.split(':', 1)[1]} filament, {n} x {q / 1000:g} kg spool" if k.startswith("material:")
+                    else f"{names.get(k, k)}, {n} x pack of {q:g}")
+            return f"{what} = ${cost[k]:.2f}"
+        big = sorted(cost, key=lambda k: -cost[k])[:3]
+        if big:
+            md.append("Biggest packs: " + "; ".join(pack(k) for k in big) + ".")
     (outdir / "bom.md").write_text("\n".join(md) + "\n", encoding="utf-8")
 
 

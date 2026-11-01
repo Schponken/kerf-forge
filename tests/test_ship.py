@@ -26,6 +26,8 @@ def test_price_keys():
     assert ship.price_key({"type": "pin", "item": "3 x 16 mm steel dowel pin"}) == ["dowel:3x16", "dowel:3"]
     assert ship.price_key({"type": "hardware", "item": "zip tie", "price_key": "tie"}) == ["tie"]
     assert ship.price_key({"type": "hardware", "item": "mystery"}) == []
+    assert ship.price_key({"type": "fastener", "item": "M3 screw", "price_key": ["screw:M3x20:socket", "screw:M3:socket"]}) \
+        == ["screw:M3x20:socket", "screw:M3:socket"]
 
 
 def test_price_bom_totals():
@@ -57,7 +59,13 @@ def test_write_bom_files(tmp_path):
     s = ship.price_bom(rows, PRICES)
     ship.write_bom(rows, s, tmp_path)
     md = (tmp_path / "bom.md").read_text()
-    assert "[link](https://shop/mg996r)" in md and "**Total: $18.00**" in md
+    assert "[buy](https://shop/mg996r)" in md and "**Total: $18.00**" in md
+    rows = [{"type": "purchased", "item": "odd", "qty": 1, "spec": "servos.NOPE", "note": "", "link": "https://datasheet/x.pdf"}]
+    s = ship.price_bom(rows, PRICES)
+    ship.write_bom(rows, s, tmp_path)
+    md = (tmp_path / "bom.md").read_text()
+    assert "[source](https://datasheet/x.pdf)" in md and "[buy]" not in md          # a datasheet is not a shop
+    assert "Priced so far: $0.00" in md and "the real total is higher" in md
     assert "buy,unit_usd,total_usd" in (tmp_path / "bom.csv").read_text().splitlines()[0]
 
 
@@ -145,3 +153,56 @@ def test_assembly_md_carries_washers_ball_end_insert_and_notes(tmp_path):
     assert "It goes in moving -Z (down) (world), from 20 mm away — this path is checked clear." in step2
     assert "With: 2 x M3 flat washer — under the heads." in step2 and "cable tie" not in step2
     assert "1 screw(s) of `g` need a ball-end hex key" in step2
+
+
+def test_whole_pack_cost():
+    prices = {"screw:M3x8:socket": {"buy": "https://s", "pack_qty": 100, "pack_usd": 7.0, "checked": "d", "source": "https://s"},
+              "material:PETG": {"buy": "https://f", "pack_qty": 1000, "pack_usd": 20.0, "checked": "d", "source": "https://f"}}
+    rows = [{"type": "fastener", "item": "M3 x 8 mm socket head screw", "qty": 120, "spec": "", "note": ""},
+            {"type": "printed", "item": "a", "qty": 1, "spec": "PETG", "note": ""}]
+    s = ship.price_bom(rows, prices, {"a": {"mass_est_g": 50}})
+    assert s["packs"] == {"screw:M3x8:socket": 2, "material:PETG": 1} and s["packs_usd"] == 34.0
+    assert s["total_usd"] == pytest.approx(120 * 0.07 + 50 * 0.02)
+
+
+def test_every_project_purchase_has_a_price():
+    """Every purchased item and every extra BOM row of every project resolves to a priced shop entry (or is marked
+    as included with another item) - the maker never meets an unpriced line or a datasheet posing as a shop."""
+    import yaml
+    prices = ship.load_prices()
+    root = Path(__file__).resolve().parents[1] / "projects"
+    missing = []
+    for f in sorted(root.glob("*/project.yaml")):
+        d = yaml.safe_load(f.read_text(encoding="utf-8"))
+        rows = [{"type": "purchased", "spec": it["catalog"], "item": iid} for iid, it in (d.get("items") or {}).items()
+                if isinstance(it, dict) and it.get("catalog")]
+        rows += [{**r, "spec": r.get("spec", "")} for r in d.get("bom_extra") or [] if not r.get("included")]
+        missing += [f"{f.parent.name}: {r['item']}" for r in rows if not any(k in prices for k in ship.price_key(r))]
+    assert missing == []
+
+
+def test_bom_text_has_no_internal_references():
+    """Text that lands in a maker's BOM (extra rows, purchased-item notes) names no catalog ids, repo docs or TODOs."""
+    import re
+    import yaml
+    bad = re.compile(r"\bcatalog\b|TODO|FIXME|\b[a-z]+\.[a-z0-9_]+\.[a-z0-9_]+\b|\b[A-Z]+\.md\b")
+    hits = []
+    for f in sorted((Path(__file__).resolve().parents[1] / "projects").glob("*/project.yaml")):
+        d = yaml.safe_load(f.read_text(encoding="utf-8"))
+        rows = list(d.get("bom_extra") or []) + [it for it in (d.get("items") or {}).values() if isinstance(it, dict) and it.get("catalog")]
+        hits += [f"{f.parent.name}: {r[k]}" for r in rows for k in ("item", "spec", "note") if bad.search(str(r.get(k, "")))]
+    assert hits == []
+
+
+def test_bom_names_the_biggest_packs(tmp_path):
+    prices = {"screw:M3x8:socket": {"buy": "https://s", "pack_qty": 100, "pack_usd": 7.0, "checked": "d", "source": "https://s"},
+              "ferrule": {"buy": "https://f", "pack_qty": 1000, "pack_usd": 112.6, "checked": "d", "source": "https://f"},
+              "material:PETG": {"buy": "https://p", "pack_qty": 1000, "pack_usd": 20.0, "checked": "d", "source": "https://p"}}
+    rows = [{"type": "fastener", "item": "M3 x 8 mm socket head screw", "qty": 4, "spec": "", "note": ""},
+            {"type": "hardware", "item": "0.34 mm2 ferrule", "qty": 4, "spec": "", "note": "", "price_key": "ferrule"},
+            {"type": "printed", "item": "base", "qty": 1, "spec": "PETG", "note": ""}]
+    s = ship.price_bom(rows, prices, {"base": {"mass_est_g": 30}})
+    ship.write_bom(rows, s, tmp_path)
+    md = (tmp_path / "bom.md").read_text()
+    assert "Biggest packs: 0.34 mm2 ferrule, 1 x pack of 1000 = $112.60; PETG filament, 1 x 1 kg spool = $20.00; " \
+           "M3 x 8 mm socket head screw, 1 x pack of 100 = $7.00." in md

@@ -96,9 +96,13 @@ class Ctx:
     def pin_site(self, s: PinSite):
         self.pins.append(s)
 
-    def bom_item(self, item: str, qty: int = 1, spec: str = "", note: str = "", link: str = ""):
-        """A purchased bit a feature of this part needs (e.g. the captive tripod nut): one BOM row per part copy."""
-        self.bom.append({"type": "hardware", "item": item, "qty": qty, "spec": spec, "note": note, "link": link})
+    def bom_item(self, item: str, qty: int = 1, spec: str = "", note: str = "", link: str = "", price_key: str = ""):
+        """A purchased bit a feature of this part needs (e.g. the captive tripod nut): one BOM row per part copy.
+        `price_key` names its catalog/prices.json entry so the BOM can price it."""
+        row = {"type": "hardware", "item": item, "qty": qty, "spec": spec, "note": note, "link": link}
+        if price_key:
+            row["price_key"] = price_key
+        self.bom.append(row)
 
     def mesh_cut(self, solid):
         """`source: meshy` parts: a solid (part frame) cut through the generated shell too - holes, pockets, keep-outs.

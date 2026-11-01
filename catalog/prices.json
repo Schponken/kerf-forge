@@ -4,6 +4,7 @@
     "checked": "2026-10-30",
     "note": "Dated price snapshot for BOM costing (unit = pack_usd / pack_qty). Every price was read from the linked page with WebFetch on the check date; prices exclude shipping and sales tax unless stated. Store pages change often, so re-check before ordering. Amazon blocked automated reading, so no Amazon prices are used.",
     "missing": {
+      "servos.SG90": "no US store page selling the TowerPro SG90 itself could be read on 2026-11-01 (Adafruit 169 is the SG92R; Solarbotics 25504 is listed as SG90 / HXT900, a different servo); price it from a store page for the exact model",
       "electronics.connectors.fdisc_187_insulated_18awg": "TE 2-520275-2: no USD price page could be opened on 2026-10-31 (RS UK: GBP 20.30 per 100, i.e. GBP 0.203 each, https://uk.rs-online.com/web/p/crimp-receptacles/7820735; Carlton-Bates lists it without a price). Need 3 per arm."
     }
   },
@@ -622,5 +623,197 @@
     "checked": "2026-10-31",
     "source": "https://www.sparkfun.com/sparkfun-usb-mini-b-cable-6-foot.html",
     "note": "SparkFun CAB-11301 USB Mini-B cable 6 ft, $5.50 (25+: $5.23, 100+: $4.95), in stock."
+  },
+  "shoulder:4x3:M3": {
+    "buy": "https://www.mcmaster.com/products/97505A102/",
+    "pack_qty": 10,
+    "pack_usd": 8.04,
+    "checked": "2026-11-01",
+    "source": "https://www.mcmaster.com/products/97505A106/",
+    "note": "McMaster 97505A102: 4 mm shoulder x 3 mm, M3 x 0.5, zinc-plated steel slotted low-profile shoulder screw, pack of 10, $8.04 (family table, read in a browser)."
+  },
+  "shoulder:4x4:M3": {
+    "buy": "https://www.mcmaster.com/products/97505A103/",
+    "pack_qty": 10,
+    "pack_usd": 5.3,
+    "checked": "2026-11-01",
+    "source": "https://www.mcmaster.com/products/97505A106/",
+    "note": "McMaster 97505A103: 4 mm shoulder x 4 mm, M3 x 0.5, zinc-plated steel slotted low-profile shoulder screw, pack of 10, $5.30 (family table, read in a browser)."
+  },
+  "shoulder:4x5:M3": {
+    "buy": "https://www.mcmaster.com/products/97505A104/",
+    "pack_qty": 10,
+    "pack_usd": 7.56,
+    "checked": "2026-11-01",
+    "source": "https://www.mcmaster.com/products/97505A106/",
+    "note": "McMaster 97505A104: 4 mm shoulder x 5 mm, M3 x 0.5, zinc-plated steel slotted low-profile shoulder screw, pack of 10, $7.56 (family table, read in a browser)."
+  },
+  "shoulder:4x6:M3": {
+    "buy": "https://www.mcmaster.com/products/97505A105/",
+    "pack_qty": 10,
+    "pack_usd": 9.89,
+    "checked": "2026-11-01",
+    "source": "https://www.mcmaster.com/products/97505A106/",
+    "note": "McMaster 97505A105: 4 mm shoulder x 6 mm, M3 x 0.5, zinc-plated steel slotted low-profile shoulder screw, pack of 10, $9.89 (family table, read in a browser)."
+  },
+  "shoulder:4x8:M3": {
+    "buy": "https://www.mcmaster.com/products/97505A106/",
+    "pack_qty": 10,
+    "pack_usd": 6.86,
+    "checked": "2026-11-01",
+    "source": "https://www.mcmaster.com/products/97505A106/",
+    "note": "McMaster 97505A106: 4 mm shoulder x 8 mm, M3 x 0.5, zinc-plated steel slotted low-profile shoulder screw, pack of 10, $6.86 (family table, read in a browser)."
+  },
+  "shoulder:4x10:M3": {
+    "buy": "https://www.mcmaster.com/products/97505A107/",
+    "pack_qty": 10,
+    "pack_usd": 10.29,
+    "checked": "2026-11-01",
+    "source": "https://www.mcmaster.com/products/97505A106/",
+    "note": "McMaster 97505A107: 4 mm shoulder x 10 mm, M3 x 0.5, zinc-plated steel slotted low-profile shoulder screw, pack of 10, $10.29 (family table, read in a browser)."
+  },
+  "boards.rpi_zero_2w": {
+    "buy": "https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/",
+    "pack_qty": 1,
+    "pack_usd": 15.0,
+    "checked": "2026-11-01",
+    "source": "https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/",
+    "note": "Raspberry Pi list price, from the official product page (\"Your tiny, tiny $15 computer\"); bought through an Approved Reseller linked there."
+  },
+  "boards.rpi_camera_module_3": {
+    "buy": "https://www.raspberrypi.com/products/camera-module-3/",
+    "pack_qty": 1,
+    "pack_usd": 25.0,
+    "checked": "2026-11-01",
+    "source": "https://www.raspberrypi.com/products/camera-module-3/",
+    "note": "Official product page: \"Available from $25\" (the standard-lens model; wide-lens versions cost more); bought through an Approved Reseller linked there."
+  },
+  "screw:M4x20:socket": {
+    "buy": "https://www.zoro.com/i/G2652478/",
+    "pack_qty": 100,
+    "pack_usd": 14.89,
+    "checked": "2026-11-01",
+    "source": "https://www.zoro.com/i/G2652478/",
+    "note": "Zoro Select 'M4-0.70 Socket Head Cap Screw, Socket, Zinc Plated Steel, 20 mm Length, 100 PK' (Mfr M07090.040.0020), $14.89/100."
+  },
+  "setscrew:M3x6:nylon": {
+    "buy": "https://www.mcmaster.com/products/94095A025/",
+    "pack_qty": 5,
+    "pack_usd": 9.23,
+    "checked": "2026-11-01",
+    "source": "https://www.mcmaster.com/products/nylon-tip-steel-set-screws/thread-size~m3/nylon-tip-steel-set-screws~~/",
+    "note": "McMaster 94095A025: black-oxide alloy steel set screw with nylon tip, M3 x 0.5 x 6 mm, 1.5 mm hex drive, pack of 5, $9.23 (family table, read in a browser)."
+  },
+  "nut:1/4-20": {
+    "buy": "https://www.doitbest.com/product/737180/hillman-1-4-in-20-tpi-grade-2-zinc-hex-nuts-100-count-737180/",
+    "pack_qty": 100,
+    "pack_usd": 4.79,
+    "checked": "2026-11-01",
+    "source": "https://www.doitbest.com/product/737180/hillman-1-4-in-20-tpi-grade-2-zinc-hex-nuts-100-count-737180/",
+    "note": "Hillman 150003 '1/4 In. 20 tpi Grade 2 Zinc Hex Nuts (100-Count)', $4.79 at Do it Best. The page does not state the across-flats size; a standard 1/4-20 finished hex nut is 7/16 in AF - check it before buying elsewhere."
+  },
+  "cable:rpi_zero_camera_300": {
+    "buy": "https://www.waveshare.com/product/accessories/raspberry-pi-zero-v1.3-camera-cable-30cm.htm",
+    "pack_qty": 1,
+    "pack_usd": 3.49,
+    "checked": "2026-11-01",
+    "source": "https://www.waveshare.com/product/accessories/raspberry-pi-zero-v1.3-camera-cable-30cm.htm",
+    "note": "Waveshare 'Raspberry Pi Zero V1.3 Camera Cable 30cm' (300 mm, the Zero's narrow camera connector to the camera's standard one), $3.49, one cable."
+  },
+  "cap:1000uF:25V": {
+    "buy": "https://www.sparkfun.com/electrolytic-decoupling-capacitors-1000uf-25v.html",
+    "pack_qty": 1,
+    "pack_usd": 0.5,
+    "checked": "2026-11-01",
+    "source": "https://www.sparkfun.com/electrolytic-decoupling-capacitors-1000uf-25v.html",
+    "note": "SparkFun COM-08982 'Electrolytic Decoupling Capacitors - 1000uF/25V', $0.50 retail (volume tiers at 25+ and 100+ units, so the price is per capacitor). 25 V is above the 10 V minimum."
+  },
+  "psu:usb_micro_5v_2.5a": {
+    "buy": "https://www.adafruit.com/product/1995",
+    "pack_qty": 1,
+    "pack_usd": 8.25,
+    "checked": "2026-11-01",
+    "source": "https://www.adafruit.com/product/1995",
+    "note": "Adafruit 1995 '5V 2.5A Switching Power Supply with 20AWG MicroUSB Cable', $8.25 (1-9 units)."
+  },
+  "line:braid_100lb": {
+    "buy": "https://www.walmart.com/ip/225501197",
+    "pack_qty": 1,
+    "pack_usd": 29.5,
+    "checked": "2026-11-01",
+    "source": "https://www.walmart.com/ip/225501197",
+    "note": "PowerPro braided (Spectra/UHMWPE) line, 100 lb, 100 yd spool (21101000100HLA), $29.50 at Walmart; a finger uses ~0.5 m. The shop page gives no diameter (PowerPro's 60 lb is 0.41 mm per Tackle Warehouse's table, tacklewarehouse.com descpage-PPRY), so check the 100 lb line is <= 0.8 mm and passes the beads' ~1.0 mm hole."
+  },
+  "bead:8/0_seed": {
+    "buy": "https://beadaholique.com/products/toho-round-seed-beads-8-611-matte-opaque-gray-8-gram-tube",
+    "pack_qty": 300,
+    "pack_usd": 2.77,
+    "checked": "2026-11-01",
+    "source": "https://beadaholique.com/products/toho-round-seed-beads-8-611-matte-opaque-gray-8-gram-tube",
+    "note": "Toho round seed beads 8/0, 8 g tube, $2.77 at Beadaholique: ~3 mm OD, hole takes .040 in (~1.0 mm) stringing; ~38 beads/g, so ~300 per tube (the pack_qty is that estimate)."
+  },
+  "glue:ca_thin": {
+    "buy": "https://extremeflightrc.com/products/bsi-insta-cure-super-thin-ca-1oz",
+    "pack_qty": 1,
+    "pack_usd": 7.99,
+    "checked": "2026-11-01",
+    "source": "https://extremeflightrc.com/products/bsi-insta-cure-super-thin-ca-1oz",
+    "note": "Bob Smith Industries Insta-Cure Super Thin CA, 1 oz, $7.99 USD at Extreme Flight RC."
+  },
+  "tool:ball_end_hex_set_1.5-5": {
+    "buy": "https://hausoftools.com/products/bondhus-10946-set-of-6-balldriver-l-wrenches-sizes-1-5-5mm",
+    "pack_qty": 1,
+    "pack_usd": 9.99,
+    "checked": "2026-11-01",
+    "source": "https://hausoftools.com/products/bondhus-10946-set-of-6-balldriver-l-wrenches-sizes-1-5-5mm",
+    "note": "Bondhus 10946 ball-end hex L-wrench set, 1.5 / 2 / 2.5 / 3 / 4 / 5 mm, 6 pc, $9.99 at Haus of Tools; covers every ball-end key the projects call for."
+  },
+  "weight:50g": {
+    "buy": "https://labfilterz.com/products/calibration-weight-50-gram-astm-class-6-stainless-steel",
+    "pack_qty": 1,
+    "pack_usd": 16.25,
+    "checked": "2026-11-01",
+    "source": "https://labfilterz.com/products/calibration-weight-50-gram-astm-class-6-stainless-steel",
+    "note": "'Calibration, Weight 50 gram ASTM Class 6 Stainless Steel', $16.25 at Labfilterz (US store: US phone number and US FedEx shipping on its pages). A 50 g fishing sinker weighed on a kitchen scale also works."
+  },
+  "servos.SG90": {
+    "buy": "https://solarbotics.com/?p=87577",
+    "pack_qty": 1,
+    "pack_usd": 5.85,
+    "checked": "2026-11-01",
+    "source": "https://solarbotics.com/?p=87577",
+    "note": "Solarbotics \"SG90 9g / 1.6kg / .12sec Micro Servo\", USD $5.85, one servo (listed weight 13 g). Generic SG90s from other sellers vary; check the spline is the 21-tooth micro type the catalog assumes."
+  },
+  "boards.pca9685_adafruit": {
+    "buy": "https://www.adafruit.com/product/815",
+    "pack_qty": 1,
+    "pack_usd": 14.95,
+    "checked": "2026-11-01",
+    "source": "https://www.adafruit.com/product/815",
+    "note": "Adafruit product 815, 16-Channel 12-bit PWM/Servo Driver (PCA9685), $14.95 on the product page."
+  },
+  "electronics.becs.ubec_5v_3a": {
+    "buy": "https://www.hobbywingdirect.com/collections/vendors/products/ubec-3a-2-6s-lipo-input",
+    "pack_qty": 1,
+    "pack_usd": 8.99,
+    "checked": "2026-11-01",
+    "source": "https://www.hobbywingdirect.com/collections/vendors/products/ubec-3a-2-6s-lipo-input",
+    "note": "Hobbywing UBEC 3A (2-6S LiPo input), part 86010010, $8.99 on Hobbywing's US store (list $15.00)."
+  },
+  "electronics.connectors.wago_221_415": {
+    "buy": "https://www.futureelectronics.com/p/4062781",
+    "pack_qty": 30,
+    "pack_usd": 22.2,
+    "checked": "2026-11-01",
+    "source": "https://www.futureelectronics.com/p/4062781",
+    "note": "WAGO 221-415/VE00-1000 at Future Electronics: $0.74 each, minimum order 30, so the smallest buy is 30 x $0.74. Single pieces are listed at $0.94 (cncpd.com/?p=91660, pack size not stated) and in hardware-store assortment packs."
+  },
+  "electronics.supplies.meanwell_lrs100_5": {
+    "buy": "https://www.jameco.com/z/LRS-100-5-MEAN-WELL-90W-5V-18A-Single-Output-High-Efficiency-Power-Supply_2257660.html",
+    "pack_qty": 1,
+    "pack_usd": 19.2,
+    "checked": "2026-11-01",
+    "source": "https://www.jameco.com/z/LRS-100-5-MEAN-WELL-90W-5V-18A-Single-Output-High-Efficiency-Power-Supply_2257660.html",
+    "note": "MEAN WELL LRS-100-5 at Jameco, $19.20 each at quantity 1. A terminal cover or enclosure is extra (see the catalog note)."
   }
 }

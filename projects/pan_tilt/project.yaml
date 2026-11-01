@@ -55,12 +55,11 @@ keepouts:
   cam_view: {proxy: box, size: [21.6, 14.8, 12], owner: camera, note: "view cone 0-12 mm"}
   cam_view_far: {proxy: box, size: [44.8, 28.2, 18], owner: camera, note: "view cone 12-30 mm"}
 bom_extra:
-  - {type: hardware, item: "1/4-20 UNC hex nut (ASME B18.2.2, 7/16 in AF)", qty: 1, spec: "catalog tripod_nut_1_4_20; captive in the base, pulled down onto the 1.5 mm floor by the tripod screw"}
-  - {type: fastener, item: "M2 horn centre screw", qty: 2, spec: "one per horn, holds it on the servo spline; use the screw that comes with the horn (or the SG90 accessory bag); it is key-checked when the horn goes on"}
-  - {type: hardware, item: Raspberry Pi camera FPC cable >= 300 mm (15-pin; 22-pin to 15-pin on Pi 5/Zero), qty: 1, spec: "through the yoke's front notch, then a >= 60 mm slack loop for pan and tilt"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 2, spec: "tilt servo lead to the yoke ledge tie slots; leads to the tripod column"}
-  - {type: electronics, item: 470-1000 uF 10 V electrolytic capacitor, qty: 1, spec: "across the jack's + / - screw terminals (servo brownout buffer, INDEX lesson)"}
-  - {type: electronics, item: "USB power supply for the Pi Zero 2 W (5 V, 2.5 A, micro-USB)", qty: 1, spec: "the Pi is not fed from the servo supply"}
+  - {type: hardware, item: "1/4-20 UNC hex nut (ASME B18.2.2, 7/16 in AF)", qty: 1, price_key: "nut:1/4-20", note: "captive in the base, pulled down onto the 1.5 mm floor by the tripod screw"}
+  - {type: hardware, item: Raspberry Pi camera FPC cable >= 300 mm (15-pin; 22-pin to 15-pin on Pi 5/Zero), qty: 1, price_key: "cable:rpi_zero_camera_300", note: "through the yoke's front notch, then a >= 60 mm slack loop for pan and tilt"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 2, price_key: "tie:2.5mm", note: "tilt servo lead to the yoke ledge tie slots; leads to the tripod column"}
+  - {type: electronics, item: 470-1000 uF 10 V electrolytic capacitor, qty: 1, price_key: "cap:1000uF:25V", note: "across the jack's + / - screw terminals: buffers the servo supply against brownout when both servos start at once"}
+  - {type: electronics, item: "USB power supply for the Pi Zero 2 W (5 V, 2.5 A, micro-USB)", qty: 1, price_key: "psu:usb_micro_5v_2.5a", note: "the Pi is not fed from the servo supply"}
 assembly:
   root: base
   joints:

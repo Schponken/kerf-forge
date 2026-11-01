@@ -35,14 +35,14 @@ purchased:
   nano: {catalog: boards.arduino_nano, proxy: board, off_board: "on the desk beside the rig"}
 bom_extra:
   - {type: fastener, item: M3 flat washer (DIN 125), qty: 4, group: bracket_servo, spec: "under the servo tab screw heads (the tab holes are 4.5 mm keyhole slots); counted in the screw grip"}
-  - {type: hardware, item: 50 g calibration weight or fishing sinker on a wire loop or S-hook, qty: 1, spec: "hangs from the arm tip hole"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 1, spec: "servo lead strain relief"}
+  - {type: hardware, item: 50 g calibration weight or fishing sinker on a wire loop or S-hook, qty: 1, price_key: "weight:50g", spec: "hangs from the arm tip hole"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 1, price_key: "tie:2.5mm", spec: "servo lead strain relief"}
   - {type: electrical, item: "IEC C13 mains cord (country plug)", qty: 1, price_key: "mains_cord:C13", spec: "the MEAN WELL adapter ships without one (element14: mains lead sold separately)"}
   - {type: electrical, item: USB Mini-B cable, qty: 1, price_key: "cable:usb_mini_b", spec: "programs and powers the Arduino Nano A000005 (Mini-B, PiShop page)"}
   - {type: electrical, item: "2.54 mm male pin header (pins, break 3 off a strip)", qty: 3, price_key: "header:2.54x40", spec: "servo plug pushes onto it; solder servo_pwr red/black and servo_sig orange to its pins, heat-shrink each"}
-  - {type: fastener, item: "M4 x 20 mm socket-head screw (ISO 4762; into a T-nut or bolt + nut through the bench) or a wood screw with a head <= 7 mm", qty: 4,
+  - {type: fastener, item: "M4 x 20 mm socket-head screw (ISO 4762; into a T-nut or bolt + nut through the bench) or a wood screw with a head <= 7 mm", qty: 4, price_key: "screw:M4x20:socket",
      spec: "base to the bench through its 4 counterbored holes; the servo's stall reaction would tip the free-standing rig"}
-  - {type: tool, item: 2.5 mm ball-end hex driver, qty: 1, spec: "the two servo tab screws next to the cable boss (a straight key grazes the boss)"}
+  - {type: tool, item: 2.5 mm ball-end hex driver, qty: 1, price_key: "tool:ball_end_hex_set_1.5-5", spec: "the two servo tab screws next to the cable boss (a straight key grazes the boss)"}
 assembly:
   root: base
   order: [base, bracket, servo, [psu, jack, nano], horn, arm]   # servo in from behind; wire it up so it can be centred before the horn goes on

@@ -61,12 +61,12 @@ bom_extra:
   - {type: electrical, item: "low-ESR capacitor 470 uF (Rubycon, ships with the stack), >= 35 V", qty: 1,
      spec: "across the ESC battery pads, short leads (6S full charge is 25.2 V; the UBEC input max is 26 V)",
      link: "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/",
-     note: "included with the stack (catalog drone.stacks.fc_20 includes); its voltage is not published: if it is marked under 35 V buy a 35 V 470-1000 uF low-ESR one"}
-  - {type: hardware, item: M2 silicone grommets (stack), qty: 4, spec: "in the stack's 3.5 mm holes; soft-mount (ENGINEERING.md s9)",
-     link: "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/", note: "included with the stack (no separate purchase)"}
-  - {type: fastener, item: "M3 x 6 mm nylon-tip set screw", qty: 9, spec: "radial rod locks, one per ring boss, 1.5 mm hex key; the nylon tip cannot split the 1 mm carbon tube wall: stop at contact + 1/8 turn. A drop of epoxy in each bore makes the joint permanent"}
-  - {type: tool, item: 1.5 mm ball-end hex driver, qty: 1, spec: "the two pitch-horn M2 screws inside the hub fork (a straight key hits the fork)"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 14, spec: "2 at the yoke slots, 3 round the gimbal ring, 2 round the hub fork bar, 4 along the mast tube, 1 XT60 pigtail, 1 UBEC, 1 receiver"}
+     included: true, note: "included with the SpeedyBee F405 Mini stack; its voltage is not published: if it is marked under 35 V buy a 35 V 470-1000 uF low-ESR one"}
+  - {type: hardware, item: M2 silicone grommets (stack), qty: 4, spec: "in the stack's 3.5 mm holes; soft-mount: keeps motor vibration off the flight controller's gyro",
+     link: "https://www.speedybee.com/speedybee-f405-mini-bls-35a-20x20-stack/", included: true, note: "included with the stack (no separate purchase)"}
+  - {type: fastener, item: "M3 x 6 mm nylon-tip set screw", qty: 9, price_key: "setscrew:M3x6:nylon", spec: "radial rod locks, one per ring boss, 1.5 mm hex key; the nylon tip cannot split the 1 mm carbon tube wall: stop at contact + 1/8 turn. A drop of epoxy in each bore makes the joint permanent"}
+  - {type: tool, item: 1.5 mm ball-end hex driver, qty: 1, price_key: "tool:ball_end_hex_set_1.5-5", spec: "the two pitch-horn M2 screws inside the hub fork (a straight key hits the fork)"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 14, price_key: "tie:2.5mm", spec: "2 at the yoke slots, 3 round the gimbal ring, 2 round the hub fork bar, 4 along the mast tube, 1 XT60 pigtail, 1 UBEC, 1 receiver"}
 assembly:
   root: ring_low
   joints:

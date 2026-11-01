@@ -31,11 +31,13 @@ parts:
   distal: {file: parts/distal.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X,
            assembly_note: "After the dip pivot screw below, the tendons (finger slightly curled): feed the flexor (>= 100 lb braid, end stiffened with thin CA) from the base's back face through the palmar channel until it comes out of the 1.2 mm hole into the front (palmar) stop slot of the distal, the extensor along the dorsal channel into the dorsal stop slot. In each slot thread an M2 flat washer and a 2.5-3 mm bead onto the line, tie a double overhand knot against the bead, pull the washer flat onto the step and wick thin CA onto the knot. Pull each line to check the finger curls and comes back to the straight stop."}
 bom_extra:
-  - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 100 lb (445 N) rated", qty: 1, spec: "about 0.5 m: one flexor and one extensor line"}
+  - {type: hardware, item: "Braided fishing line (PE/Dyneema), 0.5-0.8 mm, >= 100 lb (445 N) rated", qty: 1, price_key: "line:braid_100lb", spec: "about 0.5 m: one flexor and one extensor line"}
   - {type: fastener, item: "M2 flat washer", qty: 2, spec: "ISO 7089 / DIN 125-A (2.2 x 5.0 x 0.3) or DIN 433 (2.3 x 4.5 x 0.3); one per line stop, bears on the 5.4 mm seat in the fingertip"}
-  - {type: hardware, item: "Line stop bead, 2.5-3 mm OD, hole <= 1.0 mm (metal or glass seed bead)", qty: 2, spec: "on each line end against its washer, knotted behind (it cannot pass the washer's 2.2 mm hole)"}
-  - {type: hardware, item: Thin CA glue, qty: 1, spec: "stiffen the line ends for threading; a drop on each fingertip knot"}
-  - {type: fastener, item: "M3 screws + nuts to bolt the knuckle mount to the hand frame", qty: 2, spec: "length = 15.6 mm mount + frame thickness"}
+  - {type: hardware, item: "Line stop bead, 2.5-3 mm OD, hole <= 1.0 mm (metal or glass seed bead)", qty: 2, price_key: "bead:8/0_seed", spec: "on each line end against its washer, knotted behind (it cannot pass the washer's 2.2 mm hole)"}
+  - {type: hardware, item: Thin CA glue, qty: 1, price_key: "glue:ca_thin", spec: "stiffen the line ends for threading; a drop on each fingertip knot"}
+  - {type: fastener, item: "M3 socket head screw, 15.6 mm mount + hand frame + 2.4 mm nut long, rounded up (M3 x 25 for a 4 mm frame)", qty: 2,
+     price_key: ["screw:M3x25:socket", "screw:M3:socket"], spec: "bolts the knuckle mount to the hand frame"}
+  - {type: fastener, item: "M3 hex nut", qty: 2, spec: "on the far side of the hand frame"}
 assembly:
   root: base
   joints:

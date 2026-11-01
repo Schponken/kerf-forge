@@ -120,7 +120,7 @@ def bom_rows(model) -> list:
             _buy(rows, f, q, f"AWG {g} conductor ends into screw terminals")
         else:
             rows.append({"type": "hardware", "item": f"bootlace ferrule for AWG {g}", "qty": q, "spec": "", "link": "",
-                         "note": "no ferrule for this gauge in the catalog: add one with a source"})
+                         "note": f"any insulated bootlace ferrule made for AWG {g} wire, one per conductor end into a screw terminal"})
     if crimps:
         _buy(rows, "electronics.connectors.crimp_pin_female_pololu1930", crimps, "female 0.1 in crimp pins, one per crimped conductor")
     for x, q in sorted(housings.items()):

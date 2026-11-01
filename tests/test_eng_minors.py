@@ -75,8 +75,8 @@ def test_eng14_horn_centre_screw_rows():
     class Pr:
         items = {"a": It("servo_horns.aluminum_25T"), "b": It("servo_horns.aluminum_25T"), "c": It("servos.MG996R")}
     rows = export.horn_screw_rows(Pr)
-    assert rows == [{"type": "fastener", "item": "M3 horn centre screw", "qty": 2, "spec": "",
-                     "note": rows[0]["note"]}]
+    assert rows == [{"type": "fastener", "item": "M3 horn centre screw", "qty": 2, "spec": "", "included": True,
+                     "note": rows[0]["note"]}]                       # ships with the servo: not a separate purchase
 
 
 def test_eng17_throttle_estimate_gets_margin():

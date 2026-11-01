@@ -70,11 +70,11 @@ purchased:
   bus_yaw: {catalog: electronics.connectors.wago_221_415, proxy: box, qty: 2, color: "#e8e8e8", off_board: "on the desk beside the base's rear pad, with the fuse holders",
             note: "two splices (+5 V and GND): supply in, yaw servo out, PCA9685 GND reference out"}
 bom_extra:
-  - {type: fastener, item: "M4 screws or 4 mm wood screws (desk mounting), or two small C-clamps on the rear pad", qty: 4, spec: "length = 6 mm base + desk; the base holes are 4.5 mm"}
-  - {type: hardware, item: Medium-strength threadlocker, qty: 1, spec: "a small drop on the thread TIP of the three M3 pivot screws only, where it sits in the brass insert; keep it off the printed bores (anaerobic threadlocker can stress-crack PETG)"}
+  - {type: fastener, item: "M4 screws or 4 mm wood screws (desk mounting), or two small C-clamps on the rear pad", qty: 4, price_key: "screw:M4x20:socket", spec: "length = 6 mm base + desk; the base holes are 4.5 mm; priced as M4 x 20 socket head into T-nuts"}
+  - {type: hardware, item: Medium-strength threadlocker, qty: 1, price_key: "threadlocker:blue", spec: "a small drop on the thread TIP of the three M3 pivot screws only, where it sits in the brass insert; keep it off the printed bores (anaerobic threadlocker can stress-crack PETG)"}
   - {type: hardware, item: "M3 flat washer (ISO 7089, 3.2 x 7 x 0.5)", qty: 9, spec: "up to 3 per pivot, between the fork and the link, to take up the 1.5 mm side gap", price_key: "washer:M3"}
   - {type: hardware, item: "USB-A to mini-B cable 1.8 m (SparkFun CAB-11301)", qty: 1, spec: "PC to the Arduino Nano (A000005 is mini-B)", price_key: electronics.cables.usb_mini_b_6ft_sparkfun_cab11301}
-  - {type: hardware, item: "Cable ties 2.5 mm", qty: 10, spec: "lead bundle at the cable mast, base post, link slot pairs"}
+  - {type: hardware, item: "Cable ties 2.5 mm", qty: 10, price_key: "tie:2.5mm", spec: "lead bundle at the cable mast, base post, link slot pairs"}
 assembly:
   root: base
   joints:
