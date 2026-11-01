@@ -64,7 +64,9 @@ def end_name(proj, w, side: str) -> str:
     kind = firmware._kind(proj, item.split(".")[0])
     if kind is None:
         return f"{item} {w['pin']}"
-    words = firmware._pin_words({"kind": kind, "pin": str(w["pin"])})
+    pin = str(w["pin"])
+    words = {"nano": f"pin {pin}", "pca9685": f"channel {firmware._num(pin, 'ch')}" if kind == "pca9685" else "",
+             "fc": f"output {pin}"}.get(kind) or firmware._pin_words({"kind": kind, "pin": pin})
     gnd = (f" (second conductor to a GND pin, header pin {PI_GND_NEXT_TO[str(w['pin']).upper()]})"
            if kind == "pi" and _conductors(w) == 2 and str(w["pin"]).upper() in PI_GND_NEXT_TO else "")
     return f"{item} {words}{gnd}"

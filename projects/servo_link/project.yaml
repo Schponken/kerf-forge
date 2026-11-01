@@ -27,7 +27,7 @@ purchased:
           assembly_note: "pull out its 4 rubber grommets first (the screws are sized for bare tabs); push it in top-first from BEHIND the wall",
           range: [-90, 90], insert: {direction: [0, 0, 1], distance: 25}}   # top-first through the wall window, from behind
   horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: horn_arm},
-         assembly_note: "centre the servo first: wire it up (WIRING.md), run servo.write(90) (1500 us), then press the horn on so the arm will point straight up; fit its centre screw"}
+         assembly_note: "with the servo centred, the arm points straight up"}
   # electrics (off the rig, on the desk): 5 V mains adapter -> barrel-jack terminal adapter -> servo power; an Arduino
   # Nano on USB makes the 500-2500 us pulses for the full +/-90 deg swing (DESIGN.md 'Electrics')
   psu: {catalog: electronics.supplies.meanwell_gst60a05, proxy: box, off_board: "on the desk beside the rig"}
