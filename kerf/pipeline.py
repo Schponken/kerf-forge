@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import progress, stressmap
+from . import edges, progress, stressmap
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -128,6 +128,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             progress.emit("part", id=iid, ok=False)
             continue
         r = checks.part_checks(it, printer, supports=it.spec.get("supports", supports))
+        r["sharp_inside"] = edges.sharp_inside(it.shape, getattr(it.shape, "kerf_sites", []))
         progress.emit("part", id=iid, ok=not r.get("problems"), mass=r.get("mass_est_g"))
         r["notes"] = list(getattr(it.shape, "kerf_notes", []))
         r["warnings"] += [f"{iid}: {n}" for n in r["notes"]]
@@ -227,6 +228,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     msg = stressmap.advice(part, s)
                     if msg:
                         rep["warnings"].append(msg)
+            for pid, pr in rep["parts"].items():                           # sharp inside corners, stressed ones first
+                st = pr.get("stress") or {}
+                msg = edges.advice(pid, pr.get("sharp_inside") or [], st.get("hot_zones", []), st.get("zone_mm", 0.0))
+                if msg:
+                    rep["warnings"].append(msg)
             rep["requirements"] = rq
             _layer_proofs(proj, rep)
             rep["warnings"] += _fea_hygiene(proj)

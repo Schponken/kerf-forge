@@ -164,3 +164,12 @@ def test_static_torque_gravity_direction(tmp_path):
     arm_mass = requirements.item_mass_g(proj.items["arm"])
     # arm swung to +-90 points along -/+Z: gravity along X then has the full lever (payload 60, arm ~30)
     assert requirements.run_all(proj, asm)[0]["value"] == pytest.approx((0.1 * 60 + arm_mass / 1000 * 30) / 10, rel=0.05)
+
+
+def test_review_needs_design_intent_scores_for_every_printed_part():
+    from kerf.cli import intent_scores
+    good = {k: 4 for k in ("load_path", "feature_purpose", "print_intent", "finish")}
+    assert "no design-intent scores" in intent_scores({}, ["a"])
+    assert "for ['b']" in intent_scores({"scores": {"a": good}}, ["a", "b"])
+    assert "a.load_path=2" in intent_scores({"scores": {"a": {**good, "load_path": 2}}}, ["a"])
+    assert intent_scores({"scores": {"a": good}}, ["a"]) is None

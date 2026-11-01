@@ -50,7 +50,7 @@ def summarize(cases: list[dict]) -> dict:
     hot = sorted(rows, key=lambda r: -r["peak"])[:3]
     disp = [c["disp_use"] for c in cases if c.get("disp_use") is not None]
     stiff = max(disp) if disp else None
-    return {"utilisation": round(peak, 3), "cold_volume_pct": round(cold_pct, 1), "cold_zones": cold, "hot_zones": hot,
+    return {"utilisation": round(peak, 3), "zone_mm": round(cell, 2), "cold_volume_pct": round(cold_pct, 1), "cold_zones": cold, "hot_zones": hot,
             "deflection_use": None if stiff is None else round(stiff, 3),
             "overbuilt": peak < OVERBUILT and (stiff is None or stiff < 0.5)}
 

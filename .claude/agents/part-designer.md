@@ -14,8 +14,19 @@ Rules:
 - Write `projects/<p>/parts/<part>.py` with build123d. Use `kerf.iface` for every mating feature, with exactly the
   group names in the contract; never hand-place a hole that mates with another part.
 - Every purchased-part dimension comes from the catalog (`ctx.cat.get(...)`). No magic numbers for real hardware.
-- Fillet inside corners on load paths (r >= 1 mm), keep walls >= 1.6 mm on structural parts, follow the print
-  orientation in the contract and design for it (chamfers instead of flat overhangs, no unsupported ceilings).
+- Design from the load, not from boxes. Start from the part's row in DESIGN.md "Load → section" (moment/torque along
+  the part, chosen section, how it changes along the length): put material where the moment is (deeper/wider toward the
+  root, flanges far from the neutral axis, closed or I/C sections for bending and box/tube for torsion, ribs and
+  gussets along the load path), and take it out where it isn't. A prismatic slab of one section is only acceptable for
+  a part DESIGN.md says carries no meaningful load.
+- Every feature has a purpose, written as a one-line `# why:` comment on the line that adds or cuts it (load path,
+  fit, print orientation, assembly, wiring, weight). Geometry with no reason is removed, not kept "just in case".
+- Fillet inside corners on load paths (r >= 1 mm) with the project's radius set (`style.radii` in project.yaml when
+  present: one consistent design language), keep walls >= 1.6 mm on structural parts, follow the print orientation in
+  the contract and design for it (chamfers instead of flat overhangs, no unsupported ceilings).
+- The full check reports two design warnings per part; treat both as work, not noise: "overbuilt" (FEA shows the
+  material idling: remove or reshape it where it says, or justify in DESIGN.md) and "sharp inside corner(s)" (fillet
+  them, stressed ones first, or justify the one a mating part sits in).
 - Run `.venv/bin/kerf check <p> --quick` until your part has no problems, then `kerf check <p>` for sweeps.
 - Self-correct: when a build fails, the check output (and the after-edit hook, under "FIX THESE FIRST") gives `<part>.py line N `code` [feature]: error` and a `fix:` hint computed from your own call (largest fillet/chamfer that works, nearest param or catalog key, material a hole needs). Apply the hint at that line and re-check, automatically, up to 5 rounds. Only if the same failure survives 5 rounds, or the fix would break the contract (e.g. a wall below ENGINEERING.md minimums), stop and report it.
   If a problem is caused by ANOTHER part or the contract, do not hack around it: report it back precisely.

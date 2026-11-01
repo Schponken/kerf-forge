@@ -99,6 +99,56 @@ tested before handoff.
   Tests: unchanged part = cache hit with identical geometry; editing a param that the part reads = miss; engine change
   = miss. Measure robot_arm check cold vs warm in STATUS.md
 
+## Phase 6 — design depth and output quality (two independent reviews, 2026-11-01: docs/reviews/2026-11-01.md)
+Spencer: "not just simple parts slapped together; every design choice should have a purpose and intention". Engine
+already added: FEA stress map + "overbuilt" warning (kerf/stressmap.py), sharp-inside-corner warning (kerf/edges.py),
+design-intent scores required on every review (cli.intent_scores), Load → section table + `# why:` comments in the
+workflow. Each item below: implement, test, update docs, then re-check the projects it touches.
+- [ ] Section generators in kerf/features.py: `beam(path, section="I|T|C|box|tube", depth=f(s), width=f(s), wall)` by
+  sweep/loft, `fork_link(L, ends, section, taper)` (pivot bosses, closed/I body, root fillets, cable channel) and
+  `rib_along(face, path, h)`. Tests: area and second moment against hand formulas via requirements.section_props;
+  prints on its intended side with no support
+- [ ] Mechanical idiom library (kerf/features.py or kerf/idioms.py): `yoke_cheek`, `servo_cradle`, `clevis`, `boss`
+  (root fillet built in), `cable_saddle` / strain relief, `grip_pad` (serrations or TPU-insert pocket). Replace the
+  copy-pasted robot_arm `yoke()` (yoke_l/yoke_r) and `plate()` (upper_arm/forearm) with them. Tests per idiom
+- [ ] Feature intent ledger: `ctx.add(shape, why=, kind=)` / `ctx.cut(shape, why=, kind=)` (iface calls register
+  themselves); the table goes into report.json and the part sheet; the after-edit hook warns on a body boolean with no
+  `why=` and no `# why:` comment. Test
+- [ ] Showcase rework, robot_arm: upper_arm + forearm from `fork_link` (closed section against torsion, depth tapered
+  with the moment, pockets in the stress map's cold zones, servo lead in a channel), gripper + finger (real grip surface,
+  tapered finger, root fillets, one swept jaw), base (thin floor + ribs from the bearing tower to the 4 feet, tower
+  gussets, filleted rib roots). Re-run every FEA case; design-review PASS with scores >= 4 on these parts
+- [ ] Showcase rework, fpv_5in arm: fillet the key-ridge roots, move the wire path out of the mid-depth shear zone into
+  a covered groove, skid under the motor pad; keep the deflection limit; review PASS
+- [ ] Every project: DESIGN.md "Load → section" table and `style` radii; each part's "overbuilt" and "sharp inside
+  corner" warnings fixed or justified in DESIGN.md; re-review all six with the intent scores (all >= 3). Then make a
+  sharp inside corner in a hot zone a problem (not a warning) and keep every project passing
+- [ ] BOM: every catalog item has a priced shop link (not a datasheet); total shown as priced + estimated range plus
+  what the packs actually cost; duplicate rows merged and quantities aggregated; human names instead of catalog ids;
+  units on sizes; no internal notes or TODOs leak to the maker. Shoulder screws: a part number per length (sourced)
+- [ ] ASSEMBLY.md: off-board items (PSU, jack, Pi on the bench) under "Bench electronics (not mounted)"; steps ordered
+  by sub-assembly with no forward references; servo centring before horns; step 0 = test-fit / `kerf calibrate`
+  advice; long steps split; tightening in feel terms ("snug, then 1/8 turn") alongside N·m. Generate a bring-up and
+  sweep-test program (Arduino .ino or Pi Python) for every project with a controller, referenced by the steps
+- [ ] WIRING.md: routes described by landmarks, not coordinates; physical pin numbers next to GPIO/BCM; every
+  electrical BOM item used in a step and every wire/extension a step uses in the BOM
+- [ ] Print package: per plate print time and grams (slice with Bambu Studio / OrcaSlicer CLI when installed, else a
+  documented estimate), layer height, temperatures, supports on/off, brim in PRINT_SETTINGS.md; printer/filament
+  settings in the 3MF; orientation in words ("on its back face"). Studio shows time, grams and cost per project
+- [ ] Report wording for makers: mass split into printed / on-board / off-board (viewer headline too); every check
+  value with its unit and whether the limit is a min or max; warnings split into "for you" (maker) and "for the
+  designer"; fix pan_tilt's bracket camera tap holes (22 % edge ring) and say "don't overtighten" where self-tapping
+- [ ] Renders: assembly-step images framed on the step's parts (off-board items excluded), the step's new parts and
+  fasteners highlighted with labels; purchased parts readable on dark; part sheets with overall dimensions and an
+  on-the-bed view
+- [ ] Studio: welcome / empty state; time estimates on Build and Build-all (from past runs); units on parameters;
+  versions (git-backed history with renders and metric diffs, one-click revert) and tried-vs-saved comparison; cost /
+  print time / filament summary; export a zip; which checks a parameter affects
+- [ ] Smarter new design: intake questions before the run (budget, parts on hand, power, mounting, environment,
+  printer, material), then 2–3 candidate architectures with estimated cost, print hours and part count to pick from
+  ("quote first"); parts-on-hand inventory the BOM prefers; auto-fix common findings (edge distance -> boss, round ->
+  teardrop hole, risky tap -> heat-set insert) before the reviewer sees them
+
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified

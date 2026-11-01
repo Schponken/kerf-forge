@@ -88,6 +88,21 @@ def projects() -> list[str]:
     return sorted(p.parent.name for p in (ROOT / "projects").glob("*/project.yaml"))
 
 
+INTENT = ("load_path", "feature_purpose", "print_intent", "finish")
+
+
+def intent_scores(review: dict, printed: list[str]) -> str | None:
+    """The reviewer scores every printed part on design intent (design-reviewer.md item 6); a PASS needs >= 3 on each."""
+    sc = review.get("scores")
+    if not sc:
+        return "review has no design-intent scores (design-reviewer.md item 6); review again"
+    missing = [p for p in printed if p not in sc]
+    if missing:
+        return f"review scores no design intent for {missing}; review again"
+    low = [f"{p}.{k}={sc[p].get(k)}" for p in printed for k in INTENT if not isinstance(sc[p].get(k), (int, float)) or sc[p][k] < 3]
+    return f"design-intent scores below 3: {', '.join(low)}" if low else None
+
+
 def review_status(name) -> dict:
     from . import project as P
     proj = P.load(name)
@@ -100,6 +115,9 @@ def review_status(name) -> dict:
         return {"ok": False, "why": f"review is for fingerprint {r.get('fingerprint')}, geometry is now {fp}; review again", "fingerprint": fp}
     if r.get("verdict") != "PASS":
         return {"ok": False, "why": f"review verdict {r.get('verdict')}: {r.get('summary', '')}", "fingerprint": fp}
+    bad = intent_scores(r, list(proj.printed))
+    if bad:
+        return {"ok": False, "why": bad, "fingerprint": fp}
     out = _out_stale(proj, fp)
     return {"ok": True, "why": "current PASS review" + (f"; {out}" if out else ""), "fingerprint": fp, "out_stale": bool(out)}
 

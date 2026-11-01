@@ -105,7 +105,8 @@ def test_eng18_review_status_flags_stale_out(tmp_path, monkeypatch):
         assembly: {root: a, joints: []}
         """, {"a": "from build123d import *\ndef build(ctx):\n    return ctx.finish(Box(10, 10, 10))\n"})
     fp = P.load(str(d)).fingerprint()
-    (d / "review.json").write_text(json.dumps({"verdict": "PASS", "fingerprint": fp}))
+    scores = {"a": {k: 4 for k in cli.INTENT}}          # every printed part scored (design-intent rubric)
+    (d / "review.json").write_text(json.dumps({"verdict": "PASS", "fingerprint": fp, "scores": scores}))
     r = cli.review_status(str(d))
     assert r["ok"] and r["out_stale"] and "not built" in r["why"]
     (d / "out").mkdir()

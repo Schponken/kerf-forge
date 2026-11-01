@@ -1010,3 +1010,14 @@ pushed for it and what I know:
   Dock click, and later app changes ship the same way. A failed compile leaves the existing app untouched (built in a
   temp dir first). Simulated with stub macOS tools: fresh install, up-to-date no-op, background rebuild, start.sh →
   server → /api/quit. Swift source passes `swiftc -parse`; AppKit/WebKit compile happens on the Mac.
+
+## 2026-11-01 01:30 UTC — planning session 01S68R6Q: design-depth engine + two independent reviews
+- Two fresh reviewers (CAD depth / outputs+UX), condensed in docs/reviews/2026-11-01.md; work items = PLAN Phase 6.
+- Engine: kerf/stressmap.py (FEA stress FIELD -> utilisation, cold/hot zones, "overbuilt" warning; fea.static now
+  returns `_field`), kerf/edges.py (sharp inside corners, stressed first, iface features exempt), viewer fix (coupled-pose
+  sweeps blanked the 3D view; panels isolated; browser regression test proven to fail on the old viewer).
+- Workflow: part-designer designs from DESIGN.md "Load → section" with `# why:` per feature and a project radius set;
+  reviewer scores every printed part on load path / feature purpose / print intent / finish; `review_status` requires
+  scores >= 3 for every printed part. This deliberately makes all six existing reviews stale: re-review with the rubric
+  is PLAN Phase 6.
+- servo_link now reports: bracket overbuilt (4 % utilisation) and 12 sharp inside corners, 2 in a stressed zone.

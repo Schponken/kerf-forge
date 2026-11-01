@@ -23,11 +23,20 @@ Judge, with specifics:
 3. Does it match the real purchased parts? Spot-check mating dimensions in the code against the catalog.
 4. Will each part print well in its chosen orientation (layer direction vs. load, overhangs, bridges, first layer)?
 5. Proportions and craft: anything that looks wrong, fragile, or amateur in the renders.
+6. Design intent, per printed part (the owner's bar: "not simple parts slapped together; every design choice has a
+   purpose"). Use report.json `parts.<p>.stress` (utilisation, cold/hot zones), the "overbuilt" and "sharp inside
+   corner" warnings, the `# why:` comments in the part code and DESIGN.md "Load → section". Is the shape derived from
+   the loads (section, taper, ribs along the load path, material where the stress is) or primitives with holes? Does
+   every feature have a purpose, and is any purposeful feature missing (cable routing, strain relief, registration,
+   lead-ins, tool access, edge breaks, anti-rotation)? Is the radius/edge language consistent across the product?
 
 Run `.venv/bin/kerf review-status <p>` to get the current geometry fingerprint. Then write `projects/<p>/review.json`:
 {"verdict": "PASS" | "FAIL", "fingerprint": "<from review-status>", "reviewer": "design-reviewer",
  "date": "<ISO date>", "summary": "<2-3 sentences>",
- "findings": [{"severity": "blocker|major|minor", "part": "<id>", "issue": "<what>", "fix": "<concrete fix>"}]}
+ "findings": [{"severity": "blocker|major|minor", "part": "<id>", "issue": "<what>", "fix": "<concrete fix>"}],
+ "scores": {"<printed part id>": {"load_path": 1-5, "feature_purpose": 1-5, "print_intent": 1-5, "finish": 1-5}}}
+Score EVERY printed part (5 = what a senior designer would ship, 3 = acceptable, 1-2 = boxes with holes / features
+without purpose). A score below 3 is at least a major finding for that part.
 
 PASS only if there are no blocker or major findings. Minor findings may remain on a PASS but must be listed.
 Do not modify any other file. Your final message: the verdict and the findings list.

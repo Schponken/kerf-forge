@@ -60,6 +60,10 @@ Search first, per part: for the whole device and for each printed part or sub-as
   in the parts for every run.
 - **Part list**: each printed part, its job, material (docs/ENGINEERING.md section 2), `print_rot`, `load_axis`,
   rough envelope.
+- **Load → section** table, one row per structural part: the loads entering and leaving it, the bending moment /
+  torque along it (where it peaks), the section chosen (I / C / box / tube / ribbed plate / solid) and why, and how
+  the section changes along the length (taper, ribs, pockets). The part-designers shape from this, not from boxes.
+- **Style**: `style: {radii: [...], edge_break: mm}` in project.yaml, one fillet/edge language for the whole product.
 - **Interface table**: every connection — part A, part B, interface call (toolbox below), group name, screw/pin
   size and count.
 - **Joint tree** with ranges and home, plus coupled poses worth checking (gimbal corners, finger curl).
@@ -88,6 +92,9 @@ limit or edit the catalog to make a check pass unless the physics says so (write
 ## 5. Strength, then detail
 - Run `fea_static` for every structural part (fixed at its fastener group / joint, loaded where the load enters).
   If it fails, change geometry (section depth, ribs, fillets, orientation) before reaching for a stronger material.
+- Read each part's `stress` block in out/report.json and its "overbuilt" / "sharp inside corner" warnings: move
+  material from the cold zones to the hot ones (pockets, thinner walls, deeper ribs) and fillet the stressed corners,
+  then re-run the FEA. Uniformly 10x-overbuilt parts are a design failure, not a safety margin.
 - Detail pass, re-checking after each change: fillets on every inside corner of a load path (`features.safe_fillet`
   reports edges it could not do), chamfered bed edges, teardrop horizontal holes, cable routes and zip-tie points,
   lightening `pockets` only where FEA shows margin, part name/version `label`, screw access confirmed in assembly
