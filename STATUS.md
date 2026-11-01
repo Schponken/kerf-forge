@@ -1196,3 +1196,19 @@ pushed for it and what I know:
   hook edit was refused for an agent session, so it needs his go-ahead.
 - Found, not mine: a Try of servo_link with arm_len 120 + arm in PLA sat in arm_fea for 5+ min and was OOM-killed
   (8 GB container) — worth a look by whoever owns kerf/fea.py.
+
+## 2026-11-01 ~16:00 UTC-5 — robotic_gripper_desk resumed (subagent of session 01S68R6S)
+- Kept the earlier session's design (rack-and-pinion parallel jaws on the arm's wrist, REFERENCES/DESIGN/contract).
+  Finished: real rod keeper (2 x M3), stand `stand_fea` (legs bend across layers), bench electrics for the grip servo
+  only (GST60A05 -> barrel jack -> servo, Nano D9; with both servos on the adapter's 1 m cord the servos see 4.72 V <
+  4.8 V, so the stand's wrist servo stays unplugged on the bench), wire route over the wrist in the gripper's lead
+  plane + a tie-slot pair on plate A (reviewer's major), round-root grip grooves, ISO 53 rack root fillets.
+- kerf/coves.py (+ tests/test_coves.py, ARCHITECTURE row): concave fillets by boolean union. OCC's fillet segfaults on
+  the gripper body (the earlier session had switched its fillets off behind an env var). First version sank the
+  tangent points 0.02 mm and left a sliver that read as a 217 MPa spike in gripper_stall_fea; exact tangent points fix it.
+- Budget change, stated openly: `gripper_mass` 130 -> 166 g and `torque_wrist` cap 0.30 -> 0.25 of stall, re-derived
+  together from the real requirement (no arm servo past half stall): shoulder <= 10.32 of 10.5 kg*cm at the limits,
+  10.21 as built (DESIGN.md 'Arm torque budget'). The 130 g was an early estimate; the engineered parts weigh 163 g.
+- Open: robot_arm's own torque/mass checks are not re-run with this gripper (hand check only; arm_mass would be ~888 of
+  900 g). The cove run-out ends add many 2 mm "sharp corner" entries to the gripper's warning (listed in DESIGN.md).
+  `kerf build` spends ~25 min in viewer attribution (one rebuild per param); one build was OOM-killed with other builds running.
