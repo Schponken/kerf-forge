@@ -22,11 +22,13 @@ def _edges(body, ctx, keep):
     return out
 
 
-def fillet_inside(ctx, body, r: float = 1.0, keep=lambda at: False):
+def fillet_inside(ctx, body, r: float = 1.0, keep=lambda at: False, fallback: bool = True):
     """Returns (body, smaller, failed): `smaller` = corners that only took r / 2 (they run into a hole, a chamfer or a
-    thin strip), `failed` = corners left sharp."""
+    thin strip), `failed` = corners left sharp. fallback=False skips the r / 2 retry (its slivers can break FEA meshing)."""
     body, _ = safe_fillet(body, [(_edges(body, ctx, keep), r)])
     rest = _edges(body, ctx, keep)
+    if not fallback:
+        return body, [], [f"({e.center().X:.1f}, {e.center().Y:.1f}, {e.center().Z:.1f})" for e in rest]
     smaller = [f"({e.center().X:.1f}, {e.center().Y:.1f}, {e.center().Z:.1f})" for e in rest]
     body, failed = safe_fillet(body, [(rest, r / 2)])
     return body, [s for s in smaller if not any(s.split(")")[0] in f for f in failed)], failed

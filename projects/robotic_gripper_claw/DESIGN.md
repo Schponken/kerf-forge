@@ -45,17 +45,27 @@ dowel pressed into the palm and running in the cover.
 | grip servo | servos.MG996R (9.4 kg·cm = 922 N·mm stall @ 4.8 V, 55 g) | the arm's own grip servo (`gr_servo`, PCA9685 ch 4); fits the same palm mount |
 | grip horn | servo_horns.aluminum_25T | the arm's own; the drive finger bolts to it |
 | wrist servo + horn (stand only) | servos.MG996R + servo_horns.aluminum_25T | on the arm these are the forearm's; on the bench stand they hold the claw exactly as the arm does |
-| idler dowel | motion.pin_3mm, 3 × 25 | pressed into the palm's pedestal, the idler finger turns on it, top end runs in the cover |
-| drive top dowel | motion.pin_3mm, 3 × 10 | pressed into the cover, runs in a blind bore in the drive finger's hub: the second support of the drive axis |
+| idler dowel | motion.pin_3mm, 3 × 30 | pressed 8 mm into the palm's pedestal, the idler finger turns on it, top end runs in 9 mm of cover (span 8 + 0.5 + 12 + 0.5 + 9 = 30) |
+| drive top dowel | motion.pin_3mm, 3 × 16 | pressed through the cover's 9 mm (plate + boss), runs in a 7 mm blind bore in the drive finger's hub: the second support of the drive axis (span 9 + 0.5 + 7 = 16.5) |
 
 **Gears** (`kerf.drives.spur_pair`): module 1.5, 16 : 16 teeth (pitch Ø 24, tip Ø 27, centre distance 24 mm), 12 mm
 wide, 0.3 mm backlash. Axes at z = 5.5 (drive) and 29.5 (idler), symmetric about the fork mid-plane z = 17.5.
 Lewis check at the WORST case — the whole stall torque going through the mesh (an object touching only the idler
 finger): Wt = 922 / 12 = 76.8 N, Y(16) = 0.296, σ = Wt / (b m Y) = 76.8 / (12 × 1.5 × 0.296) = 14.4 MPa < 48 / 3 = 16 MPa
 (teeth printed flat, stress along the layers, SF 3) → `gear_bending`.
+Each finger keeps teeth only on the arc that ever meshes (the 0…40° of travel plus ~1.5 teeth each side, edges in tooth
+gaps); the rest of the hub is a smooth r 11.5 disc (the other gear's tips only reach r 10.5 at the mesh line). That keeps
+the claw narrow and gives the arm a smooth root to leave from.
+**Horn screws on the gear face, not counterbored.** The drive finger bolts to the 25T horn with 4 × M3 on a 14 mm circle.
+A counterbore for an M3 socket head (Ø 5.5 + 0.6) at r 7 reaches r 10.05, and the 16 T tooth roots are at r 10.125: it
+would leave 0.08 mm of plastic under the teeth. So the heads stand on the gear's top face, the four holes sit centred
+under teeth (the horn's `hole_start_deg` 0 matches the gear phase: finger.py derives it from the gear), and the cover is
+raised to 0.5 mm over the heads (layout `y_c0`), with bosses reaching down to 0.5 mm over each gear so the dowels stay
+short-levered.
 
-**Grip force.** The pad's contact point sits `finger_len` = 45 mm in front of its gear axis; the pad's normal force
-acts at that lever. Both fingers squeeze, so at servo torque T each pad pushes F = T / (2 × 45 mm):
+**Grip force.** The pad's tip end sits `finger_len` = 45 mm in front of its gear axis (see 'Jaw angle': the 20 mm pad runs
+back from there toward the palm, so an object touches it 26.6–46.4 mm from the axis; the tip end is the worst case for
+holding, the root end for the force on the jaw). The pad's normal force acts at that lever. Both fingers squeeze, so at servo torque T each pad pushes F = T / (2 × 45 mm):
 at stall F = 922 / 90 = 10.2 N per pad; at half of stall 5.1 N (the old fixed-jaw gripper gave 18.4 N at stall from one
 finger: two moving fingers halve it).
 Friction (REFERENCES.md P1-P4): measured against steel, printed PETG 0.24-0.29 (Stoimenov 2024), TPU 30D 0.46-0.61
@@ -69,7 +79,7 @@ under a third of stall.
 Command the servo just past contact: holding far past it holds the MG996R at stall (≈ 2.5 A; a gripper servo held at
 stall gets "very hot in 2 or 3 minutes", REFERENCES.md P10).
 
-**Opening.** Each pad's contact point is L = √(45² + 11.5²) = 46.4 mm from its axis at α = 14.3° inward (closed gap
+**Opening.** Each pad's tip end is L = √(45² + 11.5²) = 46.4 mm from its axis at α = 14.3° inward (closed gap
 `pad_gap` = 1 mm at the centre line). Opening at finger angle θ: gap = 35 − 2 × 5.5 − 2 L sin(α − θ):
 θ = 10° → 17 mm, 21° → 35 mm, 30° → 49 mm, 37° → 60 mm, **40° → 64 mm** (`grip_open` ≥ 60). Joint range grip 0…40°:
 inside the MG996R's ±60° at 1000–2000 µs. The commercial aluminium MG996R claw opens 50 mm (P11).
@@ -77,7 +87,11 @@ inside the MG996R's ±60° at 1000–2000 µs. The commercial aluminium MG996R c
 **Jaw angle.** An object is squeezed out of a V when each face leans more than the friction angle tan⁻¹ μ = 16.7°
 (μ 0.30, Modern Robotics §12.2.1, P5). The pad faces are made parallel at θ = `pad_par` = 21° (a 35 mm object): from
 10 mm (θ 6.5°, faces 14.5° the safe way: the V opens toward the palm and pulls the object in) to 60 mm (θ 37°, 16° open
-toward the tips) every object is held inside the friction cone. Above 60 mm only the hooked tips hold it.
+toward the tips) every object is held inside the friction cone. Above 60 mm the faces lean more than the friction
+angle: 60 mm is the rated opening (64 mm is the travel). How it is built: each pad face passes through its tip-end point
+and is turned `pad_par` inward toward the tip, so the pad ENDS at that point (closed, the two tip ends are 1 mm apart and
+the faces open toward the palm) and runs 20 mm back; no hook can sit past it without the two fingers colliding closed.
+The pad stands on the gear's bed face (20 mm tall, gear 12): pad centre 10 mm over the horn face, tcp y = 23.9.
 
 **Wrist (MG996R, 922 N·mm stall).** `torque_wrist` computes it from the assembled masses (claw ~124 g at its CG ≈ 50 mm
 from the wrist axis, payload at the tcp 83 mm out): `torque_wrist` reports the value (≈ 1.8 kg·cm ≈ 20 % of stall).
@@ -86,9 +100,9 @@ from the wrist axis, payload at the tcp 83 mm out): `torque_wrist` reports the v
 19.0, reach 266 mm with the old tcp 100 mm past the wrist axis):
 - the tcp moves 17 mm closer to the wrist (x_tcp 83 vs 100): reach 266 − 17 = 249 mm (spec 230–300 ✓); the 150 g
   payload's lever on the shoulder drops by 1.7 cm: −0.26 kg·cm;
-- the claw is ~26 g heavier than gripper + finger + servo + horn (~124 vs ~98 g), at ≈ L1 + L2 + 5 cm ≈ 21.5 cm from the
-  shoulder: +0.56 kg·cm. Shoulder 8.21 − 0.26 + 0.56 = 8.5 kg·cm = 40 % of stall ✓; elbow 4.46 − 0.26 + 0.026 × 13 =
-  4.5 kg·cm = 24 % ✓. (Re-run robot_arm's torque checks with the claw if it is ever made the arm's default gripper.)
+- the claw is ~29 g heavier than gripper + finger + servo + horn (~127 vs ~98 g, `claw_mass`), at ≈ L1 + L2 + 5 cm ≈
+  21.5 cm from the shoulder: +0.62 kg·cm. Shoulder 8.21 − 0.26 + 0.62 = 8.6 kg·cm = 41 % of stall ✓; elbow 4.46 − 0.26 +
+  0.029 × 13 = 4.6 kg·cm = 24 % ✓. (Re-run robot_arm's torque checks with the claw if it is ever made the arm's default gripper.)
 - The tcp now sits on the fork mid-plane (z = 17.5 in the old gripper frame, the old tcp was ~23): 5.5 mm less side
   offset in the arm's inverse kinematics.
 
@@ -102,10 +116,10 @@ on the stand: plug both servos into the arm's driver (wrist into channel 3, grip
 | Part | Job | Material | Print orientation | Approx. |
 |---|---|---|---|---|
 | palm | wrist fork (horn plate A + pivot plate B, as the old gripper), palm plate the grip servo hangs under, idler pedestal, two posts the cover screws to, lead tie points | PETG 40 % | on plate A's outer face (z = 0 on the bed: horn holes vertical, the palm plate and posts stand up, `print_rot` [0, 0, 0] in the claw frame turned so z is up) | 30 g |
-| cover | plate over the two gears: top support of both gear axes (drive dowel pressed in, idler dowel running in it), 2 screws into the palm posts | PETG 50 % | flat, top face down | 8 g |
+| cover | triangulated frame over the two gears: top support of both gear axes (drive dowel pressed in, idler dowel running in it), 2 screws into the palm posts | PETG 50 % | flat, top face down (print_rot [-90, 0, 0]): bosses and deep members grow up from it | 6 g |
 | finger_l | drive finger: gear + hub bolted to the grip horn + tapered finger + jaw with the pad slot | PETG 50 % | flat on its gear face (layers in the grip plane: the finger bends along the layers) | 11 g |
 | finger_r | idler finger: mirror of finger_l, turns on the idler dowel | PETG 50 % | flat | 11 g |
-| pad_l / pad_r | TPU 95A grip pads, slid into a dovetail in each jaw | TPU 95A 100 % | flat on the back | 2 g each |
+| pad_l / pad_r | TPU 95A grip pads, slid into a dovetail in each jaw | TPU 95A 100 % | standing on its top end (print_rot [180, 0, 0]): the dovetail is in the layers and the tongue grows from the bed | 2 g each |
 | wrist_stand | bench stand that replicates the forearm's wrist end (plate A with the wrist servo, plate B with the pivot hole, the rear web) on a foot | PETG 30 % | on its back | 60 g |
 
 ## Load → section
@@ -115,9 +129,9 @@ pitch point, separating Wr = Wt tan 20° = 14.0 N along Z; each gear axis carrie
 
 | Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
 |---|---|---|---|
-| finger_l / finger_r | pad force 10.2 N at 45 mm → hub (finger_l: 4 horn screws + top dowel; finger_r: dowel) | bending in the grip plane, 0 at the pad → 461 N·mm at the hub | solid rectangular beam deep in the bending direction (z) and tall (y) for the pad: ~9 (z) × 12 (y) at the root tapering to ~6 at the jaw; layers in the grip plane so bending runs along them; r ≥ 2 root fillet into the hub; the jaw is a T at the tip carrying the pad's dovetail |
-| palm | servo stall 922 N·mm (couple on 4 tab pilots) + the drive axis side load (≈ 45 N: 38.4 along X, 24.2 across) shared by the horn/servo case and the top dowel; idler dowel ≈ 45 N shared pedestal / cover; all of it back to the wrist horn screws and pivot | torque about the drive axis in the palm plate; bending of the palm plate between the servo tabs and the wrist fork; the pedestal root (≈ 22 N at ~8 mm: 180 N·mm) | 7 mm palm plate (servo pilots need 7 mm) with the window; wrist discs as the old gripper (7 mm, r = 17) blending into the palm along a 45° rise; pedestal Ø 12 boss with a 2 mm root fillet; two 7 × 7 posts with r ≥ 1.5 root fillets; material out of the palm plate where the stress map says it idles |
-| cover | the two dowel tops (≈ 22 N each at stall) → the 2 post screws | cantilever from the posts, ≈ 900 N·mm at the posts | 4 mm plate with a rib along X between the dowel bosses and the post bosses (T section), tapering toward the front |
+| finger_l / finger_r | half the stall torque, 461 N·mm, reaches each pad: along the pad's normal at the pad centre (lever 36.2 mm) 12.7 N (17.3 N at the root end, 10.2 N at the tip end) → jaw → arm → hub (finger_l: 4 horn screws + top dowel; finger_r: dowel + teeth) | bending in the grip plane, 0 at the pad → 461 N·mm at the hub (the same for any contact point) | arm 6 mm deep (in the bending plane) × 12 mm tall, layers in the grip plane so bending runs along them (8 mm ran at 15 % of allowable: overbuilt); r 2 root fillets into the hub; the jaw is a 6.5 mm plate behind the pad (dovetail groove 3.9 deep + 2.6 wall), 20 mm tall, its top ramping up from the arm; r 3 round nose; toothed sector only where it meshes |
+| palm | servo stall 922 N·mm (couple on 4 tab pilots) + the drive axis side load (≈ 45 N: 38.4 along X, 24.2 across) on the servo tabs; the idler dowel's 45 N on the pedestal plus its single-shear moment (engine: 749 N·mm); all of it back to the wrist horn screws and pivot | in-plane torque in the palm plate; out-of-plane bending and twist of the whole palm about the root between the wrist fork and the gear axes (that is where the first FEA showed the compliance: everything forward of x ≈ 30 rotated rigidly) | a channel: 7 mm palm plate (servo pilots need 7 mm) with the servo window; plate B runs on as a 7 mm keel below and rises as a wall to 0.5 mm under the idler gear (30 mm deep web carrying the pedestal); a 3 mm far web from x 25.5 (forearm plate A reaches only 24.1 mm from the wrist axis) also rising to 0.5 mm under the drive finger; a root beam across the claw on top of the palm plate between the posts' rear faces and the grip horn (x 14.7–27, y 7–13.4) tying both cheeks, both posts and the keel wall; wrist discs as the old gripper (7 mm, r 17); pedestal Ø 10 boss; r 1 on the inside corners. Tried and dropped (FEA): a 6 mm far web (no gain), an end wall closing the channel (−0.05 mm for 2.6 g, over the mass budget), a 4 mm keel (+0.08 mm) |
+| cover | each dowel's full side load (45 N, in the cover's plane) plus its single-shear moment out of the plane (engine: drive 295, idler 715 N·mm) → the two post screws and the post tops they clamp | in-plane: the two separating forces are equal and opposite (the front member between the dowels is a tie holding the centre distance); out of plane: the idler node turns about the posts | triangulated frame: members post–post, post–idler, post–idler diagonal (passes 14.5 mm from the drive axis), post–drive, drive–idler, two triangular windows; 6 mm plate (cover_t) on the bed; the idler-side members run 9 mm deep down to 0.5 mm over the gears, the drive side stays plate-deep (the horn-screw heads turn under it); dowel bosses down to 0.5 mm over each finger |
 | wrist_stand | wrist-servo stall 922 N·mm on plate A's tab pilots + the claw's weight (≈ 1.2 N) | in-plane torque on plate A, carried by the web and back column to the foot | plates and web exactly the forearm's (they ARE the fit gauge); column + foot sized by FEA; this part is a fixture, keep it light |
 
 ## Interfaces
@@ -127,9 +141,9 @@ pitch point, separating Wr = Wt tan 20° = 14.0 N along Z; each gear axis carrie
 | wrist_stand plate B | palm plate B | `pin_hole` M3 free (stand) / heatset (palm boss, t + 3 deep) — the arm's wrist pivot | wr_pivot | M3 × 14 screw + washers for the 1.5 mm side gap |
 | wrist_stand plate A | wrist servo | `servo_mount` top_through, tap (the forearm's) | wr_servo | 4 × M3 × 8 thread-forming |
 | palm (underside) | grip servo | `servo_mount` top_through from below, tap (the old gripper's) | gr_servo | 4 × M3 × 8 thread-forming, from below |
-| grip horn | finger_l hub | `horn_mount` counterbore (heads below the cover) | gr_horn | 4 × M3 |
-| palm pedestal / finger_r / cover | idler dowel | `pin_hole` press (pedestal, 8 deep) / free (finger_r, cover) | gr_idler | 3 × 25 dowel |
-| cover / finger_l | drive top dowel | `pin_hole` press (cover) / free (finger_l blind bore ≥ 5.5) | gr_top | 3 × 10 dowel |
+| grip horn | finger_l hub | `horn_mount` clearance, heads on the gear's top face (a counterbore would undercut the tooth roots), holes under teeth (`hole_start_deg` 0) | gr_horn | 4 × M3 |
+| palm pedestal / finger_r / cover | idler dowel | `pin_hole` press (pedestal, 8 deep) / free (finger_r, cover 9) | gr_idler | 3 × 30 dowel |
+| cover / finger_l | drive top dowel | `pin_hole` press (cover, 9) / free (finger_l blind bore 7) | gr_top | 3 × 16 dowel |
 | palm posts | cover | `bolt_pattern` heatset (palm) / clearance (cover) | cover | 2 × M3 + inserts |
 | finger jaw | pad | dovetail slot open at the top, stop at the bottom (no fastener; `insert:` path checked) | — | — |
 
@@ -142,21 +156,63 @@ tcp = rigid joint on the palm between the pads (x 83, y 19.9, z 17.5).
 
 ## Assembly order
 1. Heat-set inserts: palm wrist-pivot boss (inside plate B), two cover posts.
-2. Press the 3 × 25 idler dowel into the palm pedestal from above until it bottoms (the Ø 2 hole below it lets you
-   push it out later). Press the 3 × 10 drive dowel into the cover from its top face until flush.
+2. Press the 3 × 30 idler dowel into the palm pedestal from above until it bottoms (8 mm; the Ø 2 hole below it lets
+   you push it out later). Press the 3 × 16 drive dowel into the cover's drive boss from its top face until flush
+   (7 mm stands out below the boss).
 3. Grip servo into the palm from below, case top first through the window, tab tops against the palm underside;
    4 × M3 × 8 thread-forming from below. Its lead leaves at the rear (output end), toward the wrist.
 4. Centre the servo (1500 µs), press the grip horn on the spline, fit the horn's centre screw.
 5. Close the servo to its "closed" end (decide its pulse in the bring-up; the claw is assembled closed): drive finger
-   onto the horn pointing along the claw, 4 × M3 through the counterbored hub into the horn.
+   onto the horn pointing along the claw, 4 × M3 through the hub into the horn (heads on the gear's top face).
 6. Idler finger onto its dowel, meshing so the two pads meet at the centre line.
 7. Cover on: its dowel into the drive finger's top bore, the idler dowel's top into the cover; 2 × M3 into the posts.
-8. Pads: slide each TPU pad down into its jaw's dovetail until it sits on the stop.
+8. Pads: slide each TPU pad down into its jaw's dovetail (from the top, lead-in end first) until it sits on the floor.
 9. On the arm: take off the old gripper (4 horn screws, pivot screw), fit the claw: 4 × M3 through plate A into the
    wrist horn (hex key through the access holes in the claw's plate B and the forearm's plate B), then the M3 × 14 pivot
    through the forearm's plate B into the claw's insert with washers for the 1.5 mm side gap (threadlocker on the tip
    only, back off 1/8 turn). Tie the grip lead at `lead_1` / `lead_2` as before. On the bench stand: the same steps
    with the stand in place of the forearm.
+
+## Checks and margins (kerf build, full check with motion sweeps)
+| Check | Result | Limit | Margin |
+|---|---|---|---|
+| grip_open (tip ends at 40°) | 64.2 mm | ≥ 60 | rated 60 (friction cone, 'Jaw angle') |
+| grip_closed | 1.0 mm | ≤ 2 | — |
+| torque_wrist (claw + 150 g, worst pose) | 1.76 kg·cm | ≤ 4.7 (50 % of stall) | 19 % of stall |
+| gears (Lewis, whole stall torque through the mesh) | 14.42 MPa | 16.0 (48 / SF 3) | SF 3.3 |
+| claw_mass | ~127 g | 130 | ~3 g |
+| finger_l_fea / finger_r_fea (12.7 N on the pad normal) | 5.0 / 4.5 MPa | 24 (SF 2, along layers), 1 mm | SF ~10 on stress; sized by printability (6 mm arm, 2.6 mm behind the groove) and the jaw's pad, not by stress |
+| palm_fea (stall, conservative single-shear idler) | 5.3 MPa, 0.19 mm | 16 (SF 3), 0.3 mm | stiffness governs: 35 % on deflection |
+| cover_fea (both axes' full loads + lever moments; held at the screws and the post tops they clamp) | 7.9 MPa, ~0.14 mm | 24, 0.2 mm | ~30 % on deflection |
+| stand_fea | 3.2 MPa | 16 | fixture |
+| sweeps | wrist ±75° and grip 0…40° (idler following −1) collision-free | | the far web from x 25.5 clears the forearm copy |
+
+## Warnings kept, and why
+- **Edge distance** of the wr_horn / gr_horn holes (25T horn's 14 mm circle) and the wr_servo / gr_servo tab pilots
+  (MG996R tab pattern): the purchased parts' hole patterns force them (ENGINEERING.md s7 allows it); the walls are the old
+  gripper's and the arm forearm's, which are proven on the arm.
+- **Sharp inside corners kept on purpose:** the jaw-root corner of each finger (the pad's square root end sits in it);
+  the pad's tongue-to-plate corner (the jaw floor's edge sits in it; TPU, no crack risk); the cover's member ends 0.2 mm
+  beside the palm posts (a fillet there would rest on the post's top edge). OCC cannot fit r 1 into three short palm
+  corners (15 mm in all: where the root beam's front face and the keel wall meet beside the pedestal, and one inside the
+  wrist-pivot boss) and two short cover corners where a deep member meets a boss; none is in a hot zone of the FEA.
+  The far web's root (next to the servo window) is filleted before the window is cut, so the mesh stays valid.
+- **palm needs support (~9 %):** the palm plate's underside inside the servo bay (between the keel and the far web).
+  Printed with claw +Y up (plates and webs vertical, posts, walls and pedestal growing up) every other face is
+  self-supporting; any other orientation puts the wrist discs, posts or pedestal on overhangs. Use tree supports from
+  the bed only (Bambu Studio "support on build plate only"); the servo window and tab pilots are vertical and stay clean.
+- **wrist_stand** (overbuilt, ~5 % support, fixed box not at a fastener): its plates and web are the arm forearm's wrist
+  end verbatim (they ARE the fit gauge, tests/test_claw_fits_arm.py); it rests on the bench, so the bench face is its
+  support in stand_fea.
+- **Ball-end key** for the servo tab screws (driven from below; the servo body blocks a straight key) and the M3 screw
+  pivot note: as on the arm.
+- **No electrical section**: see 'Electrics' (the arm's power tree, unchanged).
+
+## Known limits
+- The pads' tip ends are 4.5 mm ahead of the palm's front edge (the grip servo sits under the fingers, as on the arm's
+  old gripper). Objects are taken from the side or from above; something lying flat on the desk (< ~8 mm tall) is picked
+  with the claw pointing down, by the pad tips.
+- 60 mm is the largest object held inside the friction cone; 60-64 mm objects are held by squeeze only.
 
 ## Risks / measure first
 - MG996R tab height and hub depth vary by vendor (robot_arm DESIGN.md): print the palm first and test-fit the servo.

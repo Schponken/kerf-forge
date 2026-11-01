@@ -12,6 +12,7 @@ closes the U, and plates A/B rise as cheeks behind the gears to carry the cover 
 """
 from build123d import *
 from kerf import iface
+from kerf.features import safe_fillet
 import importlib.util as _iu
 import pathlib as _pl
 
@@ -93,6 +94,14 @@ def build(ctx):
         body += fillet(post.edges().filter_by(Axis.Y).group_by(Axis.Z)[-inner], 2.0)
     body += Pos(0, 0, W - t - 3.0) * Cylinder(6.5, 3.01, align=(Align.CENTER, Align.CENTER, Align.MIN))   # pivot boss
 
+    # why: r 1 where the far web meets the palm plate top, filleted before the servo window is cut 1.75 mm beside it
+    # (filleted after, OCC leaves a sliver at the window that the FEA mesher cannot close)
+    web_root = [e for e in body.edges() if e.geom_type == GeomType.LINE and abs(e.center().Z - zw) < 0.05
+                and abs(e.center().Y - t) < 0.05 and e.length > 20]
+    body, failed = safe_fillet(body, [(web_root, 1.0)])
+    if failed or not web_root:
+        raise ValueError(f"far web root fillet: {len(web_root)} edges, failed {failed}")
+
     hl = Location((0, 0, t))
     body -= iface.horn_mount(ctx, HORN, hl, group="wr_horn", plate_t=t, teardrop=iface.print_up_deg(ctx, hl))
     sloc = Plane((p.x_sc, 0, p.z_d), x_dir=(-1, 0, 0), z_dir=(0, 1, 0)).location   # tab tops on the palm underside, output toward the wrist
@@ -109,9 +118,9 @@ def build(ctx):
     body -= Pos(p.x_g, (Y_BED - 1) / 2, p.z_i - 1.25) * Box(2.0, -Y_BED + 1, 2.5)   # why: the push-out hole runs on as a groove open to the keel's inner face (no 0.5 mm skin)
     for (x, z) in posts(p):
         body -= iface.bolt_pattern(ctx, "cover", "M3", [(0, 0)], up(x, p.y_c0, z), kind="heatset", depth=p.y_c0 - t)
-    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0)   # why: r 1 on every inside corner (ENGINEERING.md s5; style radii)
-    if half_r or failed:
-        ctx.notes.append(f"inside corners at r 0.5 (r 1 does not fit): {half_r}; left sharp: {failed}")
+    body, half_r, failed = detail.fillet_inside(ctx, body, 1.0, fallback=False)   # why: r 1 on every other inside corner (ENGINEERING.md s5; style radii)
+    if failed:
+        ctx.notes.append(f"inside corners left sharp (r 1 does not fit): {failed}")
     ctx.rigid("horn_mount", Location((0, 0, 0)))
     ctx.rigid("servo_seat", sloc * Location((0, 0, -p.mg_tab_t)))
     ctx.revolute("idler", Axis((p.x_g, p.y_g0, p.z_i), (0, 1, 0)), range=(-p.grip_open, 0))

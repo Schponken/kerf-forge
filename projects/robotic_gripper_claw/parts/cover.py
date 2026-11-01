@@ -22,7 +22,7 @@ detail = _iu.module_from_spec(_d)
 _d.loader.exec_module(detail)
 from kerf.features import safe_fillet
 
-R_POST = 4.4         # plate around each post screw (= the palm post, layout post_r)
+R_POST = 5.0         # plate around each post screw: >= 1.5 d + wall from the M3 hole (ENGINEERING.md s7), 0.6 past the post
 R_DRIVE = 5.5        # plate around the drive dowel
 R_IDLER = 5.5        # plate around the idler dowel
 BOSS_DRIVE = 3.7     # drive boss: the horn-screw heads sweep r 4.25..9.75 about the drive axis, so <= 3.75 (0.55 clear)
