@@ -5,6 +5,7 @@ description: >
   the static-torque check and every export.
 printer: Bambu Lab A2L
 supports: allowed
+style: {radii: [1.0, 1.5, 4.0, 6.0], edge_break: 0.8}   # 1 every inside corner, 1.5 gusset roots, 4 wall/foot and arm hub blend, 6 base plan corners; 0.6-1.0 edge chamfers
 params:
   arm_len: {value: 100, unit: "mm", min: 60, max: 140, step: 1, label: Arm length (pivot to tip)}
   arm_w: {value: 18, unit: "mm", min: 14, max: 24, step: 0.5, label: Arm width}   # 18 mm keeps stall-load tip deflection under 1 mm

@@ -10,7 +10,7 @@ Forge mechanism (catalog-backed mounts on both sides, joint tree, sweep, fastene
 |---|---|---|
 | Arm swing | ±90° from vertical, collision-free | sweep `swing` |
 | Holding torque | arm + 50 g at 100 mm, <= 50% of MG996R stall (9.4 kg·cm at 4.8 V) | `arm_torque` |
-| Bracket strength | full stall-torque reaction at the four tab screws, SF 3 on layer-direction strength, deflection <= 0.3 mm; held only at its 4 foot screw heads (the foot may lift: conservative) | `bracket_fea` (0.64 of 13 MPa) |
+| Bracket strength | full stall-torque reaction at the four tab screws, SF 3 on layer-direction strength, deflection <= 0.3 mm; held only at its 4 foot screw heads (the foot may lift: conservative) | `bracket_fea` (0.61 of 13 MPa) |
 | Stays put | screwed to the bench through the base's 4 counterbored M4 holes (stall reaction 0.92 N m vs 0.12 N m from its own weight); free-standing it must survive a 15 deg tilt with the 50 g weight at either end of the swing | `stand` (37.1 deg), BOM: 4 x M4 x 20 socket-head screws (the 7.6 mm counterbores take a 7 mm head) |
 | Arm strength | stall torque driving the arm into an obstacle (9.2 N at the tip), SF 2 in-plane, tip deflection <= 1 mm | `arm_fea` |
 | Mass | <= 250 g assembled | `rig_mass` |
@@ -61,7 +61,26 @@ upright wall, arm swinging in a vertical plane — real gravity torque, real bra
 The four servo tab pilot holes sit 4.0 mm from the window edge, under ENGINEERING.md s7's 1.5 d = 4.5 mm (`kerf
 check` warns). The MG996R's tab hole pattern fixes both the window and the holes, so it cannot move; the wall round
 each pilot is still 2.4 mm at the lead-in (`iface.servo_lead_in`) and the bracket FEA (stall couple at those holes)
-is at 0.64 of 13 MPa. The horn bolt circle on the arm is likewise set by the horn.
+is at 0.61 of 13 MPa. The horn bolt circle on the arm is likewise set by the horn.
+
+## Load → section
+| Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
+|---|---|---|---|
+| arm | servo stall driving the arm into an obstacle: 9.2 N at the 100 mm tip → 4 horn screws | bending, 0 at the tip → 922 N·mm at the hub | 18 × 6 mm bar (14 mm gave 1.44 mm tip deflection, over the 1 mm limit), r 4 blend into the round hub round the horn |
+| bracket | stall 922 N·mm as a ±18.6 N couple across the 49.5 mm tab pilots → 8 mm wall → foot → 4 M3 screws into the base inserts; the arm and weight's gravity moment the same way | wall bending at its root over the foot (wall height 75 mm to the pivot) | 8 mm wall (the 7.2 mm deep M3 pilots set it), 6 mm foot, r 4 wall/foot fillet, two 5 mm gussets with r 1.5 roots |
+| base | the bracket's 4 foot screws (heat-set inserts) → 4 M4 bench screws, or its own weight when free-standing | plate bending between the inserts and the bench screws | 8 mm plate (the inserts' depth plus floor), r 6 plan corners |
+
+## Detail: radii, corners, edge distance, overbuilt
+- One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside), r 1.5 gusset
+  roots, r 4 wall/foot and arm hub blends, r 6 base plan corners, 0.6–1.0 mm edge chamfers.
+- Left sharp on purpose (ctx.keep_sharp, report.json `sharp_kept`): the two gusset toes, where the gusset's 51° face
+  meets the foot top in an open 129° corner at its tip; the toe carries almost nothing and is too thin a sliver to
+  fillet. The servo window and pilot corners are interface features (dog-bone reliefs, exempt).
+- Overbuilt (kerf stress map): the bracket uses at most 4 % of its allowable stress (bracket_fea 0.61 of 13 MPa) and
+  the base less. Their size is set by fit and use, not strength: the 8 mm wall is what the 7.2 mm deep tab pilots
+  need, the 80 mm wall width carries the servo window and both gussets, the foot and base carry the inserts and the
+  bench screws, and the free-standing tip-over check (`stand`, 37° with the weight at the end of the swing) wants the
+  mass low. The rig is a bench fixture; a lighter bracket buys nothing.
 
 ## Parts
 | Part | Job | Material | Print orientation |

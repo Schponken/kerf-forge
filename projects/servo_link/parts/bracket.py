@@ -4,7 +4,7 @@ Mounting from behind keeps the servo's cable boss (low on the output end) out of
 Origin: bottom of the wall's back face, centred; wall from y=0 (back) to y=wall_t (front, arm side).
 Printed lying on its back face: the window needs no bridge and every hole except the foot's is vertical."""
 from build123d import *
-from kerf import iface
+from kerf import features, iface
 
 
 def build(ctx):
@@ -42,6 +42,14 @@ def build(ctx):
     # Cable-tie anchor under the servo window: two through-slots for a 2.5 mm tie, to strain-relieve the servo lead.
     for sx in (-1, 1):
         body -= Pos(sx * 5.0, p.wall_t / 2, p.pivot_h - p.servo_W / 2 - 7.0) * Box(3.2, p.wall_t + 2, 1.8)
+    # why: every remaining sharp inside corner rounded (gusset ends, tie-slot corners the tie bears on): stress raisers
+    # and weak layer seams (ENGINEERING.md s5); the servo window and pilot corners are interface features (exempt)
+    toe_y = p.wall_t + p.foot_d - 3.0      # the gussets' front tips on the foot
+    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
+        "gusset toe: the gusset's 51-degree face meets the foot top in an open 129-degree corner at the tip, where the "
+        "gusset carries almost nothing (too thin a sliver for OCC to fillet)")
+        if abs(abs(at[0]) - p.gusset_x) < 3 and abs(at[1] - toe_y) < 1.5 and abs(at[2] - p.foot_t) < 0.2 else None)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     ctx.rigid("origin", Location((0, 0, 0)))
     ctx.rigid("servo_seat", seat)
     return ctx.finish(body)
