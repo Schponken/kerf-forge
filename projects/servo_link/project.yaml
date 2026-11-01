@@ -6,15 +6,15 @@ description: >
 printer: Bambu Lab A2L
 supports: allowed
 params:
-  arm_len: {value: 100, min: 60, max: 140, step: 1, label: Arm length (pivot to tip)}
-  arm_w: {value: 18, min: 14, max: 24, step: 0.5, label: Arm width}   # 18 mm keeps stall-load tip deflection under 1 mm
-  arm_t: {value: 6, min: 5, max: 9, step: 0.5, label: Arm thickness}
-  pivot_h: {value: 75, min: 60, max: 120, step: 1, label: Pivot height above the base top}
-  wall_t: {value: 8, min: 8, max: 12, step: 0.5, label: Bracket wall thickness}
-  base_t: {value: 8, min: 8, max: 12, step: 0.5, label: Base plate thickness}
-  foot_d: {value: 38, min: 30, max: 50, step: 1, label: Bracket foot depth}
-  foot_t: {value: 6, min: 5, max: 10, step: 0.5, label: Bracket foot thickness}
-  gusset_t: {value: 5, min: 4, max: 8, step: 0.5, label: Gusset thickness}
+  arm_len: {value: 100, unit: "mm", min: 60, max: 140, step: 1, label: Arm length (pivot to tip)}
+  arm_w: {value: 18, unit: "mm", min: 14, max: 24, step: 0.5, label: Arm width}   # 18 mm keeps stall-load tip deflection under 1 mm
+  arm_t: {value: 6, unit: "mm", min: 5, max: 9, step: 0.5, label: Arm thickness}
+  pivot_h: {value: 75, unit: "mm", min: 60, max: 120, step: 1, label: Pivot height above the base top}
+  wall_t: {value: 8, unit: "mm", min: 8, max: 12, step: 0.5, label: Bracket wall thickness}
+  base_t: {value: 8, unit: "mm", min: 8, max: 12, step: 0.5, label: Base plate thickness}
+  foot_d: {value: 38, unit: "mm", min: 30, max: 50, step: 1, label: Bracket foot depth}
+  foot_t: {value: 6, unit: "mm", min: 5, max: 10, step: 0.5, label: Bracket foot thickness}
+  gusset_t: {value: 5, unit: "mm", min: 4, max: 8, step: 0.5, label: Gusset thickness}
 layout: parts/layout.py     # shared geometry both base and bracket use (screw positions, seat heights)
 parts:
   base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: [x, y],

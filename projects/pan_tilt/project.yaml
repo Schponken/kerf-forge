@@ -7,21 +7,21 @@ description: >
 printer: Bambu Lab A2L
 supports: allowed
 params:
-  servo_floor_z: {value: 10.0, min: 9, max: 14, step: 0.5, label: Pan servo bottom above the base underside (tripod screw tip room)}
-  deck_t: {value: 5.0, min: 4.5, max: 8, step: 0.5, label: Base deck over the pan servo tabs (M2 pilots from below)}
-  floor_t: {value: 1.5, min: 1.2, max: 3, step: 0.1, label: Floor under the tripod nut}
-  base_margin: {value: 4.0, min: 3, max: 8, step: 0.5, label: Base length beyond the servo tabs (each end)}
-  base_side: {value: 7.0, min: 5, max: 12, step: 0.5, label: Base wall beside the servo body (each side)}
-  yoke_t: {value: 6.0, min: 3.5, max: 8, step: 0.5, label: Yoke plate thickness}
-  wall_t: {value: 5.0, min: 5.0, max: 6, step: 0.1, label: Yoke side-wall thickness}
-  tilt_h: {value: 29.5, min: 24, max: 36, step: 0.5, label: Tilt axis above the yoke underside}
-  cam_gap: {value: 27.0, min: 26, max: 32, step: 0.5, label: Space between the bracket arms (camera board 25 wide)}
-  arm_t: {value: 3.5, min: 3, max: 5, step: 0.5, label: Bracket arm thickness}
-  knuckle_len: {value: 8.0, min: 6, max: 10, step: 0.5, label: Pivot knuckle length (M3 thread depth)}
-  pivot_gap: {value: 0.9, min: 0.5, max: 1, step: 0.1, label: Axial gap knuckle to pivot wall}
-  cam_plate_x: {value: 7.0, min: 6.5, max: 12, step: 0.5, label: Camera plate back face ahead of the tilt axis}
-  cam_plate_t: {value: 3.0, min: 2.5, max: 5, step: 0.5, label: Camera plate thickness}
-  arm_bottom: {value: 15.0, min: 14, max: 18, step: 0.5, label: Bracket flat bottom below the tilt axis}
+  servo_floor_z: {value: 10.0, unit: "mm", min: 9, max: 14, step: 0.5, label: Pan servo bottom above the base underside (tripod screw tip room)}
+  deck_t: {value: 5.0, unit: "mm", min: 4.5, max: 8, step: 0.5, label: Base deck over the pan servo tabs (M2 pilots from below)}
+  floor_t: {value: 1.5, unit: "mm", min: 1.2, max: 3, step: 0.1, label: Floor under the tripod nut}
+  base_margin: {value: 4.0, unit: "mm", min: 3, max: 8, step: 0.5, label: Base length beyond the servo tabs (each end)}
+  base_side: {value: 7.0, unit: "mm", min: 5, max: 12, step: 0.5, label: Base wall beside the servo body (each side)}
+  yoke_t: {value: 6.0, unit: "mm", min: 3.5, max: 8, step: 0.5, label: Yoke plate thickness}
+  wall_t: {value: 5.0, unit: "mm", min: 5.0, max: 6, step: 0.1, label: Yoke side-wall thickness}
+  tilt_h: {value: 29.5, unit: "mm", min: 24, max: 36, step: 0.5, label: Tilt axis above the yoke underside}
+  cam_gap: {value: 27.0, unit: "mm", min: 26, max: 32, step: 0.5, label: Space between the bracket arms (camera board 25 wide)}
+  arm_t: {value: 3.5, unit: "mm", min: 3, max: 5, step: 0.5, label: Bracket arm thickness}
+  knuckle_len: {value: 8.0, unit: "mm", min: 6, max: 10, step: 0.5, label: Pivot knuckle length (M3 thread depth)}
+  pivot_gap: {value: 0.9, unit: "mm", min: 0.5, max: 1, step: 0.1, label: Axial gap knuckle to pivot wall}
+  cam_plate_x: {value: 7.0, unit: "mm", min: 6.5, max: 12, step: 0.5, label: Camera plate back face ahead of the tilt axis}
+  cam_plate_t: {value: 3.0, unit: "mm", min: 2.5, max: 5, step: 0.5, label: Camera plate thickness}
+  arm_bottom: {value: 15.0, unit: "mm", min: 14, max: 18, step: 0.5, label: Bracket flat bottom below the tilt axis}
 layout: parts/layout.py
 parts:
   base: {file: parts/base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: Z,

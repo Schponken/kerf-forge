@@ -378,3 +378,13 @@ await p.waitForSelector('text=Welcome to Kerf Studio', { timeout: 15000 }); out.
     finally:
         srv.shutdown()
     assert out["errs"] == [] and out["welcome"], out
+
+
+def test_every_finished_project_states_its_param_units():
+    """Studio shows each slider's unit; the six finished projects state it (`unit:`) rather than leaving it assumed."""
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1] / "projects"
+    missing = [f"{n}.{k}" for n in ("bionic_finger", "fpv_5in", "pan_tilt", "robot_arm", "servo_link", "tvc_drone")
+               for k, v in (yaml.safe_load((root / n / "project.yaml").read_text(encoding="utf-8")).get("params") or {}).items()
+               if isinstance(v, dict) and "unit" not in v]
+    assert missing == []
