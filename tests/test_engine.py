@@ -4,10 +4,9 @@ import textwrap
 from pathlib import Path
 
 import pytest
-from build123d import Align, Axis, Box, Cylinder, Location, Pos
+from build123d import Align, Box, Cylinder, Pos
 
-from kerf import assembly as A, geom, pipeline, project as P, requirements
-from kerf.ctx import Ctx, Site
+from kerf import assembly as A, geom, project as P, requirements
 
 
 def test_overlap_exact():

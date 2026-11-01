@@ -1,7 +1,5 @@
 """Search-first (`kerf find`): sources mocked (no network in tests); REFERENCES.md block, licenses, STL measuring,
 Thingiverse token handling, decisions kept across re-runs, and the check warning while a decision is TODO."""
-import json
-from pathlib import Path
 
 import pytest
 from build123d import Box, export_stl

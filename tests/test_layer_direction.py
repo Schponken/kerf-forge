@@ -1,7 +1,6 @@
 """Layer-direction check: a part's declared main load axis vs. its print orientation."""
 from types import SimpleNamespace
 
-import pytest
 
 from kerf import catalog, checks
 

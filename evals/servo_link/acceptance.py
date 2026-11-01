@@ -1,4 +1,4 @@
-from evals.common import base_checks, need_joint, need_req, screws_touching
+from evals.common import base_checks, need_joint, need_req
 
 
 def accept(rep, proj_dir):
@@ -11,5 +11,5 @@ def accept(rep, proj_dir):
     for a, b in (("base", "bracket"), ("bracket", "servo"), ("arm", "horn")):
         if not any({f["male"], f["female"]} == {a, b} for f in fs):
             fails.append(f"no screws join {a} and {b}")
-    r = need_req(rep, "arm_torque", "static_torque", fails)
+    need_req(rep, "arm_torque", "static_torque", fails)
     return fails

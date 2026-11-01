@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import csv
-import json
 from collections import Counter
 
-from build123d import Compound, Location, Mesher, Pos, export_gltf, export_step, export_stl, Color
+from build123d import Compound, Location, Mesher, Pos, export_step, export_stl, Color
 
 from . import catalog, checks, geom
 from .pins import lock_advice

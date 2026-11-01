@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
-from build123d import Shape, ShapeList, Location, Vector
+from build123d import ShapeList, Location, Vector
 
 # Interference below this volume is treated as numerical noise from coplanar/touching faces.
 OVERLAP_TOL_MM3 = 0.05

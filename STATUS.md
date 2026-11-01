@@ -985,3 +985,11 @@ pushed for it and what I know:
   the New design page shows the state with a "Set up Claude Code" button (opens Terminal running `claude` in the repo
   for the trust prompt and /login); the same two errors seen mid-run stop the job at once as failed with the fix shown;
   a result with is_error is reported as an error. Tests use the verbatim error lines from his run.
+- 2026-11-01 00:50 UTC Ponytail audit (planning session 01S68R6Q): ruff/vulture/pylint-duplicate-code pass. Removed 39
+  unused imports and one dead function (diagnose.short_trace); closed two leaked file handles; evals' need_req took
+  `**must` conditions and silently ignored them (no caller used it): removed, so a condition can't be swallowed; a
+  requirement SKIPPED by a quick check no longer counts as passing acceptance (Studio's Quick check rewrites
+  report.json). Two tests ran the pipeline on the real servo_link project and overwrote its report: now on copies.
+  No duplicated blocks >= 8 lines; repo 7 MB. Speed: renders ~1.1 s each (browser start), FEA + sweeps dominate build
+  time; FEA is cached, per-part build cache is PLAN Phase 4c. Library functions vulture flags as unused are the
+  part-code API (used by projects, documented, tested): kept.

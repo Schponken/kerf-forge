@@ -14,8 +14,7 @@ def accept(rep, proj_dir):
     if not any(str(v.get("catalog", "")).startswith("servos.") for v in pur.values()):
         fails.append("no catalog servos")
     for rid in ("torque_shoulder", "torque_elbow", "torque_wrist"):
-        r = need_req(rep, rid, "static_torque", fails)
-    reqs = {r["id"]: r for r in rep.get("requirements", [])}
+        need_req(rep, rid, "static_torque", fails)
     import yaml
     y = yaml.safe_load((proj_dir / "project.yaml").read_text())
     for r in y.get("requirements", []):

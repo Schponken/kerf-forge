@@ -2,7 +2,7 @@
 import textwrap
 
 import pytest
-from build123d import Align, Box, Location
+from build123d import Location
 
 from kerf import assembly as A, geom, iface, project as P
 

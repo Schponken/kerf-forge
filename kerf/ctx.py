@@ -17,7 +17,7 @@ Coordinates are millimetres, Z up, in the part's own frame. The part's print ori
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 from build123d import Axis, Location, RevoluteJoint, RigidJoint, LinearJoint, Color

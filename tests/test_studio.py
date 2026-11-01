@@ -119,13 +119,17 @@ def test_api_refuses_bad_input(server):
     assert _post(server + "/api/new", {"name": "servo_link", "description": "x"})[0] == 400
 
 
-def test_progress_events_are_off_by_default_and_ordered_when_on(capsys, monkeypatch):
+def test_progress_events_are_off_by_default_and_ordered_when_on(capsys, monkeypatch, tmp_path):
     from kerf import pipeline, progress
     monkeypatch.delenv("KERF_PROGRESS", raising=False)
     progress.emit("x")
     assert capsys.readouterr().out == ""
     monkeypatch.setenv("KERF_PROGRESS", "1")
-    pipeline.run("servo_link", sweeps=False)
+    import shutil
+    src = studio.PROJECTS / "servo_link"     # a copy: a test must never overwrite a real project's out/report.json
+    dst = tmp_path / "servo_link"
+    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("out", "__pycache__"))
+    pipeline.run(str(dst), sweeps=False)
     ev = [json.loads(l[2:]) for l in capsys.readouterr().out.splitlines() if l.startswith("@@")]
     stages = [e["stage"] for e in ev if e["k"] == "stage"]
     assert ev[0]["k"] == "start" and ev[-1]["k"] == "done" and stages == ["build", "print", "fit", "requirements"]
@@ -160,10 +164,10 @@ def test_closing_the_last_window_stops_the_server():
 
 
 def test_quit_asks_first_when_a_job_runs_and_stays_up_without_idle_limit():
-    import time
     p, url = _start({})
     try:
-        code, body = _post(url + "/api/run", {"project": "servo_link", "action": "quick"})
+        # a trial runs on a scratch copy, so this test never overwrites the real project's report
+        code, body = _post(url + "/api/run", {"project": "servo_link", "action": "trial", "values": {}})
         assert code == 200
         code, body = _post(url + "/api/quit", {})
         assert code == 409 and body["running"]           # a job is running: the page asks before quitting

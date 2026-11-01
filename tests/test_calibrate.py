@@ -3,7 +3,7 @@ import json
 import math
 
 import pytest
-from build123d import Box, Location
+from build123d import Location
 
 from kerf import calibrate as C, catalog, geom, iface
 from kerf.ctx import Ctx

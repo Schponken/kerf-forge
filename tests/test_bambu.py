@@ -1,6 +1,5 @@
 """kerf print (kerf/bambu.py): orientation choice, slicer command, LAN payloads and the send/poll loop with fake
 FTPS/MQTT links (dry run: no printer, no network, no slicer needed)."""
-import json
 from pathlib import Path
 from types import SimpleNamespace
 

@@ -33,7 +33,7 @@ logging.getLogger("skfem").setLevel(logging.ERROR)
 # Result cache: a solve is fully determined by the mesh, the boundary faces each region selects, the load values,
 # the material and this file's code. Hashing exactly those (after meshing, before solving) makes a cache hit
 # provably the same answer; any change to geometry, loads, material or the solver is a miss. KERF_FEA_CACHE=0 disables.
-_SRC_HASH = __import__("hashlib").sha256(open(__file__, "rb").read()).hexdigest()[:16]
+_SRC_HASH = __import__("hashlib").sha256(__import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:16]
 
 
 def _cache_dir():
@@ -125,7 +125,7 @@ AMG_MAXITER = 600
 
 
 def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = None, _depth: int = 0) -> dict:
-    from skfem import Basis, ElementTetP2, ElementVector, FacetBasis, Functional, LinearForm, MeshTet, asm, condense, solve
+    from skfem import Basis, ElementTetP2, ElementVector, FacetBasis, MeshTet, asm, condense
     from skfem.helpers import eye, sym_grad, trace
     from skfem.models.elasticity import lame_parameters
 

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 
-from build123d import (Align, Axis, Box, Cylinder, Location, Plane, Polyline, Pos, Rot, Spline, Text, Vector, chamfer,
+from build123d import (Align, Box, Cylinder, Location, Plane, Polyline, Pos, Rot, Spline, Text, Vector, chamfer,
                        extrude, fillet, make_face, sweep, Circle, offset)
 
 from . import catalog, drives, iface

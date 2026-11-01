@@ -199,7 +199,7 @@ def section(query: str, cands: list[dict], skipped: dict[str, str], date: str | 
 
 def write_section(refs: Path, query: str, text: str) -> None:
     """Insert or replace this query's block under the SECTION heading of REFERENCES.md (other content untouched)."""
-    s = refs.read_text(encoding="utf-8") if refs.exists() else f"# References\n"
+    s = refs.read_text(encoding="utf-8") if refs.exists() else "# References\n"
     head = f"### `kerf find \"{query}\"`"
     if SECTION not in s:
         s = s.rstrip("\n") + f"\n\n{SECTION}\n\n"

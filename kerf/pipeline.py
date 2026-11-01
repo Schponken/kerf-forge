@@ -59,7 +59,6 @@ def _fea_hygiene(proj) -> list:
       `bearing_n` (cosine-distributed);
     - a `fixed` box that holds none of the part's fastener sites (the clamp should be where the screws are)."""
     import numpy as np
-    from build123d import Location
     from . import geom
     from .checks import LAYER_WARN_NZ2
     from .requirements import _across_share, _region
@@ -272,7 +271,6 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         export.glb(proj, g)
                         render_glb(g, out / f"pose_{e.name}_{tag}", views="iso", sheet=False)
                     A.solve(asm)
-                from build123d import Compound
                 for iid, it in proj.printed.items():
                     g = proj.out(f"part_{iid}.glb")
                     s = checks.oriented(it.shape, it.spec.get("print_rot", [0, 0, 0]))

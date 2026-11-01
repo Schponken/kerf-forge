@@ -3,7 +3,7 @@ import math
 import textwrap
 
 import pytest
-from build123d import Location, Pos, Rot
+from build123d import Pos, Rot
 
 from kerf import assembly as A, drives, geom, project as P
 

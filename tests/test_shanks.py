@@ -1,5 +1,4 @@
 """Screw shanks and blind-thread length tolerance (from the fpv_5in review: a stack screw tip ran into an arm)."""
-import pytest
 
 from kerf import assembly as A, project as P, shanks
 from test_engine import BOLT_BLOCK, BOLT_PLATE, _write_project

@@ -4,7 +4,6 @@ import re
 import textwrap
 from pathlib import Path
 
-import pytest
 
 from kerf import pipeline, project as P
 

@@ -155,7 +155,7 @@ def belt_keepout(center: float, z1: int, z2: int, width: float, margin: float = 
     """Solid the running belt occupies (plus `margin` on every side): from each pulley's tooth tips out to the belt
     back (belt height from the catalog), straight spans tangent between. Frame: pulley 1 axis at the origin, pulley 2
     at (center, 0, 0), belt from z = 0 to z = width (centred on the pulley's toothed section)."""
-    from build123d import Edge, Face, Wire, extrude, make_hull
+    from build123d import Edge, extrude, make_hull
     h = catalog.num(_belt(), "height")
     pld = pulley_pld()
     r1, r2 = pulley_pitch_d(z1) / 2 - pld, pulley_pitch_d(z2) / 2 - pld

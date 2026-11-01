@@ -7,7 +7,7 @@ def req(rep, rid):
     return next((r for r in rep.get("requirements", []) if r["id"] == rid), None)
 
 
-def need_req(rep, rid, check, fails, **must):
+def need_req(rep, rid, check, fails):
     r = req(rep, rid)
     if r is None:
         fails.append(f"requirement id '{rid}' ({check}) is missing from project.yaml")
@@ -15,7 +15,9 @@ def need_req(rep, rid, check, fails, **must):
     allowed = check if isinstance(check, (tuple, list)) else (check,)
     if r["check"] not in allowed:
         fails.append(f"requirement '{rid}' must use check {' or '.join(allowed)}, uses '{r['check']}'")
-    if not r["ok"]:
+    if r.get("skipped"):   # a Quick check skips FEA: that is not a pass
+        fails.append(f"requirement '{rid}' was skipped (quick check); run a full `kerf check` / `kerf build`")
+    elif not r["ok"]:
         fails.append(f"requirement '{rid}' fails: {r['detail']} = {r['value']} (limit {r['limit']})")
     return r
 
@@ -73,7 +75,7 @@ def complete_electronics(rep, proj_dir, fails, roles, min_flight_min):
     from pathlib import Path
     import yaml
     items = rep.get("assembly", {}).get("positions", {})
-    data = yaml.safe_load(open(Path(proj_dir) / "project.yaml")) or {}
+    data = yaml.safe_load((Path(proj_dir) / "project.yaml").read_text(encoding="utf-8")) or {}
     purchased = {k: str((v or {}).get("catalog", "")) + " " + k
                  for k, v in (data.get("purchased") or data.get("items") or {}).items()
                  if isinstance(v, dict)}

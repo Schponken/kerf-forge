@@ -14,7 +14,6 @@ from __future__ import annotations
 import difflib
 import math
 import re
-import traceback
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -235,6 +234,3 @@ def _max_size(attempt, start: float):
             hi = mid
     return ok
 
-
-def short_trace(exc: BaseException) -> str:
-    return "".join(traceback.format_exception(type(exc), exc, exc.__traceback__, limit=6))

@@ -1,10 +1,9 @@
 """Ship package: priced BOM rows (hand-computed totals) and the assembly-step plan / ASSEMBLY.md."""
 from pathlib import Path
 
-import numpy as np
 import pytest
 
-from kerf import assembly as A, pins, project as P, ship
+from kerf import assembly as A, project as P, ship
 from test_engine import BOLT_BLOCK, BOLT_PLATE, BOLT_YAML, HINGE_ARM, HINGE_BASE, HINGE_YAML, _write_project
 
 PRICES = {

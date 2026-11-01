@@ -1,7 +1,6 @@
 """Creative mode (kerf/meshy.py): a cached, deliberately broken 'Meshy' mesh is repaired, scaled to its bounds and
 fused with exact mounting features into one printable body whose screw holes are real. No Meshy call is needed."""
 import textwrap
-from pathlib import Path
 
 import numpy as np
 import pytest

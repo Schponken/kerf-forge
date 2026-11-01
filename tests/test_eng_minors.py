@@ -4,7 +4,7 @@ import json
 import pytest
 from build123d import Box, Location, Pos
 
-from kerf import assembly as A, checks, electrical as E, export, hole_axes, iface, pins, project as P, requirements
+from kerf import checks, electrical as E, export, hole_axes, iface, pins, project as P, requirements
 from kerf.ctx import Ctx
 from kerf.req_gears import lewis_stress, lewis_y
 from test_engine import _write_project

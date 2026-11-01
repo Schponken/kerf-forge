@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 
-from build123d import Align, Box, Cylinder, Location, Part, Pos, RegularPolygon, Rot, extrude, Plane
+from build123d import Align, Box, Cylinder, Location, Pos, RegularPolygon, Rot, extrude
 
 from . import calibrate, catalog
 from .ctx import PinSite, Site

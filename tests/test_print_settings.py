@@ -1,6 +1,5 @@
 """ENG-6: per-part print settings (infill, wall loops) reach the plate 3MF and PRINT_SETTINGS.md; strength-checked
 parts default to 4 walls and their mass estimate counts them (hand check on a box)."""
-import types
 import zipfile
 
 import pytest

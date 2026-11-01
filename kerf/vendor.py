@@ -19,7 +19,7 @@ from pathlib import Path
 
 from build123d import Align, Compound, Cylinder, Pos, Rot, import_step
 
-from . import catalog, geom
+from . import geom
 from .ctx import Ctx
 from .proxies import DEFAULT_BY_CATEGORY, REG, proxy
 
