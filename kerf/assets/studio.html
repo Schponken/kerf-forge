@@ -376,7 +376,8 @@ function renderProject() {
       <div class="chips">${statusChips(d)}${d.report && d.report.seconds ? `<span class="chip">last run ${Math.round(d.report.seconds)} s</span>` : ""}</div>
       ${n ? `<div class="chips">${n.cost_usd != null ? `<span class="chip" title="Priced shopping list (bom.md), per piece used; whole packs cost $${fmt(n.packs_usd)}">$${fmt(n.cost_usd)}${n.unpriced ? ` + ${n.unpriced} unpriced` : ""}</span>` : ""}
         ${n.filament_g != null ? `<span class="chip" title="Printed parts, estimated">${fmt(n.filament_g)} g filament · ${n.print_parts} part${n.print_parts == 1 ? "" : "s"}</span>` : ""}
-        ${n.device_g != null ? `<span class="chip" title="Everything mounted on the device">device ${fmt(n.device_g)} g</span>` : ""}</div>` : ""}
+        ${n.device_g != null ? `<span class="chip" title="Everything mounted on the device">device ${fmt(n.device_g)} g</span>` : ""}
+        ${n.print_s ? `<span class="chip" title="${n.print_sliced ? "sliced by Bambu Studio / OrcaSlicer" : "lower bound: plastic at the filament's max flow; slice for the real time (PRINT_SETTINGS.md)"}">${n.print_sliced ? "" : "≥ "}${n.print_s >= 3600 ? (n.print_s / 3600).toFixed(1) + " h" : Math.round(n.print_s / 60) + " min"} printing · ${n.plates} plate${n.plates == 1 ? "" : "s"}</span>` : ""}</div>` : ""}
       <div class="actions">
         <button class="primary" onclick="run('build')" title="Every check, then STEP/STL/3MF plates, BOM, assembly guide and renders">⚙ Build${e.build ? ` <small>${about(e.build)}</small>` : ""}</button>
         <button onclick="run('check')" title="Every check incl. motion sweeps and strength, no files">✓ Check${e.check ? ` <small>${about(e.check)}</small>` : ""}</button>

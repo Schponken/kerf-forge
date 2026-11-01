@@ -340,6 +340,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 export.glb(proj, out / "assembly_keepouts.glb", include_keepouts=True)
                 rep["files"] = {"parts": export.part_files(proj, out / "parts"),
                                 "plates": export.plates(proj, out / "plates", printer)}
+                try:                                    # per plate grams + time, per part slicer settings (kerf/printpkg.py)
+                    from . import printpkg
+                    rep["print"] = printpkg.write(proj, rep, rep["files"]["plates"], out / "plates")
+                except Exception as e:  # noqa: BLE001
+                    rep["problems"].append(f"print package could not be written: {type(e).__name__}: {e}")
                 from . import drawings                  # out/drawings/<part>.pdf (cadgen eng_drawing)
                 dr = drawings.write_all(proj, out / "drawings")
                 rep["files"]["drawings"] = [f"drawings/{d['pdf']}" for d in dr.values() if d.get("pdf")]

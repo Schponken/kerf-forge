@@ -384,7 +384,11 @@ def _numbers(rep: dict) -> dict | None:
         return None
     b = ((rep.get("files") or {}).get("ship") or {}).get("bom") or {}
     m = rep.get("mass") or {}
-    return {"cost_usd": b.get("total_usd"), "packs_usd": b.get("packs_usd"), "unpriced": len(b.get("unpriced") or []),
+    pl = (rep.get("print") or {}).get("plates") or []
+    sliced = bool(pl) and all(x.get("sliced") for x in pl)
+    secs = sum((x["sliced"]["seconds"] if sliced else x.get("min_seconds") or 0) for x in pl) if pl else None
+    return {"print_s": secs, "print_sliced": sliced, "plates": len(pl) or None,
+            "cost_usd": b.get("total_usd"), "packs_usd": b.get("packs_usd"), "unpriced": len(b.get("unpriced") or []),
             "filament_g": m.get("printed_g"), "device_g": m.get("device_g"),
             "print_parts": len(rep.get("parts") or {})}
 

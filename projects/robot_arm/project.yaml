@@ -33,8 +33,8 @@ parts:
   yoke_r: {file: parts/yoke_r.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: Z}
   yoke_l: {file: parts/yoke_l.py, material: PETG, print_rot: [90, 0, 0], infill: 0.4, load_axis: Z}
   upper_arm: {file: parts/upper_arm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
-  forearm: {file: parts/forearm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
-  gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X}
+  forearm: {file: parts/forearm.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X, supports: needed}   # DESIGN.md: jaw overhang and window bridges
+  gripper: {file: parts/gripper.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: X, supports: needed}   # DESIGN.md: jaw overhang and window bridges
   finger: {file: parts/finger.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: X}
   cable_mast: {file: parts/cable_mast.py, material: PETG, print_rot: [90, 0, 0], infill: 0.3, load_axis: Z}
   psu_hood: {file: parts/psu_hood.py, material: PETG, print_rot: [0, -90, 0], infill: 0.3,

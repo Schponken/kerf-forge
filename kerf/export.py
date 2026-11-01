@@ -164,7 +164,17 @@ def _write_part_settings(path, specs: dict):
         ps = part_print_settings(sp)
         lines += [f'  <object id="{oid}">', f'    <metadata key="name" value={quoteattr(pn)}/>',
                   f'    <metadata key="sparse_infill_density" value="{ps["infill_pct"]}%"/>',
-                  f'    <metadata key="wall_loops" value="{ps["walls"]}"/>', "  </object>"]
+                  f'    <metadata key="wall_loops" value="{ps["walls"]}"/>']
+        pr = sp.get("_print")              # kerf/printpkg.py: layer height, supports and brim (Bambu Studio config keys)
+        if pr:
+            lines += [f'    <metadata key="layer_height" value="{pr["layer_mm"]}"/>',
+                      f'    <metadata key="enable_support" value="{1 if pr["supports"] else 0}"/>',
+                      f'    <metadata key="brim_type" value="{pr["brim"]}"/>']
+            if pr["supports"]:
+                lines.append(f'    <metadata key="support_type" value="{pr["support_type"]}"/>')
+            if pr.get("brim_mm"):
+                lines.append(f'    <metadata key="brim_width" value="{pr["brim_mm"]}"/>')
+        lines.append("  </object>")
     lines.append("</config>")
     files["Metadata/model_settings.config"] = "\n".join(lines).encode()
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
