@@ -607,10 +607,13 @@ def _buildall(names: list[str]) -> int:
 
 
 def _watchdog(srv, idle: float, grace: float, bye_wait: float = 6.0):
-    t0 = time.time()
+    t0 = prev = time.time()
     while True:
         time.sleep(1.0)
         now = time.time()
+        if now - prev > 30:                          # the computer slept: give open windows time to check in again
+            LIFE["last"] = now
+        prev = now
         if busy():
             continue
         quiet = now - LIFE["last"]

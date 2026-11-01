@@ -248,3 +248,35 @@ def test_a_setup_problem_stops_the_job_as_failed(tmp_path):
             break
         time.sleep(0.1)
     assert j.state == "failed" and any(e.get("code") == "auth" for e in j.events)
+
+
+def test_waking_from_sleep_does_not_close_an_open_window(monkeypatch):
+    """A Mac that slept for an hour must not look like 'every window closed' the moment it wakes."""
+    import threading
+    clock = {"t": 1000.0}
+    slept = {"done": False}
+
+    def fake_sleep(_):
+        if not slept["done"] and clock["t"] >= 1005.0:
+            clock["t"] += 3600.0                      # lid closed for an hour
+            slept["done"] = True
+        else:
+            clock["t"] += 1.0
+
+    monkeypatch.setattr(studio.time, "time", lambda: clock["t"])
+    monkeypatch.setattr(studio.time, "sleep", fake_sleep)
+    monkeypatch.setattr(studio, "busy", lambda: False)
+    monkeypatch.setitem(studio.LIFE, "last", 1000.0)
+    monkeypatch.setitem(studio.LIFE, "seen", True)
+    monkeypatch.setitem(studio.LIFE, "bye", None)
+    stopped = []
+
+    class Srv:
+        def shutdown(self):
+            stopped.append(clock["t"])
+
+    t = threading.Thread(target=studio._watchdog, args=(Srv(), 150.0, 450.0), daemon=True)
+    t.start(); t.join(timeout=10)
+    assert stopped, "watchdog never finished"
+    woke = 1006.0 + 3600.0
+    assert stopped[0] - woke >= 149, f"closed {stopped[0] - woke:.0f} s after waking; must wait the idle limit"

@@ -993,3 +993,14 @@ pushed for it and what I know:
   No duplicated blocks >= 8 lines; repo 7 MB. Speed: renders ~1.1 s each (browser start), FEA + sweeps dominate build
   time; FEA is cached, per-part build cache is PLAN Phase 4c. Library functions vulture flags as unused are the
   part-code API (used by projects, documented, tested): kept.
+
+## 2026-11-01 00:55 UTC — planning chat: Kerf Studio is a real single-instance Mac app
+- Bug (Spencer): every Dock click opened another Kerf Studio window. Cause: the launcher ran `open -na <browser>
+  --app=...` (-n = always a new instance) and then exited, so macOS never saw the app as running.
+- Fix: tools/mac/KerfStudio.swift, a native AppKit + WKWebView app compiled by install_app.sh. One process, one
+  window: a Dock click while open brings it forward; a second launch hands over to the running copy and exits.
+  Closing the window / Cmd+Q / the page's Quit button all quit the app AND the server (asks first if a job runs).
+  Starts the server itself via tools/mac/start.sh (update + setup-if-needed + exec server), shows progress, restarts
+  the server if it dies while the window is open, saves downloads to ~/Downloads, opens outside links in the browser,
+  has Edit menu copy/paste. Re-run ./tools/mac/install_app.sh once to switch over (it closes the old windows).
+- Server: the idle watchdog no longer shuts down right after the Mac wakes from sleep (test proves the old code did).
