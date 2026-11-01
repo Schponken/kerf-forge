@@ -94,6 +94,64 @@ def spur_pair(module: float, z1: int, z2: int, width: float, backlash: float = G
     return Part(p1.wrapped), Part(p2.wrapped), info
 
 
+@dataclass
+class RackPinion:
+    module: float
+    z: int                 # pinion teeth
+    rack_teeth: int
+    width: float
+    pitch_r: float         # pinion pitch radius = rack pitch line height above the pinion axis
+    tip_r: float
+    root_r: float
+    pitch: float           # linear tooth pitch pi * m
+    mm_per_deg: float      # rack travel per degree of pinion turn (pitch_r * pi / 180)
+    rack_y: tuple          # rack (tooth tip, tooth root, back) heights above the pinion axis
+    backlash_mm: float
+    warnings: list
+
+
+def rack_pinion(module: float, z: int, rack_teeth: int, width: float, backlash: float = GEAR_BACKLASH_MM,
+                bore: float | None = None):
+    """A spur pinion and a straight rack meshed with it (20 deg involute, py_gearworks), returned as
+    (pinion, rack, info). Pinion: axis = +Z through its origin, face 0..width, a tooth pointing +Y at angle 0.
+    Rack: pitch line at y = +info.pitch_r, teeth pointing -Y, running along X and centred on x = 0, phased so it meshes
+    at pinion angle 0 (a tooth gap over the pinion's top tooth). Turning the pinion +a deg (counter-clockwise about +Z)
+    moves the rack by -a * info.mm_per_deg along X; a second rack under the pinion (the first one rotated 180 deg
+    about the pinion axis) moves the other way, which is how a parallel gripper drives its two jaws. In project.yaml
+    the rack joint is `linear` and follows the pinion joint: {joint: <rack slide>, follows: <pinion joint>,
+    ratio: +-info.mm_per_deg}. rack_teeth must be odd (py_gearworks centres an odd rack on a tooth). Backlash as for
+    spur_pair: 0.3 mm total, split between pinion and rack flanks."""
+    if module < MIN_MODULE:
+        raise ValueError(f"module {module} is below {MIN_MODULE}: teeth that small do not print with a 0.4 mm nozzle")
+    if z < MIN_TEETH:
+        raise ValueError(f"{z} teeth is below {MIN_TEETH}; the undercut tooth root is too weak to print")
+    if rack_teeth < 3 or rack_teeth % 2 == 0:
+        raise ValueError(f"rack_teeth must be odd and >= 3 (got {rack_teeth})")
+    if width <= 0:
+        raise ValueError("gear width must be positive")
+    import py_gearworks as gw
+    warn = [] if module >= GOOD_MODULE else [f"module {module} < {GOOD_MODULE}: only for a well-tuned printer; test-print first"]
+    coef = backlash / module / 2.0
+    r = module * z / 2.0
+    pinion = _gear(z, width, module, coef).build_part()
+    # rack line along X, teeth pointing -Y: rotate the py_gearworks rack (teeth along +X, line along Y) by -90 deg
+    rk = gw.InvoluteRack(number_of_teeth=int(rack_teeth), height=width, module=module, backlash=coef,
+                         position=np.array([0.0, r, 0.0]),
+                         orientation=np.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]))
+    rack = Pos(math.pi * module / 2.0, 0, 0) * rk.build_part()     # half a pitch: a gap over the pinion's top tooth
+    if bore:
+        root_d = module * (z - 2.5)
+        if (root_d - bore) / 2 < 2.0:
+            raise ValueError(f"{z}-tooth pinion: bore {bore} mm leaves {(root_d - bore) / 2:.1f} mm under the tooth roots (< 2 mm)")
+        pinion = pinion - Pos(0, 0, -1) * Cylinder(bore / 2, width + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    bb = rack.bounding_box()
+    # py_gearworks: addendum 1.0 m, dedendum 1.2 m on both pinion and rack
+    info = RackPinion(module, int(z), int(rack_teeth), width, r, r + module, r - 1.2 * module, math.pi * module,
+                      r * math.pi / 180.0, (round(bb.min.Y, 4), round(r + 1.2 * module, 4), round(bb.max.Y, 4)),
+                      backlash, warn)
+    return Part(pinion.wrapped), Part(rack.wrapped), info
+
+
 # ------------------------------------------------------------------------------------------- GT2 belts
 def _belt():
     return catalog.get("motion.GT2_belt")

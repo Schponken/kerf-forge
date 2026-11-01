@@ -79,6 +79,32 @@ def test_gear_refusals():
     assert i.warnings and "module" in i.warnings[0]
 
 
+# ------------------------------------------------------------------------------------------- rack and pinion
+def test_rack_pinion_meshes_and_travels():
+    pin, rack, i = drives.rack_pinion(1.5, 20, 11, 8)
+    # pitch r = m z / 2 = 15; rack moves r * pi / 180 = 0.2618 mm per pinion degree; tooth pitch pi m = 4.712
+    assert i.pitch_r == pytest.approx(15.0) and i.mm_per_deg == pytest.approx(15 * math.pi / 180)
+    assert i.pitch == pytest.approx(math.pi * 1.5) and i.rack_y[0] == pytest.approx(15 - 1.5, abs=1e-3)
+    assert pin.is_valid and rack.is_valid and len(geom.solids(rack)) == 1
+    assert rack.bounding_box().size.X == pytest.approx(11 * math.pi * 1.5, abs=0.5)
+    assert _ov(pin, rack) < 1e-3                                   # meshed, not colliding, at angle 0
+    for a in (5, 13, 30, 60, -20):                                 # pinion +a deg ccw -> rack -a * mm_per_deg along X
+        assert _ov(Rot(0, 0, a) * pin, Pos(-a * i.mm_per_deg, 0, 0) * rack) < 1e-3, a
+    assert _ov(Rot(0, 0, 9) * pin, rack) > 1.0                     # half a tooth out of phase collides
+    under = Rot(0, 0, 180) * rack                                  # the second jaw's rack, under the pinion
+    for a in (0, 25, 50):
+        assert _ov(Rot(0, 0, a) * pin, Pos(a * i.mm_per_deg, 0, 0) * under) < 1e-3, a
+
+
+def test_rack_pinion_refusals():
+    with pytest.raises(ValueError):
+        drives.rack_pinion(1.5, 20, 10, 8)                         # even rack: py_gearworks centres it on a gap
+    with pytest.raises(ValueError):
+        drives.rack_pinion(0.8, 20, 11, 8)
+    with pytest.raises(ValueError):
+        drives.rack_pinion(1.5, 20, 11, 8, bore=24)                # root d 26.25 -> 1.1 mm wall
+
+
 # ------------------------------------------------------------------------------------------- belts
 def test_belt_lengths_by_hand():
     # equal 20T pulleys: L = 2C + pi D = 200 + 40 = 240 mm = 120 teeth

@@ -1,0 +1,62 @@
+name: Parallel gripper for the desk robot arm
+description: >
+  A rack-and-pinion parallel-jaw gripper that bolts onto the desk robot arm's wrist in place of its single-finger
+  gripper (same wrist fork, horn and pivot). The arm's grip servo (MG996R) lies inline in the gripper body; a printed
+  20-tooth pinion on its horn drives two racks, one per jaw, so both jaws move in and out together and stay parallel,
+  the object stays centred on the tool point. Each jaw slides on two steel guide rods. Opens 2-54 mm. A small bench
+  stand that reproduces the arm's wrist end lets you test the gripper before it goes on the arm.
+printer: Bambu Lab A2L
+supports: allowed
+params:
+  plate_t: {value: 7, min: 7, max: 8, step: 0.5, label: Wrist fork plate thickness (robot_arm plate_t)}
+  side_gap: {value: 1.5, min: 0.5, max: 2.0, step: 0.1, label: Axial gap at the wrist pivot (robot_arm side_gap)}
+  grip_w: {value: 35, min: 35, max: 35, step: 1, label: Wrist fork width (= robot_arm grip_w; the forearm is built for it)}
+  link_h: {value: 34, min: 34, max: 34, step: 1, label: Wrist disc diameter (robot_arm link_h)}
+  x_bulk: {value: 45, min: 45, max: 55, step: 0.5, label: Bulkhead back face (grip servo tab tops) ahead of the wrist axis}
+  bulk_t: {value: 6, min: 5, max: 7, step: 0.5, label: Bulkhead thickness (servo tab pilots)}
+  gear_m: {value: 1.5, min: 1.5, max: 1.5, step: 0.25, label: Pinion / rack module}
+  pinion_z: {value: 20, min: 20, max: 20, step: 1, label: Pinion teeth}
+  gear_b: {value: 12, min: 10, max: 14, step: 1, label: Pinion / rack face width}
+  grip_max: {value: 100, min: 90, max: 110, step: 5, label: Servo travel closed -> open (deg)}
+  gap0: {value: 2, min: 1, max: 4, step: 0.5, label: Pad gap when closed}
+  slab_gap: {value: 0.6, min: 0.5, max: 1.0, step: 0.1, label: Gap between the pinion's front face and the carriages}
+  carr_x: {value: 10, min: 8, max: 14, step: 1, label: Carriage depth along the gripper}
+  carr_len: {value: 14, min: 12, max: 20, step: 1, label: Carriage length along the rods}
+  rod_y: {value: 21, min: 18, max: 24, step: 0.5, label: Guide rods above / below the pinion axis}
+  stop_gap: {value: 1.0, min: 0.5, max: 2.0, step: 0.1, label: Extra travel past fully open before the carriage meets the cheek}
+  cheek_t: {value: 8, min: 6, max: 10, step: 0.5, label: End cheek thickness (rod seats)}
+  finger_len: {value: 32, min: 25, max: 40, step: 1, label: Finger length ahead of the carriage}
+  pad_len: {value: 24, min: 15, max: 30, step: 1, label: Grip pad length along the finger}
+  stand_h: {value: 70, min: 55, max: 110, step: 1, label: Bench stand - wrist axis height above the bench}
+layout: parts/layout.py
+parts:
+  gripper: {file: parts/gripper.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
+  pinion: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0}
+  jaw_r: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: 1}}
+  jaw_l: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: -1}}
+  rod_keeper: {file: parts/rod_keeper.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}
+  stand: {file: parts/stand.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: Z}
+purchased:
+  wr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: wr_servo}, tab_screws_from: bottom, range: [-75, 75],
+             note: "the stand's wrist servo; on the arm this is the arm's own wrist servo (projects/robot_arm)"}
+  wr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: wr_horn}}
+  gr_servo: {catalog: servos.MG996R, proxy: servo, groups: {tabs: gr_servo}, tab_screws_from: bottom, range: [0, 100],
+             note: "the arm's grip servo: reuse the one from the arm's old gripper"}
+  gr_horn: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: gr_horn}}
+assembly:
+  root: stand
+  joints:
+    - {parent: stand.servo_seat, child: wr_servo.tabs}
+    - {parent: wr_servo.output, child: wr_horn.spline, name: wrist, range: [-75, 75]}
+    - {parent: wr_horn.face, child: gripper.horn_mount}
+    - {parent: gripper.servo_seat, child: gr_servo.tabs}
+    - {parent: gr_servo.output, child: gr_horn.spline, name: grip, range: [0, 100], home: 0}
+    - {parent: gr_horn.face, child: pinion.horn_mount}
+    - {parent: gripper.jaw_r_slide, child: jaw_r.mount, name: jaw_r_slide}
+    - {parent: gripper.jaw_l_slide, child: jaw_l.mount, name: jaw_l_slide}
+    - {parent: gripper.keeper_seat, child: rod_keeper.origin}
+  sweeps:
+    # rack and pinion: each jaw travels r * pi / 180 = 15 * pi / 180 = 0.261799 mm per servo degree (layout mm_per_deg)
+    - {joint: jaw_r_slide, follows: grip, ratio: 0.261799}
+    - {joint: jaw_l_slide, follows: grip, ratio: 0.261799}
+requirements: []
