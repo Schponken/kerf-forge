@@ -1,0 +1,11 @@
+[
+ "fdm_fits.pin",
+ "fdm_holes.M3",
+ "materials.PETG",
+ "materials.TPU",
+ "motion.pin_3mm",
+ "screws.M3",
+ "servo_horns.aluminum_25T",
+ "servos.MG996R",
+ "tools.hex_key"
+]

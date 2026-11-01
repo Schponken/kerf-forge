@@ -15,14 +15,14 @@ from kerf import iface
 
 HORN = "servo_horns.aluminum_25T"
 SERVO = "servos.MG996R"
-POST_R = 4.4                   # M3 insert hole r 2.0 + 2.4 wall (docs/ENGINEERING.md s5)
 Y_BED = -17.0                  # = -r_w: the wrist discs' lowest point, the print bed
+IDLER_PRESS = 10.0             # idler dowel pressed this deep: 10 + 0.5 + finger 12 + 0.5 + cover 7 = a stocked 3 x 30
 TAN50 = 1.19                   # 50 deg rise for the web ends (prints without support: steeper than 45 deg)
 
 
 def posts(p):
-    """Cover-post axes (x, z); cover.py computes the same: 1 mm behind the gear tips, 2.6 mm of wall to each fork face."""
-    return [(p.x_g - p.r_tip - 1.0 - POST_R, z) for z in (POST_R + 0.2, p.W - POST_R - 0.2)]
+    """Cover-post axes (x, z), from parts/layout.py (cover.py uses the same)."""
+    return [(p.x_post, p.z_post_a), (p.x_post, p.z_post_b)]
 
 
 def up(x, y, z):
@@ -42,6 +42,7 @@ def build(ctx):
     p = ctx.p
     t, W, r = p.plate_t, p.W, p.r_w
     (xp, zpa), (_, zpb) = posts(p)
+    POST_R = p.post_r
     x_front = p.x_sc + p.mg_span / 2 + 3.0          # 3 mm past the front servo tab
     c45 = r * 0.7071
     foot = [(-c45, -c45), (-c45 + (r - c45), Y_BED)]  # 45-deg tangent from the disc down to the flat bed edge
@@ -77,9 +78,9 @@ def build(ctx):
     for (hx, hy) in iface.circle(4, iface.horn_dims(HORN)["bc"], 45.0):     # hex key to the wrist-horn screws
         body -= Pos(hx, hy, W - t - 4) * Cylinder(2.0, t + 5, align=(Align.CENTER, Align.CENTER, Align.MIN))
     il = up(p.x_g, p.y_g0 - 0.5, p.z_i)
-    body -= iface.pin_hole(ctx, "motion.pin_3mm", il, "gr_idler", depth=8.0, fit="press", through=False,
+    body -= iface.pin_hole(ctx, "motion.pin_3mm", il, "gr_idler", depth=IDLER_PRESS, fit="press", through=False,
                            teardrop=iface.print_up_deg(ctx, il))
-    body -= Pos(p.x_g, Y_BED - 1, p.z_i) * Rot(-90, 0, 0) * Cylinder(1.0, p.y_g0 - 0.5 - 8.0 - Y_BED + 1.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body -= Pos(p.x_g, Y_BED - 1, p.z_i) * Rot(-90, 0, 0) * Cylinder(1.0, p.y_g0 - 0.5 - IDLER_PRESS - Y_BED + 1.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body -= Pos(p.x_g, (Y_BED - 1) / 2, p.z_i - 1.25) * Box(2.0, -Y_BED + 1, 2.5)   # why: the push-out hole runs on as a groove open to the keel's inner face (no 0.5 mm skin)
     for (x, z) in posts(p):
         body -= iface.bolt_pattern(ctx, "cover", "M3", [(0, 0)], up(x, p.y_c0, z), kind="heatset", depth=p.y_c0 - t)

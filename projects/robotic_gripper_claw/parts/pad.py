@@ -19,7 +19,7 @@ TONGUE = (2.53, 3.48, 3.75)        # dovetail half-width at the back face, half-
 TONGUE_R = 1.0                     # root corner radius: no sharp corner left in the jaw's groove
 NECK_R = 0.5                       # tongue-to-plate fillet (the jaw's groove lips are chamfered 0.6 to clear it)
 STOP = 2.0                         # tongue starts this far above the pad's bottom: the jaw's groove floor fills it
-LEAD = 1.2                         # chamfer on the tongue's leading (bottom) end: lead-in, clears the floor's r 1 fillet
+LEAD = 0.8                         # chamfer on the tongue's leading (bottom) end: lead-in; >= the jaw groove floor's r 0.6 fillet clears it (largest the r 1 root takes is 1.0)
 RIB_H, RIB_P, RIB_C = 1.0, 2.5, 0.2   # grip ribs: height, pitch, crest half-width (2 mm base under them, as D7)
 
 
