@@ -362,7 +362,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     rnd = (lambda g, pre: render_glb(g, pre, views="iso", sheet=False)) if do_render else None
                     rep["files"]["ship"] = ship.write(proj, asm, rep, out, render=rnd)
                     if emodel:      # solder / wiring steps after the mechanical ones
-                        wiring_out.append_assembly(out / "ASSEMBLY.md", emodel)
+                        wiring_out.append_assembly(out / "ASSEMBLY.md", emodel, proj)
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"ship package (priced BOM / ASSEMBLY.md) could not be written: {type(e).__name__}: {e}")
             if do_render:

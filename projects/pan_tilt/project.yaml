@@ -95,7 +95,7 @@ wiring:      # ends = item centres; tie points move with their item; cut lengths
      note: "the adapter's own 1 m DC cord with its 5.5 x 2.1 plug (checked as 24 AWG, the thinnest plausible)"}
   - {id: pan_pwr, from: jack, to: pan_servo, v: 5.0, gauge: 22, color: red/brown, length_mm: 300,
      route: [{item: base, at: [14, -20, 14]}, {item: base, at: [14, -4, 14]}],
-     note: "the SG90's own lead (it leaves the servo's output end) out of the base's open -Y side, plus a 300 mm servo extension; red/brown to the jack terminals"}
+     note: "solder it to the SG90's own lead (cut its plug off; the lead leaves the servo's output end) and run it out of the base's open -Y side; red/brown to the jack terminals"}
   - {id: pan_sig, from: pi, to: pan_servo, kind: signal, pin: GPIO18, gauge: 26, conductors: 2, color: orange/brown, length_mm: 300,
      route: [{item: base, at: [14, -20, 14]}, {item: base, at: [14, -4, 14]}],
      note: "Pi GPIO18 (PWM0) to the pan servo signal, Pi GND to the supply minus (common ground)"}

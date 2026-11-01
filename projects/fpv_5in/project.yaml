@@ -108,6 +108,7 @@ bom_extra:
   - {type: hardware, item: 2.5 mm cable tie, qty: 12, price_key: "tie:2.5mm", spec: "2 per arm for motor wires, 1 wrapped under the XT60 through the two slots beside its cradle, 1 for the VTX antenna under the tab, 2 for the receiver and its antenna legs"}
   - {type: hardware, item: medium-strength (blue) threadlocker, qty: 1, price_key: "threadlocker:blue", spec: "Loctite 243 or equal", note: "one drop on each of the 16 motor screws (steel into the aluminium base) and the 8 arm screws at their nuts"}
   - {type: hardware, item: M3 silicone grommets (stack), qty: 4, spec: "ship with the SpeedyBee stack; soft-mount", link: "https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/", included: true, note: "included with the stack (no separate purchase)"}
+  - {type: electrical, item: "35 V 1000 uF low-ESR capacitor", qty: 1, included: true, note: "ships with the SpeedyBee stack; soldered across the ESC battery pads in the XT60 wiring step"}
 assembly:
   root: body
   joints:

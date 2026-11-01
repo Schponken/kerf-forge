@@ -51,6 +51,75 @@ def join(term: str, item: str) -> str:
             "crimp": f"crimp a female 0.1 in pin on each conductor, click it into a housing and push it onto {item}'s header pin"}[term]
 
 
+PI_GND_NEXT_TO = {"GPIO18": 14, "GPIO19": 34}   # a GND header pin next to each hardware-PWM pin (pin 14 / pin 34)
+
+
+def end_name(proj, w, side: str) -> str:
+    """One end of a run in words: the item, plus the controller pin it lands on (`pin:` on the run), with the Pi's
+    physical header pin next to the BCM name."""
+    item = w[side]
+    if proj is None or side != "from" or not w.get("pin"):
+        return item
+    from . import firmware
+    kind = firmware._kind(proj, item.split(".")[0])
+    if kind is None:
+        return f"{item} {w['pin']}"
+    words = firmware._pin_words({"kind": kind, "pin": str(w["pin"])})
+    gnd = (f" (second conductor to a GND pin, header pin {PI_GND_NEXT_TO[str(w['pin']).upper()]})"
+           if kind == "pi" and _conductors(w) == 2 and str(w["pin"]).upper() in PI_GND_NEXT_TO else "")
+    return f"{item} {words}{gnd}"
+
+
+def _dist_box(p, lo, hi) -> float:
+    import numpy as np
+    return float(np.linalg.norm(np.maximum(0, np.maximum(lo - p, p - hi))))
+
+
+def _near(proj, pt, only=None) -> str:
+    """The part a free route point runs along: nearest item box (and its nearest named joint within 12 mm)."""
+    import numpy as np
+    from . import geom
+    p = np.asarray(pt, float)
+    best = None
+    for iid, it in proj.items.items():
+        if it.role == "keepout" or it.shape is None or (only and iid != only):
+            continue
+        lo, hi = geom.bbox(it.shape)
+        d = _dist_box(p, np.asarray(lo, float), np.asarray(hi, float))
+        if best is None or d < best[0]:
+            best = (d, iid)
+    if best is None:
+        return "in free air", None
+    d, iid = best
+    sh = proj.items[iid].shape
+    js = [(float(np.linalg.norm(np.asarray(geom.world_point(j.location, (0, 0, 0))) - p)), n) for n, j in sh.joints.items()]
+    jd, jn = min(js) if js else (1e9, "")
+    at = f"{iid}'s {jn.replace('_', ' ')}" if jd <= 12 else iid
+    return ("along " if d <= 8 else "near ") + at, iid
+
+
+def landmarks(proj, w) -> str:
+    """The route in words: each waypoint named by the part and feature it passes, never by coordinates."""
+    start, end = w["from"].split(".")[0], w["to"].split(".")[0]
+    out, last = [], start
+    for ref, pt in zip(w.get("route") or [], (w.get("points") or [])[1:-1]):
+        if isinstance(ref, str):
+            item, _, pin = ref.partition(".")
+            words, loose = (f"{item}'s {pin.replace('_', ' ')}" if pin else f"the {item}"), False
+        elif isinstance(ref, dict) and isinstance(ref.get("at"), str):
+            item, words, loose = ref["item"], f"{ref['item']}'s {ref['at'].replace('_', ' ')}", False
+        else:
+            (words, item), loose = _near(proj, pt, only=ref.get("item") if isinstance(ref, dict) else None), True
+        if loose and item == last:            # another free point along the same part says nothing new
+            continue
+        if not out or out[-1] != words:
+            out.append(words)
+        last = item
+    if out and out[-1].endswith(f" {end}") and out[-1].split()[0] in ("along", "near"):
+        out.pop()
+    return " -> ".join([start] + out + [end])
+
+
 def ferrule_for(gauge) -> str:
     """Catalog path of the bootlace ferrule for this AWG (electronics.wire_misc.ferrule_*), '' if none is catalogued."""
     for k, e in (catalog.get("electronics.wire_misc") or {}).items():
@@ -168,7 +237,7 @@ def wiring_md(proj, model) -> str:
     L += ["## Runs (cut each wire to the length shown; it includes 15 % slack over the routed path)", "",
           "| Run | From | To | Kind | V | AWG | Colour | Avg A | Peak A | Routed mm | Cut mm |", "|---|---|---|---|---|---|---|---|---|---|---|"]
     for w in model["wires"]:
-        L.append(f"| {w['id']} | {w['from']} | {w['to']} | {w['kind']} | {w.get('v') or ''} | {w['gauge']} | {w.get('color') or ''} | "
+        L.append(f"| {w['id']} | {end_name(proj, w, 'from')} | {w['to']} | {w['kind']} | {w.get('v') or ''} | {w['gauge']} | {w.get('color') or ''} | "
                  f"{w['avg_a']:.2f} | {w['peak_a']:.2f} | {w['routed_mm']} | {w['length_mm']} |")
     L += ["", "## Loads", "", "| Item | Avg A | Peak A | From |", "|---|---|---|---|"]
     for i, d in model["loads"].items():
@@ -176,7 +245,7 @@ def wiring_md(proj, model) -> str:
     L += ["", "## Ratings", "", "| Element | Check | Value | Limit | OK |", "|---|---|---|---|---|"]
     for r in model["ratings"]:
         L.append(f"| {r['what']} | {r['kind']} | {r['value']} | {r['limit']} | {'yes' if r['ok'] else ('sags (brief, at peak)' if r.get('soft') else '**NO**')} |")
-    L += ["", "## Solder and wiring steps", ""] + [f"{k}. {s}" for k, s in enumerate(steps(model), 1)]
+    L += ["", "## Solder and wiring steps", ""] + [f"{k}. {s}" for k, s in enumerate(steps(model, proj), 1)]
     return "\n".join(L) + "\n"
 
 
@@ -188,8 +257,13 @@ def _limit_groups(model) -> dict:
     return g
 
 
-def steps(model) -> list:
+def steps(model, proj=None) -> list:
+    """Solder / wiring steps. With `proj` (built and solved) routes are told by landmarks and controller pins named
+    with their physical header pin; without it the route falls back to world coordinates."""
     out = []
+
+    def route(w):
+        return landmarks(proj, w) if proj is not None else " -> ".join(str(p) for p in w["points"])
     for w in model["wires"]:
         n = _conductors(w)
         if w.get("supplied"):
@@ -207,14 +281,14 @@ def steps(model) -> list:
                         f"needs {w['cut_min_mm']:g} mm incl. 15 % slack). Cut the plug off its {w['from']} end")
             else:
                 head = f"**{w['id']}** is the {what} conductor of {w['lead_of']}'s lead: peel it off at the {w['from']} end"
-            out.append(f"{head}; {w.get('color') or what} ({n} conductor{'s' if n > 1 else ''}): {join(terms['from'], w['from'])}"
+            out.append(f"{head}; {w.get('color') or what} ({n} conductor{'s' if n > 1 else ''}): {join(terms['from'], end_name(proj, w, 'from'))}"
                        + (f", {join(terms['to'], w['to'])}" if terms["to"] != "plug" else f"; the other end plugs into {w['to']}")
-                       + f"{shrink}. Route: {' -> '.join(str(p) for p in w['points'])}." + (f" {w['note']}." if w.get("note") else ""))
+                       + f"{shrink}. Route: {route(w)}." + (f" {w['note'][0].upper() + w['note'][1:]}." if w.get("note") else ""))
         else:
             out.append(f"Cut {n} x {w['length_mm']} mm of AWG {w['gauge']} ({what}) for **{w['id']}**: "
-                       f"{join(terms['from'], w['from'])}, {join(terms['to'], w['to'])}{shrink}. "
-                       f"Route: {' -> '.join(str(p) for p in w['points'])}."
-                       + (f" {w['note']}." if w.get("note") else ""))
+                       f"{join(terms['from'], end_name(proj, w, 'from'))}, {join(terms['to'], w['to'])}{shrink}. "
+                       f"Route: {route(w)}."
+                       + (f" {w['note'][0].upper() + w['note'][1:]}." if w.get("note") else ""))
         if w.get("fuse"):
             f = catalog.get(w["fuse"])
             hold = _item_name(w["fuse_holder"]) if w.get("fuse_holder") else "an inline fuse holder"
@@ -239,6 +313,11 @@ def steps(model) -> list:
         out.append(f"Before plugging any load in: set {model['battery']}'s output to {model['supply_v']:g} V with its "
                    f"adjustment pot, measured with a meter where its output wires land (e.g. the bus splices), with the "
                    f"terminal cover / enclosure closed (the ratings above assume it).")
+    if proj is not None:          # electrical bom_extra rows (a capacitor, a USB supply): every bought part has a step
+        for x in proj.data.get("bom_extra") or []:
+            if x.get("type") in ("electrical", "electronics") and not x.get("included"):
+                how = "; ".join(t for t in (x.get("spec"), x.get("note")) if t)
+                out.append(f"Fit the {x.get('qty', 1)} x **{x['item']}** (bom.md)" + (f": {how}." if how else "."))
     out.append("Before the first battery: check every + to - pair for a short with a multimeter, then power up through "
                "a smoke stopper (fused lead)." if not model.get("mains") else
                "Before plugging in the adapter: check every + to - pair for a short with a multimeter.")
@@ -298,9 +377,9 @@ def svg(proj, model) -> str:
     return "\n".join(S) + "\n"
 
 
-def append_assembly(path, model):
+def append_assembly(path, model, proj=None):
     """Add the electrical (solder and wiring) steps to out/ASSEMBLY.md, after the mechanical steps."""
     L = ["", "## Electrical — solder and wire (runs, currents and ratings in WIRING.md, diagram in wiring.svg)", ""]
-    L += [f"{k}. {s}" for k, s in enumerate(steps(model), 1)]
+    L += [f"{k}. {s}" for k, s in enumerate(steps(model, proj), 1)]
     old = path.read_text(encoding="utf-8") if path.exists() else ""
     path.write_text(old.rstrip("\n") + "\n" + "\n".join(L) + "\n", encoding="utf-8")

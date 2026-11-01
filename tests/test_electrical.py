@@ -500,3 +500,21 @@ def test_wiring_tools_from_wire_ends():
     t = " | ".join(wiring_tools(m))
     for k in ("stripper", "multimeter", "soldering iron", "0.1 in", "ferrule crimper", "4.8 mm"):
         assert k in t
+
+
+def test_wiring_steps_use_landmarks_pins_and_every_electrical_extra():
+    """WIRING/ASSEMBLY electrical steps (pan_tilt): routes named by the parts they pass (no coordinates), the Pi's
+    physical header pin next to the BCM name, and every electrical bom_extra row (the capacitor) fitted in a step."""
+    import re
+    from pathlib import Path
+    from kerf import assembly as A, electrical, project as P, wiring_out
+    proj = P.build(P.load(str(Path(__file__).resolve().parents[1] / "projects/pan_tilt")))
+    asm = A.plan(proj)
+    A.solve(asm)
+    st = wiring_out.steps(electrical.analyse(proj), proj)
+    txt = "\n".join(st)
+    assert not re.search(r"Route: [^\n]*\[-?\d", txt)                       # no [x, y, z] in a route
+    assert "Route: jack -> along base -> pan_servo" in txt
+    assert "pi GPIO18 (header pin 12) (second conductor to a GND pin, header pin 14)" in txt
+    assert any("**470-1000 uF 10 V electrolytic capacitor**" in x for x in st)
+    assert "servo extension" not in txt                                     # the lead note no longer names a part it does not buy
