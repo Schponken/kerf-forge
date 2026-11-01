@@ -69,7 +69,7 @@ def build(ctx):
     # layer seams (ENGINEERING.md s5); pin, insert and screw features are exempt
     part, left = features.fillet_inside(ctx, part, 0.8, keep=lambda at: (
         "where the knuckle's clearance cut meets the dorsal face across the lap band at the joint axis: OCC cannot "
-        "fillet it (0.8 and 0.4 mm both fail); the pin carries the joint load, FEA use there is under 20 %")
+        "fillet it (0.8 and 0.4 mm both fail); the pin carries the joint load")
         if min(abs(at[0] - j) for j in (0.0,)) < 0.6 and abs(at[2]) > F.H - 0.3 else None)
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(part)

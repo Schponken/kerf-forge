@@ -175,6 +175,22 @@ the distance along the pin from the loaded band to the band that pushes on it) t
 - The FEA peaks (not p99.9) are single-element spikes at sharp re-entrant edges where a groove meets the pocket step;
   they are in the gap face of a band, which a 4-wall print lays down as solid perimeter.
 
+## 8a. Load → section
+| Part | Loads in → out | Moment / torque, where it peaks | Section chosen, and how it changes |
+|---|---|---|---|
+| base | the 222 N rated line load and the fingertip load arrive at the mcp insert bore → body → the two M3 frame screws | the single-shear pin moment at the mcp bore (222 N x 7.1 mm = 1578 N·mm) plus compression | 18 mm deep x 15.6 mm wide block, two-layer lap knuckle (7.6 mm bands), heat-set insert boss |
+| proximal | 15 N at the pip pin held at the mcp pin (hand load), and the 222 N line load compressing it between its pivots | 660 N·mm at the mcp end for the 15 N case; the 1578 N·mm pin moment at each bore for the line case (the governing one, 20.5 of 24 MPa) | 18 x 15.6 mm rectangle less the two 2.2 mm tendon channels (Z ≈ 800 mm³), alternating lap knuckles at both ends, insert boss at the pip end |
+| middle | the 222 N line load between pip and dip | the pin moment at each bore | the same 18 mm section, 25 mm long |
+| distal | 222 N on the flexor or extensor washer seat + 10 N on the pad, held at the dip bore | bending at the dip knuckle; bearing under the washer (12 MPa nominal) | 18 mm deep knuckle tapering to the fingertip pad; washer seats on solid plugs past the channel ends |
+
+## 8c. Detail: radii and corners
+- One fillet language (`style` in project.yaml): r 0.8 on every inside corner (kerf.features.fillet_inside, r 0.4
+  where 0.8 does not fit), 0.5 mm edge chamfers (fingerlib.edge_chamfers).
+- Declared sharp (report.json `sharp_kept`, with the reason): the corners where each knuckle's clearance cut meets
+  the dorsal face across the lap band at a joint axis (no fillet or cove fits there; the pin carries the joint load),
+  and corners under a ceiling as printed (a fillet there would overhang: the parts print on their side with no
+  supports).
+
 ## 8b. Mass budget
 
 | Part | Estimate (4 walls, 40 % infill) |

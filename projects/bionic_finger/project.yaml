@@ -6,6 +6,7 @@ description: >
   on its side with no supports: two-layer lap knuckles alternating sides, round pin holes, pointed-roof channels.
 printer: Bambu Lab A2L
 supports: avoid
+style: {radii: [0.8], edge_break: 0.5}   # 0.8 every inside corner (0.4 where it does not fit); 0.5 edge chamfers
 params:
   L1: {value: 44, unit: "mm", min: 40, max: 48, step: 0.5, label: Proximal segment (mcp axis to pip axis)}
   L2: {value: 25, unit: "mm", min: 22, max: 28, step: 0.5, label: Middle segment (pip axis to dip axis)}
