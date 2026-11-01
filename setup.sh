@@ -2,6 +2,10 @@
 # One-command environment setup. Safe to re-run. Ends with `kerf doctor`, which must print ALL OK.
 set -euo pipefail
 cd "$(dirname "$0")"
+# Mac: first (so a later failing step can't skip it), keep the Kerf Studio app in step with its source; rebuilds it in the background when tools/mac changed
+if [ "$(uname)" = "Darwin" ] && [ -d "$HOME/Applications/Kerf Studio.app" ]; then
+  ./tools/mac/install_app.sh --if-outdated || true
+fi
 command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; export PATH="$HOME/.local/bin:$PATH"; }
 [ -x .venv/bin/python ] || uv venv -q -p 3.12 .venv
 uv pip install -q --python .venv/bin/python -e .
@@ -16,7 +20,3 @@ if ! ls "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"/chromium-* >/dev/null 2>
   (cd tools/render && npx playwright install chromium)
 fi
 .venv/bin/kerf doctor
-# Mac: keep the Kerf Studio app in step with its source; rebuilds it in the background when tools/mac changed
-if [ "$(uname)" = "Darwin" ] && [ -d "$HOME/Applications/Kerf Studio.app" ]; then
-  ./tools/mac/install_app.sh --if-outdated || true
-fi
