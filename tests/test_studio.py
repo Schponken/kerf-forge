@@ -487,3 +487,28 @@ def test_optimise_is_offered_where_the_project_declares_it():
     assert not (studio._yaml(studio.PROJECTS / "servo_link") or {}).get("optimise")
     page = (studio.ASSETS / "studio.html").read_text() if hasattr(studio, "ASSETS") else ""
     assert not page or "run('optimise')" in page
+
+
+def test_failed_build_starts_a_fix_job_once_per_design_state(monkeypatch):
+    from types import SimpleNamespace as NS
+    reports = {"good": {"ok": True}, "bad": {"ok": False, "problems": ["a and b overlap"], "fingerprint": "f1"},
+               "wip": {"ok": False, "problems": ["design in progress"], "stubs": ["hull"], "fingerprint": "f2"}}
+    monkeypatch.setattr(studio, "_report", lambda d: reports.get(d.name))
+    monkeypatch.setattr(studio, "claude_bin", lambda: "/usr/bin/claude")
+    monkeypatch.setattr(studio, "settings", lambda: {"notify": False, "sound": False, "autofix": True})
+    monkeypatch.setattr(studio, "AUTOFIXED", {})
+    started = []
+    monkeypatch.setattr(studio, "fix_job", lambda name: started.append(name) or NS(id="j"))
+    job = lambda name, kind="build": NS(kind=kind, project=name, state="failed")   # noqa: E731
+    assert studio.fixable("good")[0] is False and "being designed" in studio.fixable("wip")[1]
+    for n in ("good", "wip", "bad", "bad"):
+        studio.auto_fix(job(n))
+    assert started == ["bad"]                                  # passed / mid-design: none; the same failure: only once
+    studio.auto_fix(job("bad", kind="edit"))                   # a change request's own build is not re-fixed
+    reports["bad"]["fingerprint"] = "f3"                       # the design changed and failed again: one more try
+    studio.auto_fix(job("bad"))
+    assert started == ["bad", "bad"]
+    monkeypatch.setattr(studio, "settings", lambda: {"autofix": False})
+    reports["bad"]["fingerprint"] = "f4"
+    studio.auto_fix(job("bad"))
+    assert started == ["bad", "bad"]                           # switched off: the Fix button only

@@ -193,9 +193,13 @@ def on_finished(job) -> None:
         notify_job(job)
     except Exception:  # noqa: BLE001 - a notification never breaks a job
         pass
+    try:
+        auto_fix(job)
+    except Exception:  # noqa: BLE001 - starting the fix is best effort; the Fix button stays
+        pass
     if job.state != "done" or job.project in ("*", None):
         return
-    if job.kind == "edit" and (PROJECTS / job.project / "out" / "report.json").exists():
+    if job.kind in ("edit", "fix") and (PROJECTS / job.project / "out" / "report.json").exists():
         snapshot(job.project)            # Claude Code rebuilt it: a version entry, so the change can be compared
         return
     if job.kind not in ("build", "check"):
@@ -203,6 +207,61 @@ def on_finished(job) -> None:
     record_time(job.project, f"mode_{job.mode}" if job.mode else job.kind, (job.ended or time.time()) - job.started)
     if job.kind == "build":
         snapshot(job.project)
+
+
+AUTOFIXED: dict = {}     # project -> fingerprint already handed to an automatic fix (one try per design state)
+
+
+def fixable(name: str) -> tuple[bool, str]:
+    """Whether a fix job makes sense now: the last report failed, the design is not mid-way (placeholder parts), and
+    no fix is already running for it."""
+    rep = _report(PROJECTS / name)
+    if not rep or rep.get("ok"):
+        return False, "the last build passed" if rep else "not built yet"
+    if rep.get("stubs"):
+        return False, "it is still being designed (placeholder parts): the designing session finishes it"
+    if any(j.kind == "fix" and j.project == name and j.state == "running" for j in JOBS.values()):
+        return False, "a fix is already running"
+    return True, ""
+
+
+def fix_job(name: str) -> Job:
+    """Claude Code fixes every problem of the last failed build: the mechanical ones with `kerf fixes --apply`, the
+    rest at their cause, then check, build, review, commit (same rules as a change request)."""
+    ok, why = fixable(name)
+    if not ok:
+        raise ValueError(f"nothing to fix: {why}")
+    ready = claude_ready()
+    if not ready["ok"]:
+        raise ClaudeNotReady(ready)
+    rep = _report(PROJECTS / name) or {}
+    probs = rep.get("problems") or []
+    listing = "\n".join(f"- {p}" for p in probs[:40]) + (f"\n- ... and {len(probs) - 40} more (out/report.json)" if len(probs) > 40 else "")
+    prompt = (f"Kerf Studio: the last build of projects/{name} failed. Spencer clicked Build and wants it FIXED, not reported. "
+              f"Problems:\n{listing}\n\nFollowing CLAUDE.md: first `.venv/bin/kerf fixes {name} --apply` for the mechanical "
+              f"ones; fix every other problem at its cause in the part that owns it (never loosen a check, threshold, catalog "
+              f"value or test); run `.venv/bin/kerf check {name}` until it passes, then `.venv/bin/kerf build {name}`, read the "
+              f"renders, get a design-reviewer pass, append a dated STATUS.md entry, commit and push. Before editing, run "
+              f"`.venv/bin/python tools/claims.py list`: if another session holds this project's claim and pushed in the last "
+              f"90 minutes, stop and say so instead of editing its files. Do not start other PLAN work.")
+    return start_job("fix", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"],
+                     f"Fix {name}: {len(probs)} problem(s)", parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
+
+
+def auto_fix(job) -> Job | None:
+    """A Studio build / check that ends with problems starts a fix job by itself (setting `autofix`, on by default),
+    once per design state, so a failed Build goes straight to fixing instead of a list to read."""
+    if job.kind not in ("build", "check") or job.project in ("*", None) or not settings().get("autofix"):
+        return None
+    rep = _report(PROJECTS / job.project)
+    ok, _ = fixable(job.project)
+    if not ok or not claude_bin():
+        return None
+    fp = (rep or {}).get("fingerprint")
+    if fp and AUTOFIXED.get(job.project) == fp:
+        return None                       # this exact design already had its automatic try: the button is still there
+    AUTOFIXED[job.project] = fp
+    return fix_job(job.project)
 
 
 def restore(name: str, stamp: str) -> list[str]:
@@ -757,7 +816,7 @@ def open_in_app(name: str, what: str) -> dict:
 
 # ---------------------------------------------------------------- settings + notifications
 SETTINGS = ROOT / ".cache" / "studio_settings.json"
-DEFAULT_SETTINGS = {"notify": True, "sound": True}
+DEFAULT_SETTINGS = {"notify": True, "sound": True, "autofix": True}   # autofix: a failed build starts a fix job
 NOTIFY_MIN_S = 20.0          # quick checks finish while you watch: no notification for those
 
 
@@ -788,7 +847,7 @@ def job_outcome(job) -> tuple[bool, str]:
             n = len(rep.get("problems") or [])
             return (not n), (f"every check passes ({took})" if not n else f"{n} problem{'s' if n > 1 else ''} to fix ({took})")
     if job.state == "done":
-        return True, f"finished ({took})" + (": Claude Code is done" if job.kind in ("design", "edit") else "")
+        return True, f"finished ({took})" + (": Claude Code is done" if job.kind in ("design", "edit", "fix") else "")
     return False, f"stopped with an error after {took}"
 
 
@@ -815,7 +874,7 @@ def notify(title: str, message: str, good: bool = True) -> bool:
 def notify_job(job) -> bool:
     """Notify about a finished job that ran long enough to have been left alone, unless switched off or stopped by hand."""
     secs = (job.ended or time.time()) - job.started
-    if not settings()["notify"] or job.state == "stopped" or (secs < NOTIFY_MIN_S and job.kind not in ("design", "edit")):
+    if not settings()["notify"] or job.state == "stopped" or (secs < NOTIFY_MIN_S and job.kind not in ("design", "edit", "fix")):
         return False
     good, line = job_outcome(job)
     return notify(job.label, line, good)
@@ -1251,6 +1310,13 @@ class Handler(BaseHTTPRequestHandler):
                                   kerf_cmd("run", name, "--mode", m, *(["--ship"] if m == "ship" else [])),
                                   f"{MODE_LABEL[m]}: {name}", env=PROGRESS_ENV)
                     j.mode = m
+                elif action == "fix":
+                    try:
+                        j = fix_job(name)
+                    except ClaudeNotReady as e:
+                        return self._json({"error": str(e), "setup": e.ready["code"]}, 409)
+                    except ValueError as e:
+                        return self._err(str(e))
                 elif action == "optimise":
                     j = start_job("check", name, kerf_cmd("optimise", name), f"Optimise {name}", env=PROGRESS_ENV)
                 elif action == "trial":

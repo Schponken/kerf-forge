@@ -1397,3 +1397,12 @@ pushed for it and what I know:
 - 09:05 update: the session that holds the drone was already designing ALL groups (front, pivot, wings, tail; its WIP
   commits 08:4x), so the split would only duplicate it. e3d8373e stopped its two designers, kept the other session's
   files, removed the split sub-items from PLAN and released its half. The drone stays with its owner.
+
+## 2026-11-02 09:25 UTC-5 — Studio: a failed Build goes straight to fixing (Spencer: "fix those problems instead of just telling me")
+- When a Studio build / check ends with problems, the server starts a Claude Code **fix job** by itself (kerf/studio.py
+  auto_fix -> fix_job): `kerf fixes --apply` for the mechanical ones, every other problem fixed at its cause (never by
+  loosening a check), then check, build, review, STATUS, commit, push; the page follows the fix job's progress. One
+  automatic try per design state (fingerprint); not for a design still being built (placeholder parts) or when a fix is
+  already running; the fix prompt stops if another session holds the project. "🔧 Fix these" on the Checks banner
+  starts one by hand; More -> "Auto-fix failed builds: on / off" (setting `autofix`, on by default). Test in
+  tests/test_studio.py.

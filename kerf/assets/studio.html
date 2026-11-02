@@ -469,6 +469,7 @@ function renderProject() {
           <div class="menu" id="moremenu">
             <button onclick="run('check')">✓ Check everything <span class="sub">no files${e.check ? " · " + about(e.check) : ""}</span></button>
             <button onclick="run('quick')">⚡ Quick check <span class="sub">no motion or strength</span></button>
+            <button onclick="toggleAutofix()">🔧 Auto-fix failed builds: ${S.settings.autofix ? "on" : "off"} <span class="sub">Claude Code fixes the problems a build finds, then rebuilds</span></button>
             <hr>
             <button onclick="openIn('plates')" ${plates ? "" : "disabled"}>▦ Open plates in Bambu Studio</button>
             <button onclick="openIn('folder')">📁 Show the files</button>
@@ -600,7 +601,7 @@ function renderResults(el, rep) {
       <div class="stat"><b>${tight}</b><span>with under 20 % margin</span></div>
       <div class="stat"><b>${W.length}</b><span>warnings to read</span></div></div>
     ${(rep.stubs || []).length ? `<div class="banner info">Still being designed: ${rep.stubs.length} part${rep.stubs.length == 1 ? " is a" : "s are"} placeholder${rep.stubs.length == 1 ? "" : "s"} (${esc(rep.stubs.join(", "))}). Collisions with them are expected and hidden until they are modelled; the list below is what is left besides them.</div>` : ""}
-    <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Parts fit, nothing collides at any joint angle, every screw lines up and can be reached, and strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.`}</div>
+    <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Parts fit, nothing collides at any joint angle, every screw lines up and can be reached, and strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.${(rep.stubs || []).length ? "" : ` <button class="primary" style="margin-left:10px" onclick="run('fix')" title="Claude Code fixes every problem at its cause, re-checks, rebuilds and commits">🔧 Fix these</button>`}`}</div>
     ${P.length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Problems</h3><ul class="msgs">${P.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
     <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Engineering requirements</h3>${reqTable(rep.requirements)}</div>
     ${(rep.maker_notes || []).length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">For you, when you build it</h3><ul class="msgs">${rep.maker_notes.map(n => `<li>${esc(n).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")}</li>`).join("")}</ul></div>` : ""}
@@ -814,7 +815,7 @@ function renderMc(j) {
   $("#mcstop").style.display = j.state === "running" ? "" : "none";
   const body = $("#mcbody"), atEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 40;
   let html = "", pct = 0;
-  if (j.kind === "design" || j.kind === "edit") {
+  if (j.kind === "design" || j.kind === "edit" || j.kind === "fix") {
     const tools = S.ev.filter(e => e.k === "tool"), seen = new Set(tools.map(e => e.phase).filter(Boolean));
     const curPhase = [...tools].reverse().find(e => e.phase)?.phase;
     const ci = PHASES.findIndex(p => p[0] === curPhase);
@@ -870,8 +871,9 @@ async function finished(j) {
   if (S.seenDone.has(j.id)) return; S.seenDone.add(j.id);
   const st = stageState(lastProjectEvents(S.ev));
   const ok = j.state === "done" && (!st.fin || st.fin.ok);
-  if (ok) { toast(j.label, j.kind === "design" ? "Claude Code finished the design." : j.kind === "edit" ? "Claude Code made the change." : "Every check passes.", "ok"); burst(); }
-  else { toast(j.label, j.state === "stopped" ? "Stopped." : st.fin ? `${st.fin.problems} problem(s) to fix.` : "Finished with an error; see the log.", "bad");
+  if (ok) { toast(j.label, j.kind === "design" ? "Claude Code finished the design." : j.kind === "edit" ? "Claude Code made the change." : j.kind === "fix" ? "Claude Code fixed it: every check passes." : "Every check passes.", "ok"); burst(); }
+  else { toast(j.label, j.state === "stopped" ? "Stopped." : st.fin ? `${st.fin.problems} problem(s): ${S.settings.autofix && j.kind !== "fix" ? "Claude Code is fixing them now." : "use 🔧 Fix these."}` : "Finished with an error; see the log.", "bad");
+    if (j.kind !== "fix" && S.settings.autofix) setTimeout(followFix, 1500);
     const mc = $("#mc"); mc.classList.add("shake"); setTimeout(() => mc.classList.remove("shake"), 500); }
   if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) { chime(ok); flashTitle(ok ? `✓ ${j.label}` : `✕ ${j.label}`); }
   // done: fold the panel down to its title bar after a moment, so it stops covering the page (click to reopen)
@@ -883,6 +885,14 @@ async function finished(j) {
   await loadProjects();
   if (j.project === S.sel || j.project === "*") await refreshDetail();
   else if (j.kind === "design" && S.projects.some(p => p.name === j.project)) select(j.project);
+}
+async function followFix() {   // the server starts a fix job by itself after a failed build: show it
+  try { const d = await api("/api/jobs"); const f = d.jobs.find(x => x.kind === "fix" && x.state === "running" && x.project === S.sel); if (f) watch(f.id); } catch (e) {}
+}
+async function toggleAutofix() {
+  try { S.settings = await api("/api/settings", {autofix: !S.settings.autofix}); } catch (e) { return toast("Couldn't change it", e.message, "bad"); }
+  toast("Auto-fix " + (S.settings.autofix ? "on" : "off"), S.settings.autofix ? "A failed build goes straight to Claude Code, which fixes the problems, rebuilds and commits." : "A failed build shows its problems; 🔧 Fix these starts the fix.", "ok");
+  refreshDetail();
 }
 async function pollJobs() {
   try {
