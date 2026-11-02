@@ -27,3 +27,14 @@ ZIP. Unlisted files are left out; the original project is never modified.
 The extracted design has no `review.json` or previous build cache. Put it in a Kerf checkout to rebuild it with the
 engine and catalog, then run its checks and obtain its own current review. The existing maker outputs in the ZIP
 remain the saved outputs from the original project; exporting does not rebuild or approve either copy.
+
+## Generated maker files
+
+Selected maker files must be regular files within the project's real `out/` directory. The download refuses
+symlinks in that root, selected folders or their descendants, and refuses special files such as pipes or sockets.
+Unreadable folders fail the download instead of silently omitting their files. The error names the invalid input;
+no partial ZIP is returned. Remove the invalid output and regenerate the expected maker files before retrying.
+
+Missing optional output files/folders remain okay, so a project can still export its design before its first build.
+Valid nested maker paths are preserved; generated `.glb` previews remain excluded. Supplier files and generated
+reports continue to follow Studio's additive output lists.
