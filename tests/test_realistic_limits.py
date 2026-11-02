@@ -62,3 +62,19 @@ def test_misses_say_how_far_off():
     assert probs[0].endswith("[near miss: 5 % short]")
     from kerf import explain
     assert "(Near miss: 5 % short.)" in explain.explain_requirement({**near, "id": "f", "check": "natural_freq", "unit": "Hz"})["why"]
+
+
+def test_infill_lattice_strength_inside_the_walls():
+    from kerf import infill
+    assert infill.lattice_factor(1.0) == 1.0 and abs(infill.lattice_factor(0.25) - 0.0375) < 1e-9   # Ashby 2006 eq. 3.5
+    shape = Box(40, 20, 10)                                          # walls 2 x 0.42 = 0.84 mm shell
+    pts = [[0, 0, 0], [0, 0, 4.8]]                                   # centre (5 mm deep) and just under the top skin
+    d = infill.depth_below_surface(shape, __import__("numpy").array(pts, float))
+    assert abs(d[0] - 5.0) < 0.2 and d[1] < 0.84
+    field = {"c": pts, "vol": [1.0, 1.0], "vm": [2.0, 30.0]}         # inside: 2 MPa; skin: 30 MPa
+    item = NS(id="p", spec={"infill": 0.25, "walls": 2}, shape=shape)
+    r = infill.check(item, [{"field": field, "allow": 20.0}])        # lattice allows 20 x 0.0375 = 0.75 MPa inside
+    assert r["use"] > 2.5 and "100 % infill modifier" in r["warning"]
+    boxed = NS(id="p", spec={"infill": 0.25, "walls": 2, "modifiers": [{"box": [[-5, -5, -5], [5, 5, 5]], "infill": 1.0}]}, shape=shape)
+    assert infill.check(boxed, [{"field": field, "allow": 20.0}])["warning"] == ""
+    assert infill.check(NS(id="s", spec={"infill": 1.0}, shape=shape), [{"field": field, "allow": 20.0}]) is None

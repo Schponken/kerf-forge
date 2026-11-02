@@ -25,6 +25,9 @@ DESIGN.md says why.
 | Thrust-to-weight, multirotor | >= 2.0 to fly; freestyle quad >= 6 |
 
 ## 3b. Strength verification
+- The FEA part is solid plastic; the print is walls + an infill lattice about 0.3 x infill^1.5 as strong (Ashby 2006).
+  Stress deeper than the walls must stay under that (kerf/infill.py, a warning): put 100 % infill modifiers (with a
+  `box`) where the stress runs through the inside, or add walls.
 - Every structural part gets an `fea_static` requirement: fixed where it is bolted (fastener group region), loaded
   where the load enters (joint/seat region), the realistic worst case x the factor in section 3, strength in the
   loaded layer direction. Deflection limits where stiffness matters (arms: tip deflection < 1% of length).

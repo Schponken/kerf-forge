@@ -434,6 +434,16 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 if f:
                     fields.setdefault(f["part"], []).append(f)
             for part, cases in fields.items():
+                if part in rep["parts"] and part in proj.items:          # the inside is infill, not solid (kerf/infill.py)
+                    from . import infill
+                    try:
+                        ic = infill.check(proj.items[part], cases)
+                    except Exception as e:  # noqa: BLE001 - a geometry hiccup here must not hide the FEA results
+                        ic = {"warning": f"{part}: infill strength not checked ({type(e).__name__}: {e})"}
+                    if ic:
+                        rep["parts"][part]["infill_check"] = ic
+                        if ic.get("warning"):
+                            rep["warnings"].append(ic["warning"])
                 s = stressmap.summarize(cases)
                 if s and part in rep["parts"]:
                     rep["parts"][part]["stress"] = s
