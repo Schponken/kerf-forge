@@ -221,6 +221,7 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [ ] Studio Checks tab in plain words (Spencer, 2026-11-02): every problem and failed requirement as a card a non-engineer understands at a glance (which part, what is wrong in one sentence, why it matters, what fixes it; the raw check text folded under "details"), and a work status per card: "being fixed" (a Studio fix / edit job running, or a fresh claim naming the project) or "nobody on it" with the Fix button; rules in a new kerf/explain.py so the CLI and review pack can use them; tests
 
 ## Phase 5 — final audit
+- [ ] Fresh-eyes usability pass (Spencer, 2026-11-02): look at Kerf as a first-time user (README, setup, Kerf Studio every screen at desktop + phone width, viewer, CLI help and error messages, output files) for what is confusing, overwhelming or unintuitive and for likely user mistakes / failure paths (port in use, Claude not signed in, job running, dirty repo, missing build, bad input); fix each with a test, leaving the Checks tab wording, Follow live and Work tab to their claimed items (findings for those go in their sessions' STATUS notes)
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
   - [x] Audit run: three design-reviewer subagents, AUDIT.md written (index + full reports)
