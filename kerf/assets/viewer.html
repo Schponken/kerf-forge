@@ -14,7 +14,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
-header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em}
+header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em;max-width:100%;min-width:0;overflow-wrap:anywhere}
 .pill{font-size:12px;font-weight:650;padding:2px 9px;border-radius:999px}
 .pill.ok{color:var(--good);background:var(--goodbg)}.pill.bad{color:var(--bad);background:var(--badbg)}
 .meta{color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
@@ -41,13 +41,14 @@ h2:first-child{margin-top:0}
 .ctl input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .ctl .sub{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;color:var(--mute);font-size:12px;gap:6px 8px}.ctl .sub span:last-child{display:flex;gap:6px;margin-left:auto}
 .ctl .sub button{padding:1px 8px;font-size:12px}
-.part{display:grid;grid-template-columns:18px 14px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--soft);cursor:pointer}
+.part{display:grid;grid-template-columns:18px 14px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--soft);cursor:pointer}
 .part:hover .pn{color:var(--accent)}
 .sw{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
-.pn{font-weight:600}.pd{color:var(--mute);font-size:12px}
+.pn{font-weight:600;overflow-wrap:anywhere}.pd{color:var(--mute);font-size:12px}
 .tag{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:5px;padding:0 5px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--soft);vertical-align:top}
+td{overflow-wrap:anywhere}
 th{color:var(--mute);font-weight:600;font-size:12px}
 td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .chk{display:grid;grid-template-columns:20px 1fr;gap:6px;padding:6px 0;border-bottom:1px solid var(--soft)}
@@ -62,7 +63,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 #insp .x{border:0;background:none;font-size:18px;line-height:1;padding:0 4px;color:var(--mute)}
 #insp code,#insp pre{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 #insp pre{background:var(--soft);border-radius:6px;padding:7px 9px;margin:6px 0 10px;white-space:pre-wrap;word-break:break-word}
-#insp .loc{display:flex;gap:8px;align-items:center;justify-content:space-between}
+#insp .loc{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#insp .loc code{overflow-wrap:anywhere;min-width:0}
 #insp .prm{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;padding:7px 0;border-top:1px solid var(--soft)}
 #insp .prm .k{font-weight:600}#insp .prm .l{color:var(--mute);font-size:12px;grid-column:1/-1}
 #insp input[type=number]{width:90px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
@@ -199,7 +201,8 @@ const massP = printed.reduce((s, i) => s + ((R.parts || {})[i.id]?.mass_est_g ||
 const massB = Object.values(R.purchased || {}).reduce((s, p) => s + (p.mass_g || 0) * (p.qty || 1), 0);
 // headline mass = the device (printed + bought parts on it); bench items marked off_board are listed apart
 const M = R.mass || {device_g: massP + massB, off_board_g: 0};
-$('meta').textContent = `${printed.length} printed · ${bought.length} purchased · ~${fmt(M.device_g, 0)} g`
+$('meta').textContent = `${printed.length} printed · ${bought.length} purchased · `
+  + (R.preview && !R.mass ? 'weight not calculated yet' : `~${fmt(M.device_g, 0)} g`)
   + (M.off_board_g ? ` (+${fmt(M.off_board_g, 0)} g off the device)` : '') + ` · ${R.printer || ''}`;
 let theme = null;
 $('theme').onclick = () => { theme = (document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; restyle(); };
@@ -392,8 +395,18 @@ function highlight(id, f) {
 }
 async function copy(text, btn) {
   try { await navigator.clipboard.writeText(text); }
-  catch { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  catch {
+    const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch {} finally { t.remove(); }
+    if (!copied) {
+      if (btn) btn.textContent = 'Copy manually';
+      window.prompt('Select and copy this text:', text);
+      return false;
+    }
+  }
   if (btn) { const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = o, 1400); }
+  return true;
 }
 function inspect(id, tri) {
   const box = $('insp');
@@ -504,13 +517,16 @@ function renderParts() {
 function applyVis() { const keepOn = $('keep').classList.contains('on'); for (const [k, g] of groups) g.visible = !hidden.has(k) && (g.userData.it.role !== 'keepout' || keepOn) && asmVisible(k); redraw(); }
 function renderBom() {
   const b = R.bom || [];
-  if (!b.length) { $('bom').innerHTML = '<p class="empty">No parts list in this build.</p>'; return; }
+  if (!b.length) { $('bom').innerHTML = `<p class="empty">${R.preview ? 'The shopping list is still being prepared. Wait for the build to finish, then reopen this file if it has not refreshed.' : 'This file has no shopping list. Use Build kit in Kerf Studio to create the list and print files.'}</p>`; return; }
   const types = [...new Set(b.map(x => x.type))];
-  $('bom').innerHTML = types.map(t => `<h2>${esc(t)}</h2><table><tr><th>Item</th><th>Spec</th><th class="n">Qty</th></tr>${b.filter(x => x.type === t).map(x =>
-    `<tr><td>${esc(x.item)}${x.note ? `<div class="pd">${esc(x.note)}</div>` : ''}</td><td>${esc(x.spec)}</td><td class="n">${esc(x.qty)}</td></tr>`).join('')}</table>`).join('');
+  $('bom').innerHTML = types.map(t => `<h2>${esc(t)}</h2><table><tr><th>Item</th><th class="n">Qty</th><th>Buy</th></tr>${b.filter(x => x.type === t).map(x =>
+    `<tr><td>${esc(x.item)}${x.spec ? (/^[a-z_][\w]*(?:\.[\w]+)+$/i.test(x.spec) ? `<details class="pd"><summary>Part reference</summary>${esc(x.spec)}</details>` : `<div class="pd">${esc(x.spec)}</div>`) : ''}${x.note ? `<div class="pd">${esc(x.note)}</div>` : ''}</td><td class="n">${esc(x.qty)}</td><td>${/^https?:\/\//i.test(x.buy || '') ? `<a href="${esc(x.buy)}" target="_blank" rel="noopener noreferrer">View shop</a>` : '—'}</td></tr>`).join('')}</table>`).join('');
 }
 function renderPrint() {
   const P = R.parts || {}, ids = Object.keys(P);
+  const pl = (R.files || {}).plates || [];
+  if (R.preview) { $('print').innerHTML = '<p class="empty">Print files and settings are still being prepared. Wait for the build to finish before printing; reopen this file if it has not refreshed.</p>'; return; }
+  if (!ids.length && !pl.length) { $('print').innerHTML = '<p class="empty">This file has no print files or settings. Use Build kit in Kerf Studio, then open the finished viewer or the plates folder in the build output.</p>'; return; }
   let h = `<p class="pd">Printer: ${esc(R.printer || '')}. Sizes are in print orientation.</p>`;
   for (const id of ids) {
     const p = P[id];
@@ -528,23 +544,26 @@ function renderPrint() {
     for (const w of p.problems || []) h += `<div class="note bad">${esc(w)}</div>`;
     for (const w of p.warnings || []) h += `<div class="note warn">${esc(w)}</div>`;
   }
-  const pl = (R.files || {}).plates || [];
-  if (pl.length) h += `<h2>Build plates</h2>` + pl.map(x => `<div class="chk"><span class="i ok">${ICON.plate}</span><span>${esc(x.file)}<div class="d">${esc((x.parts || []).join(', '))}</div></span></div>`).join('');
+  if (pl.length) h += `<h2>Build plates</h2><p class="pd">Open a plate in Bambu Studio, select your printer and filament, then slice and review it before sending it to the printer.</p>` + pl.map(x => `<div class="chk"><span class="i ok">${ICON.plate}</span><span><a href="plates/${encodeURIComponent(x.file)}">${esc(x.file)}</a><div class="d">${esc((x.parts || []).join(', '))}</div></span></div>`).join('');
   $('print').innerHTML = h || '<p class="empty">No printed parts.</p>';
 }
 function renderChecks() {
   let h = '';
-  for (const p of R.problems || []) h += `<div class="note bad">${esc(p)}</div>`;
-  for (const w of R.warnings || []) h += `<div class="note warn">${esc(w)}</div>`;
-  const a = R.assembly || {}, line = (ok, t, d) => `<div class="chk"><span class="i ${ok ? 'ok' : 'bad'}">${ok ? ICON.ok : ICON.bad}</span><span>${t}${d ? `<div class="d">${d}</div>` : ''}</span></div>`;
+  const card = (c, cls) => `<div class="note ${cls}"><b>${c.part ? esc(c.part) + ': ' : ''}${esc(c.title)}</b>${c.why ? `<p>${esc(c.why)}</p>` : ''}${c.fix ? `<p>Next step: ${esc(c.fix)}</p>` : ''}<details><summary>Technical details</summary><div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(c.detail)}</div></details></div>`;
+  if (R.problem_cards?.length) h += R.problem_cards.map(c => card(c, 'bad')).join('');
+  else for (const p of R.problems || []) h += `<div class="note bad">${esc(p)}</div>`;
+  if (R.design_notes?.length) h += R.design_notes.map(c => card(c, 'warn')).join('');
+  else for (const w of R.warnings || []) h += `<div class="note warn">${esc(w)}</div>`;
+  if (R.preview) { $('checks').innerHTML = '<p class="empty">Checks are still running. This preview does not prove that the parts fit or are safe to print. Wait for the finished build; reopen this file if it has not refreshed.</p>' + h; return; }
+  const a = R.assembly || {}, line = (ok, t, d) => `<div class="chk"><span class="i ${ok == null ? '' : ok ? 'ok' : 'bad'}">${ok == null ? '—' : ok ? ICON.ok : ICON.bad}</span><span>${t}${d ? `<div class="d">${d}</div>` : ''}</span></div>`;
   h += '<h2>Assembly</h2>';
   h += line(!(a.interference || []).length, 'No parts overlap', (a.interference || []).map(i => `${esc(i.a)} / ${esc(i.b)}: ${fmt(i.volume_mm3)} mm³`).join('<br>'));
   h += line(true, `${(a.fasteners || []).length} screws line up through both parts`, [...new Set((a.fasteners || []).map(f => `${f.screw}×${f.length_mm} (${f.group})`))].map(esc).join(' · '));
-  for (const s of a.sweeps || []) h += line(s.clear, s.range ? `Joint ${esc(s.joint)} moves ${fmt(s.range[0])} to ${fmt(s.range[1])} without hitting anything`
-      : `Combined motion "${esc(s.joint)}" (${(s.poses || []).length || s.samples || "all"} poses) without hitting anything`,   // coupled-pose sweeps have no single range
+  for (const s of a.sweeps || []) h += line(s.clear, s.range ? `Joint ${esc(s.joint)} ${s.clear ? 'moves' : 'collides while moving'} ${fmt(s.range[0])} to ${fmt(s.range[1])}${s.clear ? ' without hitting anything' : ''}`
+      : `Combined motion "${esc(s.joint)}" (${(s.poses || []).length || s.samples || "all"} poses) ${s.clear ? 'without hitting anything' : 'has a collision'}`,   // coupled-pose sweeps have no single range
     s.clear ? `${s.samples || (s.poses || []).length} poses checked` : esc(JSON.stringify((s.collisions || [])[0])));
   h += '<h2>Engineering requirements</h2>';
-  for (const r of R.requirements || []) h += line(r.ok, r.value == null ? `${esc(r.id)}: did not run` : `${esc(r.id)}: ${fmt(r.value, 2)}${r.unit ? ' ' + esc(r.unit) : ''} (${esc(r.bound || 'limit')} ${Array.isArray(r.limit) ? r.limit.map(x => fmt(x, 2)).join('–') : fmt(r.limit, 2)})`, esc(r.value == null ? r.detail : (r.why || r.detail)));
+  for (const r of R.requirements || []) h += line(r.skipped ? null : r.ok, r.skipped ? `${esc(r.id)}: not checked in this run` : r.value == null ? `${esc(r.id)}: did not run` : `${esc(r.id)}: ${fmt(r.value, 2)}${r.unit ? ' ' + esc(r.unit) : ''} (${esc(r.bound || 'limit')} ${Array.isArray(r.limit) ? r.limit.map(x => fmt(x, 2)).join('–') : fmt(r.limit, 2)})`, esc(r.value == null ? r.detail : (r.why || r.detail)));
   if (!(R.requirements || []).length) h += '<p class="empty">None declared.</p>';
   $('checks').innerHTML = h;
 }

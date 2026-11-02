@@ -147,8 +147,11 @@ def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None 
         if iid in stress:
             out_items[-1]["stress"] = _stress_on(v, stress[iid])
     keep = ("project", "dir", "fingerprint", "printer", "params", "parts", "purchased", "requirements", "problems",
-            "warnings", "bom", "files", "seconds")
+            "warnings", "bom", "files", "seconds", "mass")
     rp = {k: rep.get(k) for k in keep}
+    from . import explain
+    rp["problem_cards"] = explain.cards(rep, items)
+    rp["design_notes"] = [explain.explain(w, items) for w in rep.get("warnings") or []]
     a = rep.get("assembly") or {}
     rp["assembly"] = {k: a.get(k) for k in ("interference", "fasteners", "sweeps")}
     rp["ok"] = not rep.get("problems")
