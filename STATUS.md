@@ -532,7 +532,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   after mtime-only changes, budget/lock races, lost acknowledgements, stale leases, later main changes, child
   failure and cancellation injected at publication/spawn boundaries. Doctor ALL OK using existing dependencies.
   The index regression found Git diff refreshing stat metadata: conflict detection now uses read-only ls-files;
-  that shared fix is also being folded into the prerequisite claims PR.
+  that shared fix is also included in the prerequisite claims PR.
 - No actual kerf verify, full batch, stress solve, project geometry, catalog, threshold, hardware or review.json
-  was run/changed. The owner's full-batch hold remains in place. Stacked on the shared-claims PR; final base
-  compatibility integration and manager review remain before merge.
+  was run/changed. The owner's full-batch hold remains in place. Integrated the reviewed shared-claims PR base
+  (3a6d668), preserving both STATUS histories; 18 affected merge-edge tests passed in 15.80 s. These selections
+  overlap rather than forming a unique total. Independent parent review found no remaining issue; manager review
+  remains before merge.
