@@ -15,7 +15,7 @@ Frame: X aft from the wing root leading edge at the centreline, Y right, Z up; w
 ## How it works (plain words)
 
 Each wing half is one rigid panel that pivots about a vertical steel pin at the corner where its root meets its
-trailing edge. A servo inside the fuselage turns it through a printed 2:1 gear. Swept straight out (0 deg) the drone
+trailing edge. A servo inside the fuselage turns it through a printed 21:13 gear. Swept straight out (0 deg) the drone
 is a normal efficient high-aspect-ratio plane for long, slow, stable flight. Swept back 70 deg the panels lie back
 along the fuselage like a stooping hawk's wings: the span drops from 1.1 m to ~0.64 m, the lift slope drops ~75 %,
 the aerodynamic centre moves far aft and the drone becomes a stable dart that dives fast and shrugs off gusts.
@@ -93,11 +93,46 @@ reach CL 0.15 (1 g at ~95 km/h) - that limit is the `max` of `sm_folded`.
 
 ## Purchased parts and sizing
 
-(filled after research: see REFERENCES.md)
+| Item | Catalog | Why / sizing |
+|---|---|---|
+| Motor | drone.motors.2806_5_1300kv_7in | reused from fpv_wing (sourced test report). On 4S the report's 60-70 % throttle rows are the nearest published points: HQ 7x4x3 1147-1438 g at 13.9-19.2 A (REFERENCES.md, derived); the `twr` check scales the 23.4 V figure to the pack voltage instead |
+| Prop | drone.props.hq_7x4x3 | the prop iFlight tested this motor with; no sourced folding-prop thrust figure exists for this class (REFERENCES.md), so the belly-landing prop strike is an accepted risk (below) |
+| Battery | drone.batteries.4S_1500 | 164 g; flight time below |
+| ESC | drone.escs.skywalker_40a_v2 | 40 A cont. / 60 A, 3-4S, 36 g (the 60A V2 is 68 g); its 5 V 5 A BEC powers only the two sweep servos (2 x 2.5 A stall = 5 A) |
+| FC | drone.fcs.f405_wmo | INAV wing / plane FC: 90 A current sensor on the main feed, Vx BEC 4.5 A (7 A peak) jumpered to 6 V for the four surface servos, 5 V 2 A for receiver + GPS; 10 PWM outputs (motor + 6 servos) |
+| Receiver | electronics.receivers.elrs_nano | CRSF |
+| GPS | drone.gps.m9n_5883 | UAV functions: return-to-home, loiter, position hold; on the spine top, far from the ESC and motor leads |
+| Sweep servos | servos.MG996R x 2 + servo_horns.aluminum_25T | sized against the panel's air load (below): 9.4 kg cm stall at 4.8 V through the 21:13 gear (1.615:1) = 15.2 kg cm at the panel, 50 % = 7.6 kg cm. The MG90S first chosen (13 g) would only give 3.6 kg cm at stall through 2:1 and be back-driven at partial sweep in a 4 g pull |
+| Surface servos | servos.KST_X08_Plus x 4 | ailerons (in the panels), elevator and rudder (in the tail mount): 3.85 kg cm at 6 V, 8 mm thick, as on fpv_wing |
+| Spars | rods.cf_tube_8x6 (main), rods.cf_tube_6x4 (rear) | `main_len` / `rear_len` from the layout; spar_bending |
+| Boom | rods.cf_tube_8x6, `boom_len` | tail loads: hand check below |
+| Pivot pins | rods.ss_rod_4, 50 mm | pressed in the deck and spine arm, free in the hub boss (kerf/pins.py proves the stack) |
+
+**Sweep actuator sizing** (`fold_moment_*`, REFERENCES.md formula 8). The pivot axis is normal to the panel's chord
+plane, so lift makes no moment about it. What the servo holds is the panel's force along the flight direction times
+its sideways arm, worst over 0-70 deg (the check integrates it strip by strip over the real panel):
+- *Pull at partial sweep*: a 4 g pull at the manoeuvring speed (83 km/h, q 324 Pa, CL 0.74, alpha ~9.5 deg) turns the
+  panel's chordwise force forward (leading-edge suction): c_a = cd cos(a) - cl sin(a) = 0.053 x 0.986 - 0.74 x 0.165
+  = -0.070 (cd = 0.020 profile, MH 45 polar at Re 200 000, + 0.033 induced = CL^2 / (pi 0.8 x 6.67)). Plus pivot
+  friction: root moment 4 g x 10.8 N / 2 x 0.22 m = 4.75 N m over the 43 mm plate spacing = 110 N per plate, x 2 x
+  mu 0.27 (PETG on steel) x 2 mm pin radius = 0.12 N m.
+- *Opening the folded wing in a fast dive*: 140 km/h (q 926 Pa), CL 0.05, cd 0.015 (aft: resists opening) + 0.03 N m
+  friction.
+At full spread the forward pull presses the panel onto its 0 deg stop, and folded the drag presses it onto the 70 deg
+stop: only moving or holding in between loads the servo.
+
+**Cruise power and flight time** (`flight_time`, electrical.cruise): P = W V / (L/D) / eta at 50 km/h with L/D 8
+(clean 1.1 m, A 6.7 wing; profile + induced at CL 0.5 gives ~12 for the wing alone, fuselage, boom and tail taken as
+a third more drag) and eta 0.45 (a 7 in 3-blade FPV prop on a 2806.5 is a high-pitch-speed set-up, inefficient at
+50 km/h).
 
 ## Electrical system
 
-(filled after research)
+Power tree: battery (4S 1500, XT60) -> FC BAT pads (current sensor) -> FC ESC pads -> ESC -> motor; ESC BEC 5 V ->
+sweep servos (both); FC Vx BEC (6 V jumper) -> 4 KST surface servos; FC 4V5 -> receiver, GPS. Wire gauges from the
+peak currents (`power` check, docs/ENGINEERING.md 10b). Servo leads to the wings run through the hub's channel and
+leave it beside the pivot boss, so they bend only ~13 mm over the full fold; the tail servos' leads run along the
+boom under heat-shrink.
 
 ## Load -> section
 
@@ -122,7 +157,7 @@ reach CL 0.15 (1 g at ~95 km/h) - that limit is the `max` of `sm_folded`.
 | hatch | PLA 2 walls | upside down | lid over the forward bay |
 | motor_mount | PETG 4 walls | flat (standing on its aft face) | 2806.5 pattern, 4 M3 to the fuselage nose |
 | hub_r / hub_l | CF-PETG 4 walls 40 % | flat on its lower side (boss vertical) | root block + boss + gear sector + spar sockets + stop lug |
-| pinion_r / pinion_l | PETG 100 % | flat | 14 T m1.5 gear on the aluminium micro horn |
+| pinion_r / pinion_l | PETG 100 % | flat | 13 T module-2 gear on the aluminium 25T horn |
 | wing_r1/l1, wing_r2/l2 | PLA 1 wall 3 % | standing on the root / joint face | thin-wall skins on the tubes (as fpv_wing) |
 | ail_r / ail_l | PLA 1 wall 5 % | standing on the inner end | tape hinge, horn |
 | tail_mount | PETG 4 walls | standing on its front face | boom sleeve, servo pockets, stab and fin seats |
@@ -136,20 +171,25 @@ main_*/rear_* tube ends, boom_len ...). Do not hard-code what layout gives.
 
 ### Pivot system (aft_fuse, spine, hub_r/l, pinion_r/l) - one designer
 
-- Pivot axis per side: `L.pivot_axis(p, s)` at (pivot_x 200, s*pivot_y 28), vertical. Stack along it: deck z -30.5..-24.5,
+- Pivot axis per side: `L.pivot_axis(p, s)` at (pivot_x 200, s*pivot_y 26), vertical. Stack along it: deck z -30.5..-24.5,
   0.5 gap, hub boss z -24..13, 0.5 gap, spine arm z 13.5..19.5 = 50 mm = the stocked 4 mm stainless rod
   (`rods.ss_rod_4`). `iface.pin_hole(ctx, "rods.ss_rod_4", loc, group="pivot_r"/"pivot_l", depth, fit)`: deck
   `press` (loc on the deck top, +Z up), hub boss `free` (loc on the boss top, +Z up, depth = boss height), spine arm
   `press` (loc on the arm top face z 19.5, +Z up, depth 6).
-- Gears: `L.gears()` returns (pinion, sector gear) already phased: pinion at (pinion_x, s*pivot_y, L.PINION_Z0 = -24),
-  10 mm wide; sector gear centred on the pivot axis at z L.SECTOR_Z0 = -23, 8 mm wide. Keep the sector's teeth over the
-  arc the pinion meets during the sweep (right hub: angles 160..270 deg measured from +X counter-clockwise seen from
-  above at home; left hub: mirror) plus the web back to the boss; cut the rest away. The pinion is bolted to the
-  aluminium micro horn: `iface.horn_mount(ctx, "servo_horns.aluminum_micro_21T", loc, group="pinion_r"/"pinion_l",
+- Gears: `L.gears()` returns (pinion, sector gear) already phased: module 2, 13 T pinion at (pinion_x, s*pivot_y,
+  L.PINION_Z0 = -24), 11 mm wide; 21 T sector gear centred on the pivot axis at z L.SECTOR_Z0 = -23.5, 10 mm wide
+  (centre distance 34). Teeth over hub angles ~157.5..272.5 deg (right hub, from +X counter-clockwise seen from above;
+  left: mirror) plus the web back to the boss. Hub angle a sits at world angle a - fold, so the sector's swept
+  envelope is the 87.5..272.5 deg arc at r 23: that is why the aft fuselage is 104 mm wide at the pivots and the
+  pivots sit at y +-26 (the two sectors are 6 mm apart at home and turn away from each other).
+- Stops: kerf's hard_stop measures the fold joint's parent (aft_fuse) against its child (hub), so both stop faces are
+  posts on the aft fuselage deck that the sector's two radial end faces meet: just past 0 deg (spread) and just past
+  70 deg (folded). The pinion is bolted to the
+  aluminium 25T horn: `iface.horn_mount(ctx, "servo_horns.aluminum_25T", loc, group="pinion_r"/"pinion_l",
   plate_t)` with loc on the pinion's top face (z -14) +Z up; child joint `horn` at the horn face (z -24) on the
   pinion axis. The coupling is in project.yaml sweeps (right ratio +2, left -2): checked tooth-clear at 0/10/23/35/70.
-- Sweep servos (MG90S, output up, output end aft): `L.sweep_servo_loc(p, s)` is the servo's `tabs` frame; the
-  aft_fuse declares rigid joints `sweep_servo_r/l` there and cuts `iface.servo_mount(ctx, "servos.MG90S", loc,
+- Sweep servos (MG996R, output up, output end aft; in top-first from below the plate, `tab_screws_from: bottom`): `L.sweep_servo_loc(p, s)` is the servo's `tabs` frame; the
+  aft_fuse declares rigid joints `sweep_servo_r/l` there and cuts `iface.servo_mount(ctx, "servos.MG996R", loc,
   group="sweep_servo_r"/"..._l", plate_t, kind="heatset" or "tap")` (servo drops in from above, tabs on a shelf).
 - aft_fuse: outer skin lofted through `L.fuse_stations(p)` from x = fuse_joint_x to fuse_x1 (section at the joint =
   `L.section_face(p, fuse_joint_x)`, shared with fwd_fuse), 4 perimeters; top open between ~x 100 and 218 for the
@@ -165,9 +205,6 @@ main_*/rear_* tube ends, boom_len ...). Do not hard-code what layout gives.
   joint `gps` on it at x ~150); arms at z 13.5..19.5 from the ridge over each pin (pin bosses r ~8 round the pin). The
   arms must stay within ~20 mm of the pivot axis and above z 13.5: the hub's upper surface rises to z 15 further out.
   Bolted to the aft fuselage rim with >= 4 M3 (group `spine`).
-- Stops (`hard_stop` both ends): the hub carries a stop lug; spread stop: no forward sweep past 0 deg; fold stop at
-  fold_max (70). Suggested: a lug on the boss's aft side (pointing +X at home, z 0..13) hitting faces on the ridge /
-  arm at -1 deg and at 71 deg; place it where the folded wing's air load (pushes aft) presses it onto the stop.
 - hub_r / hub_l (CF-PETG): the panel's root block from y = pivot_y to hub_y1 (the `L.planform` airfoil, built with
   `aero.wing_solid`, same section as wing_*1 at y = hub_y1 so the skins meet flush) made into a strong closed box,
   plus the boss column (r 10, z boss_z0..boss_z1) on the pivot axis, the sector below the wing, spar sockets
@@ -219,8 +256,8 @@ base frame (+Z forward, -X world).
 | aft_fuse - fwd_fuse | 4 M3 from inside fwd_fuse into heat-set inserts in aft_fuse's front bulkhead | fuse_joint |
 | aft_fuse - spine | >= 4 M3 into heat-set inserts in the aft fuselage rim | spine |
 | aft_fuse / spine - hub | 4 mm stainless pin pressed in deck + spine arm, free in the boss | pivot_r / pivot_l |
-| aft_fuse - sweep servo | MG90S tabs, 2 M2 | sweep_servo_r / sweep_servo_l |
-| horn - pinion | 4 M2 through the pinion into the aluminium micro horn | pinion_r / pinion_l |
+| aft_fuse - sweep servo | MG996R tabs, 4 M3 from below | sweep_servo_r / sweep_servo_l |
+| horn - pinion | 4 M3 through the pinion into the aluminium 25T horn | pinion_r / pinion_l |
 | hub - spar tubes | blind sockets, epoxy | - |
 | hub - wing_x1 - wing_x2 | glued faces + tubes | - |
 | wing_x2 - aileron | bottom tape hinge, pushrod | joint ail_r / ail_l |
@@ -236,7 +273,7 @@ base frame (+Z forward, -X world).
 aft_fuse (root) -> fwd_fuse (-> hatch, motor_mount -> motor -> prop, battery, xt60, esc, fc, receiver), spine (-> gps),
 boom, tail_mount (-> hstab -> elevator, fin -> rudder, elev_servo, rud_servo), sweep servos -> horns -> pinions,
 **fold_r / fold_l** (0..70 deg) -> hub -> wing_x1 -> wing_x2 -> aileron (+-20), aileron servo, spar tubes.
-Couplings: sweep_srv_r = +2 x fold_r, sweep_srv_l = -2 x fold_l (the 2:1 gear).
+Couplings: sweep_srv_r = +1.6154 x fold_r, sweep_srv_l = -1.6154 x fold_l (the 21:13 gear; 70 deg of fold = 113 deg of the MG996R's 120 deg standard travel).
 
 ## Assembly order
 

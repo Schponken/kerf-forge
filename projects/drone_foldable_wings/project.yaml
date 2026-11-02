@@ -13,7 +13,7 @@ params:
   wing_tip_chord: {value: 120, unit: mm, min: 100, max: 140, step: 5, label: Tip chord}
   wing_sweep_le_deg: {value: 9.3, unit: "°", min: 0, max: 15, step: 0.1, label: Leading-edge sweep (spread; 9.3 = straight trailing edge)}
   wing_twist_tip_deg: {value: -2.0, unit: "°", min: -4, max: 0, step: 0.5, label: Washout at the tip (nose down)}
-  pivot_y: {value: 32, unit: mm, min: 24, max: 40, step: 1, label: Sweep pivot off the centreline (panel root station)}
+  pivot_y: {value: 26, unit: mm, min: 24, max: 40, step: 1, label: Sweep pivot off the centreline (panel root station)}
   pivot_back: {value: 10, unit: mm, min: 6, max: 20, step: 1, label: Sweep pivot ahead of the root trailing edge}
   fold_max: {value: 70, unit: "°", min: 50, max: 75, step: 1, label: Full fold (sweep back)}
   hub_y1: {value: 90, unit: mm, min: 70, max: 110, step: 5, label: Root hub outer face (inner skin segment starts here)}
@@ -51,7 +51,7 @@ params:
   fuse_top: {value: -10, unit: mm, min: -14, max: -9, step: 0.5, label: Fuselage top under the wing roots}
   fuse_bottom: {value: -74, unit: mm, min: -80, max: -66, step: 1, label: Fuselage bottom}
   fuse_hw: {value: 31, unit: mm, min: 28, max: 36, step: 1, label: Forward fuselage half width}
-  fuse_hw_wing: {value: 48, unit: mm, min: 44, max: 54, step: 1, label: Aft fuselage half width at the pivots}
+  fuse_hw_wing: {value: 52, unit: mm, min: 48, max: 58, step: 1, label: Aft fuselage half width at the pivots}
   motor_z: {value: -40, unit: mm, min: -48, max: -30, step: 1, label: Motor (thrust line) height}
   bat_x: {value: -150, unit: mm, min: -160, max: -60, step: 1, label: Battery centre x (sets the CG)}
 parts:
@@ -116,8 +116,8 @@ assembly:
     - {parent: aft_fuse.pivot_l, child: hub_l.pivot, name: fold_l, range: [0, 70], home: 0}
     - {parent: aft_fuse.sweep_servo_r, child: sweep_servo_r.tabs}
     - {parent: aft_fuse.sweep_servo_l, child: sweep_servo_l.tabs}
-    - {parent: sweep_servo_r.output, child: sweep_horn_r.spline, name: sweep_srv_r, range: [0, 112], home: 0}
-    - {parent: sweep_servo_l.output, child: sweep_horn_l.spline, name: sweep_srv_l, range: [-112, 0], home: 0}
+    - {parent: sweep_servo_r.output, child: sweep_horn_r.spline, name: sweep_srv_r, range: [0, 113.1], home: 0}
+    - {parent: sweep_servo_l.output, child: sweep_horn_l.spline, name: sweep_srv_l, range: [-113.1, 0], home: 0}
     - {parent: sweep_horn_r.face, child: pinion_r.horn}
     - {parent: sweep_horn_l.face, child: pinion_l.horn}
     - {parent: hub_r.wing, child: wing_r1.root}
@@ -153,8 +153,8 @@ assembly:
   sweeps:
     - {joint: fold_r, samples: 15}
     - {joint: fold_l, samples: 15}
-    - {joint: sweep_srv_r, follows: fold_r, ratio: 1.6}
-    - {joint: sweep_srv_l, follows: fold_l, ratio: -1.6}
+    - {joint: sweep_srv_r, follows: fold_r, ratio: 1.6154}
+    - {joint: sweep_srv_l, follows: fold_l, ratio: -1.6154}
     - {joint: ail_r, samples: 7}
     - {joint: ail_l, samples: 7}
     - {joint: elevator, samples: 7}

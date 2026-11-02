@@ -27,7 +27,7 @@ MOTOR = "drone.motors.2806_5_1300kv_7in"
 BATTERY = "drone.batteries.4S_1500"
 TE_MIN = 1.0                  # printed trailing edge: two perimeters + margin
 
-GEAR_M, Z_PINION, Z_SECTOR, GEAR_W = 2.0, 15, 24, 8.0      # 1.6:1 servo -> wing: 70 deg fold = 112 deg of the 120 deg standard travel
+GEAR_M, Z_PINION, Z_SECTOR, GEAR_W = 2.0, 13, 21, 10.0     # 1.615:1 servo -> wing: 70 deg fold = 113 deg of the 120 deg standard travel
 PIN_L = 50.0                  # stocked 4 mm rod length (catalog rods.ss_rod_4 lengths)
 PLATE_T = 6.0                 # deck and spine arm thickness at the pin
 GAP = 0.5                     # axial running clearance each end of the boss (ENGINEERING s8)
@@ -97,8 +97,8 @@ def pivot(p, side):
 
 # ---------------------------------------------------------------- joint frames shared by parent and child parts
 PINION_Z0 = -24.0             # pinion bottom = horn face (the horn's outer face carries the pinion)
-PINION_W = 10.0               # pinion is wider than the sector so the mesh keeps full width over the backlash
-SECTOR_Z0 = -23.0             # sector band z0..z0+GEAR_W on the hub boss
+PINION_W = 11.0               # pinion is wider than the sector so the mesh keeps full width over the backlash
+SECTOR_Z0 = -23.5             # sector band z0..z0+GEAR_W on the hub boss (top 1.5 mm under the spine cover)
 
 
 def pivot_axis(p, side):
