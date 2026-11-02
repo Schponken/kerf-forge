@@ -421,3 +421,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 22:05 UTC - Kerf manager
 - Merged PR #11 (scenario options; tests/test_scenario.py pass). test_studio's progress-order
   test already fails on main; PR #4 fixes it once rebased.
+
+## 2026-11-02 22:30 UTC - Stress simulations paused (Spencer: "pause all the stress simulations, we will work on that later")
+- PAUSED.json at the repo root switches off every FEA-backed check (fea_static, impact_fea, stop_impact,
+  natural_freq, drop_impact, weak_link: kerf/requirements.py STRESS_SIMS). They show "PAUSED (stress simulations
+  off)", value NOT RUN, and the report warns "strength unproven" - never a pass value. KERF_STRESS=1 runs them once;
+  delete the key to resume. Analytic strength checks (cantilever_stress, spar/gear bending) still run.
+- PLAN: the 4 FEA items (arm_resonance, impact_fea/stop_impact, arm_breaks_first, creep/flex_strain) are marked
+  "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
+- Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
+  tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.

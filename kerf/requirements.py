@@ -5,6 +5,10 @@ Add new checks with @check("name"). Keep them physics-based and documented in do
 """
 from __future__ import annotations
 
+import json
+import os
+from pathlib import Path
+
 import numpy as np
 from build123d import CenterOf
 
@@ -864,11 +868,36 @@ STRENGTH_CHECKS = {"fea_static", "impact_fea", "cantilever_stress", "stop_impact
                    "planetary_bending", "worm_drive", "flex_strain", "creep_limit", "weak_link", "drop_impact", "impact_case"}
 
 
+# Stress simulations: every check that meshes a part and runs the FEA solver (directly or through fea_static).
+STRESS_SIMS = {"fea_static", "impact_fea", "stop_impact", "natural_freq", "drop_impact", "weak_link"}
+PAUSE_FILE = Path(__file__).resolve().parent.parent / "PAUSED.json"
+
+
+def stress_paused() -> str:
+    """Why stress simulations are paused ('' = they run). Spencer, 2026-11-02: "pause all the stress simulations, we
+    will work on that later". Switch: PAUSED.json {"stress_sims": "<reason>"} at the repo root; delete the key (or
+    set KERF_STRESS=1 for one run) to run them. A paused check is reported as NOT RUN, never as a pass."""
+    if os.environ.get("KERF_STRESS") == "1":
+        return ""
+    try:
+        return str(json.loads(PAUSE_FILE.read_text(encoding="utf-8")).get("stress_sims") or "")
+    except Exception:  # noqa: BLE001 - no file: nothing paused
+        return ""
+
+
 def _run_one(proj, asm, req, quick):
     out = []
     kw = {k: v for k, v in req.items() if k not in ("check", "why", "id", "advisory")}
     name = req["check"]
     rid = req.get("id", name)
+    if name in STRESS_SIMS and (why := stress_paused()):
+        unit, bound = UNITS.get(name, ("", "limit"))
+        out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, "ok": True,
+                    "skipped": True, "paused": True, "value": None, "limit": None,
+                    "detail": f"NOT RUN: stress simulations are paused ({why}); strength is unproven until they run"})
+        from . import progress
+        progress.emit("req", id=rid, check=name, ok=True, value=None, limit=None, skipped=True)
+        return out[-1]
     if quick and name in SLOW:
         unit, bound = UNITS.get(name, ("", "limit"))
         out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, "ok": True, "skipped": True,
