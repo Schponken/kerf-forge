@@ -286,3 +286,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Done: near-miss scale on failed requirements (`requirements.miss_scale`: near miss <= 5 %, close <= 20 %, far off); kerf/infill.py (stress deeper than the walls vs the infill lattice, 0.3 x infill^1.5, Ashby 2006; warning; modifiers may carry a `box`); impact_fea `bumper:` (Gent & Lindley pad stiffness, no credit past 20 % squash, Gallagher 95A).
 - Reviewed, unchanged: natural_freq already checks the hover rotor and blade-pass rates against a cited 20 % separation; use-story checks only run for listed hazards; thrust already scales test voltage to the pack.
 - servo_link's arm now warns on infill strength (3 % of its volume over the lattice limit near [6.7, -8.1, 4.3]): a boxed 100 % infill modifier or more walls; left for the project's owner.
+
+## 2026-11-02 16:20 UTC-5 — Firmware proven + Electronics as a real circuit checked off (Claude, Spencer's session)
+- Code was pushed 2026-11-01 (44df72e firmware, b846908 circuit); this pass verified it on the current tree (batched
+  testing: targeted tests only). `pytest tests/test_fwcheck.py tests/test_firmware.py tests/test_circuit.py
+  tests/test_electrical.py`: all pass with the real toolchain (arduino-cli 1.3.1 + arduino:avr 1.8.6 + simavr; 26 in
+  fwcheck+circuit, incl. the broken-sketch FAIL test and schematic PDF). `kerf firmware-check robot_arm`: PASS, Nano +
+  PCA9685, 11210 B flash, every joint's simulated sweep inside its range (e.g. grip ch4 -32.4..31.8 of +/-32.5 deg).
+- Note: without arduino-cli + core installed (e.g. the Codex sandbox) the real-toolchain tests skip and
+  firmware-check says NOT RUN, never PASS. Both items are in the next batched full run.
