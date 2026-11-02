@@ -90,6 +90,10 @@ git clone https://github.com/Schponken/kerf-forge ~/kerf-forge 2>/dev/null || gi
 - **Open plates in Bambu Studio** and **Show files** (Finder).
 - **New design**: describe it in plain words; Claude Code (`claude`, installed and signed in on the Mac) runs the
   full /kerf workflow in the repo and its progress streams into the Activity panel.
+  Start with **I have a problem to solve** when you haven't chosen a device: describe success, priorities and effort,
+  then compare buying, adapting an existing design and building. Options show sources, risks, hands-on effort and
+  known or unknown estimates. Answer any open questions and compare again before starting a design. Buy-only options
+  show research links and next steps; Studio does not place orders. [Scenario comparison details](docs/SCENARIOS.md).
 
 One click opens it: the Dock icon starts the local server if needed (pulling updates first and re-running setup only when dependencies changed) and opens its window. Closing the window, or the ⏻ button, shuts it down; it waits for a running job (asks first on ⏻). The server only listens on 127.0.0.1 (your computer). Log: ~/Library/Logs/KerfStudio.log.
 

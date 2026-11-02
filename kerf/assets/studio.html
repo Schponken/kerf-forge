@@ -37,6 +37,15 @@ button.upgrade{border-color:var(--accent)}
 .intake{margin-top:12px}.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:10px 0}
 .igrid label,.intake>label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
 .qopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.qopt.rec{border-color:var(--accent)}
+.scenario-fields{display:grid;gap:12px;margin:16px 0}.scenario-fields[hidden]{display:none}
+.scenario-fields label,.request-kind{display:grid;gap:5px;color:var(--muted);font-size:12.5px}
+.request-kind{margin-bottom:14px}.request-kind select{max-width:400px}
+.qopt{min-width:0;overflow-wrap:anywhere}.qopt dl{margin:16px 0}.qopt dt{font-weight:650;margin-top:12px}
+.qopt .chip.ok{color:var(--ink)}
+.qopt dd{margin:3px 0 0;color:var(--muted)}.qopt h4{font-size:13px;margin:16px 0 6px}
+.qopt ul{padding-left:18px;margin:6px 0 16px}.qopt li+li{margin-top:8px}.qopt .source-note{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
+.qopt details{margin:16px 0}.qopt summary{cursor:pointer}.qopt .route{margin:4px 0 0;color:var(--muted);font-size:13px}
+@media(max-width:560px){.qopts{grid-template-columns:minmax(0,1fr)}}
 #partsbtn{display:none}
 .param .affects{margin-top:2px;opacity:.85}
 button:active{transform:scale(.97)}
@@ -253,7 +262,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 /* new design */
 .new{max-width:840px}
 .examples{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 16px}
-.examples button{font-size:12.5px;padding:5px 11px;border-radius:999px}
+.examples button{font-size:12.5px;padding:5px 11px;border-radius:999px;white-space:normal;text-align:left;max-width:100%}
 .row{display:flex;gap:10px;align-items:center}
 .howit{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
 .howit div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12.5px;color:var(--muted);animation:fadeUp .4s both}
@@ -1295,16 +1304,23 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
-  S.newOpen = true; S.sel = null; S.grid = false; S.parts = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
       <div id="ready"></div>
-      <div class="card">
-        <label class="note" for="ndesc">What should it be?</label>
+      <div class="card" id="new-request">
+        <label class="request-kind">Where are you starting?<select id="i_request_kind" onchange="setRequestKind()"><option value="">I know what I want to make</option><option value="scenario">I have a problem to solve</option></select></label>
+        <label class="note" id="description-label" for="ndesc">What should it be?</label>
         <textarea id="ndesc" placeholder="e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm" oninput="autoname()"></textarea>
-        <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname()">${esc(x)}</button>`).join("")}</div>
+        <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote()">${esc(x)}</button>`).join("")}</div>
         <label class="note" for="nname">Project folder name</label>
         <input id="nname" placeholder="desk_arm" oninput="this.dataset.touched=1">
+        <div class="scenario-fields" id="scenario-fields" hidden>
+          <label>What would a successful solution do?<input id="i_success" placeholder="e.g. keep six plants watered while I am away for 10 days"></label>
+          <label>What matters most?<select id="i_priority"><option value="">Help me weigh the trade-offs</option><option>Reliability and low maintenance</option><option>Lowest total cost</option><option>Ready as soon as possible</option><option>Learning and customization</option></select></label>
+          <label>How much time and effort can you give it?<input id="i_effort" placeholder="e.g. one evening to set up; no soldering"></label>
+          <p class="note">Compare buying, adapting an existing design and building. Unknown costs stay unknown. Nothing is purchased or printed here.</p>
+        </div>
         <details class="intake" open><summary><b>A few questions</b> <span class="note">(optional; they steer the design)</span></summary>
           <div class="igrid">
             <label>Budget, USD<input id="i_budget" placeholder="e.g. 60"></label>
@@ -1334,7 +1350,26 @@ function showNew() {
         <div style="animation-delay:240ms"><i>◎</i><b>Review</b>An independent reviewer inspects it; findings are fixed before it's called done.</div>
       </div>
     </div>`;
+  for (const event of ["input", "change"]) $("#new-request").addEventListener(event, e => { if (!e.target.closest("#quote")) invalidateQuote(); });
   checkReady();
+}
+function invalidateQuote() {
+  if (!S.quote || (S.quote.context && quoteMatches(S.quote, S.quoteName))) return;
+  S.quote = null;
+  $("#quote").innerHTML = `<p class="note" role="status">Your request changed. Compare options again to use these answers.</p>`;
+}
+function quoteMatches(q, name) {
+  return name === slugName($("#nname").value) && (!q.context || (q.context.description === $("#ndesc").value.trim() && JSON.stringify(Object.entries(q.context.intake).sort()) === JSON.stringify(Object.entries(intake()).sort())));
+}
+function setRequestKind() {
+  const scenario = $("#i_request_kind").value === "scenario";
+  $("#scenario-fields").hidden = !scenario;
+  $("#nstart").hidden = scenario;
+  $("#description-label").textContent = scenario ? "What is happening, and what needs to change?" : "What should it be?";
+  $("#ndesc").placeholder = scenario ? "e.g. my plants die when I travel" : "e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm";
+  $("#nquote").textContent = scenario ? "Compare ways to solve it" : "Show me 2–3 options first";
+  const examples = scenario ? ["my plants die when I travel", "I need steady aerial shots of my trail runs", "my desk cables keep falling behind the table"] : EXAMPLES;
+  $(".new .examples").innerHTML = examples.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote()">${esc(x)}</button>`).join("");
 }
 function autoname() {
   const n = $("#nname"); if (n.dataset.touched) return;
@@ -1342,34 +1377,49 @@ function autoname() {
   n.value = uniqueName(($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40));
 }
 function intake() {
-  const o = {}; for (const k of ["budget","power","mounting","environment","printer","material","notes","who","how_often","goes_wrong"]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
+  const o = {}; for (const k of ["request_kind","budget","power","mounting","environment","printer","material","notes","who","how_often","goes_wrong", ...($("#i_request_kind").value === "scenario" ? ["success","priority","effort"] : [])]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
   return o;
 }
 async function startQuote() {
   const r = await fetch("/api/quote", {method: "POST", headers: {"Content-Type": "application/json"},
                                        body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake()})});
   const j = await r.json().catch(() => ({error: "bad response"}));
-  if (r.ok && j.job) { S.quoteFor = $("#nname").value.trim(); watch(j.job); toast("Working out options", "Claude Code is researching 2–3 ways to build it, with cost and print time.", "ok"); return; }
+  if (r.ok && j.job) { S.quoteFor = $("#nname").value.trim(); watch(j.job); toast("Working out options", "Claude Code is researching the alternatives and their trade-offs.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
   toast("Couldn't start", j.error || r.statusText, "bad");
 }
 async function showQuote(name) {
   const el = $("#quote"); if (!el) return;
   try {
-    const q = await api(`/api/quote/${name}`); S.quote = q;
-    el.innerHTML = `<h3>Options</h3><div class="qopts">${q.options.map((o, i) => `<div class="card qopt ${i === q.recommended ? "rec" : ""}">
+    const q = await api(`/api/quote/${name}`); S.quote = q; S.quoteName = name;
+    if (q.context && !$("#ndesc").value.trim()) {
+      $("#ndesc").value = q.context.description;
+      for (const input of document.querySelectorAll('#new-request [id^="i_"]')) input.value = q.context.intake[input.id.slice(2)] || "";
+      setRequestKind();
+    }
+    const matches = quoteMatches(q, name);
+    const questions = q.questions || [];
+    el.innerHTML = `<h3>Options</h3>
+      ${!matches ? `<p class="banner warn">These options use earlier answers. Your edits are kept above; compare options again before designing.</p>` : ""}
+      ${questions.length ? `<div class="banner warn"><b>Before choosing</b><ul>${questions.map(x => `<li>${esc(x)}</li>`).join("")}</ul>Add the answers above, then compare again.</div>` : ""}
+      ${q.recommendation_reason ? `<p>${esc(q.recommendation_reason)}</p>` : ""}
+      <div class="qopts">${q.options.map((o, i) => `<div class="card qopt ${i === q.recommended ? "rec" : ""}">
       <b>${esc(o.title)}</b>${i === q.recommended ? ` <span class="chip ok">recommended</span>` : ""}<p>${esc(o.summary)}</p>
-      <div class="chips"><span class="chip">$${fmt(o.cost_usd)}</span><span class="chip">${fmt(o.print_hours)} h printing</span><span class="chip">${fmt(o.parts_printed)} printed parts</span></div>
+      ${o.route ? `<p class="route">${esc({buy:"Buy a ready-made solution",adapt:"Adapt an existing design",build:"Build a custom solution"}[o.route] || o.route)}</p>` : ""}
+      <div class="chips"><span class="chip">${o.cost_usd == null ? "Cost not yet known" : "$" + fmt(o.cost_usd) + (q.request_kind === "scenario" ? " estimated" : "")}</span><span class="chip">${o.print_hours == null ? "Print time not yet known" : fmt(o.print_hours) + " h printing"}</span><span class="chip">${fmt(o.parts_printed)} printed parts</span></div>
       ${o.cost_note || o.print_note ? `<p class="note">${esc([o.cost_note, o.print_note].filter(Boolean).join(" · "))}</p>` : ""}
+      ${o.fit || o.effort ? `<dl>${o.fit ? `<dt>Fit to your goal</dt><dd>${esc(o.fit)}</dd>` : ""}${o.effort ? `<dt>Your time and effort</dt><dd>${esc(o.effort)}</dd>` : ""}</dl>` : ""}
       ${(o.risks || []).length ? `<p class="note">Risks: ${o.risks.map(esc).join("; ")}</p>` : ""}
-      <button class="primary" onclick="startNew(${i})">Design this one</button></div>`).join("")}</div>
+      ${(o.sources || []).length ? `<details ${o.route === "buy" ? "open" : ""}><summary>Research sources</summary><ul>${o.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><span class="source-note">${esc(s.finding)}</span></li>`).join("")}</ul></details>` : ""}
+      ${(o.next_steps || []).length ? `<h4>Next steps</h4><ul>${o.next_steps.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${o.route === "buy" ? `<p class="note">Use the research links to check availability and decide. Kerf does not place an order.</p>` : `<button class="primary" onclick="startNew(${i})" ${!matches || questions.length ? "disabled" : ""}>${o.route === "adapt" ? "Adapt this option" : "Design this one"}</button>`}</div>`).join("")}</div>
       ${(q.assumptions || []).length ? `<p class="note">Assumed: ${q.assumptions.map(esc).join("; ")}</p>` : ""}`;
   } catch (e) { el.innerHTML = `<div class="banner bad">No options yet: ${esc(e.message)}</div>`; }
 }
 async function startNew(opt) {
   const option = typeof opt === "number" && S.quote ? S.quote.options[opt] : null;
   const r = await fetch("/api/new", {method: "POST", headers: {"Content-Type": "application/json"},
-                                     body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake(), option})});
+                                     body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake(), option, option_index: typeof opt === "number" ? opt : null})});
   const j = await r.json().catch(() => ({error: "bad response"}));
   if (r.ok && j.job) { watch(j.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }

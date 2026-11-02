@@ -8,8 +8,10 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 ```
 
 ## Package map
+
 | Module | Job |
 |---|---|
+| `kerf/quotes.py` | Studio option validation: researched scenario alternatives compare buy/adapt/build, explicit unknown estimates, fit/effort/risks, safe source URLs and a justified recommendation. Tests: tests/test_scenario.py |
 | `kerf/ctx.py` | What a part's `build(ctx)` gets: `ctx.p` params, `ctx.cat` catalog, joint + fastener-site declarations, `ctx.finish()`; `ctx.keep_sharp(at, why)` declares an inside corner sharp on purpose |
 | `kerf/iface.py` | Mating-feature generators (bolt patterns, inserts, nut traps, bearing seats, servo/horn/motor/stack mounts, `pin_hole` for pinned hinges). Each returns a cutter solid and registers fastener (or pin) sites |
 | `kerf/drives.py` | Printed spur-gear pairs (py_gearworks, FDM backlash, standard centre distance) and GT2 belt maths (length, tooth count, centre for a stock belt, wrap) + belt keep-out solid |

@@ -311,3 +311,19 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 (Claude, user-facing bug sweep)
 - Fixed: auto-fix / Fix no longer start on a project another session holds (they wasted a Claude run that then stopped); Save / Restore / materials / Change something ask before changing such a project (409 `claimed`, `override: true`); switching projects asks before dropping unsaved Tune values; a second Build/Check click opens the running job instead of an error; typed names are cleaned (`studio.slug`: "Hawk Drone" -> hawk_drone) and auto names avoid existing projects; Tune Reset clears material picks too; "1,5" reads as 1.5; a wrong printer access code now says so (was "serial right?"); spaces in a pasted code are ignored. tests/test_user_bugs.py; test_studio's bad-name case now uses "9 Bad!" (a name that can't be cleaned).
 - Seen, not mine: running test_studio.py together with the other Studio browser test files in ONE pytest process died with exit 141 after ~44 tests (each file alone passes); worth a look if the batch shows it. test_progress_events_are_off_by_default_and_ordered_when_on still fails on main (noted earlier).
+
+## 2026-11-02 — Scenario comparison in Studio (Codex, scenario-intake)
+- Added a scoped problem-first route to the existing New design/quote flow: success criteria, priorities and hands-on
+  effort; researched buy/adapt/build alternatives with fit, risks, source findings, next steps and recommendation reasons.
+  Unknown costs/print times stay null and visibly unknown. Existing architecture quotes remain readable.
+- The server resolves the saved selected option, rejects changed requests and unanswered blocking questions, and never
+  starts a design for a buy-only option. Buy options provide links/next steps; no purchase or printer action. A duplicate
+  quote cannot erase active output: original-request capture and output reset use start_job's existing preparation lock.
+- 33 targeted tests passed (scenario validator/API/browser, legacy quote/intake/readiness and package-map coverage).
+  Desktop 1440 and phone 390, both themes: no browser errors, no horizontal overflow, research links retain keyboard focus.
+  The new browser coverage found/fixed long example buttons overflowing on phones. Read-only doctor: ALL OK; optional
+  Arduino/simavr tools remain unavailable. Reused the existing environment instead of reinstalling into the shared venv.
+- PLAN's Studio subitem is complete; full E8 and scenario requirement checks remain open. The plant-care comparison
+  fixture and screenshots are explicitly illustrative, not vendor research, engineering acceptance or a working project.
+  No paid Claude generation, physical hardware, full suite, project geometry or review.json was used/changed. Full batch
+  remains on the manager's hold. Independent review requested before delivery.

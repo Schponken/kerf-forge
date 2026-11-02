@@ -852,8 +852,16 @@ class ClaudeNotReady(ValueError):
 INTAKE_FIELDS = {"budget": "Budget (USD, purchased parts + filament)", "power": "Power", "mounting": "Mounting",
                  "environment": "Environment", "printer": "Printer", "material": "Material", "notes": "Other constraints",
                  "who": "Use story - who uses it", "how_often": "Use story - how often",
-                 "goes_wrong": "Use story - what goes wrong (drops, crashes, heat, rain, gloves)"}
+                 "goes_wrong": "Use story - what goes wrong (drops, crashes, heat, rain, gloves)",
+                 "request_kind": "Request kind", "success": "What a successful solution must do",
+                 "priority": "What matters most", "effort": "Time and effort available"}
 QUOTES = ROOT / ".cache" / "studio" / "quotes"
+
+
+def _intake(intake: dict | None) -> dict:
+    if intake is not None and not isinstance(intake, dict):
+        raise ValueError("intake answers must be an object")
+    return {k: str(v).strip() for k, v in (intake or {}).items() if k in INTAKE_FIELDS and str(v).strip()}
 
 
 def brief(description: str, intake: dict | None = None, option: dict | None = None) -> str:
@@ -861,7 +869,8 @@ def brief(description: str, intake: dict | None = None, option: dict | None = No
     and (after a quote) the option he picked."""
     from .ship import load_inventory
     L = [description.strip()]
-    answers = [f"- {INTAKE_FIELDS[k]}: {str(v).strip()}" for k, v in (intake or {}).items() if k in INTAKE_FIELDS and str(v).strip()]
+    intake = _intake(intake)
+    answers = [f"- {INTAKE_FIELDS[k]}: {v}" for k, v in intake.items()]
     if answers:
         L += ["", "Spencer's answers to the intake questions:", *answers]
     if any(str((intake or {}).get(k, "")).strip() for k in ("who", "how_often", "goes_wrong")):
@@ -874,6 +883,10 @@ def brief(description: str, intake: dict | None = None, option: dict | None = No
         L += ["", f"Spencer picked this option from the quote: {option.get('title', '')} - {option.get('summary', '')}"]
         if option.get("purchased"):
             L.append("Its purchased parts: " + ", ".join(f"{x.get('key')} x{x.get('qty', 1)}" for x in option["purchased"]))
+        if option.get("route"):
+            L += ["", "Selected option, including its evidence and unresolved risks:", json.dumps(option, ensure_ascii=False),
+                  "Keep these trade-offs and sources in DESIGN.md / REFERENCES.md; recheck estimates during design. "
+                  "Do not buy anything or send anything to a printer."]
     return "\n".join(L)
 
 
@@ -890,8 +903,24 @@ def _check_new(name: str, description: str):
         raise ClaudeNotReady(ready)
 
 
-def new_design(name: str, description: str, intake: dict | None = None, option: dict | None = None) -> Job:
+def new_design(name: str, description: str, intake: dict | None = None, option: dict | None = None,
+               option_index: int | None = None) -> Job:
     name = slug(name)
+    intake = _intake(intake)
+    if intake.get("request_kind") == "scenario" and option_index is None:
+        raise ValueError("compare options first, then choose an adapt or build option")
+    if option_index is not None:
+        q = read_quote(name)
+        if type(option_index) is not int or not 0 <= option_index < len(q["options"]):
+            raise ValueError("choose one of the quoted options")
+        context = q.get("context")
+        if context and context != {"description": description.strip(), "intake": intake}:
+            raise ValueError("your request changed; compare options again before designing")
+        if q.get("questions"):
+            raise ValueError("answer the open questions in your request, then compare options again")
+        option = q["options"][option_index]
+    if option and option.get("route") == "buy":
+        raise ValueError("this is a buy-only option: follow its sources and next steps; no design is needed")
     _check_new(name, description)
     exe = claude_bin()
     prompt = (f"/kerf {brief(description, intake, option)}\n\nProject folder name: projects/{name}. Spencer started this from "
@@ -904,14 +933,24 @@ def quote(name: str, description: str, intake: dict | None = None) -> Job:
     """Quote first: Claude researches and writes 2-3 candidate architectures with cost, print time and part count to
     .cache/studio/quotes/<name>.json (kerf skill, "Quote mode") and stops; nothing is designed until one is picked."""
     name = slug(name)
+    intake = _intake(intake)
     _check_new(name, description)
-    QUOTES.mkdir(parents=True, exist_ok=True)
     out = QUOTES / f"{name}.json"
-    out.unlink(missing_ok=True)
     prompt = (f"/kerf QUOTE ONLY. {brief(description, intake)}\n\nWrite the quote to {out} as the kerf skill's Quote mode "
               f"says and stop: do not create projects/{name} or any design files.")
+    if intake.get("request_kind") == "scenario":
+        prompt += ("\nSCENARIO OPTIONS: use the scenario quote contract in Quote mode. Compare buying a ready-made "
+                   "solution with adapting an existing/free design or building one. Research first; cite the pages you "
+                   "actually opened. Show fit to the success criteria, effort, risks and the reason for the recommendation. "
+                   "Unknown prices/times stay null with an explanation, never zero. List unanswered questions; do not "
+                   "pretend an unverified assumption meets the scenario. No purchases or printer actions.")
+    def prepare():
+        QUOTES.mkdir(parents=True, exist_ok=True)
+        out.unlink(missing_ok=True)
+        (QUOTES / f"{name}.request.json").write_text(
+            json.dumps({"description": description.strip(), "intake": intake}), encoding="utf-8")
     return start_job("quote", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"],
-                     f"Options for: {description.strip()[:60]}", parse=_claude_lines)
+                     f"Options for: {description.strip()[:60]}", parse=_claude_lines, prepare=prepare)
 
 
 def read_quote(name: str) -> dict:
@@ -919,14 +958,16 @@ def read_quote(name: str) -> dict:
     f = QUOTES / f"{name}.json"
     if not NAME_RE.match(name) or not f.exists():
         raise ValueError("no quote yet")
-    q = json.loads(f.read_text(encoding="utf-8"))
-    opts = q.get("options") if isinstance(q, dict) else None
-    if not isinstance(opts, list) or not 1 <= len(opts) <= 3:
-        raise ValueError("the quote has no options (expected 1-3)")
-    for o in opts:
-        missing = [k for k in ("title", "summary", "parts_printed", "cost_usd", "print_hours") if o.get(k) in (None, "")]
-        if missing:
-            raise ValueError(f"quote option '{o.get('title', '?')}' is missing {', '.join(missing)}")
+    from .quotes import validate
+    context_file = QUOTES / f"{name}.request.json"
+    context = json.loads(context_file.read_text(encoding="utf-8")) if context_file.exists() else None
+    scenario = bool(context and context.get("intake", {}).get("request_kind") == "scenario")
+    q = validate(json.loads(f.read_text(encoding="utf-8")), scenario=scenario)
+    q.pop("context", None)  # The request comes from Studio's saved input, never from generated quote content.
+    if scenario:
+        q["request_kind"] = "scenario"
+    if context:
+        q["context"] = context
     return q
 
 
@@ -1589,7 +1630,8 @@ class Handler(BaseHTTPRequestHandler):
                     if u.path == "/api/quote":
                         j = quote(body.get("name", ""), body.get("description", ""), body.get("intake"))
                     else:
-                        j = new_design(body.get("name", ""), body.get("description", ""), body.get("intake"), body.get("option"))
+                        j = new_design(body.get("name", ""), body.get("description", ""), body.get("intake"),
+                                       body.get("option"), body.get("option_index"))
                 except ClaudeNotReady as e:
                     return self._json({"error": str(e), "setup": e.ready["code"]}, 409)
                 return self._json({"job": j.id})

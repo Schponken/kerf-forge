@@ -194,6 +194,8 @@ Work these in order unless one is blocked; each item is done only with tests and
 - [x] Human factors: reach / access checks from the use story (battery swap with gloves, tool access), carry and repair notes in ASSEMBLY.md
 - [x] Learn from results: `kerf feedback` takes logs / photos / notes, records what failed where, and turns repeated findings into ENGINEERING.md rules or catalog corrections (with the evidence)
 - [ ] Scenario intake + options: from a scenario-only brief, ask what matters, generate 2-3 options incl. buy-vs-build (search for existing / free designs first), compare cost / time / risk / fit, recommend one; Studio flow; eval E8 (scenario only: "my plants die when I travel")
+  - [x] Studio scenario flow: success/priorities/effort intake, researched buy/adapt/build quote contract, sources/fit/risks/unknown estimates, server-checked selection and no design job for buy-only options; targeted API/browser tests
+  - [ ] E8 real scenario run: researched options from "my plants die when I travel", clarified constraints, chosen solution built/checked/reviewed and scenario acceptance passed (the intake test fixture is not this evaluation)
 - [ ] Module library: proven modules extracted from finished projects (power system, servo joint, gripper, wing panel, motor mount, enclosure, drive train) with their contracts and checks; a new project can instantiate them; tests
 - [ ] Whole-system output: flight-controller / microcontroller config and controller tuned in simulation (INAV / Betaflight diff for drones and wings, Arduino / Pi code for gadgets), checked by a sim test
 - [ ] Check against the scenario: scenario requirements (run time on the stated duty, capacity of a tank, coverage of a sensor) evaluated for E8
