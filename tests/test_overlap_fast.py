@@ -95,17 +95,28 @@ def test_mesh_gap_is_within_the_screen_of_the_exact_distance():
 
 
 def test_clearance_min_screen_reports_the_exact_value(tmp_path, monkeypatch):
-    """requirements.clearance_min screens poses on meshes and measures exactly only near the minimum: the same value
-    as measuring every pose exactly."""
+    """requirements.clearance_min screens poses on meshes: near the limit it measures exactly (same value as measuring
+    every pose exactly); far above the limit it reports the mesh gap (within 2 x PREFILTER_DEFLECTION), labelled."""
     import sys
     sys.path.insert(0, os.path.dirname(__file__))
-    from test_engine import HINGE_ARM, HINGE_BASE, HINGE_YAML, _write_project
+    from test_engine import HINGE_BASE, HINGE_YAML, _write_project
     from kerf import assembly as A, project as P, requirements as rq
-    d = _write_project(tmp_path / "h", HINGE_YAML, {"base": HINGE_BASE, "arm": HINGE_ARM})
+    arm = """
+from build123d import *
+def build(ctx):
+    ctx.rigid("hub", Location((0, 0, 0)))
+    return ctx.finish(Pos(15, 0, 2) * Box(40, 6, 4, align=(Align.MIN, Align.CENTER, Align.CENTER)))
+"""
+    d = _write_project(tmp_path / "h", HINGE_YAML, {"base": HINGE_BASE, "arm": arm})
     p = P.build(P.load(str(d)))
     asm = A.plan(p)
     A.solve(asm)
-    fast = rq.clearance_min(p, asm, "arm", "base", 1.0, joints=["swing"], samples=7)
+    real = geom.mesh_gap
     monkeypatch.setattr(geom, "mesh_gap", lambda a, b, search=1e4: None)          # every pose exact (the old path)
-    slow = rq.clearance_min(p, asm, "arm", "base", 1.0, joints=["swing"], samples=7)
-    assert fast == slow
+    exact = rq.clearance_min(p, asm, "arm", "base", 1.0)["value"]
+    monkeypatch.setattr(geom, "mesh_gap", real)
+    assert exact > 2.0                                                          # a real gap, well above 1 mm
+    near = rq.clearance_min(p, asm, "arm", "base", exact)
+    assert near["value"] == exact and "meshes" not in near["detail"]
+    far = rq.clearance_min(p, asm, "arm", "base", 1.0)
+    assert far["ok"] and abs(far["value"] - exact) <= 2 * geom.PREFILTER_DEFLECTION + 0.01 and "meshes" in far["detail"]

@@ -107,3 +107,19 @@ def test_update_keeps_local_changes_and_names_the_ones_that_block_it(tmp_path):
     (work / "c.txt").write_text("one\n2\n3\n4\n5\n6\n")         # same file, different lines: merges cleanly
     out = run()
     assert out.startswith("UPDATED") and (work / "c.txt").read_text() == "one\n2\n3\n4\n5\nsix\n", out
+
+
+def test_dock_keeps_one_kerf_tile_and_every_other_item():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("dock", Path(__file__).resolve().parent.parent / "tools" / "mac" / "dock_dedupe.py")
+    d = importlib.util.module_from_spec(spec); spec.loader.exec_module(d)
+    tile = lambda url, label="": {"tile-data": {"file-data": {"_CFURLString": url}, "file-label": label}}  # noqa: E731
+    dock = {"persistent-apps": [tile("file:///Applications/Safari.app/", "Safari"),
+                                tile("file:///Users/s/Applications/Kerf%20Studio.app/", "Kerf Studio"),
+                                tile("file:///Users/s/kerf-forge/Kerf%20Studio.app/", "Kerf Studio"),
+                                tile("file:///Users/s/Applications/Kerf%20Studio.app/", "Kerf Studio"),
+                                tile("file:///Applications/BambuStudio.app/", "BambuStudio")]}
+    out, n = d.dedupe(dock, "/Users/s/Applications/Kerf Studio.app")
+    labels = [t["tile-data"]["file-label"] for t in out["persistent-apps"]]
+    assert n == 2 and labels == ["Safari", "Kerf Studio", "BambuStudio"]
+    assert out["persistent-apps"][1]["tile-data"]["file-data"]["_CFURLString"].startswith("file:///Users/s/Applications/")

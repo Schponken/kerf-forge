@@ -87,7 +87,8 @@ def clearance_min(proj, asm, a, b, min_mm, joints=None, samples=9):
     sa, sb = proj.items[a].shape, proj.items[b].shape
     # each pose screened on the cached meshes (geom.mesh_gap, ~0.4 s where the exact OCC distance takes ~30 s on a
     # lofted wing); the exact distance then runs only at poses whose mesh gap is within GAP_SCREEN_MM of the smallest
-    # (any pose that can hold the true minimum), so the reported value is the exact one
+    # (any pose that can hold the true minimum), so the reported value is the exact one - unless even the smallest
+    # mesh gap clears the limit by more than GAP_SCREEN_MM: then the verdict is certain and the mesh value is reported
     screened = []
     for pose in poses:
         A.solve(asm, pose)
@@ -97,6 +98,11 @@ def clearance_min(proj, asm, a, b, min_mm, joints=None, samples=9):
     else:
         lo = min(g for g, _ in screened)
         exact = [(g, p) for g, p in screened if g <= lo + geom.GAP_SCREEN_MM]
+        if lo - geom.GAP_SCREEN_MM >= min_mm:     # clears the limit by more than the mesh error: verdict is certain
+            A.solve(asm)
+            return {"ok": True, "value": round(float(lo), 2), "limit": min_mm,
+                    "detail": f"min gap {a} to {b} (mm; measured on 0.02 mm meshes, within "
+                              f"{2 * geom.PREFILTER_DEFLECTION:g} mm of exact, far above the limit)"}
     worst = np.inf
     for _, pose in exact:
         A.solve(asm, pose)
