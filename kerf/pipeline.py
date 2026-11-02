@@ -7,7 +7,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import advice, edges, partcache, progress, stressmap
+from . import advice, edges, fastener_mass, partcache, progress, stressmap
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -273,6 +273,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     rep = {"project": proj.name, "dir": proj.dir.name, "fingerprint": proj.fingerprint(), "printer": printer,
            "params": proj.params, "parts": {}, "purchased": {}, "assembly": {}, "requirements": [],
            "problems": [], "warnings": [], "mode": mode, "stages": sorted(stg),
+           "fastener_mass": {"evaluated": False, "total_g": None, "included_in_engineering_totals": False,
+                             "notice": fastener_mass.NOTICE, "reason": "Hardware inventory has not run"},
            "cached_parts": [k for k, it in proj.printed.items() if it.cached]}   # kerf/partcache.py hits
     for iid, it in proj.items.items():
         if it.error:
@@ -422,6 +424,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         rep["warnings"] += cres["warnings"]
                     except Exception as e:  # noqa: BLE001 - a crash in the circuit check is a failed check, not silent
                         rep["problems"].append(f"circuit check crashed: {type(e).__name__}: {e}")
+            extra_bom = wiring_out.bom_rows(emodel) if emodel else None
             rq = []
             if "requirements" in stg:
                 progress.stage("requirements")
@@ -480,6 +483,18 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             bp, bw = export.bom_extra_check(proj, rep.get("assembly", {}).get("fasteners"))
             rep["problems"] += bp
             rep["warnings"] += bw
+            if bp:
+                rep["fastener_mass"]["reason"] = "Hardware inventory not run: correct the bom_extra problems first"
+            else:
+                hardware = fastener_mass.inventory(export.bom_rows(proj, fj, rep["parts"], pins=pinj, extra=extra_bom),
+                                                   proj.data.get("fastener_stock"))
+                rep["fastener_mass"] = hardware
+                rep["problems"] += [f"fastener mass inventory: {p}" for p in hardware["problems"]]
+                rep["warnings"] += hardware["warnings"]
+                if hardware["rows"]:
+                    rep["warnings"].append(fastener_mass.NOTICE)
+                if hardware["unknown"]:
+                    rep["warnings"].append("Hardware mass unknown: " + ", ".join(hardware["unknown"]))
             mp, mw = req_misses(rq)
             rep["problems"] += mp
             rep["warnings"] += mw
@@ -518,7 +533,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         rep["problems"].append(f"URDF could not be written: {type(e).__name__}: {e}")
             if "docs" in stg:
                 rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj,
-                                        extra=wiring_out.bom_rows(emodel) if emodel else None)
+                                        extra=extra_bom)
+                rep["files"]["fastener_mass"] = "FASTENER_MASS.md"
                 if emodel:
                     (out / "WIRING.md").write_text(wiring_out.wiring_md(proj, emodel), encoding="utf-8")
                     (out / "wiring.svg").write_text(wiring_out.svg(proj, emodel), encoding="utf-8")

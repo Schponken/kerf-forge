@@ -323,6 +323,8 @@ def tidy(rows: list[dict]) -> list[dict]:
         m["for"] = m["for"] + [i for i in (r.get("for") or []) if i not in m["for"]]
         m["_segs"].append(_segs(r.get("note", "")))
         m["link"] = m.get("link") or r.get("link", "")
+        if not m.get("hardware_key") and r.get("hardware_key"):
+            m["hardware_key"] = r["hardware_key"]
     for r in out:
         segs = r.pop("_segs", None)
         if segs and len(segs) > 1:
@@ -334,7 +336,8 @@ def tidy(rows: list[dict]) -> list[dict]:
     return out
 
 
-def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
+def bom_rows(proj, fastener_joints, part_reports, pins=None, extra=None):
+    """The final, deduplicated shopping quantities, independent of writing files or assigning mass."""
     rows = []
     for iid, it in proj.printed.items():
         r = part_reports.get(iid, {})
@@ -353,10 +356,12 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
                          "note": it.spec.get("note", ""), "link": link(it.spec.get("catalog", ""))})
     screws = Counter((j["screw"], j["length_mm"], {"countersink": "flat head"}.get(j["head"], "socket head")) for j in fastener_joints)
     for (size, length, head), n in sorted(screws.items(), key=lambda x: str(x)):
-        rows.append({"type": "fastener", "item": f"{size} x {length} mm {head} screw", "qty": n, "spec": "ISO 4762 / 10642", "note": ""})
+        rows.append({"type": "fastener", "item": f"{size} x {length} mm {head} screw", "qty": n, "spec": "ISO 4762 / 10642", "note": "",
+                     "hardware_key": f"screw:{size}x{length:g}:{head.split()[0]}" if length is not None else None})
     recv = Counter((j["screw"], j["receiver"]) for j in fastener_joints if j["receiver"] in ("heatset", "nut_trap"))
     for (size, kind), n in sorted(recv.items()):
-        rows.append({"type": "fastener", "item": f"{size} {'heat-set insert' if kind == 'heatset' else 'hex nut'}", "qty": n, "spec": "", "note": ""})
+        rows.append({"type": "fastener", "item": f"{size} {'heat-set insert' if kind == 'heatset' else 'hex nut'}", "qty": n, "spec": "", "note": "",
+                     "hardware_key": f"{'insert' if kind == 'heatset' else 'nut'}:{size}"})
     def g(x):  # a pin with no valid stocked length is a check problem already; never crash the BOM on it
         return "? (no stocked length fits, see the pin problems)" if x is None else f"{x:g}"
 
@@ -374,12 +379,15 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
                                  + (f"; order {pn} (McMaster, {g(pj['d_mm'])} x {g(pj['length_mm'])} mm, pack of 10)" if pn
                                     else (f"; {ce['buy_note']}" if ce.get("buy_note") else ""))})
             if "heatset" in pj["fixed_fit"]:
-                rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
+                rows.append({"type": "fastener", "item": f"{pd['thread']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'",
+                             "hardware_key": f"insert:{pd['thread']}"})
         elif pj["screw_pivot"]:
             rows.append({"type": "fastener", "item": f"{pj['pin']} x {g(pj['length_mm'])} mm socket head screw (pivot)", "qty": 1,
+                         "hardware_key": f"screw:{pj['pin']}x{pj['length_mm']:g}:socket" if pj['length_mm'] is not None else None,
                          "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; {lock_advice(pj['fixed_fit'])}"})
             if "heatset" in pj["fixed_fit"]:
-                rows.append({"type": "fastener", "item": f"{pj['pin']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
+                rows.append({"type": "fastener", "item": f"{pj['pin']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'",
+                             "hardware_key": f"insert:{pj['pin']}"})
         else:
             rows.append({"type": "pin", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm steel dowel pin", "qty": 1,
                          "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})
@@ -394,6 +402,15 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
     rows = tidy(rows)
     for r in rows:
         r.setdefault("link", "")
+    return rows
+
+
+def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
+    from . import fastener_mass
+    rows = bom_rows(proj, fastener_joints, part_reports, pins=pins, extra=extra)
+    mass = fastener_mass.inventory(rows, proj.data.get("fastener_stock"))
+    fastener_mass.annotate(rows, mass)
+    fastener_mass.write(mass, outdir)
     with open(outdir / "bom.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["type", "item", "qty", "spec", "note", "link"], extrasaction="ignore")
         w.writeheader()

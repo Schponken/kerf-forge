@@ -2279,5 +2279,22 @@
     "confidence": "vendor"
    }
   }
+ },
+ "fastener_mass": {
+  "accu_sscf_m3_8_a2": {
+   "name": "Accu SSCF-M3-8-A2 socket cap screw, M3 x 8 mm, A2 stainless steel",
+   "kind": "screw",
+   "size": "M3",
+   "head": "socket",
+   "length_mm": 8,
+   "material": "A2 stainless steel",
+   "reported_mass_g": 80,
+   "reported_qty": 100,
+   "mass_kind": "vendor-published",
+   "mass_basis": "Vendor technical specification states Weight per 100 Units: 80 g; 80 / 100 = 0.8 g per screw. Hardware quantity, not shipping or packaging mass. Published precision retained; not independently weighed.",
+   "source": "https://www.accu.co.uk/metric-cap-head-screws/3818-SSCF-M3-8-A2",
+   "checked": "2026-11-02",
+   "confidence": "vendor"
+  }
  }
 }

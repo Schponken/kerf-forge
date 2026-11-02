@@ -8,6 +8,13 @@ DESIGN.md says why.
 - Every project starts with DESIGN.md: what it must do, in numbers (payload, reach, thrust, size, motion range, mass budget).
 - Every number that decides pass/fail becomes a `requirements:` entry in project.yaml, so it is re-checked on every build.
 - Size purchased parts with math in DESIGN.md (torque, thrust, current, speed) before drawing anything.
+- Include real hardware in the mass budget. `fastener_stock` and `out/FASTENER_MASS.md` report sourced fastener
+  inventory separately: unknown is not zero, and the engine's mass/CG/runtime totals still omit generated hardware
+  explicitly. Do not add a supplied screw twice if a purchased-part weight already includes it. Vendor-published,
+  measured and estimated evidence stay distinct. The first stock entry is [Accu SSCF-M3-8-A2](https://www.accu.co.uk/metric-cap-head-screws/3818-SSCF-M3-8-A2):
+  its technical specification states **Weight per 100 Units: 80 g**, giving 0.8 g per M3 × 8 A2 socket-cap screw;
+  this is hardware mass at the vendor's published precision, not an independent measurement or a shipping weight.
+  Other materials/lengths and inserts need their own evidence; no generic M3 mass is assumed.
 
 ## 2. Materials (printed, FDM)
 - Use catalog `materials.*` values. Printed parts are weakest across layers: design strength assuming the Z (layer)
