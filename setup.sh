@@ -26,4 +26,42 @@ fi
 if ! ls "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"/chromium-* >/dev/null 2>&1 && ! ls ~/.cache/ms-playwright/chromium-* >/dev/null 2>&1; then
   (cd tools/render && npx playwright install chromium)
 fi
+# Firmware check (kerf/fwcheck.py, `kerf firmware-check`): arduino-cli, the arduino:avr core and the sketch libraries at
+# pinned versions under .cache/arduino (all from downloads.arduino.cc), and simavr to run the compiled Nano program.
+# Anything that cannot be installed is reported here and by `kerf doctor`; the check then says NOT RUN, never PASS.
+fw_tools() {
+  local AR="$PWD/.cache/arduino" VER=1.3.1 PKG SHA
+  case "$(uname -s)-$(uname -m)" in
+    Linux-x86_64)  PKG=Linux_64bit SHA=376428d7d45be640c00812a71612e1742edc2f5f9ee3742a2d6da7870e079588 ;;
+    Linux-aarch64) PKG=Linux_ARM64 SHA=cf4f668b1add7a20310d79e83a1f3eb148031f95e5673d9171c65f5e9a126a94 ;;
+    Darwin-arm64)  PKG=macOS_ARM64 SHA=723f8ddaf4875e87a20380c88c15ff9d55916c3c80cb432f1f980ea32cec2341 ;;
+    Darwin-x86_64) PKG=macOS_64bit SHA=a0ca73f7e599d33a532fb2b1f8af9260541d990a684988bf8208abb42be83ced ;;
+    *) echo "firmware check: no arduino-cli $VER build for $(uname -sm)"; return 1 ;;
+  esac
+  export ARDUINO_DIRECTORIES_DATA="$AR/data" ARDUINO_DIRECTORIES_DOWNLOADS="$AR/staging" ARDUINO_DIRECTORIES_USER="$AR/user"
+  if ! "$AR/bin/arduino-cli" version 2>/dev/null | grep -q "Version: $VER "; then
+    local t; t=$(mktemp -d)
+    curl -fsSL -o "$t/cli.tgz" "https://downloads.arduino.cc/arduino-cli/arduino-cli_${VER}_${PKG}.tar.gz" || { rm -rf "$t"; return 1; }
+    if [ "$( (sha256sum "$t/cli.tgz" 2>/dev/null || shasum -a 256 "$t/cli.tgz") | cut -d' ' -f1)" != "$SHA" ]; then
+      echo "firmware check: arduino-cli download sha256 mismatch"; rm -rf "$t"; return 1
+    fi
+    mkdir -p "$AR/bin" && tar -xzf "$t/cli.tgz" -C "$AR/bin" arduino-cli; rm -rf "$t"
+  fi
+  local CLI="$AR/bin/arduino-cli" LIBS=("Servo@1.2.2" "Adafruit PWM Servo Driver Library@3.0.2" "Adafruit BusIO@1.16.2")
+  [ -d "$AR/data/packages/arduino/hardware/avr/1.8.6" ] \
+    || { "$CLI" core update-index && "$CLI" core install arduino:avr@1.8.6; } >/dev/null || return 1
+  if [ "$(cat "$AR/user/.kerf-libs" 2>/dev/null)" != "${LIBS[*]}" ]; then   # keep in step with kerf/fwcheck.py LIBS
+    { "$CLI" lib update-index && "$CLI" lib install --no-deps "${LIBS[@]}"; } >/dev/null || return 1
+    echo "${LIBS[*]}" > "$AR/user/.kerf-libs"
+  fi
+  if [ "$(uname)" = "Darwin" ]; then
+    command -v brew >/dev/null && { ls "$(brew --prefix)/include/simavr/sim_avr.h" >/dev/null 2>&1 \
+      || { brew tap osx-cross/avr && brew install osx-cross/avr/simavr; } >/dev/null 2>&1 || echo "firmware check: brew could not install simavr (osx-cross/avr)"; }
+  elif [ ! -f /usr/include/simavr/sim_avr.h ]; then
+    (apt-get install -y -q simavr libsimavr-dev || (apt-get update -q && apt-get install -y -q simavr libsimavr-dev)) >/dev/null 2>&1 \
+      || sudo -n sh -c 'apt-get update -q && apt-get install -y -q simavr libsimavr-dev' >/dev/null 2>&1 \
+      || echo "firmware check: could not apt-install simavr libsimavr-dev"
+  fi
+}
+fw_tools || echo "firmware check tools incomplete: \`kerf firmware-check\` will report NOT RUN (see kerf doctor)"
 .venv/bin/kerf doctor

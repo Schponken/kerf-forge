@@ -70,6 +70,17 @@ def doctor() -> int:
         _p(f"ok   circuit check (SKiDL {skidl.__version__}, {n} KiCad symbols from {circuit.symbol_dir()})")
     except Exception as e:
         bad.append(f"circuit check: {e} (run ./setup.sh)")
+    try:   # firmware check tools: missing ones are reported (firmware-check then says NOT RUN), not a doctor failure
+        from . import fwcheck
+        t = fwcheck.tools()
+        if t["arduino_cli"] and t["core"] and t["avrsim"]:
+            _p(f"ok   firmware check (arduino-cli {fwcheck.ARDUINO_CLI}, {fwcheck.CORE}, simavr harness)")
+        else:
+            _p("warn firmware check tools missing: " + "; ".join(
+                w for w in ("" if t["arduino_cli"] and t["core"] else "arduino-cli/arduino:avr (run ./setup.sh)",
+                            "" if t["avrsim"] else t["avrsim_why"]) if w) + " - `kerf firmware-check` reports NOT RUN")
+    except Exception as e:  # noqa: BLE001
+        _p(f"warn firmware check: {e}")
     try:
         r = subprocess.run(["git", "-C", str(ROOT), "remote", "-v"], capture_output=True, text=True)
         _p(f"ok   git remote: {r.stdout.split()[1] if r.stdout.strip() else '(none — work will not be saved remotely!)'}")
@@ -295,6 +306,8 @@ def main(argv=None) -> int:
     g = sub.add_parser("gallery"); g.add_argument("projects", nargs="*")
     sm = sub.add_parser("simulate", help="MuJoCo motion simulation of the URDF: servo limits, home hold, grip_hold / joint_speed / drop_impact")
     sm.add_argument("project")
+    fw = sub.add_parser("firmware-check", help="compile + simulate the project's servo bring-up program (kerf/fwcheck.py)")
+    fw.add_argument("project")
     a = ap.parse_args(argv)
     sys.path.insert(0, str(ROOT))
     if a.cmd == "doctor":
@@ -343,6 +356,12 @@ def main(argv=None) -> int:
     if a.cmd == "simulate":
         from . import sim
         return sim.simulate(a.project, say=_p)
+    if a.cmd == "firmware-check":
+        from . import fwcheck
+        res = fwcheck.check_project(a.project)
+        for ln in fwcheck.lines(res):
+            _p(ln)
+        return {"PASS": 0, "NONE": 0, "FAIL": 1}.get(res["status"], 2)     # NOT RUN / compiled only: not a pass
     if a.cmd == "gallery":
         from . import gallery
         r = gallery.build(a.projects or None)

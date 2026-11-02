@@ -60,7 +60,7 @@ def test_sketch_is_valid_cpp(tmp_path):
     (stub / "Wire.h").write_text("#pragma once\n")
     (stub / "Adafruit_PWMServoDriver.h").write_text(       # the real library's signatures (v3)
         "#pragma once\n#include <stdint.h>\nstruct Adafruit_PWMServoDriver { bool begin(uint8_t p=0){return true;} "
-        "void setOscillatorFrequency(uint32_t){} void setPWMFreq(float){} uint8_t setPWM(uint8_t, uint16_t, uint16_t){return 0;} "
+        "void setOscillatorFrequency(uint32_t){} void setPWMFreq(float){} uint8_t setPWM(uint8_t, uint16_t, uint16_t){return 0;} uint8_t readPrescale(){return 3;} "
         "void writeMicroseconds(uint8_t, uint16_t){} };\n")
     rows = [{"joint": "a", "servo": "s1", "model": "SG90", "pin": p, "lo": -30, "hi": 60, "centre": 15, "us_per_deg": 5.556, "us_why": "x"}
             for p in ("ch0", "ch1")]

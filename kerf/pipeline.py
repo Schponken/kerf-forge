@@ -430,6 +430,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         wiring_out.append_assembly(out / "ASSEMBLY.md", emodel, proj)
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"ship package (priced BOM / ASSEMBLY.md) could not be written: {type(e).__name__}: {e}")
+                _firmware_check(proj, asm, rep, out)
             if "viewer" in stg:
                 try:  # self-contained assembly viewer (kerf/viewer.py), after ASSEMBLY.md: its build-it-step-by-step mode
                     rep["files"]["viewer"] = "viewer.html"   # reads the step text; FEA fields colour the stress view
@@ -486,6 +487,26 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         except Exception as e:  # noqa: BLE001 - the pack is a convenience: never fail a build over it
             print(f"review pack not written: {e}")
     return rep
+
+
+def _firmware_check(proj, asm, rep, out):
+    """Compile + simulate the bring-up program kerf/firmware.py just wrote (kerf/fwcheck.py) -> out/firmware/FIRMWARE_CHECK.json."""
+    fw = ((rep.get("files") or {}).get("ship") or {}).get("firmware")
+    if not fw or not fw.get("program"):          # no generated program (none, or flight-controller only)
+        return
+    from . import firmware, fwcheck
+    try:
+        res = fwcheck.check_dir(firmware.servos(proj, asm), out / "firmware")
+    except Exception as e:  # noqa: BLE001 - a crash here is a build problem, never a silent pass
+        res = {"status": "FAIL", "problems": [f"firmware check crashed: {type(e).__name__}: {e}"]}
+    res["project"] = proj.name
+    (out / "firmware" / "FIRMWARE_CHECK.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
+    rep["firmware_check"] = {"status": res["status"], "problems": res.get("problems", [])}
+    rep.setdefault("files", {})["firmware_check"] = "firmware/FIRMWARE_CHECK.json"
+    if res["status"] == "FAIL":
+        rep["problems"] += [f"firmware: {p}" for p in res["problems"]]
+    elif res["status"] in ("NOT_RUN", "COMPILED_ONLY"):
+        rep["warnings"] += [f"firmware NOT verified ({res['status']}): {p}" for p in res["problems"]]
 
 
 def summary(rep: dict) -> str:

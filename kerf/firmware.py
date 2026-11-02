@@ -25,6 +25,7 @@ SAFE_US_PER_DEG = 1000 / 180     # 1000-2000 us over 180 deg (TowerPro SG90 data
                                  # standard positional servo uses, so an unknown servo moves at most as commanded
 PULSE_LIMITS = (500, 2500)       # widest standard pulse range (DSSERVO DS3218/DS3225 tables)
 SWEEP_STEP_DEG = 1.0
+PCA_OSC_HZ = 27_000_000          # PCA9685 oscillator the sketch tells the Adafruit library (its examples' calibrated value)
 SWEEP_STEP_MS = 30
 
 KINDS = {"boards.arduino_nano": "nano", "boards.pca9685_adafruit": "pca9685"}
@@ -122,9 +123,14 @@ def sketch(name: str, rows: list[dict], pca: bool) -> str:
     if pca:
         hw = ("#include <Wire.h>\n#include <Adafruit_PWMServoDriver.h>   // Library Manager: \"Adafruit PWM Servo Driver Library\"\n"
               "Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();   // I2C address 0x40 (no address jumpers)\n\n"
-              "void writeUs(int i, int us) { pwm.writeMicroseconds(J[i].out, us); }\n"
+              "float usPerCount;   // one PCA9685 step (about 4.9 us at 50 Hz), from the prescale the chip holds\n"
+              "// whole steps rounded TOWARD the centre pulse, so the chip's step never takes a joint past what was commanded\n"
+              "// (the library's writeMicroseconds() truncates, which moves the low side up to one step further out)\n"
+              f"void writeUs(int i, int us) {{ float c = us / usPerCount, c0 = {CENTRE_US} / usPerCount;\n"
+              "  pwm.setPWM(J[i].out, 0, (uint16_t)(c >= c0 ? floor(c) : ceil(c))); }\n"
               "void off(int i) { pwm.setPWM(J[i].out, 0, 4096); }   // full off: no pulses, the servo goes limp\n")
-        begin = "  pwm.begin();\n  pwm.setOscillatorFrequency(27000000);\n  pwm.setPWMFreq(50);\n"
+        begin = (f"  pwm.begin();\n  pwm.setOscillatorFrequency({PCA_OSC_HZ});\n  pwm.setPWMFreq(50);\n"
+                 f"  usPerCount = 1e6f * (pwm.readPrescale() + 1) / {PCA_OSC_HZ}.0f;\n")
     else:
         hw = ("#include <Servo.h>\nServo servo[N];\n\n"
               "void writeUs(int i, int us) { if (!servo[i].attached()) servo[i].attach(J[i].out); servo[i].writeMicroseconds(us); }\n"
