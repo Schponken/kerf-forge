@@ -34,7 +34,7 @@ BLOCK_HW = 13.0       # insert block half width
 BLOCK_TOP = -37.0     # insert block top (insert depth 6.7 + 0.8 floor above the stab top)
 BLADE_T, BLADE_H = 3.0, 10.0   # fin blade: thickness, height above the top
 SLOT_CLEAR = 0.15     # fin slot over the blade, per side (glued)
-SEAT_GAP = 1.5        # mount stops this far ahead of the elevator hinge line
+SEAT_GAP = 3.0        # seat stops this far ahead of the elevator hinge line (>= 0.5 mm to the elevator at full up)
 
 
 def dims(p):

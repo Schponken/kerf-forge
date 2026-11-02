@@ -1,5 +1,5 @@
 """Rudder (PLA, 1 wall, 5 %): the fin's aft part from fin.surfaces, turning about the hinge line on the fin's right
-side (tape hinge); its bottom is 1 mm above the tail mount's top (turning about the aft-leaning hinge only lifts it).
+side (tape hinge); its bottom is 1.5 mm above the tail mount's top (at full throw its left bottom edge drops ~0.8 mm).
 
 Control horn on the left side (pushrod from the rudder servo arm, 4 mm further out, runs in at a slight angle): a horizontal plate whose underside rises 50 deg
 outwards (it prints standing on the rudder's bottom, print_rot [0, 0, 0], with no flat overhang), vertical hole for
@@ -14,7 +14,7 @@ F = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(F)
 _m = importlib.util.spec_from_file_location("dfw_tail_mount", pathlib.Path(__file__).with_name("tail_mount.py"))
 M = importlib.util.module_from_spec(_m); _m.loader.exec_module(M)
 
-BOTTOM_GAP = 1.0      # above the tail mount's top
+BOTTOM_GAP = 1.5      # above the tail mount's top: the left bottom edge drops ~0.8 mm at full throw
 PUSHROD_HOLE = 1.3    # snug on the 1.2 mm music wire (DESIGN.md "short 1.2 mm pushrods"), as fpv_wing's horn
 LEVER = 14.6          # hole out from the hinge line
 HORN_UP = 20.0        # horn top above the rudder's bottom (its underside stays above the bottom face)

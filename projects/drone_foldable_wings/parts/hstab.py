@@ -20,7 +20,7 @@ L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 _m = importlib.util.spec_from_file_location("dfw_tail_mount", pathlib.Path(__file__).with_name("tail_mount.py"))
 M = importlib.util.module_from_spec(_m); _m.loader.exec_module(M)
 
-HINGE_GAP = 0.6       # elevator front face behind the hinge line (tape hinge)
+HINGE_GAP = 0.9       # elevator front face behind the hinge line (tape hinge; >= 0.5 mm over the full throw)
 V_HALF = 30.0         # deg the stab's aft face leans forward: >= the largest elev_throw param (28) + 2, and a fixed
                       # angle so the print orientation (standing on this face) does not change with the throw
 

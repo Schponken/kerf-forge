@@ -1,6 +1,6 @@
 """Elevator (PLA, 1 wall, 5 %): one piece across the full tail span, cut from the same solid as the stabiliser
 (hstab.surfaces), turning about the straight bottom hinge line (tape hinge along the bottom). Its front face is
-square to the chord, 0.6 mm behind the hinge line; the V gap is all on the stabiliser's side.
+square to the chord, 0.9 mm behind the hinge line; the V gap is all on the stabiliser's side.
 
 Control horn: a 2.4 mm plate on the top skin in line with the elevator servo's arm (tail_mount dims arm_y), hole
 for the 1.2 mm music-wire pushrod's Z-bend 13 mm above the hinge line. Print: standing on its front face

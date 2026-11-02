@@ -101,7 +101,7 @@ def _prism_xy(pts, z0, z1):
 
 def _prism_xz(pts, y0, y1):
     """Polygon in the XZ plane (points (x, z)) extruded from y0 to y1."""
-    pl = Plane(origin=(0, y0, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0))   # local (u, v) = world (x, z)
+    pl = Plane(origin=(0, y1, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0))   # local (u, v) = world (x, z), extruded -Y
     return extrude(pl * Polygon(*pts, align=None), y1 - y0)
 
 
@@ -163,7 +163,6 @@ def build(ctx):
 
     # ---- keel rib on the centreline: floor to servo plate and deck, front edge rising 45 deg off the floor
     zf = p.fuse_bottom + SKIN
-    kx = tab_top - (zf - 1) + 116.0
     rib = _prism_xz([(116, zf - 1), (222, zf - 1), (222, p.deck_z0), (186, p.deck_z0), (186, tab_top),
                      (116 + tab_top - (zf - 1), tab_top)], -1.5, 1.5) & hull
     body += ctx.add(rib, why="keel rib: ties servo plate and deck to the floor", kind="rib")
@@ -247,7 +246,7 @@ def build(ctx):
     body += ctx.add(sock & hull, why="boom socket", kind="socket")
     body -= ctx.cut(bl * Pos(0, 0, -0.5) * Cylinder((p.boom_od + 0.2) / 2, p.fuse_x1 - p.boom_x0 + 2, align=(Align.CENTER, Align.CENTER, Align.MIN)),
                     why="boom bore, OD + 0.2 slip for epoxy", kind="bore")
-    body -= ctx.cut(_td_hole(ctx, (238.0, 0, -45.0), 6.0, 30), why="tail servo leads enter from under the boom", kind="wire hole")
+    body -= ctx.cut(_td_hole(ctx, (238.0, 12.0, -52.0), 6.0, 14.0), why="tail servo leads enter from under the boom", kind="wire hole")
 
     body, failed = fillet_inside(ctx, body, r=1.0)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
