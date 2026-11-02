@@ -57,12 +57,67 @@ def bbox_overlap(a, b, pad: float = 0.0) -> bool:
     return bool(np.all(amin - pad <= bmax) and np.all(bmin - pad <= amax))
 
 
+# Mesh prefilter for overlap(): most pairs whose boxes overlap do not actually touch (every motion-sweep step tests
+# hundreds of them), and an exact B-rep boolean costs 0.1 - several s each. Each shape is tessellated ONCE to within
+# PREFILTER_DEFLECTION of its true surface, kept in its own frame on the shape object, and placed with its current
+# location; if the two meshes do not intersect, the true solids can only interpenetrate by less than ~2 x the
+# deflection (0.04 mm, far below what an FDM printer resolves), so the pair is reported clear. Any mesh contact,
+# and any shape whose tessellation is not a closed manifold, goes to the exact boolean, so every reported volume is
+# still exact. KERF_EXACT_OVERLAP=1 turns the prefilter off.
+PREFILTER_DEFLECTION = 0.02
+
+
+def _loc_matrix(loc) -> np.ndarray:
+    t = loc.wrapped.Transformation()
+    return np.array([[t.Value(r + 1, c + 1) for c in range(4)] for r in range(3)])
+
+
+def _local_manifold(shape):
+    """Closed manifold of the shape in its own frame (cached on the shape), or None when it cannot be made."""
+    cached = getattr(shape, "_kerf_prefilter", None)
+    if cached is not None and cached[0].IsPartner(shape.wrapped):
+        return cached[1]
+    m = None
+    try:
+        import trimesh
+        from . import meshy
+        v, f = mesh(shape, tol=PREFILTER_DEFLECTION, ang=0.2)
+        M = _loc_matrix(shape.location)
+        v = (v - M[:, 3]) @ M[:, :3]                     # world -> own frame (rotation is orthonormal)
+        t = trimesh.Trimesh(v, f, process=True)          # weld the per-face vertex copies
+        cand = meshy.to_manifold(t)
+        if cand.status().name == "NoError" and not cand.is_empty():
+            m = cand
+    except Exception:  # noqa: BLE001 - no prefilter for this shape; the exact path still runs
+        m = None
+    try:
+        shape._kerf_prefilter = (shape.wrapped, m)
+    except Exception:  # noqa: BLE001 - shapes that refuse attributes just aren't cached
+        pass
+    return m
+
+
+def _meshes_touch(a, b) -> bool:
+    """False only when both shapes have closed meshes and those meshes do not intersect (see PREFILTER_DEFLECTION)."""
+    import os
+    if os.environ.get("KERF_EXACT_OVERLAP"):
+        return True
+    ma, mb = _local_manifold(a), _local_manifold(b)
+    if ma is None or mb is None:
+        return True
+    wa = ma.transform(_loc_matrix(a.location))
+    wb = mb.transform(_loc_matrix(b.location))
+    return (wa ^ wb).volume() > 0.0
+
+
 def overlap(a, b) -> float:
     """Volume (mm^3) shared by two located shapes. 0 when they only touch."""
     if not bbox_overlap(a, b, pad=0.01):
         return 0.0
     if kmesh(a) is not None or kmesh(b) is not None:     # a fused Meshy part: intersect in mesh space
         return float((_manifold(a) ^ _manifold(b)).volume())
+    if not _meshes_touch(a, b):                          # fast reject; the exact boolean below decides every hit
+        return 0.0
     try:
         r = a.intersect(b)
     except Exception:  # fall back to operator form on odd shape types
