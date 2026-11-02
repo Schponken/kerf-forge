@@ -1341,3 +1341,13 @@ pushed for it and what I know:
   < 50 % predicted use, fit reports -> the calibration route) and can append the rules to ENGINEERING.md. The old
   `kerf feedback <material> <reports>` calibration route is unchanged. tests/test_feedback.py. **Spencer: record real
   breakages / loose screws / fits with it; nothing real is recorded yet.**
+
+## 2026-11-02 08:20 UTC-5 — fpv_5in optimiser run 1 + test status, session e3d8373e
+- `kerf optimise fpv_5in` (9 evaluations, steps 1-2 mm on arm_hole_2 / body_t / arm_t): no passing point.
+  arm_resonance and arm_breaks_first fail at every nearby point; arm_t -0.5 also fails arm_strength; body_t +0.25/+0.5
+  breaks the body's arm nut-trap walls (< 0.8 mm). Every evaluation also showed "KiCad symbol libraries not found"
+  (circuit check, another session's): fetched with tools/fetch_kicad_symbols.py. Run 2 with bigger steps
+  (arm_hole_2 52/55/58, arm_t to 12, body_t 6.5-8, 20 runs) is going.
+- Full suite: 655 passed; failures left are other sessions' (test_sim / test_urdf need mujoco / pybullet installed,
+  circuit.py text write without encoding, catalog board proxy, KST X08 servo dims, aero/sim checks missing from the
+  skill toolbox and UNITS). Mine fixed: utf-8 writes, Studio intake count, skill toolbox rows.
