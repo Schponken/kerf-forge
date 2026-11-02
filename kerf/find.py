@@ -229,8 +229,8 @@ def add(refs: Path, query: str, cand: dict) -> None:
         raise ValueError(f"no `kerf find \"{query}\"` block in {refs.name}; run kerf find first")
     cand.setdefault("use", license_use(cand.get("license", "")))
     blank = s.find("\n\nNot searched by script", start)
-    s = s[:blank] + "\n" + _row(cand) + s[blank:]
-    refs.write_text(s.replace("| — | nothing found | | | | |\n", ""), encoding="utf-8")
+    block = s[start:blank].replace("| — | nothing found | | | | |\n", "")    # only this query's placeholder row
+    refs.write_text(s[:start] + block + "\n" + _row(cand) + s[blank:], encoding="utf-8")
 
 
 def pending_decisions(proj_dir: Path) -> list[str]:

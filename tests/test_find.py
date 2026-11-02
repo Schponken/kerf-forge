@@ -142,3 +142,13 @@ def test_check_warns_while_decision_todo(offline, tmp_path):
     F.find("MG90S pan tilt", d)
     rep = pipeline.run(str(d), sweeps=False)
     assert any("no reuse decision" in w for w in rep["warnings"])
+
+
+def test_add_only_clears_its_own_blocks_nothing_found_row(tmp_path):
+    row = "| — | nothing found | | | | |\n"
+    blk = lambda q: f'### `kerf find "{q}"` (2026-11-01)\n\n| Source | Design |\n|---|---|\n{row}\n\nNot searched by script: x\n\n'
+    (tmp_path / "REFERENCES.md").write_text("# refs\n\n" + blk("first") + blk("second"), encoding="utf-8")
+    F.add(tmp_path / "REFERENCES.md", "second", {"source": "MakerWorld", "title": "Found it", "url": "https://x", "license": "MIT"})
+    s = (tmp_path / "REFERENCES.md").read_text()
+    first, second = s.split('### `kerf find "second"`')
+    assert row in first and row not in second and "Found it" in second
