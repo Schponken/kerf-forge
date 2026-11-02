@@ -7,7 +7,8 @@ from kerf.cli import _run_isolated
 
 def test_project_runs_in_child_process_and_reports():
     r = _run_isolated("check_shelf_bracket", check_only=True)
-    assert set(r) == {"ok", "problems"} and isinstance(r["ok"], bool)
+    assert set(r) == {"ok", "problems", "seconds"} and isinstance(r["ok"], bool)
+    assert isinstance(r["seconds"], (int, float)) and r["seconds"] > 0          # VERIFY.json keeps each project's time
 
 
 def test_a_crashing_build_is_a_failure_not_an_exception():
