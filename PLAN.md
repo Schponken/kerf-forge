@@ -334,4 +334,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 - [ ] Studio round 2 export handoff: integrate declared-source and contained-output fixes, close remaining download gaps with fixture coverage
 
-- [x] Complete Studio source exports: preserve declared imported assets and nested design dependencies in downloaded project archives; reject missing or escaping sources without exporting caches or stale review approval.
+  - [x] Complete Studio source exports: preserve declared imported assets and nested design dependencies in downloaded project archives; reject missing or escaping sources without exporting caches or stale review approval.
