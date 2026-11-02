@@ -431,3 +431,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
 - Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
   tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.
+
+## 2026-11-02 — Keep New design open after leaving Work (Codex, handoff-refresh)
+- Leaving Work for New design now clears the Work navigation flag, so an in-flight Work response or later poll cannot replace the request being typed. One state reset; no layout change. This follow-up carries the fix that was pushed after the manager captured PR #11 for merging.
+- Three focused browser tests pass: delayed Work response, scenario option flow and existing Work-page filters/progress/recovery. Parent independently reviewed the one-line fix and deferred-response regression. No full suite, hardware or paid model run.

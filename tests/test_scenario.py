@@ -163,3 +163,17 @@ out.keptEdit = await p.inputValue('#i_success');
     assert not out["buildDisabled"] and out["restored"] == saved_quote["description"]
     assert all(out["layout"]), out.get("overflow")
     assert out["changedDisabled"] and out["keptEdit"] == "new requirement", out
+
+
+def test_late_work_refresh_cannot_replace_a_new_request(server, tmp_path):
+    out = _browser(server + "/", """
+let release; const ready = new Promise(resolve => release = resolve);
+await p.route('**/api/claude', r => r.fulfill({json: {ok:true}}));
+await p.route('**/api/work', async r => { await ready; await r.fulfill({json: {items:[], sources:[], feed:[]}}); });
+await p.click('#nav_work'); await p.waitForSelector('.work-page');
+await p.click('#newbtn'); await p.fill('#ndesc', 'my plants die when I travel');
+release(); await p.waitForFunction(() => !S.workLoading);
+out.description = await p.inputValue('#ndesc');
+out.activeWork = await p.evaluate(() => S.work);
+""", tmp_path)
+    assert out["errs"] == [] and out["description"] == "my plants die when I travel" and not out["activeWork"], out
