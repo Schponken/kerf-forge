@@ -184,3 +184,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Next round: output files and setup/install recovery, with a fresh main/claims/BOARD check. Reserved Studio areas and claimed project geometry were not edited. PRs are for another session or Spencer to review and merge.
 
 - Viewer round final probe: corrected the contradictory “without hitting anything” text on failed sweeps and marked skipped checks neutrally as not checked; the browser regression asserts both. Final affected-area run: 20 passed.
+
+### 2026-11-02 — Engine speed: part cache follows the engine files a part uses; `kerf req` (session 01S68R6R)
+- kerf/partcache.py no longer hashes every kerf/*.py into each key: each build records (sys.monitoring) the engine
+  files whose code ran, widened by their imports and the top-level import closure, and lookup re-hashes just those.
+  drone_foldable_wings: cold 180 s, warm 1.3 s, after a fea.py edit 2.2 s (was a full ~180 s rebuild), after
+  req_aero.py 51 s (3 wing parts reach it through requirements.py's imports: conservative), after iface.py 156 s.
+  Also fixed catalog.recording() removing the wrong set when two nested recordings were both empty.
+- New `kerf req <p> [id ...]`: only the named requirements (ids or check names) on the assembled project; servo_link
+  all 8 in 6.9 s. `kerf check` still decides PASS. Listed in CLAUDE.md's command table.

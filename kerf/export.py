@@ -76,8 +76,13 @@ def part_files(proj, outdir):
     return files
 
 
+SOLO_G = 150.0   # a part this heavy (many hours of printing) gets its own plate: if a tall neighbour comes loose on the
+                 # A2L's moving bed it would take the big print with it (design review, fpv_wing pod with 9 tall parts)
+
+
 def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
-    """Shelf-pack every printed copy onto as few plates as needed. Returns plate list."""
+    """Shelf-pack every printed copy onto as few plates as needed (one material per plate; a part of SOLO_G or more
+    alone). Returns plate list."""
     outdir.mkdir(parents=True, exist_ok=True)
     X, Y, _ = checks.PRINTERS[printer]
     copies = []
@@ -89,6 +94,15 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
     # one material per plate: PLA, PETG and TPU want different bed and nozzle temperatures (and plate surfaces)
     mats = sorted({proj.items[c[0]].spec.get("material", "PETG") for c in copies})
     plates_, plate_mat = [], []
+    def heavy(c):
+        try:
+            return checks.item_mass_g(proj.items[c[0]]) >= SOLO_G
+        except Exception:  # noqa: BLE001 - no mass: pack it normally
+            return False
+    for c in [c for c in copies if heavy(c)]:
+        plates_.append([(c[0], c[1], c[2])])                  # oriented() leaves it centred on the plate
+        plate_mat.append(proj.items[c[0]].spec.get("material", "PETG"))
+    copies = [c for c in copies if not heavy(c)]
     for mat in mats:
         group = sorted((c for c in copies if proj.items[c[0]].spec.get("material", "PETG") == mat), key=lambda c: -c[4])
         cur, x, y, row_h = [], gap, gap, 0.0

@@ -559,6 +559,29 @@ def _fold_stubs(proj, rep: dict):
     rep["problems"] = keep
 
 
+def run_requirements(name: str, only=None, overrides=None) -> dict:
+    """Just the named requirements (ids or check names; None = all), on the assembled project: parts from the build
+    cache, placed by the joint tree, nothing else checked. The quick way to see one number after an edit, instead of
+    a full check (interference, sweeps, print checks, every FEA). `kerf check` still decides PASS."""
+    from . import assembly as A, usestory
+    proj = P.load(name, overrides)
+    reqs = list(proj.data.get("requirements") or []) + usestory.requirements(proj)
+    known = {r.get("id", r["check"]) for r in reqs} | {r["check"] for r in reqs}
+    unknown = sorted(set(only or ()) - known)
+    if unknown:
+        return {"ok": False, "results": [], "problems": [f"no requirement {', '.join(unknown)} in {name} "
+                                                         f"(have: {', '.join(r.get('id', r['check']) for r in reqs)})"]}
+    P.build(proj)                                 # every item: placement needs the whole joint tree
+    bad = [f"{iid}: {it.error}" for iid, it in proj.items.items() if it.error]
+    if bad:
+        return {"ok": False, "results": [], "problems": bad}
+    asm = A.plan(proj)
+    A.solve(asm)
+    res = requirements.run_all(proj, asm, only=set(only) if only else None)
+    return {"ok": all(r["ok"] for r in res), "results": res, "problems": [],
+            "cached_parts": [k for k, it in proj.printed.items() if it.cached]}
+
+
 def summary(rep: dict) -> str:
     L = [f"{'PASS' if rep['ok'] else 'FAIL'}  {rep['project']}  ({rep['seconds']} s, fingerprint {rep['fingerprint']})"]
     if rep.get("cached_parts"):

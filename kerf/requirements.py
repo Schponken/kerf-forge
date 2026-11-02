@@ -743,7 +743,8 @@ def describe(r: dict) -> str:
     return f"{r.get('value')}{u} ({bound} {lim})"
 
 
-def run_all(proj, asm, quick: bool = False) -> list:
+def run_all(proj, asm, quick: bool = False, only=None) -> list:
+    """Every requirement's result. only: requirement ids or check names to run (the rest are left out)."""
     out = []
     from . import usestory
     story_p = usestory.numbers(proj) if usestory.story(proj) else {}
@@ -752,6 +753,8 @@ def run_all(proj, asm, quick: bool = False) -> list:
         proj.params.update(story_p)
     try:
         for req in list(proj.data.get("requirements") or []) + usestory.requirements(proj):
+            if only is not None and req.get("id", req["check"]) not in only and req["check"] not in only:
+                continue
             out.append(_run_one(proj, asm, req, quick))
     finally:
         if story_p:

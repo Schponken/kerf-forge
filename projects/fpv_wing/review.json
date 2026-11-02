@@ -1,142 +1,119 @@
 {
   "verdict": "FAIL",
-  "fingerprint": "db53d5e3f837ac37",
+  "fingerprint": "5c6804790dafc138",
   "reviewer": "design-reviewer",
-  "date": "2026-11-01",
-  "summary": "The aero layout is sound and sourced: MH 45 reflexed, 28 deg sweep, -2.5 deg washout, 10.1 % static margin, spars at 52 % of allowable, and the wall-to-wall V sleeve is a good load-path idea. But the airframe cannot be assembled or serviced as drawn. The only way into the pod is a 60 x 25.5 mm window above the shelf at the front face. Through it you would have to tape five boards up to 240 mm deep under the spar sleeves and drive the rear root bolts behind the main sleeve. Several flight-critical problems are hidden by checks that pass: the prop tip sits 30 mm below the belly, TWR is computed with a different prop than the one specified (1.36 with the Gemfan 7040, not 1.54), the sleeve FEA assumes solid PLA but the pod prints with 2 walls at 15 % infill, and the 314 mm elevon prints standing on a 102 mm2 foot.",
+  "date": "2026-11-02",
+  "summary": "Most of the previous findings are fixed in the geometry. The top hatch gives real access to the shelf and the root bolts. The pod prints with 4 walls plus sleeve modifiers, so the FEA matches what prints. TWR is now computed for the prop actually fitted (HQ 7x4x3), the elevons are split with separate PETG horns, the outer segments bolt on with splice plates, and the pod has strap tabs and cooling vents. The fixes brought in new problems, though, and none of them is caught by a check. The new hatch is a flat 1.7 mm panel spanning 200 mm with nothing holding it down along its length, so it will balloon in flight. Its rear tongue covers the VTX antenna's exit hole. At one end of the elevon throw the pushrod runs into the servo pocket's aft edge. The outer elevon halves have about +-1.3 deg of free play on the slip-fit joiner. And the single PLA plate stacks the 7-hour pod with nine tall, thin standing parts.",
   "findings": [
     {
-      "severity": "blocker",
-      "part": "pod",
-      "issue": "The pod is a closed box with one way in: the front opening (y +-30, z -62.6 to +6). Above the shelf (top z -19.5) that leaves a 60 x 25.5 mm slot. Through it the build expects you to (a) foam-tape the GPS (x 5), FC + RX (x 52), ESC (x 88-161, partly under both spar sleeves with 1.7-2.5 mm clearance) and VTX (x 192, 237 mm deep, behind both sleeves), in the order front to back, so each part blocks the next; (b) drive the rear wing-root M3 at x 112 from inside, 157 mm deep, between the main sleeve (z about -6 to +14 at x 74-104) and the rear sleeve. A straight key at the bolt's z = 4 cannot get past the main sleeve, and the window top is z = 6. The left and right root bolts are also coaxial, so a key for one runs into the other's head. Step 13 of the generated assembly renders shows the ESC dropping in through the closed top skin, which breaks ENGINEERING.md s11 ('nothing must be inserted through a closed part'). report.json hex_keys passes these bolts only because its probe starts inside the closed cavity. The FC's USB port (needed for INAV setup) is also 100 mm inside.",
-      "fix": "Give the pod real access. Either (1) make the electronics a removable sled: a 58 mm-wide printed tray on two rails above the battery, components no more than 12 mm tall, slid in through the front window under the sleeves and wired on the bench, with the FC USB at the front edge; or (2) cut a bolted or magnetic top hatch from x -10 to ~215 above the shelf and move the sleeves' crossing so the hatch opening clears them. Move the wing-root fasteners outside: e.g. one M3 per side from the wing's lower skin through a counterbored access pocket in wing_x1 into a heat-set insert in a pod side-wall boss, or a captive locking pin/clip on the main tube. Reverse assembly.order to rear-to-front if anything still goes in from the front. Fix kerf/access.py so a key probe has to reach open air outside the assembly."
+      "severity": "major",
+      "part": "hatch",
+      "issue": "The hatch (x -5 to 205, 72 mm wide, 1.7 mm PLA) is held only at its ends: 2 x M3 at x 4 and a tongue under the skin at x 205-213. Along its sides it just rests on the ledges (parts/pod.py ledge, parts/hatch.py), and nothing stops it lifting. The pod top sits above the wing's upper surface, in the suction field, and the bay is pressurised by the nose ram-air vents. So the net outward load is about 0.5-1.5 kPa at 100-150 km/h. As a 200 mm simply supported plate strip (I = 72 x 1.7^3 / 12 = 29.5 mm^4, E about 3 GPa), 500 Pa already gives about 7 mm of mid-span lift, and more at speed. The hatch will balloon, open a gap along both sides and buzz (oil-can) in flight. A 210 mm part that only has to stay down has no feature that keeps it down.",
+      "fix": "Add a second pair of M3 + inserts at mid-length. x 100-140 is clear of both sleeves at |y| 30-36: the main sleeve ends at about x 95 there and the rear sleeve starts at about x 155. Put ledge blocks there like the front ones. Also stiffen the panel: give it a slight crown (2-3 mm camber across the 72 mm) or two longitudinal 3 x 3 mm ribs at |y| about 25. They sit between the sleeves and the cut plane (2.8 mm), or are notched over the sleeves. Make the side edges overlap the ledges with a 0.5 mm lip so the gap is a labyrinth, not a slot."
     },
     {
       "severity": "major",
-      "part": "pod",
-      "issue": "The moment-carrying V sleeves are checked as solid PLA: the DESIGN.md hand check uses I = 7630 mm4 for a solid 20/8.2 tube (6.2 MPa), and the FEA is solid too. But the pod prints with walls: 2 at 15 % infill, which overrides ENGINEERING.md s5's 4-wall default for any part with an fea_static. As printed, the sleeve is two thin perimeter shells (about 0.9 mm at OD 20 and at the 8.2 bore) joined by 15 % infill. As a shell, I is about 3000 mm4, so the centreline stress is about 16 MPa against the 19.5 MPa limit, and the shell-to-shell shear through 15 % infill is not checked at all. The 2.4 mm skin, insert bosses and root-bolt seats are mostly infill as well.",
-      "fix": "Put 100 % infill modifier volumes on both sleeves, the 8 insert bosses and the root-bolt pads, and write them into the plate 3MF and PRINT_SETTINGS.md. Or set the pod to walls: 6 (2.4 mm of skin is then all perimeter). Redo the DESIGN.md sleeve hand check for the section that actually prints."
-    },
-    {
-      "severity": "major",
-      "part": "motor",
-      "issue": "Prop strike on every belly landing. The motor axis is at z = tail_z = -6 and the Gemfan 7040 radius is 89.2 mm, so the blade tip reaches z = -95. The pod belly is at -65, so the tip is 30 mm below the belly. With a tri-blade stopping at a random angle, a blade clears the ground only when it stops more than 48.6 deg from straight down, which is about 19 % of stops. DESIGN.md says the opposite ('clear of the ground on a belly landing'). prop_clear checks only clearance to the airframe, never to the ground.",
-      "fix": "Pick one: (a) a folding 2-blade pusher prop with spinner on the 5 mm shaft (catalog it with a source); the blades fold back on touchdown, which is standard on pusher wings; (b) raise the motor axis so the disc bottom sits at least 5 mm above the belly line (tail_z >= +29: a pylon above the TE); (c) cut pod depth and use a smaller prop, re-running twr. Add a ground-plane case to prop_clearance (belly flat on z = pod_bottom) so this can't pass silently again, and correct DESIGN.md."
-    },
-    {
-      "severity": "major",
-      "part": "motor",
-      "issue": "The twr requirement passes on thrust from a different prop. The catalog motor note gives 2319 g with the HQ 7x4x3 and 2058 g with the Gemfan 7040, and the project's prop (drone.props.7in) is the Gemfan Flash 7040. Scaled to 22.2 V, 2058 g becomes 1849 g, so TWR = 1849 / 1357 = 1.36, below the brief's 1.5. The reported 1.54 is wrong.",
-      "fix": "Either catalog the HQ 7x4x3 (source: the iFlight test report already cited) and use it as the prop, or keep the Gemfan and resize: a 2807/2810-class motor, or cut ~120 g. Change the thrust_to_weight check to use the motor's thrust for the declared prop, not thrust_g_max."
-    },
-    {
-      "severity": "major",
-      "part": "elevon_l",
-      "issue": "Printability: each elevon stands 314 mm tall on a 102 mm2 foot (the build warns about it). That is a 40 mm x ~5 mm, 1-wall, 5 % infill blade, about 60:1 height to thickness. On a moving bed it will sway, ring and very likely be knocked loose by the nozzle in the last 150 mm. The control horn sticks out of the side as a flat 10 x 14 mm overhang with nothing under it. Applies to elevon_r too.",
-      "fix": "Split each elevon at the segment line (y 280) into two pieces of about 150 mm, keyed with a 2-3 mm carbon rod along the hinge-line thickness. Or print it lying on its flat lower surface (the aft 24 % of MH 45 is almost flat) with the hinge bevel up. Make the horn a separate part bonded through a slot (see the next finding), or give it a 45 deg gusset so it prints without support."
-    },
-    {
-      "severity": "major",
-      "part": "elevon_l",
-      "issue": "Control linkage (both elevons): (1) The horn hole is only about 9.7 mm from the hinge (3.5 aft, 9 down). The servo axis sits about 9.4 mm above the lower skin, so the servo arm must be at least about 12 mm to reach out of the pocket. The servo then sees about 1.2x the hinge moment, and nothing specifies the arm length. (2) The DESIGN.md hinge moment of 2.1 kgf.cm is already 64 % of the X08's ~3.2-3.3 kgf.cm at the 5 V Vx default (55 % at 6 V), which breaks ENGINEERING.md s3 (servo holding <= 50 % of stall), and no static_torque requirement checks it. (3) A 1.6 mm hole for 1.2 mm wire on a 9.7 mm horn gives about +-1.2 deg of free play at the surface, which is a flutter risk on a 150 km/h wing. (4) The 2.4 mm horn grows out of a 1-wall, 5 % infill skin about 60 mm from the inner end of a 316 mm surface, so the pushrod load tears at a 0.45 mm skin and the outer 250 mm is driven only by the skin's torsion.",
-      "fix": "Lengthen the horn to 15-18 mm below the hinge line. Make it a through-slot horn (PETG, plywood or G10) glued through both skins with a printed solid boss, or a 100 % infill modifier block round it. Use a 1.2 mm hole drilled to fit, or a clevis/EZ connector. Specify the servo arm hole radius to match the horn radius (about 1:1) and set the F405-WMO Vx jumper to 6 V. Move the horn outboard (toward mid-elevon) or stiffen the elevon with a spanwise 2-3 mm carbon rod. Add a static_torque requirement for the X08 at the design hinge moment."
-    },
-    {
-      "severity": "major",
-      "part": "wing_l2",
-      "issue": "The brief asks for 'bolted sections I can replace after a crash', and DESIGN.md says 'a crashed segment is reprinted alone'. But the outer segments are epoxied to the inner ones and to both spar tubes, and the elevon runs across the joint. Replacing a crashed outer segment means cutting it off epoxied carbon. The only bolted joints are the wing root (unreachable, see the blocker), nose and motor mount. Applies to wing_r2 and to the epoxied tubes in wing_l1/r1.",
-      "fix": "Bolt the inner and outer segments: two M3 per joint from a counterbored pocket in the lower skin into heat-set inserts in a solid-modifier boss across the joint face, or a printed joiner key. Let the outer segment slide on the tubes (slip fit, no epoxy) and fix it with the bolts or a grub screw on the main tube. Split the elevon at the joint so each segment carries its own piece."
+      "part": "hatch",
+      "issue": "The hatch's rear tongue covers the VTX antenna's exit hole. The tongue spans x 204-213 and |y| <= 30, 0.2 mm under the pod's top skin (hatch.py TONGUE_L = 8 from HATCH_X[1] = 205). The antenna hole is a 7 mm hole at x = ant_x = 212, y 0 (pod.py line 165), so x 208.5-215.5. The tongue is a separate part, so the hole is never cut through it, and 4.5 of the hole's 7 mm lie over the tongue. The antenna's 95 mm coax tube runs from the VTX's MMCX up through that hole, right where the tongue has to slide in. The hatch cannot be fitted with the antenna installed. The interference check misses it because the vtx_ant proxy starts at z = pod_top, above the skin.",
+      "fix": "Move ant_x to 220 (the param allows up to 225; check that the hole stays clear of the tail-top slope and the motor-mount bosses), or cut a 7.5 mm notch in the tongue at y 0. Let the vtx_ant proxy start at the VTX connector (z of the shelf + VTX height), so a future clash is caught."
     },
     {
       "severity": "major",
       "part": "wing_l1",
-      "issue": "The root heat-set inserts (2 per side) and the servo pocket are cut into a 1-wall, 3 % infill part. Around the 4 mm insert hole the slicer makes one 0.45 mm perimeter, and behind it is about 15 mm-pitch infill, so the insert has nothing to melt into. DESIGN.md knows this ('add a 100 % infill modifier'), but the note is not in the plate 3MF (no modifier volumes), not in PRINT_SETTINGS.md and not in ASSEMBLY.md (report maker_notes is empty). Someone who prints the plate as delivered gets inserts that spin out and a servo glued to a single perimeter. Applies to wing_r1.",
-      "fix": "Write cylinder modifier volumes (100 % infill, 4 walls) round each root insert and a box modifier round the servo pocket into the per-part and plate 3MF. Add them to PRINT_SETTINGS.md and ASSEMBLY.md step 3. Also emit DESIGN.md maker notes into report.maker_notes so they reach the print package."
+      "issue": "At one end of the elevon throw the pushrod hits the servo pocket's aft edge. The servo pocket spans x 184.75-215.25 (tab span + 1, centred on servo_x 200). The output axis is at x 205.6, z 3.8, 8.2 mm above the lower skin (skin_z -4.4). DESIGN.md specifies an 8 mm arm hole and the horn hole 12 mm under the hinge (x about 268, z about -12.6). At +25 deg throw the horn hole moves about 5 mm aft, so the arm swings about 40 deg aft and its hole rises to z about -2.4. The pushrod line then crosses x 215.25 at z about -3.1, which is 0.65 mm inside the lower skin (-3.73 there), plus the wire's 0.6 mm radius. So the 1.2 mm wire runs into the pocket's aft wall, which is the 100 % modifier block, and the servo stalls at full throw in that direction. The build does not model the pushrod (report assembly.horns is empty), so nothing catches it. Also, the 8 mm KST arm hole is not in the catalog entry (servos.KST_X08_Plus has no arm geometry), and the static_torque requirement the last review asked for was not added. The 36 % servo load is a DESIGN.md hand calculation only. Applies to wing_r1.",
+      "fix": "Cut a pushrod exit slot through the lower skin from the pocket's aft wall to about x 235 (3 mm wide at y = horn_y, deep enough for the arm hole's full arc), or use a 10-11 mm arm hole with the 15 mm horn hole (same 1.4-1.5:1 ratio, hole lower). Catalog the KST arm's hole radii with a source. Add a static_torque requirement for servo_l / servo_r at the 0.20 N m hinge moment times the arm/horn ratio, and model the pushrod as a keep-out line swept with the elevon joint so the clash is checked."
+    },
+    {
+      "severity": "major",
+      "part": "elevon_lo",
+      "issue": "The outer elevon halves (60 % of the surface, the outboard and most flutter-prone part) are driven only through the 3 mm carbon joiner. It is glued in the inner half and a slip fit in the outer half: the bore is JOINER_D + 0.25 (elevon.py line 63). The rod lies about 5.3 mm from the hinge axis (4 mm aft, 3.5 mm up), so 0.125 mm of radial clearance gives about +-1.35 deg of free rotation for the outer half about its hinge tape. Free play on a control surface is the classic cause of limit-cycle flutter and buzz, and this airframe is meant to fly at 150-180 km/h (DESIGN.md). The last review's free-play concern at the horn was fixed (1.3 mm holes) but moved here. Applies to elevon_ro.",
+      "fix": "Make the outer bore a zero-play fit and keep it removable: print it at 3.0 mm and ream it to a push fit, and lock it with a tape band across the split on both skins, or a 2 mm pin/grub screw across the joint. Better still, add a second, smaller rod (2 mm) further aft (about 15 mm from the hinge) so the two halves are keyed together at a long lever arm. Note the outer half's removal in the ASSEMBLY.md crash-repair step."
     },
     {
       "severity": "major",
       "part": "pod",
-      "issue": "Battery retention: there are no strap slots and no stops, only 'a strip of anti-slip pad', which breaks ENGINEERING.md s9 ('strap slots for a 20 mm strap'). project.yaml says the pack is held by the 'nose in front', but the pack's front face is at x 64 and the nose is at x -45, a 109 mm free run. The XT60 and its solder joints lie in that run (x 50). In a nose-in arrival, 372 g of LiPo slides forward into its own connector.",
-      "fix": "Add two 20 x 3 mm strap slots through the bay floor (or side walls) at x about 90 and 150 for a velcro strap. Add a TPU or foam spacer, or a printed removable stop, ahead of the pack so its x is fixed at the balance position, with a channel for the lead and the XT60 beside it, not in front of it."
-    },
-    {
-      "severity": "major",
-      "part": "pod",
-      "issue": "No cooling path. The 60 A ESC (73 x 30 x 12, 48 A peak) and an 800 mW TX800 VTX sit in a sealed PLA box. The only openings are a 15 mm lens hole, an 8 mm lead hole, a 7 mm antenna hole and the servo-lead holes. Foam-taped electronics heat-soak PLA (Tg ~55-60 C) over a 20-minute flight. The VTX at 800 mW dissipates several watts.",
-      "fix": "Add a ram-air inlet (NACA duct or louvred slot under the nose or on the pod front shoulders) and an exit in the low-pressure tail area (sides of the tail taper ahead of the mount), with the ESC and VTX heatsink in the flow. Limit the VTX to <= 400 mW in DESIGN.md until a bench heat-soak test shows more is OK."
-    },
-    {
-      "severity": "major",
-      "part": "pod",
-      "issue": "The print package puts every part on ONE plate (plate_1.3mf) in three materials: PLA, PETG and TPU, which need different bed temperatures (55 / 70 / 35 C), a different plate surface for PETG and different nozzle temperatures. Eleven tall standing parts share one long print, so one toppled elevon wrecks the 310 mm pod beside it. The A2L cannot print this plate as delivered.",
-      "fix": "Pack plates by material, with the high-risk tall parts kept apart: pod alone; wing segments (2 per plate); elevons (or their split halves); TPU nose + fins; PETG mount. Change export.plates to never mix materials on a plate."
+      "issue": "Plates are now one material each (fixed), but plate_2.3mf puts every PLA part in one job: the 310 mm pod, 4 wing segments standing 220-230 mm on 1-wall, 3 % infill, 4 elevon halves standing 126-189 mm on footprints about 40 x 5 mm, and the hatch standing 72 mm on a 1.7 mm edge. That is about 626 g and at least 400 min. On the A2L's moving bed, if any one slender part comes loose, the nozzle drags it through the others and the 312 g, 200-minute pod is lost with it. The last review asked for the pod alone and the tall parts kept apart. Only the material split was done.",
+      "fix": "Change export.plates (generally, not just for this project) to split a material group: put a part over about 200 mm tall or over about 3 h on its own plate, and keep tall slender parts (height/footprint > 15) apart from heavy ones. For this project: pod alone; wing segments 2 per plate; elevon halves + hatch together; PETG and TPU as now."
     },
     {
       "severity": "minor",
       "part": "pod",
-      "issue": "Pod print: 310 mm tall, about 300 g, on a 48 x 50 mm foot (5 mm brim). The wing centre section's trailing edge (x = 250 + 0.27|y|) runs to x 263.6 at y +-50, so its lowest point starts 1.4 mm above the bed in air. That swept TE edge then climbs at about 15 deg from horizontal with no support. 7 sharp inside corners remain at the shelf front edge and the opening (3 in stressed zones).",
-      "fix": "End the centre section's TE at the rear face (pod_x1 = x_te(pod_hw) or trim the TE to x <= pod_x1 - 0) so the TE corners start on the bed, or add a 0.4 mm sacrificial fin under them. Add 1-2 mm fillets at the shelf front corners. Consider mouse-ear pads and a 60 mm/s outer-wall cap for the last 150 mm."
-    },
-    {
-      "severity": "minor",
-      "part": "wing_l2",
-      "issue": "Outboard of the elevon (y 460-500), the TE stub is a ceiling about 30 mm deep over the elevon slot as printed standing (overhang_pct 1.14 %). It is held on one side only and will droop on a 1-wall print. Same on wing_r2.",
-      "fix": "Chamfer the underside of the stub at 45 deg (the end face of the slot), or run the elevon to the tip."
-    },
-    {
-      "severity": "minor",
-      "part": "fin_l",
-      "issue": "The TPU fin (2 walls, 15 %, E about 26 MPa) is about 130x softer than PLA. A rough estimate at 5 deg sideslip and 150 km/h gives about 3 mm tip deflection, with low torsional stiffness, so yaw damping drops and flutter is possible. Printed on its root, the root ahead of and behind the tab follows the wing's curved upper surface, so those faces are shallow overhangs in TPU, which makes a poor glue face. A TPU-to-PLA CA joint peels in a wingtip landing. Same on fin_r.",
-      "fix": "Make the fin PETG/PLA with a TPU bumper on the lower and trailing tip, or put a 2 mm carbon rod in the fin's thickness. Run the tab the full root chord, and print the fin on its flat side or with the root overhangs supported. Lock the tab with a pin through the wing skin."
-    },
-    {
-      "severity": "minor",
-      "part": "wing_l1",
-      "issue": "Brief: 'TPU where it lands'. A flying wing lands on its belly, and the belly here is the 2-wall PLA pod floor (which also carries the pack). Only the nose and fins are TPU. The servo arms and Z-bend pushrods also hang under the lower skin in the belly-slide zone.",
-      "fix": "Add a replaceable TPU belly skid (bolted or glued, 2-3 mm, x -40 to ~200), and if possible a small TPU fairing ahead of each servo arm."
+      "issue": "The ESC (73 mm long) cannot drop in from above. Between the sleeves the gap is only about 61 mm at y 0 and 60 mm at |y| 15 (main sleeve back edge about x 82-89, rear sleeve front about x 143-149), and in its final place the ESC sits partly under both sleeves (4 mm under their undersides). It goes in only by tilting it about 14 deg and sliding it under the rear sleeve, with 12 and 14 AWG leads already soldered. That works but is fiddly, and ASSEMBLY.md step 17 just says 'fit esc'. Also, 'one cable tie round the shelf' is impossible: the shelf runs wall to wall.",
+      "fix": "Add the tilt-and-slide instruction to step 17 (or shorten esc_x travel so the ESC sits between the sleeves, e.g. mounted on its side). Add two 3 x 1.5 mm cable-tie slots through the shelf beside the ESC."
     },
     {
       "severity": "minor",
       "part": "pod",
-      "issue": "Wiring: the 12 AWG main lead (49.5 A peak) is routed 'over the GPS'. The QMC5883 compass is right under it, and the catalog note says to keep it away from power wires. The RP1's T antenna is taped inside the pod beside the carbon tubes and 6S leads, which costs range on a wing sold as long-range.",
-      "fix": "Run the main lead down the bay side wall away from the GPS (or disable the compass in INAV, which planes don't need). Bring the RX antenna out of the pod (e.g. through the wing root into the inner segment, or a vertical whip at the tail), or use a diversity RX."
+      "issue": "Battery swap: the pack is reached only with the nose off (4 x M3 x 16 into inserts, every flight), and the strap's velcro sits 60-170 mm inside the bay with 6 mm over the pack, where you cannot close it by hand. That works only if the strap is a pre-closed loop the pack slides into, and nothing says so. A field battery swap that needs a hex key and 4 screws in a TPU nose will wear the inserts out.",
+      "fix": "In ASSEMBLY.md, say the strap is closed once into a snug loop through the tabs and the pack slides into it. Consider a quick-release nose: 2 screws plus a hook/tongue at the top, or captive thumb screws."
+    },
+    {
+      "severity": "minor",
+      "part": "pod",
+      "issue": "Mass margin is thin: TWR 1.54 against 1.5 allows only about 33 g of growth (1389 g). The 1356 g estimate (printed 726 + on-board 562 + wiring) does not include epoxy, foam tape, hinge tape, CA, heat-shrink, 18 brass inserts or about 22 screws, which is typically 20-35 g on a build like this. The real airframe will likely sit at TWR about 1.50-1.52 or below.",
+      "fix": "Add the consumables and fasteners to the mass model (bom_extra items with weight_g), or take mass out of the pod: it is 312 g and 'overbuilt' at 12 % utilisation; e.g. 3 walls in the hatch-side skins away from the bosses, or lightening windows in the shelf."
+    },
+    {
+      "severity": "minor",
+      "part": "pod",
+      "issue": "26 inside corners are still sharp: 16 are declared (fillet would face down), 10 are not (vent slot corners at x 238, the shelf front at x -5 / y +-47, and the ledge ends at x -3). 6 of them are in stressed zones. At 12 % peak utilisation this is not a strength issue, but the vent corners in the belly are where landing cracks start.",
+      "fix": "Give the belly vents 2 mm end radii (slot shape instead of a box) and fillet or declare the rest."
+    },
+    {
+      "severity": "minor",
+      "part": "hatch",
+      "issue": "The hatch prints standing on its 1.7 mm edge (363 mm2 contact, flagged by the build), 218 mm long and 72 mm tall. Printed flat on its outer face it would have a smooth bed-side finish on the visible top and no wobble.",
+      "fix": "Print it on its outer face (print_rot so the top skin is on the bed). The tongue then prints above its 3 mm root as a short cantilever, or give the root a 45 deg chamfer."
+    },
+    {
+      "severity": "minor",
+      "part": "splice_l",
+      "issue": "The splice plate is a 30 x 50 mm block standing about 3.5-5 mm proud of the lower skin, with exposed socket heads. It sits in the belly-landing slide zone. Only its plan-view edges are filleted, so its forward face is a square step that catches grass and adds drag. Same on splice_r.",
+      "fix": "Chamfer or round the leading and trailing lower edges (e.g. a 3 mm x 30 deg ramp at the front) and counterbore the screw heads flush."
+    },
+    {
+      "severity": "minor",
+      "part": "pod",
+      "issue": "Still open from the last review: there is no TPU belly skid (brief: 'TPU where it lands'; the belly is PLA and only the nose is TPU). The RX's T antenna is still taped inside the pod beside the carbon tubes. The VTX output is not capped in DESIGN.md (800 mW in the pod, with a small inlet: two 8 mm nose vents).",
+      "fix": "Add a replaceable 2-3 mm TPU skid under the bay (bolted into the floor or glued). Route the RX antenna out through the wing root or the tail. Cap the VTX at 400-600 mW in DESIGN.md until a bench heat-soak test."
     },
     {
       "severity": "minor",
       "part": "motor_mount",
-      "issue": "The mount_strength load case pulls the motor aft (+x) and says 'a nose-in crash throws the motor + prop aft'. On a pusher, thrust pushes the motor forward into the plate, and in a nose-in crash its inertia also pushes forward. So the case checks screw pull-off, which is fine as a bound, but the stated reason is backwards. The 6 mm plate has no outside edge breaks. ASSEMBLY.md specifies M3 x 5 (2.0 mm engagement, exactly the catalog minimum) while DESIGN.md says M3 x 6.",
-      "fix": "Correct the 'why' (forward crash load and prop-strike side load), add a forward-load case, chamfer outside edges 0.5 mm, and settle on M3 x 6 (3 mm engagement, at the 3 mm max depth)."
+      "issue": "Stale or inconsistent documents. The mount_strength 'why' in project.yaml still describes 'the pylon carries the raised motor ... 24 mm above the upper pod bolts', but there is no pylon now. DESIGN.md says 'stock M3 x 6' for the motor screws, while ASSEMBLY.md and the fastener table use M3 x 5 (2 mm in the motor, exactly the catalog minimum). The DESIGN.md CG note still uses the 372 g pack ('372 / 1331 g'); the pack is now 302 g. The plate's outer edges have no edge break. report.maker_notes is still empty.",
+      "fix": "Rewrite the mount_strength why for the flush mount. Choose M3 x 6 (3 mm engagement, the max depth) in both places. Update the CG sensitivity (302 / 1356: about 2.2 mm of CG per 10 mm of pack). Add a 0.5 mm chamfer on the outer edges of the mount."
     },
     {
       "severity": "minor",
-      "part": "pod",
-      "issue": "Balance: req_balance puts each printed part's mass at its solid centroid. For 1-wall, 3 % wing skins the mass sits further aft (perimeter centroid), about 1 % MAC on the swept wing. bat_x is 118 against a range max of 120, and the pack is 3 mm from the floor taper, so there is no aft adjustment left if the real aircraft comes out nose-heavy.",
-      "fix": "Shift the default bay position or shelf so the pack has +-15 mm of travel round the 10 % MAC point. Tell the builder to balance on the marked CG (x 146) and not trust the computed value."
-    },
-    {
-      "severity": "minor",
-      "part": "nose",
-      "issue": "The 15 mm lens hole is in a 2.4 mm wall in front of a 155 deg lens, so the window edge limits the view to about +-68 deg and the image corners will vignette. Some walls are 1.13 mm (warning). The VTX antenna proxy is 20 mm tall where the catalog part is 95 mm (it stands about 117 mm above the chord plane).",
-      "fix": "Chamfer the lens window outward at about 70 deg half-angle, or let the lens barrel protrude flush. Model the antenna at its catalog length."
+      "part": "wing_l1",
+      "issue": "The 100 % modifiers are now in project.yaml and PRINT_SETTINGS.md (fixed in substance), but they are not written into the plate 3MF as modifier volumes. Each one has to be placed by hand in the slicer, 'sized and placed as below' from a text table, which is easy to miss on a 10-part plate.",
+      "fix": "Emit the modifier volumes into the per-part and plate 3MF (Bambu Studio supports modifier parts in the 3MF config)."
     },
     {
       "severity": "minor",
       "part": "elevon_r",
-      "issue": "The TE is 1.01 mm (2 perimeters), which is fragile on a hinged surface that gets handled. The URDF joint and link names collide (elevon_l / elevon_r).",
-      "fix": "Raise te_min to 1.2 mm. Rename the URDF links (e.g. elevon_l_link)."
+      "issue": "Carried over: TE_MIN is still 1.0 mm (walls 0.97-1.04 mm flagged), which is fragile on a hinged surface that gets handled. The URDF joint and link names still collide (elevon_l / elevon_r).",
+      "fix": "TE_MIN 1.2 mm. Rename the URDF links (e.g. elevon_l_link)."
     }
   ],
   "scores": {
-    "pod": {"load_path": 3, "feature_purpose": 2, "print_intent": 3, "finish": 3},
-    "wing_l1": {"load_path": 3, "feature_purpose": 3, "print_intent": 4, "finish": 3},
-    "wing_r1": {"load_path": 3, "feature_purpose": 3, "print_intent": 4, "finish": 3},
-    "wing_l2": {"load_path": 3, "feature_purpose": 2, "print_intent": 3, "finish": 3},
-    "wing_r2": {"load_path": 3, "feature_purpose": 2, "print_intent": 3, "finish": 3},
-    "elevon_l": {"load_path": 2, "feature_purpose": 3, "print_intent": 1, "finish": 3},
-    "elevon_r": {"load_path": 2, "feature_purpose": 3, "print_intent": 1, "finish": 3},
-    "fin_l": {"load_path": 3, "feature_purpose": 3, "print_intent": 3, "finish": 3},
-    "fin_r": {"load_path": 3, "feature_purpose": 3, "print_intent": 3, "finish": 3},
-    "nose": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
-    "motor_mount": {"load_path": 3, "feature_purpose": 4, "print_intent": 5, "finish": 3}
+    "pod": {"load_path": 4, "feature_purpose": 3, "print_intent": 3, "finish": 3},
+    "hatch": {"load_path": 2, "feature_purpose": 3, "print_intent": 3, "finish": 3},
+    "wing_l1": {"load_path": 4, "feature_purpose": 3, "print_intent": 4, "finish": 3},
+    "wing_r1": {"load_path": 4, "feature_purpose": 3, "print_intent": 4, "finish": 3},
+    "wing_l2": {"load_path": 4, "feature_purpose": 4, "print_intent": 3, "finish": 3},
+    "wing_r2": {"load_path": 4, "feature_purpose": 4, "print_intent": 3, "finish": 3},
+    "elevon_l": {"load_path": 3, "feature_purpose": 4, "print_intent": 3, "finish": 3},
+    "elevon_r": {"load_path": 3, "feature_purpose": 4, "print_intent": 3, "finish": 3},
+    "elevon_lo": {"load_path": 3, "feature_purpose": 3, "print_intent": 3, "finish": 3},
+    "elevon_ro": {"load_path": 3, "feature_purpose": 3, "print_intent": 3, "finish": 3},
+    "horn_l": {"load_path": 4, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "horn_r": {"load_path": 4, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "splice_l": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "splice_r": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "fin_l": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "fin_r": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "nose": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 4},
+    "motor_mount": {"load_path": 4, "feature_purpose": 4, "print_intent": 5, "finish": 3}
   }
 }

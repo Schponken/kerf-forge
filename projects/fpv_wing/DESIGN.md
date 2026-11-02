@@ -52,7 +52,7 @@ lands. Every number below is either a param in project.yaml, a catalog value, or
 coefficient 0.4 at full throw: H = q Ch S c = 1065 x 0.4 x 0.012 x 0.040 = 0.20 N m = 2.1 kgf.cm at the hinge. The
 linkage gears it down: horn hole 12 mm under the hinge, servo arm hole 8 mm from the spline (use that hole of the
 KST arm), so the servo sees 2.1 x 8 / 12 = 1.4 kgf.cm = 36 % of its 3.85 kgf.cm at 6 V (ENGINEERING.md s3: <= 50 %).
-Bridge the F405-WMO's Vx=6V pads so the servos run at 6 V. 1.3 mm horn holes on 1.2 mm wire: ~0.1 mm play, under
+KST publishes no hole radii for its stock arms (checked: KST/OpenELAB product pages, servodatabase.com list no horn dimensions), so the builder measures the arm and uses the hole at 8-11 mm: at 11 mm the servo sees 2.1 x 11 / 12 = 1.9 kgf.cm = 50 %, the ENGINEERING.md limit. The pushrod leaves the pocket through a 5 mm slot in its aft wall, open to the bottom skin, stopping short of the rear spar channel (the reviewer found the rod's line ran 0.65 mm into the wall at full throw). Bridge the F405-WMO's Vx=6V pads so the servos run at 6 V. 1.3 mm horn holes on 1.2 mm wire: ~0.1 mm play, under
 0.5 deg at the surface. Fly with rates (60-70 %) above ~180 km/h.
 
 **Cruise power**: P = W V / (L/D) / eta = 1331 g x 9.81 x 22.2 m/s / 6 / 0.5 = 96.7 W (electrical.cruise). SonicModell
@@ -78,7 +78,7 @@ publishes 81 W at 75-80 km/h for its 1 m AR Wing Pro, so L/D 6 / eta 0.5 is on t
 - **Motor mount** (`mount_strength`): 6 mm PETG plate, 45.5 N (2 x full thrust) along the motor axis at the motor
   screws, held at the 4 pod bolts, crash SF 3.0 (for a pusher the thrust presses the plate onto the pod; the case
   that pulls the screws is a nose-in crash throwing motor + prop aft, 64 g x 50 g = 31 N, covered by the 45.5 N): 1.5 MPa of 16. The build calls it overbuilt; it stays 6 mm on purpose: the motor screws need
-  3 mm counterbores (heads flush against the pod) over 3 mm of grip for a stock M3 x 6, and a stiff plate keeps prop
+  3 mm counterbores (heads flush against the pod) over 3 mm of grip for a stock M3 x 5 (ASSEMBLY.md's computed length), and a stiff plate keeps prop
   imbalance from buzzing the tail. It weighs 11.5 g.
 - **Wing root**: two M3 per side from inside the pod (reached from above through the hatch) into heat-set inserts in
   the inner segment's root face; they only keep the segment on the tubes (the tubes carry lift and moment). The
@@ -94,10 +94,10 @@ Plates are one material each (PLA / PETG / TPU need different temperatures).
 | Part | Material | Print | Notes |
 |---|---|---|---|
 | pod | PLA, 4 walls, 15 % (+ modifiers) | standing on its rear face, supports under the centre-section TE only | shelf, ledges and bosses vertical; boss ends 45 deg cones; sleeves teardrop; 310 mm tall: brim |
-| hatch | PLA, 2 walls | standing on its side edge (skin vertical) | rests on the pod's ledges; rear tongue under the skin, 2 x M3 at the front |
+| hatch | PLA, 2 walls | flat on its outer face (smooth top on the bed, ribs up) | rests on the pod's ledges; rear tongue under the skin (notched round the antenna lead), 2 x M3 at the front + 2 x M3 at mid-length (x 130); two 2 x 3 mm ribs along its underside at y +-18 |
 | wing_l1 / r1 | PLA, 1 wall, 3 % (+ modifiers) | standing on the root face | servo pocket, lead channel, root and splice inserts |
 | wing_l2 / r2 | PLA, 1 wall, 3 % (+ modifier) | standing on the joint face, supports up the elevon slot under the TE stub | fin slot, splice insert |
-| elevon_l / r, elevon_lo / ro | PLA, 1 wall, 5 % | standing on the outboard end (120 / 180 mm tall), brim | joined by a 3 mm carbon rod; the inner half has the horn slot |
+| elevon_l / r, elevon_lo / ro | PLA, 1 wall, 5 % | standing on the outboard end (120 / 180 mm tall), brim | joined by two 3 mm carbon rods (4 and 10 mm aft of the hinge); the inner half has the horn slot |
 | horn_l / r | PETG, solid | flat | glued into the elevon slot; holes 9 / 12 / 15 mm under the hinge |
 | splice_l / r | PETG, 4 walls | flat | 2 x M3 up into the two segments |
 | fin_l / r | PETG, 2 walls | flat | stiffer than TPU at speed; glued into the tip slots |
@@ -112,10 +112,10 @@ Plates are one material each (PLA / PETG / TPU need different temperatures).
 | pod - spars | tubes slide into close-fit bores in the sleeves (OD + 0.2) | - |
 | wing_x1 - spars | slip fit (OD + 0.3), epoxied | - |
 | wing_x1 - wing_x2 | outer segment slides on the tubes (not glued); the splice plate's 2 x M3 hold it: bolt-on, replaceable | splice_l / splice_r |
-| wing_x1 - elevon_x | bottom hinge tape (hinge line from aero.elevon_split); elevon_xo joined to elevon_x by a 3 mm carbon rod | joint elevon_l / elevon_r |
+| wing_x1 - elevon_x | bottom hinge tape (hinge line from aero.elevon_split); elevon_xo joined to elevon_x by two 3 mm carbon rods (joiner_x, joiner2_x): epoxied (5-min, glue:epoxy_5min) in the inner half, reamed push fit in the outer half | joint elevon_l / elevon_r |
 | elevon_x - horn | horn tab glued into the slot under the inner half | - |
 | wing_x2 - fin | fin tab glued in the tip slot | - |
-| pod - hatch | rear tongue under the pod skin + 2 x M3 at the front into inserts in the ledge blocks | hatch |
+| pod - hatch | rear tongue under the pod skin + 4 x M3 (front pair, mid-length pair at x 130, between the spar sleeves) into inserts in the ledge blocks | hatch |
 | pod - nose | 4 x M3 from the nose lugs into heat-set inserts in the front bosses (washers on TPU) | nose |
 | pod - motor_mount | 4 x M3 from the aft face into heat-set inserts in the tail bosses | motor_mount |
 | motor_mount - motor | 4 x M3 from the mount's front face (counterbored), screwed on the bench first | motor |
@@ -144,12 +144,12 @@ and leaves through two 30 x 8 mm slots in the belly behind the shelf.
 
 pod (root) -> spars (rigid), hatch, nose -> camera, motor_mount -> motor -> prop disc, battery, strap, XT60, ESC, FC,
 RX, GPS, VTX, antenna (rigid); pod -> wing_l1 / wing_r1 (rigid) -> wing_l2 / wing_r2 (rigid) -> fins; wing_x1 -> servo,
-splice (rigid), elevon_l / elevon_r (revolute about the hinge line, +-25 deg) -> horn, joiner rod, outer half (rigid).
+splice (rigid), elevon_l / elevon_r (revolute about the hinge line, +-25 deg) -> horn, two joiner rods, outer half (rigid).
 
 ## CG and balance
 
 The CG is the assembled CG of every item and wire (kerf/req_balance.py). The battery is the only heavy thing that
-moves: `bat_x` sets it. Each 10 mm of battery moves the CG 2.8 mm (372 / 1331 g), i.e. 1.45 % MAC. Balance point
+moves: `bat_x` sets it. Each 10 mm of battery moves the CG 2.2 mm (302 / 1356 g), i.e. about 1.2 % MAC. Balance point
 for the first flight: CG at the value `static_margin` reports (cg_x_mm), 10-13 % MAC ahead of the neutral point;
 mark it under the wing.
 
@@ -157,5 +157,18 @@ mark it under the wing.
 
 Pod -> spars into the sleeves -> inner segments on the tubes (epoxy), root bolts from above -> servos in their pockets
 (centre them first) -> outer segments slid on, splice plates bolted -> horns glued into the inner elevon halves ->
-elevons taped on (hinge tape), joiner rods, outer halves -> fins -> motor on its mount (bench) -> mount on the pod ->
+elevons taped on (hinge tape), joiner rods (both epoxied into the inner half), outer halves (bores reamed 3.0 mm first) -> fins -> motor on its mount (bench) -> mount on the pod ->
 shelf electronics (GPS, FC, RX, ESC, VTX), antenna -> battery, strap, XT60 -> hatch -> camera in the nose -> nose.
+
+### Elevon joint: no free play (review 2026-11-02)
+
+The outer elevon half (60 % of the surface) is driven only through the joiner rods, and free play on a control surface
+is the classic cause of flutter/buzz at 150-180 km/h. So: **two** 3 mm carbon rods (rods.cf_rod_3, 50 mm), one 4 mm and
+one 10 mm aft of the hinge in plan (the aft one as far back as the section allows a 3.1 mm bore with ~0.9 mm wall;
+at 16 mm the section is only 4 mm thick). Both are **epoxied into the inner half** (5-min epoxy, bores +0.1 mm). In the
+**outer half** the bores print at 3.0 mm nominal (FDM holes come out ~0.1 mm small) and are **reamed with a 3.0 mm
+drill** to a push fit on the rods (catalog: rods are -0.03/-0.1 mm undersize), so the outer half slides off for crash
+repair but has no clearance to rattle in. With a single slip-fit rod at 5.3 mm the play was +-1.35 deg; any residual
+reaming clearance (<= 0.05 mm radial) at the 10.5 mm aft rod is < 0.3 deg, and a 25 mm hinge-tape band wrapped across
+the split on both skins preloads it to zero. Crash repair: cut the band, slide the outer half (with its outer wing
+segment) off the rods, re-tape after.

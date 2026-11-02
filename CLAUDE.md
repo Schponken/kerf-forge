@@ -74,6 +74,7 @@ Other Claude sessions may be working in this repo at the same time. To never bre
 |---|---|
 | `kerf check <p>` | build all parts + every check incl. motion sweeps; prints PASS/FAIL with problems |
 | `kerf check <p> --quick` | same without motion sweeps (fast inner loop) |
+| `kerf req <p> [id ...]` | just the named requirements (ids or check names) on the assembled project: one number after an edit (a mass, a margin, one FEA) in seconds; `kerf check` still decides PASS |
 | `kerf build <p>` | check + STEP, per-part STL/3MF, A2L plates, BOM, renders → `projects/<p>/out/` |
 | `kerf verify [--fast]` | definition of done: pytest, all projects, all reviews current, all evals, PLAN.md complete |
 | `kerf review-status <p>` | whether the visual review matches the current geometry fingerprint |

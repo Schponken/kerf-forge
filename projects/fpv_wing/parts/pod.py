@@ -61,9 +61,14 @@ def hatch_box(p):
     return Pos(HATCH_X[0], 0, HATCH_CUT_Z) * Box(HATCH_X[1] - HATCH_X[0], 2 * HATCH_HW, 60, align=(Align.MIN, Align.CENTER, Align.MIN))
 
 
+HATCH_MID_X = 130.0        # mid-length hatch screws: between the main sleeve (ends ~x 95 at |y| 30) and the rear sleeve
+                           # (starts ~x 150), 15 mm behind the rear wing-root bolt (x 112) so its driver still reaches
+
+
 def hatch_bolts(p):
-    """(x, y) of the hatch's two front M3 (vertical), over the side ledges."""
-    return [(HATCH_X[0] + 9.0, -30.0), (HATCH_X[0] + 9.0, 30.0)]
+    """(x, y) of the hatch's M3 (vertical), over the side ledges: a pair at the front and a pair at mid-length, so the
+    210 mm panel spans ~130 mm and ~75 mm between screws instead of 210 mm (no ballooning under the top suction)."""
+    return [(x, y) for x in (HATCH_X[0] + 9.0, HATCH_MID_X) for y in (-30.0, 30.0)]
 
 
 def hatch_solid(p):
@@ -144,7 +149,8 @@ def build(ctx):
         body = body + ctx.add(tab & outer(p), why="battery strap tab (22 x 3.5 slot)", kind="strap tab")
     # cooling: air in through the nose vents, along the bay, out through belly slots behind the shelf
     for s in (-1, 1):
-        vent = Pos(p.shelf_x1 + 8, s * 14, p.pod_bottom - 1) * Box(30, 8, 30, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # why: slot with full-round ends (r 4), not a box: no sharp corners in the belly where landing cracks start
+        vent = Pos(p.shelf_x1 + 8, s * 14, p.pod_bottom - 1) * extrude(SlotOverall(30, 8), 30)
         body = body - ctx.cut(vent & Pos(0, 0, -200) * Box(1000, 1000, 200 + p.pod_bottom + 25, align=(Align.CENTER, Align.CENTER, Align.MIN)),
                               why="air outlet: ESC / VTX heat leaves under the tail", kind="vent")
     # electronics shelf over the battery bay (prints standing: a vertical plate, no overhang)
