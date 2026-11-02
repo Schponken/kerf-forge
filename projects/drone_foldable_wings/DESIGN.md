@@ -214,11 +214,14 @@ main_*/rear_* tube ends, boom_len ...). Do not hard-code what layout gives.
   `rear` = `L.tube_loc(p, which, s)`. Must clear the spine (arms, ridge) and fuselage top (z -10) over 0..70 deg.
 - Root end faired for every sweep angle (Spencer, Studio 2026-11-02): folded, the hub's root face (y = pivot_y) is
   the wing's leading edge (at 70 deg it meets the flow 20 deg off square). It is a rounded nose: each chord station
-  gets a half-ellipse reaching min(1.25 x local half thickness, 10 mm) inboard (never past y 16, 2 mm off the
-  ridge), from the LE to x 176, fading to a 0.3 mm lip just ahead of the boss collar (a nose running into the collar
-  made a stress notch). The collar's inboard side is a half round (r 9.4), not a flat cut. Flat area within 30 deg
-  of square to the flow at 70 deg fold: 2803 mm2 before, 51 mm2 now (the thin root strip aft of x 176). Left as is:
-  the V keel under the root (45 deg sides, no square face) and the round boss.
+  gets a half-ellipse reaching min(1.25 x local half thickness, 10 mm) inboard (never past y 16), from the LE to
+  x 166, fading to a 0.3 mm lip. Where the spine ridge is (x >= 95) the reach is also held 0.5 mm off the ridge
+  with the panel 3 deg past spread (the stop_spread_* angle; the stop post bites at ~1.4 deg): a point ahead of the
+  pin swings inboard there. Nose to ridge: 4.1 mm at spread, 2.5 at -1.4 deg, 0.45 at -3 deg. The nose stops at
+  x 166 because running into the collar made a stress notch and ending at 176 sat on the 2.4 mm ligament inboard of
+  the aileron lead channel. The collar's inboard side is a half round (r 9.4), not a flat cut. Flat area within
+  30 deg of square to the flow at 70 deg fold: 2803 mm2 before, 111 mm2 now (the thin root strip aft of x 166).
+  Left as is: the V keel under the root (45 deg sides, no square face) and the round boss.
 - Loads for FEA (DESIGN "Strength"): 6 g half-wing lift ~31 N at its centre of lift + the root moment; the hub is
   fixed at its boss bore; the deck and spine arm see the pin's bearing couple.
 

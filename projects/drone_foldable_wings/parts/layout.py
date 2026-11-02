@@ -33,6 +33,8 @@ PLATE_T = 6.0                 # deck and spine arm thickness at the pin
 GAP = 0.5                     # axial running clearance each end of the boss (ENGINEERING s8)
 BOSS_TOP = 13.0               # boss top face z (above the root trailing edge, under the spine arm)
 BOSS_R = 10.0                 # boss outer radius (4.35 free bore + 7.8 wall)
+OPEN_X = (100.0, 221.0)       # aft fuselage top opening the spine closes (aft_fuse); the spine ridge starts at its front
+RIDGE_HW = 14.0               # spine ridge half width between the wing roots (spine); the hubs' root caps keep off it
 
 
 def planform(p):
