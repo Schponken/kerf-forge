@@ -8,7 +8,7 @@ from PIL import Image
 from kerf import geom
 from kerf.pipeline import render_glb
 
-pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+pytestmark = [pytest.mark.browser, pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")]
 
 
 @pytest.fixture(scope="module")

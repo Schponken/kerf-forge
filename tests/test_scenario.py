@@ -134,6 +134,7 @@ def test_quote_prompt_and_context_are_prepared_under_job_lock(tmp_path, monkeypa
     assert json.loads((tmp_path / "plants.request.json").read_text()) == saved_quote
 
 
+@pytest.mark.browser
 def test_scenario_browser_compares_buy_and_adapt_without_fake_zero(server, saved_quote, tmp_path):
     out = _browser(server + "/", """
 await p.route('**/api/claude', r => r.fulfill({json: {ok:true}}));

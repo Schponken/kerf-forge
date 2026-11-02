@@ -6,6 +6,8 @@ from types import SimpleNamespace as NS
 
 import pytest
 
+pytestmark = pytest.mark.slow
+
 from kerf import firmware as F, fwcheck as W
 
 T = W.tools()

@@ -261,11 +261,15 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     stg = modes.stages(mode) if mode else modes.legacy(sweeps, do_export, do_render)
     sweeps = "motion" in stg
     proj = P.load(name, overrides)
+    from . import usestory
+    planned = list(proj.data.get("requirements") or []) + usestory.requirements(proj) if "requirements" in stg else []
+    core_planned = [r for r in planned if requirements.redesign_tier(r) is not None]
+    planned = requirements.redesign_order(proj, core_planned) + [r for r in planned if requirements.redesign_tier(r) is None]
     progress.emit("start", project=proj.name, stages=[k for k, _ in progress.STAGES if (k != "motion" or sweeps)
                                                        and (k != "requirements" or "requirements" in stg)
                                                        and (k != "export" or stg & {"files", "docs", "viewer"})
                                                        and (k != "renders" or "renders" in stg)],
-                  parts=list(proj.printed), reqs=[r.get("id", r.get("check")) for r in proj.data.get("requirements") or []])
+                  parts=list(proj.printed), reqs=[r.get("id", r.get("check")) for r in planned])
     progress.stage("build")
     P.build(proj)
     printer = proj.data.get("printer", "Bambu Lab A2L")

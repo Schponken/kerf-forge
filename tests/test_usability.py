@@ -36,14 +36,15 @@ def test_finished_job_does_not_block_next_job(monkeypatch):
     assert studio.start_job('build', 'demo', [], 'Build again') is new
 
 
+@pytest.mark.browser
 def test_phone_tune_and_connection_recovery(tmp_path):
     root = Path(__file__).resolve().parents[1]
     page = tmp_path / 'studio.html'
     page.write_text((root / 'kerf/assets/studio.html').read_text())
     script = tmp_path / 'check.mjs'
-    script.write_text('''import { chromium } from "PLAYWRIGHT";
+    script.write_text('''import { browser } from "PLAYWRIGHT";
 import assert from 'node:assert/strict';
-const b=await chromium.launch();
+const b=await browser();
 try {
  for(const theme of ['light','dark']) {
  const p=await b.newPage({viewport:{width:390,height:844}});
@@ -65,7 +66,7 @@ try {
  await p.close();
  }
 } finally {await b.close();}
-'''.replace('PLAYWRIGHT', str(root / 'tools/render/node_modules/playwright/index.mjs')).replace('PAGE',str(page)))
+'''.replace('PLAYWRIGHT', str(root / 'tests/browser.mjs')).replace('PAGE',str(page)))
     r = subprocess.run(['node', str(script)], capture_output=True, text=True, timeout=90)
     assert r.returncode == 0, r.stdout + r.stderr
 

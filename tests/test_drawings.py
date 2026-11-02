@@ -4,6 +4,8 @@ import json
 
 import pytest
 
+pytestmark = pytest.mark.slow
+
 from kerf import drawings, partcache, project as P
 from test_engine import _write_project
 

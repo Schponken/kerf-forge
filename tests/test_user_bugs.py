@@ -49,6 +49,7 @@ def test_wrong_access_code_says_so():
         bambu.status({"printer": {"host": "10.0.0.2", "serial": "S", "access_code": "x"}}, link=Link())
 
 
+@pytest.mark.browser
 def test_page_keeps_unsaved_tune_values_and_reuses_running_jobs(server, tmp_path):  # noqa: F811
     out = _browser(server + "/", """
 await p.waitForFunction(() => typeof select === 'function' && S.projects.length > 1);

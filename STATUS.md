@@ -272,6 +272,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   kerf/cli.py), so memory is freed between projects; tests/test_verify_isolated.py. Nothing about what verify checks changed.
 - Session names by task are on docs/status/BOARD.md (app session titles can't be renamed from a cloud run).
 
+## 2026-11-02 — Fast tests, ChatGPT Codex
+- Added pinned pytest-xdist 3.8.0 with two file-grouped workers; `-n 0` remains available for debugging. Browser/all-project markers also imply slow; solver/drawing/simulation/lifecycle cases are explicitly marked. docs/TESTING.md gives targeted `-m "not slow"` commands and when to include expensive coverage. Unfiltered pytest/verify still selects every test; no test or engineering assertion was removed or loosened.
+- Cached the viewer assembly once per worker, deep-copying it for every test; direct page tests reuse a Chromium server with separate contexts on each client. Regressions prove pose/storage/context isolation and that quick + slow selections exactly partition the collected tests.
+- Before/after: identical 68-test Studio/viewer/render sample, all passing, 67.01 s -> 45.30 s wall time (32.4% less). This is a targeted sample, not a full-suite speed claim. An additional 59 affected tests passed, including solver, drawings, simulation, assembly, docs and test-workflow regressions (127 distinct targeted passes total). No full suite or all-project build was run; the sample includes a metadata-only project-unit check, and the manager owns batched verification. Generated README render restored after its test.
+- Deliver as a ready PR for independent review/merge. Next: inspect and claim Reviews go stale only for real changes, then Repo cleanup and Firmware proven, skipping active claims. Claude now reports the replacement environment Published; this original instance does not establish a fresh restore of it.
+
+- Latest-main refresh: kept the progress ordering assertion intact and fixed the announced queue to match the new core-first execution order, including use-story checks and empty sketch-mode queues. Diagnosed worker exits as SIGPIPE (-13): Gmsh changes the native handler behind Python's back. FEA now restores the caller's handler during/after normal and failed meshing, with subprocess regressions that actually write a broken pipe. The refreshed 85-test integration selection passes with no worker loss; solver/load tests are checked separately. No mesh settings, equations, thresholds or assertions were loosened.
+- Gmsh/progress refresh validation: 85 targeted integration tests passed without a worker restart; 24 FEA/load tests passed, including real broken-pipe checks after successful meshing, initialization failure and mesh failure. Numerical solver checks remain unchanged. Further concurrent Studio updates on main will be incorporated before the final handoff.
+
+- Final Studio refresh: 76 affected Studio/viewer/progress/glossary/activity tests pass against the later main updates. New browser cases are explicitly marked and share the same isolated browser fixture; their marked selection is checked separately. Both sides of all STATUS/PLAN changes were retained. The recorded 68-test timing comparison predates these later main features and is not a timing claim for the expanded refresh.
+
 ## 2026-11-02 — Reviews go stale only for real changes, ChatGPT Codex
 - Main already tracked the catalog entries read by check/build. Fixed the remaining live-process gap: the parsed catalog refreshes when its file changes (identity/size/nanosecond modification/change times), so a used-entry edit invalidates a fingerprint in running Studio without manual cache clearing. Unused-entry edits and JSON reformatting leave scoped fingerprints unchanged; unchanged reads still reuse parsed data.
 - Missing/malformed dependency manifests conservatively hash the full catalog and the next check repairs them. Valid manifests retain the existing growing union so quick checks cannot drop full-build dependencies. No project geometry, review.json, catalog dimensions, limits or checks were edited. The docs regression exposed a missing `req` table entry; the later main refresh now supplies it and its wording was retained.
@@ -351,6 +362,19 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - NOT done, needs Spencer's go-ahead: the Stop hook letting a session stop while the budget switch is on (hook edits
   were refused as self-modification). Until then a budget stop still makes sessions want a free item.
 - Tests: tests/test_budget.py (4), test_claims.py (copies budget.py), test_batch_verify.py, test_verify_isolated.py pass.
+
+## 2026-11-02 — Fast-tests PR refreshed after FEA memory improvements (Codex)
+- Merged current main into PR #4 without rewriting history. Kept main's chunked stress sampling and int32
+  stiffness assembly together with the PR's native SIGPIPE protection. The only code conflict was additive tests:
+  both `test_von_mises_chunks_match_one_basis` and the three real broken-pipe child cases remain unchanged.
+- Marked the new user-bugs browser case so it reuses the worker browser and participates in quick/slow selection.
+- **34 targeted tests PASS** with the configured two file-grouped workers: 26 FEA/load/progress-order tests in
+  26.29 s, plus 8 browser/marker/fixture-isolation tests in 13.92 s. No worker loss. These are validation timings,
+  not a new speed comparison. An earlier run was interrupted to avoid overlapping another worker's FEA files
+  and is not counted. Installed only the existing PR-pinned pytest-xdist 3.8.0 and execnet in the shared Mac venv.
+- No equations, thresholds, solver settings, review.json or catalog values changed. Full batch remains on hold;
+  no full-suite/all-project/hardware run. PR remains for independent manager review; no self-merge.
+
 ## 2026-11-02 — Repo cleanup, ChatGPT Codex
 - Audited tracked files, generated/cache/scratch paths, large binaries, project part/helper references, engine imports and claims. Earlier cleanup and PR #1's screenshot trimming already removed the safe candidates; no additional deletion was justified. Kept the sourced STEP models, offline viewer bundle, six README renders, helper modules, audit/prototype/provenance docs and open-task claims because they have live references. Detailed retention reasons: docs/status/REPO_CLEANUP_2026-11-02.md. No history rewrite, geometry edit or review.json edit.
 - Added ignore rules for full-size usability images while retaining compressed contact sheets, plus regression guards against tracked build/cache/scratch files, excess evidence size and missing README render links. Catalog dependency manifests, lockfiles, source/import models and batch records remain trackable.
@@ -428,6 +452,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Merged PR #11 (scenario options; tests/test_scenario.py pass). test_studio's progress-order
   test already fails on main; PR #4 fixes it once rebased.
 
+## 2026-11-02 — Fast-tests refresh after manager merges (Codex)
+- Incorporated manager-merged scenario/module/catalog/firmware work without reverting their checked PLAN items
+  or STATUS entries. The new scenario browser case now shares the isolated worker browser.
+- 30 affected scenario/intake/progress tests PASS in 14.52 s after this merge. The previous 34-test FEA/fixture
+  selection remains the earlier result (progress overlaps); no repeated solver run or full batch.
+
 ## 2026-11-02 22:30 UTC - Stress simulations paused (Spencer: "pause all the stress simulations, we will work on that later")
 - PAUSED.json at the repo root switches off every FEA-backed check (fea_static, impact_fea, stop_impact,
   natural_freq, drop_impact, weak_link: kerf/requirements.py STRESS_SIMS). They show "PAUSED (stress simulations
@@ -471,6 +501,16 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
 - Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
 
+## 2026-11-02 — Fast-tests refresh preserves paused stress work (Codex)
+- Merged current main into PR #4, retaining both STATUS histories, the stress-simulation pause and warning, current
+  Studio fixes, and the new integration claim. No thresholds, acceptance checks or marker exclusions changed.
+- The existing marker-selection contract passed (1 test, 10.96 s); its subprocesses only collect tests, proving
+  slow/browser/all-project partitioning still includes all tests. No FEA, all-project build or full batch ran.
+  Earlier targeted execution evidence remains historical; it was not repeated for the additive STATUS resolution.
+- Follow-on main integration through eb5fc90 retains the new research trail and steering unchanged. Its browser
+  test now carries the browser marker and shares the isolated worker browser; the collection contract asserts this.
+  Those exact two tests PASS in 27.59 s. No other execution or benchmark repeated.
+
 ## 2026-11-02 17:45 UTC-5 — for Spencer: Studio single-change jobs vs the Stop gate
 - A Studio change request says "do exactly this change ... do not start other PLAN work", but .claude/hooks/stop_gate.py
   only lets a session end when every open PLAN item is claimed by others (or on BLOCKED / YIELD / 60 blocks). So a
@@ -493,3 +533,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Not changed on purpose: projects still build from scratch (KERF_NO_CACHE) and drawings / renders stay in verify
   (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
   test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
+
+## 2026-11-02 — Fast-tests infrastructure compatibility refresh (Codex)
+- Merged main through 56d0d84 without rewriting history. The test-wide KERF_NO_ATTRIBUTION setting now coexists
+  with the browser/all-project markers and shared browser fixture; the viewer attribution assertion retains its
+  explicit opt-in and browser marker. Both STATUS histories and the stress pause remain intact.
+- Existing marker-selection contract PASS: 1 test in 8.82 s (its subprocesses only collect tests). Notification
+  and viewer-usability modules collect all 6 tests in 1.39 s. No browser, FEA, all-project build or full-suite
+  execution. Newly identified Work/Build-it/notification browser marker gaps are a separate small follow-up.

@@ -2,6 +2,8 @@
 cards and the requirement table use the plain names, and jargon in a tab gets an explaining underline."""
 import json
 
+import pytest
+
 from kerf import explain, glossary, requirements
 from test_studio import _browser, _get, server  # noqa: F401  (fixture)
 
@@ -21,6 +23,7 @@ def test_failed_requirement_card_uses_the_plain_name():
     assert glossary.name("not_a_check") == "not_a_check"
 
 
+@pytest.mark.browser
 def test_studio_serves_it_and_underlines_jargon(server, tmp_path):  # noqa: F811
     code, body = _get(server + "/api/glossary")
     g = json.loads(body)
@@ -41,6 +44,7 @@ out.shown = await p.$$eval('.glmodal .glrow', e => e.filter(x => x.style.display
     assert out["rows"] == len(glossary.CHECKS) + len(glossary.TERMS) and 1 <= out["shown"] < 5
 
 
+@pytest.mark.browser
 def test_tune_compare_says_better_or_worse_in_plain_words(server, tmp_path):  # noqa: F811
     out = _browser(server + "/", """
 await p.waitForFunction(() => typeof compareTable === 'function' && GL.rx);
@@ -56,6 +60,7 @@ out.html = await p.evaluate(() => { S.detail = {report: {requirements: []}};
                            ["Flies stable (balance)", "better", "fxa up"]], out["html"]
 
 
+@pytest.mark.browser
 def test_explain_this_page_tour_and_the_certificate(server, tmp_path):  # noqa: F811
     out = _browser(server + "/", """
 await p.waitForFunction(() => typeof explainPage === 'function');

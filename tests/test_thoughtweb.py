@@ -7,6 +7,8 @@ from pathlib import Path
 
 import urllib.request
 
+import pytest
+
 from kerf import steer as T_steer, studio, thoughtweb as T
 from test_studio import _browser, server  # noqa: F401  (fixture)
 
@@ -76,6 +78,7 @@ def test_plain_notes_drop_code_paths_and_links():
     assert "servo" not in t and "/a/b" not in t and t.endswith("weak.")
 
 
+@pytest.mark.browser
 def test_studio_draws_it_live_and_for_a_project(server, tmp_path):  # noqa: F811
     """The job panel shows a one-line strip by itself once research starts; it opens the full story, which reads top to
     bottom (asked -> looked into -> decided -> building), keeps still between polls and never overlaps or cuts labels."""

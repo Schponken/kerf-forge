@@ -2,6 +2,8 @@
 the Checks tab shows what that session has saved lately."""
 import time
 
+import pytest
+
 from kerf import explain, studio
 from test_studio import _browser, server  # noqa: F401  (fixture)
 
@@ -23,6 +25,7 @@ def test_sessions_and_recent_work(monkeypatch):
     assert studio.explained("servo_link", {"problems": []}, {})["work"]["state"] == "idle"
 
 
+@pytest.mark.browser
 def test_activity_shows_the_session(server, monkeypatch, tmp_path):  # noqa: F811
     _claim(monkeypatch)
     out = _browser(server + "/", """
