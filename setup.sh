@@ -8,6 +8,13 @@ if [ "$(uname)" = "Darwin" ] && [ -d "$HOME/Applications/Kerf Studio.app" ]; the
   ./tools/mac/install_app.sh --if-outdated || true
 fi
 command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; export PATH="$HOME/.local/bin:$PATH"; }
+# Fresh machines (cloud sandboxes, CI): uv's Python asks for clang/clang++ when a dependency builds from source
+# (pybullet); use GCC when clang is missing. Package caches go under .cache/ when the default ones are not writable.
+if [ -z "${CC:-}" ] && ! command -v clang >/dev/null && command -v gcc >/dev/null; then export CC=gcc; fi
+if [ -z "${CXX:-}" ] && ! command -v clang++ >/dev/null && command -v g++ >/dev/null; then export CXX=g++; fi
+writable() { mkdir -p "$1" 2>/dev/null && [ -w "$1" ]; }
+if [ -z "${UV_CACHE_DIR:-}" ] && ! writable "$(uv cache dir 2>/dev/null || echo "$HOME/.cache/uv")"; then export UV_CACHE_DIR="$PWD/.cache/uv"; fi
+if [ -z "${npm_config_cache:-}" ] && ! writable "$HOME/.npm"; then export npm_config_cache="$PWD/.cache/npm"; fi
 [ -x .venv/bin/python ] || uv venv -q -p 3.12 .venv
 # pybullet has no macOS arm64 wheel and its bundled zlib `#define fdopen NULL` breaks against recent Xcode SDKs
 # (stdio.h declares fdopen): pre-defining the macro skips that line. Harmless on Linux.
