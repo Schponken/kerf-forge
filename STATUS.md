@@ -246,6 +246,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Open for the drone's owner (not this change): the V keel under the root still crosses the folded flow as a 45 deg
   wedge (structural, no square face); the pre-existing failures above.
 
+## 2026-11-02 21:00 UTC - Kerf manager: first batch verify was OOM-killed; fixed
+- `tools/batch_verify.py run` died (exit -9): `kerf verify` built all 11 projects in one process and grew past 6 GB
+  (kernel OOM on a 7 GB cloud box). verify now builds each project in its own child process (`_run_isolated` in
+  kerf/cli.py), so memory is freed between projects; tests/test_verify_isolated.py. Nothing about what verify checks changed.
+- Session names by task are on docs/status/BOARD.md (app session titles can't be renamed from a cloud run).
+
 ## 2026-11-02 — Fast tests, ChatGPT Codex
 - Added pinned pytest-xdist 3.8.0 with two file-grouped workers; `-n 0` remains available for debugging. Browser/all-project markers also imply slow; solver/drawing/simulation/lifecycle cases are explicitly marked. docs/TESTING.md gives targeted `-m "not slow"` commands and when to include expensive coverage. Unfiltered pytest/verify still selects every test; no test or engineering assertion was removed or loosened.
 - Cached the viewer assembly once per worker, deep-copying it for every test; direct page tests reuse a Chromium server with separate contexts on each client. Regressions prove pose/storage/context isolation and that quick + slow selections exactly partition the collected tests.
@@ -254,3 +260,5 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 
 - Latest-main refresh: kept the progress ordering assertion intact and fixed the announced queue to match the new core-first execution order, including use-story checks and empty sketch-mode queues. Diagnosed worker exits as SIGPIPE (-13): Gmsh changes the native handler behind Python's back. FEA now restores the caller's handler during/after normal and failed meshing, with subprocess regressions that actually write a broken pipe. The refreshed 85-test integration selection passes with no worker loss; solver/load tests are checked separately. No mesh settings, equations, thresholds or assertions were loosened.
 - Gmsh/progress refresh validation: 85 targeted integration tests passed without a worker restart; 24 FEA/load tests passed, including real broken-pipe checks after successful meshing, initialization failure and mesh failure. Numerical solver checks remain unchanged. Further concurrent Studio updates on main will be incorporated before the final handoff.
+
+- Final Studio refresh: 76 affected Studio/viewer/progress/glossary/activity tests pass against the later main updates. New browser cases are explicitly marked and share the same isolated browser fixture; their marked selection is checked separately. Both sides of all STATUS/PLAN changes were retained. The recorded 68-test timing comparison predates these later main features and is not a timing claim for the expanded refresh.

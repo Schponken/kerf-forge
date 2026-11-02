@@ -37,7 +37,7 @@ On the same cached cloud machine, the same 68 tests in `test_viewer.py`, `test_v
 `test_studio.py`, `test_usability.py` and `test_render.py` took **67.01 s before / 45.30 s after** (32.4% less wall
 time). Both runs passed all 68, including browser and lifecycle tests. The after command excludes only the new
 fixture-isolation regression when comparing counts; it is tested separately. This is a targeted sample, not a
-full-suite timing claim, and timings vary with machine load.
+full-suite timing claim, and timings vary with machine load. This sample predates main's later core-first FEA and Studio narration changes; the larger refresh selections are not timing comparisons.
 
 Parallel-run regressions also cover Gmsh's native SIGPIPE side effect: meshing preserves Python's pipe policy, so
 a browser disconnect remains an exception rather than killing the worker/server. Progress announces the same

@@ -1,0 +1,7 @@
+{
+ "item": "Beginner visualizer (Spencer, 2026-11-02, approved plan; Claude session owns it): a newcomer can follow every Studio job and tab. Done so far: the live \"How Kerf decided\" thought web (kerf/thoughtweb.py), plain-language job narration (\"Drawing the hub\", \"Testing that everything fits\"). Still to do: jargon chips + glossary (test: every check type has an entry), Tune slider explanations with effect arrows, 3D guided tour, Files \"unboxing\", History comic strip, new-design briefing room, onboarding tour + \"Explain this page\" + ready-to-print certificate; builds on kerf/explain.py (no duplicate Checks wording); tests",
+ "session": "0f43a4e722",
+ "since": 1793651615.24647,
+ "heartbeat": 1793652277.3671534,
+ "since_utc": "2026-11-02 20:33"
+}
