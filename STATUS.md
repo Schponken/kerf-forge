@@ -435,3 +435,20 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   clearance_min requirements were 720 s of it. geom.mesh_gap screen -> ~72 s, same exact value. Printed mass now
   cached per shape + spec (~45 s per check). Next hotspots from the same run: core FEA ~300 s (6 parts), print stage
   68 s, fit 23 s.
+
+## 2026-11-02 — Filename-safe Mac updates and staged-edit recovery (Codex, handoff-refresh)
+- Reproduced updater failures in temporary Git repositories: the spaced Mac command path could update then conflict,
+  restored edits lost their staged/unstaged split, renames became partial, an unstaged undo hid a staged conflict,
+  and blocked/restoration failures lacked clear status or an exact recovery revision. Seven initial regressions failed.
+- update_repo.sh now reads NUL-delimited paths, checks both index and working-tree edits and all three file modes
+  before moving edits, and restores its exact saved stash with --index. Overlapping add/delete/type changes stay
+  untouched; independent text edits still merge. Untracked obstructions report NOT-UPDATED without overwriting files.
+- Parent review found a shared-stash capture race. A regression reproduced an intervening stash between push and
+  lookup; a unique marker now identifies this update's own entry in the reflog. No stash is automatically dropped or
+  popped: the small tradeoff is one labelled recovery copy per dirty update, with its exact revision printed even on
+  success. Existing/newer stashes survive, including one created by another worktree mid-update. README links recovery
+  instructions in docs/MAC_UPDATES.md.
+- 24 focused tests pass: 18 new real-Git cases plus six existing Mac launcher cases. Includes whitespace/Unicode/quote
+  paths, staged+unstaged changes, renames, failed restores, index-only conflicts, file-type changes and both stash-race
+  windows. Shell syntax and diff whitespace pass. No actual working checkout update, native app launch, full batch,
+  hardware, FEA or paid model run.
