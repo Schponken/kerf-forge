@@ -1,6 +1,7 @@
 """Per-part manufacturability checks for FDM printing, done on the part in its print orientation."""
 from __future__ import annotations
 
+import json
 import math
 
 import numpy as np
@@ -200,18 +201,31 @@ def shell_volume(s, spec, vol=None) -> float:
 def item_mass_g(item) -> float:
     """Mass used for statics: printed parts from geometry, purchased parts from the catalog."""
     if item.role == "printed":
-        vol = geom.volume(item.shape)
-        rho = density(item.spec.get("material", "PETG"))
-        infill = float(item.spec.get("infill", 0.25))
-        if geom.kmesh(item.shape) is not None:
-            area = float(sum(fc.area for fc in item.shape.faces()))
-            shell = min(vol, area * 0.84)
-        else:
-            shell = shell_volume(oriented(item.shape, item.spec.get("print_rot", [0, 0, 0])), item.spec, vol)
-        return (shell + infill * max(vol - shell, 0)) / 1000 * rho
+        # every mass / CG / thrust / endurance requirement asks again; the answer depends on the geometry and the
+        # spec only (not on where the part sits), so it is kept on the shape (copy-safe slot, geom._Memo)
+        key = json.dumps(item.spec, sort_keys=True, default=str)
+        hit = geom._memo_get(item.shape, "_kerf_mass")
+        if hit is not None and hit[0] == key:
+            return hit[1]
+        g = _printed_mass_g(item)
+        geom._memo_set(item.shape, "_kerf_mass", (key, g))
+        return g
     if item.role == "purchased":
         return _purchased_mass_g(item) + float(getattr(item, "carried_g", 0.0) or 0.0)
     return 0.0
+
+
+def _printed_mass_g(item) -> float:
+    """Printed mass from geometry: perimeter shell at full density + the rest at the part's infill."""
+    vol = geom.volume(item.shape)
+    rho = density(item.spec.get("material", "PETG"))
+    infill = float(item.spec.get("infill", 0.25))
+    if geom.kmesh(item.shape) is not None:
+        area = float(sum(fc.area for fc in item.shape.faces()))
+        shell = min(vol, area * 0.84)
+    else:
+        shell = shell_volume(oriented(item.shape, item.spec.get("print_rot", [0, 0, 0])), item.spec, vol)
+    return (shell + infill * max(vol - shell, 0)) / 1000 * rho
 
 
 def _purchased_mass_g(item) -> float:
