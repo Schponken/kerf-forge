@@ -104,10 +104,10 @@ Coupled poses swept: all four pan/tilt corners (`corners` sweep).
 FEA load cases (all SF 3 on PETG Z strength 39 MPa → allowable 13 MPa):
 | Check | Fixed | Load | Result |
 |---|---|---|---|
-| bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 1.62 MPa p99.9 (peak 3.7), 0.03 mm |
-| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the 4 mm shoulder bore (+ the engine's single-shear lever moment, 32 N·mm) | 2.54 MPa (peak 4.0), 0.22 mm (limit 0.3) |
-| yoke_knock_out / _in | pan-horn screws | the 30 N camera knock as ±Y: all of it at the tilt tab screws (+Y), or on the pivot wall's inner face round the bore (-Y) | 10.4 / 9.76 MPa p99.9 (peaks 16.7 / 22.9 at the wall roots), 1.74 / 1.26 mm elastic (limit 2.0: a transient load, strength governs; inside the 3.3 mm camera-yoke clearance) |
-| yoke_pan_stall (crash case) | tilt tab screws + pivot bore (head blocked) | 176.5 N·mm pan stall torque at the pan-horn screws | 0.81 MPa, 0.03 mm |
+| bracket_fea | camera standoff tops (camera jammed) | 176.5 N·mm (SG90 stall) as a torque on the horn contact face | 1.64 MPa p99.9 (peak 3.7), 0.03 mm |
+| yoke_fea | pan-horn screw holes | 176.5 N·mm stall reaction at the tilt tab screws + 5 N down on the 4 mm shoulder bore (+ the engine's single-shear lever moment, 32 N·mm) | 2.49 MPa (peak 4.0), 0.22 mm (limit 0.3) |
+| yoke_knock_out / _in | pan-horn screws | the 30 N camera knock as ±Y: all of it at the tilt tab screws (+Y), or on the pivot wall's inner face round the bore (-Y) | 9.55 / 9.31 MPa p99.9 (peaks 17.8 / 22.0 at the wall roots), 1.65 / 1.26 mm elastic (limit 2.0: a transient load, strength governs; inside the 3.3 mm camera-yoke clearance) |
+| yoke_pan_stall (crash case) | tilt tab screws + pivot bore (head blocked) | 176.5 N·mm pan stall torque at the pan-horn screws | 0.84 MPa, 0.03 mm |
 | base_fea | underside on the tripod plate | 176.5 N·mm pan stall at the tab screws; a 30 N sideways knock **at the camera** (IEC 62368-1 external-force level, UL tech brief; 100 N is for hand-held equipment) = 30 N at the tab screws + 30 N × 42.0 mm lever (deck to tilt axis) as a moment on the tab-top contact under the deck | 6.16 MPa p99.9 (peak 9.2 at a pilot), 0.11 mm (limit 0.2) |
 | bracket_arm | section 5.5 mm ahead of the tilt axis | 13 N at the camera seat (stall torque / 13.5 mm), kt 1.5 | 0.2 MPa |
 The yoke first failed its stiffness limit (0.56 mm, the 4 mm plate twisting under the tilt-servo reaction); the plate
@@ -124,13 +124,13 @@ tripod plate (pure compression) over a ring 6.9 → 11.1 mm across flats ≈ 60 
 | base | pan stall 176.5 N·mm + the 30 N knock × 42 mm (deck to tilt axis) at the 2 tab screws → 5 mm deck → end walls → floor → tripod screw/nut | deck at the tab pilots (base_fea peak 9.2 MPa at a pilot) | 5 mm deck bridging the cavity between the end walls, 4 mm plan corners; 1.5 mm floor under the 1/4-20 nut (pure compression: 5 MPa hand check) |
 
 ## 7c. Detail: radii, corners, edge distance
-- One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside, boolean
-  coves, r 0.5 where 1 does not fit), r 1.5 at the wall and arm roots, r 2.5 yoke plate corners, r 3 wall tops, r 4 base plan corners;
+- One fillet language (`style` in project.yaml): r 1 on every inside corner (kerf.features.fillet_inside: OCC's
+  fillet first, boolean coves for the rest, r 0.5 where 1 does not fit), r 1.5 at the wall and arm roots, r 2.5 yoke plate corners, r 3 wall tops, r 4 base plan corners;
   0.4–0.8 mm chamfers on bed and top edges.
 - Corners left sharp on purpose (declared with ctx.keep_sharp, listed with the reason in report.json `sharp_kept`):
   base: the servo cavity and deck window (the SG90's square case and tabs slide along them), the 1/4-20 nut's hex
-  pocket, the 0.6 mm "PT1" label letters; yoke: the label letters and two short (4-5 mm) corners boxed in by
-  a neighbouring blend, where no fillet or cove fits (their long neighbours are filleted); bracket: the two flank corners where the pivot
+  pocket, the 0.6 mm "PT1" label letters; yoke: the label letters (the FPC notch in the plate's front edge
+  was a pocket only 3 mm up into the 6 mm plate, a centred box; it now goes through, so the ribbon can pass); bracket: the two flank corners where the pivot
   knuckle's 52° teardrop point meets the −Y arm (too narrow to fillet; not in a stressed zone of bracket_fea).
 - Edge distance: the SG90 tab pilots (base, yoke: 79 % of the 1.5 d ring is material) are where the servo's own hole
   pattern puts them, and they take the self-tapping screws that come with the servo. The camera's M2 pilots were in

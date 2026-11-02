@@ -70,7 +70,7 @@ def build(ctx):
     body -= iface.pin_hole(ctx, "motion.shoulder_4_m3", ploc, group="tilt_pivot", depth=p.wall_t, fit="free", teardrop=90)
 
     # FPC notch in the plate's front edge, outside the pan horn (r 10): the camera ribbon drops through it to its loop
-    body -= Pos(12.0, 0, -1) * Box(3.0, 18.0, t + 2)
+    body -= Pos(12.0, 0, -1) * Box(3.0, 18.0, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))   # through the plate
     # cable-tie point on the ledge for the tilt servo lead: two vertical slots for a 2.5 mm tie
     for sx in (-1, 1):
         body -= Pos(sx * 3.5, ledge - 4.0, -1) * Box(1.8, 3.2, t + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
