@@ -109,7 +109,7 @@ limit or edit the catalog to make a check pass unless the physics says so (write
 ## 5. Strength, then detail
 - Run `fea_static` for every structural part (fixed at its fastener group / joint, loaded where the load enters).
   If it fails, change geometry (section depth, ribs, fillets, orientation) before reaching for a stronger material.
-- Read each part's `stress` block in out/report.json and its "overbuilt" / "sharp inside corner" warnings: move
+- Read each part's stress summary and hot zones (out/review/PACK.md; the full `stress` block is in out/report.json) and its "overbuilt" / "sharp inside corner" warnings: move
   material from the cold zones to the hot ones (pockets, thinner walls, deeper ribs) and fillet the stressed corners,
   then re-run the FEA. Uniformly 10x-overbuilt parts are a design failure, not a safety margin.
 - Detail pass, re-checking after each change: fillets on every inside corner of a load path (`features.safe_fillet`
@@ -139,9 +139,10 @@ check that follows must still pass, else revert and grow a boss), and it lists w
 Re-run `kerf check <p>` after applying.
 
 ## 6. Build and look
-`kerf build <p>`. Read the assembly sheet, exploded sheet, keep-out render, every joint pose (min/max) and every
-part sheet in `out/renders/`, and `out/report.json` warnings (layer direction, overhang, thin walls, part notes).
-Fix anything that looks wrong even if the checks pass.
+`kerf build <p>`. Read `out/review/PACK.md` (report.json digested: requirements, warnings, part and stress
+summary), the `*_sheet.png` renders (assembly, exploded, every part) and `out/review/contact_*.png` (FEA plots, joint
+poses, keep-outs on a few sheets). They cost a fraction of the tokens of report.json and the single views; open a
+single view or a report.json section only to check a detail. Fix anything that looks wrong even if the checks pass.
 
 ## 7. Independent review
 Run the `design-reviewer` subagent on the project. Fix all blocker/major findings, rebuild, and re-review until

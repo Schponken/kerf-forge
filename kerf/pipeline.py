@@ -440,6 +440,12 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     rep["seconds"] = round(time.time() - t0, 1)
     progress.emit("done", ok=rep["ok"], problems=len(rep["problems"]), seconds=rep["seconds"])
     proj.out("report.json").write_text(json.dumps(rep, indent=1, default=str), encoding="utf-8")
+    if do_render:                       # the design-reviewer's compact input (kerf/reviewpack.py)
+        try:
+            from . import reviewpack
+            reviewpack.write(proj, rep, proj.out("report.json").parent)
+        except Exception as e:  # noqa: BLE001 - the pack is a convenience: never fail a build over it
+            print(f"review pack not written: {e}")
     return rep
 
 

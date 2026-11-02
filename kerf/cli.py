@@ -228,6 +228,8 @@ def main(argv=None) -> int:
     pc = sub.add_parser("price", help="price parts for a quote: kerf price servos.MG996R:2 screw:M3x8:socket:20 --grams 120")
     pc.add_argument("items", nargs="*"); pc.add_argument("--grams", type=float, default=0.0); pc.add_argument("--material", default="PETG")
     pc.add_argument("--json", action="store_true")
+    rp = sub.add_parser("review-pack", help="write out/review/ (PACK.md, catalog.json, contact sheets) from the last build")
+    rp.add_argument("project")
     fx = sub.add_parser("fixes", help="turn the last check's common findings into edits (--apply writes the mechanical ones)")
     fx.add_argument("project"); fx.add_argument("--apply", action="store_true")
     fx.add_argument("--heatset", action="store_true", help="with --apply: also turn edge-near self-tapping holes into heat-set inserts")
@@ -245,6 +247,12 @@ def main(argv=None) -> int:
         return check(a.project, full=True)
     if a.cmd == "verify":
         return verify(a.fast)
+    if a.cmd == "review-pack":
+        from . import project as P, reviewpack
+        proj = P.load(a.project)
+        rep = json.loads(proj.out("report.json").read_text(encoding="utf-8"))
+        _p(str(reviewpack.write(proj, rep, proj.out("report.json").parent)))
+        return 0
     if a.cmd == "review-status":
         s = review_status(a.project)
         _p(json.dumps(s))

@@ -106,3 +106,27 @@ def test_shoulder_screw_row_names_the_part_number_for_its_length():
     from kerf import catalog
     pn = catalog.get("motion.shoulder_4_m3")["part_numbers"]
     assert pn["6"] == "97505A105" and pn["8"] == "97505A106"    # McMaster family table, 2026-11-01
+
+
+def test_review_pack_digests_the_report_for_the_reviewer(tmp_path):
+    """kerf/reviewpack.py: requirements with FEA peaks, declared corners with reasons, catalog subset, contact sheet."""
+    import json
+    from types import SimpleNamespace
+    from PIL import Image
+    from kerf import reviewpack
+    out = tmp_path / "out"
+    (out / "renders").mkdir(parents=True)
+    for n in ("fea_a.png", "pose_j_max_iso.png", "assembly_sheet.png", "assembly_iso.png"):
+        Image.new("RGB", (300, 200), "white").save(out / "renders" / n)
+    rep = {"project": "t", "fingerprint": "abc", "ok": True, "seconds": 3, "problems": [], "warnings": ["w1", "w1"],
+           "requirements": [{"id": "arm_fea", "check": "fea_static", "value": 9.4, "unit": "MPa", "limit": 13, "bound": "max",
+                             "ok": True, "detail": "FEA arm: ...; peak 17.80 MPa at [1, 2, 3], deflection 0.500 mm (limit 1.0) at [0, 0, 0]"}],
+           "parts": {"arm": {"material": "PETG", "sharp_inside": [], "sharp_kept": [{"at": [1, 2, 3], "why": "servo corner"}],
+                             "stress": {"utilisation": 0.7, "hot_zones": [{"at": [1, 2, 3], "peak": 0.9}]}}}}
+    proj = SimpleNamespace(name="t", dir=str(tmp_path), items={"sv": SimpleNamespace(spec={"catalog": "servos.SG90"})})
+    md = reviewpack.write(proj, rep, out).read_text()
+    assert "peak 17.80 MPa at [1, 2, 3]; defl 0.500 mm (limit 1.0)" in md
+    assert "arm: 1 x servo corner" in md and md.count("- w1") == 1
+    assert "renders/assembly_sheet.png" in md and "review/contact_1.png" in md
+    assert list(json.loads((out / "review" / "catalog.json").read_text())) == ["servos.SG90"]
+    assert (out / "review" / "contact_1.png").exists()
