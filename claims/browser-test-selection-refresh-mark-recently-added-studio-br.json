@@ -2,9 +2,9 @@
  "item": "Browser test selection refresh: mark recently added Studio browser coverage and prove quick/browser/all-project selection without removing tests or running expensive cases.",
  "session": "codex-browser-marker-refresh",
  "since": 1793661449.816063,
- "heartbeat": 1793661754.233459,
+ "heartbeat": 1793661863.031852,
  "provider": "Codex",
  "thread_id": "01a19e35-36af-7000-955d-7cf26845e15b",
  "since_utc": "2026-11-02 23:17",
- "activity": "Preserved test settings during PR4 integration; marking missing browser cases next"
+ "activity": "Browser markers and shared lifecycle pass all four focused checks; publishing scoped follow-up"
 }
