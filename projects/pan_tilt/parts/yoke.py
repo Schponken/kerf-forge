@@ -83,10 +83,7 @@ def build(ctx):
     # why: every remaining sharp inside corner rounded (style r 1, r 0.5 where 1 does not fit): stress raisers and weak
     # layer seams (ENGINEERING.md s5); interface-feature corners (servo pocket, horn, inserts) are exempt
     lab_y = ledge - 9.5
-    stubs = [(9.5, 19.6, 6.0), (-4.5, -22.9, 20.7)]
-    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
-        "0.6 mm deep 'PT1' label letters (cosmetic, no load)" if abs(at[1] - lab_y) < 4 and at[2] > t - 0.7 else
-        "short corner (4-5 mm) boxed in by a neighbouring blend: no fillet or cove fits; its long neighbour is filleted"
-        if any(max(abs(a - b) for a, b in zip(at, q)) < 0.3 for q in stubs) else None))
+    body, left = features.fillet_inside(ctx, body, 1.0, occ=True, keep=lambda at: (
+        "0.6 mm deep 'PT1' label letters (cosmetic, no load)" if abs(at[1] - lab_y) < 4 and at[2] > t - 0.7 else None))
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

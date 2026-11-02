@@ -115,7 +115,7 @@ def build(ctx):
     ctx.rigid("lens_view12", seat * Location((lens["x"], lens["y"], t + ctx.cat.num(cam, "component_height") + 12.0)))
     # why: every remaining sharp inside corner rounded (style r 1, r 0.5 where 1 does not fit): stress raisers and weak
     # layer seams (ENGINEERING.md s5); interface-feature corners (servo pocket, horn, inserts) are exempt
-    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
+    body, left = features.fillet_inside(ctx, body, 1.0, occ=True, keep=lambda at: (
         "where the pivot knuckle's 52-degree teardrop point meets the -Y arm face: too narrow for a fillet; off the "
         "bracket_fea load path's hot zone" if abs(at[1] + yi) < 0.2 and at[2] < -4 and abs(at[0]) < 2.5 else None))
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]

@@ -81,6 +81,6 @@ def build(ctx):
         if y >= W / 2 - 1.0:
             return "0.6 mm deep 'PT1' label letters (cosmetic, no load)"
         return None
-    body, left = features.fillet_inside(ctx, body, 1.0, keep=mating)
+    body, left = features.fillet_inside(ctx, body, 1.0, occ=True, keep=mating)
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(body)

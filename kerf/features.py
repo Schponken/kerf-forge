@@ -361,7 +361,7 @@ def _end_cove(shape, e, r, trim):
     return extrude(pl * prof, amount=L - 2 * trim)
 
 
-def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
+def fillet_inside(ctx, shape, r: float = 1.0, keep=None, occ: bool = False):
     """Round every sharp inside corner the build check would report (kerf.edges.sharp_inside: straight concave edges
     between flat faces, the corners of interface features exempt) with radius r, then r / 2 on those whose faces are
     too short for r. The fillets are boolean coves (kerf.coves: the fillet's material added by union), not OCC's fillet
@@ -370,6 +370,9 @@ def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
     more than 45 degrees down as printed (the corner under a ceiling) is left square and declared: rounding it would
     add an overhang. keep(at) -> a reason string leaves a corner sharp on purpose (a mating part's square corner sits
     in it); it is declared with ctx.keep_sharp, so the report lists it with that reason instead of warning.
+    occ=True tries OCC's real fillet first (it blends into the neighbouring faces where a cove has to stop short,
+    which matters at a stressed corner) and coves only what it leaves; use it on bodies where it has been seen to
+    work, since OCC can crash the process outright on others.
     Returns (shape, failed): the corners left sharp that were not declared, as "(x, y, z)" strings for ctx.notes."""
     from . import coves
     from . import edges as E
@@ -411,6 +414,20 @@ def fillet_inside(ctx, shape, r: float = 1.0, keep=None):
         half = len(prisms) // 2
         return apply(apply(s, prisms[:half]), prisms[half:])
 
+    def occ_apply(s, todo, size):
+        new, _ = safe_fillet(s, [(todo, size)])
+        if _meshes(new):
+            return new
+        if len(todo) == 1:
+            return s
+        half = len(todo) // 2
+        s = occ_apply(s, todo[:half], size)
+        return occ_apply(s, [_match(s, e) for e in todo[half:]], size)
+
+    for size in ((r, r / 2) if occ else ()):
+        todo = pick(shape)
+        if todo:
+            shape = occ_apply(shape, todo, size)
     for size in (r, r / 2):
         todo = pick(shape)
         if not todo:
