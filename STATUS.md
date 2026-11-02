@@ -470,3 +470,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Job panel: a one-line strip (stage, current question, counts, latest finding) appears by itself when research starts and stays visible when the panel is folded; it opens the full trail.
 - Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
 - Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
+
+## 2026-11-02 17:45 UTC-5 — for Spencer: Studio single-change jobs vs the Stop gate
+- A Studio change request says "do exactly this change ... do not start other PLAN work", but .claude/hooks/stop_gate.py
+  only lets a session end when every open PLAN item is claimed by others (or on BLOCKED / YIELD / 60 blocks). So a
+  finished Studio job (this one: drone_foldable_wings hub fairing, all pushed, claim released) keeps getting told to
+  `claims.py next`. I followed the job's instruction and did not take new work, and did not write BLOCKED/YIELD (both
+  would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
+  pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
