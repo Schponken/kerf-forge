@@ -259,6 +259,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   lead exit >= 3.4 mm behind the root face would let the nose run into the collar; the 0.3 mm lip is under one line
   width (harmless). Engine gap: nothing checks that OTHER parts stay clear during a stop's over-travel (hard_stop
   could report any part that collides before the stop pair does). Drone PLAN item stays open (claim released).
+- Re-review (review.json, fingerprint 93aa0e4d, FAIL on pre-existing blockers): the fairing's major is fixed (0.451 mm
+  at -3 deg, both sides; ligament back to its old stress). Fairing minors left open: no requirement guards that
+  over-travel gap (needs the engine feature above); the nose plan has a 1.4 mm wave at x 100-135 (taking the running
+  minimum of the ridge limit from x 95 aft would level it); keel wrap / lead exit as above. New pre-existing findings
+  for the drone's owner: spine ridge fillet meets each hub boss at zero clearance; hub and spine stressed past their
+  15 % infill lattice (kerf/infill.py, new engine check).
 
 ## 2026-11-02 21:00 UTC - Kerf manager: first batch verify was OOM-killed; fixed
 - `tools/batch_verify.py run` died (exit -9): `kerf verify` built all 11 projects in one process and grew past 6 GB
@@ -465,6 +471,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
 - Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
 
+## 2026-11-02 17:45 UTC-5 — for Spencer: Studio single-change jobs vs the Stop gate
+- A Studio change request says "do exactly this change ... do not start other PLAN work", but .claude/hooks/stop_gate.py
+  only lets a session end when every open PLAN item is claimed by others (or on BLOCKED / YIELD / 60 blocks). So a
+  finished Studio job (this one: drone_foldable_wings hub fairing, all pushed, claim released) keeps getting told to
+  `claims.py next`. I followed the job's instruction and did not take new work, and did not write BLOCKED/YIELD (both
+  would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
+  pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
+
 
 ## 2026-11-02 — Steady wheel-drive sizing (Codex, ground-robot-checks)
 - Added one `wheel_drive` requirement: sustained uphill grade plus rolling force against the sum of each independent
@@ -488,3 +502,5 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   braking, turning, uneven/soft terrain, coupled differential, self-balancing or hardware validation is claimed.
   Geometry, catalog values and existing checks are unchanged. No stress simulations, project builds or full batch;
   batch status/overlap checks performed and the owner's full-batch hold retained.
+- Integrated main 8bf927f; the only conflict was additive STATUS text, both entries retained under their own headings.
+  No engine or selected test source changed during this integration, so the 69-test result still covers this feature.
