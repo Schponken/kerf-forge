@@ -456,7 +456,7 @@ out.opts = await p.$$eval('.qopt b', e => e.map(x => x.textContent)); out.rec = 
 await p.click('#nav_parts'); await p.waitForSelector('#invadd');
 await p.fill('#invadd', 'servos.SG90'); await p.fill('#invqty', '2'); await p.click('text=Add');
 await p.click('button.primary:has-text("Save")'); await p.waitForTimeout(500);""", tmp_path)
-    assert out["errs"] == [] and out["intake"] == 6, out
+    assert out["errs"] == [] and out["intake"] == 9, out      # 6 + the 3 use-story questions
     assert out["opts"] == ["Rack jaws", "Linkage claw"] and out["rec"] == "Linkage claw", out
     assert json.loads(inv.read_text())["items"] == {"servos.SG90": 2}
 

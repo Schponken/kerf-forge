@@ -180,8 +180,8 @@ def write_md(name: str, res: dict, space: dict, goal: dict, out: Path) -> Path:
     out.mkdir(parents=True, exist_ok=True)
     f = out / "OPTIMISE.md"
     f.write_text("\n".join(L) + "\n", encoding="utf-8")
-    (out / "optimise.json").write_text(json.dumps({"goal": goal, "space": space, "best": b, "history": res["history"]},
-                                                  indent=1, default=str), encoding="utf-8")
+    js = json.dumps({"goal": goal, "space": space, "best": b, "history": res["history"]}, indent=1, default=str)
+    (out / "optimise.json").write_text(js, encoding="utf-8")
     return f
 
 
