@@ -1419,3 +1419,13 @@ pushed for it and what I know:
   access code -> Connect (the code is never sent back to the page). Tests: tests/test_printer_setup.py, test_studio.
 - The cloud container and the linked VM cannot reach the printer's LAN (10.11.16.171:8883/990 closed from there), and
   the access code is a credential Claude does not type, so Spencer connects it once on his Mac (git pull, restart Studio).
+
+### 2026-11-02 (session 4c4e3822c9): Checks tab in plain words; build fixes
+- Studio Checks tab: every problem and failed requirement is now a card (which part, what is wrong in one sentence,
+  why it matters, usual fix, raw check text under "Details"), with a "being worked on / nobody on it" status from
+  running Studio jobs and fresh claims; the sidebar says "being worked on" too. Rules in kerf/explain.py (a message
+  no rule knows still shows, by its first clause: add a rule there when a new check appears). tests/test_explain.py.
+- attribution: the viewer stage's tracer resolved a file path on every Python call; fpv_wing builds hung 40+ min
+  there (pod trace now 92 s).
+- drawings: ISO 5455 enlargement scales (2:1, 5:1) after the reductions, so tiny parts (fpv_wing horns) get drawings.
+- fpv_wing: check PASS (all 14 requirements); full build + review next.

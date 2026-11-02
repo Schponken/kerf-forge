@@ -122,6 +122,13 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .banner{padding:11px 14px;border-radius:12px;margin-bottom:14px;font-size:13.5px}
 .banner.warn{background:var(--warn-bg);color:var(--warn)}.banner.ok{background:var(--ok-bg);color:var(--ok)}
 .banner.bad{background:var(--bad-bg);color:var(--bad)}.banner.info{background:var(--info-bg);color:var(--info)}
+.issue{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--panel)}
+.issue .ihead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.issue .ihead b{font-size:14.5px}
+.issue .ipart{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.issue p{margin:6px 0 0;font-size:13.5px}.issue .fixl{color:var(--muted)}
+.issue details{margin-top:6px}.issue summary{cursor:pointer;color:var(--muted);font-size:12px}
+.issue code{display:block;white-space:pre-wrap;font-size:12px;color:var(--muted);margin-top:4px}
+.workst{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .files h3{font-size:11px;margin:20px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
 .files a.f{display:inline-flex;gap:6px;align-items:center;margin:0 8px 8px 0;padding:7px 11px;border:1px solid var(--line);border-radius:9px;text-decoration:none;color:var(--ink);background:var(--panel);font-size:13px;transition:border-color .15s,transform .15s}
 .files a.f:hover{border-color:var(--accent);transform:translateY(-1px)}
@@ -415,7 +422,7 @@ function renderList() {
     const run = p.running && p.running.length;
     return `<div class="pitem ${p.name === S.sel ? "sel" : ""}" style="${first ? `animation:fadeUp .35s ${i * 40}ms both` : ""}" onclick="select('${p.name}')">
       <div class="thumb ${run ? "running" : ""}" style="${pic(p) ? `background-image:url('${pic(p)}');background-size:contain;background-color:var(--panel2)` : ""}">${pic(p) ? "" : "◇"}</div>
-      <div class="pmeta"><b>${esc(p.title)}</b><span><i class="sdot ${run ? "run" : !p.built ? "" : p.ok ? "ok" : "bad"}"></i>${run ? "working…" : !p.built ? "not built yet" : p.ok ? "checks pass" : p.problems + " problems"}${p.review && p.review.ok ? " · reviewed" : ""}</span></div>
+      <div class="pmeta"><b>${esc(p.title)}</b><span><i class="sdot ${run ? "run" : !p.built ? "" : p.ok ? "ok" : "bad"}"></i>${run ? "working…" : !p.built ? "not built yet" : p.ok ? "checks pass" : p.problems + (p.problems == 1 ? " problem" : " problems") + (p.worked_on ? " · being worked on" : "")}${p.review && p.review.ok ? " · reviewed" : ""}</span></div>
     </div>`; }).join("") || `<div class="note" style="padding:10px">No projects.</div>`;
 }
 
@@ -589,6 +596,22 @@ function ring(pass, total) {
   return `<div class="ring"><svg viewBox="0 0 96 96" width="96" height="96"><circle class="bg" cx="48" cy="48" r="40"/>
     <circle class="fg" cx="48" cy="48" r="40" stroke-dasharray="${C}" stroke-dashoffset="${C}" data-off="${C * (1 - f)}"/></svg><b>${pass}/${total}</b></div>`;
 }
+/* Checks tab in plain words (kerf/explain.py): what is wrong, why it matters, what fixes it, and who is on it */
+function workBanner(iss) {
+  const w = iss && iss.work;
+  if (!w || !w.text) return "";
+  const icon = {fixing: "🔧", checking: "⟳", claimed: "👤", idle: "○"}[w.state] || "○";
+  return `<div class="banner ${w.state === "idle" ? "warn" : "info"} workst"><span>${icon} <b>${w.state === "idle" ? "Not being worked on" : "Being worked on"}</b> · ${esc(w.text)}${w.task ? ` <span class="note">(${esc(w.task)})</span>` : ""}</span></div>`;
+}
+function issueCards(iss, raw) {
+  const cards = iss && iss.cards && iss.cards.length ? iss.cards : raw.map(p => ({title: p, why: "", fix: "", kind_label: "", detail: ""}));
+  const w = iss && iss.work, on = w && w.state !== "idle";
+  return `<div style="margin-bottom:14px"><h3 style="margin:4px 0 10px">What's wrong (${cards.length})</h3>${cards.map((c, i) => `
+    <div class="issue reqrow" style="animation-delay:${i * 40}ms"><div class="ihead">${c.kind_label ? `<span class="chip">${esc(c.kind_label)}</span>` : ""}<b>${esc(c.title)}</b>${c.part ? `<span class="ipart">${esc(c.part)}</span>` : ""}
+      <span style="flex:1"></span><span class="chip ${on ? "info" : "warn"}">${on ? (w.state === "fixing" ? "being fixed" : w.state === "checking" ? "re-checking" : "being worked on") : "nobody on it"}</span></div>
+      ${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.fix ? `<p class="fixl"><b>Usual fix:</b> ${esc(c.fix)}</p>` : ""}
+      ${c.detail && c.detail !== c.title ? `<details><summary>Details for whoever fixes it</summary><code>${esc(c.detail)}</code></details>` : ""}</div>`).join("")}</div>`;
+}
 function renderResults(el, rep) {
   if (!rep) { el.innerHTML = notBuilt("Check results appear here."); return; }
   const P = rep.problems || [], W = rep.warnings || [], R = (rep.requirements || []).filter(r => !r.skipped);
@@ -601,8 +624,9 @@ function renderResults(el, rep) {
       <div class="stat"><b>${tight}</b><span>with under 20 % margin</span></div>
       <div class="stat"><b>${W.length}</b><span>warnings to read</span></div></div>
     ${(rep.stubs || []).length ? `<div class="banner info">Still being designed: ${rep.stubs.length} part${rep.stubs.length == 1 ? " is a" : "s are"} placeholder${rep.stubs.length == 1 ? "" : "s"} (${esc(rep.stubs.join(", "))}). Collisions with them are expected and hidden until they are modelled; the list below is what is left besides them.</div>` : ""}
-    <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Parts fit, nothing collides at any joint angle, every screw lines up and can be reached, and strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.${(rep.stubs || []).length ? "" : ` <button class="primary" style="margin-left:10px" onclick="run('fix')" title="Claude Code fixes every problem at its cause, re-checks, rebuilds and commits">🔧 Fix these</button>`}`}</div>
-    ${P.length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Problems</h3><ul class="msgs">${P.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
+    <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Parts fit, nothing collides at any joint angle, every screw lines up and can be reached, and strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.${(rep.stubs || []).length || (S.detail.issues && S.detail.issues.work && S.detail.issues.work.state !== "idle") ? "" : ` <button class="primary" style="margin-left:10px" onclick="run('fix')" title="Claude Code fixes every problem at its cause, re-checks, rebuilds and commits">🔧 Fix these</button>`}`}</div>
+    ${!rep.ok ? workBanner(S.detail.issues) : ""}
+    ${P.length ? issueCards(S.detail.issues, P) : ""}
     <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Engineering requirements</h3>${reqTable(rep.requirements)}</div>
     ${(rep.maker_notes || []).length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">For you, when you build it</h3><ul class="msgs">${rep.maker_notes.map(n => `<li>${esc(n).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")}</li>`).join("")}</ul></div>` : ""}
     ${W.length ? `<details class="card"><summary><b>${W.length} note${W.length == 1 ? "" : "s"} for the designer</b> <span class="note">(design improvements; not blocking)</span></summary><ul class="msgs">${W.map(w => `<li>${esc(w)}</li>`).join("")}</ul></details>` : ""}`;

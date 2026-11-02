@@ -469,7 +469,17 @@ def summary(name: str) -> dict:
             "problems": len(rep.get("problems", [])) if rep else None,
             "stubs": len(rep.get("stubs") or []) if rep else 0,       # placeholder parts: the design is still in progress
             "stale": bool(rep and rv.get("fingerprint") and rep.get("fingerprint") != rv.get("fingerprint")),
-            "review": rv, "thumb": _thumb(d), "running": running, "build_s": estimate(name, "build")}
+            "review": rv, "thumb": _thumb(d), "running": running, "build_s": estimate(name, "build"),
+            "worked_on": bool(rep and not rep.get("ok") and _worked_on(name))}
+
+
+def _worked_on(name: str) -> bool:
+    """A fresh claim names this project (a Claude session is on it); running Studio jobs show as "working…" already."""
+    from . import explain
+    try:
+        return explain.work_status(name, [], explain.claims(ROOT))["state"] == "claimed"
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def detail(name: str) -> dict:
@@ -517,6 +527,7 @@ def detail(name: str) -> dict:
             "estimate": {"build": estimate(name, "build"), "check": estimate(name, "check")},
             "modes": mode_menu(name, rep), "last_mode": (rep.get("mode") or ("kit" if rep.get("files") else None)) if rep else None,
             "summary_numbers": _numbers(rep),
+            "issues": explained(name, rep, data),
             "use_story": (rep or {}).get("use_story"),
             "can_optimise": bool((_yaml(d) or {}).get("optimise")),
             "materials": materials(), "part_materials": part_materials(name),
@@ -525,6 +536,19 @@ def detail(name: str) -> dict:
                       "mass": trial_rep.get("mass") if trial_rep else None,
                       "problems": trial_rep.get("problems") if trial_rep else None,
                       "requirements": trial_rep.get("requirements") if trial_rep else None} if trial_rep else None}
+
+
+def explained(name: str, rep: dict, data: dict) -> dict:
+    """The Checks tab in plain words (kerf/explain.py): one card per problem, and whether anyone is working on them."""
+    from . import explain
+    jobs = [{"kind": j.kind, "label": j.label, "started": j.started} for j in JOBS.values() if j.project == name and j.state == "running"]
+    parts = list((data.get("parts") or {}).keys()) + list((data.get("purchased") or {}).keys())
+    try:
+        cards = explain.cards(rep, parts) if rep else []
+        work = explain.work_status(name, jobs, explain.claims(ROOT))
+    except Exception as e:  # noqa: BLE001 - the plain-words layer never breaks the page
+        return {"cards": [], "work": {"state": "idle", "text": ""}, "error": str(e)}
+    return {"cards": cards, "work": work}
 
 
 def _numbers(rep: dict) -> dict | None:
