@@ -184,6 +184,9 @@ def _wheel_drive(row, req, proj) -> list[str]:
     if row.get("limiting") == "motor torque":
         return ["Use more continuous wheel torque at the required speed, a smaller wheel radius, or less load/grade. "
                 "Recheck gearing losses and traction; stall torque is not a continuous rating."]
+    if row.get("limiting") == "mixed":
+        return ["Inspect the per-wheel limits: more continuous torque can help the torque-limited wheels, while "
+                "the traction-limited wheels need better grip or revised wheel loads. Recheck both limits after changes."]
     return ["The declared wheel loads and tire grip limit this climb. Reduce the grade or change the tire/contact "
             "design, then measure traction and wheel load shares again; extra motor torque alone cannot remove wheel slip."]
 

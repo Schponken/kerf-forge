@@ -51,13 +51,17 @@ def test_asymmetric_wheel_loads_cannot_borrow_unused_motor_torque():
     assert r["limit"] == pytest.approx(34.80665)
     assert r["limit"] < r["value"]
     assert not r["ok"] and r["limiting"] == "mixed"
-    assert "wheel loads" in advice.advise(r | {"check": "wheel_drive"}, BASE)[0]
+    tip = advice.advise(r | {"check": "wheel_drive"}, BASE)[0]
+    assert "more continuous torque" in tip and "wheel loads" in tip
+    assert _run(slope_deg=0, rolling_coeff=0.4, traction_mu=1, wheel_torque_nm=3,
+                normal_load_fractions=[0.1, 0.9])["ok"]  # the heavily loaded wheel can supply more force
 
 
 def test_unloaded_wheel_and_passive_wheel_fraction():
     r = _run(normal_load_fractions=[0, 0.4])
     assert r["available_per_wheel_n"][0] == 0
     assert r["limit"] == pytest.approx(27.176985667) and not r["ok"]
+    assert "extra motor torque alone" in advice.advise(r | {"check": "wheel_drive"}, BASE)[0]
     assert _run(traction_mu=0)["limit"] == 0 and not _run(traction_mu=0)["ok"]
     assert _run(normal_load_fractions=[0, 0])["limit"] == 0
 

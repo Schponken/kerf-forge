@@ -504,3 +504,6 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   batch status/overlap checks performed and the owner's full-batch hold retained.
 - Integrated main 8bf927f; the only conflict was additive STATUS text, both entries retained under their own headings.
   No engine or selected test source changed during this integration, so the 69-test result still covers this feature.
+- Parent review found one advice issue: mixed wheel limits were described as purely traction-limited. Added distinct
+  per-wheel torque/grip advice and a regression proving extra torque at the heavily loaded wheel can resolve that
+  case. Ground/advice rerun: 48 passed in 2.66 s; the other 21 checks from the earlier 69-test run are unaffected.
