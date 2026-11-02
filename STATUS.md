@@ -259,6 +259,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   lead exit >= 3.4 mm behind the root face would let the nose run into the collar; the 0.3 mm lip is under one line
   width (harmless). Engine gap: nothing checks that OTHER parts stay clear during a stop's over-travel (hard_stop
   could report any part that collides before the stop pair does). Drone PLAN item stays open (claim released).
+- Re-review (review.json, fingerprint 93aa0e4d, FAIL on pre-existing blockers): the fairing's major is fixed (0.451 mm
+  at -3 deg, both sides; ligament back to its old stress). Fairing minors left open: no requirement guards that
+  over-travel gap (needs the engine feature above); the nose plan has a 1.4 mm wave at x 100-135 (taking the running
+  minimum of the ridge limit from x 95 aft would level it); keel wrap / lead exit as above. New pre-existing findings
+  for the drone's owner: spine ridge fillet meets each hub boss at zero clearance; hub and spine stressed past their
+  15 % infill lattice (kerf/infill.py, new engine check).
 
 ## 2026-11-02 21:00 UTC - Kerf manager: first batch verify was OOM-killed; fixed
 - `tools/batch_verify.py run` died (exit -9): `kerf verify` built all 11 projects in one process and grew past 6 GB
