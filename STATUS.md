@@ -384,3 +384,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   physical hardware run. The batch remains on the owner's hold. Parent review found and resolved imported-asset
   dependency closure; no remaining finding. Only the precise workflow subitem is done; other families/composition
   and current independent source reviews remain open.
+
+## 2026-11-02 21:55 UTC - Kerf manager run
+- Merged Codex PRs #5, #6, #7, #9, #10 after reading the diffs and running their targeted tests (all pass;
+  STATUS.md conflicts resolved by keeping both entries). #3, #4 need a rebase on main; #8 must move its CLAUDE.md note.
+- Blocker for the batch: tests/test_catalog.py::test_board_proxy_keeps_mounting_holes_clear already fails on main.
