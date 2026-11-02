@@ -1,10 +1,12 @@
 """A preview is not a passing check; the finished viewer exposes usable outputs."""
 import json
 import subprocess
+
+import pytest
 from pathlib import Path
 
 from kerf import assembly as A, viewer
-from test_viewer import proj  # shared three-part moving assembly fixture
+from test_viewer import proj, viewer_project  # shared three-part moving assembly fixture
 
 
 def test_viewer_keeps_device_and_off_board_mass(proj):
@@ -13,6 +15,7 @@ def test_viewer_keeps_device_and_off_board_mass(proj):
     assert d['report']['mass'] == mass
 
 
+@pytest.mark.browser
 def test_preview_outputs_and_copy_recovery_in_browser(proj, tmp_path):
     mass = {'device_g':25, 'off_board_g':317}
     rep = {'project':'LongProjectName' * 12 + ' <mount> & camera', 'ok':False, 'problems':['base: exported mesh is not watertight'], 'mass':mass,
@@ -30,9 +33,9 @@ def test_preview_outputs_and_copy_recovery_in_browser(proj, tmp_path):
     preview.write_text(viewer.html(d), encoding='utf-8')
     root = Path(__file__).resolve().parents[1]
     script = tmp_path / 'check.mjs'
-    script.write_text('''import {chromium} from 'PLAYWRIGHT';
+    script.write_text('''import {browser} from 'PLAYWRIGHT';
 import assert from 'node:assert/strict';
-const b=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const b=await browser();
 try {
  for(const viewport of [{width:1280,height:800},{width:390,height:844}])for(const theme of ['light','dark']) {
  const p=await b.newPage({viewport});const errors=[];p.on('pageerror',e=>errors.push(e.message));
@@ -69,7 +72,7 @@ try {
  await p.close();
  }
 } finally {await b.close();}
-'''.replace('PLAYWRIGHT',str(root / 'tools/render/node_modules/playwright/index.mjs'))
+'''.replace('PLAYWRIGHT',str(root / 'tests/browser.mjs'))
         .replace('PREVIEW',str(preview)).replace('READY',str(ready)), encoding='utf-8')
     r = subprocess.run(['node',str(script)],capture_output=True,text=True,timeout=180)
     assert r.returncode == 0, r.stdout + r.stderr

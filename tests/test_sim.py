@@ -7,6 +7,8 @@ import math
 import numpy as np
 import pytest
 
+pytestmark = pytest.mark.slow
+
 from kerf import catalog, project as P, sim
 from test_engine import _write_project
 

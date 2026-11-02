@@ -123,6 +123,7 @@ def test_api_refuses_bad_input(server):
     assert _post(server + "/api/new", {"name": "servo_link", "description": "x"})[0] == 400
 
 
+@pytest.mark.slow
 def test_progress_events_are_off_by_default_and_ordered_when_on(capsys, monkeypatch, tmp_path):
     from kerf import pipeline, progress
     monkeypatch.delenv("KERF_PROGRESS", raising=False)
@@ -155,6 +156,7 @@ def _start(tmp_env, *extra):
     return p, url
 
 
+@pytest.mark.slow
 def test_closing_the_last_window_stops_the_server():
     import time
     p, url = _start({"KERF_STUDIO_GRACE": "30"}, "--idle-exit", "60")
@@ -182,6 +184,7 @@ def test_quit_asks_first_when_a_job_runs_and_stays_up_without_idle_limit():
         p.kill()
 
 
+@pytest.mark.slow
 def test_a_window_still_open_cancels_the_goodbye():
     import time
     p, url = _start({"KERF_STUDIO_GRACE": "30"}, "--idle-exit", "60")
@@ -348,8 +351,8 @@ def _browser(url, steps_js, tmp_path):
     from pathlib import Path
     root = Path(__file__).resolve().parent.parent
     js = tmp_path / "b.mjs"
-    js.write_text(f"""import {{ chromium }} from '{root}/tools/render/node_modules/playwright/index.mjs';
-const b = await chromium.launch(); const p = await b.newPage({{ viewport: {{ width: 1300, height: 900 }} }}); const errs = [];
+    js.write_text(f"""import {{ browser }} from '{root}/tests/browser.mjs';
+const b = await browser(); const p = await b.newPage({{ viewport: {{ width: 1300, height: 900 }} }}); const errs = [];
 p.on('pageerror', e => errs.push(e.message));
 await p.goto('{url}'); const out = {{}};
 {steps_js}
@@ -359,6 +362,7 @@ console.log(JSON.stringify({{ errs, ...out }})); await b.close();""")
     return json.loads(r.stdout.strip().splitlines()[-1])
 
 
+@pytest.mark.browser
 def test_studio_page_shows_numbers_units_effects_history_and_export(server, tmp_path):
     out = _browser(server + "/", """
 await p.waitForSelector('.pitem'); await p.waitForSelector('#tabs'); await p.click('text=Servo test rig');
@@ -385,6 +389,7 @@ await p.waitForSelector('text=Welcome to Kerf Studio', { timeout: 15000 }); out.
     assert out["errs"] == [] and out["welcome"], out
 
 
+@pytest.mark.all_projects
 def test_every_finished_project_states_its_param_units():
     """Studio shows each slider's unit; the six finished projects state it (`unit:`) rather than leaving it assumed."""
     from pathlib import Path
@@ -440,6 +445,7 @@ def test_save_inventory_keeps_only_known_parts(tmp_path, monkeypatch):
     assert any(k["key"] == "servos.SG90" for k in studio.inventory_keys())
 
 
+@pytest.mark.browser
 def test_new_design_page_has_intake_quote_options_and_my_parts(server, tmp_path, monkeypatch):
     from kerf import ship
     inv = tmp_path / "inv.json"
@@ -465,6 +471,7 @@ await p.click('button.primary:has-text("Save")'); await p.waitForTimeout(500);""
     assert json.loads(inv.read_text())["items"] == {"servos.SG90": 2}
 
 
+@pytest.mark.browser
 def test_mode_menu_and_ship_needs_its_own_confirmation(server, tmp_path):
     menu = studio.mode_menu("servo_link", studio._report(studio.PROJECTS / "servo_link"))
     assert [m["mode"] for m in menu] == ["sketch", "print", "check", "simulate", "kit", "ship"]

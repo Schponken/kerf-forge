@@ -21,6 +21,7 @@ dependencies = [
   "numpy>=1.26",
   "pyyaml>=6",
   "pytest>=8",
+  "pytest-xdist==3.8.0",  # bounded parallel test workers
   "cadgen==0.8.4",
   "mujoco==3.3.7",   # motion simulation (kerf/sim.py, kerf simulate)
   "skidl==3.0.0",        # circuit netlist + ERC + schematic (kerf/circuit.py)
@@ -36,3 +37,9 @@ build-backend = "setuptools.build_meta"
 packages = ["kerf"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-n 2 --dist loadfile --strict-markers"
+markers = [
+  "slow: geometry/solver or external-tool integration; include for changes to that area",
+  "browser: real Chromium integration (also slow)",
+  "all_projects: checks every repository project (also slow)",
+]

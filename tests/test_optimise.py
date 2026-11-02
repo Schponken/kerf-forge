@@ -42,6 +42,7 @@ def build(ctx):
 """
 
 
+@pytest.mark.slow
 def test_real_run_on_a_beam_writes_the_trade_off(tmp_path, monkeypatch):
     monkeypatch.setattr(O, "SCRATCH", tmp_path / "scratch")
     y = """

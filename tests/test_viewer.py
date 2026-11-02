@@ -1,6 +1,7 @@
 """The assembly viewer reproduces the engine's kinematics: each moving joint's axis is measured from solve(), and moving
 it in the page must move exactly the items the engine moves, to the same place."""
 import base64
+import copy
 import json
 import re
 import textwrap
@@ -43,9 +44,9 @@ def build(ctx):
 """
 
 
-@pytest.fixture()
-def proj(tmp_path):
-    d = tmp_path / "p"
+@pytest.fixture(scope="session")
+def viewer_project(tmp_path_factory):
+    d = tmp_path_factory.mktemp("viewer") / "p"
     (d / "parts").mkdir(parents=True)
     (d / "project.yaml").write_text(textwrap.dedent(YAML))
     for n, src in {"base": BASE, "carriage": CARRIAGE, "flap": FLAP}.items():
@@ -53,6 +54,21 @@ def proj(tmp_path):
     pr = P.build(P.load(str(d)))
     assert not {k: v.error for k, v in pr.items.items() if v.error}
     return pr
+
+
+@pytest.fixture
+def proj(viewer_project):
+    # A.solve mutates item locations. Reuse the build, never a prior test's pose.
+    return copy.deepcopy(viewer_project)
+
+
+def test_cached_build_does_not_share_test_pose(proj, viewer_project):
+    before = viewer_project.items["flap"].shape.location
+    assert proj is not viewer_project and proj.items["flap"] is not viewer_project.items["flap"]
+    A.solve(A.plan(proj), {"slide": 40, "tilt": 60})
+    assert proj.items["flap"].shape.location != before
+    assert viewer_project.items["flap"].shape.location == before
+    assert copy.deepcopy(viewer_project).items["flap"].shape.location == before
 
 
 def _apply(j, v, pts):
@@ -98,6 +114,7 @@ def test_html_is_self_contained(proj, tmp_path):
     assert json.loads(data)["report"]["project"] == "t </script> & <b>"
 
 
+@pytest.mark.browser
 def test_page_renders_with_a_combined_pose_sweep(proj, tmp_path):
     """Regression: a coupled-pose sweep (no 'range') crashed the side panel and left the 3D view blank, silently."""
     import subprocess
@@ -109,8 +126,8 @@ def test_page_renders_with_a_combined_pose_sweep(proj, tmp_path):
     page = viewer.write(proj, asm, rep, tmp_path / "v.html")
     root = Path(__file__).resolve().parent.parent
     js = tmp_path / "check.mjs"
-    js.write_text(f"""import {{ chromium }} from '{root}/tools/render/node_modules/playwright/index.mjs';
-const b = await chromium.launch({{ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }});
+    js.write_text(f"""import {{ browser }} from '{root}/tests/browser.mjs';
+const b = await browser();
 const p = await b.newPage({{ viewport: {{ width: 1000, height: 700 }} }}); const errs = [];
 p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
 await p.goto('file://{page}'); await p.waitForFunction(() => window.__kerf, null, {{ timeout: 30000 }}); await p.waitForTimeout(500);
@@ -156,6 +173,7 @@ def test_stress_steps_and_sections_data(proj):
     assert viewer.data(proj, asm, {"project": "t", "problems": []})["steps"]["intro"] == []    # no ASSEMBLY.md: steps, no text
 
 
+@pytest.mark.browser
 def test_page_cut_stress_build_it_compare_and_picture(proj, tmp_path):
     """Every new mode runs in a real browser without a page error and does what it says."""
     import subprocess
@@ -166,8 +184,8 @@ def test_page_cut_stress_build_it_compare_and_picture(proj, tmp_path):
     page = viewer.write(proj, asm, {"project": "t", "problems": [], "fingerprint": "f"}, tmp_path / "viewer.html", fea=_fea_for(proj, "carriage"))
     root = Path(__file__).resolve().parent.parent
     js = tmp_path / "check.mjs"
-    js.write_text(f"""import {{ chromium }} from '{root}/tools/render/node_modules/playwright/index.mjs';
-const b = await chromium.launch({{ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }});
+    js.write_text(f"""import {{ browser }} from '{root}/tests/browser.mjs';
+const b = await browser();
 const p = await b.newPage({{ viewport: {{ width: 1100, height: 750 }} }}); const errs = [], out = {{}};
 p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
 await p.goto('file://{page}'); await p.waitForFunction(() => window.__kerf, null, {{ timeout: 30000 }}); await p.waitForTimeout(300);

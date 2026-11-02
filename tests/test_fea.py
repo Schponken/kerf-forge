@@ -1,6 +1,8 @@
 """FEA must match hand calculations before any project relies on it."""
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.slow
 from build123d import Align, Box, Cylinder
 
 from kerf import fea

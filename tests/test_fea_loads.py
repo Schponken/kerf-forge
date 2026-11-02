@@ -4,6 +4,8 @@ import math
 
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.slow
 from build123d import Align, Box, Cylinder, Pos, Rot
 
 from kerf import fea, fea_render, pipeline

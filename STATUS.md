@@ -214,3 +214,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Blocker for Spencer: the ChatGPT Codex environment "kerf-forge" will not publish ("Couldn't publish environment",
   no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
   then docs/status/CODEX_TASKS.md items in order.
+
+## 2026-11-02 — Fast tests, ChatGPT Codex
+- Added pinned pytest-xdist 3.8.0 with two file-grouped workers; `-n 0` remains available for debugging. Browser/all-project markers also imply slow; solver/drawing/simulation/lifecycle cases are explicitly marked. docs/TESTING.md gives targeted `-m "not slow"` commands and when to include expensive coverage. Unfiltered pytest/verify still selects every test; no test or engineering assertion was removed or loosened.
+- Cached the viewer assembly once per worker, deep-copying it for every test; direct page tests reuse a Chromium server with separate contexts on each client. Regressions prove pose/storage/context isolation and that quick + slow selections exactly partition the collected tests.
+- Before/after: identical 68-test Studio/viewer/render sample, all passing, 67.01 s -> 45.30 s wall time (32.4% less). This is a targeted sample, not a full-suite speed claim. An additional 59 affected tests passed, including solver, drawings, simulation, assembly, docs and test-workflow regressions (127 distinct targeted passes total). No full suite or all-project test/build was run; the manager owns batched verification. Generated README render restored after its test.
+- Deliver as a ready PR for independent review/merge. Next: inspect and claim Reviews go stale only for real changes, then Repo cleanup and Firmware proven, skipping active claims. Environment publication remains the recorded platform blocker.

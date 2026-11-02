@@ -191,3 +191,4 @@ The design notes, sizing math, assembly order and what to measure first are in e
 - `catalog/hardware.json` — purchased parts with sources; `catalog/prices.json` — dated prices
 - `projects/<id>/` — the designs; `evals/<id>/` — briefs and graders
 - `PLAN.md`, `STATUS.md` — what is done and the running log
+- [Running targeted tests](docs/TESTING.md) — parallel workers, quick tests and browser/solver coverage

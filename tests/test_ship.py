@@ -165,6 +165,7 @@ def test_whole_pack_cost():
     assert s["total_usd"] == pytest.approx(120 * 0.07 + 50 * 0.02)
 
 
+@pytest.mark.all_projects
 def test_every_project_purchase_has_a_price():
     """Every purchased item, extra BOM row and wiring-generated row (wire, heat-shrink, ferrules, leads, fuses) of every
     project resolves to a priced shop entry (or is marked as included with another item), and every extra row uses
@@ -189,6 +190,7 @@ def test_every_project_purchase_has_a_price():
     assert missing == [] and bad_keys == []
 
 
+@pytest.mark.all_projects
 def test_bom_text_has_no_internal_references():
     """Text that lands in a maker's BOM (extra rows, purchased-item notes) names no catalog ids, repo docs or TODOs."""
     import re
@@ -236,6 +238,7 @@ def test_bom_extra_keys_accept_every_key_the_pricer_reads():
     assert {"price_key", "included", "link", "group"} <= export.BOM_EXTRA_KEYS
 
 
+@pytest.mark.all_projects
 def test_no_project_assembly_step_refers_to_a_later_part():
     """In every project's ASSEMBLY.md plan a part is only ever fitted onto something already on the bench or the build
     (a bench sub-assembly is joined at its parent's step), and a servo horn always follows its servo."""
