@@ -59,7 +59,8 @@ class Web:
     def __init__(self, request: str):
         self.nodes: dict[str, dict] = {}
         self.step = 0
-        self.root = self._add("core", None, plain(request, 80) or "Your request", kind="core")
+        self.root = self._add("core", None, plain(request, 80) or "Your request", kind="core",
+                              detail=" ".join(str(request).split())[:600])   # the whole request, for the readable story
         self.last_idea = self.root
         self.build = None
         self.known = None
@@ -100,7 +101,7 @@ class Web:
             self.last_idea = best
             return best
         parent = best if best and score >= JOIN else self.root
-        nid = self._add(None, parent, plain(text, 70), "idea", detail)
+        nid = self._add(None, parent, plain(text, 120), "idea", detail)
         self.nodes[nid]["words"] = ws
         self.last_idea = nid
         return nid
@@ -147,9 +148,11 @@ class Web:
             ws = words(text)
             best, score = self._best_idea(ws)
             nid = self._add(None, parent, plain(text, 70), "option")
-            self.nodes[nid].update(words=ws, state="chosen" if chosen else "set_aside", reason=plain(reason, 90))
+            self.nodes[nid].update(words=ws, state="chosen" if chosen else "set_aside", reason=plain(reason, 160))
+            if best and score >= JOIN and self.nodes[best]["kind"] == "idea":   # the research this option came out of
+                self.nodes[nid]["based_on"] = best
             if best and score >= JOIN and not chosen and self.nodes[best]["kind"] == "idea":
-                self.nodes[best].update(state="set_aside", reason=plain(reason, 90))
+                self.nodes[best].update(state="set_aside", reason=plain(reason, 160))
 
     # -- one Studio job event
     def event(self, ev: dict):
@@ -208,7 +211,7 @@ class Web:
                 n["state"] = "active"
             elif n["kind"] == "idea" and not kids and n["touches"] < 3 and age >= IDLE:
                 n["state"] = "set_aside"
-                n["reason"] = n["reason"] or "left for other routes"
+                n["reason"] = n["reason"] or "it moved on to other questions"
             else:
                 n["state"] = "pursued" if (kids or n["touches"] >= 3) else "explored"
         return self
@@ -242,19 +245,41 @@ def from_events(events: list, request: str = "") -> dict:
 
 # ---------------------------------------------------------------- a finished project, from its own files
 
+_CHOSEN = re.compile(r"\b(chosen|picked|selected)\b", re.I)
+_REJECTED = re.compile(r"\b(rejected|ruled out|not chosen|dropped)\b", re.I)
+_MARK = re.compile(r"^\s*\(?(chosen|picked|selected|rejected|ruled out|not chosen|dropped)\)?\s*(for a first build|here)?\s*[.;:,]?\s*", re.I)
+
+
 def design_options(text: str) -> list:
-    """(option, chosen, reason) from DESIGN.md's options list: numbered lines marked chosen / rejected."""
+    """(option, chosen, reason) from DESIGN.md's options list: a numbered list where items are marked chosen / picked /
+    rejected. Unmarked items of a list that has a chosen one were set aside too. The reason drops the marker words, so
+    it says why ("one joint per side, printable…"), not "chosen."."""
+    groups, cur, last = [], [], 0
+    for m in re.finditer(r"^\s*(\d+)\.\s+(.+?)$((?:\n\s{2,}.+$)*)", text, re.M):
+        n = int(m.group(1))
+        if n <= last or (cur and text[cur[-1][0]:m.start()].count("\n\n") > 1):   # numbering restarted: a new list
+            groups.append(cur); cur = []
+        cur.append((m.end(), " ".join((m.group(2) + " " + m.group(3)).split())))
+        last = n
+    groups.append(cur)
     out = []
-    for m in re.finditer(r"^\s*\d+\.\s+(.+?)$((?:\n\s{2,}.+$)*)", text, re.M):
-        line = " ".join((m.group(1) + " " + m.group(2)).split())
-        low = line.lower()
-        chosen = bool(re.search(r"\b(chosen|picked|selected)\b", low))
-        rejected = bool(re.search(r"\b(rejected|ruled out|not chosen|dropped)\b", low))
-        if not (chosen or rejected):
-            continue
-        name = re.sub(r"\*\*", "", re.split(r"\s[-:—]\s|\.\s|:\s", line, maxsplit=1)[0])
-        reason = re.split(r"\s[-:—]\s|:\s", line, maxsplit=1)[1] if re.search(r"\s[-:—]\s|:\s", line) else ""
-        out.append((name, chosen and not rejected, reason))
+    for g in groups:
+        lines = [ln for _, ln in g]
+        if not any(_CHOSEN.search(ln) for ln in lines):
+            lines = [ln for ln in lines if _REJECTED.search(ln)]          # a list of rejections only: keep just those
+            if not lines:
+                continue
+        for line in lines:
+            chosen = bool(_CHOSEN.search(line)) and not _REJECTED.search(line)
+            parts = re.split(r"\s[-:—]\s|:\s|\*\*\s*[.;:]?\s+", line, maxsplit=1)
+            name = re.sub(r"\*\*", "", parts[0])
+            name = re.sub(r"\s*\((chosen|picked|selected|rejected)\)\s*$", "", name, flags=re.I).strip(" .")
+            rest = re.sub(r"\*\*", "", parts[1]).lstrip(" -:—") if len(parts) > 1 else ""
+            m = re.match(r"\s*\((chosen|picked|selected|rejected)\)\s*[.:]?\s*(.*)$", rest, re.I)
+            rest = m.group(2) if m else rest
+            rest = _MARK.sub("", rest)
+            rest = re.sub(r"[;,.]?\s*(rejected|ruled out|dropped)\b[^.]*\.?\s*$", ".", rest, flags=re.I).strip()
+            out.append((name, chosen, "" if rest in ("", ".") else rest))
     return out
 
 

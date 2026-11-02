@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.mark.slow
 def test_markers_select_expensive_tests_without_removing_them():
-    files = ["tests/test_viewer.py", "tests/test_ship.py", "tests/test_fea.py"]
+    files = ["tests/test_viewer.py", "tests/test_ship.py", "tests/test_fea.py", "tests/test_thoughtweb.py"]
     def collect(*options):
         r = subprocess.run([sys.executable, "-m", "pytest", "-n", "0", "--collect-only", "-q", *files, *options],
                            cwd=ROOT, capture_output=True, text=True, timeout=60)
@@ -25,6 +25,7 @@ def test_markers_select_expensive_tests_without_removing_them():
     projects = collect("-m", "all_projects")
     assert all_tests == quick | expensive and quick.isdisjoint(expensive)
     assert browsers and projects and browsers | projects <= expensive
+    assert "tests/test_thoughtweb.py::test_studio_draws_it_live_and_for_a_project" in browsers
     assert "tests/test_fea.py::test_cantilever_matches_beam_theory" in expensive
     assert "tests/test_viewer.py::test_page_kinematics_match_engine" in quick
     # No default marker exclusion: verify/batch still includes every test.

@@ -488,9 +488,19 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   few s: tessellation straight to numpy in geom.mesh (skip build123d Vectors), a warm check server (~7 s startup per
   command), cold part rebuilds after engine edits (~180 s, fillets in part code).
 
+## 2026-11-02 22:45 UTC - "How Kerf decided" readable and steerable (Claude)
+- Replaced the force-directed thought web (it never settled, so it shook, and labels overlapped / were cut at 46 chars) with a calm trail read top to bottom: 1 You asked (the whole request) -> 2 What it looked into (one card per question: Looking now / Kept coming back / Looked at / Not pursued + why, "Found:" its notes, its sources as links, follow-up questions inside) -> 3 What it decided (each option Chosen / Set aside with why, and "Came out of" the research it rests on) -> 4 What it's building (parts drawn as one step with chips, then tests). Nothing moves except new items fading in; light, dark and phone width checked in screenshots.
+- DESIGN.md option parsing: reasons no longer read "chosen." (marker words stripped), and unmarked items of a list with a chosen one count as set aside (fpv_5in, pan_tilt now show all their alternatives).
+- Job panel: a one-line strip (stage, current question, counts, latest finding) appears by itself when research starts and stays visible when the panel is folded; it opens the full trail.
+- Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
+- Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
+
 ## 2026-11-02 — Fast-tests refresh preserves paused stress work (Codex)
 - Merged current main into PR #4, retaining both STATUS histories, the stress-simulation pause and warning, current
   Studio fixes, and the new integration claim. No thresholds, acceptance checks or marker exclusions changed.
 - The existing marker-selection contract passed (1 test, 10.96 s); its subprocesses only collect tests, proving
   slow/browser/all-project partitioning still includes all tests. No FEA, all-project build or full batch ran.
   Earlier targeted execution evidence remains historical; it was not repeated for the additive STATUS resolution.
+- Follow-on main integration through eb5fc90 retains the new research trail and steering unchanged. Its browser
+  test now carries the browser marker and shares the isolated worker browser; the collection contract asserts this.
+  Those exact two tests PASS in 27.59 s. No other execution or benchmark repeated.
