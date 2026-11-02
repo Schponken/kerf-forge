@@ -1,23 +1,5 @@
 STATE: IN PROGRESS
 
-## 2026-11-02 22:00 UTC — Mixed manufacturing handoff (Codex, PR pending)
-- Custom stock parts use the existing parts/build/import contract with manufacturing metadata. Exact local-frame
-  STEP and proven constant-section DXF (including holes, millimetres) accompany printed plates; stock parts appear
-  in mass/CG/URDF, assembly, drawings, BOM, viewer and Studio supplier files/ZIP. Printer offsets, filament controls
-  and slicer plates exclude them. Stock mass uses sourced density times current CAD volume, not FDM infill.
-- Exact quote keys bind to geometry, stock, process and quantity; missing or changed quotes stay unpriced. Pockets,
-  bevels and thickness mismatches cannot silently become through-cut DXF. Rebuilds retire only obsolete files named
-  by the previous generated manufacturing manifest. No supplier order or hardware action.
-- Stock strength/thermal models and supplier limits are not implemented. Structural declarations, direct/derived
-  strength cases and heat checks covering stock fail explicitly instead of using a default printed polymer.
-  PLAN checks off the tested handoff subitem only; the broader engineering/project-proof work remains open.
-- Validation so far: real mixed fixture pipeline and DXF/STEP round trips, quote expiry, density mass, print exclusion,
-  URDF, drawings, calibration isolation, nested strength rejection, 6 FEA regressions, ship/maker/docs and Studio
-  compatibility checks. Chromium fixture inspection has no page errors and shows the made-to-order part correctly.
-  One fixture-compatibility failure was corrected and its suite rerun (21 passes). A broad ship test selection was
-  interrupted when it reached an all-project geometry test, then replaced with bounded selectors; no full batch run.
-  Final current-main verification and independent review follow before the PR is marked ready.
-
 _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you need history)._
 
 ## 2026-11-01 23:40 UTC-5 — Human factors (done), session e3d8373e
@@ -439,3 +421,21 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 22:05 UTC - Kerf manager
 - Merged PR #11 (scenario options; tests/test_scenario.py pass). test_studio's progress-order
   test already fails on main; PR #4 fixes it once rebased.
+
+## 2026-11-02 22:00 UTC — Mixed manufacturing handoff (Codex, PR pending)
+- Custom stock parts use the existing parts/build/import contract with manufacturing metadata. Exact local-frame
+  STEP and proven constant-section DXF (including holes, millimetres) accompany printed plates; stock parts appear
+  in mass/CG/URDF, assembly, drawings, BOM, viewer and Studio supplier files/ZIP. Printer offsets, filament controls
+  and slicer plates exclude them. Stock mass uses sourced density times current CAD volume, not FDM infill.
+- Exact quote keys bind to geometry, stock, process and quantity; missing or changed quotes stay unpriced. Pockets,
+  bevels and thickness mismatches cannot silently become through-cut DXF. Rebuilds retire only obsolete files named
+  by the previous generated manufacturing manifest. No supplier order or hardware action.
+- Stock strength/thermal models and supplier limits are not implemented. Structural declarations, direct/derived
+  strength cases and heat checks covering stock fail explicitly instead of using a default printed polymer.
+  PLAN checks off the tested handoff subitem only; the broader engineering/project-proof work remains open.
+- Validation so far: real mixed fixture pipeline and DXF/STEP round trips, quote expiry, density mass, print exclusion,
+  URDF, drawings, calibration isolation, nested strength rejection, 6 FEA regressions, ship/maker/docs and Studio
+  compatibility checks. Chromium fixture inspection has no page errors and shows the made-to-order part correctly.
+  One fixture-compatibility failure was corrected and its suite rerun (21 passes). A broad ship test selection was
+  interrupted when it reached an all-project geometry test, then replaced with bounded selectors; no full batch run.
+  Final current-main verification and independent review follow before the PR is marked ready.
