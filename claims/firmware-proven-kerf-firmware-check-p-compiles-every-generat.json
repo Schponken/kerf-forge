@@ -1,0 +1,7 @@
+{
+ "item": "Firmware proven: `kerf firmware-check <p>` compiles every generated Nano / PCA9685 sketch with arduino-cli (arduino:avr core + library index from downloads.arduino.cc, pinned versions, installed by setup.sh) and runs the Nano build in simavr (apt), recording the servo pulse widths on every signal pin during centre + sweep and checking them against the joint ranges and PULSE_LIMITS; Pi scripts byte-compile and run against a stub GPIO that records the same; part of `kerf build` when a project has firmware; tests incl. a deliberately broken sketch that must FAIL (Wokwi rejected: its CLI needs a paid CI token)",
+ "session": "4205138ec7",
+ "since": 1793653767.3556008,
+ "heartbeat": 1793653767.3556008,
+ "since_utc": "2026-11-02 21:09"
+}
