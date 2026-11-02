@@ -2,6 +2,6 @@
  "item": "Reviews go stale only for real changes (Spencer, 2026-11-02, efficiency): a project's geometry fingerprint hashes only the catalog entries that project actually uses (plus its own files), so editing an unrelated catalog part no longer forces a re-review of every project; tests prove a used-entry change still invalidates and an unused one does not",
  "session": "6ff4882b3b",
  "since": 1793649518.4637911,
- "heartbeat": 1793649518.4637911,
+ "heartbeat": 1793649885.1294343,
  "since_utc": "2026-11-02 19:58"
 }
