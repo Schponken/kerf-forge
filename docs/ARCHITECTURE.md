@@ -209,7 +209,7 @@ on a strength check, it is refused and blocks.
 | `access_opening` | `item`, `from_dir`, `gloved`, `ignore`, `diameter_mm` | overlap (mm3) of the 38 / 32 mm finger opening with other parts |
 | `impact_case` | `hazard`, `index` (generated from the use story) | force a `case: drop|crash` fea_static carries vs the work-energy stopping force (N) |
 | `story_covered` | `ids`, `what` (generated) | how many of the named requirements exist |
-| `impact_fea` | `part`, `fixed`, `loads` (hit pattern), `height_m` / `speed_m_s` / `hazard`, `mass_kg` / `mass_g`, `sf` (3) | von Mises p99.9 at the stiffness-based impact force (MPa) |
+| `impact_fea` | `part`, `fixed`, `loads` (hit pattern), `height_m` / `speed_m_s` / `hazard`, `mass_kg` / `mass_g`, `sf` (3), `bumper` {item, area_mm2, thick_mm}: a soft pad in series (Gent & Lindley bonded-pad stiffness; no credit past 20 % squash) | von Mises p99.9 at the stiffness-based impact force (MPa) |
 | `stop_impact` | `joint`, `part`, `fixed`, `loads` (stop contact), `speed_dps` / `actuator`, `sf` | von Mises p99.9 when the joint hits its stop (MPa) |
 | `natural_freq` | `part`, `fixed`, `loads` (mass point + direction), `carried_g` / `carried`, `excitation` ({hz} or {motor, throttle, prop / blades}), `min_ratio` / `separation` | first natural frequency (Hz) vs excitation |
 | `repair_access` | `parts`, `ball_end_ok` (true) | screws holding the parts that no key reaches on the finished device |

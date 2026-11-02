@@ -78,3 +78,23 @@ def test_infill_lattice_strength_inside_the_walls():
     boxed = NS(id="p", spec={"infill": 0.25, "walls": 2, "modifiers": [{"box": [[-5, -5, -5], [5, 5, 5]], "infill": 1.0}]}, shape=shape)
     assert infill.check(boxed, [{"field": field, "allow": 20.0}])["warning"] == ""
     assert infill.check(NS(id="s", spec={"infill": 1.0}, shape=shape), [{"field": field, "allow": 20.0}]) is None
+
+
+def test_bumper_pad_lowers_crash_force_only_while_it_does_not_bottom_out(monkeypatch):
+    import math
+    from kerf import req_dynamic as D
+    ku, kl, S = D.bumper_k("TPU", 400, 4)                     # 20 x 20 mm TPU pad, 4 mm thick: S = 400 / 320 = 1.25
+    assert abs(S - 1.25) < 1e-9 and abs(kl - 9.2 * 100) < 1e-6 and abs(ku - 9.2 * (1 + 2.2 * 1.25 ** 2) * 100) < 1e-6
+    r0 = {"ok": True, "value": 10.0, "limit": 20.0, "max_disp_mm": 0.1, "applied_force_n": [0, 0, 10], "detail": ""}
+    monkeypatch.setattr(D, "_solve", lambda *a, **k: (dict(r0), 10.0, 2000.0))   # part: 2000 N/mm
+    proj = NS(items={"pad": NS(spec={"material": "TPU"})}, data={})
+    pad = {"item": "pad", "area_mm2": 400, "thick_mm": 4}
+    bare = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=1.0, mass_kg=0.1)
+    soft = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=1.0, mass_kg=0.1, bumper=pad)
+    assert abs(bare["impact"]["force_n"] - math.sqrt(2e6 * 0.1)) < 1
+    ks = 1 / (1 / 2000 + 1 / ku)
+    assert soft["impact"]["bumper"]["credited"] and abs(soft["impact"]["force_n"] - math.sqrt(ks * 1e3 * 0.1)) < 1
+    hard = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=3.0, mass_kg=0.6, bumper=pad)   # 2.9 mm squash > 0.8 mm
+    hard_bare = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=3.0, mass_kg=0.6)
+    assert not hard["impact"]["bumper"]["credited"] and hard["impact"]["force_n"] == hard_bare["impact"]["force_n"]
+    assert "no credit" in hard["detail"]
