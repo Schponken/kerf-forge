@@ -102,6 +102,23 @@ def check(name, full=False, quick=False) -> int:
     return 0 if rep["ok"] else 1
 
 
+def req(name, ids) -> int:
+    """`kerf req <p> [id ...]`: just these requirements (pipeline.run_requirements)."""
+    import time
+    from .pipeline import req_line, run_requirements
+    t = time.time()
+    r = run_requirements(name, ids or None)
+    for x in r["results"]:
+        _p(f"  {x['id']}: {req_line(x)}")
+        if x.get("value") is None and x.get("detail"):
+            _p(f"      {x['detail']}")
+    for p in r["problems"]:
+        _p(f"PROBLEM {p}")
+    _p(f"{'ok' if r['ok'] else 'FAIL'}: {len(r['results'])} requirement(s) in {time.time() - t:.1f} s "
+       f"({len(r.get('cached_parts', []))} parts from cache; `kerf check` decides PASS)")
+    return 0 if r["ok"] else 1
+
+
 def run_mode(name: str, mode: str, ship_confirmed: bool = False, runner=None) -> int:
     """kerf run <p> --mode <m> (kerf/modes.py). Ship it: refused without --ship; after the kit it needs a current
     design-review PASS, then hands plate 1 to the printer (kerf print --send 1)."""
@@ -271,6 +288,9 @@ def main(argv=None) -> int:
     sub.add_parser("doctor")
     c = sub.add_parser("check"); c.add_argument("project"); c.add_argument("--quick", action="store_true")
     b = sub.add_parser("build"); b.add_argument("project")
+    rq = sub.add_parser("req", help="evaluate just these requirements (ids or check names; none = all) on the assembled "
+                                    "project: seconds instead of a full check")
+    rq.add_argument("project"); rq.add_argument("ids", nargs="*")
     v = sub.add_parser("verify"); v.add_argument("--fast", action="store_true")
     v.add_argument("--all-failures", action="store_true", help="don't stop pytest at the first failure (batched runs)")
     r = sub.add_parser("review-status"); r.add_argument("project")
@@ -322,6 +342,8 @@ def main(argv=None) -> int:
         return check(a.project, quick=a.quick)
     if a.cmd == "build":
         return check(a.project, full=True)
+    if a.cmd == "req":
+        return req(a.project, a.ids)
     if a.cmd == "verify":
         return verify(a.fast, a.all_failures)
     if a.cmd == "run":
