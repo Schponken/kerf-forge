@@ -4,7 +4,7 @@ as the wing segments, so slot and surface match: bottom hinge line (hinge tape a
 up-throw, ends square to the hinge with 1 mm to the wing. The two halves meet on a plane square to the hinge where the
 wing segments meet, and two 3 mm carbon rods (epoxied in the inner half, a reamed push fit in the outer half) make
 them one surface with no free play, so the outer half still slides off with its bolt-on wing segment. The second rod
-sits further aft than the first (9 mm vs 4.6 mm from the hinge: the front one clears the rounded hinge nose by ~1 mm,
+sits further aft than the first (8.7 mm vs 4.6 mm from the hinge: the front one clears the rounded hinge nose by ~1 mm,
 the aft one keeps ~1 mm of wall where the section thins, with ~1.3 mm of web between the bores), so any clearance left in the outer bores turns into half the angle a single rod near the hinge gave.
 
 Each half prints standing on its outboard end (square to the hinge; 120 / 180 mm tall, so 1 wall + a brim). The
@@ -23,7 +23,7 @@ L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 HORN_SLOT = (10.0, 2.5, 4.2)     # x length, y width (horn 2.4 thick + 0.1), depth into the surface from 1 mm under the hinge
 JOINER_D = 3.0                    # catalog rods.cf_rod_3
 JOINER_L = 50.0
-JOINER_AFT = (4.6, 9.0)            # mm aft of the hinge (in plan) of the front / aft rod
+JOINER_AFT = (4.6, 8.7)            # mm aft of the hinge (in plan) of the front / aft rod
 OUTER_FIT = 0.0                   # outer-half bore printed at the rod size (prints ~0.1 under), reamed 3.0 mm: push fit
 
 
