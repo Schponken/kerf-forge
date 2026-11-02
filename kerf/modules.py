@@ -10,22 +10,13 @@ from pathlib import Path
 import yaml
 
 from . import project
+from .sources import inside as _inside
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def entries() -> dict:
     return yaml.safe_load((ROOT / "catalog/modules.yaml").read_text(encoding="utf-8")) or {}
-
-
-def _inside(base: Path, relative: str) -> Path:
-    p = Path(relative)
-    if p.is_absolute() or not p.parts or ".." in p.parts:
-        raise ValueError(f"Module path must stay inside {base.name}: {relative}")
-    target = base / p
-    if any((base / Path(*p.parts[:i])).is_symlink() for i in range(1, len(p.parts) + 1)):
-        raise ValueError(f"Module files cannot be symbolic links: {relative}")
-    return target
 
 
 def _source(name: str) -> tuple[dict, Path, dict[str, bytes]]:

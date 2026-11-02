@@ -36,6 +36,8 @@ After setup prints **ALL OK**, start the app:
 
 Open **All projects**, choose **Servo test rig**, then **Build kit**. The first build can take several minutes. It checks the design and creates the model, shopping list, assembly guide and print plates. Open **Files & guides** after it finishes. Building a kit does not start your printer.
 
+Studio's project ZIP includes editable design sources alongside maker files. See [source downloads](docs/SOURCE_EXPORTS.md) for declaring extra data files needed to rebuild an extracted design.
+
 You can build and inspect existing projects without Claude Code. **New design**, **Change something** and automatic fixes require Claude Code installed and signed in on the computer running Studio, and use your Claude plan. If auto-fix is on (under **More**), a failed build can start Claude Code and change the design.
 
 For a command-line first build, run `.venv/bin/kerf build servo_link`. Generated files are in `projects/servo_link/out/`: begin with `ASSEMBLY.md` and `bom.md`, read `WIRING.md`, then open `plates/plate_1.3mf` in Bambu Studio and review `plates/PRINT_SETTINGS.md` before slicing. Kerf's unsliced print time is a minimum; Bambu Studio gives the actual estimate.

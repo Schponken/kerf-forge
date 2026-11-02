@@ -479,3 +479,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
 - (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.
+
+## 2026-11-02 — Complete declared source downloads (Codex)
+- Reproduced omitted nested Python/CSV helpers and declared STEP input in a synthetic Studio download. Source ZIPs
+  now retain recursive Python helpers, part/layout/import/Meshy inputs and explicit project.yaml source_files; data
+  reads are declared, not inferred by executing or scanning Python. Shared the existing module containment check;
+  module manifest policy and generated maker loops/constants remain unchanged for concurrent supplier/BOM work.
+- Selected inputs must exist and remain contained with no symlink components; hidden/cache/output/review/known
+  credential files are refused. Malformed YAML/UTF-8 and missing inputs return a useful 400 error before an archive
+  is sent. The original files stay unchanged; no review approval/build cache is copied into the design folder.
+- 39 exact archive/source/module tests PASS in 3.08 s. An extracted synthetic design rebuilds its nested helper,
+  declared CSV, layout and imported STEP after deleting the original (body 42 / lid 24 mm3). Parent review found the
+  malformed-contract case; its two HTTP regressions plus rebuild/package-map checks PASS (4 tests, 1.94 s).
+  Docs explain declared dependency limits; no actual project build, full batch, FEA or paid model call.
+- Separate saved follow-up: existing maker-output loops can follow output symlinks; their containment repair is
+  assigned separately. This change validates design inputs and intentionally leaves maker-output behavior intact.
