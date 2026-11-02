@@ -113,3 +113,28 @@ def test_drawn_in_part_frame_after_assembly(proj, tmp_path):
     for pid in before:
         assert after[pid]["callouts"] == before[pid]["callouts"] and after[pid]["sheet"] == before[pid]["sheet"]
         assert all(c["hole"] for c in after[pid]["callouts"])            # holes still found on the part
+
+
+TINY = """
+from build123d import *
+def build(ctx):
+    s = Box(10, 2.4, 23, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for z in (9, 12, 15):
+        s -= Pos(0, 0, z) * Rot(90, 0, 0) * Cylinder(0.65, 3)
+    ctx.rigid("base", Location())
+    return ctx.finish(s)
+"""
+
+
+def test_tiny_part_drawn_enlarged(tmp_path, monkeypatch):
+    """A part a few mm across (a control horn) leaves the view labels off the frame at 1:1; it is drawn at 2:1 / 5:1."""
+    monkeypatch.setattr(partcache, "DIR", tmp_path / "cache")
+    y = "name: Tiny\nparams: {}\nparts:\n  horn: {file: parts/horn.py, material: PETG}\nassembly:\n  root: horn\n  joints: []\n"
+    p = P.build(P.load(str(_write_project(tmp_path / "tp", y, {"horn": TINY}))))
+    monkeypatch.setattr(drawings, "ENLARGE", ())
+    with pytest.raises(RuntimeError):
+        drawings.part_drawing(p, "horn", p.items["horn"], tmp_path / "a.pdf")
+    monkeypatch.undo()
+    monkeypatch.setattr(partcache, "DIR", tmp_path / "cache")
+    out = drawings.part_drawing(p, "horn", p.items["horn"], tmp_path / "b.pdf")
+    assert out["scale"] > 1 and (tmp_path / "b.pdf").exists()

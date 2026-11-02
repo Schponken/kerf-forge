@@ -22,6 +22,9 @@ from . import partcache
 os.environ.setdefault("CADGEN_TELEMETRY", "0")     # cadgen counts usage by default; Kerf sends nothing anywhere
 
 SCALES = (1.0, 0.5, 0.4, 0.2, 0.1)                 # ISO 5455 scales, largest first
+# ISO 5455 enlargements, tried after the reductions: a part a few mm across (a control horn) leaves cadgen's view
+# labels hanging off the frame at 1:1, so it is drawn bigger
+ENLARGE = (2.0, 5.0)
 SIZES = ("A4", "A3", "A2")
 LABEL = {"heatset": "HEAT-SET INSERT", "tap": "SELF-TAP PILOT", "nut_trap": "NUT TRAP", "clearance": "CLEARANCE",
          "counterbore": "CLEARANCE", "countersink": "CLEARANCE", "threaded": "THREADED",
@@ -245,7 +248,7 @@ def _part_drawing(proj, pid, it, path: Path) -> dict:
     calls = callouts(it)
     err = None
     for hidden in (True, False):
-        for scale in SCALES:
+        for scale in SCALES + ENLARGE:
             for size in SIZES:
                 try:
                     sheet = _sheet(proj, pid, it, size, scale, calls, hidden)
@@ -272,7 +275,7 @@ def _part_drawing(proj, pid, it, path: Path) -> dict:
             else:
                 continue
             break
-    raise RuntimeError(f"{pid}: no sheet up to {SIZES[-1]} at 1:{round(1 / SCALES[-1])} fits the drawing ({err})")
+    raise RuntimeError(f"{pid}: no sheet up to {SIZES[-1]} from 1:{round(1 / SCALES[-1])} to {max(SCALES + ENLARGE):g}:1 fits the drawing ({err})")
 
 
 def write_all(proj, outdir: Path) -> dict:
