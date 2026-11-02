@@ -215,6 +215,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
   then docs/status/CODEX_TASKS.md items in order.
 
+## 2026-11-02 — Repo cleanup, ChatGPT Codex
+- Audited tracked files, generated/cache/scratch paths, large binaries, project part/helper references, engine imports and claims. Earlier cleanup and PR #1's screenshot trimming already removed the safe candidates; no additional deletion was justified. Kept the sourced STEP models, offline viewer bundle, six README renders, helper modules, audit/prototype/provenance docs and open-task claims because they have live references. Detailed retention reasons: docs/status/REPO_CLEANUP_2026-11-02.md. No history rewrite, geometry edit or review.json edit.
+- Added ignore rules for full-size usability images while retaining compressed contact sheets, plus regression guards against tracked build/cache/scratch files, excess evidence size and missing README render links. Catalog dependency manifests, lockfiles, source/import models and batch records remain trackable.
+- Validation after pulling concurrent engine improvements: 6 targeted hygiene/claims tests pass; no full suite or all-project builds were run. No files were removed in this round. The audit closes the remaining cleanup item without manufacturing deletions. Next: Firmware proven, if its claim is available; PRs remain for independent manager review/merge.
+
 ## 2026-11-02 20:35 UTC - Codex cloud environment published (Claude)
 - The first `kerf-forge` Codex environment was stuck: every publish failed and the draft never kept its settings. It is deleted (Spencer approved); a fresh one is **Published**.
 - Settings: install script `cd /workspace/kerf-forge && mkdir -p .cache/{uv,python,npm,playwright,xdg,matplotlib} && ./setup.sh`; full public internet; environment variables put the uv/npm/Playwright/XDG/matplotlib caches under `/workspace/kerf-forge/.cache` (gitignored, so the setup's downloads are still there when a task runs), `CC=gcc CXX=g++`.
@@ -331,3 +336,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - NOT done, needs Spencer's go-ahead: the Stop hook letting a session stop while the budget switch is on (hook edits
   were refused as self-modification). Until then a budget stop still makes sessions want a free item.
 - Tests: tests/test_budget.py (4), test_claims.py (copies budget.py), test_batch_verify.py, test_verify_isolated.py pass.
+## 2026-11-02 — Repo cleanup, ChatGPT Codex
+- Audited tracked files, generated/cache/scratch paths, large binaries, project part/helper references, engine imports and claims. Earlier cleanup and PR #1's screenshot trimming already removed the safe candidates; no additional deletion was justified. Kept the sourced STEP models, offline viewer bundle, six README renders, helper modules, audit/prototype/provenance docs and open-task claims because they have live references. Detailed retention reasons: docs/status/REPO_CLEANUP_2026-11-02.md. No history rewrite, geometry edit or review.json edit.
+- Added ignore rules for full-size usability images while retaining compressed contact sheets, plus regression guards against tracked build/cache/scratch files, excess evidence size and missing README render links. Catalog dependency manifests, lockfiles, source/import models and batch records remain trackable.
+- Validation after pulling concurrent engine improvements: 6 targeted hygiene/claims tests pass; no full suite or all-project builds were run. No files were removed in this round. The audit closes the remaining cleanup item without manufacturing deletions. Next: Firmware proven, if its claim is available; PRs remain for independent manager review/merge.
+- Cleanup refresh after the later Studio/engine merges: all 6 hygiene/claims tests still pass; retained the new source/test files and all other sessions' changes. The original file-count figures are explicitly identified as the audit's starting snapshot.
