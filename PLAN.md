@@ -195,6 +195,8 @@ Work these in order unless one is blocked; each item is done only with tests and
 - [x] Learn from results: `kerf feedback` takes logs / photos / notes, records what failed where, and turns repeated findings into ENGINEERING.md rules or catalog corrections (with the evidence)
 - [ ] Scenario intake + options: from a scenario-only brief, ask what matters, generate 2-3 options incl. buy-vs-build (search for existing / free designs first), compare cost / time / risk / fit, recommend one; Studio flow; eval E8 (scenario only: "my plants die when I travel")
 - [ ] Module library: proven modules extracted from finished projects (power system, servo joint, gripper, wing panel, motor mount, enclosure, drive train) with their contracts and checks; a new project can instantiate them; tests
+  - [x] Module instance workflow: inspect source interfaces, parameters, checks and actual review freshness; instantiate an independent editable bench servo joint from servo_link with full contract, dependency closure and historical provenance, without transferring approval; CLI, tests and full scratch check
+  - [ ] Extend the library with the remaining module families from currently reviewed sources and support composing their interfaces into a new checked system
 - [ ] Whole-system output: flight-controller / microcontroller config and controller tuned in simulation (INAV / Betaflight diff for drones and wings, Arduino / Pi code for gadgets), checked by a sim test
 - [ ] Check against the scenario: scenario requirements (run time on the stated duty, capacity of a tank, coverage of a sensor) evaluated for E8
 - [ ] Conventional planes + VTOL: tail volume coefficients and sizing, landing gear, transition thrust; eval E9 (trainer plane)

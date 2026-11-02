@@ -64,11 +64,17 @@ independent review (design-reviewer subagent) → commit. You get `projects/<nam
 | `kerf print <p> [--dry-run]` | orient, slice for the A2L and send over LAN (or open in Bambu Studio) |
 | `kerf calibrate` / `kerf feedback` | print a fit coupon, report what fit; later designs use your printer's real offsets |
 | `kerf find "<description>"` | search open model sites for an existing design first |
+| `kerf modules [module]` | inspect reusable assemblies, their interfaces, inherited checks and source review status |
+| `kerf new my_joint "My joint" --module servo_joint` | start an independent editable project from the bench servo joint, retaining its full contract |
 | `kerf verify` | the definition of done: tests, every project, every review current, every eval |
 | `kerf status` | one-screen overview |
 
 What to open after a build: `out/viewer.html` (assembly with joint sliders and explode), `out/bom.md` (shopping
 list), `out/ASSEMBLY.md`, `out/WIRING.md` + `out/wiring.svg`, `out/plates/*.3mf` (open in Bambu Studio).
+
+The initial [module library](docs/MODULES.md) contains the complete bench servo joint from `servo_link`. A module's
+source review may be stale; the command reports that explicitly. Every new instance needs its own check, build
+and independent review. Its `MODULE.md` explains interfaces and limits; editing it does not change the source.
 
 ## Kerf Studio (the app)
 
