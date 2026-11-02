@@ -18,7 +18,7 @@ Then include the marked tests for anything the change touches:
 .venv/bin/pytest -q -m browser tests/test_studio.py
 ```
 
-- `slow`: CAD/solver, long-running lifecycle or external-tool integration tests.
+- `slow`: CAD/solver, long-running lifecycle or external-tool integration tests, including firmware compilation/simulation.
 - `browser`: real Chromium tests, also `slow`. Direct page tests share one Chromium server per worker, with fresh
   contexts on each connection; renderer integration still runs the production render command.
 - `all_projects`: cross-project coverage, also `slow`. Run these when changing the general contract they verify,
@@ -38,3 +38,7 @@ On the same cached cloud machine, the same 68 tests in `test_viewer.py`, `test_v
 time). Both runs passed all 68, including browser and lifecycle tests. The after command excludes only the new
 fixture-isolation regression when comparing counts; it is tested separately. This is a targeted sample, not a
 full-suite timing claim, and timings vary with machine load.
+
+Parallel-run regressions also cover Gmsh's native SIGPIPE side effect: meshing preserves Python's pipe policy, so
+a browser disconnect remains an exception rather than killing the worker/server. Progress announces the same
+core-first check order that the engine now executes; generated use-story checks appear in that queue too.

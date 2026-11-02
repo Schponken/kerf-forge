@@ -64,12 +64,19 @@ MAX_TETS = 80000  # quadratic tets with the AMG solver stay well under ~2 GB
 
 def _mesh(shape, size: float):
     import gmsh
+    import signal
     from build123d import export_step
     with tempfile.TemporaryDirectory() as t:
         f = os.path.join(t, "p.step")
         export_step(shape, f)
-        gmsh.initialize(["-noenv"])
+        pipe = getattr(signal, "SIGPIPE", None)
+        pipe_handler = signal.getsignal(pipe) if pipe is not None else None
         try:
+            gmsh.initialize(["-noenv"])
+            # Gmsh changes the native SIGPIPE handler behind Python's back. Keep a disconnected
+            # HTTP/worker pipe as BrokenPipeError instead of terminating the entire process.
+            if pipe is not None:
+                signal.signal(pipe, pipe_handler)
             gmsh.option.setNumber("General.Terminal", 0)
             gmsh.model.add("p")
             gmsh.model.occ.importShapes(f)
@@ -81,7 +88,12 @@ def _mesh(shape, size: float):
             ntags, coords, _ = gmsh.model.mesh.getNodes()
             etypes, _, enodes = gmsh.model.mesh.getElements(3)
         finally:
-            gmsh.finalize()
+            try:
+                if gmsh.isInitialized():
+                    gmsh.finalize()
+            finally:
+                if pipe is not None:
+                    signal.signal(pipe, pipe_handler)
     idx = np.zeros(int(ntags.max()) + 1, dtype=np.int64)
     idx[ntags.astype(np.int64)] = np.arange(len(ntags))
     k = list(etypes).index(4)  # 4-node tetrahedron

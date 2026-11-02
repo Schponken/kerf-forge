@@ -104,6 +104,11 @@ Stubs show in the report and in Studio as ONE "design in progress" problem ("bei
 collisions; replacing a stub with the real part removes its `ctx.stub` call. A project is never left with a stub.
 
 ## 3. Parts in parallel
+**Most expensive to redesign first** (Spencer, 2026-11-02). Before detailing anything, prove the concept numbers
+(mass, thrust/weight, flight or run time, power, CG / static margin, wing loading, servo torque) with
+`kerf req <p>` on the stubs, then design the load-carrying parts that the most others mate with (frame, spine, hub)
+and prove their FEA with `kerf req <p> <id>` before launching the leaf parts. `kerf check` follows the same order:
+it runs these requirements first and stops before the detail checks when one fails (`--all` to run everything).
 Launch one `part-designer` subagent per independent printed part in a single message. Give each its contract from
 DESIGN.md: envelope, every interface (exact iface call, group, location and frame), loads and load path, print
 orientation, material, and which other parts it must clear. Parts that depend on each other's geometry go to the

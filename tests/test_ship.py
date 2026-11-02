@@ -308,3 +308,16 @@ def test_horn_goes_on_at_the_joint_centre_the_bring_up_program_counts_from(tmp_p
     res, prob = access.horn_paths(asm)
     assert any(r["horn"] == "tilt_horn" and not r["clear"] for r in res)
     assert prob and "cannot be pushed onto tilt_servo's spline" in prob[0] and "bracket hits yoke" in prob[0]
+
+
+def test_held_by_and_item_tools_reach_assembly_md(tmp_path):
+    """`held_by` (tape, strap, a loop to close) and an item's `tools` reach the builder: they used to live only in
+    project.yaml (fpv_wing review: 'Fit esc onto pod' with no word of the tape or the tilt-in)."""
+    proj, asm, fj = _bolt(tmp_path)
+    proj.items["plate"].spec["held_by"] = "foam tape; tilt it 30 deg to get it past the sleeves."
+    proj.items["plate"].spec["tools"] = ["3.0 mm drill bit (reams the joiner bores)"]
+    rep = {"assembly": {"fasteners": fj, "pins": [], "hex_keys": [], "insertion": []}, "parts": {}, "bom": []}
+    ship.write_assembly(proj, asm, rep, tmp_path)
+    md = (tmp_path / "ASSEMBLY.md").read_text()
+    assert "  - Held by: foam tape; tilt it 30 deg to get it past the sleeves." in md.split("## Step 2")[1]
+    assert "  - 3.0 mm drill bit (reams the joiner bores)" in md.split("## Step")[0]

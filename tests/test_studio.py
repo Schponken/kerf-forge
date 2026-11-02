@@ -376,6 +376,7 @@ out.history = await p.evaluate(() => document.querySelector('#tabbody').textCont
     assert out["units"] > 0 and out["affects"] > 0 and out["history"], out
 
 
+@pytest.mark.browser
 def test_welcome_when_there_are_no_projects(tmp_path, monkeypatch):
     (tmp_path / "projects").mkdir()
     monkeypatch.setattr(studio, "PROJECTS", tmp_path / "projects")

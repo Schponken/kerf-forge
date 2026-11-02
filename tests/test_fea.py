@@ -111,3 +111,42 @@ def test_sliver_tets_are_dropped():
     tets = np.array([[0, 1, 2, 3], [0, 1, 2, 4]])            # the second lies flat in z = 0
     out = fea.drop_slivers(pts, tets, 1.0)
     assert out.tolist() == [[0, 1, 2, 3]]
+
+
+@pytest.mark.parametrize('fail', ['none', 'initialize', 'mesh'])
+def test_gmsh_meshing_keeps_python_broken_pipe_handling(fail):
+    import subprocess
+    import sys
+    import textwrap
+    code = '''
+import os, signal
+from build123d import Box
+from kerf import fea
+import gmsh
+if FAIL == 'initialize':
+    initialize = gmsh.initialize
+    def broken_init(*args):
+        initialize(*args)
+        raise RuntimeError('expected initialization failure')
+    gmsh.initialize = broken_init
+elif FAIL == 'mesh':
+    def broken(*args): raise RuntimeError('expected meshing failure')
+    gmsh.model.mesh.generate = broken
+try:
+    fea._mesh(Box(5, 5, 5), 3)
+except RuntimeError:
+    assert FAIL != 'none'
+# Native code can reset the OS handler while signal.getsignal still reports SIG_IGN.
+# Actually write a broken pipe: a regression kills this child with SIGPIPE (exit -13).
+r, w = os.pipe()
+os.close(r)
+try:
+    os.write(w, b'x')
+except BrokenPipeError:
+    pass
+else:
+    raise AssertionError('broken pipe was not reported')
+os.close(w)
+'''.replace('FAIL',repr(fail))
+    r = subprocess.run([sys.executable,'-c',textwrap.dedent(code)],capture_output=True,text=True,timeout=30)
+    assert r.returncode==0,r.stderr

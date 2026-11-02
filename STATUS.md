@@ -215,8 +215,42 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
   then docs/status/CODEX_TASKS.md items in order.
 
+## 2026-11-02 20:35 UTC - Codex cloud environment published (Claude)
+- The first `kerf-forge` Codex environment was stuck: every publish failed and the draft never kept its settings. It is deleted (Spencer approved); a fresh one is **Published**.
+- Settings: install script `cd /workspace/kerf-forge && mkdir -p .cache/{uv,python,npm,playwright,xdg,matplotlib} && ./setup.sh`; full public internet; environment variables put the uv/npm/Playwright/XDG/matplotlib caches under `/workspace/kerf-forge/.cache` (gitignored, so the setup's downloads are still there when a task runs), `CC=gcc CXX=g++`.
+- Validation: `./setup.sh` exit 0, `kerf doctor` ALL OK. Warning only: in that sandbox the Arduino core download failed and simavr is missing, so `kerf firmware-check` reports NOT RUN there (whoever holds "Firmware proven" should make setup.sh install simavr or note it).
+- No new Codex chats started: open Codex PRs already cover the planned tasks (#4 parallel tests, #5 catalog fingerprints, #6 generated outputs/.gitignore, #3 setup retries); "Firmware proven" is claimed by another session. The Kerf manager reviews and merges them.
+- 15:35 Mac app, found on Spencer's Mac: the native app never built because KerfStudio.swift did not compile with his
+  Swift (`loaded ? web.reload() : startServer()`: WKNavigation? vs ()), so the old new-window-per-click launcher stayed.
+  Fixed (if/else), install_app.sh now falls back to the single-window launcher if the compile ever fails, and
+  `tools/mac/Update Kerf Studio.command` (double-click updater) refuses to restart the engine while a Studio job runs
+  (the first run of it stopped the Hawk-fold design job; its files were kept: hub.py, DESIGN.md uncommitted on the Mac).
+
+## 2026-11-02 15:25 UTC-5 — drone_foldable_wings: hub root ends faired for the folded mode (Studio request, Spencer)
+- Request: hub_r / hub_l's faces where the wing meets the fuselage at full spread face forward when folded and must be
+  aerodynamic; keep the aero good at every sweep angle. Folded, the hub's flat root face (y = pivot_y) IS the wing's
+  leading edge: at 70 deg it met the flow 20 deg off square, a 206 x 20 mm slab.
+- Done (parts/hub.py `root_cap`, collar trim; DESIGN.md hub contract): every chord station of the root face gets a
+  half-ellipse nose reaching min(1.25 x local half thickness, 10 mm) inboard (never past y 16: 2.0 mm off the spine
+  ridge at full spread, the tightest pose; folding only moves it out), from the LE to x 176, fading to a 0.3 mm lip
+  ahead of the boss collar; the collar's inboard flat cut (y 16) is now a half round, and its trim aft of the pin stays
+  at y 26 (that part swings inboard). Flat area within 30 deg of square to the flow at 70 deg fold: 2803 -> 51 mm2 (the
+  thin root strip aft of x 176); 0 / 35 deg: unchanged (11 / 0 mm2). hub_r 76.9 -> 81.4 g each, AUW 1582 -> 1591 g.
+- Tried and dropped (scratch FEA): a nose running into the collar, or a collar without its inboard half, put a stress
+  notch at the junction (hub_fea p99.9 31-40 MPa); stopping the nose 4.6 mm ahead of the collar fixed it.
+- Check: same 54 problems as before the change, all pre-existing and not about the root faces: wiring routes through
+  parts, ail_*_pwr/sig lead length, KiCad symbols missing, deck_fea (meshing error), spine_fea 53.6 MPa, hub_fea.
+  hub_fea p99.9 25.8 -> 24.2 MPa (limit 17.5); its deflection 7.8 -> 8.2 mm (limit 1.0, already 8x over): part mesh
+  noise (the nose alone, which only adds material, read 8.0), part the collar corners the half round removes.
+  Fold sweeps clear both sides; sm_*, stall, wing loading, spar, fold moments within 1 %.
+- Open for the drone's owner (not this change): the V keel under the root still crosses the folded flow as a 45 deg
+  wedge (structural, no square face); the pre-existing failures above.
+
 ## 2026-11-02 — Fast tests, ChatGPT Codex
 - Added pinned pytest-xdist 3.8.0 with two file-grouped workers; `-n 0` remains available for debugging. Browser/all-project markers also imply slow; solver/drawing/simulation/lifecycle cases are explicitly marked. docs/TESTING.md gives targeted `-m "not slow"` commands and when to include expensive coverage. Unfiltered pytest/verify still selects every test; no test or engineering assertion was removed or loosened.
 - Cached the viewer assembly once per worker, deep-copying it for every test; direct page tests reuse a Chromium server with separate contexts on each client. Regressions prove pose/storage/context isolation and that quick + slow selections exactly partition the collected tests.
-- Before/after: identical 68-test Studio/viewer/render sample, all passing, 67.01 s -> 45.30 s wall time (32.4% less). This is a targeted sample, not a full-suite speed claim. An additional 59 affected tests passed, including solver, drawings, simulation, assembly, docs and test-workflow regressions (127 distinct targeted passes total). No full suite or all-project test/build was run; the manager owns batched verification. Generated README render restored after its test.
-- Deliver as a ready PR for independent review/merge. Next: inspect and claim Reviews go stale only for real changes, then Repo cleanup and Firmware proven, skipping active claims. Environment publication remains the recorded platform blocker.
+- Before/after: identical 68-test Studio/viewer/render sample, all passing, 67.01 s -> 45.30 s wall time (32.4% less). This is a targeted sample, not a full-suite speed claim. An additional 59 affected tests passed, including solver, drawings, simulation, assembly, docs and test-workflow regressions (127 distinct targeted passes total). No full suite or all-project build was run; the sample includes a metadata-only project-unit check, and the manager owns batched verification. Generated README render restored after its test.
+- Deliver as a ready PR for independent review/merge. Next: inspect and claim Reviews go stale only for real changes, then Repo cleanup and Firmware proven, skipping active claims. Claude now reports the replacement environment Published; this original instance does not establish a fresh restore of it.
+
+- Latest-main refresh: kept the progress ordering assertion intact and fixed the announced queue to match the new core-first execution order, including use-story checks and empty sketch-mode queues. Diagnosed worker exits as SIGPIPE (-13): Gmsh changes the native handler behind Python's back. FEA now restores the caller's handler during/after normal and failed meshing, with subprocess regressions that actually write a broken pipe. The refreshed 85-test integration selection passes with no worker loss; solver/load tests are checked separately. No mesh settings, equations, thresholds or assertions were loosened.
+- Gmsh/progress refresh validation: 85 targeted integration tests passed without a worker restart; 24 FEA/load tests passed, including real broken-pipe checks after successful meshing, initialization failure and mesh failure. Numerical solver checks remain unchanged. Further concurrent Studio updates on main will be incorporated before the final handoff.
