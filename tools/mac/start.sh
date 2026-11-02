@@ -12,9 +12,12 @@ echo "--- $(date) Kerf Studio app start"
 # updates: fast-forward only, never over local changes; skipped quietly when offline
 if [ -z "$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then
   echo "STATUS Checking for updates…"
-  git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=10 pull -q --ff-only 2>&1 || true
+  git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=10 pull -q --ff-only 2>&1 \
+    || echo "STATUS Could not update; keeping the installed copy. Try again when the connection or repository issue is resolved."
+else
+  echo "STATUS Keeping your local changes; updates skipped."
 fi
-SUM="$(shasum pyproject.toml setup.sh tools/render/package.json 2>/dev/null | shasum | cut -c1-16)"
+SUM="$(shasum pyproject.toml setup.sh tools/render/package.json tools/render/package-lock.json 2>/dev/null | shasum | cut -c1-16)"
 if [ "$SUM" != "$(cat "$STATE/deps.sum" 2>/dev/null)" ] || [ ! -x .venv/bin/kerf ]; then
   echo "STATUS Installing updates (the first time can take a few minutes)…"
   # indent setup's output so none of its lines are mistaken for STATUS / ERROR lines
