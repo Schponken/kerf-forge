@@ -1460,3 +1460,13 @@ pushed for it and what I know:
   open items (it no longer runs verify itself). SessionStart shows the batch status. CLAUDE.md "Batched testing".
 - Tests: tests/test_batch_verify.py 6 passed; hook exercised in a scratch clone (dirty tree blocks; SessionStart prints
   the batch status). First batch not run yet: it is due now and the next session that stops will run it.
+
+## 2026-11-02 17:30 UTC - fresh-eyes usability pass handed to ChatGPT Codex (planning chat)
+- Spencer asked for a first-time-user pass over Kerf (Studio, viewer, README/setup, CLI, output files). It runs in
+  ChatGPT Codex (cloud environment "kerf-forge", thread "Set up kerf-forge") and arrives as pull requests against main
+  plus a STATUS.md entry "Fresh-eyes usability pass, ChatGPT". Codex was told to leave the claimed Studio Checks tab,
+  Follow live, Work tab and repo cleanup alone.
+- Claude sessions: don't take the PLAN item; review and merge Codex's PRs (pull, run pytest, check screenshots) instead.
+- Codex's environment has package-manager + listed-domain internet only; Chromium download was blocked during its setup,
+  so its screenshots may need a network-settings update in the environment (Spencer's call).
+
