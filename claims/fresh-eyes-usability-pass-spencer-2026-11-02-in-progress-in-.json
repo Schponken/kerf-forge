@@ -1,9 +1,0 @@
-{
- "item": "Fresh-eyes usability pass (Spencer, 2026-11-02; IN PROGRESS in ChatGPT Codex, delivered as pull requests - Claude sessions: don't start it, review/merge its PRs instead): look at Kerf as a first-time user (README, setup, Kerf Studio every screen at desktop + phone width, viewer, CLI help and error messages, output files) for what is confusing, overwhelming or unintuitive and for likely user mistakes / failure paths (port in use, Claude not signed in, job running, dirty repo, missing build, bad input); fix each with a test, leaving the Checks tab wording, Follow live and Work tab to their claimed items (findings for those go in their sessions' STATUS notes)",
- "session": "codex-handoff-refresh",
- "since": 1793656465.7428539,
- "heartbeat": 1793656465.7428539,
- "provider": "Codex",
- "thread_id": "01a19e15-de6d-78b1-b4d9-942e1fc9ce46",
- "since_utc": "2026-11-02 21:54"
-}

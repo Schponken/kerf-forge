@@ -22,6 +22,9 @@ Updated 2026-11-02 22:05 UTC. Sessions are named by their task (claim id in brac
 - tests/test_catalog.py::test_board_proxy_keeps_mounting_holes_clear FAILS on main (PCA9685 below-board pin height
   vs. mounting holes; predates today's merges). Needs a sourced catalog fix, not a loosened test. Free for a session.
 
+## Paused
+- Stress simulations (all FEA-backed checks) PAUSED by Spencer: PAUSED.json; 4 PLAN items marked PAUSED:.
+
 ## Batch verify
 - ON HOLD (Spencer) until the other sessions finish; `tools/batch_verify.py status` shows HELD. No batch recorded yet.
 - Usage budget switch: off (`tools/budget.py status`).
@@ -29,4 +32,3 @@ Updated 2026-11-02 22:05 UTC. Sessions are named by their task (claim id in brac
 ## Most valuable free items
 1. The PCA9685 catalog test above.
 2. Showcase rework, robot_arm (upper_arm + forearm from fork_link).
-3. fpv_5in arm_resonance / arm_breaks_first real findings.

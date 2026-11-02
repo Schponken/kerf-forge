@@ -451,3 +451,46 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   or STATUS entries. The new scenario browser case now shares the isolated worker browser.
 - 30 affected scenario/intake/progress tests PASS in 14.52 s after this merge. The previous 34-test FEA/fixture
   selection remains the earlier result (progress overlaps); no repeated solver run or full batch.
+
+## 2026-11-02 22:30 UTC - Stress simulations paused (Spencer: "pause all the stress simulations, we will work on that later")
+- PAUSED.json at the repo root switches off every FEA-backed check (fea_static, impact_fea, stop_impact,
+  natural_freq, drop_impact, weak_link: kerf/requirements.py STRESS_SIMS). They show "PAUSED (stress simulations
+  off)", value NOT RUN, and the report warns "strength unproven" - never a pass value. KERF_STRESS=1 runs them once;
+  delete the key to resume. Analytic strength checks (cantilever_stress, spar/gear bending) still run.
+- PLAN: the 4 FEA items (arm_resonance, impact_fea/stop_impact, arm_breaks_first, creep/flex_strain) are marked
+  "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
+- Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
+  tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.
+- (01S68R6R, later) Stage timing of a full drone_foldable_wings quick check (--all, 19 min, 3.1 GB peak): two
+  clearance_min requirements were 720 s of it. geom.mesh_gap screen -> ~72 s, same exact value. Printed mass now
+  cached per shape + spec (~45 s per check). Next hotspots from the same run: core FEA ~300 s (6 parts), print stage
+  68 s, fit 23 s.
+
+## 2026-11-02 (Claude, visual pass)
+- Screenshotted every Studio screen (project tabs, failing checks, new design, My parts, Work, all projects, printer, light theme, 900 px window). Fixed: in a small window the sidebar's Activity list drew over the page (sidebar now clips, its list scrolls); header buttons compact so the tagline fits in two lines; Files tab label "Optimiser results" instead of out/OPTIMISE.md. Mac installer now keeps exactly one Kerf Studio Dock tile (tools/mac/dock_dedupe.py).
+- test_studio's auto-fix test no longer depends on live claims (a claim item containing the word "bad" made it flaky after the claim guard).
+
+### 2026-11-02 (session 4c4e3822c9): viewer "Build it" tab
+- Labels sit beside the part they name (right / left / above / below, the first that fits) and are pushed apart.
+- Camera: 48 more candidate views (every 30 deg at 15-75 deg up), scored on the new part not being hidden, sliding
+  across the screen, and how much of its broad faces the view shows (no edge-on plates).
+- Close-up: a small part (or one side of a far-apart left/right pair) is framed with some build round it instead of
+  the whole device (fpv_wing 3 mm elevon rods, horns, GPS now readable).
+- Bench steps keep the build they join on screen, faint, instead of the bench parts floating alone.
+- tests/test_viewer_build_it.py (browser): label clear of its part, close-up, bench context.
+- (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
+  check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
+  skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
+- (01S68R6R, wrap-up of the speed round) Warm drone_foldable_wings quick check ~75 s: build 5, concept reqs 6, print
+  0 (cached), fit 21 (interference 11.6, hex_key_reach 9.0: spread over tessellation -> build123d Vector conversion,
+  no single hotspot), fold-tail clearances 15, prop 7 + load. Tried and reverted: reporting a mesh-refined prop gap
+  (20.06 vs exact 20.00 broke test_swinging_prop_is_swept's +-0.01 hand calc; reported gaps stay exact). Left, each a
+  few s: tessellation straight to numpy in geom.mesh (skip build123d Vectors), a warm check server (~7 s startup per
+  command), cold part rebuilds after engine edits (~180 s, fillets in part code).
+
+## 2026-11-02 — Fast-tests refresh preserves paused stress work (Codex)
+- Merged current main into PR #4, retaining both STATUS histories, the stress-simulation pause and warning, current
+  Studio fixes, and the new integration claim. No thresholds, acceptance checks or marker exclusions changed.
+- The existing marker-selection contract passed (1 test, 10.96 s); its subprocesses only collect tests, proving
+  slow/browser/all-project partitioning still includes all tests. No FEA, all-project build or full batch ran.
+  Earlier targeted execution evidence remains historical; it was not repeated for the additive STATUS resolution.
