@@ -419,12 +419,16 @@ def start_job(*a, **k) -> Job:
         require_idle(project)
         if prepare:
             prepare()
+        if (k.get("env") or {}).get("KERF_STUDIO_JOB"):   # steering from "How Kerf decided" belongs to one job
+            from . import steer
+            steer.reset(project)
         j = Job(*a, **k)
         JOBS[j.id] = j
         return j
 
 
 PROGRESS_ENV = {"KERF_PROGRESS": "1", "PYTHONUNBUFFERED": "1"}
+STEERABLE = ("design", "edit", "fix")      # Claude Code jobs that read steering (kerf/steer.py)
 
 
 MODE_LABEL = {"sketch": "Sketch", "print": "Print it", "check": "Check it", "simulate": "Simulate it",
@@ -925,8 +929,10 @@ def new_design(name: str, description: str, intake: dict | None = None, option: 
     exe = claude_bin()
     prompt = (f"/kerf {brief(description, intake, option)}\n\nProject folder name: projects/{name}. Spencer started this from "
               f"Kerf Studio and is not watching the terminal: work autonomously to a finished, built and reviewed project.")
-    return start_job("design", name, [exe, "-p", prompt, "--output-format", "stream-json", "--verbose"],
-                     f"New design: {description.strip()[:60]}", parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
+    j = start_job("design", name, [exe, "-p", prompt, "--output-format", "stream-json", "--verbose"],
+                  f"New design: {description.strip()[:60]}", parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
+    j.request = description.strip()          # the whole request, for "How Kerf decided" (the label is cut at 60)
+    return j
 
 
 def quote(name: str, description: str, intake: dict | None = None) -> Job:
@@ -1562,7 +1568,10 @@ class Handler(BaseHTTPRequestHandler):
                 jid, nm = q.get("job", [""])[0], q.get("project", [""])[0]
                 if jid in JOBS:
                     j = JOBS[jid]
-                    return self._json({**thoughtweb.from_events(j.events, j.label), "live": j.state == "running", "label": j.label})
+                    from . import steer
+                    live = j.state == "running"
+                    return self._json({**thoughtweb.from_events(j.events, getattr(j, "request", "") or j.label), "live": live, "label": j.label,
+                                       "steerable": live and j.kind in STEERABLE, "steer": steer.read(j.project) if j.kind in STEERABLE else []})
                 if nm in project_names():
                     return self._json({**thoughtweb.from_project(PROJECTS / nm), "live": False, "label": nm})
                 return self._err("no such job or project", 404)
@@ -1681,6 +1690,15 @@ class Handler(BaseHTTPRequestHandler):
                     return self._err("every project is already built")
                 j = start_job("build", "*", [PY, "-m", "kerf.studio", "_buildall", *todo], f"Build {len(todo)} project(s)", env=PROGRESS_ENV)
                 return self._json({"job": j.id})
+            if u.path == "/api/steer":                 # "How Kerf decided": focus / skip a question, or a short note
+                j = JOBS.get(body.get("job"))
+                if not j:
+                    return self._err("no such job", 404)
+                if j.state != "running" or j.kind not in STEERABLE:
+                    return self._err("this job has finished; steering only reaches a design that is still running")
+                from . import steer
+                return self._json(steer.add(j.project, body.get("action", ""), body.get("label", ""), body.get("text", ""),
+                                            body.get("node", "")))
             if u.path == "/api/stop":
                 j = JOBS.get(body.get("job"))
                 if not j:
