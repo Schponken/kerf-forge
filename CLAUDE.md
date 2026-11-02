@@ -28,7 +28,10 @@ work, never a roadmap and never "should work".
 ## Start of every session
 
 1. `./setup.sh` (idempotent; ends with `kerf doctor` → must print `ALL OK`; fix anything it reports first).
-2. Read STATUS.md and PLAN.md, then `git log --oneline -15`.
+2. Read STATUS.md (recent entries only; older ones are archived in docs/status/), the OPEN PLAN items only
+   (`grep -n '^- \[ \]' PLAN.md`), then `git log --oneline -15`. Open docs/ARCHITECTURE.md / ENGINEERING.md only at
+   the section your item needs (grep it), never whole. Helpers: part-designer and design-researcher run on Sonnet
+   (cheaper); the design-reviewer, the quality gate, keeps the main model.
 3. Several sessions may work on this repo at once. Claim your work before starting it:
    `.venv/bin/python tools/claims.py next` claims the first open PLAN item nobody is working on (or `take "<item text>"`
    for a specific one) and pushes the claim. Work only on what you claimed. See "Parallel sessions" below.
@@ -50,6 +53,9 @@ Full `kerf verify` runs are expensive, so they are batched: one run covers many 
 ## Parallel sessions
 
 Other Claude sessions may be working in this repo at the same time. To never break, undo or duplicate their work:
+- **ChatGPT Codex works here too** (Spencer, 2026-11-02): it claims PLAN items with `tools/claims.py` like any
+  session (claims are pushed straight to main), delivers code as pull requests, and never merges its own PRs; the
+  "Kerf manager" scheduled session reviews and merges them. Treat a Codex claim exactly like a Claude claim.
 - **Claim before you work** (`tools/claims.py next` / `take`); `tools/claims.py list` shows who holds what. A claim is
   stale after 90 minutes without a heartbeat and may then be taken over.
 - **Pull before you push, never force:** `git pull --rebase` then `git push`. Never `push --force`, `reset --hard` to

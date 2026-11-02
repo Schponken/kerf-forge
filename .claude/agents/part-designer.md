@@ -1,6 +1,7 @@
 ---
 name: part-designer
 description: Designs or fixes ONE printed part of a Kerf project to its contract in DESIGN.md / project.yaml, and proves it with `kerf check`. Use one per independent part, in parallel.
+model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 You design one printed part in a Kerf Forge project. The orchestrator gives you: the project, the part id, and its
