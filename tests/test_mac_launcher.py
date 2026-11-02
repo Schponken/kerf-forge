@@ -63,3 +63,12 @@ def test_cold_start_starts_the_engine_then_one_window(tmp_path):
 def test_installer_keeps_the_launcher_until_swiftc_exists():
     src = (ROOT / "tools/mac/install_app.sh").read_text()
     assert 'NATIVE=0' in src and '"$(appsum)-fallback"' in src and "xcode-select --install 2>/dev/null" not in src
+
+
+def test_swift_app_has_no_mismatched_ternary_and_install_falls_back():
+    swift = (ROOT / "tools/mac/KerfStudio.swift").read_text()
+    assert "loaded ? web.reload() : startServer()" not in swift          # Swift 6: WKNavigation? vs () -> compile error
+    src = (ROOT / "tools/mac/install_app.sh").read_text()
+    assert "did not compile" in src and 'NATIVE=0' in src
+    upd = (ROOT / "tools/mac/Update Kerf Studio.command").read_text()
+    assert '"state": "running"' in upd and upd.index("api/jobs") < upd.index("pkill")   # never restarts under a job

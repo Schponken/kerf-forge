@@ -220,3 +220,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Settings: install script `cd /workspace/kerf-forge && mkdir -p .cache/{uv,python,npm,playwright,xdg,matplotlib} && ./setup.sh`; full public internet; environment variables put the uv/npm/Playwright/XDG/matplotlib caches under `/workspace/kerf-forge/.cache` (gitignored, so the setup's downloads are still there when a task runs), `CC=gcc CXX=g++`.
 - Validation: `./setup.sh` exit 0, `kerf doctor` ALL OK. Warning only: in that sandbox the Arduino core download failed and simavr is missing, so `kerf firmware-check` reports NOT RUN there (whoever holds "Firmware proven" should make setup.sh install simavr or note it).
 - No new Codex chats started: open Codex PRs already cover the planned tasks (#4 parallel tests, #5 catalog fingerprints, #6 generated outputs/.gitignore, #3 setup retries); "Firmware proven" is claimed by another session. The Kerf manager reviews and merges them.
+- 15:35 Mac app, found on Spencer's Mac: the native app never built because KerfStudio.swift did not compile with his
+  Swift (`loaded ? web.reload() : startServer()`: WKNavigation? vs ()), so the old new-window-per-click launcher stayed.
+  Fixed (if/else), install_app.sh now falls back to the single-window launcher if the compile ever fails, and
+  `tools/mac/Update Kerf Studio.command` (double-click updater) refuses to restart the engine while a Studio job runs
+  (the first run of it stopped the Hawk-fold design job; its files were kept: hub.py, DESIGN.md uncommitted on the Mac).
