@@ -311,3 +311,23 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 (Claude, user-facing bug sweep)
 - Fixed: auto-fix / Fix no longer start on a project another session holds (they wasted a Claude run that then stopped); Save / Restore / materials / Change something ask before changing such a project (409 `claimed`, `override: true`); switching projects asks before dropping unsaved Tune values; a second Build/Check click opens the running job instead of an error; typed names are cleaned (`studio.slug`: "Hawk Drone" -> hawk_drone) and auto names avoid existing projects; Tune Reset clears material picks too; "1,5" reads as 1.5; a wrong printer access code now says so (was "serial right?"); spaces in a pasted code are ignored. tests/test_user_bugs.py; test_studio's bad-name case now uses "9 Bad!" (a name that can't be cleaned).
 - Seen, not mine: running test_studio.py together with the other Studio browser test files in ONE pytest process died with exit 141 after ~44 tests (each file alone passes); worth a look if the batch shows it. test_progress_events_are_off_by_default_and_ordered_when_on still fails on main (noted earlier).
+
+## 2026-11-02 — Reusable assembly instances (Codex, module-library)
+- `kerf modules [name] [--json]` exposes a source assembly's interfaces, parameters, inherited requirements and
+  actual `review-status`. `kerf new <name> <title> --module servo_joint` copies an independent editable bench servo
+  joint from servo_link, retaining the base, power/wiring, fasteners, every load case and YAML engineering comments.
+- Explicit source-file manifest; all part/layout/sibling helpers and imported/mesh assets required; path escapes,
+  symlinks and existing targets refused; a failed copy cleans up only its new folder. `MODULE.md` explains limits;
+  `module.json` archives source hashes and the full historical review. Outputs/caches/review.json are never copied.
+- **46 targeted tests PASS** (test_modules, test_cli_usability, test_docs), including real geometry/joint/torque,
+  independent editing, name/path safety, omitted dependencies, 3MF support, title escaping and failed-copy recovery.
+  Doctor ALL OK using the existing shared environment; optional Arduino/simavr remain unavailable on this Mac.
+- Full `kerf check` on a scratch instance PASS in 28.4 s: 0 overlaps, 12 aligned screws, swing clear over +/-90 deg,
+  all 8 requirements PASS (bracket FEA 0.63/13 MPa; arm 4.67/24 MPa). No new geometry or thresholds changed.
+  Existing warnings remain: jack has no mass; two servo screws need a ball-end key; circuit ERC NOT RUN for psu/jack
+  missing pin tables; bracket overbuilt and 4 sharp inside corners; arm infill lattice reaches 1.5x its local limit.
+- Source's historical PASS fingerprint 57044319cfe478bb differs from current ddf0ee5d392760f4: explicitly stale,
+  never presented as current proof. The new instance is unreviewed. No full build/render/review, full suite or
+  physical hardware run. The batch remains on the owner's hold. Parent review found and resolved imported-asset
+  dependency closure; no remaining finding. Only the precise workflow subitem is done; other families/composition
+  and current independent source reviews remain open.
