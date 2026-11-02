@@ -38,16 +38,16 @@ def test_plan_done_counts_checked_boxes():
 
 def test_status_says_when_a_batch_is_running(tmp_path, monkeypatch, capsys):
     """A fresh lock from any session means a full run is going: status says so instead of DUE."""
-    import json, time
-    lock = tmp_path / "batch-verify.json"
-    monkeypatch.setattr(bv, "LOCK", lock)
+    lock = {"session": "other", "heartbeat": time.time() - 600}
+    monkeypatch.setattr(bv, "shared_claims", lambda: {"batch-verify": lock})
     monkeypatch.setattr(bv, "load", lambda: {})
     monkeypatch.setattr(bv, "feature_commits", lambda c: [])
     monkeypatch.setattr(bv, "plan_done", lambda: 0)
-    lock.write_text(json.dumps({"session": "other", "heartbeat": time.time() - 600}))
     bv.cmd_status()
     assert "RUNNING NOW" in capsys.readouterr().out
-    lock.write_text(json.dumps({"session": "other", "heartbeat": time.time() - 100 * 60}))   # stale
+    assert bv.lock_held_by_other("me") and not bv.lock_held_by_other("other")
+    lock["heartbeat"] = time.time() - 100 * 60
+    assert not bv.lock_held_by_other("me")
     bv.cmd_status()
     out = capsys.readouterr().out
     assert "RUNNING NOW" not in out and "due: no feature commits" in out

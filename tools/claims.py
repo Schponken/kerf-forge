@@ -1,14 +1,14 @@
-"""Work claims, so several Claude sessions can work on PLAN.md at the same time without doing the same item twice.
+"""Work claims, so several sessions can work on PLAN.md without doing the same item twice.
 
 A claim is one small file, claims/<item-slug>.json, committed and pushed the moment it is made. One file per claim
-means two sessions never edit the same file, so claims never cause merge conflicts. A claim is fresh while the
-claiming session keeps pushing (its newest commit touching anything, or the claim's own `heartbeat`, is younger
-than STALE_MIN); a stale claim may be taken over.
+means unrelated claims survive concurrent pushes. Claims live on origin/main, independent of the caller's
+branch, index and working files. A claim is fresh while its heartbeat is younger than STALE_MIN; a stale claim
+may be taken over. Reads require a reachable origin/main; unavailable shared state never means "free".
 
   .venv/bin/python tools/claims.py list            open PLAN items, who holds each, which are free
   .venv/bin/python tools/claims.py next            claim the first free open item (prints it), commit + push
   .venv/bin/python tools/claims.py take "<text>"   claim a specific open item (prefix of its text), commit + push
-  .venv/bin/python tools/claims.py beat [activity] refresh claims, optionally say what is happening now
+  .venv/bin/python tools/claims.py beat [activity] refresh + push claims, optionally say what is happening now
   .venv/bin/python tools/claims.py release         drop this session's claims (when the item is checked off), commit + push
   .venv/bin/python tools/claims.py mine            this session's claims
   .venv/bin/python tools/claims.py others-cover    exit 0 when every open item is freshly claimed by OTHER sessions
@@ -22,24 +22,26 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from pathlib import Path
 
 ROOT = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path(__file__).resolve().parent.parent))
-DIR = ROOT / "claims"
 STALE_MIN = 90
 
 
-def git(*a, check=False):
-    return subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, check=check)
+def git(*a, check=False, **kwargs):
+    return subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=check, **kwargs)
 
 
 def session_id() -> str:
+    if explicit := os.environ.get("KERF_SESSION_ID"):
+        return explicit
     p = ROOT / ".claude/state/session_id"
     p.parent.mkdir(parents=True, exist_ok=True)
     if not p.exists():
-        p.write_text(os.environ.get("KERF_SESSION_ID") or uuid.uuid4().hex[:10])
+        p.write_text(uuid.uuid4().hex[:10], encoding="utf-8")
     return p.read_text(encoding="utf-8").strip()
 
 
@@ -72,13 +74,21 @@ def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:60]
 
 
-def load() -> dict[str, dict]:
+def load(ref: str | None = None) -> dict[str, dict]:
+    """Read an immutable shared snapshot, never the caller's stale or edited claim files."""
+    ref = ref or sync()
     out = {}
-    for f in sorted(DIR.glob("*.json")):
+    for name in git("ls-tree", "-r", "--name-only", ref, "--", "claims/", check=True).stdout.splitlines():
+        f = Path(name)
+        if f.parent != Path("claims") or f.suffix != ".json":
+            continue
         try:
-            out[f.stem] = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001 - a broken claim file is treated as no claim
-            pass
+            c = json.loads(git("show", f"{ref}:{name}", check=True).stdout)
+            if not isinstance(c, dict):
+                raise ValueError("expected an object")
+            out[f.stem] = c
+        except (ValueError, subprocess.CalledProcessError) as e:
+            raise GitBusy(f"claims: cannot read shared {name}; nothing published") from e
     return out
 
 
@@ -90,8 +100,12 @@ class GitBusy(SystemExit):
     pass
 
 
+class BudgetStop(Exception):
+    pass
+
+
 def ensure_clean_git():
-    """Claims commit and push; doing that mid-rebase/merge would stack claim commits on a broken tree."""
+    """Keep the existing refusal during an unfinished Git operation; normal dirty work is safe."""
     gd = Path(git("rev-parse", "--git-dir").stdout.strip() or ".git")
     gd = gd if gd.is_absolute() else ROOT / gd
     busy = [n for n in ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD") if (gd / n).exists()]
@@ -101,41 +115,73 @@ def ensure_clean_git():
 
 def sync():
     ensure_clean_git()
-    git("pull", "-q", "--rebase", "--autostash")
+    # A private ref avoids FETCH_HEAD/origin-main races between worktrees sharing the same Git directory.
+    ref = f"refs/kerf/claims/{uuid.uuid4().hex}"
+    try:
+        r = git("fetch", "-q", "--no-tags", "--no-write-fetch-head", "origin", f"refs/heads/main:{ref}")
+        if r.returncode:
+            raise GitBusy("claims: cannot fetch origin/main; nothing published\n" + r.stderr.strip())
+        return git("rev-parse", "--verify", ref, check=True).stdout.strip()
+    finally:
+        git("update-ref", "-d", ref)
 
 
-def push(msg: str) -> bool:
+def publish(msg: str, change) -> bool:
+    """Apply only explicit claim changes to current main, retrying ownership/budget decisions after races."""
     for _ in range(4):
-        git("add", "claims")
-        if git("diff", "--cached", "--quiet", "--", "claims").returncode != 0:
-            git("-c", "user.name=Claude", "-c", "user.email=noreply@anthropic.com", "commit", "-q", "-m", msg, "--", "claims")
-        if git("push", "-q").returncode == 0:
+        base = sync()
+        changes = change(load(base))
+        if changes is None:
+            return False
+        if not changes:
             return True
-        git("pull", "-q", "--rebase", "--autostash")
-        ensure_clean_git()
-    # never leave a local claim commit behind: the next call would otherwise build on an unpushed claim
-    raise GitBusy(f"claims: could not push '{msg}' after 4 tries; check `git status` (nothing else claimed)")
+        with tempfile.TemporaryDirectory(prefix="kerf-claims-") as td:
+            env = {**os.environ, "GIT_INDEX_FILE": str(Path(td) / "index")}
+            git("read-tree", base, env=env, check=True)
+            for key, value in changes.items():
+                if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", key):
+                    raise GitBusy(f"claims: invalid claim name {key!r}; nothing published")
+                if value is None:
+                    entry = f"0 {'0' * 40}\tclaims/{key}.json\n"
+                else:
+                    blob = git("hash-object", "-w", "--stdin", input=json.dumps(value, indent=1) + "\n", check=True).stdout.strip()
+                    entry = f"100644 {blob}\tclaims/{key}.json\n"
+                git("update-index", "--index-info", input=entry, env=env, check=True)
+            tree = git("write-tree", env=env, check=True).stdout.strip()
+        if tree == git("rev-parse", f"{base}^{{tree}}", check=True).stdout.strip():
+            return True
+        commit = git("-c", "user.name=Kerf claims", "-c", "user.email=noreply@kerf.local", "commit-tree", tree,
+                     "-p", base, "-m", msg, check=True).stdout.strip()
+        r = git("push", "-q", "origin", f"{commit}:refs/heads/main")
+        if r.returncode == 0:
+            return True
+    raise GitBusy(f"claims: could not publish '{msg}' after 4 tries; caller work is unchanged\n" + r.stderr.strip())
+
+
+def check_budget(current=None):
+    import budget
+    why = budget.stopped() if current is None else budget.stopped(shared=current.get("budget", {}))
+    if why:
+        raise BudgetStop(why)
 
 
 def _claim(item: str) -> bool:
-    sync()
     s = slug(item)
-    cur = load().get(s)
-    if cur and fresh(cur) and cur.get("session") != session_id():
-        return False
-    DIR.mkdir(exist_ok=True)
-    now = time.time()
-    (DIR / f"{s}.json").write_text(json.dumps({"item": item, "session": session_id(), "since": now, "heartbeat": now, **session_source(),
-                                                "since_utc": time.strftime("%Y-%m-%d %H:%M", time.gmtime(now))}, indent=1) + "\n")
-    if not push(f"claim: {item[:70]}"):
-        return False
-    # someone may have pushed the same claim first; the pushed tree is the truth
-    sync()
-    return load().get(s, {}).get("session") == session_id()
+    if s in ("budget", "batch-verify"):
+        raise GitBusy(f"claims: {s!r} is reserved for shared controls; nothing claimed")
+    sid = session_id()
+    def change(current):
+        check_budget(current)
+        cur = current.get(s)
+        if cur and fresh(cur) and cur.get("session") != sid:
+            return None
+        now = time.time()
+        return {s: {"item": item, "session": sid, "since": now, "heartbeat": now, **session_source(),
+                    "since_utc": time.strftime("%Y-%m-%d %H:%M", time.gmtime(now))}}
+    return publish(f"claim: {item[:70]}", change)
 
 
 def cmd_list():
-    sync()
     claims = load()
     for it in open_items():
         c = claims.get(slug(it))
@@ -150,7 +196,6 @@ def workable_items() -> list[str]:
 
 
 def cmd_next():
-    sync()
     claims = load()
     for it in workable_items():
         c = claims.get(slug(it))
@@ -173,32 +218,29 @@ def cmd_take(prefix: str):
     return 1
 
 
-def mine() -> list[str]:
-    return [k for k, c in load().items() if c.get("session") == session_id()]
+def mine(current=None) -> list[str]:
+    return [k for k, c in (load() if current is None else current).items()
+            if k not in ("budget", "batch-verify") and c.get("session") == session_id()]
 
 
 def cmd_beat(activity: str = ""):
-    now = time.time()
-    for k in mine():
-        p = DIR / f"{k}.json"
-        c = json.loads(p.read_text(encoding="utf-8")); c["heartbeat"] = now
-        source = session_source()
-        if source.get("provider") == "Claude Code":
-            c.pop("thread_id", None)
-        c.update(source)
-        if activity.strip():
-            c["activity"] = " ".join(activity.split())[:500]
-        p.write_text(json.dumps(c, indent=1) + "\n")
-        git("add", f"claims/{k}.json")  # staged, so the next commit carries it and `git pull --rebase` isn't blocked
-    return 0
+    def change(current):
+        changes = {}
+        for k in mine(current):
+            c = dict(current[k], heartbeat=time.time())
+            source = session_source()
+            if source.get("provider") == "Claude Code":
+                c.pop("thread_id", None)
+            c.update(source)
+            if activity.strip():
+                c["activity"] = " ".join(activity.split())[:500]
+            changes[k] = c
+        return changes
+    return 0 if publish("claim heartbeat", change) else 1
 
 
 def cmd_release():
-    sync()
-    for k in mine():
-        (DIR / f"{k}.json").unlink()
-        git("rm", "-q", "--cached", "--ignore-unmatch", f"claims/{k}.json")
-    return 0 if push("release claims") else 1
+    return 0 if publish("release claims", lambda current: dict.fromkeys(mine(current))) else 1
 
 
 def others_cover() -> bool:
@@ -207,15 +249,12 @@ def others_cover() -> bool:
     return bool(items) and all((c := claims.get(slug(it))) and fresh(c) and c.get("session") != session_id() for it in items)
 
 
-def main(argv):
+def dispatch(argv):
     if not argv or argv[0] == "list":
         return cmd_list() or 0
     cmd = argv[0]
     if cmd in ("next", "take"):
-        import budget            # tools/budget.py: no new work while the usage-budget switch is on
-        if why := budget.stopped():
-            print(f"budget stop: {why}. Not claiming anything; push your work and stop.")
-            return 3
+        check_budget()
     if cmd == "next":
         return cmd_next()
     if cmd == "take":
@@ -225,12 +264,21 @@ def main(argv):
     if cmd == "release":
         return cmd_release()
     if cmd == "mine":
-        print("\n".join(load()[k]["item"] for k in mine()))
+        current = load()
+        print("\n".join(current[k]["item"] for k in mine(current)))
         return 0
     if cmd == "others-cover":
         return 0 if others_cover() else 1
     print(__doc__)
     return 2
+
+
+def main(argv):
+    try:
+        return dispatch(argv)
+    except BudgetStop as e:
+        print(f"budget stop: {e}. Not claiming anything; push your work and stop.")
+        return 3
 
 
 if __name__ == "__main__":

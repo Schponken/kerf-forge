@@ -67,11 +67,15 @@ Other Claude sessions may be working in this repo at the same time. To never bre
 - **Stay in your lane:** edit the files your item needs. Shared files (kerf/*.py, PLAN.md, STATUS.md, CLAUDE.md, docs/)
   get small, targeted edits — never rewrites — so concurrent changes merge cleanly. New engine features go in new
   functions or new modules where possible. STATUS.md: append your own dated entry; don't edit others' entries.
-- **Heartbeat:** run `tools/claims.py beat` before each commit (it stages the claim file, so run it before `git commit`, not after) so your claim stays fresh.
+- **Heartbeat:** run `tools/claims.py beat` before each commit so your claim stays fresh. It immediately publishes
+  only your claim to shared `origin/main`; your branch, staged changes and working files stay untouched.
   Add a short activity sentence, for example `tools/claims.py beat "Checking wing clearances; wiring checks next"`,
   so Studio's Work page can explain current work. Codex's thread id and Claude's explicit runtime identity are
   recorded automatically when present. Keep remaining work as real PLAN checkboxes; never invent completion
   percentages or time estimates for a claim.
+- Claims and budget commands require a reachable `origin/main`, even on a PR branch or detached HEAD. They never
+  pull, switch branches or publish feature code. Claim files in a feature checkout may be old; use `claims.py list`
+  / `mine` and `budget.py status` to read shared state. Finish any rebase/merge before using these commands.
 - **Finishing an item:** check it off in PLAN.md, `tools/claims.py release`, push, then `tools/claims.py next`.
   When every open item is claimed by other active sessions and your work is pushed, the Stop hook lets you stop.
 
