@@ -279,7 +279,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep["warnings"] += pwarn
             keys, kprob, kwarn = access.hex_key_reach(asm)          # can every screw be driven?
             ins, iprob = access.insertion_paths(asm)                # can declared parts slide into their seats?
-            rep["assembly"]["hex_keys"], rep["assembly"]["insertion"] = keys, ins
+            hp, hprob = access.horn_paths(asm)                      # can each horn be pushed onto its spline?
+            iprob += hprob
+            rep["assembly"]["hex_keys"], rep["assembly"]["insertion"], rep["assembly"]["horns"] = keys, ins, hp
             rep["warnings"] += unattached(proj, fj, pinj)
             rep["problems"] += kprob + iprob
             rep["warnings"] += kwarn

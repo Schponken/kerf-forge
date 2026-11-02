@@ -28,6 +28,11 @@ a.btn{display:inline-block;text-decoration:none;font:inherit;white-space:nowrap;
 a.btn:hover{border-color:var(--muted)}
 button small{opacity:.75;font-weight:500;margin-left:4px}
 .param .unit{color:var(--muted);font-size:12px;min-width:30px}
+.menu.modes button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-width:300px}
+.menu.modes .sub.cost{opacity:.75;font-size:11.5px}
+button.upgrade{border-color:var(--accent)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal .card{max-width:440px;width:calc(100% - 32px)}
 .intake{margin-top:12px}.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:10px 0}
 .igrid label,.intake>label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
 .qopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.qopt.rec{border-color:var(--accent)}
@@ -447,7 +452,14 @@ function renderProject() {
       ${d.description ? `<p class="desc one" title="Click to show it all" onclick="this.classList.toggle('open')">${esc(d.description)}</p>` : ""}
       ${facts.length ? `<div class="facts">${facts.join("<span>·</span>")}</div>` : ""}
       <div class="actions">
-        <button class="primary" onclick="run('build')" title="Every check, then print plates, shopping list, assembly guide and the 3D viewer">⚙ Build${e.build ? ` <small>${about(e.build)}</small>` : ""}</button>
+        <button class="primary" onclick="runMode('kit')" title="Every check, then print plates, shopping list, assembly guide and the 3D viewer">⚙ Build kit${modeEst(d, "kit")}</button>
+        ${d.last_mode && !["kit", "ship"].includes(d.last_mode) ? `<button class="upgrade" onclick="runMode('kit')" title="Runs only what the ${esc(modeLabel(d, d.last_mode))} run did not: built parts and solved load cases are reused">⬆ Upgrade to Build kit</button>` : ""}
+        <span class="more"><button onclick="toggleMenu(event)" aria-haspopup="true" title="Run only as deep as you need">Depth ▾</button>
+          <div class="menu modes" id="modemenu">
+            ${(d.modes || []).filter(m => m.mode !== "ship").map(m => `<button onclick="runMode('${m.mode}')"><b>${esc(m.label)}</b>${m.estimate ? ` <small>${about(m.estimate)}</small>` : ""}<span class="sub">${esc(m.gives)}</span><span class="sub cost">${esc(m.cost)}</span></button>`).join("")}
+            <hr>
+            <button onclick="askShip()"><b>📦 Ship it…</b><span class="sub">${esc(((d.modes || []).find(m => m.mode === "ship") || {}).gives || "")}</span></button>
+          </div></span>
         <button onclick="openEdit('', {})" title="Describe a change; Claude Code makes it, re-checks, rebuilds and gets it reviewed">✎ Change something</button>
         <span class="more"><button onclick="toggleMenu(event)" aria-haspopup="true">More ▾</button>
           <div class="menu" id="moremenu">
@@ -724,6 +736,23 @@ const PHASES = [["research","Research","🔎"],["plan","Plan","✎"],["contract"
 const TOOL_ICON = {WebSearch: "🔎", WebFetch: "🌐", Read: "📖", Write: "✎", Edit: "✎", Bash: "▶", Agent: "◆", Task: "◆", Grep: "⌕", Glob: "⌕", TaskCreate: "☑", TaskUpdate: "☑"};
 
 async function run(action) { try { const r = await api("/api/run", {project: S.sel, action}); watch(r.job); } catch (e) { toast("Couldn't start", e.message, "bad"); } }
+function modeLabel(d, m) { return ((d.modes || []).find(x => x.mode === m) || {}).label || m; }
+function modeEst(d, m) { const x = (d.modes || []).find(x => x.mode === m); return x && x.estimate ? ` <small>${about(x.estimate)}</small>` : ""; }
+async function runMode(mode, confirmShip) {
+  try { const r = await api("/api/run", {project: S.sel, action: "mode", mode, confirm_ship: confirmShip === true}); watch(r.job); }
+  catch (e) { toast("Couldn't start", e.message, "bad"); }
+}
+function askShip() {   // Ship it prints on the user's printer: its own confirmation, never a default
+  const d = S.detail, m = ((d && d.modes) || []).find(x => x.mode === "ship") || {};
+  const el = document.createElement("div");
+  el.className = "modal"; el.id = "shipask";
+  el.innerHTML = `<div class="card"><h3>📦 Ship it: print ${esc(d ? d.title : "")}?</h3>
+    <p>${esc(m.gives || "")}.</p><p class="note">${esc(m.cost || "")}. Kerf builds the full kit first, checks that the design review is current, then sends plate 1 to your printer.</p>
+    <div class="row"><button class="primary" id="shipgo">Build and send to my printer</button><button id="shipno">Not now</button></div></div>`;
+  document.body.appendChild(el);
+  $("#shipno").onclick = () => el.remove();
+  $("#shipgo").onclick = () => { el.remove(); runMode("ship", true); };
+}
 async function openIn(what) {
   try { const r = await api("/api/open", {project: S.sel, what}); if (!r.opened) toast("Files are here", r.paths.join("\n"), "ok"); }
   catch (e) { toast("Couldn't open", e.message, "bad"); }

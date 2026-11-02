@@ -296,3 +296,12 @@ def test_horn_goes_on_at_the_joint_centre_the_bring_up_program_counts_from(tmp_p
     assert "joint `tilt` at 15 deg (the middle of its -35 to 65 deg travel), not the pose in the picture (that shows 0 deg)" in md
     tilt = next(r for r in firmware.servos(proj, asm) if r["joint"] == "tilt")
     assert tilt["centre"] == 15 and firmware._band(tilt) == 50
+    assert "and slide **tilt_servo** in until its spline enters the horn" in md       # it goes in last (its `insert:`)
+    # without that, the bracket + horn would have to be pushed onto the spline of a servo already in the wall: blocked
+    from kerf import access
+    res, prob = access.horn_paths(asm)
+    assert any(r["horn"] == "pan_horn" and r["clear"] for r in res) and not prob   # pan horn pushed on after its servo
+    proj.items["tilt_servo"].spec.pop("insert")
+    res, prob = access.horn_paths(asm)
+    assert any(r["horn"] == "tilt_horn" and not r["clear"] for r in res)
+    assert prob and "cannot be pushed onto tilt_servo's spline" in prob[0] and "bracket hits yoke" in prob[0]

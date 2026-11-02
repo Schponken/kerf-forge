@@ -229,3 +229,65 @@ def insertion_paths(asm, step_mm: float = 1.0) -> tuple[list, list]:
             problems.append(f"{iid} cannot be inserted along {np.round(d, 3).tolist()}: {h['a']} hits {h['b']} "
                             f"({h['volume_mm3']} mm3) {h['mm_from_seat']} mm before it is seated")
     return results, problems
+
+
+def servo_goes_last(asm, servo: str, horn: str, step: dict | None = None) -> bool:
+    """True when assembly.order fits the horn before its servo and the servo declares `insert:` (how it slides in):
+    the servo then goes in last onto the horn sub-assembly held in place, instead of the horn being pushed on."""
+    step = _install_steps(asm) if step is None else step
+    return bool(asm.proj.items[servo].spec.get("insert")) and step.get(horn, 0) < step.get(servo, 0)
+
+
+def horn_paths(asm, step_mm: float = 0.5) -> tuple[list, list]:
+    """Can every servo horn (with whatever is built onto it) be pushed onto its servo's spline once the servo is in?
+    The horn sub-assembly slides along the output axis by the spline's height (catalog shaft_h + 0.5 mm) against the
+    parts installed by then (assembly.order). A servo listed after its horn that has its own `insert:` goes in last
+    onto the horn held in place instead (servo_goes_last; insertion_paths checks that path). Returns (results, problems)."""
+    items = asm.proj.items
+    allow = A._allowed(asm)
+    step = _install_steps(asm)
+    results, problems = [], []
+    for e in asm.edges:
+        sv, hn = items.get(e.parent), items.get(e.child)
+        if (e.kind != "revolute" or sv is None or hn is None or sv.shape is None or hn.shape is None
+                or not str(sv.spec.get("catalog", "")).startswith("servos.")
+                or not str(hn.spec.get("catalog", "")).startswith("servo_horns.")):
+            continue
+        if servo_goes_last(asm, e.parent, e.child, step):
+            continue                                       # the servo slides in onto the held horn (insertion_paths)
+        when = max(step.get(e.parent, 0), step.get(e.child, 0))
+        moving = sorted(m for m in asm.subtree(e.child) if step.get(m, 0) <= when)
+        jl = sv.shape.joints[e.pjoint].location
+        d = geom.world_dir(jl, (0, 0, 1))
+        o = geom.world_point(jl, (0, 0, 0))
+        if np.dot(d, o - geom.world_point(sv.shape.location, (0, 0, 0))) < 0:
+            d = -d                                         # point away from the servo body: the horn comes from there
+        dist = float(catalog.get(sv.spec["catalog"]).get("shaft_h", 3.0)) + 0.5
+        homes = {m: items[m].shape.location for m in moving}
+        others = [i for i, o_ in items.items() if o_.shape is not None and o_.role != "keepout" and i not in moving
+                  and i != e.parent and step.get(i, 0) <= when]
+        hits = []
+        try:
+            for back in np.linspace(dist, 0, max(4, math.ceil(dist / step_mm)), endpoint=False):
+                off = Pos(*(d * back))
+                for m in moving:
+                    items[m].shape.location = off * homes[m]
+                for m in moving:
+                    if items[m].role == "keepout":
+                        continue
+                    for o_ in others:
+                        lim = allow.get(frozenset((m, o_)), (0.0, ""))[0]
+                        v = geom.overlap(items[m].shape, items[o_].shape)
+                        if v > max(lim, geom.OVERLAP_TOL_MM3):
+                            hits.append({"a": m, "b": o_, "volume_mm3": round(v, 3), "mm_from_seat": round(float(back), 2)})
+        finally:
+            for m in moving:
+                items[m].shape.location = homes[m]
+        results.append({"horn": e.child, "servo": e.parent, "moving": moving, "distance_mm": dist, "clear": not hits,
+                        "collisions": hits[:6]})
+        if hits:
+            h = max(hits, key=lambda h: h["mm_from_seat"])
+            problems.append(f"{' + '.join(m for m in moving if items[m].role != 'keepout')} cannot be pushed onto {e.parent}'s spline: {h['a']} hits {h['b']} "
+                            f"{h['mm_from_seat']} mm before it is seated. Fit the servo last instead: give {e.parent} an "
+                            f"`insert:` (the way it slides in) so it goes in onto the held sub-assembly")
+    return results, problems

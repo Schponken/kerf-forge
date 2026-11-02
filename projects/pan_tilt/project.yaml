@@ -36,7 +36,9 @@ purchased:
               insert: {direction: [0, 1, 0], distance: 30},
               assembly_note: "slide it in from the open -Y side, case top into the deck slot, lead out of the open side"}
   pan_horn: {catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {holes: yoke_pan}}
-  tilt_servo: {catalog: servos.SG90, proxy: servo, groups: {tabs: yoke_tilt}, tab_screws_from: bottom, range: [-90, 90]}
+  tilt_servo: {catalog: servos.SG90, proxy: servo, groups: {tabs: yoke_tilt}, tab_screws_from: bottom, range: [-90, 90],
+               insert: {direction: [0, 0, 1], distance: 30},
+               assembly_note: "the bracket can't be pushed onto a servo already in the wall (only 0.9 mm of room at the pivot), so the servo goes in last: hold the bracket + horn between the yoke walls with the camera tilted 15 deg up, slide the centred servo in output first from outside the +Y wall until its spline enters the horn, drive the 2 tab screws, then the horn's centre screw through the pivot hole and the 2.4 mm hole in the knuckle, and fit the shoulder screw last"}
   tilt_horn: {catalog: servo_horns.aluminum_micro_21T, proxy: horn, groups: {holes: bracket_tilt}}
   # component_height 0: the board proxy's generic component block (90% of the board) would cover the mounting holes;
   # the real parts on the front are the 10.8 mm lens housing only, modelled as the cam_lens keep-out below

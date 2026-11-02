@@ -565,8 +565,13 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
         c = firmware.centre_of(e, lo, hi)
         pose = ("as in the picture" if abs(c - e.home) < 0.5 else
                 f"not the pose in the picture (that shows {e.home:g} deg): set the driven parts to {c:g} deg, then fit it")
-        return [f"  - The servo is centred (Step 0b): press **{child}** onto the spline with joint `{e.name}` at "
-                f"{c:g} deg ({'the middle of its' if e.centre is None else 'in its'} {lo:g} to {hi:g} deg travel), {pose}; "
+        where = f"joint `{e.name}` at {c:g} deg ({'the middle of its' if e.centre is None else 'in its'} {lo:g} to {hi:g} deg travel)"
+        from .access import servo_goes_last
+        if servo_goes_last(asm, parent, child):       # the servo goes in last, onto the horn held in place
+            return [f"  - The servo is centred (Step 0b) and goes in last: hold **{child}** (and what is built onto it) in "
+                    f"place with {where}, {pose}, and slide **{parent}** in until its spline enters the horn; then fit the "
+                    "horn's centre screw. The bring-up program counts degrees from this position."]
+        return [f"  - The servo is centred (Step 0b): press **{child}** onto the spline with {where}, {pose}; "
                 "then fit the horn's centre screw. The bring-up program counts degrees from this position."]
 
     for s in st:

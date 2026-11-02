@@ -54,6 +54,7 @@ class Job:
         self.state = "running"
         self.started, self.ended = time.time(), None
         self.result: dict | None = None
+        self.mode: str | None = None            # kerf run --mode (kerf/modes.py) when the job is a mode run
         self.proc = subprocess.Popen(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                                      bufsize=1, env={**os.environ, **(env or {})}, start_new_session=True)
         threading.Thread(target=self._pump, daemon=True).start()
@@ -127,11 +128,14 @@ def record_time(project: str, kind: str, seconds: float):
 
 
 def estimate(project: str, kind: str) -> float | None:
-    """Seconds a build / check of this project usually takes: median of its last runs from Studio, else the last
-    report's own run time for a build."""
-    runs = _times().get(project, {}).get(kind) or []
+    """Seconds a build / check / mode run (kind "mode_<m>") of this project usually takes: median of its last runs from
+    Studio (a Build kit falls back to Build's, Check it to Check's), else the last report's own run time for a build."""
+    t = _times().get(project, {})
+    runs = t.get(kind) or t.get({"mode_kit": "build", "mode_ship": "build", "mode_check": "check"}.get(kind, ""), []) or []
     if runs:
         return float(sorted(runs)[len(runs) // 2])
+    if kind in ("mode_kit", "mode_ship"):
+        kind = "build"
     rep = _report(PROJECTS / project)
     return float(rep["seconds"]) if kind == "build" and rep and rep.get("seconds") else None
 
@@ -196,7 +200,7 @@ def on_finished(job) -> None:
         return
     if job.kind not in ("build", "check"):
         return
-    record_time(job.project, job.kind, (job.ended or time.time()) - job.started)
+    record_time(job.project, f"mode_{job.mode}" if job.mode else job.kind, (job.ended or time.time()) - job.started)
     if job.kind == "build":
         snapshot(job.project)
 
@@ -302,6 +306,27 @@ def start_job(*a, **k) -> Job:
 PROGRESS_ENV = {"KERF_PROGRESS": "1", "PYTHONUNBUFFERED": "1"}
 
 
+MODE_LABEL = {"sketch": "Sketch", "print": "Print it", "check": "Check it", "simulate": "Simulate it",
+              "kit": "Build kit", "ship": "Ship it"}
+
+
+def mode_menu(name: str, rep: dict | None) -> list[dict]:
+    """The depths Kerf can run this project at (kerf/modes.py), each with what it gives, its usual time (past runs) and
+    what it costs: every mode runs on this computer with no Claude usage; Ship it also prints (filament)."""
+    from . import modes
+    n = _numbers(rep) if rep else {}
+    out = []
+    for m in modes.ORDER:
+        cost = "free: runs on this computer, no Claude usage"
+        if m == "ship":
+            g = n.get("filament_g")
+            cost = ("prints on your printer" + (f": about {g:.0f} g of filament" if isinstance(g, (int, float)) else "")
+                    + "; needs a current design review")
+        out.append({"mode": m, "label": MODE_LABEL[m], "gives": modes.GIVES[m], "estimate": estimate(name, f"mode_{m}"),
+                    "cost": cost, "confirm": m == "ship"})
+    return out
+
+
 def kerf_cmd(*args) -> list[str]:
     return [PY, "-m", "kerf.cli", *args]
 
@@ -401,6 +426,7 @@ def detail(name: str) -> dict:
             "viewer": "out/viewer.html" if (out / "viewer.html").exists() else None,
             "history": history(name),
             "estimate": {"build": estimate(name, "build"), "check": estimate(name, "check")},
+            "modes": mode_menu(name, rep), "last_mode": (rep.get("mode") or ("kit" if rep.get("files") else None)) if rep else None,
             "summary_numbers": _numbers(rep),
             "materials": materials(), "part_materials": part_materials(name),
             "trial": {"params": trial_rep.get("params") if trial_rep else None, "ok": trial_rep.get("ok") if trial_rep else None,
@@ -1200,6 +1226,17 @@ class Handler(BaseHTTPRequestHandler):
                     j = start_job("check", name, kerf_cmd("check", name, "--quick"), f"Quick check {name}", env=PROGRESS_ENV)
                 elif action == "build":
                     j = start_job("build", name, kerf_cmd("build", name), f"Build {name}", env=PROGRESS_ENV)
+                elif action == "mode":
+                    from . import modes
+                    m = body.get("mode")
+                    if m not in modes.MODES:
+                        return self._err(f"unknown mode {m}")
+                    if m == "ship" and body.get("confirm_ship") is not True:
+                        return self._err("Ship it sends plates to your printer: it needs its own confirmation")
+                    j = start_job("build" if m in ("kit", "ship") else "check", name,
+                                  kerf_cmd("run", name, "--mode", m, *(["--ship"] if m == "ship" else [])),
+                                  f"{MODE_LABEL[m]}: {name}", env=PROGRESS_ENV)
+                    j.mode = m
                 elif action == "trial":
                     vals = {k: float(v) for k, v in (body.get("values") or {}).items()}
                     trial_copy(name, vals, {str(k): str(v) for k, v in (body.get("materials") or {}).items()})

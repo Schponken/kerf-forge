@@ -456,3 +456,24 @@ await p.click('button.primary:has-text("Save")'); await p.waitForTimeout(500);""
     assert out["errs"] == [] and out["intake"] == 6, out
     assert out["opts"] == ["Rack jaws", "Linkage claw"] and out["rec"] == "Linkage claw", out
     assert json.loads(inv.read_text())["items"] == {"servos.SG90": 2}
+
+
+def test_mode_menu_and_ship_needs_its_own_confirmation(server, tmp_path):
+    menu = studio.mode_menu("servo_link", studio._report(studio.PROJECTS / "servo_link"))
+    assert [m["mode"] for m in menu] == ["sketch", "print", "check", "simulate", "kit", "ship"]
+    assert all("no Claude usage" in m["cost"] for m in menu[:-1]) and "printer" in menu[-1]["cost"] and menu[-1]["confirm"]
+    code, body = _post(server + "/api/run", {"project": "servo_link", "action": "mode", "mode": "ship"})
+    assert code == 400 and "confirmation" in body["error"]                    # nothing started without the click
+    code, body = _post(server + "/api/run", {"project": "servo_link", "action": "mode", "mode": "fast"})
+    assert code == 400
+    out = _browser(server + "/", """
+await p.waitForSelector('.pitem'); await p.click('text=Servo test rig');
+await p.waitForFunction(() => (document.querySelector('.head h1') || {}).textContent === 'Servo test rig');
+await p.click('button:has-text("Depth")'); await p.waitForSelector('#modemenu.open');
+out.modes = await p.$$eval('#modemenu button b', e => e.map(x => x.textContent));
+await p.click('text=Ship it…'); await p.waitForSelector('#shipask');
+out.ask = await p.textContent('#shipask h3');
+await p.click('#shipno'); out.closed = await p.$('#shipask') === null;""", tmp_path)
+    assert out["errs"] == [], out
+    assert out["modes"] == ["Sketch", "Print it", "Check it", "Simulate it", "Build kit", "📦 Ship it…"], out
+    assert "Ship it" in out["ask"] and out["closed"], out

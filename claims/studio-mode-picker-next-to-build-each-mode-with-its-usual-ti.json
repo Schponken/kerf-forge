@@ -2,6 +2,6 @@
  "item": "Studio mode picker: next to Build, each mode with its usual time + cost shown before it starts; \"Upgrade to Build kit\" reuses the finished stages; Ship it behind its own confirm (prints on the user's printer); smoke test",
  "session": "0f43a4e722",
  "since": 1793583052.356061,
- "heartbeat": 1793583052.356061,
+ "heartbeat": 1793583270.2478971,
  "since_utc": "2026-11-02 01:30"
 }
