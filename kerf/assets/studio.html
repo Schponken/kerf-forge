@@ -60,12 +60,14 @@ a{color:var(--info)}
 
 /* ---------- sidebar */
 #side{width:292px;flex:none;border-right:1px solid var(--line);background:var(--bg2);display:flex;flex-direction:column;height:100%;position:relative;z-index:2}
-.brand{display:flex;align-items:center;gap:11px;padding:18px 16px 12px}
+.brand{display:flex;align-items:center;gap:9px;padding:18px 16px 12px}
 .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;box-shadow:0 0 24px var(--glow);position:relative;overflow:hidden;flex:none}
 .logo::after{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,255,255,.55) 80%,transparent 90%);animation:spin 4s linear infinite}
 .logo svg{position:relative;z-index:1}
 .brand b{font-size:16px;letter-spacing:.2px}
 .brand small{display:block;color:var(--muted);font-size:11.5px}
+.brand > div{min-width:0}.brand b{white-space:nowrap}
+.brand .themebtn{padding:4px 7px}.brand .themebtn ~ .themebtn{margin-left:3px}
 .themebtn{margin-left:auto;padding:5px 8px;border-radius:8px;font-size:13px}
 #newbtn{margin:4px 14px 10px;width:calc(100% - 28px);padding:10px}
 #search{margin:0 14px 8px;width:calc(100% - 28px)}
@@ -390,11 +392,11 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .mats {overflow-x:auto}
 @media (max-width:900px){
   html,body {height:100%;overflow:hidden}
-  #side {height:auto;max-height:38vh;min-height:0}
+  #side {height:44vh;max-height:44vh;min-height:0;overflow:hidden}   /* its list scrolls inside; nothing spills over the page */
   .brand {padding:10px 14px 6px}
   #newbtn {padding:7px;margin-bottom:6px}
   #search {padding:6px 10px;margin-bottom:4px}
-  #plist {min-height:56px}
+  #plist {min-height:56px;flex:1 1 auto}
   #jobs {padding:6px 12px;max-height:80px;flex-shrink:0}
   #main {min-height:0}
   .head {padding:16px 16px 0}
@@ -418,10 +420,10 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 <aside id="side">
   <div class="brand">
     <div class="logo"><svg width="18" height="18" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 24V6m0 9 11-9m-7 6 9 12" stroke="#160a03" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <div><b>Kerf Studio</b><small>describe it → printable, checked parts</small></div>
+    <div><b>Kerf Studio</b><small title="describe it → printable, checked parts">describe it → printable parts</small></div>
     <button class="themebtn" id="helpbtn" onclick="explainPage()" title="Explain this page">?</button>
     <button class="themebtn" id="themebtn" onclick="toggleTheme()" title="Light / dark">☀</button>
-    <button class="themebtn" onclick="quitApp()" title="Quit Kerf Studio" style="margin-left:4px">⏻</button>
+    <button class="themebtn" onclick="quitApp()" title="Quit Kerf Studio">⏻</button>
   </div>
   <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
   <nav class="sidenav"><button id="nav_grid" onclick="showGrid()" title="Every project as a big card">▦ All projects</button>
@@ -940,7 +942,7 @@ function renderFiles(el) {
     "CAD + shopping list": "The shopping list of parts to buy, and the full 3D model for other CAD programs.",
     "Simulation (URDF + meshes, for PyBullet / MuJoCo / Gazebo)": "For trying the design in a physics simulator (optional)."};
   const group = (title, pred, icon) => { const g = f.filter(pred); return g.length ? `<h3>${title}</h3>${FILE_SAY[title] ? `<p class="note fsay">${FILE_SAY[title]}</p>` : ""}${g.map(x => `<a class="f" href="${fileUrl(d.name, x)}" download>${icon} ${esc(x.split("/").pop())}</a>`).join("")}` : ""; };
-  const DOCN = {"DESIGN.md": "Design notes", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring",
+  const DOCN = {"out/OPTIMISE.md": "Optimiser results", "OPTIMISE.md": "Optimiser results", "DESIGN.md": "Design notes", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring",
                 "out/firmware/BRINGUP.md": "First power-up", "out/bom.md": "Shopping list", "out/plates/PRINT_SETTINGS.md": "Print settings"};
   el.innerHTML = `<div class="files">
     ${d.docs.length ? `<h3>Guides (read here)</h3>${d.docs.map(x => `<a class="f" href="#" onclick="S.doc='${x}';setTab('docs');return false">☰ ${DOCN[x] || x}</a>`).join("")}` : ""}
