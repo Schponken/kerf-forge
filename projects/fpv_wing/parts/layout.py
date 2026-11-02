@@ -88,6 +88,15 @@ def splice_holes(p, side):
     return out
 
 
+def skin_z(p, x, y):
+    """z of the bottom skin at plan point (x, y) (either side)."""
+    pf = planform(p)
+    ya = abs(y)
+    frac = (x - pf.x_le(ya)) / pf.chord(ya)
+    mid = aero.spar_point(pf, ya, frac)
+    return float(mid[2] - aero.depth_at(pf, ya, frac) / 2)
+
+
 def planform(p):
     return aero.Planform(span=p.wing_span, root_chord=p.wing_root_chord, tip_chord=p.wing_tip_chord,
                          sweep_le_deg=p.wing_sweep_le_deg, twist_tip_deg=p.wing_twist_tip_deg, root_airfoil=AIRFOIL,

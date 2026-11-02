@@ -6,6 +6,8 @@ key reaches the head along the screw axis. The camera (19 mm micro) sits against
 through a square window (front flush with the tip), held by two M2 through the side cheeks into its side holes. TPU 95A takes the landings and
 belly-slides; printed standing on its rear face (walls lean in less than 30 deg, the 2 mm tip is a short bridge).
 """
+import math
+
 from build123d import *
 from kerf import iface
 from kerf.features import fillet_inside
@@ -50,8 +52,8 @@ def build(ctx):
     # why: square window through the tip: the camera's front face fills it, flush (the lens's 155 deg view is clear)
     body = body - Pos(x0 - NOSE_L - 1, 0, zc) * Box(WALL + 4, CAM + 0.4, CAM + 0.4, align=(Align.MIN, Align.CENTER, Align.CENTER))
     for s in (-1, 1):
-        # why: cooling air in: two 8 mm vents through the lower sides, into the bay behind (out under the tail)
-        body = body - Pos(x0 - 32, s * 22, zc - 10) * Rot(0, 90, 0) * Cylinder(4, 18, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # why: cooling air in: two 8 mm vents up through the belly of the nose, into the bay behind (out under the tail)
+        body = body - Pos(x0 - 24, s * 14, zc - 40) * Cylinder(4, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # why: camera side screws (M2 clearance) through cheeks and walls, at the camera's side holes
     body = body - Pos(xt + CAM_HOLE_BACK, 0, zc) * Rot(90, 0, 0) * Cylinder(1.25, 60)
     # bolt lugs on the outside of the rear rim, screws along +X into the pod inserts
@@ -59,6 +61,9 @@ def build(ctx):
         lug = Pos(x0 - LUG_L / 2, y, z) * Rot(0, 90, 0) * Cylinder(LUG_D / 2, LUG_L)
         body = body + ctx.add(lug, why="screw lug (12 mm of grip on a TPU rim)", kind="lug")
         reach = Pos(x0 - LUG_L, y, z) * Rot(0, -90, 0) * Cylinder(3.75, NOSE_L, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # open the channel outward as a groove: square edges where it leaves the tapering skin, no feathered sliver
+        ang = math.degrees(math.atan2(z - zc, y))
+        reach += Pos(x0 - LUG_L, y, z) * Rot(ang, 0, 0) * Box(NOSE_L, 30, 7.5, align=(Align.MAX, Align.MIN, Align.CENTER))
         body = body - ctx.cut(reach, why="hex-key channel to the lug's screw head", kind="tool access")
     face = Location(Plane(origin=(x0 - LUG_L, 0, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))    # local (u, v) = world (y, -z)
     body = body - iface.bolt_pattern(ctx, "nose", "M3", [(y, -z) for (y, z) in POD.nose_bolts(p)], face, kind="clearance", depth=LUG_L)

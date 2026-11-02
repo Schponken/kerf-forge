@@ -114,7 +114,9 @@ def boss(x0, y, z, length, d, toward):
     """Insert boss along X from the wall at x0, `toward` = +1 / -1; a 45 deg cone at its free end."""
     from build123d import Cone
     cyl = Pos(x0 + toward * length / 2, y, z) * Rot(0, 90, 0) * Cylinder(d / 2, length)
-    cone = Pos(x0 + toward * (length + d / 4), y, z) * Rot(0, 90 if toward > 0 else -90, 0) * Cone(d / 2, 0, d / 2)
+    tip = 0.6                                  # a blunt tip: a pointed apex meshes open (not watertight)
+    h = d / 2 - tip
+    cone = Pos(x0 + toward * (length + h / 2), y, z) * Rot(0, 90 if toward > 0 else -90, 0) * Cone(d / 2, tip, h)
     return cyl + cone
 
 
@@ -125,19 +127,20 @@ def build(ctx):
     # top hatch: the skin over the bay comes off (parts/hatch.py), so the shelf electronics and the wing-root bolts are
     # reached from above; side ledges under its edges carry it
     body = body - ctx.cut(hatch_box(p), why="top hatch opening: electronics and root bolts from above", kind="hatch")
-    ledge = Pos(HATCH_X[0], 0, HATCH_CUT_Z - 2) * Box(HATCH_X[1] - HATCH_X[0], 2 * (HATCH_HW + 2), 12, align=(Align.MIN, Align.CENTER, Align.MIN)) \
-        - Pos(HATCH_X[0], 0, 0) * Box(HATCH_X[1] - HATCH_X[0], 2 * (HATCH_HW - 4), 80, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    # why: 3 mm longer than the opening at each end, so the ledges merge into the end skins (not edge-to-edge contact)
+    ledge = Pos(HATCH_X[0] - 3, 0, HATCH_CUT_Z - 2) * Box(HATCH_X[1] - HATCH_X[0] + 6, 2 * (HATCH_HW + 2), 12, align=(Align.MIN, Align.CENTER, Align.MIN)) \
+        - Pos(HATCH_X[0] - 3, 0, 0) * Box(HATCH_X[1] - HATCH_X[0] + 6, 2 * (HATCH_HW - 4), 80, align=(Align.MIN, Align.CENTER, Align.CENTER))
     body = body + ctx.add((ledge & outer(p)) - hatch_solid(p), why="ledges the hatch rests on", kind="ledge")
     for (x, y) in hatch_bolts(p):          # ledge blocks deep enough for the hatch screws' inserts
-        blk = Pos(x, y, HATCH_CUT_Z - 9) * Box(10, 10, 12, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        blk = Pos(x, y, HATCH_CUT_Z - 9) * Box(14, 14, p.pod_top - SKIN - (HATCH_CUT_Z - 9), align=(Align.CENTER, Align.CENTER, Align.MIN))
         body = body + ctx.add((blk & outer(p)) - hatch_solid(p), why="hatch insert block", kind="boss")
     top = Location(Plane(origin=(0, 0, p.pod_top - SKIN), x_dir=(1, 0, 0), z_dir=(0, 0, 1)))
     body = body - iface.bolt_pattern(ctx, "hatch", "M3", hatch_bolts(p), top, kind="heatset", depth=8, teardrop="auto")
     # battery strap: two tabs on the floor beside the pack, a 20 mm strap over its top (6 mm under the shelf)
     floor_z = p.pod_bottom + SKIN
     for s in (-1, 1):
-        tab = Pos(p.bat_x, s * 31.5, floor_z - 1) * Box(30, 3, 11, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        tab -= Pos(p.bat_x, s * 31.5, floor_z + 3) * Box(22, 5, 3.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        tab = Pos(p.bat_x, s * 33.0, floor_z - 1) * Box(30, 3, 11, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        tab -= Pos(p.bat_x, s * 33.0, floor_z + 3) * Box(22, 5, 3.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
         body = body + ctx.add(tab & outer(p), why="battery strap tab (22 x 3.5 slot)", kind="strap tab")
     # cooling: air in through the nose vents, along the bay, out through belly slots behind the shelf
     for s in (-1, 1):

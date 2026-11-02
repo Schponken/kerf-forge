@@ -20,7 +20,7 @@ def build(ctx):
     _, ha, hb = E.surfaces(p, s)
     h, _ = E.hinge_point(ha, hb, s * p.horn_y)
     lx, wy, dz = E.HORN_SLOT
-    x0, y = h[0] + 0.5, s * p.horn_y
+    x0, y = h[0] + 1.5, s * p.horn_y
     body = Pos(x0, y, h[2] - 19) * Box(lx, T, 18.3, align=(Align.MIN, Align.CENTER, Align.MIN))          # below the surface
     body += Pos(x0, y, h[2] - 1.0) * Box(lx, T, dz + 0.8, align=(Align.MIN, Align.CENTER, Align.MIN))    # the tab in the slot
     for d in HOLES:

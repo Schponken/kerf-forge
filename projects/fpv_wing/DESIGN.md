@@ -64,15 +64,15 @@ publishes 81 W at 75-80 km/h for its 1 m AR Wing Pro, so L/D 6 / eta 0.5 is on t
   leave the pod (y 50). The tubes share it by E I (same modulus): 8 x 6 mm 137 MPa, 6 x 4 mm 103 MPa against
   400 MPa / 1.5 = 267 MPa (Easy Composites' LOW figure for these exact tubes): 52 % of allowable.
 - **Across the middle**: left and right tubes stop 8 mm off the centreline, inside ONE V-shaped PLA sleeve per tube
-  pair that runs from side wall to side wall (main 20 mm, rear 16 mm round, teardrop underside so it prints without
-  support). The moment goes tube -> sleeve -> the other half's tube; the side walls only carry shear. Hand check at the
-  centreline: main share 73 % x 6.48 N m = 4.73 N m on a 20 / 8.2 mm PLA tube (I = 7630 mm^4) = 6.2 MPa against PLA
-  48 MPa / 2. `pod_strength` (FEA, right bores loaded with the half-wing's lift + root moment, left bores held): peak
-  5.7 MPa, p99.9 1.5 MPa, 0.04 mm. (A first version with separate sleeves ending at the side walls put the whole
-  moment into the wall junction: 28.6 MPa p99.9, 2.3 mm - it failed and was replaced.)
-- **Pod skins**: the build calls the pod overbuilt for the 6 g case (8 % of allowable). The 2.4 mm skin is set by
+  pair that runs from side wall to side wall (main 16 mm, rear 13 mm round: 4 / 3.5 mm walls, teardrop underside so it
+  prints without support). The moment goes tube -> sleeve -> the other half's tube; the side walls only carry shear.
+  Hand check at the centreline: main share 73 % x 6.48 N m = 4.73 N m on a 16 / 8.2 mm PLA tube (I = 2995 mm^4) =
+  12.6 MPa against PLA 48 MPa / 2 = 24 MPa. `pod_strength` (FEA, right bores loaded with the half-wing's lift + root
+  moment, left bores held): 2.25 MPa p99.9 against 19.5 allowed. (A first version with separate sleeves ending at the
+  side walls put the whole moment into the wall junction: 28.6 MPa p99.9, 2.3 mm - it failed and was replaced.)
+- **Pod skins**: the build calls the pod overbuilt for the 6 g case (8 % of allowable). The 1.7 mm skin (4 perimeters, solid) is set by
   the other jobs it has: belly landings on grass and gravel, the battery's inertia in a nose-in arrival, heat-set
-  insert bosses and a stiff enough box for the root bolts; a thinner skin would also print poorly standing 310 mm tall.
+  insert bosses and a stiff enough box for the root bolts; thinner than 4 perimeters would also print poorly standing 310 mm tall.
 - **Wing skins**: 1 wall + 3 % infill, like the Darkwing; the spars take the bending, the skin only air pressure and
   handling. The wing segments' layers are the airfoil outlines (printed standing), so skin stress lies in the layers.
 - **Motor mount** (`mount_strength`): 6 mm PETG plate, 45.5 N (2 x full thrust) along the motor axis at the motor

@@ -30,6 +30,7 @@ def build(ctx):
         skin = skin + ctx.add((root & cav) - Pos(0, 0, -(TONGUE_T + 0.2)) * cav, why="tongue root", kind="tongue")
     # front: two M3 down through the skin into inserts in the pod's ledge blocks
     top = Location(Plane(origin=(0, 0, p.pod_top), x_dir=(1, 0, 0), z_dir=(0, 0, 1)))
-    skin = skin - iface.bolt_pattern(ctx, "hatch", "M3", POD.hatch_bolts(p), top, kind="clearance", depth=POD.SKIN + 0.01)
+    skin = skin - iface.bolt_pattern(ctx, "hatch", "M3", POD.hatch_bolts(p), top, kind="clearance", depth=POD.SKIN + 0.01,
+                                     teardrop="auto")
     ctx.rigid("base", Location())
     return ctx.finish(skin)

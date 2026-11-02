@@ -65,7 +65,7 @@ def build(ctx):
     if not outer_half:
         h, _ = hinge_point(ha, hb, s * p.horn_y)
         lx, wy, dz = HORN_SLOT
-        slot = Pos(h[0] + 0.5, s * p.horn_y, h[2] - 1.0) * Box(lx, wy, dz + 1.0, align=(Align.MIN, Align.CENTER, Align.MIN))
+        slot = Pos(h[0] + 1.5, s * p.horn_y, h[2] - 1.0) * Box(lx, wy, dz + 1.0, align=(Align.MIN, Align.CENTER, Align.MIN))
         surf = surf - ctx.cut(slot, why="slot the control horn's tab is glued into", kind="horn slot")
         ctx.rigid("horn", Location())
         ctx.rigid("joiner", Location(Plane(origin=tuple(a), z_dir=tuple(d))))
