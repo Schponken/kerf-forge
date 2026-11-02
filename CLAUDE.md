@@ -40,6 +40,9 @@ work, never a roadmap and never "should work".
 ## Batched testing (Spencer, 2026-11-02)
 
 Full `kerf verify` runs are expensive, so they are batched: one run covers many sessions' features.
+- **Check before you start any test run** (Spencer, 2026-11-02): `tools/batch_verify.py status` says "RUNNING NOW"
+  while any session holds the full-suite lock (claims/batch-verify.json, all machines): never start a second full
+  run, wait for its result. For targeted runs, `ps aux | grep [p]ytest` first: don't start the same files twice.
 - **Per change:** run only what the change touches: the test files for the code you changed (`.venv/bin/pytest -q
   tests/test_<x>.py ...`), new tests for your feature, and `kerf check <project>` / `kerf build <project>` for projects
   you changed. Never the full suite for a single change.

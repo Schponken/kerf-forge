@@ -67,6 +67,16 @@ def due(rec: dict, feats: list, done_now: int, now: float | None = None) -> tupl
     return False, f"{len(feats)} feature commits / {new_items} items waiting (batch at {BATCH_ITEMS} items or {MAX_AGE_H} h)"
 
 
+def running_now() -> str | None:
+    """'session S, started/heartbeat N min ago' while a fresh lock says a full run is going (any machine), else None."""
+    try:
+        c = json.loads(LOCK.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    age = (time.time() - float(c.get("heartbeat", 0))) / 60
+    return f"session {c.get('session')}, last heartbeat {age:.0f} min ago" if age < LOCK_STALE_MIN else None
+
+
 def lock_held_by_other(sid: str) -> bool:
     try:
         c = json.loads(LOCK.read_text(encoding="utf-8"))
@@ -103,7 +113,11 @@ def cmd_status() -> int:
             print(f"  FAIL {f}")
     else:
         print("last batch: none recorded")
-    print(("DUE: " if d else "not due: ") + why)
+    run = running_now()
+    if run:      # Spencer, 2026-11-02: check for a running full suite before starting one
+        print(f"RUNNING NOW: a full batch is in progress ({run}); do not start another, wait for its result")
+    else:
+        print(("DUE: " if d else "not due: ") + why)
     return 0
 
 
