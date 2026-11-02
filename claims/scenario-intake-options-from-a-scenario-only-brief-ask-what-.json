@@ -1,7 +1,0 @@
-{
- "item": "Scenario intake + options: from a scenario-only brief, ask what matters, generate 2-3 options incl. buy-vs-build (search for existing / free designs first), compare cost / time / risk / fit, recommend one; Studio flow; eval E8 (scenario only: \"my plants die when I travel\")",
- "session": "codex-scenario-intake",
- "since": 1793655669.9459698,
- "heartbeat": 1793655669.9459698,
- "since_utc": "2026-11-02 21:41"
-}
