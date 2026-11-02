@@ -502,3 +502,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   real temporary Git snapshots, release/staleness/control handling, normal-page refresh, API guards and a real Activity
   browser. The browser caught/fixed the age parser after wording changed to last update. No full batch, project build,
   solver, paid model call or layout redesign. Architecture map updated; git diff --check passes.
+
+## 2026-11-02 — Shared claim publisher/Studio integration (Codex)
+- Folded the reviewed Studio reader compatibility into PR #17 so shared publication and its consumers ship
+  together; preserved both STATUS histories and publisher/immutable-ref tests. No local claim mirroring.
+- A new real-Git regression reproduced index-byte changes when only an unchanged tracked file's mtime moved.
+  Disabled optional Git locks and replaced the conflict check's worktree-refreshing git diff with ls-files --unmerged;
+  private GIT_INDEX_FILE remains intact. Take, heartbeat and release now preserve the exact original index bytes.
+- 14 combined focused tests PASS in 13.50 s: index lifecycle, dirty-feature preservation, mid-rebase refusal,
+  shared readers/refresh, Codex publisher metadata, Activity browser and API guards. Earlier 41 publisher and
+  29 reader results remain separate historical selections, not an accumulated unique count. No full batch or FEA.

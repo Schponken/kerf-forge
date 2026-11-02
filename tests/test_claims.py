@@ -71,6 +71,18 @@ def test_refuses_mid_rebase(repos):
     assert sh(a, "git", "rev-parse", "HEAD").stdout == head and not (a / "claims").exists()
 
 
+def test_claim_lifecycle_preserves_index_when_only_worktree_mtime_changed(repos):
+    a, _, _ = repos
+    index = a / ".git/index"
+    before = index.read_bytes()
+    later = time.time() + 60
+    os.utime(a / "PLAN.md", (later, later))  # same contents; even refreshing index stat data would change its bytes
+    for args in (("take", "Item one"), ("beat", "Checking shared ownership"), ("release",)):
+        result = claims(a, *args)
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert index.read_bytes() == before, args
+
+
 def shared(remote, name):
     r = sh(remote, "git", "show", f"main:claims/{name}.json")
     return json.loads(r.stdout) if r.returncode == 0 else None

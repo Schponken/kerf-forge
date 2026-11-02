@@ -32,7 +32,8 @@ STALE_MIN = 90
 
 
 def git(*a, check=False, **kwargs):
-    return subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=check, **kwargs)
+    env = {**kwargs.pop("env", os.environ), "GIT_OPTIONAL_LOCKS": "0"}
+    return subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=check, env=env, **kwargs)
 
 
 def session_id() -> str:
@@ -109,7 +110,7 @@ def ensure_clean_git():
     gd = Path(git("rev-parse", "--git-dir").stdout.strip() or ".git")
     gd = gd if gd.is_absolute() else ROOT / gd
     busy = [n for n in ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD") if (gd / n).exists()]
-    if busy or git("diff", "--name-only", "--diff-filter=U").stdout.strip():
+    if busy or git("ls-files", "--unmerged").stdout.strip():
         raise GitBusy(f"claims: git is mid-{busy[0] if busy else 'conflict'}; finish or abort it first (nothing claimed)")
 
 
