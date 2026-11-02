@@ -33,6 +33,7 @@ COVER_T = 2.5           # spine cover thickness; its top is flush with fuse_top 
 GAP_COVER = 0.3         # spine cover to opening edge, per side
 OPEN_X = (100.0, 221.0)  # top opening for the spine
 CLEAR = 0.5             # moving printed parts (ENGINEERING s6)
+FILLET = 2.0           # inside-corner fillets on the load paths (ENGINEERING s5: r >= 1)
 STOP_GAP = 0.55         # sector end face to stop post at each end of the fold range
 LEDGE_W, LEDGE_T = 3.0, 3.0
 SPINE_BOLTS = [(108.0, -7.0), (108.0, 7.0), (215.0, -6.0), (215.0, 6.0)]   # (x, y): wells in the spine ridge
@@ -67,9 +68,10 @@ def _sec(st, x):
 
 def _loft(st, shrink=0.0):
     secs = []
-    for x, hw, zb, zt, r in st:
-        w, h = 2 * (hw - shrink), (zt - zb) - 2 * shrink
-        rr = max(1.0, min(r - shrink, w / 2 - 0.5, h / 2 - 0.5))
+    for x, hw, zb, zt, r, *extra in st:
+        k = shrink + (extra[0] if extra else 0.0)
+        w, h = 2 * (hw - k), (zt - zb) - 2 * k
+        rr = max(1.0, min(r - k, w / 2 - 0.5, h / 2 - 0.5))
         pl = Plane(origin=(x, 0, (zb + zt) / 2), x_dir=(0, 1, 0), z_dir=(1, 0, 0))
         secs.append(pl * RectangleRounded(w, h, rr))
     return loft(secs, ruled=True)
@@ -81,8 +83,18 @@ def outer(p):
 
 def cavity(p):
     st = stations(p)
-    xs = [p.fuse_joint_x + BULK_T] + [s[0] for s in st if p.fuse_joint_x + BULK_T < s[0] < 220] + [240.0, 258.0]
-    return _loft([(x, *_sec(st, x)) for x in xs], SKIN)
+    x0 = p.fuse_joint_x + BULK_T
+    xs = [x0 + FILLET] + [s[0] for s in st if x0 + FILLET < s[0] < 220] + [240.0, 258.0]
+    # 45 deg fillet-chamfer all round where the skin meets the front bulkhead (the joint's load path)
+    return _loft([(x0, *_sec(st, x0), FILLET)] + [(x, *_sec(st, x)) for x in xs], SKIN)
+
+
+def cove_x(x0, x1, y, z, dy, dz, r):
+    """Fillet strip along X in a concave corner at (y, z); (dy, dz) = +-1 point into the open air of the corner."""
+    pl = Plane(origin=(x0, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0))     # local (u, v) = world (y, z)
+    sq = Pos(y + dy * r / 2, z + dz * r / 2) * Rectangle(r, r)
+    prof = sq - Pos(y + dy * r, z + dz * r) * Circle(r)
+    return extrude(pl * prof, x1 - x0, dir=(1, 0, 0))
 
 
 def opening(p):
@@ -173,6 +185,7 @@ def build(ctx):
         mech += ctx.add(_prism_xy([(211, s * 26), (212.5, s * 24.5), (226, s * 24.5), (226, s * 27.5), (212.5, s * 27.5)],
                                   p.deck_z1 - 0.01, cz0 - 0.1), why="web behind the pin: carries the rear top skin edge", kind="web")
     flug = _prism_xz([(88, p.fuse_top - SKIN), (114, p.fuse_top - SKIN), (114, FRONT_LUG_Z), (88 + p.fuse_top - SKIN - FRONT_LUG_Z, FRONT_LUG_Z)], -12, 12)
+    flug -= Pos(0, 0, cz0) * extrude(opening(p), 40, dir=(0, 0, 1))          # the spine cover sits on it
     body += ctx.add(flug & hull, why="front spine lug under the top skin (45 deg underside): 2 M3 heat-set inserts", kind="lug")
 
     # ---- per side: sector sweep clearance in the skin, stop posts on the deck
@@ -198,6 +211,15 @@ def build(ctx):
         mech += ctx.add(posts, why="mechanical stops: the sector's end faces meet them at 0 and fold_max", kind="stop")
     mech, failed = fillet_inside(ctx, mech, r=1.5)
     body += mech & hull
+    # fillets where the deck, servo plate and keel rib meet the skin (straight walls from x 140 aft)
+    wy = L.fuse_section(p, 160)[0] - SKIN
+    cv = None
+    for s in (1, -1):
+        for x0, x1, z, dz in ((203, 218, p.deck_z1, 1), (186, 218, p.deck_z0, -1), (140, 186, tab_top + plate_t, 1), (140, 186, tab_top, -1)):
+            c1 = cove_x(x0, x1, s * wy, z, -s, dz, FILLET)
+            cv = c1 if cv is None else cv + c1
+        cv += cove_x(118 + tab_top - zf, 218, s * 1.5, zf, s, 1, FILLET)
+    body += ctx.add(cv, why="r 2 fillets: deck / servo plate to the side walls, keel rib to the floor", kind="fillet")
 
     for s in (1, -1):
         n = "r" if s > 0 else "l"
@@ -216,12 +238,13 @@ def build(ctx):
                                   kind="heatset", top_through=True, teardrop="auto")
         # belly opening: the servo goes up through it, a 2.5 mm key reaches the tab screws; pointed rear end (print)
         sx = sl.position.X
-        xa, xb = sx - d["span"] / 2 - 1.0, sx + d["L"] / 2 + 8.0
+        # the rear tab screws sit beside the servo's lead boss (a straight key misses it by < 0.5 mm): the opening
+        # runs on aft to x 196 so a ball-end key tilted aft reaches them; drift hole for the pin in its pointed end
+        xa, xb = sx - d["span"] / 2 - 1.0, c[0] - 4.0
         ya, yb = s * (p.pivot_y - d["W"] / 2 - 1), s * (p.pivot_y + d["W"] / 2 + 1)
         hole = _prism_xy([(xa, ya), (xb, ya), (xb + abs(yb - ya) / 2, s * p.pivot_y), (xb, yb), (xa, yb)],
                          p.fuse_bottom - 5, zf + 0.5)
-        body -= ctx.cut(hole, why="belly opening: servo in from below, key to its tab screws", kind="opening")
-        body -= ctx.cut(_td_hole(ctx, (c[0], c[1], zf), 6.0, SKIN + 1), why="drift hole: push the pivot pin out from below", kind="hole")
+        body -= ctx.cut(hole, why="belly opening: servo in from below, keys to its tab screws, drift to push the pin out", kind="opening")
         ctx.revolute(f"pivot_{n}", L.pivot_axis(p, s), range=(0, p.fold_max))
         ctx.rigid(f"sweep_servo_{n}", sl)
 
@@ -251,6 +274,13 @@ def build(ctx):
                     why="boom bore, OD + 0.2 slip for epoxy", kind="bore")
     body -= ctx.cut(_td_hole(ctx, (238.0, 12.0, -52.0), 6.0, 14.0), why="tail servo leads enter from under the boom", kind="wire hole")
 
+    # the heat-set and pin holes print horizontal with a teardrop roof: those roof edges are concave on purpose
+    from kerf.edges import sharp_inside
+    holes = [(q.loc.position, q.group) for q in list(ctx.sites) + list(ctx.pins)]
+    for c in sharp_inside(body, ctx.sites):
+        near = [g for o, g in holes if (o - Vector(*c["at"])).length < 9.0]
+        if near and c["len"] < 8.0:
+            ctx.keep_sharp(c["at"], f"teardrop roof / lead-in of a '{near[0]}' hole: the screw, insert or pin sits in it")
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     for k in ("fwd", "spine", "tail"):
         ctx.rigid(k, Location())

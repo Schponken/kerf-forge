@@ -47,6 +47,27 @@ def _cyl(c, r, z0, z1):
     return Pos(c[0], c[1], z0) * Cylinder(r, z1 - z0, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
 
+def _channels(p):
+    """(name, radius, polyline) of the right hub's bores, for declaring their teardrop roofs."""
+    out = [(f"{w} spar socket", (od + 0.2) / 2, list(L.tube_line(p, w, 1))) for w, od in (("main", p.main_od), ("rear", p.rear_od))]
+    lr = L.lead_root(p, 1)
+    out.append(("aileron lead channel", LEAD_D / 2, [(float(lr[0]), p.hub_y1 + 2.0, float(lr[2])), (float(lr[0]), p.hub_y1 - 10.0, 0.6),
+                                                     (float(lr[0]), p.spar_y0 + 4, 0.6), L.lead_exit(p, 1)]))
+    return out
+
+
+def _in_channel(p, q):
+    import numpy as np
+    q = np.array(q, float)
+    for name, r, pts in _channels(p):
+        for a, b in zip(pts, pts[1:]):
+            a, b = np.array(a, float), np.array(b, float)
+            t = np.clip(np.dot(q - a, b - a) / np.dot(b - a, b - a), 0, 1)
+            if np.linalg.norm(q - (a + t * (b - a))) <= r * 1.5 + 0.3:
+                return name
+    return None
+
+
 def right_body(ctx):
     """The right hub without its pin bore (the left one is its mirror image)."""
     p = ctx.p
@@ -89,11 +110,8 @@ def right_body(ctx):
         body -= ctx.cut(teardrop_channel([at(p.spar_y0 - 0.5 + r), at(p.hub_y1 + 1.0 - r)], od + 0.2),
                         why=f"{which} spar socket, OD + 0.2, epoxied, {p.hub_y1 - p.spar_y0:.0f} mm engagement", kind="socket")
     # aileron lead: outer face (lead_root) -> under the root -> beside the boss -> down through the sector web
-    lr = L.lead_root(p, 1)
     le = L.lead_exit(p, 1)
-    zr = float(lr[2])
-    path = [(float(lr[0]), p.hub_y1 + 2.0, zr), (float(lr[0]), p.hub_y1 - 10.0, 0.6), (float(lr[0]), p.spar_y0 + 4, 0.6), le]
-    body -= ctx.cut(teardrop_channel(path, LEAD_D), why="aileron servo lead channel", kind="wire channel")
+    body -= ctx.cut(teardrop_channel(_channels(p)[2][2], LEAD_D), why="aileron servo lead channel", kind="wire channel")
     body -= ctx.cut(_cyl((le[0], le[1]), LEAD_D / 2, p.boss_z0 - 1, le[2] + 0.5),
                     why="aileron lead drops into the fuselage through the sector web", kind="wire channel")
     return body
@@ -108,6 +126,14 @@ def build(ctx):
         body = mirror(body, Plane.XZ)
     top = Location((p.pivot_x, s * p.pivot_y, p.boss_z1))
     body -= iface.pin_hole(ctx, L.PIN, top, f"pivot_{n}", depth=p.boss_z1 - p.boss_z0, fit="free", teardrop="auto")
+    # the teardrop roofs of the spar sockets and the lead channel are concave edges by design: a tube or the lead
+    # lies in them and the roof is what lets the bore print without support
+    from kerf.edges import sharp_inside
+    for c in sharp_inside(body, ctx.sites):
+        q = (c["at"][0], s * c["at"][1], c["at"][2])
+        what = _in_channel(p, q)
+        if what:
+            ctx.keep_sharp(c["at"], f"teardrop roof of the {what}: printed without support, the {what.split()[0]} part lies in it")
     ctx.rigid("pivot", L.pivot_axis(p, s).location)
     ctx.rigid("wing", Location())
     ctx.rigid("main", L.tube_loc(p, "main", s))
