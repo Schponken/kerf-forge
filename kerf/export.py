@@ -145,7 +145,8 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
 
 def part_print_settings(spec) -> dict:
     """Slicer settings a printed part's numbers assume (mass estimate, FEA): infill and perimeters."""
-    return {"infill_pct": round(float(spec.get("infill", 0.25)) * 100), "walls": int(spec.get("walls", 2)),
+    infill, walls = checks.print_parameters(spec)
+    return {"infill_pct": round(infill * 100), "walls": walls,
             "material": spec.get("material", "PETG"), "print_rot": list(spec.get("print_rot", [0, 0, 0]))}
 
 
@@ -165,7 +166,15 @@ def print_settings_md(proj) -> str:
 def modifiers_md(proj) -> list[str]:
     """PRINT_SETTINGS.md section for project.yaml part `modifiers:` [{where, size, infill, walls, why}]: local slicer
     settings (a 100 % infill block round an insert, a servo pocket) the part's strength depends on."""
-    mods = [(iid, m) for iid, it in proj.printed.items() for m in it.spec.get("modifiers") or []]
+    mods = []
+    for iid, it in proj.printed.items():
+        entries = it.spec.get("modifiers", [])
+        if not isinstance(entries, list):
+            raise ValueError(f"{iid}.modifiers: must be a list of mappings")
+        for n, m in enumerate(entries):
+            if not isinstance(m, dict):
+                raise ValueError(f"{iid}.modifiers[{n}]: print settings must be a mapping")
+            mods.append((iid, m))
     if not mods:
         return []
     L = ["", "## Modifiers (local settings the strength depends on)", "",
@@ -173,8 +182,9 @@ def modifiers_md(proj) -> list[str]:
          "size and place it as below) and give it these settings; without them the part is weaker than its checks "
          "assume.", "", "| Part | Where | Size | Infill | Wall loops | Why |", "|---|---|---|---|---|---|"]
     for iid, m in mods:
-        L.append(f"| {iid} | {m['where']} | {m.get('size', '')} | {round(float(m.get('infill', 1.0)) * 100)} % | "
-                 f"{m.get('walls', '')} | {m.get('why', '')} |")
+        infill, walls = checks.print_parameters({**m, "infill": m.get("infill", 1.0)})
+        L.append(f"| {iid} | {m['where']} | {m.get('size', '')} | {round(infill * 100)} % | "
+                 f"{walls if 'walls' in m else ''} | {m.get('why', '')} |")
     return L
 
 

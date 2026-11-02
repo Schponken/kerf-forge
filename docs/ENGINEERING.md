@@ -49,6 +49,11 @@ DESIGN.md says why.
   `along`, worst over the arm's extreme poses). Printed parts act at their solid centroid, so keep ~1 mm margin.
 
 ## 4. Print orientation and layers
+- Print inputs must be finite: `infill` is a fraction from 0 to 1, and `walls` is a whole count of zero or more
+  perimeter loops. Booleans, negative/fractional wall counts and nonfinite values are rejected before geometry;
+  numeric strings use the same interpretation in mass and slicer output. These are input rules, not permission to
+  reduce a structural part below its required wall count. Explicit purchased `mass_g` must be finite and nonnegative;
+  zero keeps the existing missing-mass warning and must not be treated as physical evidence.
 - Choose `print_rot` so the largest flat face is on the bed and the main bending load runs along layers, not across them.
   Arms and beams lie flat. Hooks and brackets are oriented so the bend is in the XY plane.
 - Declare `load_axis` (part frame: `x`, `-y`, `[1, 0, 1]` or a list) on every structural part; `kerf check` warns when

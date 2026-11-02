@@ -479,3 +479,30 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
 - (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.
+
+## 2026-11-02 23:10 UTC — Validate physical mass inputs (Codex, mass-input-validation)
+- Reproduced on a synthetic 10 mm cube: walls=-10 gave -1.105 g; infill=2 gave 1.87 g against 1.25 g solid;
+  walls=2.5 counted 2.5 loops in mass but exported 2. NaN/Inf infill reached physical mass; NaN/Inf walls could
+  saturate shell volume and then crash integer print output. Purchased mass_g=-5/NaN/Inf passed loading unchanged.
+- Shared scalar validation now rejects nonfinite/boolean inputs, infill outside [0,1], non-whole or negative walls,
+  and negative explicit purchased mass_g. Project loading reports item/field paths before geometry; direct mass,
+  cached-mass, shell-volume and print-output paths use the same rules. Numeric wall strings including "2.0" normalize
+  consistently with numeric 2.0. Zero/one infill, zero walls, 2/4-wall defaults and missing/zero purchased-mass warnings
+  retain their semantics. Purchased specs must be mappings; modifier collections lists of mappings with valid scalars.
+- Local modifier validation does not alter the whole-part mass or FEA model. Geometry, density/catalog values,
+  formulas, structural thresholds and solver behavior are unchanged. Pending mixed-manufacturing PR13's early
+  manufactured-part branch must retain its continue before these FDM-only input checks during integration.
+- Read-only doctor ALL OK with shared existing dependencies; optional firmware tools remain unavailable. Batch
+  status/process checks preceded each focused test run; no full batch, project build, stress/FEA run or install.
+- Final exact selection, without environment overrides: `.venv/bin/python -m pytest -q tests/test_mass_inputs.py
+  tests/test_item_mass.py tests/test_print_settings.py tests/test_printpkg.py tests/test_docs.py
+  tests/test_maker_output.py::test_report_mass_split_unattached_and_units` — **99 passed in 2.67 s**.
+  Tests cover invalid load/helper boundaries, finite hand-calculated mass, cached-spec edits, valid zeros/defaults,
+  numeric strings, malformed mappings, unchanged local-modifier mass and existing print/maker output contracts.
+- Initial selection was 98 pass/1 failure: existing printpkg test read UTF-8 output using the process locale after
+  Mesher.write(.3mf) changed it to US-ASCII. With PYTHONUTF8=1 it then exposed an unquoted fake interpreter path with
+  spaces (exit126). Isolated unmodified origin/main 2a6662a source copy reproduced the exact printpkg node failure:
+  1 failed in 2.41 s. Fixed only the adjacent test fixture: explicit UTF-8 on two output reads and shlex.quote on
+  fake executable/script paths. Every assertion is retained; no Mesher, global locale or production slicer change.
+- Independent parent review approved the final validation/fixture diff. Only this precise PLAN item is complete;
+  no new physical validation or finished-project claim.

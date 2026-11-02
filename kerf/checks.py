@@ -26,6 +26,43 @@ MIN_WALL_LINE = 0.42
 OVERHANG_WARN = 0.03     # fraction of surface area needing support
 
 
+def _finite_number(value, name):
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a finite number, not a boolean")
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        raise ValueError(f"{name} must be a finite number") from None
+    if not math.isfinite(number):
+        raise ValueError(f"{name} must be a finite number")
+    return number
+
+
+def print_parameters(spec) -> tuple[float, int]:
+    """One interpretation for mass and slicer output; reject bad inputs rather than clamp or truncate them."""
+    if not isinstance(spec, dict):
+        raise ValueError("print settings must be a mapping")
+    infill = _finite_number(spec.get("infill", 0.25), "infill")
+    if not 0 <= infill <= 1:
+        raise ValueError("infill must be a fraction from 0 to 1 inclusive")
+    walls = _finite_number(spec.get("walls", 2), "walls")
+    if walls < 0 or not walls.is_integer():
+        raise ValueError("walls must be a nonnegative whole number of perimeter loops")
+    return infill, int(walls)
+
+
+def explicit_mass_g(spec) -> float | None:
+    """An absent override stays absent; zero retains the existing unknown-mass warning behavior."""
+    if not isinstance(spec, dict):
+        raise ValueError("purchased item settings must be a mapping")
+    if "mass_g" not in spec:
+        return None
+    mass = _finite_number(spec["mass_g"], "mass_g")
+    if mass < 0:
+        raise ValueError("mass_g must be nonnegative")
+    return mass
+
+
 def density(material: str) -> float:
     try:
         m = catalog.get(f"materials.{material}")
@@ -68,6 +105,7 @@ def bed_contact(pid, s) -> list:
 
 def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     spec = item.spec
+    infill, walls = print_parameters(spec)
     shape = item.shape
     rot = spec.get("print_rot", [0, 0, 0])
     s = oriented(shape, rot)
@@ -113,13 +151,12 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     km = geom.kmesh(s)
     area = float(sum(fc.area for fc in s.faces())) if km is None else float(__import__("trimesh").Trimesh(*km, process=False).area)
     shell = min(vol, area * 0.84) if km is not None else shell_volume(s, spec, vol)
-    infill = float(spec.get("infill", 0.25))
     return {
         "ok": not problems, "problems": problems, "warnings": warnings, "min_wall_p02": None if p02 is None else round(p02, 3),
         "material": mat, "print_rot": rot, "size_mm": [round(x, 2) for x in size], "fits": fits,
         "volume_mm3": round(vol, 1), "mass_solid_g": round(vol / 1000 * rho, 1),
         "mass_est_g": round((shell + infill * max(vol - shell, 0)) / 1000 * rho, 1), "infill": infill,
-        "walls": int(spec.get("walls", 2)),
+        "walls": walls,
         "overhang_pct": round(oh_frac * 100, 2), "wall_p02_mm": None if p02 is None else round(p02, 2),
         "watertight": ms["watertight"], "solids": len(sol), "faces": len(s.faces()), "build_ms": item.build_ms,
     }
@@ -183,7 +220,7 @@ LINE_W, SKIN_MM = 0.42, 0.84    # perimeter line width; top/bottom skin (~4 laye
 def shell_volume(s, spec, vol=None) -> float:
     """Solid-printed volume of a part in its PRINT orientation: faces that point up/down (within 45 deg of build Z) get
     the top/bottom skin, every other face `walls` perimeters of 0.42 mm. Capped at the part volume."""
-    walls = float(spec.get("walls", 2))
+    _, walls = print_parameters(spec)
     tb = side = 0.0
     for fc in s.faces():
         try:
@@ -201,6 +238,7 @@ def shell_volume(s, spec, vol=None) -> float:
 def item_mass_g(item) -> float:
     """Mass used for statics: printed parts from geometry, purchased parts from the catalog."""
     if item.role == "printed":
+        print_parameters(item.spec)       # even a cached answer must not hide invalid mutated inputs
         # every mass / CG / thrust / endurance requirement asks again; the answer depends on the geometry and the
         # spec only (not on where the part sits), so it is kept on the shape (copy-safe slot, geom._Memo)
         key = json.dumps(item.spec, sort_keys=True, default=str)
@@ -217,9 +255,9 @@ def item_mass_g(item) -> float:
 
 def _printed_mass_g(item) -> float:
     """Printed mass from geometry: perimeter shell at full density + the rest at the part's infill."""
+    infill, _ = print_parameters(item.spec)
     vol = geom.volume(item.shape)
     rho = density(item.spec.get("material", "PETG"))
-    infill = float(item.spec.get("infill", 0.25))
     if geom.kmesh(item.shape) is not None:
         area = float(sum(fc.area for fc in item.shape.faces()))
         shell = min(vol, area * 0.84)
@@ -230,8 +268,9 @@ def _printed_mass_g(item) -> float:
 
 def _purchased_mass_g(item) -> float:
     """Catalog (or yaml mass_g) mass of one purchased item."""
-    if "mass_g" in item.spec:
-        return float(item.spec["mass_g"])
+    override = explicit_mass_g(item.spec)
+    if override is not None:
+        return override
     try:
         e = catalog.get(item.spec["catalog"])
     except Exception:
