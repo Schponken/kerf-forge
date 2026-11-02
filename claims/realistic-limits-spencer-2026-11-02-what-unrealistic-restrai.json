@@ -1,7 +1,0 @@
-{
- "item": "Realistic limits (Spencer, 2026-11-02: \"what unrealistic restraints are we putting on the tool\"): requirements can be `advisory: <why>` (a miss is a warning, never for strength / stress checks); the thin-wall minimum applies to load-carrying parts only, others go down to one line width (sourced); items can declare `compress_mm` + `compress_why` (foam, straps, wire bundles) so a press-in up to that depth isn't a collision; tests, docs",
- "session": "0f43a4e722",
- "since": 1793652712.7200093,
- "heartbeat": 1793652958.8851416,
- "since_utc": "2026-11-02 20:51"
-}
