@@ -564,7 +564,45 @@ def explained(name: str, rep: dict, data: dict) -> dict:
         work = explain.work_status(name, jobs, explain.claims(ROOT))
     except Exception as e:  # noqa: BLE001 - the plain-words layer never breaks the page
         return {"cards": [], "work": {"state": "idle", "text": ""}, "error": str(e)}
+    if work.get("state") == "claimed":
+        work["recent"] = recent_commits(name)
     return {"cards": cards, "work": work}
+
+
+def recent_commits(name: str, n: int = 4) -> list[dict]:
+    """The latest commits that touched projects/<name>/ ({subject, time}): what the session on it has done so far."""
+    out = []
+    for line in _git("log", f"-{n}", "--format=%ct%x09%s", "--", f"projects/{name}").splitlines():
+        t, _, subj = line.partition("\t")
+        subj = re.sub(rf"^{re.escape(name)}:\s*", "", subj)
+        out.append({"time": float(t or 0), "subject": subj[:220]})
+    return out
+
+
+SESSIONS = {"at": 0.0, "list": []}
+
+
+def sessions(max_age: float = 30) -> list[dict]:
+    """Claude / Codex sessions working on a project right now (fresh claims naming it), for Studio's Activity list.
+    Cached for max_age s: /api/jobs is polled every few seconds."""
+    if time.time() - SESSIONS["at"] < max_age:
+        return SESSIONS["list"]
+    from . import explain
+    out = []
+    try:
+        cl = explain.claims(ROOT)
+        for name in project_names():
+            w = explain.work_status(name, [], cl)
+            if w["state"] == "claimed":
+                rep = _report(PROJECTS / name)
+                last = recent_commits(name, 1)
+                out.append({"project": name, "text": w["text"], "task": w.get("task", ""),
+                            "problems": len((rep or {}).get("problems") or []) if rep else None,
+                            "last": last[0] if last else None})
+    except Exception:  # noqa: BLE001 - Activity never breaks over a claim file
+        out = []
+    SESSIONS.update(at=time.time(), list=out)
+    return out
 
 
 def _numbers(rep: dict) -> dict | None:
@@ -1465,7 +1503,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, f.read_bytes(), "image/png") if f else self._err("not found", 404)
             if parts == ["api", "jobs"]:
                 return self._json({"jobs": [j.info(len(j.lines), len(j.events)) | {"tail": j.lines[-1:]} for j in
-                                            sorted(JOBS.values(), key=lambda j: -j.started)]})
+                                            sorted(JOBS.values(), key=lambda j: -j.started)], "sessions": sessions()})
             if parts[:2] == ["api", "job"] and len(parts) == 3:
                 j = JOBS.get(parts[2])
                 return self._json(j.info(int(q.get("since", ["0"])[0]), int(q.get("esince", ["0"])[0]))) if j else self._err("no such job", 404)
