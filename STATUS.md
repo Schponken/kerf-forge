@@ -1300,3 +1300,12 @@ pushed for it and what I know:
   two bolts) is 186 Hz, 7 % below the ~200 Hz hover rotor rate (needs 20 %). DESIGN.md already flagged "arm mode in the
   gyro noise band"; now it is a check. Fix options for the fpv arm item (mine): a deeper section with web lightening
   (teardrop holes) to stay inside the T/W mass budget, or a stiffer material if the A2L can print it. Not loosened.
+
+## 2026-11-01 22:20 UTC-5 — Failure modes (engine), session e3d8373e
+- kerf/failure.py: per-part failure table (report.json `failure_modes`, ASSEMBLY.md "If it breaks", PACK.md) and the
+  `weak_link` requirement (the cheap part's crash case must use more of its limit than every case on the parts that
+  must survive the same event, compared at the same force). tests/test_failure.py.
+- **Second real fpv_5in finding**: `arm_breaks_first` FAILS: under the arm_1 crash event the body (body_strength,
+  body_strength_3) uses 94 % of its limit and the arm 76 %, so the body cracks before the cheap arm. Together with
+  arm_resonance this sets the fpv arm rework (my claim): a stiffer free span for the 20 % resonance separation, a
+  designed fuse at the arm root and / or a stronger body clamp, inside the T/W mass budget. Not loosened.

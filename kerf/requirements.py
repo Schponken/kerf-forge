@@ -794,3 +794,4 @@ from . import req_aero  # noqa: E402,F401  (static_margin, wing_loading, stall_s
 from . import usestory  # noqa: E402,F401  (heat_limit, rain_cover, access_opening, impact_case, story_covered)
 from . import req_dynamic  # noqa: E402,F401  (impact_fea, stop_impact, natural_freq)
 from . import req_motion  # noqa: E402,F401  (grip_hold, joint_speed, drop_impact: MuJoCo, kerf/sim.py)
+from . import failure  # noqa: E402,F401  (weak_link)

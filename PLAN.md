@@ -182,6 +182,8 @@ Work these in order unless one is blocked; each item is done only with tests and
   - [ ] fpv_5in arm_resonance PASSES (now FAILS on a real finding: arm f_n 186 Hz is 7 % from the 200 Hz hover rotor rate; needs >= 20 %)
   - [ ] a project uses impact_fea and stop_impact (a surviving drop / a driven hard stop)
 - [ ] Failure modes: per-part failure table in the report (how it fails, what it takes with it, repair time); `weak_link` requirement proving the cheap part fails before the expensive one under the crash case
+  - [x] kerf/failure.py: report.json `failure_modes` (governing case, use, how by print direction, bought parts it takes with it + price, screws to undo, reprint time lower bound + filament cost) in ASSEMBLY.md "If it breaks" and the review pack; `weak_link` (stress uses at the same applied force); tests/test_failure.py
+  - [ ] fpv_5in `arm_breaks_first` PASSES (now FAILS on a real finding: under the arm crash event the body uses 94 % of its limit, the arm 76 %: the body would break first)
 - [ ] Design for life: fatigue check for flexing parts (living hinges, snap fits), creep limit for plastic under constant load, vibration rule for screws (threadlocker / nyloc / inserts), heat limit by material Tg vs the use story
 - [ ] Optimise then explain: `kerf optimise <p>` searches declared params (mass / cost / a requirement margin) within every check, writes the trade-off table; tested on a small project
 - [ ] Human factors: reach / access checks from the use story (battery swap with gloves, tool access), carry and repair notes in ASSEMBLY.md

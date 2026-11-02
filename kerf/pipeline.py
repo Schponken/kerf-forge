@@ -355,6 +355,12 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     if msg:
                         rep["warnings"].append(msg)
             rep["requirements"] = rq
+            if rq:
+                from . import failure
+                try:
+                    rep["failure_modes"] = failure.table(proj, asm, rep)
+                except Exception as e:  # noqa: BLE001 - a table gap must not stop the checks
+                    rep["warnings"].append(f"failure table: {type(e).__name__}: {e}")
             _layer_proofs(proj, rep)
             rep["warnings"] += _fea_hygiene(proj)
             bp, bw = export.bom_extra_check(proj, rep.get("assembly", {}).get("fasteners"))

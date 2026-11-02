@@ -629,6 +629,11 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
         L += [f"- **{i}** ({human_item(it)}): {it.spec['off_board']}." for i, it in off]
         L.append("")
     L += story_notes(rep.get("use_story"))
+    if rep.get("failure_modes"):
+        from .failure import lines
+        L += ["## If it breaks", "",
+              "Which part gives way first in each part's worst load case, what it takes with it, and the repair:", ""]
+        L += lines(rep["failure_modes"]) + [""]
     (outdir / "ASSEMBLY.md").write_text("\n".join(L), encoding="utf-8")
     return {"file": "ASSEMBLY.md", "steps": len(st), "renders": render is not None}
 

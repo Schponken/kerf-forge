@@ -193,6 +193,8 @@ requirements:
       # the arm top presses up on the body underside around the outer screw with 177.1 N
       - {box: [[23.8, 23.8, body_t - 3.21], [29.9, 29.9, body_t - 3.19]], force_n: [0, 0, -144.0]}   # nut seat (nut sunk 0.5 mm + 2.7 pocket)
       - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
+  - {id: arm_breaks_first, check: weak_link, cheap: arm_strength, expensive: [body_strength, body_strength_3],
+     why: "use story: in a crash the 20 g arm (about 1 h to reprint, 6 screws) must break before the body that carries the stack, camera and top plate"}
   - id: body_strength_3
     check: fea_static
     part: body

@@ -146,6 +146,9 @@ def write(proj, rep: dict, outdir: Path) -> Path:
             k = (f.get("group"), f.get("screw"), f.get("length_mm"), f.get("grip_mm"), f.get("head"), f.get("receiver"))
             seen[k] = seen.get(k, 0) + 1
         L += [f"| {g} | {n} x {s} | {ln} | {gr} | {h} / {rc} |" for (g, s, ln, gr, h, rc), n in seen.items()]
+    if rep.get("failure_modes"):
+        from .failure import lines
+        L += ["", "## Failure table (judge the order: the cheap part should break first)", ""] + lines(rep["failure_modes"])
     ch = _changed_since_review(Path(proj.dir))
     L += ["", "## Changed since the last review", ""] + ([f"    {c.strip()}" for c in ch] if ch else ["(never reviewed, or no git)"])
     cat = catalog_subset(proj)
