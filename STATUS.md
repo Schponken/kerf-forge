@@ -1309,3 +1309,12 @@ pushed for it and what I know:
   body_strength_3) uses 94 % of its limit and the arm 76 %, so the body cracks before the cheap arm. Together with
   arm_resonance this sets the fpv arm rework (my claim): a stiffer free span for the 20 % resonance separation, a
   designed fuse at the arm root and / or a stronger body clamp, inside the T/W mass budget. Not loosened.
+
+## 2026-11-01 22:50 UTC-5 — Design for life (engine), session e3d8373e
+- kerf/req_life.py: `flex_strain` (snap hooks / living hinges; Machine Design + Fictiv rules, catalog elongation at
+  break for CF-PETG / PA6-CF), `creep_limit` (catalog `creep_rupture` points; PLA: 15 MPa ruptured within ~1.2 h,
+  Aston University study; materials without data fail rather than guess), `screw_locking` (fpv_5in: all 10 metal-thread
+  groups locked, PASS; ASSEMBLY.md now says which screws get threadlocker). Heat: the use story's heat_limit. Open:
+  sourced PETG creep data, and a project with a snap fit / hinge.
+- Not mine, seen in tests: test_maker_output::test_units_and_limit_direction fails because the new aero checks
+  (static_margin, stall_speed, static_margin_tail, wing_loading, fold_hinge_moment, spar_bending) have no UNITS entry.

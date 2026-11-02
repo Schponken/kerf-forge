@@ -628,6 +628,12 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
               "These are not fitted to the build: place them as described and connect them as `WIRING.md` says.", ""]
         L += [f"- **{i}** ({human_item(it)}): {it.spec['off_board']}." for i, it in off]
         L.append("")
+    lock = next((q.get("locking") for q in proj.data.get("requirements") or [] if q.get("check") == "screw_locking"), None)
+    if lock:
+        L += ["## Lock the screws that vibrate", "",
+              "Motors shake screws loose. Lock these groups as you fit them (threadlocker: a small drop on the screw's "
+              "last threads only, kept off the printed plastic; nyloc: the nylon ring goes on last):", ""]
+        L += [f"- `{g}`: {m}" for g, m in sorted(lock.items())] + [""]
     L += story_notes(rep.get("use_story"))
     if rep.get("failure_modes"):
         from .failure import lines

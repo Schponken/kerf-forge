@@ -195,6 +195,11 @@ requirements:
       - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
   - {id: arm_breaks_first, check: weak_link, cheap: arm_strength, expensive: [body_strength, body_strength_3],
      why: "use story: in a crash the 20 g arm (about 1 h to reprint, 6 screws) must break before the body that carries the stack, camera and top plate"}
+  - {id: screws_stay_put, check: screw_locking,
+     why: "four motors at up to ~600 Hz blade-pass shake screws loose: every screw into metal threads is locked",
+     locking: {motor_1: threadlocker, motor_2: threadlocker, motor_3: threadlocker, motor_4: threadlocker,
+               arm_1: threadlocker, arm_2: threadlocker, arm_3: threadlocker, arm_4: threadlocker,
+               posts: threadlocker, stack: threadlocker}}
   - id: body_strength_3
     check: fea_static
     part: body
