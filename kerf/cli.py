@@ -63,6 +63,13 @@ def doctor() -> int:
             _p(f"ok   headless renderer (box {info['size_mm']})")
     except Exception as e:
         bad.append(f"renderer: {e}")
+    try:                                    # circuit check (kerf/circuit.py): SKiDL + KiCad symbols for every pin table
+        from . import circuit
+        skidl = circuit._skidl()             # (imported this way so SKiDL writes no .log/.erc files into the repo)
+        n = sum(len(circuit.kicad_symbol(*e["symbol"].split(":"))) for e in circuit.load_pins().values() if e.get("symbol"))
+        _p(f"ok   circuit check (SKiDL {skidl.__version__}, {n} KiCad symbols from {circuit.symbol_dir()})")
+    except Exception as e:
+        bad.append(f"circuit check: {e} (run ./setup.sh)")
     try:
         r = subprocess.run(["git", "-C", str(ROOT), "remote", "-v"], capture_output=True, text=True)
         _p(f"ok   git remote: {r.stdout.split()[1] if r.stdout.strip() else '(none — work will not be saved remotely!)'}")

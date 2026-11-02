@@ -38,7 +38,7 @@ purchased:
            note: "RunCam Phoenix 2; frame: local Z = tilt axis, local +Y = lens; side M2 holes 5.1 mm from the back face"}
   battery: {catalog: drone.batteries.6S_1100, proxy: box, color: "#c8a400", held_by: "the 20 mm strap around the pack and the top plate", joints: {strap: [14.5, 0, 31]},
             note: "6S 1100 (197.5 g), not 1300 (215 g): with the four props weighed the 1300 pack gave 5.87:1 thrust/weight (min 6)"}
-  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "the cradle under the rear tab plus a cable tie through the two slots beside it"}
+  xt60: {catalog: drone.connectors.XT60, proxy: step, base: box, model: kicad/AMASS_XT60-M_1x02_P7.2mm_Vertical.step, model_rot: [0, -90, 0], model_pos: [5.75, 0, 4.35], color: "#d8b000", held_by: "the cradle under the rear tab plus a cable tie through the two slots beside it"}
   vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "heat-shrunk and cable-tied under the camera roof (two tie slots)",
              note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate; T antenna legs tied up and out in a V through the two slots at the roof front (behind the lens, out of its view)"}
@@ -89,12 +89,12 @@ wiring:
   - {id: rx_5v, from: stack.5v, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 110,
      route: [[20, 15, 32], [38, 15, 40]]}
   # signals
-  - {id: cam_video, from: camera, to: stack, kind: signal, gauge: 28, color: yellow, length_mm: 110,
+  - {id: cam_video, from: camera, to: stack, kind: signal, gauge: 28, color: yellow, length_mm: 110, pins: {from: [VIDEO], to: [CAM]},
      route: [[38, 11, 20], [37, 15, 20], [20, 15, 20]], note: "camera video into the FC (OSD)"}
-  - {id: vtx_video, from: stack, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 80,
+  - {id: vtx_video, from: stack, to: vtx, kind: signal, gauge: 28, color: yellow, length_mm: 80, pins: {from: [VTX], to: [VIDEO]},
      route: [[-8, 14, 30], [-13.5, 14, 33]], note: "FC video out + SmartAudio (UART) to the VTX, same path as vtx_5v"}
-  - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 110,
-     route: [[20, 15, 32], [38, 15, 40]], note: "CRSF TX/RX to an FC UART"}
+  - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, conductors: 2, color: white/green, length_mm: 110, pins: {from: [T2, R2], to: [RX, TX]},
+     route: [[20, 15, 32], [38, 15, 40]], note: "CRSF to the FC's UART2 (ExpressLRS wiring guide: receiver TX to FC R2, receiver RX to FC T2)"}
 keepouts:
   strap_under: {proxy: box, size: [20, 43.6, 1.8], owner: strap, note: "strap run under the top plate"}
   strap_l: {proxy: box, size: [20, 1.8, 40.6], owner: strap, note: "strap side run, plate underside to pack top"}

@@ -1256,10 +1256,10 @@
   "connectors": {
    "XT60": {
     "model": "Amass XT60 male (solder cup)",
-    "length": 21.3,
+    "length": 20.5,
     "width": 8.1,
     "height": 16.0,
-    "note": "Length includes solder cups. Matching female: 20.5 x 8.1 x 16.0. Dimensions read from the Amass drawing published on the vendor page. XT60H (with rear housing) is longer; check before a tight pocket. Current: Amass XT60-F/M datasheet V1.2 (copy hosted by CMU MRSD) lists rated current 30 A, instantaneous 60 A, DC 500 V, contact resistance 0.55 mOhm. The thingbits page lists 35 A max (12 AWG, dT<=85 K) / 60 A peak; 30 A used as the conservative continuous figure.",
+    "note": "Length includes solder cups. Matching female: 21.3 x 8.1 x 16.0. Dimensions read from the Amass drawing published on the vendor page (2026-11-01 correction: the drawing's 20.50 view is the male - split bullet pins in its end view, full-width shroud - and the 21.30 view, with the stepped body that slides into the male shroud and round sockets, is the female; KiCad's AMASS_XT60-M_1x02_P7.2mm_Vertical.step (kicad-packages3D, catalog/models/kicad/SOURCES.md) measures 15.9 x 8.1 x 20.5 incl. 4.5 mm of solder-cup pins, so the male is 20.5 long; was 21.3 until 2026-11-01). XT60H (with rear housing) is longer; check before a tight pocket. Current: Amass XT60-F/M datasheet V1.2 (copy hosted by CMU MRSD) lists rated current 30 A, instantaneous 60 A, DC 500 V, contact resistance 0.55 mOhm. The thingbits page lists 35 A max (12 AWG, dT<=85 K) / 60 A peak; 30 A used as the conservative continuous figure.",
     "source": "https://www.thingbits.in/products/amass-xt60-male-female-connector ; https://mrsdprojects.ri.cmu.edu/2025teamb/wp-content/uploads/sites/84/2025/05/xt60.pdf ; https://docs.holybro.com/power-module-and-pdb/power-module/connector-and-wire-rating",
     "source_detail": "https://images.thingbits.net/eyJidWNrZXQiOiJ0aGluZ2JpdHMtbmV0Iiwia2V5IjoiZGVzY3JpcHRpb24vYW1hc3MteHQ2MC1jb25uZWN0b3JfZHJhd2luZ180eC5qcGcifQo=",
     "confidence": "datasheet",
@@ -1603,6 +1603,8 @@
    "source": "https://learn.adafruit.com/16-channel-pwm-servo-driver/pinouts",
    "source_cad": "https://github.com/adafruit/Adafruit-16-Channel-PWM-Servo-Driver-PCB (file 'Adafruit PCA9685 rev C.brd')",
    "source_3d": "https://github.com/adafruit/Adafruit_CAD_Parts/tree/main/815%20Servo%20Driver%2016%20Channel (815 Servo Driver 16 Channel.step)",
+   "component_below_box": [-24.45, -11.62, 24.46, 12.48],
+   "component_below_note": "Footprint (board frame: centre of the PCB, x along the length) of the solder tails under the PCB, measured 2026-11-01 from Adafruit's own STEP (https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/815%20Servo%20Driver%2016%20Channel/815%20Servo%20Driver%2016%20Channel.step, catalog/models/adafruit_815_pca9685.step): the 4 x 3x4 servo-header blocks reach 1.40 mm below the board, the V+ terminal block 2.01 mm; model x 4.77..53.67, y -5.39..18.70 minus the board centre (29.21, 6.223). The 4 mounting holes stay clear (3.5 mm from the region).",
    "source_fab": "https://cdn-learn.adafruit.com/assets/assets/000/144/179/medium800/adafruit_products_fabPWM.png",
    "source_weight": "https://www.adafruit.com/product/815",
    "source_current": "https://nxp.com/docs/en/data-sheet/PCA9685.pdf",

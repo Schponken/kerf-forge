@@ -75,7 +75,17 @@ def mesh(shape, tol: float = 0.02, ang: float = 0.15):
     km = kmesh(shape)
     if km is not None:
         return km
-    verts, tris = shape.tessellate(tol, ang)
+    try:
+        verts, tris = shape.tessellate(tol, ang)
+    except AttributeError:   # a face OCC cannot triangulate (KiCad's XT60 contact cone): mesh the rest, as the STL/GLB writers do
+        verts, tris = [], []
+        for fc in shape.faces():
+            try:
+                fv, ft = fc.tessellate(tol, ang)
+            except AttributeError:
+                continue
+            tris += [[a + len(verts), b + len(verts), c + len(verts)] for a, b, c in ft]
+            verts += list(fv)
     v = np.array([[p.X, p.Y, p.Z] for p in verts], dtype=float)
     f = np.array(tris, dtype=np.int64).reshape(-1, 3)
     return v, f

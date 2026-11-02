@@ -16,6 +16,11 @@ if ! .venv/bin/python -c "import gmsh" >/dev/null 2>&1; then
   (apt-get update -q && apt-get install -y -q libglu1-mesa libxcursor1 libxinerama1 libxft2 libxrender1) >/dev/null 2>&1 \
     || sudo -n sh -c 'apt-get update -q && apt-get install -y -q libglu1-mesa libxcursor1 libxinerama1 libxft2 libxrender1' >/dev/null 2>&1 || true
 fi
+# KiCad symbol libraries for the circuit check (kerf/circuit.py): apt kicad-symbols, else the same tag from gitlab
+if [ ! -d /usr/share/kicad/symbols ]; then
+  (apt-get install -y -q kicad-symbols || sudo -n apt-get install -y -q kicad-symbols) >/dev/null 2>&1 || true
+fi
+.venv/bin/python tools/fetch_kicad_symbols.py
 (cd tools/render && npm ci --silent --no-audit --no-fund)
 # Chromium for headless rendering: use the preinstalled Playwright browser if present, else install it.
 if ! ls "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"/chromium-* >/dev/null 2>&1 && ! ls ~/.cache/ms-playwright/chromium-* >/dev/null 2>&1; then

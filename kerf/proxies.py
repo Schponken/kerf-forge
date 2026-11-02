@@ -340,6 +340,10 @@ def board(ctx, spec):
             for (x, y) in holes:
                 parts -= Pos(x, y, t) * Cylinder(r, comp + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))
         s += parts
+    below = catalog.num(e, "component_height_below", default=0.0)
+    if below > 0 and "component_below_box" in e:   # solder tails under the PCB: only where the catalog (vendor model) puts them
+        x0, y0, x1, y1 = (float(v) for v in e["component_below_box"])
+        s += Pos((x0 + x1) / 2, (y0 + y1) / 2, -below) * Box(x1 - x0, y1 - y0, below + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
     if "usb_overhang" in e:  # connector overhanging the +X short edge (e.g. Pico micro-USB), top at component height
         ov, uw = catalog.num(e, "usb_overhang"), catalog.num(e, "usb_w")
         s += Pos(L / 2 + ov / 2 - L * 0.05 / 2, 0, t) * Box(ov + L * 0.05, uw, max(comp, 0.1), align=(Align.CENTER, Align.CENTER, Align.MIN))

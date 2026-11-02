@@ -2,6 +2,6 @@
  "item": "Electronics as a real circuit: KiCad 3D models (kicad-packages3D from gitlab.com/kicad, sourced, cached under catalog/models/kicad/) for every board / connector proxy that has one, replacing plain boxes in renders and the internals view (bbox checked against the catalog entry); SKiDL (pip, pinned) + KiCad symbol libraries (apt `kicad-symbols`) turn project.yaml `wiring:` into a KiCad schematic / netlist and run ERC (unconnected pins, two outputs on one net, power pin with no source) as a check; schematic exported as PDF/SVG next to wiring.svg; tests incl. a wiring error ERC must catch",
  "session": "0d37a487c8",
  "since": 1793583786.6936827,
- "heartbeat": 1793583786.6936827,
+ "heartbeat": 1793587143.4216278,
  "since_utc": "2026-11-02 01:43"
 }

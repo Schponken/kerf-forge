@@ -1,0 +1,110 @@
+{
+ "_doc": "Pin tables for the circuit check (kerf/circuit.py, docs/ARCHITECTURE.md 'Circuit'). Key: a catalog path or a prefix of one (longest match wins). symbol: a KiCad symbol 'Lib:Name' from kicad-symbols (its pins, numbers and types are used); types: per-pin type overrides on a KiCad symbol whose generic pins are all passive (each needs types_why); pins: [[number, name, type], ...] for a part KiCad has no symbol for (types: input output bidirectional tristate passive power_in power_out open_collector). ports.out / ports.in: what a wiring run lands on - a port name ('' = a power run's default, 'signal' = a signal run's default, or the run's from/to '.port' suffix) maps to a pin list (one pin per conductor, + first for power) or to named instances {name: [pins]} chosen by the run's `pin:` or taken in order. optional: pins that may stay unconnected, with why (they get a KiCad no-connect flag; every other pin must be wired or the ERC fails). max_conductors: wires one pin/terminal takes. tied: groups of pins joined inside the part (one node). confidence 'role' = the pin names are the part's functional roles (power in, ground, video out, UART TX/RX) as the sources describe them, not pad labels read off the board.",
+ "servos": {
+  "symbol": "Motor:Motor_Servo",
+  "types": {"PWM": "input", "+": "power_in", "-": "power_in"},
+  "types_why": "KiCad's generic Motor_Servo symbol marks all three pins passive; a hobby servo takes the PWM signal in and is powered through + / - (Pololu servo cable convention: 'brown or black = ground', 'orange, yellow, white, or blue = servo control signal line', red = power)",
+  "ports": {"in": {"": ["+", "-"], "signal": ["PWM"]}},
+  "source": "https://www.pololu.com/product/2184 (servo cable colour convention, opened 2026-11-01); KiCad symbol Motor:Motor_Servo (kicad-symbols)",
+  "confidence": "datasheet"
+ },
+ "boards.pca9685_adafruit": {
+  "pins": [["1", "GND", "power_in"], ["2", "OE", "input"], ["3", "SCL", "input"], ["4", "SDA", "bidirectional"], ["5", "VCC", "power_in"], ["6", "V+", "passive"],
+           ["10", "PWM0", "output"], ["11", "PWM1", "output"], ["12", "PWM2", "output"], ["13", "PWM3", "output"], ["14", "PWM4", "output"], ["15", "PWM5", "output"],
+           ["16", "PWM6", "output"], ["17", "PWM7", "output"], ["18", "PWM8", "output"], ["19", "PWM9", "output"], ["20", "PWM10", "output"], ["21", "PWM11", "output"],
+           ["22", "PWM12", "output"], ["23", "PWM13", "output"], ["24", "PWM14", "output"], ["25", "PWM15", "output"]],
+  "ports": {"out": {"signal": {"ch0": ["PWM0"], "ch1": ["PWM1"], "ch2": ["PWM2"], "ch3": ["PWM3"], "ch4": ["PWM4"], "ch5": ["PWM5"], "ch6": ["PWM6"], "ch7": ["PWM7"],
+                               "ch8": ["PWM8"], "ch9": ["PWM9"], "ch10": ["PWM10"], "ch11": ["PWM11"], "ch12": ["PWM12"], "ch13": ["PWM13"], "ch14": ["PWM14"], "ch15": ["PWM15"]}},
+            "in": {"": ["VCC", "GND"], "i2c": ["VCC", "GND", "SDA", "SCL"], "vplus": ["V+", "GND"]}},
+  "optional": {"pins": ["OE", "V+", "PWM*"], "why": "OE is 'Pulled low by default' (outputs enabled); V+ is 'an optional power pin that will supply distributed power to the servos' that the chip does not use; unused PWM channels may stay open"},
+  "note": "Pins tied together on the board are one pin here: the GND, VCC and V+ of both 6-pin side headers, the V+ terminal block and every port's V+ / GND row ('Each port has 3 pins: V+, GND and the PWM output'). PWM outputs have 220 ohm series resistors.",
+  "source": "https://learn.adafruit.com/16-channel-pwm-servo-driver/pinouts (opened 2026-11-01): GND 'must be connected'; VCC logic power 3-5 V; SCL/SDA 'weak pullup to VCC'; OE 'Pulled low by default'",
+  "confidence": "datasheet"
+ },
+ "boards.arduino_nano": {
+  "symbol": "MCU_Module:Arduino_Nano_v3.x",
+  "ports": {"out": {"": ["+5V", "GND"], "i2c": ["+5V", "GND", "A4", "A5"]}, "in": {"": ["VIN", "GND"], "usb5v": ["+5V", "GND"]}},
+  "optional": {"pins": ["D*", "A*", "AREF", "~{RESET}", "3V3", "VIN", "+5V"], "why": "general-purpose I/O, the analog reference, the reset input (pulled up on the board), the 3.3 V output and VIN may stay open; the Nano can run from its USB port"},
+  "note": "A wire to a pin name lands on every symbol pin of that name (the two GND pins are tied on the board).",
+  "source": "KiCad symbol MCU_Module:Arduino_Nano_v3.x (kicad-symbols): +5V power_out (the USB-fed 5 V rail), VIN/GND power_in, D/A pins bidirectional; https://docs.arduino.cc/resources/datasheets/A000005-datasheet.pdf",
+  "confidence": "datasheet"
+ },
+ "electronics.supplies.meanwell_lrs100_5": {
+  "pins": [["1", "AC/L", "power_in"], ["2", "AC/N", "power_in"], ["3", "FG", "passive"], ["4", "-V(4)", "power_out"], ["5", "-V(5)", "passive"], ["6", "+V(6)", "power_out"], ["7", "+V(7)", "passive"]],
+  "ports": {"in": {"ac": ["AC/L", "AC/N", "FG"]}, "out": {"dc": {"1": ["+V(6)", "-V(4)"], "2": ["+V(7)", "-V(5)"]}}},
+  "optional": {"pins": ["+V(7)", "-V(5)"], "why": "second screw terminal of the same output (terminals 4-5 and 6-7 are tied inside the supply)"},
+  "max_conductors": {"*": 1},
+  "tied": [["-V(4)", "-V(5)"], ["+V(6)", "+V(7)"]],
+  "note": "Terminals 5 and 7 are the second screw of the -V / +V outputs: passive here so one output is one driver (KiCad pin-type rules); a bootlace ferrule per terminal (one conductor each).",
+  "source": "MEAN WELL LRS-100 datasheet, terminal pin assignment: 1 AC/L, 2 AC/N, 3 FG, 4-5 DC -V, 6-7 DC +V (catalog electronics.supplies.meanwell_lrs100_5 'terminals', https://www.power-supplies-australia.com.au/sites/default/files/specifications/MEAN%20WELL%20LRS-100%20DATA%20SHEET.pdf)",
+  "confidence": "datasheet"
+ },
+ "electronics.connectors.iec_inlet_fused_switched_schurter_dd11": {
+  "pins": [["1", "L", "power_out"], ["2", "N", "power_out"], ["3", "PE", "passive"]],
+  "ports": {"out": {"": ["L", "N", "PE"]}},
+  "note": "The inlet is where mains enters the circuit, so its switched/fused L and N tabs are the power source of the AC side; PE is the protective earth tab.",
+  "source": "catalog electronics.connectors.iec_inlet_fused_switched_schurter_dd11 (L / N / PE tabs) and the electrical.mains jumpers (kerf/electrical.py)",
+  "confidence": "role"
+ },
+ "electronics.connectors.wago_221_415": {
+  "pins": [["1", "+", "passive"], ["2", "-", "passive"]],
+  "ports": {"in": {"": ["+", "-"]}, "out": {"": ["+", "-"], "gnd": ["-"]}},
+  "max_conductors": {"*": 5},
+  "note": "One item = the + and - splices (qty 2): each 221-415 joins 5 conductors (5 lever clamping units, all connected).",
+  "source": "https://www.rlocman.es/datasheet/data.html?di=537187 (WAGO 221-415, 5-conductor splicing connector)",
+  "confidence": "datasheet"
+ },
+ "drone.batteries": {
+  "symbol": "Device:Battery",
+  "types": {"+": "power_out", "-": "power_out"},
+  "types_why": "KiCad's Device:Battery pins are passive; the pack is the source of the whole circuit, so both terminals drive their nets",
+  "ports": {"out": {"": ["+", "-"]}},
+  "source": "KiCad symbol Device:Battery (kicad-symbols); pack lead red + / black - to its XT60",
+  "confidence": "role"
+ },
+ "drone.connectors.XT60": {
+  "symbol": "Connector_Generic:Conn_01x02",
+  "ports": {"in": {"": ["Pin_1", "Pin_2"]}, "out": {"": ["Pin_1", "Pin_2"]}},
+  "note": "Pin_1 = + (the lead's red), Pin_2 = - : a plug passes both conductors straight through.",
+  "source": "KiCad symbol Connector_Generic:Conn_01x02 (kicad-symbols); KiCad footprint/3D AMASS_XT60-M_1x02_P7.2mm_Vertical (2 contacts)",
+  "confidence": "datasheet"
+ },
+ "drone.stacks.fc_30_5": {
+  "pins": [["1", "BAT+", "power_in"], ["2", "GND", "power_in"], ["3", "5V", "power_out"], ["4", "9V", "power_out"], ["5", "CAM", "input"], ["6", "VTX", "output"],
+           ["7", "T2", "output"], ["8", "R2", "input"],
+           ["11", "M1A", "output"], ["12", "M1B", "output"], ["13", "M1C", "output"], ["14", "M2A", "output"], ["15", "M2B", "output"], ["16", "M2C", "output"],
+           ["17", "M3A", "output"], ["18", "M3B", "output"], ["19", "M3C", "output"], ["20", "M4A", "output"], ["21", "M4B", "output"], ["22", "M4C", "output"]],
+  "ports": {"in": {"": ["BAT+", "GND"]},
+            "out": {"5v": ["5V", "GND"], "9v": ["9V", "GND"], "esc": {"M1": ["M1A", "M1B", "M1C"], "M2": ["M2A", "M2B", "M2C"], "M3": ["M3A", "M3B", "M3C"], "M4": ["M4A", "M4B", "M4C"]}}},
+  "optional": {"pins": ["5V", "9V", "CAM", "VTX", "T2", "R2", "M*"], "why": "BEC outputs, video, UART and unused ESC outputs may stay open"},
+  "note": "FC + 4-in-1 ESC as one item: the ESC battery pads (BAT+, BAT- = GND) feed both boards; GND is common to every pad. Motor phases per ESC output (A/B/C order is arbitrary: swapping two reverses the motor).",
+  "source": "https://ardupilot.org/plane/docs/common-speedybeef4-v3.html (SpeedyBee F405 V4: 'SERIAL2 -> UART2, RCIN', 'CRSF/ELRS ... T2', 'The CAM and VTX pins provide connections for using the internal OSD', '5V 2A BEC', '9V 2A for video', '4 in 1 ESC connector', M1-M4); https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/",
+  "confidence": "role"
+ },
+ "drone.motors": {
+  "pins": [["1", "A", "passive"], ["2", "B", "passive"], ["3", "C", "passive"]],
+  "ports": {"in": {"": ["A", "B", "C"]}},
+  "source": "three-phase brushless motor: three phase leads to one ESC output (catalog drone.motors source pages)",
+  "confidence": "role"
+ },
+ "drone.vtx": {
+  "pins": [["1", "VIN", "power_in"], ["2", "GND", "power_in"], ["3", "VIDEO", "input"], ["4", "IRC", "input"]],
+  "ports": {"in": {"": ["VIN", "GND"], "signal": ["VIDEO"]}},
+  "optional": {"pins": ["IRC"], "why": "IRC Tramp control from an FC UART TX is only needed to change channel / power from the FC (https://oscarliang.com/speedybee-tx800/: 'Connect the IRC wire/pad from the VTX to the TX pad of a spare UART')"},
+  "source": "https://oscarliang.com/speedybee-tx800/ (opened 2026-11-01: 'Voltage input: 3.7-5.5V', IRC Tramp control); video in from the FC's VTX pad",
+  "confidence": "role"
+ },
+ "drone.cameras": {
+  "pins": [["1", "+", "power_in"], ["2", "GND", "power_in"], ["3", "VIDEO", "output"], ["4", "OSD", "input"]],
+  "ports": {"in": {"": ["+", "GND"]}, "out": {"signal": ["VIDEO"]}},
+  "optional": {"pins": ["OSD"], "why": "camera menu / UART control line, not needed to fly"},
+  "source": "https://shop.runcam.com/runcam-phoenix-2/ (opened 2026-11-01: 'Power DC 5-36V', 6-pin FPV cable, menu/UART control)",
+  "confidence": "role"
+ },
+ "electronics.receivers.elrs_nano": {
+  "pins": [["1", "5V", "power_in"], ["2", "GND", "power_in"], ["3", "TX", "output"], ["4", "RX", "input"]],
+  "ports": {"in": {"": ["5V", "GND"], "signal": ["RX", "TX"]}},
+  "source": "https://www.expresslrs.org/quick-start/receivers/wiring-up/ (opened 2026-11-01): 'The TX or T pad should be connected to an RX pad of the same UART number', 'The RX or R pad should be connected to a TX pad', VCC to a 5 V pad, GND to ground",
+  "confidence": "datasheet"
+ }
+}

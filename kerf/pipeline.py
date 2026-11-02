@@ -306,7 +306,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                                                                  round(j.location.position.Z, 3)]
                                                 for iid, it in proj.items.items() if it.shape is not None
                                                 for lab, j in it.shape.joints.items()}
-            emodel = None
+            emodel = cres = None
             powered = [i for i, it in proj.items.items() if it.role == "purchased"
                        and any(k in str(it.spec.get("catalog", "")) for k in ("servos.", "motors", "steppers", "boards."))]
             if powered and not proj.data.get("wiring") and "electrical" in stg:
@@ -322,6 +322,15 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         rep["problems"] += rprob
                 except electrical.ElectricalError as e:
                     rep["problems"].append(f"electrical: {e}")
+                if emodel is not None:      # kerf/circuit.py: pin-level netlist + SKiDL ERC from the same wiring
+                    try:
+                        from . import circuit
+                        cres = circuit.check(proj)
+                        rep["circuit"] = {k: v for k, v in cres.items() if not k.startswith("_")}
+                        rep["problems"] += cres["problems"]
+                        rep["warnings"] += cres["warnings"]
+                    except Exception as e:  # noqa: BLE001 - a crash in the circuit check is a failed check, not silent
+                        rep["problems"].append(f"circuit check crashed: {type(e).__name__}: {e}")
             rq = []
             if "requirements" in stg:
                 progress.stage("requirements")
@@ -409,6 +418,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     (out / "WIRING.md").write_text(wiring_out.wiring_md(proj, emodel), encoding="utf-8")
                     (out / "wiring.svg").write_text(wiring_out.svg(proj, emodel), encoding="utf-8")
                     rep["files"]["wiring"] = ["WIRING.md", "wiring.svg"]
+                if cres and cres.get("ran"):        # out/schematic.svg + .pdf, out/kicad/ (netlist, schematic, ERC)
+                    from . import circuit
+                    cw = circuit.write(proj, out, cres)
+                    rep["files"]["circuit"] = cw["files"]
+                    rep["problems"] += [f"circuit: {e}" for e in cw["errors"]]
                 try:  # ship package (kerf/ship.py): priced BOM + ASSEMBLY.md with a render per step when rendering
                     rnd = (lambda g, pre, **kw: render_glb(g, pre, views="iso", sheet=False, **kw)) if "renders" in stg else None
                     rep["files"]["ship"] = ship.write(proj, asm, rep, out, render=rnd)
