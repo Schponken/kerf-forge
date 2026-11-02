@@ -1,0 +1,7 @@
+{
+ "item": "Specific advice (Spencer, 2026-11-02: \"give better feedback and advice when an issue is identified instead of a blanket repair statement\"): every failed requirement gets advice worked out from its own numbers and settings (how much thicker / which material / which servo / how far to move the battery ...; kerf/advice.py), overlaps say how deep, along which axis and which part to cut (the bought part can't change); shown on Studio cards and under `kerf check`; tests",
+ "session": "0f43a4e722",
+ "since": 1793653974.9524493,
+ "heartbeat": 1793653974.9524493,
+ "since_utc": "2026-11-02 21:12"
+}
