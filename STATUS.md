@@ -215,7 +215,45 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
   then docs/status/CODEX_TASKS.md items in order.
 
+## 2026-11-02 20:35 UTC - Codex cloud environment published (Claude)
+- The first `kerf-forge` Codex environment was stuck: every publish failed and the draft never kept its settings. It is deleted (Spencer approved); a fresh one is **Published**.
+- Settings: install script `cd /workspace/kerf-forge && mkdir -p .cache/{uv,python,npm,playwright,xdg,matplotlib} && ./setup.sh`; full public internet; environment variables put the uv/npm/Playwright/XDG/matplotlib caches under `/workspace/kerf-forge/.cache` (gitignored, so the setup's downloads are still there when a task runs), `CC=gcc CXX=g++`.
+- Validation: `./setup.sh` exit 0, `kerf doctor` ALL OK. Warning only: in that sandbox the Arduino core download failed and simavr is missing, so `kerf firmware-check` reports NOT RUN there (whoever holds "Firmware proven" should make setup.sh install simavr or note it).
+- No new Codex chats started: open Codex PRs already cover the planned tasks (#4 parallel tests, #5 catalog fingerprints, #6 generated outputs/.gitignore, #3 setup retries); "Firmware proven" is claimed by another session. The Kerf manager reviews and merges them.
+- 15:35 Mac app, found on Spencer's Mac: the native app never built because KerfStudio.swift did not compile with his
+  Swift (`loaded ? web.reload() : startServer()`: WKNavigation? vs ()), so the old new-window-per-click launcher stayed.
+  Fixed (if/else), install_app.sh now falls back to the single-window launcher if the compile ever fails, and
+  `tools/mac/Update Kerf Studio.command` (double-click updater) refuses to restart the engine while a Studio job runs
+  (the first run of it stopped the Hawk-fold design job; its files were kept: hub.py, DESIGN.md uncommitted on the Mac).
+
+## 2026-11-02 15:25 UTC-5 — drone_foldable_wings: hub root ends faired for the folded mode (Studio request, Spencer)
+- Request: hub_r / hub_l's faces where the wing meets the fuselage at full spread face forward when folded and must be
+  aerodynamic; keep the aero good at every sweep angle. Folded, the hub's flat root face (y = pivot_y) IS the wing's
+  leading edge: at 70 deg it met the flow 20 deg off square, a 206 x 20 mm slab.
+- Done (parts/hub.py `root_cap`, collar trim; DESIGN.md hub contract): every chord station of the root face gets a
+  half-ellipse nose reaching min(1.25 x local half thickness, 10 mm) inboard (never past y 16: 2.0 mm off the spine
+  ridge at full spread, the tightest pose; folding only moves it out), from the LE to x 176, fading to a 0.3 mm lip
+  ahead of the boss collar; the collar's inboard flat cut (y 16) is now a half round, and its trim aft of the pin stays
+  at y 26 (that part swings inboard). Flat area within 30 deg of square to the flow at 70 deg fold: 2803 -> 51 mm2 (the
+  thin root strip aft of x 176); 0 / 35 deg: unchanged (11 / 0 mm2). hub_r 76.9 -> 81.4 g each, AUW 1582 -> 1591 g.
+- Tried and dropped (scratch FEA): a nose running into the collar, or a collar without its inboard half, put a stress
+  notch at the junction (hub_fea p99.9 31-40 MPa); stopping the nose 4.6 mm ahead of the collar fixed it.
+- Check: same 54 problems as before the change, all pre-existing and not about the root faces: wiring routes through
+  parts, ail_*_pwr/sig lead length, KiCad symbols missing, deck_fea (meshing error), spine_fea 53.6 MPa, hub_fea.
+  hub_fea p99.9 25.8 -> 24.2 MPa (limit 17.5); its deflection 7.8 -> 8.2 mm (limit 1.0, already 8x over): part mesh
+  noise (the nose alone, which only adds material, read 8.0), part the collar corners the half round removes.
+  Fold sweeps clear both sides; sm_*, stall, wing loading, spar, fold moments within 1 %.
+- Open for the drone's owner (not this change): the V keel under the root still crosses the folded flow as a 45 deg
+  wedge (structural, no square face); the pre-existing failures above.
+
+## 2026-11-02 21:00 UTC - Kerf manager: first batch verify was OOM-killed; fixed
+- `tools/batch_verify.py run` died (exit -9): `kerf verify` built all 11 projects in one process and grew past 6 GB
+  (kernel OOM on a 7 GB cloud box). verify now builds each project in its own child process (`_run_isolated` in
+  kerf/cli.py), so memory is freed between projects; tests/test_verify_isolated.py. Nothing about what verify checks changed.
+- Session names by task are on docs/status/BOARD.md (app session titles can't be renamed from a cloud run).
+
 ## 2026-11-02 — Repo cleanup, ChatGPT Codex
 - Audited tracked files, generated/cache/scratch paths, large binaries, project part/helper references, engine imports and claims. Earlier cleanup and PR #1's screenshot trimming already removed the safe candidates; no additional deletion was justified. Kept the sourced STEP models, offline viewer bundle, six README renders, helper modules, audit/prototype/provenance docs and open-task claims because they have live references. Detailed retention reasons: docs/status/REPO_CLEANUP_2026-11-02.md. No history rewrite, geometry edit or review.json edit.
 - Added ignore rules for full-size usability images while retaining compressed contact sheets, plus regression guards against tracked build/cache/scratch files, excess evidence size and missing README render links. Catalog dependency manifests, lockfiles, source/import models and batch records remain trackable.
 - Validation after pulling concurrent engine improvements: 6 targeted hygiene/claims tests pass; no full suite or all-project builds were run. No files were removed in this round. The audit closes the remaining cleanup item without manufacturing deletions. Next: Firmware proven, if its claim is available; PRs remain for independent manager review/merge.
+- Cleanup refresh after the later Studio/engine merges: all 6 hygiene/claims tests still pass; retained the new source/test files and all other sessions' changes. The original file-count figures are explicitly identified as the audit's starting snapshot.

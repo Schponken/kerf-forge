@@ -202,6 +202,20 @@ def _out_stale(proj, fp) -> str:
     return "" if ofp == fp else f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
 
 
+def _run_isolated(name, check_only=False, fast=False) -> dict:
+    """Build one project in a child process so its OCC/mesh memory is returned to the OS before the next one
+    (all projects in one process grew past 6 GB and was OOM-killed on a 7 GB machine, 2026-11-02)."""
+    code = ("import json,sys; from kerf.pipeline import run; n,c,f=sys.argv[1],sys.argv[2]=='1',sys.argv[3]=='1'; "
+            "r=run(n,mode='check') if c else run(n,sweeps=True,do_export=not f,do_render=not f); "
+            "print('KERF_RESULT '+json.dumps({'ok':bool(r['ok']),'problems':[str(p) for p in r['problems']]}))")
+    r = subprocess.run([sys.executable, "-c", code, name, "1" if check_only else "0", "1" if fast else "0"], cwd=ROOT,
+                       capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
+    for line in reversed(r.stdout.splitlines()):
+        if line.startswith("KERF_RESULT "):
+            return json.loads(line[len("KERF_RESULT "):])
+    return {"ok": False, "problems": [f"build process exited {r.returncode}: {(r.stderr or r.stdout)[-300:]}"]}
+
+
 def verify(fast=False, all_failures=False) -> int:
     """The definition of done. Exit 0 only when everything passes."""
     t0 = time.time()
@@ -214,11 +228,10 @@ def verify(fast=False, all_failures=False) -> int:
     results["tests"] = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:]
     if r.returncode != 0:
         fails.append(f"unit tests: {results['tests']}")
-    from .pipeline import run
     from . import project as P
     for name in projects():
         check_only = bool(P.load(name).data.get("check_only"))   # a user's own design, checked, not designed by Kerf
-        rep = run(name, mode="check") if check_only else run(name, sweeps=True, do_export=not fast, do_render=not fast)
+        rep = _run_isolated(name, check_only, fast)
         results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6]}
         if not rep["ok"]:
             fails.append(f"project {name}: {rep['problems'][:3]}")

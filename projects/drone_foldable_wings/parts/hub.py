@@ -12,6 +12,8 @@ bottom (pivot deck) 43 mm apart: the moment becomes a bearing couple there, neve
 The sector gear below the boss (inside the fuselage) carries the servo torque; its two radial end faces hit the
 aft fuselage's stop posts at 0 and fold_max. The aileron lead runs from the outer face through the root block to
 beside the boss and straight down through the sector web.
+Folded, the root end is the wing's leading edge, so it is a rounded nose (root_cap) and the collar's inboard side
+is a half round, not a flat cut: no flat face meets the flow at any sweep angle (2803 -> 51 mm2 square-on at 70 deg).
 """
 from build123d import *
 import math
@@ -28,6 +30,40 @@ KEEL_Y = (26.3, 45.7)   # V keel span (right side), 45 deg sides to its edge at 
 KEEL_X = (130.0, 205.0)
 LEAD_D = 4.0            # aileron lead channel: same 4 mm as the wing segments' channel (wing.py)
 LEAD_R = 12.0           # lead drop beside the boss (layout lead_exit: 12 mm ahead of the pin)
+CAP_K = 1.25            # root cap: inboard reach / local half thickness (elliptic nose, finer than a semicircle)
+CAP_MAX = 10.0          # root cap reach cap: inboard edge at y >= pivot_y - 10 = 16, 2 mm off the spine ridge (|y| 14)
+CAP_N = 13              # points round each cap section's half-ellipse
+CAP_X1 = 176.0          # cap ends 4.6 mm ahead of the collar's front tip (x 180.6): run into the collar it made a notch
+CAP_FADE = 16.0         #   (hub FEA p99.9 25.8 -> 37.5 MPa); its reach fades over the last 16 mm to a 0.3 mm lip
+CAP_LIP = 0.3
+
+
+def root_cap(p, pf):
+    """Rounded root end: the flat root face (y = pivot_y) becomes the wing's leading edge when the panel folds (at 70
+    deg it faces the flow 20 deg off square, 206 x 20 mm), so each chord station gets a half-ellipse nose in its YZ
+    plane, reaching a = min(CAP_K h, CAP_MAX) inboard (h = local half thickness about the mid-line). Faired the same at
+    every sweep angle; at full spread it fills the slot beside the spine ridge. Section k joins the root polygon's k-th
+    upper and k-th lower vertex (a planar half-ellipse), so the cap's flat side is exactly the root face (clean fuse,
+    no slivers) and its strips are as wide as the block's own. It starts at the first pair behind the LE vertex (a 0.1
+    mm2 end; OCC will not loft these polygons to a point) and stops at CAP_X1: aft of it the root is under 5 mm thick
+    and the boss collar (rounded inboard, right_body) takes over."""
+    import numpy as np
+    s = pf.section(p.pivot_y)
+    i = int(np.argmin(s[:, 0]))
+    up, lo = s[:i + 1][::-1], s[i:]
+    assert len(up) == len(lo), "root cap pairs upper and lower airfoil vertices: they must come in equal numbers"
+    ph = np.linspace(0.0, math.pi, CAP_N)
+    secs = []
+    for u, l in zip(up[1:], lo[1:]):
+        if max(u[0], l[0]) > CAP_X1:
+            break
+        zm, h = (u[2] + l[2]) / 2, (u[2] - l[2]) / 2
+        a = min(CAP_K * h, CAP_MAX) * min(1.0, (CAP_X1 - u[0]) / CAP_FADE)
+        a = max(a, CAP_LIP)
+        pts = [(float(u[0] + (l[0] - u[0]) * (1 - math.cos(f)) / 2), float(p.pivot_y - a * math.sin(f)), float(zm + h * math.cos(f)))
+               for f in ph]
+        secs.append(Wire.make_polygon(pts, close=True))
+    return Solid.make_loft(secs, ruled=True)
 
 
 def sector_deg(p):
@@ -74,6 +110,7 @@ def right_body(ctx):
     pf = L.planform(p)
     c = (p.pivot_x, p.pivot_y)
     body = ctx.add(aero.wing_solid(pf, p.pivot_y, p.hub_y1), why="root block: the wing root airfoil, closed box", kind="block")
+    body += ctx.add(root_cap(p, pf), why="rounded root end: the wing's leading edge when folded, no flat face into the flow", kind="fairing")
     # V keel under the root aft of the rear spar: depth where the airfoil thins out (torsion to the boss)
     ym = sum(KEEL_Y) / 2
     v = Plane(origin=(KEEL_X[0], 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0)) * Polygon(
@@ -83,11 +120,15 @@ def right_body(ctx):
         (KEEL_X[0], 0.5), (KEEL_X[1] + 1, 0.5), (KEEL_X[1] + 1, KEEL_Z - 1), (KEEL_X[0] + 0.5 - KEEL_Z + 1, KEEL_Z - 1), align=None)
     keel &= extrude(front, 40, dir=(0, -1, 0))
     body += ctx.add(keel, why="V keel: section depth for the root moment between rear spar and boss", kind="keel")
-    # double cone round the boss (45 deg both ways), only where it never swings over the spine ridge
+    # double cone round the boss (45 deg both ways), only where it never swings over the spine ridge (y >= 16); its
+    # inboard side is a half round (r h, axis along X) instead of a flat cut: folded, that side faces the flow too
     h = -KEEL_Z
     bicone = Pos(c[0], c[1], KEEL_Z) * Cone(p.boss_r, p.boss_r + h, h, align=(Align.CENTER, Align.CENTER, Align.MIN))
     bicone += Pos(c[0], c[1], 0) * Cone(p.boss_r + h, p.boss_r, h, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    keep = Pos(c[0], c[1] - p.boss_r, -50) * Box(100, 100, 100, align=(Align.MAX, Align.MIN, Align.MIN))
+    # (aft of the pin it swings inboard as it folds: kept outboard of y = pivot_y there)
+    yk = c[1] - p.boss_r + h
+    keep = Pos(c[0], yk, -50) * Box(100, 100, 100, align=(Align.MAX, Align.MIN, Align.MIN))
+    keep += Pos(c[0] - 50, yk, 0) * Rot(0, 90, 0) * Cylinder(h, 100)
     keep += Pos(c[0], c[1], -50) * Box(p.pivot_back, 100, 100, align=(Align.MIN, Align.MIN, Align.MIN))
     body += ctx.add(bicone & keep, why="boss collar: blends the boss into the root block at 45 deg", kind="collar")
     body += ctx.add(_cyl(c, p.boss_r, p.boss_z0, p.boss_z1), why="pivot boss, free on the steel pin", kind="boss")
@@ -134,6 +175,10 @@ def build(ctx):
         what = _in_channel(p, q)
         if what:
             ctx.keep_sharp(c["at"], f"teardrop roof of the {what}: printed without support, the {what.split()[0]} part lies in it")
+        elif abs(abs(c["at"][1]) - p.pivot_y) < 0.1 and CAP_X1 - CAP_FADE < c["at"][0] <= CAP_X1:
+            ctx.keep_sharp(c["at"], f"the root cap's {CAP_LIP} mm lip where it fades out: thinner than one extrusion line, "
+                                    "no fillet fits; FEA ~6 MPa at the lip itself (allowable 17.5), the hot cell is the "
+                                    "aileron lead channel 3-6 mm outboard")
     ctx.rigid("pivot", L.pivot_axis(p, s).location)
     ctx.rigid("wing", Location())
     ctx.rigid("main", L.tube_loc(p, "main", s))
