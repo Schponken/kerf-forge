@@ -2,8 +2,9 @@
  "item": "Fresh-eyes follow-up: Stop and authentication failures keep the project busy until the child process exits; preserve final outcome and cleanup output, with real-process regression tests (`tests/test_studio_lifecycle.py`).",
  "session": "codex-cancellation-refresh",
  "since": 1793657123.6224582,
- "heartbeat": 1793657123.6224582,
+ "heartbeat": 1793657217.939955,
  "provider": "Codex",
- "thread_id": "01a19e15-de6d-78b1-b4d9-942e1fc9ce46",
- "since_utc": "2026-11-02 22:05"
+ "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
+ "since_utc": "2026-11-02 22:05",
+ "activity": "PR #8 manager request fixed; reviewed note moved to STATUS, lifecycle tests pass"
 }

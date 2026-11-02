@@ -447,6 +447,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
 - Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
   tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.
+
+## 2026-11-02 — PR #8 manager follow-up (Codex)
+- Moved the completed resource review from CLAUDE.md into this session record, as the manager requested. The
+  standing instructions retain current budget controls and the stress-simulation pause. No new resource review.
+- Reviewed decision: **keep** Studio's existing subprocess runner and progress stream. The concrete gap was
+  releasing a project before cancellation finished; recording the requested outcome until process exit fixes it
+  within the current design. A separate job framework adds migration and maintenance without a demonstrated gain.
+  Revisit if jobs must persist across Studio restarts or run on multiple machines. No CAD/simulation replacement
+  was identified for this usability task.
+- Latest main merged without lifecycle code changes. Rechecked the saved note, standing instructions and PR scope;
+  the two real-process cancellation regressions pass again after integration (0.16 s). No full batch or stress solve.
 - (01S68R6R, later) Stage timing of a full drone_foldable_wings quick check (--all, 19 min, 3.1 GB peak): two
   clearance_min requirements were 720 s of it. geom.mesh_gap screen -> ~72 s, same exact value. Printed mass now
   cached per shape + spec (~45 s per check). Next hotspots from the same run: core FEA ~300 s (6 parts), print stage
