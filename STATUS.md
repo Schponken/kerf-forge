@@ -251,3 +251,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   (kernel OOM on a 7 GB cloud box). verify now builds each project in its own child process (`_run_isolated` in
   kerf/cli.py), so memory is freed between projects; tests/test_verify_isolated.py. Nothing about what verify checks changed.
 - Session names by task are on docs/status/BOARD.md (app session titles can't be renamed from a cloud run).
+
+## 2026-11-02 (Claude, beginner visualizer)
+- Done and pushed: plain-language job narration; workshop stage scene in the job panel; kerf/glossary.py (plain name + meaning for all 43 checks, ~60 terms) with jargon underlines, plain check names in tables and cards, "📖 Words, explained"; Tune "can move: …" and ▲▼ better/worse in tried-vs-saved; Files tab one-liners; "?" Explain-this-page spotlight tour (first-run tour once, skipped for automated browsers); ready-to-print certificate (only for a current passing build, says "independent review: not done yet" when so).
+- Activity now lists sessions working on a project from fresh claims (☁ title · N to fix · last active); the Checks banner shows that session's latest commits. A claim covers the whole PLAN item, so per-problem ownership isn't known; the banner says so.
+- Not mine, seen while testing: tests/test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on fails on main (req event order vs start.reqs, after the "check in order of redesign cost" change). Fixed docs: `kerf req` was missing from the ARCHITECTURE CLI row.
+- Next: 3D guided tour, History comic strip, new-design briefing room.
