@@ -1,0 +1,8 @@
+{
+ "item": "Viewer \"Build it\" tab beefed up (Spencer, 2026-11-02): labels never cover the part they name (offset with a leader line), each step's camera shows the new part at a useful angle (more candidate views, square to how it goes on, not hidden), small parts get a close-up framing, and parts don't appear / vanish between steps when they matter (bench steps keep the build visible as context, nothing relevant drops out); checked on fpv_wing / robot_arm step by step with screenshots; tests",
+ "session": "4c4e3822c9",
+ "since": 1793656865.7587347,
+ "heartbeat": 1793656865.7587347,
+ "provider": "Claude Code",
+ "since_utc": "2026-11-02 22:01"
+}
