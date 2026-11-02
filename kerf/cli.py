@@ -185,13 +185,14 @@ def _out_stale(proj, fp) -> str:
     return "" if ofp == fp else f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
 
 
-def verify(fast=False) -> int:
+def verify(fast=False, all_failures=False) -> int:
     """The definition of done. Exit 0 only when everything passes."""
     t0 = time.time()
     results, fails = {}, []
     os.environ["KERF_NO_CACHE"] = "1"      # the definition of done builds every part from scratch (kerf/partcache.py)
     # tests read/write UTF-8 text without naming it; a C/POSIX locale (hooks, cron, nohup) would make that ASCII
-    r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "--no-header", "-p", "no:cacheprovider"], cwd=ROOT,
+    r = subprocess.run([sys.executable, "-m", "pytest", "-q", *([] if all_failures else ["-x"]), "--no-header", "-p",
+                        "no:cacheprovider"], cwd=ROOT,
                        capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
     results["tests"] = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:]
     if r.returncode != 0:
@@ -271,6 +272,7 @@ def main(argv=None) -> int:
     c = sub.add_parser("check"); c.add_argument("project"); c.add_argument("--quick", action="store_true")
     b = sub.add_parser("build"); b.add_argument("project")
     v = sub.add_parser("verify"); v.add_argument("--fast", action="store_true")
+    v.add_argument("--all-failures", action="store_true", help="don't stop pytest at the first failure (batched runs)")
     r = sub.add_parser("review-status"); r.add_argument("project")
     n = sub.add_parser("new"); n.add_argument("name"); n.add_argument("title")
     sub.add_parser("status")
@@ -321,7 +323,7 @@ def main(argv=None) -> int:
     if a.cmd == "build":
         return check(a.project, full=True)
     if a.cmd == "verify":
-        return verify(a.fast)
+        return verify(a.fast, a.all_failures)
     if a.cmd == "run":
         return run_mode(a.project, a.mode, ship_confirmed=a.ship)
     if a.cmd == "optimise":
