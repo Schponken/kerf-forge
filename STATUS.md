@@ -1381,3 +1381,19 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Restarted Kerf Studio with no running jobs. Native UI verified insert location, Replay installation, step navigation and the second step's M3 shoulder-screw location. Installed source hashes and all 20 pre-existing modified project files still match after restart.
 - Desktop/phone captures reviewed in one correction pass plus confirmation: clearer local replay, reduced duplicate copy, moved label off tool contact and phone step controls away from target. These are schematic installation demonstrations, not physical assembly validation. Unknown unrecorded pin seats remain explicitly unavailable; older projects gain new missing metadata on future builds.
 - Backup: ~/Library/Application Support/KerfStudio/backups/20261102-230847-assembly-guide. Integration proof and recovery/install manifests: .cache/assembly-guide-integration/.
+
+
+## 2026-11-02 — Complete declared source downloads (Codex)
+- Reproduced omitted nested Python/CSV helpers and declared STEP input in a synthetic Studio download. Source ZIPs
+  now retain recursive Python helpers, part/layout/import/Meshy inputs and explicit project.yaml source_files; data
+  reads are declared, not inferred by executing or scanning Python. Shared the existing module containment check;
+  module manifest policy and generated maker loops/constants remain unchanged for concurrent supplier/BOM work.
+- Selected inputs must exist and remain contained with no symlink components; hidden/cache/output/review/known
+  credential files are refused. Malformed YAML/UTF-8 and missing inputs return a useful 400 error before an archive
+  is sent. The original files stay unchanged; no review approval/build cache is copied into the design folder.
+- 39 exact archive/source/module tests PASS in 3.08 s. An extracted synthetic design rebuilds its nested helper,
+  declared CSV, layout and imported STEP after deleting the original (body 42 / lid 24 mm3). Parent review found the
+  malformed-contract case; its two HTTP regressions plus rebuild/package-map checks PASS (4 tests, 1.94 s).
+  Docs explain declared dependency limits; no actual project build, full batch, FEA or paid model call.
+- Separate saved follow-up: existing maker-output loops can follow output symlinks; their containment repair is
+  assigned separately. This change validates design inputs and intentionally leaves maker-output behavior intact.

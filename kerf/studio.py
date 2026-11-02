@@ -366,7 +366,11 @@ def export_zip(name: str) -> bytes:
     plus the design files (project.yaml, DESIGN.md, part sources)."""
     import io
     import zipfile
-    d = PROJECTS / name
+    from .sources import design_files, inside
+    if not NAME_RE.fullmatch(name):
+        raise ValueError("no such project")
+    d = inside(PROJECTS, name)
+    sources = design_files(d)  # Validate every declared input before starting an archive.
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         for rel in EXPORT_DIRS:
@@ -376,9 +380,8 @@ def export_zip(name: str) -> bytes:
         for rel in EXPORT_FILES:
             if (d / "out" / rel).exists():
                 z.write(d / "out" / rel, f"{name}/{rel}")
-        for f in ["project.yaml", "DESIGN.md", "REFERENCES.md", *[str(x.relative_to(d)) for x in sorted((d / "parts").glob("*.py"))]]:
-            if (d / f).exists():
-                z.write(d / f, f"{name}/design/{f}")
+        for relative, f in sources.items():
+            z.write(f, f"{name}/design/{relative}")
     return buf.getvalue()
 
 
@@ -1846,7 +1849,10 @@ class Handler(BaseHTTPRequestHandler):
                 nm = parts[1][:-4]
                 if nm not in project_names():
                     return self._err("no such project", 404)
-                body = export_zip(nm)
+                try:
+                    body = export_zip(nm)
+                except (ValueError, OSError) as e:
+                    return self._err(f"Couldn't export sources: {e}")
                 try:
                     self.send_response(200)
                     self.send_header("Content-Type", "application/zip")
