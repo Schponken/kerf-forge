@@ -1,0 +1,9 @@
+name: Hawk-fold morphing-wing drone
+printer: Bambu Lab A2L
+params: {}
+parts: {}
+purchased: {}
+assembly:
+  root: TODO
+  joints: []
+requirements: []

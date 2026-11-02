@@ -142,6 +142,14 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
   stress <= flexural (else tensile) strength / 1.5. The printed skin is not counted on: the spar carries the wing.
 - `flight_time` on a wing: `electrical.cruise` (speed, L/D, motor x prop x ESC efficiency, each with a source in
   `why`): P = W V / (L/D) / eta. `prop_clearance` keeps the pusher prop disc clear of the elevons at full throw.
+- Tailed aircraft and moving wings (`static_margin_tail`): neutral point of wing + horizontal tail, NP = (a_w S_w x_w
+  + eta_t a_t S_t (1 - deps) x_t) / (a_w S_w + eta_t a_t S_t (1 - deps)), lift slopes from Raymer eq. 12.6 (sweep of
+  the thickest-point line), downwash 2 a_w / (pi A_w), eta_t 0.9, optional fuselage term (Raymer eq. 16.25). A wing that
+  sweeps or folds in flight is judged at every configuration it flies in (`pose`): its aerodynamic centre moves aft
+  with the sweep, so each pose gets its own margin row. The servo that sweeps it is sized against the aerodynamic
+  moment about the pivot (`fold_hinge_moment`: drag q cd dA x arm over the half, worst over the range) at the fastest
+  speed it must still move at, <= 50 % of stall x the gear ratio; the pivot itself carries the half's lift moment
+  (spar_bending's moment, `fea_static` with `bearing_n` on the pivot boss), never the servo.
 - Thin-wall wing sections (1 wall, a few % infill or vase mode) are light but carry nothing: bolt or glue them onto
   the spar tubes; TPU on whatever lands first (nose, wingtips).
 

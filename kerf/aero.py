@@ -358,6 +358,15 @@ def stall_speed_kmh(mass_g: float, area_m2: float, cl_max: float, rho: float = R
     return math.sqrt(2 * W / (rho * area_m2 * cl_max)) * 3.6
 
 
+def lift_slope(aspect: float, sweep_deg: float, eta: float = 0.95) -> float:
+    """3D lift-curve slope (per rad) of a wing at low Mach (beta = 1): the DATCOM / Helmbold form, Raymer, Aircraft
+    Design: A Conceptual Approach, eq. 12.6, a = 2 pi A / (2 + sqrt(4 + A^2 / eta^2 (1 + tan^2 sweep))), with the
+    sweep of the line through the airfoil's thickest point and eta = 2D slope / 2 pi (Raymer: ~0.95). Exposed-area and
+    fuselage-lift factors are taken as 1."""
+    t = math.tan(math.radians(sweep_deg))
+    return 2 * math.pi * aspect / (2 + math.sqrt(4 + aspect ** 2 / eta ** 2 * (1 + t * t)))
+
+
 def reynolds(v_ms: float, chord_mm: float, nu: float = 1.46e-5) -> float:
     return v_ms * chord_mm / 1000 / nu
 

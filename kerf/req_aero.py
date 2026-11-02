@@ -10,6 +10,8 @@ from __future__ import annotations
 import math
 from types import SimpleNamespace
 
+import numpy as np
+
 from . import aero, catalog
 from .req_balance import assembly_cg
 from .requirements import check, item_mass_g
@@ -103,3 +105,166 @@ def spar_bending(proj, asm, tubes, y_root, load_factor=6.0, sf=1.5, wing="wing_"
     return {"ok": worst <= 1.0, "value": round(worst, 4), "limit": 1.0, "bound": "max", "unit": "x allowable",
             "load_factor": float(load_factor), "moment_nmm": round(M),
             "detail": f"{m:.0f} g at {load_factor:g} g, elliptical lift: {M / 1000:.2f} N m at y {y_root:g} mm; " + "; ".join(txt)}
+
+
+# ---------------------------------------------------------------- conventional aircraft, pivoting (folding) wings
+def _home_to_pose(proj, asm, items, pose):
+    """{item: Location T} carrying each item from its home placement to its placement at `pose` (planform points
+    are in the home frame, so T applied to them follows a wing half that pivots or folds)."""
+    from build123d import Location
+    if not items:
+        return {}
+    from . import assembly as A
+    A.solve(asm)
+    home = {i: Location(proj.items[i].shape.location) for i in items}
+    A.solve(asm, pose or {})
+    return {i: proj.items[i].shape.location * home[i].inverse() for i in items}
+
+
+def _half_strips(pf, y0, y1, side, n, T=None, frac=0.5):
+    """Spanwise strips of one wing half (|y| from y0 to y1, side +1 right / -1 left), moved by T: per strip the four
+    planform corners (XY), the quarter-chord and `frac`-chord points at mid-strip, its true area (mm2)."""
+    from .geom import world_point
+    mv = (lambda q: world_point(T, q)) if T is not None else (lambda q: np.asarray(q, float))
+    ys = np.linspace(y0, y1, n + 1)
+    out = []
+    for a, b in zip(ys[:-1], ys[1:]):
+        m = (a + b) / 2
+        pt = lambda y, f: mv((pf.x_le(y) + f * pf.chord(y), side * y, pf.z_le(y)))
+        out.append({"corners": np.array([pt(a, 0), pt(b, 0), pt(b, 1), pt(a, 1)]), "qc": pt(m, 0.25), "fc": pt(m, frac),
+                    "mid": pt(m, 0.5), "area": pf.chord(m) * (b - a), "root": pt(a, frac), "tip": pt(b, frac)})
+    return out
+
+
+def _proj_area(c) -> float:
+    x, y = c[:, 0], c[:, 1]
+    return abs(float(np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1)))) / 2
+
+
+def _thick_frac(pf) -> float:
+    try:
+        return float(aero.airfoil_data(pf.root_airfoil).get("thickness_x_pct", 30.0)) / 100
+    except ValueError:
+        return 0.30                                    # NACA 4-digit sections are thickest at 30 % chord
+
+
+def wing_at_pose(proj, asm, wing="wing_", halves=None, root_y=0.0, pose=None, strips=40):
+    """Projected wing at a pose: area (mm2), span (mm), aspect ratio, sweep of the thickest-point line (deg, area
+    weighted over the halves), aerodynamic centre x (area-weighted quarter-chord points: strip theory) and the moved
+    strips. `halves`: {right: item, left: item} carrying |y| >= root_y; the centre strip |y| < root_y stays put."""
+    pf = _pf(proj, wing)
+    frac = _thick_frac(pf)
+    T = _home_to_pose(proj, asm, list((halves or {}).values()), pose)
+    parts = []
+    for side, key in ((1, "right"), (-1, "left")):
+        it = (halves or {}).get(key)
+        if root_y > 0:
+            parts.append(("centre", _half_strips(pf, 0.0, root_y, side, max(2, strips // 10), None, frac)))
+        parts.append((key, _half_strips(pf, root_y, pf.semi, side, strips, T.get(it) if it else None, frac)))
+    allc = np.vstack([s["corners"] for _, ss in parts for s in ss])
+    span = float(allc[:, 1].max() - allc[:, 1].min())
+    S = sum(_proj_area(s["corners"]) for _, ss in parts for s in ss)
+    x_ac = sum(_proj_area(s["corners"]) * s["qc"][0] for _, ss in parts for s in ss) / S
+    sw, wsum = 0.0, 0.0
+    for key, ss in parts:
+        if key == "centre":
+            continue
+        v = ss[-1]["tip"] - ss[0]["root"]
+        a = sum(_proj_area(s["corners"]) for s in ss)
+        sw += a * math.degrees(math.atan2(v[0], abs(v[1]))); wsum += a
+    return {"area_mm2": S, "span_mm": span, "aspect": span ** 2 / S, "sweep_deg": sw / wsum, "x_ac_mm": x_ac,
+            "thick_frac": frac, "parts": parts, "pf": pf}
+
+
+@check("static_margin_tail")
+def static_margin_tail(proj, asm, min=0.05, max=0.25, wing="wing_", tail="htail_", halves=None, root_y=0.0, pose=None,
+                       eta_t=0.9, eta=0.95, downwash=None, fuselage=None, strips=40):
+    """Static margin of a wing + horizontal-tail aircraft, (x_NP - x_CG) / MAC of the spread (home) wing, at the home
+    pose or at `pose` (e.g. wings swept back).
+    Wing: the `wing` planform, projected at the pose (`halves` {right: item, left: item} move |y| >= root_y with those
+    items); lift slope a_w = aero.lift_slope(A, sweep of the thickest-point line) (Raymer eq. 12.6), aerodynamic centre
+    = area-weighted quarter-chord points (strip theory). Tail: the `tail` planform (its own x_le0), a_t likewise, AC at
+    its quarter MAC, efficiency eta_t (0.9). Downwash d(eps)/d(alpha) = 2 a_w / (pi A_w) (elliptic loading, far field;
+    Raymer sec. 16.3) unless `downwash` is given. Neutral point = (a_w S_w x_w + eta_t a_t S_t (1 - deps) x_t) /
+    (a_w S_w + eta_t a_t S_t (1 - deps)), moved forward by an optional fuselage term (Raymer eq. 16.25: Cm_alpha_fus =
+    K_fus W_f^2 L_f / (c S_w) per deg; `fuselage: {length_mm, width_mm, k_fus}`, K_fus from Raymer fig. 16.14).
+    CG = the assembled CG of every item and wire at the pose."""
+    from . import assembly as A
+    w = wing_at_pose(proj, asm, wing, halves, root_y, pose, strips)
+    cg, M = assembly_cg(proj)
+    if halves:
+        A.solve(asm)
+    ref = w["pf"].geometry()
+    mac = ref["mac_mm"]
+    a_w = aero.lift_slope(w["aspect"], w["sweep_deg"], eta)
+    tp = _pf(proj, tail)
+    tg = tp.geometry()
+    t_sweep = math.degrees(math.atan(math.tan(math.radians(tp.sweep_le_deg))
+                                     - _thick_frac(tp) * 2 * (tp.root_chord - tp.tip_chord) / tp.span))
+    a_t = aero.lift_slope(tg["aspect_ratio"], t_sweep, eta)
+    deps = float(downwash) if downwash is not None else 2 * a_w / (math.pi * w["aspect"])
+    deps = float(np.clip(deps, 0.0, 0.95))            # (min / max are the limits here)
+    Sw, St = w["area_mm2"], tg["area_mm2"]
+    kt = eta_t * a_t * St * (1 - deps)
+    x_np = (a_w * Sw * w["x_ac_mm"] + kt * tg["x_np_mm"]) / (a_w * Sw + kt)
+    cla = a_w + kt / Sw
+    fus_txt = ""
+    if fuselage:
+        cma_f = float(fuselage["k_fus"]) * float(fuselage["width_mm"]) ** 2 * float(fuselage["length_mm"]) / (mac * Sw) * 180 / math.pi
+        dx = cma_f / cla * mac
+        x_np -= dx
+        fus_txt = f"; fuselage Cm_alpha +{cma_f:.3f}/rad moves it {dx:.1f} mm forward"
+    sm = (x_np - float(cg[0])) / mac
+    vh = St * (tg["x_np_mm"] - float(cg[0])) / (Sw * mac)
+    return {"ok": min - 1e-9 <= sm <= max + 1e-9, "value": round(sm, 4), "limit": [min, max], "bound": "range",
+            "unit": "x MAC", "pose": pose or {}, "cg_x_mm": round(float(cg[0]), 1), "np_x_mm": round(x_np, 1),
+            "wing_ac_x_mm": round(w["x_ac_mm"], 1), "tail_ac_x_mm": round(tg["x_np_mm"], 1),
+            "wing": {"area_dm2": round(Sw / 1e4, 2), "span_mm": round(w["span_mm"], 1), "aspect": round(w["aspect"], 2),
+                     "sweep_deg": round(w["sweep_deg"], 1), "lift_slope_per_rad": round(a_w, 3)},
+            "tail": {"area_dm2": round(St / 1e4, 2), "lift_slope_per_rad": round(a_t, 3), "volume": round(vh, 3)},
+            "downwash": round(deps, 3), "cl_alpha_per_rad": round(cla, 3),
+            "detail": f"{'pose ' + str(pose) if pose else 'home'}: wing {Sw / 1e4:.2f} dm², span {w['span_mm']:.0f} mm, "
+                      f"A {w['aspect']:.2f}, sweep {w['sweep_deg']:.1f}°, a_w {a_w:.2f}/rad, AC x {w['x_ac_mm']:.1f}; tail "
+                      f"{St / 1e4:.2f} dm², a_t {a_t:.2f}/rad, AC x {tg['x_np_mm']:.1f}, V_h {vh:.2f}; deps/dalpha "
+                      f"{deps:.2f}{fus_txt}; NP x {x_np:.1f}, CG x {float(cg[0]):.1f} ({M:.0f} g): margin {sm * 100:.1f} % "
+                      f"of the {mac:.1f} mm MAC"}
+
+
+@check("fold_hinge_moment")
+def fold_hinge_moment(proj, asm, joint, item, side, speed_kmh, cd, cl=0.0, actuator=None, stall_kgcm=None, ratio=1.0,
+                      max_fraction=0.5, wing="wing_", root_y=0.0, samples=13, strips=40):
+    """Aerodynamic moment about a wing sweep / fold joint: every strip of the moving half (`item`, |y| root_y..tip on
+    `side`) carries drag q cd dA along the flight direction (+x, at its mid-chord) and lift q cl dA (+z, at its quarter
+    chord), q = rho V^2 / 2 at `speed_kmh` (sea level); the moment about the joint axis, worst over `samples` angles of
+    the joint range, against the actuator's stall torque (catalog, or `stall_kgcm`) x `ratio` (gear reduction from the
+    actuator to the joint) x `max_fraction`."""
+    from . import assembly as A
+    from .requirements import _axis_world
+    e = next((e for e in asm.edges if e.name == joint), None)
+    if e is None or e.kind != "revolute":
+        raise ValueError(f"fold_hinge_moment: '{joint}' is not a revolute joint")
+    if stall_kgcm is None:
+        ent = catalog.get(proj.items[actuator].spec["catalog"])
+        stall_kgcm = catalog.num(ent, "stall_torque_kgcm", "stall_torque_kg_cm", "stall_torque")
+    sgn = {"right": 1, "left": -1}.get(side, side)
+    pf = _pf(proj, wing)
+    v = float(speed_kmh) / 3.6
+    q = 0.5 * aero.RHO * v * v * 1e-6                    # N per mm2
+    worst, at = 0.0, None
+    for ang in np.linspace(e.range[0], e.range[1], int(samples)):
+        T = _home_to_pose(proj, asm, [item], {joint: float(ang)})[item]
+        o, d = _axis_world(proj, e)
+        tau = 0.0
+        for s in _half_strips(pf, root_y, pf.semi, int(sgn), strips, T):
+            tau += float(np.dot(np.cross(s["mid"] - o, (q * cd * s["area"], 0.0, 0.0)), d))
+            tau += float(np.dot(np.cross(s["qc"] - o, (0.0, 0.0, q * cl * s["area"])), d))
+        if abs(tau) >= worst:
+            worst, at = abs(tau), float(ang)
+    A.solve(asm)
+    kgcm = worst / 98.0665
+    lim = float(stall_kgcm) * float(ratio) * float(max_fraction)
+    return {"ok": kgcm <= lim + 1e-9, "value": round(kgcm, 3), "limit": round(lim, 3), "bound": "max", "unit": "kg·cm",
+            "at_deg": at, "servo_kgcm": round(kgcm / float(ratio), 3),
+            "detail": f"{speed_kmh:g} km/h (q {q * 1e6:.0f} Pa), cd {cd:g}, cl {cl:g} on the {pf.semi - root_y:.0f} mm half: "
+                      f"{kgcm:.2f} kg·cm about {joint} at {at:g}°, {kgcm / float(ratio):.2f} kg·cm at the actuator vs stall "
+                      f"{float(stall_kgcm):g} x ratio {float(ratio):g} x {max_fraction:g}"}
