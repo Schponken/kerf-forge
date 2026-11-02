@@ -94,7 +94,7 @@ Plates are one material each (PLA / PETG / TPU need different temperatures).
 | Part | Material | Print | Notes |
 |---|---|---|---|
 | pod | PLA, 4 walls, 15 % (+ modifiers) | standing on its rear face, supports under the centre-section TE only | shelf, ledges and bosses vertical; boss ends 45 deg cones; sleeves teardrop; 310 mm tall: brim |
-| hatch | PLA, 2 walls | standing on its side edge (skin vertical) | rests on the pod's ledges; rear tongue under the skin, 2 x M3 at the front |
+| hatch | PLA, 2 walls | flat on its outer face (smooth top on the bed, ribs up) | rests on the pod's ledges; rear tongue under the skin (notched round the antenna lead), 2 x M3 at the front + 2 x M3 at mid-length (x 130); two 2 x 3 mm ribs along its underside at y +-18 |
 | wing_l1 / r1 | PLA, 1 wall, 3 % (+ modifiers) | standing on the root face | servo pocket, lead channel, root and splice inserts |
 | wing_l2 / r2 | PLA, 1 wall, 3 % (+ modifier) | standing on the joint face, supports up the elevon slot under the TE stub | fin slot, splice insert |
 | elevon_l / r, elevon_lo / ro | PLA, 1 wall, 5 % | standing on the outboard end (120 / 180 mm tall), brim | joined by two 3 mm carbon rods (4 and 10 mm aft of the hinge); the inner half has the horn slot |
@@ -115,7 +115,7 @@ Plates are one material each (PLA / PETG / TPU need different temperatures).
 | wing_x1 - elevon_x | bottom hinge tape (hinge line from aero.elevon_split); elevon_xo joined to elevon_x by two 3 mm carbon rods (joiner_x, joiner2_x): epoxied (5-min, glue:epoxy_5min) in the inner half, reamed push fit in the outer half | joint elevon_l / elevon_r |
 | elevon_x - horn | horn tab glued into the slot under the inner half | - |
 | wing_x2 - fin | fin tab glued in the tip slot | - |
-| pod - hatch | rear tongue under the pod skin + 2 x M3 at the front into inserts in the ledge blocks | hatch |
+| pod - hatch | rear tongue under the pod skin + 4 x M3 (front pair, mid-length pair at x 130, between the spar sleeves) into inserts in the ledge blocks | hatch |
 | pod - nose | 4 x M3 from the nose lugs into heat-set inserts in the front bosses (washers on TPU) | nose |
 | pod - motor_mount | 4 x M3 from the aft face into heat-set inserts in the tail bosses | motor_mount |
 | motor_mount - motor | 4 x M3 from the mount's front face (counterbored), screwed on the bench first | motor |
