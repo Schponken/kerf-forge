@@ -84,10 +84,23 @@ def clearance_min(proj, asm, a, b, min_mm, joints=None, samples=9):
     for name in joints or []:
         e = next(e for e in asm.edges if e.name == name)
         poses += [{name: float(v)} for v in np.linspace(e.range[0], e.range[1], samples)]
-    worst = np.inf
+    sa, sb = proj.items[a].shape, proj.items[b].shape
+    # each pose screened on the cached meshes (geom.mesh_gap, ~0.4 s where the exact OCC distance takes ~30 s on a
+    # lofted wing); the exact distance then runs only at poses whose mesh gap is within GAP_SCREEN_MM of the smallest
+    # (any pose that can hold the true minimum), so the reported value is the exact one
+    screened = []
     for pose in poses:
         A.solve(asm, pose)
-        worst = min(worst, proj.items[a].shape.distance_to(proj.items[b].shape))
+        screened.append((geom.mesh_gap(sa, sb), pose))
+    if any(g is None for g, _ in screened):
+        exact = screened
+    else:
+        lo = min(g for g, _ in screened)
+        exact = [(g, p) for g, p in screened if g <= lo + geom.GAP_SCREEN_MM]
+    worst = np.inf
+    for _, pose in exact:
+        A.solve(asm, pose)
+        worst = min(worst, sa.distance_to(sb))
     A.solve(asm)
     return {"ok": worst >= min_mm, "value": round(float(worst), 2), "limit": min_mm, "detail": f"min gap {a} to {b} (mm)"}
 

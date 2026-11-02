@@ -76,3 +76,36 @@ def test_cached_shapes_can_still_be_copied_and_pickled():
     c.location = Pos(30, 0, 0) * c.location
     assert geom.overlap(c, b) == 0.0
     assert geom.overlap(d, b) > 0
+
+
+def test_mesh_gap_is_within_the_screen_of_the_exact_distance():
+    """geom.mesh_gap (cached meshes, manifold3d min_gap) at random placements: within GAP_SCREEN_MM / 2 of OCC's
+    exact distance, 0 when the shapes overlap, None for a shape without a closed mesh."""
+    rng = np.random.default_rng(7)
+    shapes = _shapes()
+    n = 0
+    for _ in range(40):
+        i, j = rng.choice(len(shapes), 2, replace=False)
+        a = Location(tuple(rng.uniform(-30, 30, 3)), tuple(rng.uniform(-180, 180, 3))) * shapes[i]
+        b = Location(tuple(rng.uniform(-30, 30, 3)), tuple(rng.uniform(-180, 180, 3))) * shapes[j]
+        g, ex = geom.mesh_gap(a, b), a.distance_to(b)
+        assert g is not None and abs(g - ex) <= geom.GAP_SCREEN_MM / 2, (g, ex)
+        n += ex > 0
+    assert n >= 10
+
+
+def test_clearance_min_screen_reports_the_exact_value(tmp_path, monkeypatch):
+    """requirements.clearance_min screens poses on meshes and measures exactly only near the minimum: the same value
+    as measuring every pose exactly."""
+    import sys
+    sys.path.insert(0, os.path.dirname(__file__))
+    from test_engine import HINGE_ARM, HINGE_BASE, HINGE_YAML, _write_project
+    from kerf import assembly as A, project as P, requirements as rq
+    d = _write_project(tmp_path / "h", HINGE_YAML, {"base": HINGE_BASE, "arm": HINGE_ARM})
+    p = P.build(P.load(str(d)))
+    asm = A.plan(p)
+    A.solve(asm)
+    fast = rq.clearance_min(p, asm, "arm", "base", 1.0, joints=["swing"], samples=7)
+    monkeypatch.setattr(geom, "mesh_gap", lambda a, b, search=1e4: None)          # every pose exact (the old path)
+    slow = rq.clearance_min(p, asm, "arm", "base", 1.0, joints=["swing"], samples=7)
+    assert fast == slow

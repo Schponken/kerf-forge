@@ -431,3 +431,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
 - Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
   tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.
+- (01S68R6R, later) Stage timing of a full drone_foldable_wings quick check (--all, 19 min, 3.1 GB peak): two
+  clearance_min requirements were 720 s of it. geom.mesh_gap screen -> ~72 s, same exact value. Printed mass now
+  cached per shape + spec (~45 s per check). Next hotspots from the same run: core FEA ~300 s (6 parts), print stage
+  68 s, fit 23 s.
