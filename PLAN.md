@@ -204,6 +204,7 @@ Work these in order unless one is blocked; each item is done only with tests and
 - [ ] Check against the scenario: scenario requirements (run time on the stated duty, capacity of a tank, coverage of a sensor) evaluated for E8
 - [ ] Conventional planes + VTOL: tail volume coefficients and sizing, landing gear, transition thrust; eval E9 (trainer plane)
 - [ ] Ground robots: wheel / track sizing, slope tip-over, self-balancing (inverted pendulum) check; eval E10 (rover or balance bot)
+  - [x] Steady wheel-drive sizing: declared continuous wheel torque and per-wheel traction/load shares vs uphill grade/rolling force, existing mass/wiring/payload model, honest input validation and hand-calculated regressions; keep tip_over/power_budget/run_time as separate checks. Acceleration, tracks, self-balancing and actual E10 remain open.
 - [ ] Gearboxes: planetary and worm sets, strength-checked (Lewis / AGMA-style) and printable; used by one project
   - [x] drives.planetary (sun / planets / ring meshed by py_gearworks, tooth-count + assembly + neighbour rules) + planetary_bending (most loaded planet, K_gamma from a sourced 3-planet case); drives.worm (printable thread) + worm_numbers + worm_drive (wheel Lewis, efficiency, self-locking); tests/test_planetary.py
   - [ ] worm wheel geometry (throated / helical wheel meshed to drives.worm, interference-checked)

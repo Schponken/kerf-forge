@@ -30,6 +30,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/fea_render.py` | Von Mises colour picture per FEA check (`out/renders/fea_<id>.png`) |
 | `kerf/geom.py` | Geometry helpers: volumes, exact overlaps (fast paths: each shape's own-frame box is cached and moved with it, and pairs whose meshes, tessellated once to 0.02 mm, do not intersect are reported clear without a B-rep boolean; every reported hit is still the exact boolean; `KERF_EXACT_OVERLAP=1` disables the prefilter), meshes, mesh-based overhang / wall-thickness analysis, world points/directions of a Location |
 | `kerf/req_balance.py` | Balance requirement `cg` (assembled centre of gravity incl. purchased parts and payload, vs a reference line, over poses) |
+| `kerf/req_ground.py` | `wheel_drive`: steady straight uphill force budget, with each independent wheel limited by continuous delivered torque and declared tire/normal-load traction; reuses item and wiring mass, rejects missing component mass; tests/test_ground.py |
 | `kerf/vendor.py` | `proxy: step` vendor CAD models: loads catalog/models STEP, keeps the base proxy's joints and sites, refuses a model whose bbox or holes disagree with the catalog |
 | `kerf/viewer.py` | Writes the self-contained `out/viewer.html` (meshes, joint sliders from the engine's own kinematics, explode, BOM, print info). Written after ASSEMBLY.md. **Cut**: a clipping plane on X / Y / Z (starts through the printed parts, keeps the far side), cut faces hatched (back faces inside a closed part). **Stress**: each `fea_static` surface field (pipeline `fea_viz`, part frame) moved to the home pose and mapped onto the viewer vertices (4 nearest FEA surface triangles, inverse-distance, worst load case), stored as one byte per vertex = utilisation × 200. **Build it**: `assembly_steps()` = kerf/ship.py `plan()` per step (parts already on, parts going on with `_explode_offset`, bench sub-assemblies joining as one group, heat-set insert sites, screws with seat point + axis from the fastener check, joints to demonstrate) + the step's ASSEMBLY.md text (`## Step N` sections; earlier sections = intro, later = outro); the page animates it (occlusion-tested camera per step, screws turning home, inserts pressed, joints swept, done ticks in localStorage). `snapshot()` (picture for Studio cards) and `compare()` (ghost + per-vertex change colours from Studio) are page APIs. Tests: tests/test_viewer.py |
 | `kerf/attribution.py` | Face → part-file line and project param that produced it (viewer click-to-edit) |
@@ -205,6 +206,7 @@ on a strength check, it is refused and blocks.
 | `cantilever_stress` | `part`, `section`, `loads`, `sf`, `kt`, `direction` | beam-theory stress at a section |
 | `cg` | `ref` or `point`, `axis`, `max_lateral_mm`, `min_along_mm`/`max_along_mm`, `include`, `payload_g`, `payload_at`, `poses` | CG offset from the line |
 | `tip_over` | `min_deg`, `support`, `poses`, `payload_g`, `payload_at` | smallest tip-over angle (deg) |
+| `wheel_drive` | `wheel_radius_mm`, `wheel_torque_nm`, `slope_deg`, `rolling_coeff`, `traction_mu`, `normal_load_fractions`, `torque_basis`, `terrain_basis`, optional `include`, `payload_g` | steady uphill force (N), maximum sum of individual wheel motor/traction limits |
 | `channel_clear` | `path`, `diameter`, `poses`, `ignore` | largest diameter that passes (mm) |
 | `grip_hold` | `joint` (the grip servo's joint), `pads` [moving jaw point, fixed jaw point] (item.label), `mass_g`, `friction` (number or catalog `friction.<jaw>-<object>`), `width_mm`, `size_mm`, `pad_t_mm`, `pad_mm`, `pose`, `torque_fraction` (0.5), `shake_g` (1), `shake_hz` (2), `max_slip_mm` (1), `actuator` | worst slip of the object across the jaws under gravity + the shake on three axes (mm) |
 | `joint_speed` | `end` (pose), `max_s`, `start` (pose, default home), `payload_g`, `payload_at`, `band_deg` (3) | time until every servo joint stays within band_deg of `end` (s; none = never) |
@@ -244,6 +246,24 @@ reports kt x max |N/A + unsymmetric bending stress| over the outline. Torsion is
 `tip_over` (`min_deg`, optional `support: [items]`, `poses: [{joint: deg}]`, `payload_g` + `payload_at: item.joint`)
 finds the floor contacts (mesh points within `tol` 0.5 mm of the lowest point), takes their convex hull and reports the
 smallest atan(CG-to-edge distance / CG height) in degrees over the poses; negative means it falls over by itself.
+
+`wheel_drive` covers steady straight travel uphill on a uniform plane. Positive `wheel_radius_mm` applies to every
+independently driven wheel; nonnegative `wheel_torque_nm` is a continuous delivered wheel-side torque lower bound at
+the intended speed/voltage/temperature, after gearbox losses. `normal_load_fractions` lists each driven wheel's share
+of total normal force at that slope and payload; values are nonnegative and sum to at most 1 (passive wheels take the
+remainder). Each wheel supplies at most min(torque/radius, traction_mu * normal_force * its_share); limits are summed
+only after this comparison, so an unloaded wheel cannot lend its unused motor torque to another wheel.
+`slope_deg` is uphill in [0, 90); `rolling_coeff` (rolling force / total normal force) and `traction_mu` (tire static
+friction) are explicit nonnegative measurements/assumptions, never catalog guesses. Numeric inputs may use params.
+Nonempty `torque_basis` and `terrain_basis` record the sources/measurements, operating point and wheel-load rationale.
+The check uses every non-keepout component plus declared wiring and `payload_g`; an explicit nonempty `include` list
+selects component masses only, excluding wiring just like `mass_max`. No selected component may have zero/unknown,
+negative or nonfinite mass; add a sourced catalog weight or `mass_g` before relying on the result. Include all carried
+loads in the modeled mass; `payload_g` adds only a load absent from the parts list. Require existing `tip_over` with
+slope plus margin at relevant poses, and `power_budget` / `run_time` with sourced or measured current separately.
+The report contains per-wheel available force, separate grade/rolling force, total demanded wheel torque, and the
+limiting factor. It does not validate the declarations or prove starting, acceleration, turning, braking, speed,
+soft/uneven terrain, tip-over, self-balancing or E10. See ENGINEERING.md for equations and primary sources.
 
 `channel_clear` sweeps a ball along the polyline at every pose and reports the largest diameter that passes (0.01 mm).
 

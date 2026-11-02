@@ -202,6 +202,49 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
 - Every run declared in `wiring:` with gauge, colour and a cut length >= routed length + 15 %; route power runs
   through the frame's wire channels / keep-outs (`channel_clear` for enclosed channels).
 
+## 10c. Ground robots: sustained straight climbs
+- `wheel_drive` uses existing component and wiring masses. A missing purchased weight cannot become a zero-mass
+  pass: supply sourced catalog weight / `mass_g`; printed parts need valid geometry/material. Account for every
+  carried component and load. An explicit `include` selects only component masses (no wiring); use it carefully.
+- For an uphill plane at theta, normal force N = m*g*cos(theta), grade force = m*g*sin(theta), and the declared
+  dimensionless rolling coefficient Crr gives rolling force Crr*N. At constant speed, required wheel force is their
+  sum. This follows force balance resolved along the incline; see the original [Foundations of Physics text](https://opentextbc.ca/foundationsofphysics/chapter/friction-and-accelerated-motion/).
+- Static tire traction is mu*N_i for each driven wheel, with N_i = N*normal_load_fractions[i]. Coefficients need
+  measurement for the actual tire/surface; [MIT 2.086's robot friction experiment, p. 1](https://ocw.mit.edu/courses/2-086-numerical-computation-for-mechanical-engineers-fall-2012/01a78b34e5b6be5e50e8d9d12b7375d4_MIT2_086F12_pset3.pdf)
+  gives this contact law and explains measuring it. The fractions must reflect the declared slope, payload and load
+  transfer, not automatically assume equal loads; their sum cannot exceed 1. Passive wheels carry the remainder.
+- Torque balance at an equal-radius independently driven wheel gives motor force T/r (convert mm to metres).
+  Available force is **sum_i min(T/r, mu*N_i)**, not min of the two sums: an unloaded wheel cannot transfer unused
+  motor capacity to a heavily loaded one. Independent torque allocation is assumed; a coupled/open differential
+  needs its own model. Pass means required steady force <= available force, without an implied safety margin.
+- `wheel_torque_nm` is continuous delivered torque at the intended speed, voltage and thermal conditions, after
+  gearbox losses; use the lowest applicable wheel rating. Record its source and operating-point calculation in
+  `torque_basis`, and tire tests/load-share evidence in `terrain_basis`. [Maxon's motor selection guidance, pp. 44/47](https://www.maxongroup.com/medias/sys_master/8815460712478.pdf)
+  distinguishes the continuous torque/speed operating range from short-term stall/peak capability. No continuous
+  wheel-drive ratings exist in the current catalog, so this check requires explicit evidence instead of inferring
+  ratings from servo stall torque or drone motor current.
+- This is a steady force budget, not proof that a rover starts, stops, turns, reaches a speed, balances or crosses
+  soft/uneven terrain. Use `tip_over` with slope plus a stated margin at relevant poses; its existing support-polygon
+  calculation checks all directions. Use `power_budget` and `run_time` with sourced current or `electrical.draw`
+  average/peak values and a `why` separately; wheel torque does not establish current or runtime. Acceleration,
+  wheel/rotor inertia, braking, contact redistribution, dynamic balance and an actual E10 project remain open.
+
+Synthetic example for exercising the arithmetic only (these are not tire measurements or motor ratings):
+```yaml
+- check: wheel_drive
+  wheel_radius_mm: 100
+  wheel_torque_nm: 5
+  slope_deg: 30
+  rolling_coeff: 0.02
+  traction_mu: 0.8
+  normal_load_fractions: [0.5, 0.5]
+  torque_basis: "Synthetic independent drives: 5 N*m continuously at the assumed test speed"
+  terrain_basis: "Synthetic coefficients and equal wheel normal loads at this slope/payload"
+```
+For a synthetic 10 kg modeled mass this requires 49.03325 N grade + 1.69856 N rolling = 50.73181 N.
+Each wheel has 50 N motor capacity but only 33.97123 N traction, so total available force is 67.94246 N.
+`tests/test_ground.py` also covers unequal/unloaded wheels, exact boundaries and invalid/unknown masses.
+
 ## 11. Assembly sanity
 - Tendon / wire channels are declared with `channel_clear` at the diameter of the tendon or wire plus clearance
   (bare wire or PTFE-sleeved tendon: add at least the free-running fit of section 6), at home and at the extreme poses.

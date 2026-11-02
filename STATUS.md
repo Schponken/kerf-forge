@@ -478,3 +478,32 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   `claims.py next`. I followed the job's instruction and did not take new work, and did not write BLOCKED/YIELD (both
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
+
+
+## 2026-11-02 — Steady wheel-drive sizing (Codex, ground-robot-checks)
+- Added one `wheel_drive` requirement: sustained uphill grade plus rolling force against the sum of each independent
+  wheel's smaller continuous-torque and traction limit. Inputs explicitly declare radius, delivered continuous wheel
+  torque, slope, rolling/static-friction coefficients and each driven wheel's normal-load fraction; nonempty torque
+  and terrain/load source rationales are required. No assumed tire coefficients, new catalog ratings or dependencies.
+- Reused `item_mass_g` and `wiring_mass_g`, with explicit payload/selection support. Unknown/zero, negative or nonfinite
+  selected component mass is an error with source guidance, rather than an optimistic zero-mass pass; invalid wire
+  lengths/conductors, input ranges and nonfinite results also fail. Report includes grade/rolling force, each wheel's
+  capacity and limiting cause; ordinary units, redesign ordering, glossary, advice, architecture and skill are wired.
+- Kept existing `tip_over` for all-direction static slope support and `power_budget` / `run_time` for declared electrical
+  draw. The current catalog lacks continuous wheel-drive ratings, so servo stall torque and drone current are not
+  repurposed as ratings. ENGINEERING.md cites primary MIT friction-experiment and Maxon motor-selection guidance, plus
+  the original Foundations of Physics incline derivation; the YAML example and all new force budgets are synthetic.
+- Validation: 69 passed in 2.47 s (tests/test_ground.py, test_tip_over.py, test_req_balance.py, test_advice.py, test_docs.py,
+  test_kerf_skill.py and test_glossary.py::test_every_check_has_a_plain_name_and_meaning). Includes unequal/unloaded wheel
+  loads, hand-computed grade/rolling force, motor/traction limits, exact boundaries, mass/wiring/payload integration,
+  missing mass, invalid inputs and YAML/report integration. Initial isolated run had a test-only chained pytest.approx
+  comparison error, corrected before the complete pass. Read-only doctor ALL OK; optional Arduino/simavr unavailable.
+- Only the precise steady-drive PLAN child is complete. No real rover/E10, speed, starting, acceleration/inertia,
+  braking, turning, uneven/soft terrain, coupled differential, self-balancing or hardware validation is claimed.
+  Geometry, catalog values and existing checks are unchanged. No stress simulations, project builds or full batch;
+  batch status/overlap checks performed and the owner's full-batch hold retained.
+- Integrated main 8bf927f; the only conflict was additive STATUS text, both entries retained under their own headings.
+  No engine or selected test source changed during this integration, so the 69-test result still covers this feature.
+- Parent review found one advice issue: mixed wheel limits were described as purely traction-limited. Added distinct
+  per-wheel torque/grip advice and a regression proving extra torque at the heavily loaded wheel can resolve that
+  case. Ground/advice rerun: 48 passed in 2.66 s; the other 21 checks from the earlier 69-test run are unaffected.
