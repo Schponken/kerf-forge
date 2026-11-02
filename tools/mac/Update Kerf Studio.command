@@ -7,6 +7,6 @@ if curl -fs http://127.0.0.1:8765/api/jobs 2>/dev/null | grep -q '"state": "runn
   exit 1
 fi
 echo "Updating Kerf Studio..."
-git pull -q --ff-only 2>/dev/null || echo "(not updated from GitHub: local changes in the folder; installing what is here)"
+./tools/mac/update_repo.sh . || true
 pkill -f "kerf studio --no-open --port 8765" 2>/dev/null || true
 ./tools/mac/install_app.sh && echo "Done: Kerf Studio is updated and open. You can close this window."

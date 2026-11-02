@@ -72,3 +72,31 @@ def test_swift_app_has_no_mismatched_ternary_and_install_falls_back():
     assert "did not compile" in src and 'NATIVE=0' in src
     upd = (ROOT / "tools/mac/Update Kerf Studio.command").read_text()
     assert '"state": "running"' in upd and upd.index("api/jobs") < upd.index("pkill")   # never restarts under a job
+
+
+def _git(*a, cwd):
+    import subprocess
+    return subprocess.run(["git", *a], cwd=cwd, capture_output=True, text=True, check=True).stdout
+
+
+def test_update_keeps_local_changes_and_names_the_ones_that_block_it(tmp_path):
+    import subprocess
+    script = Path(__file__).resolve().parent.parent / "tools" / "mac" / "update_repo.sh"
+    origin, work, other = tmp_path / "origin.git", tmp_path / "work", tmp_path / "other"
+    _git("init", "-q", "--bare", "-b", "main", str(origin), cwd=tmp_path)
+    for d in (work, other):
+        _git("clone", "-q", str(origin), str(d), cwd=tmp_path)
+        _git("config", "user.email", "t@t", cwd=d); _git("config", "user.name", "t", cwd=d)
+    (other / "a.txt").write_text("a1\n"); (other / "b.txt").write_text("b1\n")
+    _git("add", ".", cwd=other); _git("commit", "-qm", "one", cwd=other); _git("push", "-q", "origin", "main", cwd=other)
+    _git("pull", "-q", "origin", "main", cwd=work); _git("branch", "-q", "-u", "origin/main", cwd=work)
+    run = lambda: subprocess.run(["bash", str(script), str(work)], capture_output=True, text=True).stdout  # noqa: E731
+    (other / "a.txt").write_text("a2\n"); _git("commit", "-qam", "two", cwd=other); _git("push", "-q", "origin", "main", cwd=other)
+    (work / "b.txt").write_text("b-local\n")                       # a local edit the update doesn't touch
+    out = run()
+    assert out.startswith("UPDATED") and "kept" in out
+    assert (work / "a.txt").read_text() == "a2\n" and (work / "b.txt").read_text() == "b-local\n"
+    (other / "b.txt").write_text("b3\n"); _git("commit", "-qam", "three", cwd=other); _git("push", "-q", "origin", "main", cwd=other)
+    out = run()                                                    # now the update changes the same file: refuse, say why
+    assert out.startswith("NOT-UPDATED") and "b.txt" in out and (work / "b.txt").read_text() == "b-local\n"
+    assert run().startswith("NOT-UPDATED")
