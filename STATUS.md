@@ -471,3 +471,4 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   engineering thresholds changed. Existing geometry/electrical helpers reused without new dependencies.
 - PAUSED.json stress hold honored: no FEA/stress run, override or resumed work. No full suite, full project build,
   physical hardware or actual E8 success claimed. Precise engine subitem complete; delivered by PR, no self-merge.
+- Current-main integration recheck: the same 76 targeted tests PASS in 21.43 s after the latest clearance/paused-work changes; all other sessions' STATUS entries kept. No stress checks invoked.
