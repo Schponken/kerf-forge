@@ -433,12 +433,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Stock strength/thermal models and supplier limits are not implemented. Structural declarations, direct/derived
   strength cases and heat checks covering stock fail explicitly instead of using a default printed polymer.
   PLAN checks off the tested handoff subitem only; the broader engineering/project-proof work remains open.
-- Validation so far: real mixed fixture pipeline and DXF/STEP round trips, quote expiry, density mass, print exclusion,
-  URDF, drawings, calibration isolation, nested strength rejection, 6 FEA regressions, ship/maker/docs and Studio
-  compatibility checks. Chromium fixture inspection has no page errors and shows the made-to-order part correctly.
-  One fixture-compatibility failure was corrected and its suite rerun (21 passes). A broad ship test selection was
-  interrupted when it reached an all-project geometry test, then replaced with bounded selectors; no full batch run.
-  Final current-main verification and independent review follow before the PR is marked ready.
+- Validation: 11 manufacturing tests cover real mixed pipeline/DXF/STEP output, quote expiry, density mass, print
+  exclusion, URDF, drawings, calibration isolation, nested strength rejection and obsolete-file cleanup. Existing
+  ship/maker/calibration/use-story/drawing/docs checks pass; 3 Studio compatibility checks pass. Final latest-main
+  manufacturing/docs/pause selection: 19 pass. Six FEA regressions passed before Spencer paused stress simulations;
+  the pause is retained and no later solve was run. Guard tests replace the solver with a failure sentinel.
+  Chromium fixture inspection has no page errors and shows the made-to-order part correctly. Independent parent
+  code review found no remaining blocker. A broader ship selection was interrupted upon reaching an all-project
+  geometry test and replaced with bounded selectors; no full batch, supplier order or hardware run.
 
 ## 2026-11-02 22:30 UTC - Stress simulations paused (Spencer: "pause all the stress simulations, we will work on that later")
 - PAUSED.json at the repo root switches off every FEA-backed check (fea_static, impact_fea, stop_impact,
