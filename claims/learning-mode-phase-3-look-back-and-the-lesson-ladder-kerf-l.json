@@ -1,0 +1,8 @@
+{
+ "item": "Learning Mode phase 3, look-back and the lesson ladder: `kerf lookback <p>` turns each diary problem into a plain-language lesson with the earliest stage it could have been caught and what would have caught it, groups similar problems across all projects (rule-based, no AI calls), keeps `learning/lessons.json` (note -> instruction -> proposed gate, never auto-enforced) and writes `learning/LESSONS.md`; acceptance: the drone_foldable_wings look-back surfaces the 2026-11-02 hand-found lessons; tests/test_lessons.py",
+ "session": "b88502f1e9",
+ "since": 1793662306.0976913,
+ "heartbeat": 1793662306.0976913,
+ "provider": "Claude Code",
+ "since_utc": "2026-11-02 23:31"
+}
