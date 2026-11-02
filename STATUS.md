@@ -389,3 +389,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Merged Codex PRs #5, #6, #7, #9, #10 after reading the diffs and running their targeted tests (all pass;
   STATUS.md conflicts resolved by keeping both entries). #3, #4 need a rebase on main; #8 must move its CLAUDE.md note.
 - Blocker for the batch: tests/test_catalog.py::test_board_proxy_keeps_mounting_holes_clear already fails on main.
+
+
+## 2026-11-02 — Scenario comparison in Studio (Codex, scenario-intake)
+- Added a scoped problem-first route to the existing New design/quote flow: success criteria, priorities and hands-on
+  effort; researched buy/adapt/build alternatives with fit, risks, source findings, next steps and recommendation reasons.
+  Unknown costs/print times stay null and visibly unknown. Existing architecture quotes remain readable.
+- The server resolves the saved selected option, rejects changed requests and unanswered blocking questions, and never
+  starts a design for a buy-only option. Buy options provide links/next steps; no purchase or printer action. A duplicate
+  quote cannot erase active output: original-request capture and output reset use start_job's existing preparation lock.
+- 33 targeted tests passed (scenario validator/API/browser, legacy quote/intake/readiness and package-map coverage).
+  Desktop 1440 and phone 390, both themes: no browser errors, no horizontal overflow, research links retain keyboard focus.
+  The new browser coverage found/fixed long example buttons overflowing on phones. Read-only doctor: ALL OK; optional
+  Arduino/simavr tools remain unavailable. Reused the existing environment instead of reinstalling into the shared venv.
+- PLAN's Studio subitem is complete; full E8 and scenario requirement checks remain open. The plant-care comparison
+  fixture and screenshots are explicitly illustrative, not vendor research, engineering acceptance or a working project.
+  No paid Claude generation, physical hardware, full suite, project geometry or review.json was used/changed. Full batch
+  remains on the manager's hold. Independent review requested before delivery.
+
+- Scenario PR #11 review: independent parent code and final desktop/phone dark/light screenshot review found no actionable issues in the scoped change. All 33 targeted tests pass again after current-main integration. Full E8 remains pending.

@@ -100,6 +100,10 @@ git clone https://github.com/Schponken/kerf-forge ~/kerf-forge 2>/dev/null || gi
   comparable past Studio runs, and stay unknown when there is no reliable history.
 - **New design**: describe it in plain words; Claude Code (`claude`, installed and signed in on the Mac) runs the
   full /kerf workflow in the repo and its progress streams into the Activity panel.
+  Start with **I have a problem to solve** when you haven't chosen a device: describe success, priorities and effort,
+  then compare buying, adapting an existing design and building. Options show sources, risks, hands-on effort and
+  known or unknown estimates. Answer any open questions and compare again before starting a design. Buy-only options
+  show research links and next steps; Studio does not place orders. [Scenario comparison details](docs/SCENARIOS.md).
 
 Work reads Codex through its local CLI's [read-only session APIs](https://learn.chatgpt.com/docs/app-server).
 If a live Codex connection is unavailable, saved chats are labelled as history; they are never presented as running.
