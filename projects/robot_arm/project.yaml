@@ -336,4 +336,11 @@ requirements:
      why: "the USB cable reaches the Nano to load the sketch"}
   - {id: mains_access, check: connector_access, item: iec_inlet, direction: [0, 0, 1], length_mm: 50,
      why: "the C13 cord plugs into the inlet (plug + cord bend) with the hood on the supply"}
+  # motion simulated in MuJoCo (kerf/sim.py, `kerf simulate robot_arm`): servo torque and speed from the catalog
+  - {id: move_speed, check: joint_speed, start: {shoulder: 60, elbow: -60}, end: {shoulder: -60, elbow: 60, base_yaw: 90, wrist: 45},
+     max_s: 1.0, payload_g: 150, payload_at: gripper.tcp,
+     why: "a full-range pick-and-place move (shoulder and elbow end to end, 90 deg of yaw, 45 deg of wrist) with the 150 g payload settles within 3 deg in under 1 s on the catalog stall torques and no-load speeds (no load, the shoulder's 120 deg alone takes 0.30 s)"}
+  - {id: grip_150g, check: grip_hold, joint: grip, pads: [finger.tip, gripper.fixed_tip], mass_g: 150, friction: PETG-steel,
+     width_mm: 30, size_mm: [30, 25, 25], pad_t_mm: [10, 10], pad_mm: [10, 6], torque_fraction: 0.5, shake_g: 1.0,
+     why: "a 150 g steel part 30 mm wide (the rated payload; steel on PETG is the low-friction case, mu 0.27) held with the arm stretched out and the grip servo at half stall, without slipping more than 1 mm under gravity plus a 1 g shake on every axis"}
   - {id: arm_mass, check: mass_max, max_g: 900, include: [base, turntable, retainer, yaw_gear, yoke_r, yoke_l, upper_arm, forearm, gripper, finger, cable_mast, brg_lo, brg_hi, yaw_servo, yaw_horn, sh_servo, sh_horn, el_servo, el_horn, wr_servo, wr_horn, gr_servo, gr_horn, driver], why: "the arm on its base (the supply, buses and Nano sit on the desk); also the torque budget"}

@@ -221,3 +221,22 @@ def test_requirement_checks_registered_and_wired(pend, gripper):
     pet = catalog.get("materials.PETG")
     K = sim.hertz_k(pet["youngs_modulus_mpa"], pet["poisson"], 2.0)
     assert r["value"] == pytest.approx(sim.hertz_peak(K, m, math.sqrt(2 * G * 0.2)), rel=0.01)
+
+
+def test_locked_joint_is_welded_at_its_pose(pend):
+    """A joint locked for a scenario (grip_hold locks the arm) is removed and its body turned to the pose: the same
+    place as the free joint at that angle, and it does not move under load (no soft-constraint sag)."""
+    import mujoco
+    M = sim.load(pend, masses={"base": 100.0, "bar": 50.0})
+    mj = M.spec().compile()
+    d = mujoco.MjData(mj)
+    sim._set_pose(M, mj, d, {"swing": 37.0})
+    want = d.body("bar").xipos.copy()
+    sp = M.spec()
+    sim._lock(sp, M, set(), {"swing": 37.0})
+    mj2 = sp.compile()
+    assert mj2.njnt == 0
+    d2 = mujoco.MjData(mj2)
+    for _ in range(200):
+        mujoco.mj_step(mj2, d2)
+    assert np.allclose(d2.body("bar").xipos, want, atol=1e-9)

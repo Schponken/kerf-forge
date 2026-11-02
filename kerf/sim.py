@@ -188,21 +188,39 @@ class Servos:
 
 def _set_pose(M: Model, mj, data, pose_deg: dict):
     import mujoco
+    have = {mj.joint(i).name for i in range(mj.njnt)}
     for j, v in M.full_pose(pose_deg).items():
-        data.qpos[mj.jnt_qposadr[mj.joint(j).id]] = M.q(j, v)
+        if j in have:                                     # (joints welded by _lock are gone)
+            data.qpos[mj.jnt_qposadr[mj.joint(j).id]] = M.q(j, v)
     mujoco.mj_forward(mj, data)
 
 
 def _lock(sp, M: Model, keep: set, pose: dict):
-    """Hold every joint not in `keep` at its pose value with a joint equality (a rigid, locked arm)."""
+    """Weld every joint not in `keep` at its pose value: the joint is removed and its body turned (or slid) to that
+    value, so the locked arm is truly rigid (a joint equality is a soft constraint and lets a loaded arm flex by
+    degrees). A joint geared to a kept joint stays, held by its gear tie."""
     import mujoco
     full = M.full_pose(pose)
-    for e in list(sp.equalities):                 # gear ties between two locked joints are redundant: drop them
+    tied = {e.name1 for e in sp.equalities if e.name2 in keep} | {e.name2 for e in sp.equalities if e.name1 in keep}
+    for e in list(sp.equalities):                 # gear ties between two locked joints go with the joints
         if e.name1 not in keep and e.name2 not in keep:
             sp.delete(e)
+    owner = {jt.name: b for b in sp.bodies for jt in b.joints}
     for j in M.joints:
-        if j not in keep:
-            sp.add_equality(type=mujoco.mjtEq.mjEQ_JOINT, name1=j, data=[M.q(j, full[j])] + [0.0] * 10)
+        if j in keep or j in tied:
+            continue
+        jt, b = sp.joint(j), owner[j]
+        ax = np.asarray(jt.axis, float) / np.linalg.norm(jt.axis)
+        if M.kind[j] == "revolute":
+            r, out = np.zeros(4), np.zeros(4)
+            mujoco.mju_axisAngle2Quat(r, ax, M.q(j, full[j]))
+            mujoco.mju_mulQuat(out, np.asarray(b.quat, float), r)     # joint axis through the body origin (kerf/urdf.py)
+            b.quat = out.tolist()
+        else:
+            R = np.zeros(9)
+            mujoco.mju_quat2Mat(R, np.asarray(b.quat, float))
+            b.pos = (np.asarray(b.pos, float) + R.reshape(3, 3) @ ax * M.q(j, full[j])).tolist()
+        sp.delete(jt)
 
 
 # ---------------------------------------------------------------------------------------------------------- motion
@@ -358,7 +376,8 @@ def grip(M: Model, joint: str, pads: list, mass_g: float, mu: float, width_mm: f
         ob.add_geom(name="obj", type=mujoco.mjtGeom.mjGEOM_BOX, size=[sx / 2, sy / 2, sz / 2], contype=0, conaffinity=0,
                     mass=0, friction=[mu, 0.005, 0.0001])
         for pg in ("pad_m", "pad_f"):
-            sp.add_pair(geomname1=pg, geomname2="obj", condim=4, friction=[mu, mu, 0.005, 0.0001, 0.0001])
+            sp.add_pair(geomname1=pg, geomname2="obj", condim=4, friction=[mu, mu, 0.005, 0.0001, 0.0001],
+                        solref=[4 * DT, 1.0])        # stiff contact (4 steps): the pads sink in ~0.05 mm, not ~1 mm
         mj2 = sp.compile()
         d2 = mujoco.MjData(mj2)
         q_open = q_hold                     # pads just touching; the squeeze ramps up (no impact that throws it out)

@@ -1351,3 +1351,30 @@ pushed for it and what I know:
 - Full suite: 655 passed; failures left are other sessions' (test_sim / test_urdf need mujoco / pybullet installed,
   circuit.py text write without encoding, catalog board proxy, KST X08 servo dims, aero/sim checks missing from the
   skill toolbox and UNITS). Mine fixed: utf-8 writes, Studio intake count, skill toolbox rows.
+## 2026-11-01 ~22:30 UTC-5 — Motion simulated in MuJoCo (session 01S68R6S, PLAN "Prove the whole system")
+- `kerf simulate <p>` (kerf/sim.py): loads the URDF Kerf already exports (kerf/urdf.py, real part / catalog masses and
+  inertias) into MuJoCo 3.3.7 (pinned in pyproject); geared joints (`sweeps` follows) become joint equalities; each
+  catalog servo joint gets a hobby-servo model: catalog stall torque falling linearly to zero at the catalog no-load
+  speed (`speed_s_per_60`), full torque at 3 deg error, set point slewed at no-load speed. Prints link masses, servo
+  limits, the home pose held under gravity, every simulated requirement; writes out/simulate.json.
+- New requirement kinds (kerf/req_motion.py): `joint_speed` (move between poses in time), `grip_hold` (object of
+  stated mass / width / friction held under gravity + 1 g shake on 3 axes, arm welded at the pose), `drop_impact`
+  (rigid sub-assembly dropped onto a hit point: Hertz contact from the part's catalog E / Poisson in series with the
+  part's FEA stiffness, undamped; the peak force goes to fea_static as a crash case). New sourced catalog section
+  `friction` (PETG-steel 0.27, PLA-steel 0.30: Stoimenov et al., Tribology in Industry 2024).
+- Hand-checked tests (tests/test_sim.py): pendulum period from the URDF inertia (0.5 %), servo holds 0.9 x stall and
+  drops 1.1 x stall, no-load 60 deg move = catalog 0.17 s, grip slip threshold 2 mu N = m (g + a) (holds at 0.85 x,
+  slips at 1.15 x; actually sharp between 0.9 and 1.1), Hertz impact peak = closed form (1 %), linear-spring drop and
+  off-centre effective mass, locked joints welded rigid.
+- Found while building it: a joint equality lock is soft (a loaded arm flexed 9 deg and shook the object loose), so
+  scenario locks weld the body instead; MuJoCo copies `pos` into `ipos` for bodies added without an explicit inertial
+  frame (payload landed at twice its lever) - fixed with explicit ipos.
+- robot_arm: new requirements `move_speed` (full-range move with 150 g: 0.44 s, max 1 s, shoulder peaks at 0.87 x
+  stall) and `grip_150g` (150 g steel part, 30 mm, mu 0.27, servo at half stall squeezes 9.7 N: 0.0 mm slip; by hand
+  it lets go above 268 g). `kerf simulate robot_arm`: SIMULATE PASS.
+- Open (PLAN follow-up sub-item): robot_arm 300 mm handling drop of the gripper end (97 g on the fixed-jaw tip):
+  212 N peak, the gripper's crash FEA allows 128 N at SF 3 (21.5 MPa vs 13.0; strength margin 1.8, so it would bend,
+  not snap) - not added as a requirement until the design fix or drop height is decided. robotic_gripper_desk is
+  still being designed by another session (parallel jaws); grip_hold needs prismatic / geared jaw support there.
+  Note: req_dynamic.impact_fea (another session, same evening) is the 1-DOF FEA-spring drop; drop_impact adds the
+  rigid-body rotation (effective mass of an off-centre hit) and the Hertz contact in series.
