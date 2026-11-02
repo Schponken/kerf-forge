@@ -245,3 +245,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   Fold sweeps clear both sides; sm_*, stall, wing loading, spar, fold moments within 1 %.
 - Open for the drone's owner (not this change): the V keel under the root still crosses the folded flow as a 45 deg
   wedge (structural, no square face); the pre-existing failures above.
+
+## 2026-11-02 21:00 UTC - Kerf manager: first batch verify was OOM-killed; fixed
+- `tools/batch_verify.py run` died (exit -9): `kerf verify` built all 11 projects in one process and grew past 6 GB
+  (kernel OOM on a 7 GB cloud box). verify now builds each project in its own child process (`_run_isolated` in
+  kerf/cli.py), so memory is freed between projects; tests/test_verify_isolated.py. Nothing about what verify checks changed.
+- Session names by task are on docs/status/BOARD.md (app session titles can't be renamed from a cloud run).
