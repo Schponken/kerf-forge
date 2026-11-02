@@ -494,3 +494,4 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   Docs explain declared dependency limits; no actual project build, full batch, FEA or paid model call.
 - Separate saved follow-up: existing maker-output loops can follow output symlinks; their containment repair is
   assigned separately. This change validates design inputs and intentionally leaves maker-output behavior intact.
+- Completion is the source-export child only; the broader Fresh-eyes usability task remains open.
