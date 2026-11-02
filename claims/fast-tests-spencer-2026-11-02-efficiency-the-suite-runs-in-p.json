@@ -2,6 +2,6 @@
  "item": "Fast tests (Spencer, 2026-11-02, efficiency): the suite runs in parallel (pytest-xdist, pinned) with slow / browser / all-project tests marked so `pytest -m \"not slow\"` is the per-change default; shared expensive fixtures (built projects, browsers) cached per session; report the before/after wall time in STATUS.md; no test removed or loosened",
  "session": "6ff4882b3b",
  "since": 1793649030.9190395,
- "heartbeat": 1793649030.9190395,
+ "heartbeat": 1793649481.6972067,
  "since_utc": "2026-11-02 19:50"
 }
