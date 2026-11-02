@@ -45,8 +45,13 @@ OVER_TOL_US = 1.0                         # past-the-band check: integer-us roun
 
 
 def env() -> dict:
-    return {**os.environ, "ARDUINO_DIRECTORIES_DATA": str(TOOLS / "data"),
-            "ARDUINO_DIRECTORIES_DOWNLOADS": str(TOOLS / "staging"), "ARDUINO_DIRECTORIES_USER": str(TOOLS / "user")}
+    result = {**os.environ, "ARDUINO_DIRECTORIES_DATA": str(TOOLS / "data"),
+              "ARDUINO_DIRECTORIES_DOWNLOADS": str(TOOLS / "staging"), "ARDUINO_DIRECTORIES_USER": str(TOOLS / "user")}
+    if "ARDUINO_NETWORK_PROXY" not in result:
+        proxy = next((result[k] for k in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy") if result.get(k)), None)
+        if proxy:
+            result["ARDUINO_NETWORK_PROXY"] = proxy
+    return result
 
 
 def arduino_cli() -> str | None:
@@ -165,8 +170,8 @@ def pi_run(script: Path, limit_ms: float = 600_000) -> dict:
     except py_compile.PyCompileError as e:
         return {"ok": False, "error": f"does not byte-compile: {e.msg}"}
     runner = r'''
-import importlib.util, json, os, sys, tempfile
-root = tempfile.mkdtemp()
+import importlib.util, json, os, sys
+root = os.path.join(os.path.dirname(__file__), "pwm")
 for ch in (0, 1):
     os.makedirs(os.path.join(root, "pwmchip0", "pwm%d" % ch))
 open(os.path.join(root, "pwmchip0", "export"), "w", encoding="utf-8").close()
@@ -300,6 +305,8 @@ def check_nano(rows: list[dict], sketch_dir: Path, work: Path, pca: bool) -> dic
         probs.append(f"the sweep printed {len(sweeps)} of {len(rows)} 'sweep <joint>' lines before `x`")
     if not any(ln.startswith("stopped") and t >= t_x for t, ln in s["uart"]):
         probs.append("`x` did not print 'stopped' (command not handled)")
+    nano_rows = [r for r in rows if r["kind"] == "nano"] if pca else rows
+    pca_rows = [r for r in rows if r["kind"] == "pca9685"] if pca else []
     if pca:
         series, periods = pca_series(s["i2c"])
         key = lambda r: F._num(r["pin"], "ch")              # noqa: E731
@@ -323,10 +330,23 @@ def check_nano(rows: list[dict], sketch_dir: Path, work: Path, pca: bool) -> dic
             periods += [b - a for a, b in zip(rises, rises[1:])]
     if periods and not all(FRAME_MS[0] <= p <= FRAME_MS[1] for p in periods):
         probs.append(f"servo frame {min(periods):.1f}-{max(periods):.1f} ms, not 50 Hz ({FRAME_MS[0]}-{FRAME_MS[1]} ms)")
-    probs += check_trace(rows, key, series, T_CENTRE_MS, T_SWEEP_MS, t_x, tol, stopped, held=pca)
+    active_rows = pca_rows if pca else nano_rows
+    probs += check_trace(active_rows, key, series, T_CENTRE_MS, T_SWEEP_MS, t_x, tol, stopped, held=pca)
     res["simulated_ms"] = s["end_ms"]
     res["tolerance_us"] = round(tol, 2)
-    res["trace"] = _summary(rows, key, series, T_CENTRE_MS, T_SWEEP_MS, t_x)
+    res["trace"] = _summary(active_rows, key, series, T_CENTRE_MS, T_SWEEP_MS, t_x)
+    if pca:
+        # D0/D1 carry Serial, A4/A5 carry I2C; every other Nano output is checked separately.
+        direct = {pin: v for pin, v in s["pulses"].items() if pin not in (0, 1, 18, 19)}
+        direct_key = lambda r: F._num(r["pin"], "D")  # noqa: E731
+        stopped = {pin: not any(t > t_x + SETTLE_MS for t, _ in v) for pin, v in direct.items()}
+        probs += check_trace(nano_rows, direct_key, direct, T_CENTRE_MS, T_SWEEP_MS, t_x, NANO_TOL_US, stopped)
+        rises = [[t for t, _ in v if T_CENTRE_MS + SETTLE_MS < t < t_x] for v in direct.values()]
+        if any(not FRAME_MS[0] <= b - a <= FRAME_MS[1] for v in rises for a, b in zip(v, v[1:])):
+            probs.append("Nano servo frame is not 50 Hz")
+        res["trace"] += _summary(nano_rows, direct_key, direct, T_CENTRE_MS, T_SWEEP_MS, t_x)
+        if nano_rows:
+            res["nano_tolerance_us"] = NANO_TOL_US
     res["serial"] = [ln for _, ln in s["uart"]][:40]
     res["problems"] = probs
     res["status"] = "FAIL" if probs else "PASS"
@@ -385,7 +405,21 @@ def check_dir(rows: list[dict], fwdir: Path, work: Path | None = None) -> dict:
         if arduino_cli() is None or not tools()["core"]:
             return {"status": "NOT_RUN", "programs": [str(p) for p in sk],
                     "problems": ["arduino-cli / the arduino:avr core is not installed under .cache/arduino: run ./setup.sh"]}
-        res = check_nano(rows, sk[0], work, pca="pca9685" in kinds)
+        programs = []
+        for path in sk:
+            try:
+                program = check_nano(rows, path, work / path.name, pca="pca9685" in kinds)
+            except (OSError, subprocess.SubprocessError, ValueError) as e:
+                program = {"kind": "nano+pca9685" if "pca9685" in kinds else "nano", "sketch": str(path),
+                           "status": "FAIL", "problems": [f"could not verify program: {type(e).__name__}: {e}"]}
+            programs.append(program)
+        if len(programs) == 1:
+            res = programs[0]
+        else:
+            res = {"kind": programs[0]["kind"], "programs": programs,
+                   "status": "FAIL" if any(p["status"] == "FAIL" for p in programs) else
+                             "COMPILED_ONLY" if any(p["status"] == "COMPILED_ONLY" for p in programs) else "PASS",
+                   "problems": [f"{Path(p['sketch']).name}: {msg}" for p in programs for msg in p["problems"]]}
     res["tools"] = {"arduino_cli": ARDUINO_CLI, "core": CORE, "libraries": LIBS, "fqbn": FQBN,
                     "simulator": "simavr (kerf/assets/avrsim.c)" if res["kind"] != "pi" else "stub PWM sysfs"}
     return res
@@ -420,4 +454,7 @@ def lines(res: dict) -> list[str]:
         L.append(f"  {t['joint']:<12} {t['output']:<7} range {t['range_deg'][0]:g}..{t['range_deg'][1]:g} deg, "
                  f"centre {t['centre_us']} us, sweep {t['sweep_us']} us = {t['sweep_deg']} deg (allowed +/- {t['band_deg']:g})")
     L += [f"  - {p}" for p in res.get("problems", [])]
+    for program in res.get("programs", []):
+        if isinstance(program, dict):
+            L.append(f"  {Path(program['sketch']).name}: {program['status']}")
     return L
