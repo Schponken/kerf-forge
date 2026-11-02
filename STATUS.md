@@ -468,3 +468,5 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   paths, staged+unstaged changes, renames, failed restores, index-only conflicts, file-type changes and both stash-race
   windows. Shell syntax and diff whitespace pass. No actual working checkout update, native app launch, full batch,
   hardware, FEA or paid model run.
+
+- Updater integration verification: 25 focused tests pass after incorporating current main, including its new Dock-deduplication test. Independent parent source/test review found no remaining blocker after the stash-ownership and file-mode fixes. Recovery copies intentionally remain; no automatic deletion.
