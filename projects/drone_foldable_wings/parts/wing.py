@@ -34,6 +34,7 @@ TIP_N = 9             # tip sections (quarter ellipse)
 END_GAP = 1.0         # aero.elevon_split default: aileron ends to the slot ends
 LEAD_D = 4.0          # lead channel: 3-wire servo lead, pins threaded out of their housing (see notes)
 LEAD_TURN_Y = (400.0, 442.0)   # |y| where the lead channel crosses aft past the rear tube's end (spar_rear_y1 + 2 bore extend)
+LEAD_BEND_R = 10.0    # lead channel bend radius
 LEAD_AFT_X = 164.0    # channel x at the crossing's aft end (between the rear tube and the aileron's V gap)
 POCKET_CLR = 0.5      # servo pocket clearance per side (glued in; servo tape round the case)
 TOP_SKIN = 1.4        # plastic kept over the pocket under the top skin
@@ -137,12 +138,10 @@ def build(ctx):
     sv_loc, sv = servo_frame(p, s)
     # servo lead channel (both segments cut the same polyline; it opens on the root face at L.lead_root)
     path = lead_path(p, s, sv)
-    lead = None
-    for i, (a, b) in enumerate(zip(path[:-1], path[1:])):
-        seg = aero.cylinder_between(a, b, LEAD_D, extend=0.0 if i < len(path) - 2 else 1.5)
-        lead = seg if lead is None else lead + seg
-    for q in path[1:-1]:
-        lead = lead + Pos(*q) * Sphere(LEAD_D / 2)          # rounded bends
+    a, b = np.array(path[-2]), np.array(path[-1])
+    path[-1] = tuple(b + (b - a) / np.linalg.norm(b - a) * 1.5)        # through the root face
+    rail = FilletPolyline(*path, radius=LEAD_BEND_R)
+    lead = sweep(Plane(origin=path[0], z_dir=rail % 0) * Circle(LEAD_D / 2), path=rail)
     body = body - ctx.cut(lead, why="aileron servo lead from the pocket, round the rear tube's end, to the hub", kind="wire channel")
 
     if inner:
