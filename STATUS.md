@@ -271,3 +271,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   ASSEMBLY.md (engine: held_by at each step, item tools in the tools list).
 - Open minors are one PLAN item ("fpv_wing follow-ups from review round 5").
 - Speed audit findings (12 + preflight) reported to Spencer; waiting on his go before implementing.
+
+### 2026-11-02 — Engine speed: redesign-cost order; prop_clearance 7x (session 01S68R6R)
+- `kerf check` / `kerf build` run concept + core-structure requirements first (requirements.REDESIGN_TIER,
+  redesign_order) and stop before the detail checks when one fails; `--all` runs everything. `--quick` includes the
+  core FEA (explicit sketch / print modes still skip FEA). Skill + design-reviewer follow the same order.
+- prop_clearance's gap screen: branch and bound on the mesh instead of 1 mm subdivision of every surface.
+  drone_foldable_wings: 173 s -> 25 s, same reported 27.5 mm (reported gaps are exact OCC distances).
+  A first attempt (prune + 1 mm subdivision) gave no speedup (163 vs 162 s) and the profile had misattributed the
+  cost; the direct profile showed long thin wing triangles subdivided into ~1e5 pieces each.
+- Open on drone_foldable_wings (found by `kerf req`): spine_fea 53.6 MPa vs 16 MPa allowed - spine needs redesign.

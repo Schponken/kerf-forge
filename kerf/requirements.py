@@ -610,7 +610,7 @@ def channel_clear(proj, asm, path, diameter, poses=None, ignore=None, tol_frac=1
             "detail": f"largest diameter open along the {len(path)}-point channel over {1 + len(poses or [])} pose(s) (mm){where}"}
 
 
-SAMPLE_MM = 1.0
+SAMPLE_MM = 1.0     # prop_clearance screening margin: a screened gap is never more than this above the true one
 
 
 def _surface_mesh(shape):
@@ -626,31 +626,33 @@ def _cyl_dist(q, R, h):
     return np.hypot(np.maximum(0.0, rho - R), dz)
 
 
-def _min_dist_sampled(v, f, dist, move=None, memo=None) -> float:
-    """min of dist over the mesh (v, f; own frame, `move` maps own-frame points to dist's frame) sampled no coarser
-    than SAMPLE_MM (trimesh subdivide_to_size), subdividing only the triangles that can hold the minimum: dist to a
-    convex solid is 1-Lipschitz, so no point of a triangle is closer than dist(centroid) - (centroid to its farthest
-    corner); a triangle whose bound exceeds the nearest vertex cannot lower the result. Each triangle's samples are
-    made once and kept in `memo` (face index -> own-frame points), so later poses and discs reuse them. Same value as
-    subdividing the whole surface (each triangle subdivides on its own edges alone)."""
-    import trimesh
-    move = move or (lambda p: p)
-    memo = {} if memo is None else memo
-    q = move(v)
-    best = float(dist(q).min())
-    tri = q[f]
-    c = tri.mean(axis=1)
-    r = np.linalg.norm(tri - c[:, None, :], axis=2).max(axis=1)
-    keep = np.flatnonzero(dist(c) - r <= best + 1e-9)
-    need = np.array([i for i in keep if i not in memo], dtype=np.int64)
-    if len(need):
-        nv, nf, idx = trimesh.remesh.subdivide_to_size(v, f[need], max_edge=SAMPLE_MM, max_iter=20, return_index=True)
-        order = np.argsort(idx, kind="stable")
-        bounds = np.searchsorted(idx[order], np.arange(len(need) + 1))
-        for j, fi in enumerate(need):
-            memo[int(fi)] = nv[np.unique(nf[order[bounds[j]:bounds[j + 1]]])]
-    if len(keep):
-        best = min(best, float(dist(move(np.concatenate([memo[int(i)] for i in keep]))).min()))
+GAP_TOL_MM = 0.5     # half the SAMPLE_MM screening margin; the other half covers the 0.05 mm tessellation
+
+
+def _min_dist_mesh(tris, dist, tol: float = GAP_TOL_MM) -> float:
+    """Smallest dist over a triangle mesh's surface (tris: N x 3 x 3, in dist's frame), within tol of the truth, for a
+    dist that is 1-Lipschitz (distance to a convex solid). Branch and bound: no point of a triangle is closer than
+    dist(centroid) - (centroid to its farthest corner); triangles that cannot beat the best point found by more than
+    tol are dropped, the rest are split at the midpoint of their longest edge until none are left (every centroid
+    and midpoint is measured, so a triangle smaller than tol is always dropped and the loop ends even on a face
+    parallel to the disc). Replaced (2026-11-02) sampling every surface at 1 mm, which turned each long thin wing triangle into
+    ~1e5 pieces and was most of a drone check; this is faster and closer to the true gap."""
+    best = float(dist(tris.reshape(-1, 3)).min())
+    while len(tris):
+        c = tris.mean(axis=1)
+        r = np.linalg.norm(tris - c[:, None, :], axis=2).max(axis=1)
+        dc = dist(c)
+        best = min(best, float(dc.min()))         # best <= dist(c), so a triangle with r <= tol is always dropped
+        tris = tris[dc - r < best - tol]
+        if not len(tris):
+            break
+        e = np.stack([np.linalg.norm(tris[:, (k + 1) % 3] - tris[:, k], axis=1) for k in range(3)], axis=1)
+        k = e.argmax(axis=1)                                     # split edge k: corners k, k+1
+        n = np.arange(len(tris))
+        a, b, o = tris[n, k], tris[n, (k + 1) % 3], tris[n, (k + 2) % 3]
+        m = (a + b) / 2
+        best = min(best, float(dist(m).min()))
+        tris = np.concatenate([np.stack([a, m, o], axis=1), np.stack([m, b, o], axis=1)])
     return best
 
 
@@ -661,20 +663,20 @@ def _matrix(loc):
 
 
 def _disc_gap(disc, other, cache) -> float:
-    """Upper bound (<= SAMPLE_MM high) on the gap between a prop-disc keep-out (a cylinder, frame at its bottom
-    centre) and any item: the other item's sampled surface measured against the exact cylinder."""
+    """Gap (within GAP_TOL_MM) between a prop-disc keep-out (a cylinder, frame at its bottom centre) and any item:
+    the other item's surface mesh measured against the exact cylinder."""
     from build123d import Location
     if ("disc", disc.id) not in cache:
         lo, hi = geom.bbox(disc.shape.located(Location()))
         cache[("disc", disc.id)] = ((hi[0] - lo[0]) / 2, hi[2] - lo[2])
     if ("mesh", other.id) not in cache:
-        cache[("mesh", other.id)] = (*_surface_mesh(other.shape), {})
+        v, f = _surface_mesh(other.shape)
+        cache[("mesh", other.id)] = v[f]
     R, h = cache[("disc", disc.id)]
-    v, f, memo = cache[("mesh", other.id)]
     Ro, to = _matrix(other.shape.location)
     Rd, td = _matrix(disc.shape.location)
-    return _min_dist_sampled(v, f, lambda p: _cyl_dist(p, R, h),
-                             move=lambda p: (p @ Ro.T + to - td) @ Rd, memo=memo)   # own -> world -> disc frame
+    tris = (cache[("mesh", other.id)] @ Ro.T + to - td) @ Rd          # own -> world -> disc frame
+    return _min_dist_mesh(tris, lambda p: _cyl_dist(p, R, h))
 
 
 @check("prop_clearance")
@@ -699,9 +701,10 @@ def prop_clearance(proj, asm, min_mm, min_between_mm=None, props=None, ignore=No
     for e in asm.movable:
         if joints is None or e.name in joints:
             all_pose += [{e.name: float(v)} for v in np.linspace(e.range[0], e.range[1], samples)]
-    # Exact B-rep distances cost seconds per pair on big parts, so each pose is screened with sampled surfaces
-    # (points <= SAMPLE_MM apart, measured against the disc's exact cylinder: an upper bound, never more than
-    # SAMPLE_MM too large), and only pairs that could still be the worst get the exact OCC distance.
+    # Exact B-rep distances cost seconds per pair on big parts, so each pose is screened with each item's surface
+    # mesh against the disc's exact cylinder (_min_dist_mesh: within GAP_TOL_MM of the mesh, which is within its
+    # 0.05 mm tessellation of the part, so far inside the SAMPLE_MM screening margin), and only pairs that could
+    # still be the worst get the exact OCC distance, which is what is reported.
     clouds = {}
     worst = None  # (margin, gap, a, b, pose, lim)
     for pose in all_pose:
