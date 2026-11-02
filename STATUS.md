@@ -479,3 +479,37 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
 - (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.
+
+## 2026-11-02 22:56 UTC — Sourced fastener inventory (Codex, fastener-mass)
+- Extracted the existing final BOM row builder without changing quantities or pricing. Generated assembly screws,
+  screw pivots and receivers carry exact stock keys. `fastener_stock` selects sourced catalog evidence explicitly;
+  type/size/head/length mismatches, invalid quantities and nonfinite arithmetic are problems. Vendor-published,
+  measured and estimated subtotals stay separate; missing/unsupported hardware stays unknown, including supplied
+  horn screws and wiring hardware. Manual duplicate suppression and merged insert quantities are reused.
+- Seed: Accu SSCF-M3-8-A2 technical specification explicitly gives **Weight per 100 Units: 80 g**, so 0.8 g per
+  M3 x 8 A2 socket-cap screw, retaining that source precision/category (not independently weighed). Primary page
+  opened: https://www.accu.co.uk/metric-cap-head-screws/3818-SSCF-M3-8-A2 . Inserts remain unknown; no guessed density
+  or geometry estimate. All new stock data is opt-in; no existing project selects it automatically.
+- `report.json.fastener_mass`, BOM notes and `FASTENER_MASS.md` expose quantities/evidence/unknowns. Studio maker ZIP
+  includes the exact referenced inventory file. Literal HTML, pipes and newlines in report text are escaped. Early
+  stops and invalid manual BOM data explicitly leave inventory not evaluated. Docs/package map updated.
+- Validation: read-only `python -m kerf.cli doctor` ALL OK using the shared existing environment (optional firmware
+  tools remain unavailable). Batch status/process list checked before each selection; owner hold respected.
+  Final `.venv/bin/python -m pytest -q` selection: **70 passed in 3.40 s**:
+  `tests/test_fastener_mass.py tests/test_maker_output.py tests/test_docs.py`
+  `tests/test_catalog.py::test_every_entry_is_sourced tests/test_catalog.py::test_no_duplicate_keys`
+  `tests/test_ship.py::test_price_keys tests/test_ship.py::test_price_bom_totals tests/test_ship.py::test_write_bom_files tests/test_ship.py::test_parts_on_hand_are_counted_first`
+  `tests/test_pins.py::test_screw_pivot_into_heatset tests/test_pins.py::test_shoulder_screw_pivot`
+  `tests/test_eng_minors.py::test_eng15_bom_extra_keys_and_duplicates tests/test_eng_minors.py::test_eng14_horn_centre_screw_rows`
+  `tests/test_electrical.py::test_wire_rows_carry_price_keys`.
+- Synthetic assembly proves 2 site screws plus 1 pivot = 3 screws and 3 inserts (manual duplicate rows add nothing),
+  source pack conversion, included-for-cost mass retention, exact stock matching, unchanged engineering item masses,
+  unknowns/overflow, pipeline/report output, ZIP contents and safe Markdown. Parent review's ZIP/HTML findings fixed;
+  source-export owner confirmed the maker-file constant addition is independent of their source export changes.
+- Scope remains inventory/reporting: engineering mass/CG/inertia/strength/runtime totals still omit generated
+  hardware explicitly; supplied screws may already be in purchased-part weights, so adding this subtotal blindly
+  could double count. No geometry, thresholds, project build/review, FEA, stress simulation or full batch run.
+  Only the precise inventory PLAN item is complete; whole-system integration and fpv_wing finish items remain open.
+- Final independent parent review approved this reporting-only slice after both output fixes; no remaining finding.
+- Integrated main through 0f8236f; the same focused selection passed again: **70 passed in 2.32 s**. Published PR #21
+  (https://github.com/Schponken/kerf-forge/pull/21); main claim release uses the approved shared claim helper.

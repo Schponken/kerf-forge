@@ -17,6 +17,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/drives.py` | Printed spur-gear pairs (py_gearworks, FDM backlash, standard centre distance) and GT2 belt maths (length, tooth count, centre for a stock belt, wrap) + belt keep-out solid |
 | `kerf/proxies.py` | Purchased parts and keep-outs built from the catalog, with their joints and fastener sites |
 | `kerf/catalog.py` | Loads `catalog/hardware.json` (every entry has a `source`) |
+| `kerf/fastener_mass.py` | Sourced hardware inventory from the final deduplicated BOM: exact generated keys select stock, vendor-published/measured/estimated subtotals stay separate, unknowns stay null; report.json, BOM notes and FASTENER_MASS.md. Excluded from engineering mass/CG totals. Tests: tests/test_fastener_mass.py |
 | `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item |
 | `kerf/modules.py` | Reusable assembly library (`catalog/modules.yaml`): source contract, interfaces, parameters, inherited checks and live review status; makes independent editable project copies with historical evidence in `module.json`, never copied approval |
 | `kerf/assembly.py` | Joint tree, solve poses, interference, motion sweeps, coupled poses, fastener alignment + screw lengths |
@@ -366,6 +367,44 @@ wiring:
   `parts`, `purchased`, `keepouts`, `assembly`, `requirements`, `bom_extra` ([{item, qty, type, spec, note}] extra BOM
   rows such as straps, wire, glue; `group: <fastener group>` lists the row in ASSEMBLY.md at that group's screws,
   e.g. washers), and any item may carry `assembly_note` (printed in ASSEMBLY.md where it is fitted).
+
+### Fastener mass inventory (reporting only)
+
+`fastener_stock` explicitly selects the hardware whose published or measured mass applies to an exact generated BOM
+key. It does not add more pieces: quantities come from `export.bom_rows`, after mechanical sites, pins, feature BOM,
+wiring hardware and manual extras are deduplicated by the existing BOM rules. Screw pivots and assembly screws of
+the same specification share a stock key and retain their own quantities. Do not list an automatically generated
+screw/insert again in `bom_extra`; an identical manual item is suppressed and the existing duplicate check warns.
+
+```yaml
+fastener_stock:
+  "screw:M3x8:socket": fastener_mass.accu_sscf_m3_8_a2
+```
+
+The seed entry records Accu's **80 g per 100 screws** (0.8 g each) as `vendor-published`, retaining the vendor's
+precision and source. Selecting it declares the actual M3 × 8 A2 socket-cap stock; it is not a default for all M3
+screws. Exact keys are `screw:<size>x<length_mm>:socket|flat`, `insert:<size>` and `nut:<size>`. The selected catalog
+entry must match `kind`, `size`, screw `head` and `length_mm`; an insert must match the catalog fit's `heatset_length`.
+Stock entries require `reported_mass_g`, whole-piece `reported_qty`, `mass_kind` (`vendor-published`, `measured` or
+`estimated`), `source` and a `mass_basis` explaining evidence, assumptions and precision. Package/shipping mass is
+not hardware mass. There is no price-pack fallback or inferred density/material. Unsourced inserts remain unknown.
+The designer must still verify fit, material and strength; matching a mass key is not a mechanical qualification.
+
+`report.json.fastener_mass` records each final `fastener`/`pin`/`hardware` row, its key, quantity, grams per piece,
+grams per row, evidence and unknown reason. Missing stock is an explicit unknown and warning; malformed or mismatched
+stock is a check problem. Unsupported shoulder screws, dowels, supplied horn screws and arbitrary hardware extras
+stay unknown rather than being identified from shopping text. A row supplied at no extra cost still has mass:
+`included: true` does not remove it from this inventory. Vendor pack size only divides the source weight; it never
+changes the fitted BOM quantity. Unused selections warn. An empty evaluated inventory has zero rows; a run stopped
+before inventory has `evaluated: false` and `total_g: null`. The known subtotal is not a complete total while any row
+is unknown. `complete` describes only these inventory rows, not the entire device.
+
+Docs/kit output includes `FASTENER_MASS.md`, with the same evidence and unknowns; mass notes survive BOM pricing.
+**No engineering total changes in this slice:** printed/purchased mass, CG, inertia, strength, runtime and thrust
+checks still omit generated hardware as explicit masses. Glue, tape, wire and other non-hardware row types are outside
+this inventory. Purchased-part weights may already include supplied screws, so adding the inventory subtotal blindly
+can double count. Assembly fastener site positions remain in the report for future explicit spatial integration;
+hardware is not assigned to arbitrary part centroids. Whole-system integration and the fpv_wing finish item remain open.
 
 ## Proxies (kerf/proxies.py) — purchased parts and keep-outs
 | proxy | from catalog | joints | fastener sites (`groups:` key) |

@@ -326,7 +326,7 @@ def restore(name: str, stamp: str) -> list[str]:
 
 
 EXPORT_DIRS = ("plates", "parts", "drawings", "firmware", "assembly_steps")
-EXPORT_FILES = ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "wiring.svg", "viewer.html")
+EXPORT_FILES = ("assembly.step", "bom.csv", "bom.md", "FASTENER_MASS.md", "ASSEMBLY.md", "WIRING.md", "wiring.svg", "viewer.html")
 
 
 def export_zip(name: str) -> bytes:
