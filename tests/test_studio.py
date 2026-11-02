@@ -501,6 +501,7 @@ def test_failed_build_starts_a_fix_job_once_per_design_state(monkeypatch):
     monkeypatch.setattr(studio, "claude_bin", lambda: "/usr/bin/claude")
     monkeypatch.setattr(studio, "settings", lambda: {"notify": False, "sound": False, "autofix": True})
     monkeypatch.setattr(studio, "AUTOFIXED", {})
+    monkeypatch.setattr(studio, "_worked_on", lambda name: False)   # independent of the live claims in claims/
     started = []
     monkeypatch.setattr(studio, "fix_job", lambda name: started.append(name) or NS(id="j"))
     job = lambda name, kind="build": NS(kind=kind, project=name, state="failed")   # noqa: E731

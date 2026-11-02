@@ -436,6 +436,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   cached per shape + spec (~45 s per check). Next hotspots from the same run: core FEA ~300 s (6 parts), print stage
   68 s, fit 23 s.
 
+## 2026-11-02 (Claude, visual pass)
+- Screenshotted every Studio screen (project tabs, failing checks, new design, My parts, Work, all projects, printer, light theme, 900 px window). Fixed: in a small window the sidebar's Activity list drew over the page (sidebar now clips, its list scrolls); header buttons compact so the tagline fits in two lines; Files tab label "Optimiser results" instead of out/OPTIMISE.md. Mac installer now keeps exactly one Kerf Studio Dock tile (tools/mac/dock_dedupe.py).
+- test_studio's auto-fix test no longer depends on live claims (a claim item containing the word "bad" made it flaky after the claim guard).
+
+### 2026-11-02 (session 4c4e3822c9): viewer "Build it" tab
+- Labels sit beside the part they name (right / left / above / below, the first that fits) and are pushed apart.
+- Camera: 48 more candidate views (every 30 deg at 15-75 deg up), scored on the new part not being hidden, sliding
+  across the screen, and how much of its broad faces the view shows (no edge-on plates).
+- Close-up: a small part (or one side of a far-apart left/right pair) is framed with some build round it instead of
+  the whole device (fpv_wing 3 mm elevon rods, horns, GPS now readable).
+- Bench steps keep the build they join on screen, faint, instead of the bench parts floating alone.
+- tests/test_viewer_build_it.py (browser): label clear of its part, close-up, bench context.
+- (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
+  check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
+  skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
+
 ## 2026-11-02 — Filename-safe Mac updates and staged-edit recovery (Codex, handoff-refresh)
 - Reproduced updater failures in temporary Git repositories: the spaced Mac command path could update then conflict,
   restored edits lost their staged/unstaged split, renames became partial, an unstaged undo hid a staged conflict,
