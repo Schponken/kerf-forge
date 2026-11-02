@@ -175,6 +175,8 @@ Work these in order unless one is blocked; each item is done only with tests and
 - [x] Studio mode picker: next to Build, each mode with its usual time + cost shown before it starts; "Upgrade to Build kit" reuses the finished stages; Ship it behind its own confirm (prints on the user's printer); smoke test
 - [x] Check it on a user's own design: import STEP/STL + a short yaml (parts, purchased items, joints) and run fit / strength / balance / wiring checks without designing; one eval on an imported model
 - [ ] Use story in project.yaml (`use_story`: who, where, how often, what goes wrong) turned into requirements (crash / drop, heat, rain, gloves); required for new projects; fpv_wing and robot_arm get one
+  - [x] kerf/usestory.py + checks heat_limit / rain_cover / access_opening / impact_case / story_covered, Studio intake + detail, ASSEMBLY.md accepted failures, tests/test_usestory.py; robot_arm and fpv_5in have stories
+  - [ ] fpv_wing gets its use story (after its E7 owner finishes, so its review is not made stale mid-way)
 - [ ] Simulate it moving: dynamic load cases from the use story (drop / crash impulse with contact time, hard stops from joint speed and inertia, vibration: first natural frequency vs motor / prop excitation) as requirement checks with hand-calculated tests
 - [ ] Failure modes: per-part failure table in the report (how it fails, what it takes with it, repair time); `weak_link` requirement proving the cheap part fails before the expensive one under the crash case
 - [ ] Design for life: fatigue check for flexing parts (living hinges, snap fits), creep limit for plastic under constant load, vibration rule for screws (threadlocker / nyloc / inserts), heat limit by material Tg vs the use story

@@ -62,6 +62,11 @@ proportions and known-good numbers; avoid the failure points others hit. Only co
 Search first, per part: for the whole device and for each printed part or sub-assembly in the part list run `.venv/bin/kerf find "<short description>" --project <p>` (Printables measured, Thingiverse with a token, plus the MakerWorld/GrabCAD searches the researcher runs and adds with `--add`). If a candidate fits the contract (dimensions, interfaces, load) and its license allows it, reuse or adapt it — rebuild its proven geometry and numbers in the part code with credit — instead of inventing one. Either way fill in its `Decision:` line in REFERENCES.md (reuse / adapt / design new, and why); `kerf check` warns while one is TODO. Purchased hardware with a McMaster STEP: ask Spencer to drop the file into catalog/models/.
 
 ## 1. Understand and size (`projects/<p>/DESIGN.md`)
+- **Use story first** (project.yaml `use_story`, required for new projects; kerf/usestory.py): who uses it, where,
+  how often, what goes wrong (drop, crash, heat, rain, gloves, other). Each hazard becomes checks: `heat_limit`
+  (material HDT from the datasheet), `rain_cover`, `access_opening` (38 mm gloved finger), `impact_case` (a
+  `fea_static` with `case: drop|crash` must carry story_drop_n / story_crash_n), or `survive: false` with the
+  consequence (what breaks, how it is fixed; it goes into ASSEMBLY.md). Ask the user when the story is unclear.
 - **Requirements** in numbers: function, loads/payloads, motion ranges, size limits, mass budget, environment.
 - **Architecture**: 2-3 options in one line each, the pick and why (cite REFERENCES.md).
 - **Purchased parts** from the catalog with the sizing math shown, e.g. servo torque = Σ m·g·r at the worst pose

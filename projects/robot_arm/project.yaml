@@ -160,6 +160,16 @@ wiring:      # servo runs are each servo's own 300 mm lead + an extension (lead:
   - {id: i2c, from: nano, to: driver, kind: signal, gauge: 26, conductors: 4, color: red/black/blue/yellow, length_mm: 150,
      ends: {from: crimp, to: crimp}, route: [[-125, 40, 12], [-114, 20, 30], [-114, 20, 95]],
      note: "Nano 5V/GND/A4 (SDA)/A5 (SCL) to the PCA9685 side header VCC/GND/SDA/SCL (two 1x3 housings: GND-OE-SCL and SDA-VCC-V+, OE and V+ empty); the Nano runs from the PC's USB"}
+use_story:
+  who: "a maker learning robotics, teaching it pick-and-place moves at a desk"
+  where: [indoor, desk]
+  how_often: "an hour or two most evenings"
+  goes_wrong:
+    - {hazard: heat, max_c: 40, why: "a sunny room in summer: the PETG parts must not sag under the servos' loads"}
+    - {hazard: other, what: "it holds a 150 g object at full reach", covered_by: [torque_shoulder, torque_elbow, torque_wrist, upper_arm_fea, forearm_fea]}
+    - {hazard: other, what: "a servo stalls against an obstacle", covered_by: [yoke_r_fea, upper_arm_stall_fea, forearm_stall_fea]}
+    - {hazard: drop, height_m: 0.75, survive: false,
+       consequence: "knocked off a 75 cm desk: a yoke or link may crack and a horn spline may strip; reprint the cracked part (each prints in under 3 h) and fit a new horn"}
 requirements:
   - {id: torque_shoulder, check: static_torque, joint: shoulder, actuator: sh_servo, payload_g: 150, payload_at: gripper.tcp,
      max_fraction: 0.5, poses: [{}, {shoulder: -60}, {shoulder: -30}, {shoulder: 30}, {shoulder: 60}, {elbow: 60}, {elbow: -60}],

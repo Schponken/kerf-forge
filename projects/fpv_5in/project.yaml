@@ -36,15 +36,16 @@ purchased:
   stack: {catalog: drone.stacks.fc_30_5, proxy: stack, groups: {holes: stack}}
   camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], joints: {pivot: [0, -4.4, 9.5]}, held_by: "2 x M2 x 6 side screws through the body cheeks into its side holes (the tilt pivot, friction-held)",
            note: "RunCam Phoenix 2; frame: local Z = tilt axis, local +Y = lens; side M2 holes 5.1 mm from the back face"}
-  battery: {catalog: drone.batteries.6S_1300, proxy: box, color: "#c8a400", held_by: "the 20 mm strap around the pack and the top plate", joints: {strap: [14.5, 0, 36]}}
+  battery: {catalog: drone.batteries.6S_1100, proxy: box, color: "#c8a400", held_by: "the 20 mm strap around the pack and the top plate", joints: {strap: [14.5, 0, 31]},
+            note: "6S 1100 (197.5 g), not 1300 (215 g): with the four props weighed the 1300 pack gave 5.87:1 thrust/weight (min 6)"}
   xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "the cradle under the rear tab plus a cable tie through the two slots beside it"}
   vtx: {catalog: drone.vtx.tx800, proxy: stack, groups: {holes: vtx}}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "heat-shrunk and cable-tied under the camera roof (two tie slots)",
              note: "heat-shrunk, cable-tied under the top plate's camera roof (two tie slots); lead to the FC along the plate; T antenna legs tied up and out in a V through the two slots at the roof front (behind the lens, out of its view)"}
   vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 20], color: "#20a0a0", held_by: "snapped onto the VTX's MMCX socket; its tube tied through the rear tab's slot pair",
             note: "5.8 GHz antenna, 95 mm tube: from the VTX rear corner outside the rear pillar, outside the rear pillar on the +y side, under the rear tab (one tie through the y +10.5 slot pair), out past the tab end and bent up; about 75 mm of tube path, head (11 mm, 20 mm envelope) above the tab end"}
-  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [80, 40, 3], color: "#303030", held_by: "under the pack, clamped by the strap",
-        note: "anti-slip pad cut to 80 x 40 mm (the pack's footprint, so the strap's side runs pass beside it)"}
+  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [78, 38, 3], color: "#303030", held_by: "under the pack, clamped by the strap",
+        note: "anti-slip pad cut to 78 x 38 mm (the pack's footprint, so the strap's side runs pass beside it)"}
   strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 43.6, 1.8], color: "#404040", held_by: "looped around the pack and under the top plate through the plate-edge notches",
           note: "one loop around the pack's width at x 4.5..24.5: over the pack, down its sides past the plate-edge notches, under the plate (about 170 mm of a 250 mm strap); top run modelled here, side and under runs are keep-outs strap_under / strap_l / strap_r"}
 electrical:
@@ -96,8 +97,8 @@ wiring:
      route: [[20, 15, 32], [38, 15, 40]], note: "CRSF TX/RX to an FC UART"}
 keepouts:
   strap_under: {proxy: box, size: [20, 43.6, 1.8], owner: strap, note: "strap run under the top plate"}
-  strap_l: {proxy: box, size: [20, 1.8, 45.6], owner: strap, note: "strap side run, plate underside to pack top"}
-  strap_r: {proxy: box, size: [20, 1.8, 45.6], owner: strap, note: "strap side run"}
+  strap_l: {proxy: box, size: [20, 1.8, 40.6], owner: strap, note: "strap side run, plate underside to pack top"}
+  strap_r: {proxy: box, size: [20, 1.8, 40.6], owner: strap, note: "strap side run"}
   prop_1: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_1, h: 7}
   prop_2: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_2, h: 7}
   prop_3: {catalog: drone.props.5_1in, proxy: prop_disc, owner: motor_3, h: 7}
@@ -143,6 +144,15 @@ assembly:
     - {group: vtx, before: [body, stack, camera, arm_1, arm_2, arm_3, arm_4], why: "the VTX is screwed under the top plate on the bench before the plate goes onto the frame"}
   sweeps:
     - {joint: cam_tilt, samples: 9}
+use_story:
+  who: "a hobby FPV freestyle pilot, flying alone at a park or a field"
+  where: [outdoor, field]
+  how_often: "2-3 sessions a week, 5-6 packs a session"
+  goes_wrong:
+    - {hazard: crash, speed_m_s: 15, survive: false,
+       consequence: "a hard crash breaks an arm first: it is the cheapest printed part (20 g, about 1 h to print); swap it with its two frame bolts and four motor screws in about 10 minutes and carry spare arms"}
+    - {hazard: heat, max_c: 45, why: "flown in summer sun with the ESC and motors warming the frame; carried and stored out of a hot car"}
+    - {hazard: gloves, handles: [{item: battery, from: [0, 0, 1], ignore: [strap]}], why: "winter flying: the pack is swapped with gloves on"}
 requirements:
   - {id: prop_gap, check: prop_clearance, min_mm: 3, min_between_mm: 4, joints: [cam_tilt],
      why: "spinning props must clear each other by 4 mm and everything else by 3 mm, also while the camera tilts"}
@@ -212,7 +222,7 @@ requirements:
       - {box: [[-40, -21, post_h + top_t - 0.01], [40, 21, post_h + top_t + 0.01]], torque_nmm: 2369, axis: {at: [0, 0, post_h + top_t], dir: [-1, 0, 0]}}
   - {id: power, check: power_budget,
      why: "battery C rating, ESC channels, FC 5 V BEC, XT60 and every wire inside their ratings at hover and at full throttle"}
-  - {id: flight_time, check: flight_time, min_min: 3, why: "brief: at least 3 min at hover on 80 % of the 1300 mAh pack. Ideal-hover estimate (momentum theory, FM 0.5): real hover draws more, and freestyle flying gives about 3-5 min"}
+  - {id: flight_time, check: flight_time, min_min: 3, why: "brief: at least 3 min at hover on 80 % of the 1100 mAh pack. Ideal-hover estimate (momentum theory, FM 0.5): real hover draws more, and freestyle flying gives about 3-5 min"}
   - {id: usb_access, check: connector_access, item: stack, direction: [0, 1, 0], at: [0, 0, 17], length_mm: 45, size: [12, 7],
      why: "Betaflight CLI is needed (motor_output_limit 74): fit the FC with its USB-C port facing +Y (right); +Y between the right-hand arms is open from the board out past the body edge for a USB-C plug (12 x 7 mm) + 45 mm of cable. If that turns the FC's arrow sideways, set board_align_yaw (90 / 270) in Betaflight. +X is the camera, -X the VTX + XT60 lead, so +/-Y are the sides to use"}
   - {id: xt60_plug, check: connector_access, item: xt60, direction: [-1, 0, 0], length_mm: 30,

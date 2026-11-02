@@ -628,8 +628,20 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
               "These are not fitted to the build: place them as described and connect them as `WIRING.md` says.", ""]
         L += [f"- **{i}** ({human_item(it)}): {it.spec['off_board']}." for i, it in off]
         L.append("")
+    L += story_notes(rep.get("use_story"))
     (outdir / "ASSEMBLY.md").write_text("\n".join(L), encoding="utf-8")
     return {"file": "ASSEMBLY.md", "steps": len(st), "renders": render is not None}
+
+
+def story_notes(story: dict | None) -> list[str]:
+    """ASSEMBLY.md 'When something goes wrong': the use story's accepted failures (what breaks, how to fix it)."""
+    acc = (story or {}).get("accepted_failures") or []
+    if not acc:
+        return []
+    return (["## When something goes wrong", "",
+             "Designed for: " + f"{story.get('who')}, {', '.join(story.get('where') or [])}, {story.get('how_often')}.", "",
+             "These are expected and accepted, not defects:", ""]
+            + [f"- **{a['hazard']}**: {a['consequence']}" for a in acc] + [""])
 
 
 def human_item(it) -> str:

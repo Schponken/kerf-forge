@@ -400,6 +400,9 @@ def test_brief_carries_intake_inventory_and_the_picked_option(tmp_path, monkeypa
                      {"title": "Rack jaws", "summary": "two racks", "purchased": [{"key": "servos.SG90", "qty": 1}]})
     assert "a desk gripper" in b and "40" in b and "USB" in b and "bogus" not in b
     assert "servos.SG90 x2" in b and "Rack jaws" in b and "servos.SG90 x1" in b
+    assert "use_story" not in b
+    b = studio.brief("a desk gripper", {"who": "me at my desk", "goes_wrong": "knocked off the desk"})
+    assert "who uses it: me at my desk" in b and "knocked off the desk" in b and "`use_story`" in b
 
 
 def test_read_quote_checks_its_options(tmp_path, monkeypatch):

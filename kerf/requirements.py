@@ -744,29 +744,45 @@ def describe(r: dict) -> str:
 
 def run_all(proj, asm, quick: bool = False) -> list:
     out = []
-    for req in proj.data.get("requirements") or []:
-        kw = {k: v for k, v in req.items() if k not in ("check", "why", "id")}
-        name = req["check"]
-        rid = req.get("id", name)
-        if quick and name in SLOW:
-            unit, bound = UNITS.get(name, ("", "limit"))
-            out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, "ok": True, "skipped": True,
-                        "value": None, "limit": None, "detail": "skipped in --quick (runs in full check/build/verify)"})
-            from . import progress
-            progress.emit("req", id=rid, check=name, ok=True, value=None, limit=None, skipped=True)
-            continue
-        try:
-            if name not in REGISTRY:
-                raise ValueError(f"unknown check '{name}' (have {sorted(REGISTRY)})")
-            r = REGISTRY[name](proj, asm, **kw)
-        except Exception as e:  # noqa: BLE001
-            r = {"ok": False, "value": None, "limit": None, "detail": f"check failed to run: {type(e).__name__}: {e}"}
-        unit, bound = UNITS.get(name, ("", "limit"))
-        out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, **r})
-        from . import progress
-        progress.emit("req", id=rid, check=name, unit=unit, bound=bound, ok=bool(r.get("ok")), value=r.get("value"), limit=r.get("limit"),
-                      skipped=bool(r.get("skipped")))
+    from . import usestory
+    story_p = usestory.numbers(proj) if usestory.story(proj) else {}
+    saved = dict(proj.params or {})
+    if story_p:                                   # story_drop_n etc. usable in requirement expressions
+        proj.params.update(story_p)
+    try:
+        for req in list(proj.data.get("requirements") or []) + usestory.requirements(proj):
+            out.append(_run_one(proj, asm, req, quick))
+    finally:
+        if story_p:
+            proj.params.clear()
+            proj.params.update(saved)
     return out
+
+
+def _run_one(proj, asm, req, quick):
+    out = []
+    kw = {k: v for k, v in req.items() if k not in ("check", "why", "id")}
+    name = req["check"]
+    rid = req.get("id", name)
+    if quick and name in SLOW:
+        unit, bound = UNITS.get(name, ("", "limit"))
+        out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, "ok": True, "skipped": True,
+                    "value": None, "limit": None, "detail": "skipped in --quick (runs in full check/build/verify)"})
+        from . import progress
+        progress.emit("req", id=rid, check=name, ok=True, value=None, limit=None, skipped=True)
+        return out[-1]
+    try:
+        if name not in REGISTRY:
+            raise ValueError(f"unknown check '{name}' (have {sorted(REGISTRY)})")
+        r = REGISTRY[name](proj, asm, **kw)
+    except Exception as e:  # noqa: BLE001
+        r = {"ok": False, "value": None, "limit": None, "detail": f"check failed to run: {type(e).__name__}: {e}"}
+    unit, bound = UNITS.get(name, ("", "limit"))
+    out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, **r})
+    from . import progress
+    progress.emit("req", id=rid, check=name, unit=unit, bound=bound, ok=bool(r.get("ok")), value=r.get("value"), limit=r.get("limit"),
+                  skipped=bool(r.get("skipped")))
+    return out[-1]
 
 
 from . import req_balance  # noqa: E402,F401  (registers the balance checks: cg)
@@ -774,3 +790,4 @@ from . import req_electrical  # noqa: E402,F401  (power_budget, flight_time, run
 from . import req_stops  # noqa: E402,F401  (hard_stop)
 from . import req_gears  # noqa: E402,F401  (gear_bending)
 from . import req_aero  # noqa: E402,F401  (static_margin, wing_loading, stall_speed, spar_bending)
+from . import usestory  # noqa: E402,F401  (heat_limit, rain_cover, access_opening, impact_case, story_covered)

@@ -326,6 +326,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             if "requirements" in stg:
                 progress.stage("requirements")
                 rq = requirements.run_all(proj, asm, quick="fea" not in stg)
+                from . import usestory
+                rep["problems"] += usestory.problems(proj)
+                rep["use_story"] = usestory.summary(proj)
             fea_viz = {r["id"]: {**r.pop("_viz"), "part": (r.get("_field") or {}).get("part")}   # meshes stay out of report.json
                        for r in rq if "_viz" in r}
             fields: dict[str, list] = {}

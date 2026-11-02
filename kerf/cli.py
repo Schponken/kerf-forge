@@ -238,7 +238,9 @@ def new(name, title) -> int:
         _p(f"projects/{name} already exists")
         return 1
     (d / "parts").mkdir(parents=True)
-    (d / "project.yaml").write_text(f"name: {title}\nprinter: Bambu Lab A2L\nparams: {{}}\nparts: {{}}\npurchased: {{}}\nassembly:\n  root: TODO\n  joints: []\nrequirements: []\n", encoding="utf-8")
+    (d / "project.yaml").write_text(f"name: {title}\nprinter: Bambu Lab A2L\nparams: {{}}\nparts: {{}}\npurchased: {{}}\nassembly:\n  root: TODO\n  joints: []\nrequirements: []\n"
+                                       "use_story:              # who, where, how often, what goes wrong (kerf/usestory.py)\n"
+                                       "  who: TODO\n  where: [indoor]\n  how_often: TODO\n  goes_wrong: []\n", encoding="utf-8")
     _p(f"created projects/{name}")
     return 0
 

@@ -18,14 +18,16 @@
 | 4 × motor | drone.motors.2207_1855kv_6s | 4 × 31.6 g | 1685 g max thrust each (iFlight test report) |
 | stack | drone.stacks.fc_30_5 | 34 g | 45.6 mm ESC board, 22 mm tall |
 | camera | drone.cameras.micro_19mm | 9 g | tilt about the side M2 screws |
-| battery | drone.batteries.6S_1300 | 215 g | 82 × 40 × 36 mm |
+| battery | drone.batteries.6S_1100 | 197.5 g | 78 × 38 × 31 mm (was the 1300: see thrust/weight) |
 | XT60 | drone.connectors.XT60 | (not catalogued) | battery plug end open to the rear |
 | VTX | drone.vtx.tx800 | 5.6 g | 28 × 28 mm, 20 × 20 M2, hangs under the rear half of the top plate (centre x −13.5) |
 | VTX antenna | electronics.antennas.lollipop4p_mmcx_95 | 4.8 g | 95 mm tube, MMCX 90°, head above the rear tab end |
 - Thrust/weight: 4 × 1685 = 6740 g at full output, but the XT60 is rated 60 A burst (Holybro: 1 minute) and four
   motors at full output draw 4 × 35.08 = 140 A. Betaflight `set motor_output_limit = 74` caps each motor: by the
   propeller law (thrust ~ rpm², power ~ rpm³) 1685 × 0.74² = 923 g and 35.08 × 0.74³ = 14.22 A per motor →
-  3691 g / 612 g all-up (4-perimeter mass model, wire included) = **6.03**, peak 57.5 A (the `power` requirement).
+  3691 g / about 612 g all-up (4-perimeter mass model, wire and the four props included) = about **6.0**, peak 57.5 A
+  (the `power` requirement). Once the props were weighed (2026-11-01) the 1300 mAh pack gave 629 g = 5.87:1, so the
+  build now uses the 6S 1100 (17.5 g lighter, same size class; flight time drops by about 15 %).
   Raise the limit only with a bigger connector. T/W margin is thin: a frame that prints 3 g heavier than estimated
   drops to 6.0 — weigh the printed parts (161 g estimate) before setting expectations.
 - **The 14.22 A per motor is an ESTIMATE, not a current limit** (audit F6): BLHeli_S has no firmware current limit, the
@@ -47,7 +49,7 @@
 - FEA is on the solid model, the parts print at 30-50 % infill: per ENGINEERING.md s5 the stress peaks at the surface
   and every strength-checked part prints with 4 wall loops (out/plates/PRINT_SETTINGS.md and the plate 3MF carry
   infill + wall loops per object; mass counts them), so set those per object in the slicer (audit F3).
-- Mass: printed parts 161 g (limit 250, 4-perimeter estimate); all-up 612 g including wire. Lightened for T/W
+- Mass: printed parts 161 g (limit 250, 4-perimeter estimate); all-up about 612 g including wire and props. Lightened for T/W
   (audit F3): arms taper from 20 mm at the ridges to 14 mm at the motor pad, two 26 × 11 side windows and a 16 mm
   centre window in the body, two windows in the top plate.
 
@@ -139,7 +141,7 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 - Arm first bending mode is roughly in the gyro noise band (reviewer hand calc ~165 Hz) and PETG-CF softens near a
   hot motor: hover-test and check Blackbox gyro noise before freestyle.
 - Flight time 12 min is the ideal-hover estimate (momentum theory, figure of merit 0.5); real hover draws more and
-  freestyle flying gives about 3–5 min on a 1300 mAh 6S pack.
+  freestyle flying gives about 3–4 min on the 1100 mAh 6S pack.
 - Motor phase runs are modelled as 18 AWG extensions; the motors' own lead gauge/length is not in the catalog (with
   the 74 % output limit a 20 AWG lead also stays inside the 60 K / 5 s burst rule: 14.22 A).
 - XT60 retention is the cable tie wrapped under it (friction); hold the XT60 with a finger when unplugging the pack.

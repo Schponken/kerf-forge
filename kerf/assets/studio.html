@@ -450,6 +450,7 @@ function renderProject() {
     <div class="head">
       <div class="titlerow"><h1>${esc(d.title)}</h1>${statusPill(d)}</div>
       ${d.description ? `<p class="desc one" title="Click to show it all" onclick="this.classList.toggle('open')">${esc(d.description)}</p>` : ""}
+      ${d.use_story ? `<p class="note story">Designed for: ${esc(d.use_story.who || "")}${(d.use_story.where || []).length ? ", " + esc(d.use_story.where.join(", ")) : ""}${d.use_story.how_often ? ", " + esc(d.use_story.how_often) : ""}${(d.use_story.hazards || []).length ? ` · checked against: ${esc(d.use_story.hazards.join(", "))}` : ""}${(d.use_story.accepted_failures || []).map(a => `<br>Accepted: ${esc(a.hazard)}: ${esc(a.consequence)}`).join("")}</p>` : ""}
       ${facts.length ? `<div class="facts">${facts.join("<span>·</span>")}</div>` : ""}
       <div class="actions">
         <button class="primary" onclick="runMode('kit')" title="Every check, then print plates, shopping list, assembly guide and the 3D viewer">⚙ Build kit${modeEst(d, "kit")}</button>
@@ -936,6 +937,11 @@ function showNew() {
             <label>Printer<input id="i_printer" value="Bambu Lab A2L"></label>
             <label>Material<select id="i_material"><option>PETG</option><option>PLA</option><option>CF-PETG</option><option>TPU (flexible parts)</option></select></label>
           </div>
+          <div class="igrid">
+            <label>Who uses it<input id="i_who" placeholder="me at my desk, my kid, a pilot at the field…"></label>
+            <label>How often<input id="i_how_often" placeholder="an hour most evenings, 3 sessions a week…"></label>
+            <label>What goes wrong<input id="i_goes_wrong" placeholder="dropped off the desk, crashes, rain, gloves…"></label>
+          </div>
           <label class="note">Anything else (sizes, parts you own, must-haves)<input id="i_notes"></label>
           <p class="note">Parts in <a href="#" onclick="showParts();return false">My parts</a> are preferred and not counted in the cost.</p>
         </details>
@@ -959,7 +965,7 @@ function autoname() {
   n.value = ($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40);
 }
 function intake() {
-  const o = {}; for (const k of ["budget","power","mounting","environment","printer","material","notes"]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
+  const o = {}; for (const k of ["budget","power","mounting","environment","printer","material","notes","who","how_often","goes_wrong"]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
   return o;
 }
 async function startQuote() {

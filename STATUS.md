@@ -1271,3 +1271,19 @@ pushed for it and what I know:
 - **Budget: stay under 60 % of the weekly usage.** Sessions can't read the meter: keep work tight, push often.
   CLAUDE.md "Vision and budget" has the rule; `.claude/state/BUDGET_STOP` is the agreed stop signal, but the Stop hook
   doesn't honour it until Spencer approves that hook edit (same pending approval as the Studio-job scoped mode).
+
+## 2026-11-01 21:05 UTC-5 — Use story (Kerf vision item 3), session e3d8373e
+- New kerf/usestory.py: project.yaml `use_story` (who / where / how_often / goes_wrong) is validated and every hazard
+  becomes requirement rows run with the project's own: `heat_limit` (ISO 75 heat deflection temperature from the
+  datasheets, 1.8 MPa value for parts with a strength case), `rain_cover` (rain-sensitive electronics roofed from above,
+  ray cast), `access_opening` (FAA HF-STD-001 Ex. 4.4.3.2: 38 mm gloved / 32 mm bare finger opening), `impact_case`
+  (work-energy stopping force must be carried by a `case: drop|crash` fea_static; story_drop_n / story_crash_n usable in
+  loads), `story_covered` (named requirements answer an "other" hazard). `survive: false` + consequence = accepted
+  failure, written to report.json `use_story` and ASSEMBLY.md "When something goes wrong". Required for new projects
+  (usestory.LEGACY lists the older ones); `kerf new` scaffolds it; Studio asks who / how often / what goes wrong and
+  shows "Designed for" on the project page.
+- Catalog: materials got hdt_045_c / hdt_18_c / vicat_c / tg_c from the same Bambu TDS sources (TPU's sheet has none,
+  so heat_limit fails a TPU part rather than guessing).
+- robot_arm and fpv_5in have use stories. **fpv_5in now uses the 6S 1100 pack** (197.5 g): with the props weighed, the
+  1300 gave 5.87:1 thrust/weight (min 6); now 6.03:1, flight time 9.7 min ideal hover. Pad and strap keep-outs follow
+  the smaller pack. Quick checks PASS for both. fpv_wing's story waits for its E7 owner (PLAN sub-item).

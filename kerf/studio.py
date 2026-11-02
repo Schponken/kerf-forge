@@ -428,6 +428,7 @@ def detail(name: str) -> dict:
             "estimate": {"build": estimate(name, "build"), "check": estimate(name, "check")},
             "modes": mode_menu(name, rep), "last_mode": (rep.get("mode") or ("kit" if rep.get("files") else None)) if rep else None,
             "summary_numbers": _numbers(rep),
+            "use_story": (rep or {}).get("use_story"),
             "materials": materials(), "part_materials": part_materials(name),
             "trial": {"params": trial_rep.get("params") if trial_rep else None, "ok": trial_rep.get("ok") if trial_rep else None,
                       "materials": {k: v.get("material") for k, v in (trial_rep.get("parts") or {}).items()} if trial_rep else None,
@@ -646,7 +647,9 @@ class ClaudeNotReady(ValueError):
 
 
 INTAKE_FIELDS = {"budget": "Budget (USD, purchased parts + filament)", "power": "Power", "mounting": "Mounting",
-                 "environment": "Environment", "printer": "Printer", "material": "Material", "notes": "Other constraints"}
+                 "environment": "Environment", "printer": "Printer", "material": "Material", "notes": "Other constraints",
+                 "who": "Use story - who uses it", "how_often": "Use story - how often",
+                 "goes_wrong": "Use story - what goes wrong (drops, crashes, heat, rain, gloves)"}
 QUOTES = ROOT / ".cache" / "studio" / "quotes"
 
 
@@ -658,6 +661,8 @@ def brief(description: str, intake: dict | None = None, option: dict | None = No
     answers = [f"- {INTAKE_FIELDS[k]}: {str(v).strip()}" for k, v in (intake or {}).items() if k in INTAKE_FIELDS and str(v).strip()]
     if answers:
         L += ["", "Spencer's answers to the intake questions:", *answers]
+    if any(str((intake or {}).get(k, "")).strip() for k in ("who", "how_often", "goes_wrong")):
+        L += ["", "Write the use story answers into project.yaml `use_story` (kerf/usestory.py); each hazard becomes checks."]
     inv = load_inventory()
     if inv:
         L += ["", "Parts on hand (prefer these where they fit; the BOM counts them first): "
