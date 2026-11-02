@@ -304,3 +304,6 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Spencer: hold the full batch test until the other sessions finish. The second run (with the fix) was
   stopped mid-way and its lock removed; BOARD.md says the batch is on hold. Next manager run starts it once no claims
   are active.
+- (01S68R6R, later) FEA memory halved: kerf/fea.py builds the intorder-4 stress basis per chunk after the solve and
+  sums the stiffness per chunk with int32 indices. drone_foldable_wings mount_fea (70k tets) OOM-killed a 7 GB machine
+  (so its full check could never finish there); now 2.7 GB peak, same stresses. MAX_TETS comment corrected.
