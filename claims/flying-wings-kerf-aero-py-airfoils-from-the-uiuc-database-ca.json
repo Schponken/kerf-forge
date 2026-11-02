@@ -2,6 +2,6 @@
  "item": "Flying wings (kerf/aero.py): airfoils from the UIUC database (catalog/airfoils, sourced) and NACA 4-digit, swept / tapered / twisted wing lofts, split into printable segments, spar-tube channels, elevon cut + hinge joint, servo bays; wing geometry (area, MAC, neutral point); checks `static_margin`, `wing_loading`, `stall_speed`, `spar_bending`, each with a hand-calculated test",
  "session": "4c4e3822c9",
  "since": 1793563809.8323512,
- "heartbeat": 1793640544.4701648,
+ "heartbeat": 1793640734.085124,
  "since_utc": "2026-11-01 20:10"
 }

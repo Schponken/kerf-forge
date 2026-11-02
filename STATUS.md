@@ -1470,3 +1470,6 @@ pushed for it and what I know:
 - Codex's environment has package-manager + listed-domain internet only; Chromium download was blocked during its setup,
   so its screenshots may need a network-settings update in the environment (Spencer's call).
 
+- The 3D model first: runs that make a viewer write a preview viewer.html right after the parts are built and placed
+  (fpv_wing: ~3 min from a cold cache, ~5 s warm; it used to arrive after every check and file, ~22 min). Studio opens
+  it on the run's "model" event, folds the job panel, and says the rest is running; the full viewer replaces it.
