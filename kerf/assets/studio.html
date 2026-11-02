@@ -857,6 +857,47 @@ function watch(id) {
   $("#mcbody").innerHTML = `<div class="sk" style="height:60px;margin-bottom:10px"></div><div class="sk" style="height:120px"></div>`;
   pollJob(); pollJobs();
 }
+/* plain-language narration of one job step (the raw tool name + argument stays in the row's tooltip) */
+function narrate(t) {
+  const w = String(t.what || ""), path = String(t.path || ""), cmd = String(t.cmd || w), q = String(t.query || "");
+  const file = path.split("/").pop() || "", part = (path.match(/\/parts\/([^/]+)\.py$/) || [])[1];
+  const site = (() => { try { return new URL(t.url || w).hostname.replace(/^www\./, ""); } catch (e) { return ""; } })();
+  const nice = s => s.replace(/_/g, " ");
+  switch (t.name) {
+    case "WebSearch": return ["🔎", q ? `Looking up “${q}”` : "Searching the web"];
+    case "WebFetch": return ["🌐", site ? `Reading a page on ${site}` : "Reading a web page"];
+    case "Agent": case "Task": {
+      const d = nice(w);
+      const who = String(t.agent || "") + " " + w;
+      if (/research/i.test(who)) return ["🧑‍🔬", `A research helper is looking into: ${d}`];
+      if (/review/i.test(who)) return ["🕵️", "An independent reviewer is inspecting the design"];
+      if (/part-designer/i.test(who)) return ["🧑‍🔧", `A part designer is working on: ${d}`];
+      return ["🧑‍🔧", `A helper is working on: ${d}`]; }
+    case "Read": case "Grep": case "Glob": {
+      const pj = (path.match(/projects\/([^/]+)\//) || [])[1];
+      if (/catalog\//.test(path)) return ["📚", "Checking real part sizes in the parts catalog"];
+      if (/docs\/ENGINEERING/.test(path)) return ["📏", "Checking the engineering rule book"];
+      if (part) return ["📐", `Studying the ${nice(part)} part`];
+      if (pj) return ["🗂", `Looking at the ${nice(pj)} project`];
+      return ["📖", file ? `Reading ${file}` : "Looking through the files"]; }
+    case "Write": case "Edit": case "MultiEdit":
+      if (part) return ["✏️", part === "layout" ? "Setting the shared measurements every part uses" : `Drawing the ${nice(part)}`];
+      if (file === "DESIGN.md") return ["🗺", "Writing the plan: what to build and why"];
+      if (file === "REFERENCES.md") return ["📝", "Writing down what it learned from the research"];
+      if (file === "project.yaml") return ["🧩", "Listing the parts and how they connect and move"];
+      if (file === "STATUS.md") return ["📒", "Updating the project diary"];
+      return ["✏️", `Editing ${file || "a file"}`];
+    case "Bash":
+      if (/kerf build/.test(cmd)) return ["🏭", "Making the print files, shopping list and pictures"];
+      if (/kerf check/.test(cmd)) return ["🧪", "Testing that everything fits, moves and holds"];
+      if (/kerf find/.test(cmd)) return ["🔭", "Searching existing designs for ideas"];
+      if (/git (commit|push)/.test(cmd)) return ["💾", "Saving the work"];
+      if (/pytest/.test(cmd)) return ["✅", "Running Kerf's own self-tests"];
+      return ["⚙️", "Running a tool"];
+    case "TodoWrite": case "TaskCreate": case "TaskUpdate": return ["☑", "Updating its to-do list"];
+    default: return [TOOL_ICON[t.name] || "•", w ? `${t.name}: ${w}` : String(t.name)];
+  }
+}
 function closeMc() { $("#mc").classList.remove("open"); S.job = null; if (S.tw) { S.tw.stop(); S.tw = null; } }
 function showDecided(name) {   // a finished project's map: its research, the options it weighed, what it built
   const el = document.createElement("div"); el.className = "modal twmodal";
@@ -931,9 +972,9 @@ function renderMc(j) {
     if (hint) html += readyCard({code: hint.code, why: hint.code === "auth" ? "Claude Code's sign-in expired, so the design stopped before it began." :
                                  "Claude Code doesn't trust this folder yet, so it would have ignored Kerf's settings and quality checks; the design was stopped."});
     const thoughts = S.lines.filter(l => !l.startsWith("  > ") && !l.startsWith("==") && !l.startsWith("(")).slice(-1);
-    if (thoughts.length) html += `<div class="sect">Claude is thinking</div><div class="thought">${esc(thoughts[0])}</div>`;
-    html += `<div class="sect">Latest actions · ${tools.length} so far</div><div class="feed">${tools.slice(-8).reverse().map((t, n) =>
-      `<div class="fi${fresh("mc:tool:" + (tools.length - n))}"><span class="ic">${TOOL_ICON[t.name] || "•"}</span><span class="w"><b>${esc(t.name)}</b>${esc(t.what)}</span></div>`).join("") || `<div class="note">Starting Claude Code…</div>`}</div>`;
+    if (thoughts.length) html += `<div class="sect">Latest note from Claude</div><div class="thought">${esc(thoughts[0])}</div>`;
+    html += `<div class="sect">What it's doing · ${tools.length} steps so far</div><div class="feed">${tools.slice(-8).reverse().map((t, n) => { const [ic, say] = narrate(t);
+      return `<div class="fi${fresh("mc:tool:" + (tools.length - n))}" title="${esc(t.name + ": " + (t.what || ""))}"><span class="ic">${ic}</span><span class="w">${esc(say)}</span></div>`; }).join("") || `<div class="note">Starting Claude Code…</div>`}</div>`;
   } else {
     const projs = S.ev.filter(e => e.k === "project"), cp = projs[projs.length - 1];
     const ev = lastProjectEvents(S.ev), st = stageState(ev), stages = st.start ? st.start.stages : ["build", "print", "fit", "requirements"];

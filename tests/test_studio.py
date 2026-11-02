@@ -56,7 +56,7 @@ def test_claude_stream_lines():
     assert [json.loads(line[2:]) for line in lines if line.startswith("@@")] == [
         {"k": "note", "text": "Researching"},
         {"k": "tool", "name": "Bash", "what": "kerf check x", "phase": "check",
-         "query": "", "url": "", "path": "", "cmd": "kerf check x"},
+         "query": "", "url": "", "path": "", "cmd": "kerf check x", "agent": ""},
     ]
 
 

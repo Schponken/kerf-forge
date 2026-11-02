@@ -673,7 +673,8 @@ def _claude_lines(raw: str):
                 out.append("@@" + json.dumps({"k": "tool", "name": c.get("name"), "what": str(what).splitlines()[0][:140] if what else "",
                                                "phase": ph, "query": str(inp.get("query") or "")[:160],
                                                "url": str(inp.get("url") or "")[:300], "path": str(inp.get("file_path") or "")[:300],
-                                               "cmd": str(inp.get("command") or "").splitlines()[0][:200] if inp.get("command") else ""}))
+                                               "cmd": str(inp.get("command") or "").splitlines()[0][:200] if inp.get("command") else "",
+                                               "agent": str(inp.get("subagent_type") or "")[:60]}))
     elif t == "result":
         bad = ev.get("is_error") or ev.get("subtype") != "success"
         out.append(f"== {'stopped with an error' if bad else 'finished'} after {round(ev.get('duration_ms', 0) / 60000, 1)} min ==")
