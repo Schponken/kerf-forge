@@ -82,7 +82,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/fwcheck.py` | Firmware proof (`kerf firmware-check <p>`, and every `kerf build` with a generated program -> `out/firmware/FIRMWARE_CHECK.json`, a FAIL is a build problem): compiles the Nano / Nano + PCA9685 sketch with arduino-cli 1.3.1 for `arduino:avr:nano` (core arduino:avr 1.8.6; Servo 1.2.2, Adafruit PWM Servo Driver 3.0.2, Adafruit BusIO 1.16.2; installed pinned under `.cache/arduino` by setup.sh), runs it in simavr through `kerf/assets/avrsim.c` (ATmega328P at 16 MHz; Serial commands c, s, x; records every high pulse on D0-D13/A0-A5, and answers I2C as a PCA9685 at 0x40 whose register writes are decoded into pulse widths with auto-increment, sleep-only PRE_SCALE and the sketch's 27 MHz oscillator); Pi scripts are byte-compiled and run against a stub PWM sysfs tree that records every write. Checks per joint: pulses only on wired outputs, none before the first command, inside PULSE_LIMITS, 50 Hz frame, 1500 us after c, the sweep never past +/- the nearer end of the range (and reaching it, ending at centre), no pulses after x. Missing tools give NOT RUN (kerf doctor warns), never PASS |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM (with a buy / source link column) |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` (parts drawn as plastic, not glTF's default metal; near-black parts lifted with light edges; a 10 mm grid plate as the floor; `labels` = call-outs with leaders, `focus` = camera framed on those nodes with context, `title` = a line on the sheet). Assembly-step images: a bench sub-assembly alone, otherwise the parts on so far plus this step's parts in colour, framed and labelled, this step's screws in red backed out of their holes, earlier screws grey; part sheets carry the overall size and show the part as printed on the plate |
-| `kerf/cli.py` | `kerf doctor | gallery | simulate | check | build | run --mode | verify | review-status | new | status | calibrate | feedback | find | fixes | price | print | review-pack | optimise | printer | studio | firmware-check` |
+| `kerf/cli.py` | `kerf doctor | gallery | simulate | check | req | build | run --mode | verify | review-status | new | status | calibrate | feedback | find | fixes | price | print | review-pack | optimise | printer | studio | firmware-check` |
 
 ## project.yaml
 ```yaml
@@ -407,7 +407,10 @@ slides along it) with the pin held on one side only, and a stocked length that r
 calibration profile, and the catalog entries the project reads. Every check/build records the catalog paths it read
 into `projects/<p>/catalog_deps.json` (a growing union; commit it), so an edit to a catalog entry the project does
 not use leaves its review current, and an edit to one it uses makes it stale. Without that file the whole catalog
-file is hashed.
+file is hashed. An unreadable or malformed dependency file also falls back to the whole catalog until the next
+check repairs it. Catalog reads refresh automatically when the file changes, so a running Studio process notices
+used-entry edits without restarting. Quick checks retain the union of earlier reads so they cannot discard
+dependencies of stages they did not run; cached part hits re-record their reads too.
 It also reports `out_stale` (and says so in `why`) when `out/report.json` was built from another fingerprint: the
 review stands, but the shipped ASSEMBLY.md / BOM / renders need `kerf build` (verify rebuilds everything anyway).
 

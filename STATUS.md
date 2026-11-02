@@ -214,3 +214,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Blocker for Spencer: the ChatGPT Codex environment "kerf-forge" will not publish ("Couldn't publish environment",
   no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
   then docs/status/CODEX_TASKS.md items in order.
+
+## 2026-11-02 — Reviews go stale only for real changes, ChatGPT Codex
+- Main already tracked the catalog entries read by check/build. Fixed the remaining live-process gap: the parsed catalog refreshes when its file changes (identity/size/nanosecond modification/change times), so a used-entry edit invalidates a fingerprint in running Studio without manual cache clearing. Unused-entry edits and JSON reformatting leave scoped fingerprints unchanged; unchanged reads still reuse parsed data.
+- Missing/malformed dependency manifests conservatively hash the full catalog and the next check repairs them. Valid manifests retain the existing growing union so quick checks cannot drop full-build dependencies. No project geometry, review.json, catalog dimensions, limits or checks were edited. Also documented main's existing `req` command after the docs regression exposed its missing table entry.
+- Validation: 55 dependency/cache/engine/calibration/docs tests passed, plus 70 catalog checks. The one previously documented PCA9685 below-board-pin height test was explicitly deselected from the catalog run, not changed or presented as passing. New regressions cover live same-size/restored-mtime edits, atomic replacements, missing used entries, malformed manifests, local design-input changes, quick-check unions and cache-hit dependency replay. No full suite or all-project build/test was run.
+- Ready PR for independent review/merge. Next in Spencer's queue: Repo cleanup, then Firmware proven, checking active claims first. Publication remains the recorded product-side blocker.
