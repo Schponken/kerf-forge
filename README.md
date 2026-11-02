@@ -42,6 +42,9 @@ For a command-line first build, run `.venv/bin/kerf build servo_link`. Generated
 
 If Studio loses its connection, reconnect first; restart Studio if the server has stopped. With `--no-open`, use the address printed by the command. If a port is occupied, Studio prints the next available address. On macOS, the Dock app preserves local edits when checking for updates and can keep using the installed version while offline. A native Mac app install must be run on a Mac.
 
+Mac updates preserve which edits you staged and keep a labelled recovery copy when they temporarily set work aside.
+Conflicting edits stop the update and name the files. See [local changes and update recovery](docs/MAC_UPDATES.md).
+
 Printer connection is optional for design and local builds. You can open the generated plates in Bambu Studio without giving Kerf printer access. Sending from Kerf needs the printer on the same reachable network and the LAN settings described below.
 
 ## Asking for a design

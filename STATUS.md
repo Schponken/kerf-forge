@@ -451,3 +451,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
   check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
   skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
+
+## 2026-11-02 — Filename-safe Mac updates and staged-edit recovery (Codex, handoff-refresh)
+- Reproduced updater failures in temporary Git repositories: the spaced Mac command path could update then conflict,
+  restored edits lost their staged/unstaged split, renames became partial, an unstaged undo hid a staged conflict,
+  and blocked/restoration failures lacked clear status or an exact recovery revision. Seven initial regressions failed.
+- update_repo.sh now reads NUL-delimited paths, checks both index and working-tree edits and all three file modes
+  before moving edits, and restores its exact saved stash with --index. Overlapping add/delete/type changes stay
+  untouched; independent text edits still merge. Untracked obstructions report NOT-UPDATED without overwriting files.
+- Parent review found a shared-stash capture race. A regression reproduced an intervening stash between push and
+  lookup; a unique marker now identifies this update's own entry in the reflog. No stash is automatically dropped or
+  popped: the small tradeoff is one labelled recovery copy per dirty update, with its exact revision printed even on
+  success. Existing/newer stashes survive, including one created by another worktree mid-update. README links recovery
+  instructions in docs/MAC_UPDATES.md.
+- 24 focused tests pass: 18 new real-Git cases plus six existing Mac launcher cases. Includes whitespace/Unicode/quote
+  paths, staged+unstaged changes, renames, failed restores, index-only conflicts, file-type changes and both stash-race
+  windows. Shell syntax and diff whitespace pass. No actual working checkout update, native app launch, full batch,
+  hardware, FEA or paid model run.
+
+- Updater integration verification: 25 focused tests pass after incorporating current main, including its new Dock-deduplication test. Independent parent source/test review found no remaining blocker after the stash-ownership and file-mode fixes. Recovery copies intentionally remain; no automatic deletion.
