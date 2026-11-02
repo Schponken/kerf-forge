@@ -88,8 +88,18 @@ git clone https://github.com/Schponken/kerf-forge ~/kerf-forge 2>/dev/null || gi
   (fit, motion, strength) and shows it in 3D, leaving your design untouched; *Save to design* writes the values into
   project.yaml (then Build; the design review has to be redone).
 - **Open plates in Bambu Studio** and **Show files** (Finder).
+- **Work**: see shared task ownership, Codex sessions for this repository, and jobs started in Studio together.
+  Filter by assistant or state, search a project, expand a task's scope and next steps, or follow its job/3D view.
+  Items needing attention appear first. Checklist progress counts reported steps; remaining-time estimates use
+  comparable past Studio runs, and stay unknown when there is no reliable history.
 - **New design**: describe it in plain words; Claude Code (`claude`, installed and signed in on the Mac) runs the
   full /kerf workflow in the repo and its progress streams into the Activity panel.
+
+Work reads Codex through its local CLI's [read-only session APIs](https://learn.chatgpt.com/docs/app-server).
+If a live Codex connection is unavailable, saved chats are labelled as history; they are never presented as running.
+Cloud workers appear through shared claims. The source panel shows coverage and freshness, and a failed refresh
+keeps the last known data visible. No chat is started or resumed, and raw commands, tool output and reasoning are
+not included. Older claims without assistant metadata stay labelled **Session** until their worker updates them.
 
 One click opens it: the Dock icon starts the local server if needed (pulling updates first and re-running setup only when dependencies changed) and opens its window. Closing the window, or the ⏻ button, shuts it down; it waits for a running job (asks first on ⏻). The server only listens on 127.0.0.1 (your computer). Log: ~/Library/Logs/KerfStudio.log.
 
