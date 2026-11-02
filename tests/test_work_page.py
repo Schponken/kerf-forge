@@ -4,6 +4,10 @@ import os
 from pathlib import Path
 import subprocess
 
+import pytest
+
+pytestmark = pytest.mark.browser
+
 
 def test_work_page_filters_progress_and_refresh_recovery(tmp_path):
     root = Path(__file__).resolve().parents[1]
@@ -11,7 +15,7 @@ def test_work_page_filters_progress_and_refresh_recovery(tmp_path):
     capture = Path(os.environ.get("KERF_WORK_SCREENSHOTS", str(tmp_path)))
     capture.mkdir(parents=True, exist_ok=True)
     script.write_text(r'''
-import { chromium } from "PLAYWRIGHT";
+import { browser as openBrowser } from "PLAYWRIGHT";
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const html = await fs.readFile(HTML, 'utf8'), now = Date.now()/1000;
@@ -44,7 +48,7 @@ const fixture = {
    source_label:'Local session',remaining:[],eta:null,url:'javascript:window.__unsafe=1'}
  ]
 };
-const browser = await chromium.launch();
+const browser = await openBrowser();
 try {
  for (const [theme,width,height] of [['dark',1440,1000],['light',1440,1000],['dark',390,844],['light',390,844]]) {
   const p = await browser.newPage({viewport:{width,height}}), errors=[];
@@ -131,7 +135,7 @@ try {
   await p.close();
  }
 } finally { await browser.close(); }
-'''.replace('"PLAYWRIGHT"', json.dumps(str(root / 'tools/render/node_modules/playwright/index.mjs')))
+'''.replace('"PLAYWRIGHT"', json.dumps(str(root / 'tests/browser.mjs')))
        .replace('HTML', json.dumps(str(root / 'kerf/assets/studio.html')))
        .replace('CAPTURE', json.dumps(str(capture))), encoding='utf-8')
     result = subprocess.run(['node', str(script)], capture_output=True, text=True, timeout=90)

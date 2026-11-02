@@ -541,3 +541,15 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Existing marker-selection contract PASS: 1 test in 8.82 s (its subprocesses only collect tests). Notification
   and viewer-usability modules collect all 6 tests in 1.39 s. No browser, FEA, all-project build or full-suite
   execution. Newly identified Work/Build-it/notification browser marker gaps are a separate small follow-up.
+
+## 2026-11-02 — Keep new browser coverage out of quick-test selection (Codex)
+- Work and Build-it modules now carry the browser marker; only the navigation test in the mixed notification
+  module is marked. Work/Build-it connect through the existing shared browser helper, preserving the viewer
+  launch flags and avoiding an unused second browser. No product code or browser assertions changed.
+- Expanded collection contract first reproduced the missing Work marker (1 failed in 9.13 s). After the
+  fix, the contract plus the exact Work, Build-it and notification browser nodes PASS: 4 tests in 20.63 s.
+  It checks every node in the two browser-only modules, keeps both cheap notification tests quick, and
+  preserves the complete quick/slow partition plus browser/all-project inclusion. FEA/all-project cases
+  were collected only; no actual project build, stress execution, full suite or benchmark ran.
+- Stacked on PR #4 after its test-infrastructure compatibility refresh. Later Work owner assertions are
+  intentionally left in their own branch; this module marker covers them when integrated.
