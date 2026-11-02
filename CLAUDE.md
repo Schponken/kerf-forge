@@ -98,6 +98,17 @@ Other Claude sessions may be working in this repo at the same time. To never bre
 - Every new engine feature gets a test in `tests/`.
 - Plain-language explanations in user-facing text; Spencer is technical but not a mechanical engineer by training.
 
+## Vision and budget
+
+- The target is docs/VISION.md (selectable modes, use-story design, scenario-to-solution, wider reach). PLAN.md
+  "Kerf vision" lists the steps; claim them like any other item. **Ship it is opt-in only**: never a default, never
+  started without the user's explicit choice.
+- Budget: Spencer caps Claude usage at **60 % of the weekly limit**. Sessions cannot read the meter, so keep each
+  session's work tight (no repeated full builds when a quick check or one requirement shows the answer), push
+  often, and stop starting new items when Spencer says the cap is near (he may write `.claude/state/BUDGET_STOP`;
+  when it exists, finish and push the current item, then stop; the Stop hook does not honour it yet - that hook edit
+  needs Spencer's go-ahead, see STATUS.md).
+
 ## Escape hatch (rare)
 
 Only if progress needs something outside this repo that you cannot get (credentials, a paid service, a website that is

@@ -1260,3 +1260,14 @@ pushed for it and what I know:
   once its four 5.1 in props are weighed (629 g all-up). Not fixed here (not this session's project): a lighter part,
   or a re-derived output limit that still keeps the XT60 in rating. Also seen on quick checks, not from this change:
   fpv_5in top_plate/strap_l,r overlap 0.13 mm3; tvc_drone ring_low mesh not watertight.
+
+## 2026-11-01 20:05 UTC-5 — NEW DIRECTION for every session: the Kerf vision (Spencer)
+- Spencer: work toward docs/VISION.md until it is met — selectable modes (Sketch / Print it / Check it / Simulate it /
+  Build kit / Ship it), use-story design (simulate it moving, failure modes, life, optimisation, human factors,
+  learning from results), scenario-to-solution (intake, options incl. buy-vs-build, module library, whole system),
+  wider reach (planes / VTOL, ground robots, gearboxes, mixed manufacturing, watertight / thermal, printer loop,
+  self-growing catalog). 21 new items in PLAN.md "Kerf vision", in priority order: modes first.
+- **Ship it is opt-in only** (never a default, never started without the user's explicit choice).
+- **Budget: stay under 60 % of the weekly usage.** Sessions can't read the meter: keep work tight, push often.
+  CLAUDE.md "Vision and budget" has the rule; `.claude/state/BUDGET_STOP` is the agreed stop signal, but the Stop hook
+  doesn't honour it until Spencer approves that hook edit (same pending approval as the Studio-job scoped mode).

@@ -168,6 +168,30 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [x] Flying wings (kerf/aero.py): airfoils from the UIUC database (catalog/airfoils, sourced) and NACA 4-digit, swept / tapered / twisted wing lofts, split into printable segments, spar-tube channels, elevon cut + hinge joint, servo bays; wing geometry (area, MAC, neutral point); checks `static_margin`, `wing_loading`, `stall_speed`, `spar_bending`, each with a hand-calculated test
 - [ ] E7 `fpv_wing` — 1 m 6S FPV flying wing in the class of MakerWorld's Darkwing-1 (evals/fpv_wing/brief.md): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, acceptance.py PASS
 
+## Kerf vision: problem in, working thing out (Spencer, 2026-11-01; docs/VISION.md)
+Work these in order unless one is blocked; each item is done only with tests and a project or eval that uses it.
+- [ ] Modes: `kerf run <p> --mode sketch|print|check|simulate|kit|ship` (pipeline stages switched per mode, results reusable when upgrading to a deeper mode); `ship` refuses without an explicit `--ship` / Studio confirmation and is never a default; tests per mode (which stages ran, which files exist)
+- [ ] Studio mode picker: next to Build, each mode with its usual time + cost shown before it starts; "Upgrade to Build kit" reuses the finished stages; Ship it behind its own confirm (prints on the user's printer); smoke test
+- [ ] Check it on a user's own design: import STEP/STL + a short yaml (parts, purchased items, joints) and run fit / strength / balance / wiring checks without designing; one eval on an imported model
+- [ ] Use story in project.yaml (`use_story`: who, where, how often, what goes wrong) turned into requirements (crash / drop, heat, rain, gloves); required for new projects; fpv_wing and robot_arm get one
+- [ ] Simulate it moving: dynamic load cases from the use story (drop / crash impulse with contact time, hard stops from joint speed and inertia, vibration: first natural frequency vs motor / prop excitation) as requirement checks with hand-calculated tests
+- [ ] Failure modes: per-part failure table in the report (how it fails, what it takes with it, repair time); `weak_link` requirement proving the cheap part fails before the expensive one under the crash case
+- [ ] Design for life: fatigue check for flexing parts (living hinges, snap fits), creep limit for plastic under constant load, vibration rule for screws (threadlocker / nyloc / inserts), heat limit by material Tg vs the use story
+- [ ] Optimise then explain: `kerf optimise <p>` searches declared params (mass / cost / a requirement margin) within every check, writes the trade-off table; tested on a small project
+- [ ] Human factors: reach / access checks from the use story (battery swap with gloves, tool access), carry and repair notes in ASSEMBLY.md
+- [ ] Learn from results: `kerf feedback` takes logs / photos / notes, records what failed where, and turns repeated findings into ENGINEERING.md rules or catalog corrections (with the evidence)
+- [ ] Scenario intake + options: from a scenario-only brief, ask what matters, generate 2-3 options incl. buy-vs-build (search for existing / free designs first), compare cost / time / risk / fit, recommend one; Studio flow; eval E8 (scenario only: "my plants die when I travel")
+- [ ] Module library: proven modules extracted from finished projects (power system, servo joint, gripper, wing panel, motor mount, enclosure, drive train) with their contracts and checks; a new project can instantiate them; tests
+- [ ] Whole-system output: flight-controller / microcontroller config and controller tuned in simulation (INAV / Betaflight diff for drones and wings, Arduino / Pi code for gadgets), checked by a sim test
+- [ ] Check against the scenario: scenario requirements (run time on the stated duty, capacity of a tank, coverage of a sensor) evaluated for E8
+- [ ] Conventional planes + VTOL: tail volume coefficients and sizing, landing gear, transition thrust; eval E9 (trainer plane)
+- [ ] Ground robots: wheel / track sizing, slope tip-over, self-balancing (inverted pendulum) check; eval E10 (rover or balance bot)
+- [ ] Gearboxes: planetary and worm sets, strength-checked (Lewis / AGMA-style) and printable; used by one project
+- [ ] Mixed manufacturing: laser-cut / CNC / carbon-plate parts as DXF / STEP for order services alongside printed parts, priced
+- [ ] Watertight + thermal: seal / gasket design rules and checks, wall thickness for water, component heat (ESC / motor / regulator) vs enclosure; used by one project
+- [ ] Ship it printer loop (opt-in only): print fit coupons on the A2L through the Bambu integration, read the measurements (entered or camera), apply them (`kerf calibrate`), send the final plates; dry-run tested
+- [ ] Self-growing catalog: research a missing part, validate against the vendor's STEP (bbox + holes), add it with sources automatically; tested on one new part
+
 ## Phase 5 — final audit
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
