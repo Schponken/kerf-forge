@@ -478,3 +478,4 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   `claims.py next`. I followed the job's instruction and did not take new work, and did not write BLOCKED/YIELD (both
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
+- (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.

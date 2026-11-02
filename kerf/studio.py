@@ -390,7 +390,7 @@ def param_effects(name: str) -> dict:
 
 # Lifetime: with an idle limit the server quits on its own once no window has talked to it for that long (pages poll
 # every few seconds; a closing page says goodbye, which shortens the wait to a few seconds) and no job is running.
-LIFE = {"last": time.time(), "bye": None, "seen": False}
+LIFE = {"last": time.time(), "bye": None, "seen": False, "native": 0.0}   # native: last poll from the Mac app's page
 
 
 def _alive():
@@ -1061,6 +1061,8 @@ def notify_job(job) -> bool:
     secs = (job.ended or time.time()) - job.started
     if not settings()["notify"] or job.state == "stopped" or (secs < NOTIFY_MIN_S and job.kind not in ("design", "edit", "fix")):
         return False
+    if time.time() - LIFE.get("native", 0) < 20:
+        return False                  # the Mac app is open: it posts its own notification, which opens the view when clicked
     good, line = job_outcome(job)
     return notify(job.label, line, good)
 
@@ -1601,6 +1603,8 @@ class Handler(BaseHTTPRequestHandler):
                 f = _safe(THUMBS, parts[1])
                 return self._send(200, f.read_bytes(), "image/png") if f else self._err("not found", 404)
             if parts == ["api", "jobs"]:
+                if q.get("native"):
+                    LIFE["native"] = time.time()
                 return self._json({"jobs": [j.info(len(j.lines), len(j.events)) | {"tail": j.lines[-1:]} for j in
                                             sorted(JOBS.values(), key=lambda j: -j.started)], "sessions": sessions()})
             if parts[:2] == ["api", "job"] and len(parts) == 3:
