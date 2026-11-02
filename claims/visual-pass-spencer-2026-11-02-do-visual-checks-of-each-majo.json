@@ -2,7 +2,7 @@
  "item": "Visual pass (Spencer, 2026-11-02: \"do visual checks of each major page/screen and fix the easy things\"): screenshot every Studio screen (project tabs, new design, My parts, Work, all projects, modals, light theme, small window), fix layout / overlap / overflow / contrast slips; tests where behaviour changes",
  "session": "0f43a4e722",
  "since": 1793656986.323471,
- "heartbeat": 1793657213.8885162,
+ "heartbeat": 1793657272.8453379,
  "provider": "Claude Code",
  "since_utc": "2026-11-02 22:03",
  "activity": "Visual pass: fixes in, Studio tests running; Mac update + Dock cleanup next"

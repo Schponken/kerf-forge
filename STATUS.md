@@ -435,3 +435,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   clearance_min requirements were 720 s of it. geom.mesh_gap screen -> ~72 s, same exact value. Printed mass now
   cached per shape + spec (~45 s per check). Next hotspots from the same run: core FEA ~300 s (6 parts), print stage
   68 s, fit 23 s.
+
+## 2026-11-02 (Claude, visual pass)
+- Screenshotted every Studio screen (project tabs, failing checks, new design, My parts, Work, all projects, printer, light theme, 900 px window). Fixed: in a small window the sidebar's Activity list drew over the page (sidebar now clips, its list scrolls); header buttons compact so the tagline fits in two lines; Files tab label "Optimiser results" instead of out/OPTIMISE.md. Mac installer now keeps exactly one Kerf Studio Dock tile (tools/mac/dock_dedupe.py).
+- test_studio's auto-fix test no longer depends on live claims (a claim item containing the word "bad" made it flaky after the claim guard).
