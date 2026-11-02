@@ -242,7 +242,13 @@ def wiring_md(proj, model) -> str:
               "These ratings only hold with the following caps set; the checks below assume them:", ""]
         L += [f"- **{', '.join(ids)}**: {why} (peak {pk:g} A{' each' if len(ids) > 1 else ''})."
               for (why, pk), ids in _limit_groups(model).items()] + [""]
-    L += ["## Runs (cut each wire to the length shown; it includes 15 % slack over the routed path)", "",
+    L += ["## How to read this guide", "",
+          "A means amps (current); V means volts. Avg is normal use; Peak is the brief maximum. "
+          "AWG is wire thickness: a lower AWG number means a thicker wire. Cut mm is the length to cut, "
+          "including the listed slack; do not add that slack a second time.", "",
+          "Use the [wiring diagram](wiring.svg) with the connections below, and follow the "
+          "[assembly guide](ASSEMBLY.md) for the order of work.", "",
+          "## Runs (cut each wire to the length shown; it includes 15 % slack over the routed path)", "",
           "| Run | From | To | Kind | V | AWG | Colour | Avg A | Peak A | Routed mm | Cut mm |", "|---|---|---|---|---|---|---|---|---|---|---|"]
     for w in model["wires"]:
         L.append(f"| {w['id']} | {end_name(proj, w, 'from')} | {w['to']} | {w['kind']} | {w.get('v') or ''} | {w['gauge']} | {w.get('color') or ''} | "

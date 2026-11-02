@@ -2,6 +2,10 @@
 # One-command environment setup. Safe to re-run. Ends with `kerf doctor`, which must print ALL OK.
 set -euo pipefail
 cd "$(dirname "$0")"
+if ! command -v node >/dev/null || ! command -v npm >/dev/null; then
+  echo "Setup needs Node.js and npm. Install the current LTS from https://nodejs.org, open a new terminal, then run ./setup.sh again."
+  exit 1
+fi
 # Mac: first (so a later failing step can't skip it), keep the Kerf Studio app in step with its source; rebuilds it in the background when tools/mac changed
 # (without Apple's command line tools it installs the single-window launcher; with them, the native one-window app)
 if [ "$(uname)" = "Darwin" ] && [ -d "$HOME/Applications/Kerf Studio.app" ]; then
@@ -30,10 +34,9 @@ if [ ! -d /usr/share/kicad/symbols ]; then
 fi
 .venv/bin/python tools/fetch_kicad_symbols.py
 (cd tools/render && npm ci --silent --no-audit --no-fund)
-# Chromium for headless rendering: use the preinstalled Playwright browser if present, else install it.
-if ! ls "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"/chromium-* >/dev/null 2>&1 && ! ls ~/.cache/ms-playwright/chromium-* >/dev/null 2>&1; then
-  (cd tools/render && npx playwright install chromium)
-fi
+# The locked Playwright version checks its own browser revision and headless shell.
+# This is a no-op when cached, and repairs interrupted installs or an older browser cache.
+(cd tools/render && npx --no-install playwright install chromium)
 # Firmware check (kerf/fwcheck.py, `kerf firmware-check`): arduino-cli, the arduino:avr core and the sketch libraries at
 # pinned versions under .cache/arduino (all from downloads.arduino.cc), and simavr to run the compiled Nano program.
 # Anything that cannot be installed is reported here and by `kerf doctor`; the check then says NOT RUN, never PASS.

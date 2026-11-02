@@ -470,3 +470,37 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Job panel: a one-line strip (stage, current question, counts, latest finding) appears by itself when research starts and stays visible when the panel is folded; it opens the full trail.
 - Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
 - Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
+
+
+## 2026-11-02 — Fresh-eyes usability pass, ChatGPT: setup and handoff
+- Fixed setup recovery in one round: missing Node/npm is actionable before Python installs; the locked Playwright installer repairs old/interrupted Chromium/headless-shell caches and is a no-op when cached; both Mac dependency stamps include package-lock.json. Dirty/offline startup preserves files, explains why updates were skipped, and still opens Studio. Existing single-window behavior is retained.
+- Fixed generated handoff: shopping-list context and incomplete-budget notice appear before the table; pipes/newlines/HTML characters and URL punctuation cannot corrupt Markdown, while CSV values and price totals stay unchanged. Assembly directs test-fitting before bulk printing and links its guides; purchased-only builds no longer get an invented printing step. Wiring explains units and existing cut-length/slack and links the diagram/assembly guide. PRINT_SETTINGS.md next-step guidance was already fixed in PR #1.
+- Validation: 24 affected tests passed, including isolated setup retry/missing-tool cases, lockfile-only changes, offline/dirty launch, generated-document edge cases, and existing launcher/assembly/electrical tests. The real locked Chromium installer returned successfully with no downloads; bash syntax checks passed. No full suite or all-project build was run. Native Mac execution is unavailable on this Linux machine; command-stub launch tests passed.
+- Evidence: docs/usability/2026-11-02/HANDOFF.md and a 206 KB contact sheet of rendered generated examples. Full captures stay outside Git. Combined Studio/viewer/handoff contact sheets remain below 1 MB.
+
+## 2026-11-02 — Fresh-eyes usability pass, ChatGPT: final findings summary
+- Studio/CLI first-use, recovery, invalid-input and concurrent-job findings are delivered in PR #1; viewer pending/failed/skipped-result, mass, output-link, clipboard and long-name findings are delivered in PR #2. Both were independently reviewed and merged by another session, not by Codex.
+- Setup/output handoff findings are in the final area PR for review. All observed usability findings in these rounds are fixed or explicitly scoped below; the original viewer technical-note finding is superseded by PR #2's reuse of shared explanations and preserved raw details.
+- Left to owners/external validation: the two documented pre-existing PCA9685/KST engineering inconsistencies; reserved Studio Checks wording/Follow live/Work areas; native Mac execution, physical printer sends and paid Claude design runs. No check, threshold, catalog dimension or review.json was weakened or edited.
+- Environment remains installed and validated in this task. Draft/runtime specify unrestricted public Internet, confirmed by public HTTPS 200. Scripts, current workflow and explicit repository location are saved. At the time of setup it could not be published through the available tools. Claude now reports a replacement environment Published; this original instance does not independently establish a fresh-task restore of that replacement.
+- Setup/handoff refresh: merged main's current Mac launcher and held-by/tool guidance, preserving both. Extended shopping-name escaping to the budget and largest-pack notes; a regression proves HTML/special names stay readable there and CSV remains exact. All 27 affected setup/handoff/launcher/assembly/electrical tests pass, including the new upstream held-by/tool test. Shell syntax and this PR's whitespace checks pass. Contact sheets remain about 714 KB total. PR #3 is ready; #4–#7 cover the completed follow-on queue, with claims released and no self-merges.
+
+## 2026-11-02 — Setup/handoff PR #3 refreshed (Codex, handoff-refresh)
+- Integrated current main, retaining both STATUS histories, the completed catalog-fingerprint item and this PR's
+  completed first-use scope. The Mac launcher now uses main's shared update_repo.sh (including clean-line merging
+  of local edits), retains the lockfile-sensitive dependency stamp, and displays offline/blocked/update results as
+  STATUS lines in the native app. Existing setup retry, priced-guide and assembly-order fixes remain intact.
+- Startup tests now use real temporary local Git origins rather than the old dirty-tree/pull stubs. They prove
+  conflicting local work remains unchanged, the blocking file/reason is visible, offline startup retains the installed
+  revision, and Studio still starts. Main's local-change merge test remains intact.
+- 56 targeted tests passed: setup recovery, handoff, Mac launcher, electrical, firmware setup and nine named ship/BOM/
+  document tests. bash syntax and git diff --check pass. An initial test_ship.py file selection accidentally reached
+  its all-project assembly case; only this session's pytest was interrupted. No result is claimed for that broad run;
+  the successful rerun uses exact ship nodes. No full batch, native app launch, printer send or paid model run.
+
+## 2026-11-02 — Setup/handoff PR #3 final integration refresh (Codex)
+- Integrated main through eb5fc90, preserving both STATUS histories and all current Studio/stress-pause changes.
+  The installer auto-merge retains main's Dock deduplication exactly; its only difference from main remains the
+  already-tested package-lock-sensitive dependency stamp. The released Fresh-eyes claim stays deleted.
+- bash syntax and git diff --check pass. No new behavior was introduced by conflict resolution, so the earlier
+  56-test result remains historical and was not rerun for this merge. No native app, installer, solver or full batch run.

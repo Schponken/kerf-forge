@@ -9,10 +9,18 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$HOME/.claude/loc
 export LANG="${LANG:-en_US.UTF-8}" PYTHONUTF8=1 PYTHONUNBUFFERED=1
 cd "$REPO" 2>/dev/null || { echo "ERROR Kerf Forge folder not found: $REPO"; exit 1; }
 echo "--- $(date) Kerf Studio app start"
-# updates: local changes are set aside and put back (tools/mac/update_repo.sh); skipped quietly when offline
+# The shared updater preserves local edits; report its recovery guidance in the app window too.
 echo "STATUS Checking for updates…"
-./tools/mac/update_repo.sh . 2>&1 || true
-SUM="$(shasum pyproject.toml setup.sh tools/render/package.json 2>/dev/null | shasum | cut -c1-16)"
+./tools/mac/update_repo.sh . 2>&1 | while IFS= read -r line; do
+  case "$line" in
+    OFFLINE*) echo "STATUS Could not update; keeping this copy. ${line#OFFLINE }" ;;
+    NOT-UPDATED*) echo "STATUS Update skipped; keeping this copy. ${line#NOT-UPDATED }" ;;
+    UPDATED*) echo "STATUS Updated: ${line#UPDATED }" ;;
+    UP-TO-DATE) : ;;
+    *) echo "  $line" ;;
+  esac
+done
+SUM="$(shasum pyproject.toml setup.sh tools/render/package.json tools/render/package-lock.json 2>/dev/null | shasum | cut -c1-16)"
 if [ "$SUM" != "$(cat "$STATE/deps.sum" 2>/dev/null)" ] || [ ! -x .venv/bin/kerf ]; then
   echo "STATUS Installing updates (the first time can take a few minutes)…"
   # indent setup's output so none of its lines are mistaken for STATUS / ERROR lines

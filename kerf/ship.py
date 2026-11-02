@@ -148,27 +148,46 @@ def price_bom(rows: list[dict], prices: dict, part_reports: dict | None = None, 
 
 
 def write_bom(rows: list[dict], summary: dict, outdir: Path):
+    from html import escape
+    from urllib.parse import quote, urlsplit
+
+    def cell(value):
+        text = str(value).replace("\r\n", "\n").replace("\r", "\n")
+        return escape(text, quote=False).replace("|", "\\|").replace("\n", "<br>")
+
     fields = ["type", "item", "qty", "spec", "note", "buy", "unit_usd", "total_usd"]
     with open(outdir / "bom.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
-    md = ["| Type | Item | Qty | Spec | Note | Buy | Unit $ | Total $ |", "|---|---|---|---|---|---|---|---|"]
+    md = ["# Shopping list", "",
+          "Use this list to gather parts before assembly. Printed rows account for filament, not a print service. "
+          "Unit $ and Total $ price the quantity used; buying whole packs can cost more (see the pack estimate below). "
+          "A source link is a reference page, not a confirmed shop link.", "",
+          *( ["Some items are not priced yet: the subtotal is not a complete budget.", ""] if summary.get("unpriced") else [] ),
+          "| Type | Item | Qty | Spec | Note | Buy | Unit $ | Total $ |", "|---|---|---|---|---|---|---|---|"]
     for r in rows:
         # a priced row links where to buy; an unpriced one only has its datasheet / source page, and says so
-        buy = (f"[buy]({r['buy']})" if r.get("price_key") or r.get("type") == "printed" and r.get("unit_usd") != ""
-               else f"[source]({r['buy']})") if r.get("buy") else ""
-        md.append(f"| {r['type']} | {r['item']} | {r['qty']} | {r['spec']} | {r['note']} | {buy} | {r['unit_usd']} | {r['total_usd']} |")
+        raw_url = r.get("buy") or ""
+        try:
+            parsed = urlsplit(raw_url)
+            url = quote(raw_url, safe=":/?#[]@!$&'*+,;=%~._-") if parsed.scheme in ("http", "https") and parsed.netloc else ""
+        except ValueError:
+            url = ""
+        buy = (f"[buy]({url})" if r.get("price_key") or r.get("type") == "printed" and r.get("unit_usd") != ""
+               else f"[source]({url})") if url else ("Link unavailable" if raw_url else "")
+        values = [cell(r[k]) if k != "buy" else buy for k in fields]
+        md.append("| " + " | ".join(values) + " |")
     md.append("")
     md.append((f"**Priced so far: ${summary['total_usd']:.2f}**. Not priced yet ({len(summary['unpriced'])}): "
-               f"{', '.join(summary['unpriced'])}, so the real total is higher"
+               f"{', '.join(map(cell, summary['unpriced']))}, so the real total is higher"
                if summary["unpriced"] else f"**Total: ${summary['total_usd']:.2f}**")
               + (f" — {len(summary['approximate'])} row(s) priced from a different pack (see their notes): "
-                 f"{', '.join(summary['approximate'])}" if summary.get("approximate") else "")
+                 f"{', '.join(map(cell, summary['approximate']))}" if summary.get("approximate") else "")
               + (f" — {len(summary['on_hand'])} row(s) partly or wholly from your parts on hand (not counted): "
-                 f"{', '.join(summary['on_hand'])}" if summary.get("on_hand") else "")
+                 f"{', '.join(map(cell, summary['on_hand']))}" if summary.get("on_hand") else "")
               + ". Fasteners are priced per piece from assortment packs; printed parts as filament only. Prices are a "
-                "dated snapshot (catalog/prices.json), shipping and tax excluded.")
+                "dated snapshot; confirm current prices at the shop. Shipping and tax are excluded.")
     if summary.get("packs_usd"):
         md.append("")
         md.append(f"**Buying whole packs** (a 100-pack of screws, a filament spool, ...) for the priced rows costs "
@@ -181,7 +200,7 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
             n, q = summary["packs"][k], summary["pack_qty"][k]
             what = (f"{k.split(':', 1)[1]} filament, {n} x {q / 1000:g} kg spool" if k.startswith("material:")
                     else f"{names.get(k, k)}, {n} x pack of {q:g}")
-            return f"{what} = ${cost[k]:.2f}"
+            return f"{cell(what)} = ${cost[k]:.2f}"
         big = sorted(cost, key=lambda k: -cost[k])[:3]
         if big:
             md.append("Biggest packs: " + "; ".join(pack(k) for k in big) + ".")
@@ -477,6 +496,8 @@ def _is_horn_on_servo(proj, child: str, parent: str) -> bool:
 
 def _test_fit_step(proj) -> list[str]:
     """Step 0: make the printer's fits match before printing every part (kerf/calibrate.py)."""
+    if not proj.printed:
+        return []
     from . import calibrate as C
     printer = proj.data.get("printer") or C.DEFAULT_PRINTER
     mats = sorted({it.spec.get("material", "PETG") for it in proj.printed.values()})
@@ -519,16 +540,18 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
          "Generated by `kerf build` from the joint tree, `assembly.order` and the fastener/pin checks. Each picture shows "
          "the parts already fitted in grey and this step's part(s) in colour, moved back along the way they go on.", "",
          "## Before you start", "",
-         f"- Print every part in `plates/` (orientation is already set). Parts: {', '.join(proj.printed)}."]
+         (f"- Start with the test-fit in Step 0, then print the remaining parts from `plates/`. "
+          f"Read [print settings](plates/PRINT_SETTINGS.md) first; orientation is already set. Parts: {', '.join(proj.printed)}."
+          if proj.printed else "- This assembly has no printed parts. Gather the purchased parts from the shopping list before starting.")]
     tools = (sorted(keys) + (["soldering iron with a heat-set insert tip", "a flat plate to press inserts flush"] if any_insert else [])
              + (["a vise or small hammer to press dowel pins"] if any(not p.get('screw_pivot') and not p.get('shoulder') for p in all_pins) else [])
              + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for p in all_pins) else [])
              + wiring_tools(rep.get("electrical"))
              + sorted({t for it in proj.items.values() for t in (it.spec.get("tools") or [])}))
     L += ["- Tools:" + ("" if tools else " none")] + [f"  - {t}" for t in tools]
-    L += ["- Shopping list with links and prices: `bom.md`."]
+    L += ["- Shopping list with links and prices: [bom.md](bom.md)."]
     if firmware_info:
-        L.append("- First power-up and test: `firmware/BRINGUP.md`" + (f" with the program `{firmware_info['program']}`."
+        L.append("- First power-up and test: [firmware/BRINGUP.md](firmware/BRINGUP.md)" + (f" with the program `{firmware_info['program']}`."
                                                                       if firmware_info.get("program") else "."))
     L.append("")
     L += _test_fit_step(proj)

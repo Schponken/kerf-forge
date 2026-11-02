@@ -33,7 +33,7 @@ fi
 NATIVE=1
 xcrun -f swiftc >/dev/null 2>&1 || NATIVE=0
 # remember which dependency set is installed, so the app only re-runs setup when it changes
-(cd "$REPO" && shasum pyproject.toml setup.sh tools/render/package.json | shasum | cut -c1-16) > "$STATE/deps.sum"
+(cd "$REPO" && shasum pyproject.toml setup.sh tools/render/package.json tools/render/package-lock.json | shasum | cut -c1-16) > "$STATE/deps.sum"
 
 # close what the old launcher left open: Kerf Studio copies (old browser-window version) and a running app
 osascript -e 'if application id "dev.kerfforge.studio" is running then tell application id "dev.kerfforge.studio" to quit' >/dev/null 2>&1 || true
