@@ -170,6 +170,11 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 #mc.min .mcbody,#mc.min #mctw{display:none}
 #mctw{height:min(340px,38vh);margin:0 14px;flex:none}#mctw[hidden]{display:none}
 .fxa.up,.fxs.up{color:var(--ok)}.fxa.down,.fxs.down{color:var(--bad)}.fxs.meh{color:#e0a030}.fxs{font-weight:600}
+.scene{display:flex;gap:14px;align-items:center;padding:12px 14px;margin:4px 0 10px;border-radius:12px;background:linear-gradient(135deg,rgba(255,140,40,.12),rgba(255,140,40,.03));border:1px solid rgba(255,140,40,.25)}
+.scene .stage{position:relative;width:64px;height:52px;flex:none}.scene .who{position:absolute;left:2px;bottom:0;font-size:34px;animation:sbob 1.6s ease-in-out infinite}
+.scene .tool{position:absolute;right:0;top:0;font-size:22px;animation:swork 1.1s ease-in-out infinite}
+@keyframes sbob{50%{transform:translateY(-4px)}}@keyframes swork{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(14deg) translateY(3px)}}
+@media (prefers-reduced-motion:reduce){.scene .who,.scene .tool{animation:none}}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{width:min(1100px,94vw);height:min(760px,88vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
@@ -1010,6 +1015,28 @@ function stepper(items, key) {   // items: [{k,label,icon,state}] state: done|ac
     return `<div class="step ${it.state}${f}"><div class="node">${it.state === "done" ? "✓" : it.icon}</div><label>${esc(it.label)}</label></div>`; }).join("")}</div>`;
 }
 
+/* the workshop: one friendly scene for the stage a job is in, so a newcomer knows what is happening and why */
+const SCENES = {
+  research: ["🧑‍🔬", "📚", "Doing the homework", "Looking at designs people already built and the real sizes of the parts to buy, so it doesn't reinvent what works."],
+  plan: ["🧑‍💼", "🗺", "Drawing up the plan", "Deciding what the parts are, how strong they must be and how they join, written down before anything is drawn."],
+  contract: ["🧑‍💼", "🧩", "Listing the parts", "Writing the parts list, the joints that move and the numbers each check must meet."],
+  parts: ["🧑‍🎨", "✏️", "Drawing the parts", "Each printed part is drawn in 3D to fit the bought parts exactly."],
+  check: ["🧑‍🔧", "🧪", "Testing and fixing", "Putting the parts together on the computer: does everything fit, move without hitting, and hold its load? Anything that fails gets fixed."],
+  build: ["🏭", "📦", "Making the files", "Creating the print files, the shopping list, the assembly guide and pictures."],
+  review: ["🕵️", "🔍", "Independent inspection", "A separate reviewer who didn't design it looks it over for anything that would snap, jam or not print."],
+  ship: ["💾", "✅", "Saving the work", "Saving everything so nothing is lost."],
+  print: ["🖨", "📐", "Checking it can print", "Thin walls, steep overhangs and bed size are checked so every part prints cleanly."],
+  fit: ["🔩", "🧩", "Checking parts fit", "Every screw hole lines up with its partner and can be reached with a tool."],
+  motion: ["🤖", "↻", "Moving every joint", "Each joint is swung through its whole range to make sure nothing collides."],
+  requirements: ["🧑‍🔬", "📊", "Running the engineering checks", "Strength, weight, balance, battery and the other numbers this design must meet."],
+  export: ["🏭", "📦", "Making the files", "Print plates for the printer, the shopping list and the assembly guide."],
+  renders: ["📸", "🖼", "Taking pictures", "Pictures of the assembly and every part, so you can see what you'll get."],
+};
+function scene(k, done) {
+  const sc = done ? ["🎉", "✅", "Finished", "All done. Open the project to see the result."] : SCENES[k] || ["🤖", "⚙️", "Getting started", "Setting up the workbench."];
+  return `<div class="scene"><div class="stage"><span class="who">${sc[0]}</span><span class="tool">${sc[1]}</span></div>
+    <div><b>${esc(sc[2])}</b><div class="note">${esc(sc[3])}</div></div></div>`;
+}
 function renderMc(j) {
   const mc = $("#mc"); mc.classList.toggle("running", j.state === "running");
   $("#mctitle").textContent = j.label;
@@ -1026,7 +1053,7 @@ function renderMc(j) {
     const curPhase = [...tools].reverse().find(e => e.phase)?.phase;
     const ci = PHASES.findIndex(p => p[0] === curPhase);
     pct = j.state === "done" ? 100 : Math.max(4, ((ci + 1) / PHASES.length) * 100);
-    html += `<div class="sect">Design phases</div>` + stepper(PHASES.map(([k, l, ic], i) => ({k, label: l, icon: ic,
+    html += scene(curPhase || "research", j.state === "done") + `<div class="sect">Design phases</div>` + stepper(PHASES.map(([k, l, ic], i) => ({k, label: l, icon: ic,
       state: j.state === "done" ? "done" : (k === curPhase && j.state === "running") ? "active" : (i < ci || seen.has(k)) ? "done" : ""})), "ph");
     const hint = S.ev.find(e => e.k === "hint");
     if (hint) html += readyCard({code: hint.code, why: hint.code === "auth" ? "Claude Code's sign-in expired, so the design stopped before it began." :
@@ -1043,7 +1070,7 @@ function renderMc(j) {
     pct = st.fin ? 100 : (ndone + (st.cur ? 0.5 : 0)) / stages.length * 100;
     if (cp) { pct = ((cp.i - 1) + pct / 100) / cp.n * 100;
       html += `<div class="banner info">Project ${cp.i} of ${cp.n}: <b>${esc(st.start ? st.start.project : cp.name)}</b></div>`; }
-    html += `<div class="sect">Pipeline</div>` + stepper(stages.map((s, i) => ({k: s, label: STAGE_NAMES[s] || s, icon: i + 1,
+    html += scene(st.cur || stages.find(x => !st.done.has(x)) || "build", !!st.fin) + `<div class="sect">Pipeline</div>` + stepper(stages.map((s, i) => ({k: s, label: STAGE_NAMES[s] || s, icon: i + 1,
       state: st.done.has(s) ? "done" : s === st.cur ? "active" : ""})), pkey);
     const parts = ev.filter(e => e.k === "part");
     if (parts.length) html += `<div class="sect">Printed parts · ${parts.length}${st.start ? " of " + st.start.parts.length : ""}</div><div class="pchips">${parts.map(p =>
@@ -1054,7 +1081,7 @@ function renderMc(j) {
     const reqs = ev.filter(e => e.k === "req");
     if (reqs.length || st.cur === "requirements") {
       const total = st.start ? st.start.reqs.length : reqs.length;
-      html += `<div class="sect">Engineering checks · ${reqs.length} of ${total}</div>${reqs.map(r => `<div class="lrow${fresh(`mc:${pkey}:req:${r.id}`)}"><div class="n">${esc(r.id)}<small>${esc(r.check)}</small></div>
+      html += `<div class="sect">Engineering checks · ${reqs.length} of ${total}</div>${reqs.map(r => `<div class="lrow${fresh(`mc:${pkey}:req:${r.id}`)}"><div class="n" title="${esc(glossCheck(r.check).means)}">${esc(glossCheck(r.check).name)}<small>${esc(r.id)}</small></div>
         <div>${r.skipped ? `<span class="note">skipped in quick mode</span>` : mbar(r, `mc:${pkey}:${r.id}`) || `<span class="note">${fmt(r.value)}${r.unit ? " " + esc(r.unit) : ""} · ${limitText(r)}</span>`}</div>
         <span class="badge ${r.skipped ? "skip" : r.ok ? "ok" : "bad"}">${r.skipped ? "SKIP" : r.ok ? "PASS" : "FAIL"}</span></div>`).join("")}
         ${st.cur === "requirements" && reqs.length < total ? `<div class="lrow"><div class="n">${esc(st.start.reqs[reqs.length] || "")}<small>computing…</small></div><div class="sk" style="height:7px"></div><span class="badge skip">…</span></div>` : ""}`;
