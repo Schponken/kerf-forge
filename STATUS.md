@@ -1378,6 +1378,11 @@ pushed for it and what I know:
   still being designed by another session (parallel jaws); grip_hold needs prismatic / geared jaw support there.
   Note: req_dynamic.impact_fea (another session, same evening) is the 1-DOF FEA-spring drop; drop_impact adds the
   rigid-body rotation (effective mass of an off-centre hit) and the Hertz contact in series.
+- Verification (2026-11-02): tests/test_sim.py 8 passed; tests/test_urdf + test_catalog + test_docs + test_sim: 85 passed, 2 failed
+  (test_catalog board_proxy 12.07 vs 10.07 and test_docs `modifiers`, both also fail without this work). `kerf check robot_arm`:
+  move_speed / grip_150g ok; the project FAILs on sharp inside corners in yoke_r and gripper (geometry rules, not this item).
+  `kerf verify --fast` and a full pytest could not finish here: killed for memory (exit 137) / timed out with other
+  sessions' verifies sharing the 7 GB box; rerun them on a quiet machine.
 
 ## 2026-11-02 08:50 UTC-5 — Placeholder parts no longer flood the report (Spencer: "don't let this happen again")
 - Studio showed the Hawk-fold contract (every part still a STUB box) as "64 problems to fix". Now `ctx.stub("why")`
