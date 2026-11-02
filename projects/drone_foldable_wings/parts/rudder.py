@@ -1,7 +1,7 @@
 """Rudder (PLA, 1 wall, 5 %): the fin's aft part from fin.surfaces, turning about the hinge line on the fin's right
 side (tape hinge); its bottom is 1 mm above the tail mount's top (turning about the aft-leaning hinge only lifts it).
 
-Control horn on the left side, in line with the rudder servo's arm: a horizontal plate whose underside rises 50 deg
+Control horn on the left side (pushrod from the rudder servo arm, 4 mm further out, runs in at a slight angle): a horizontal plate whose underside rises 50 deg
 outwards (it prints standing on the rudder's bottom, print_rot [0, 0, 0], with no flat overhang), vertical hole for
 the 1.2 mm music-wire pushrod's Z-bend 14.6 mm out from the hinge line.
 """
@@ -17,7 +17,7 @@ M = importlib.util.module_from_spec(_m); _m.loader.exec_module(M)
 BOTTOM_GAP = 1.0      # above the tail mount's top
 PUSHROD_HOLE = 1.3    # snug on the 1.2 mm music wire (DESIGN.md "short 1.2 mm pushrods"), as fpv_wing's horn
 LEVER = 14.6          # hole out from the hinge line
-HORN_UP = 17.5        # horn top above the rudder's bottom
+HORN_UP = 20.0        # horn top above the rudder's bottom (its underside stays above the bottom face)
 HORN_X = (4.0, 12.0)  # horn's chordwise extent behind the hinge line (clear of the fin's V face at full throw)
 SLOPE = 1.2           # underside rise per mm outwards (50 deg)
 
@@ -33,7 +33,8 @@ def build(ctx):
     h = a + (zt - a[2]) / u[2] * u                         # hinge point at the horn's top height
     y_hole = h[1] - LEVER
     y_tip = y_hole - 1.6
-    sec = Plane.YZ * Polygon((0.0, zt), (y_tip, zt), (y_tip, zt - 3.0), (0.0, zt - 3.0 + SLOPE * y_tip), align=None)
+    y_root = -1.0                                          # inside the rudder, just left of its centre plane
+    sec = Plane.YZ * Polygon((y_root, zt), (y_tip, zt), (y_tip, zt - 3.0), (y_root, zt - 3.0 + SLOPE * (y_tip - y_root)), align=None)
     horn = Pos(h[0] + HORN_X[0], 0, 0) * extrude(sec, amount=HORN_X[1] - HORN_X[0])
     horn -= Pos(h[0] + HORN_X[0] + 2.0, y_hole, zt) * Cylinder(PUSHROD_HOLE / 2, 20)     # why: pushrod Z-bend hole
     rud += ctx.add(horn, why="control horn in line with the rudder servo arm; underside 50 deg so it prints standing", kind="horn")

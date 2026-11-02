@@ -2,12 +2,13 @@
 elevator cut off it by kerf.aero.elevon_split along one STRAIGHT hinge line from tip to tip (the planform's 66 %
 chord line at the tips; 65.4 % at the root), so the elevator is one piece across the full span. Bottom hinge (tape
 along the bottom), and on top the whole V gap is on the stabiliser's side: its aft face leans forward by
-elev_throw + 4 deg, the elevator's front face is square to the chord (it is the elevator's bed face), so the
-elevator swings +/- elev_throw clear.
+30 deg (V_HALF), the elevator's front face is square to the chord (it is the elevator's bed face), so the elevator
+swings +/- elev_throw clear.
 
 Held under the tail mount by 2 M3 from below into the mount's heat-set inserts (group `hstab`); the mount's
-underside is this part's own upper surface. Print: standing on its leading edge (print_rot [0, -90, 0]): span along
-the bed, layers along the span, the surfaces near vertical (no supports; brim for the narrow nose line).
+underside is this part's own upper surface. Print: standing on its flat hinge face, leading edge up (print_rot
+[0, 120, 0] = 90 + V_HALF): span along the bed and along the layers, upper surface leaning <= 36 deg past vertical,
+no supports.
 """
 from build123d import *
 import numpy as np
@@ -20,7 +21,8 @@ _m = importlib.util.spec_from_file_location("dfw_tail_mount", pathlib.Path(__fil
 M = importlib.util.module_from_spec(_m); _m.loader.exec_module(M)
 
 HINGE_GAP = 0.6       # elevator front face behind the hinge line (tape hinge)
-V_MARGIN = 4.0        # deg of V gap beyond the elevator's up throw
+V_HALF = 30.0         # deg the stab's aft face leans forward: >= the largest elev_throw param (28) + 2, and a fixed
+                      # angle so the print orientation (standing on this face) does not change with the throw
 
 
 def surfaces(p):
@@ -28,7 +30,7 @@ def surfaces(p):
     pf = L.tail_planform(p)
     half = p.htail_span / 2
     solid = aero.wing_solid(pf, -half, half, stations=3)      # 3 sections: root chord at y 0
-    wing, _, (a, b) = aero.elevon_split(pf, solid, -half, half, p.elev_hinge_frac, gap_deg=2 * (p.elev_throw + V_MARGIN))
+    wing, _, (a, b) = aero.elevon_split(pf, solid, -half, half, p.elev_hinge_frac, gap_deg=2 * V_HALF)
     _, surf, _ = aero.elevon_split(pf, solid, -half, half, p.elev_hinge_frac, gap_deg=0.0, gap=HINGE_GAP)
     return aero.largest(wing), aero.largest(surf), a, b
 
