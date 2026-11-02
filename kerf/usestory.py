@@ -142,6 +142,17 @@ def requirements(proj) -> list[dict]:
         elif kind == "other" and "covered_by" in h:
             out.append({"id": rid, "check": "story_covered", "ids": list(h["covered_by"]), "what": h.get("what", ""),
                         "why": why or f"use story: {h.get('what', '')}"})
+    gw = [h for h in s.get("goes_wrong") or [] if h.get("hazard") == "gloves" and h.get("survive", True) is not False]
+    gloved = {hd["item"] for h in gw for hd in h.get("handles") or []}
+    for hd in s.get("handles") or []:          # things touched in use: a bare finger (gloved when the story says so)
+        if hd["item"] in gloved:
+            continue
+        out.append({"id": f"story_handle_{hd['item']}", "check": "access_opening", "item": hd["item"],
+                    "from_dir": hd.get("from", [0, 0, 1]), "gloved": bool(gw), "ignore": hd.get("ignore", []),
+                    "why": f"use story: {hd['item']} is handled {hd.get('how_often', 'in use')}"})
+    if s.get("field_repair"):
+        out.append({"id": "story_field_repair", "check": "repair_access", "parts": list(s["field_repair"]),
+                    "why": "use story: these parts are replaced in the field, on the finished device"})
     return out
 
 

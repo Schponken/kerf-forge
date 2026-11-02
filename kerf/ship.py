@@ -635,6 +635,8 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
               "last threads only, kept off the printed plastic; nyloc: the nylon ring goes on last):", ""]
         L += [f"- `{g}`: {m}" for g, m in sorted(lock.items())] + [""]
     L += story_notes(rep.get("use_story"))
+    from .req_human import notes as carry_notes
+    L += carry_notes(proj, rep)
     if rep.get("failure_modes"):
         from .failure import lines
         L += ["## If it breaks", "",

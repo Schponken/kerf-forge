@@ -291,3 +291,34 @@ def horn_paths(asm, step_mm: float = 0.5) -> tuple[list, list]:
                             f"{h['mm_from_seat']} mm before it is seated. Fit the servo last instead: give {e.parent} an "
                             f"`insert:` (the way it slides in) so it goes in onto the held sub-assembly")
     return results, problems
+
+
+def repair_reach(asm, parts, n_azimuth: int = 12) -> list[dict]:
+    """Field repair: every screw that holds one of `parts` (it is the screwed item or the receiver), reached on the
+    finished device (everything fitted), not in build order. Each row: item, group, screw, key, straight, ball_end."""
+    items = asm.proj.items
+    parts = set(parts)
+    female_items: dict = {}
+    for i, it in items.items():
+        for fs in getattr(it.shape, "kerf_sites", []) if it.shape is not None else []:
+            if fs.role == "female":
+                female_items.setdefault(fs.group, set()).add(i)
+    present = [(i, _rigid_part(it.shape)) for i, it in items.items() if it.shape is not None and it.role != "keepout"]
+    los = [geom.bbox(sh) for _, sh in present]
+    extent = float(np.linalg.norm(np.max([b[1] for b in los], axis=0) - np.min([b[0] for b in los], axis=0))) if los else 1.0
+    rows = []
+    for iid, it in items.items():
+        for s in getattr(it.shape, "kerf_sites", []) if it.shape is not None else []:
+            if s.role != "male" or not ({iid} | female_items.get(s.group, set())) & parts:
+                continue
+            w = it.shape.location * s.loc
+            o, z = geom.world_point(w, (0, 0, 0)), geom.world_dir(w, (0, 0, 1))
+            k = key_spec(s.screw, s.kind)
+            k["extent"] = extent
+            start = o + z * (screw_spec(s.screw)["head_h"] if s.kind in HEAD_ON_SURFACE else 0.0) + z * 0.05
+            hits = _blocked(_rod(start, z, k["r"], k["reach"]), present)
+            if not hits and _enclosed(start + z * k["reach"], present, extent):
+                hits = ["(a closed cavity)"]
+            rows.append({"item": iid, "group": s.group, "screw": s.screw, "key_mm": k["s"], "straight": not hits,
+                         "blocked_by": hits, "ball_end": (not hits) or _ball_end_dir(start, z, k, present, n_azimuth) is not None})
+    return rows

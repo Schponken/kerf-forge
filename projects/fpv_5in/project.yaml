@@ -148,6 +148,8 @@ use_story:
   who: "a hobby FPV freestyle pilot, flying alone at a park or a field"
   where: [outdoor, field]
   how_often: "2-3 sessions a week, 5-6 packs a session"
+  carry_by: "the body sides, props off"
+  field_repair: [arm_1]          # arms are the designed weak link: swapped at the field with a hex key
   goes_wrong:
     - {hazard: crash, speed_m_s: 15, survive: false,
        consequence: "a hard crash breaks an arm first: it is the cheapest printed part (20 g, about 1 h to print); swap it with its two frame bolts and four motor screws in about 10 minutes and carry spare arms"}

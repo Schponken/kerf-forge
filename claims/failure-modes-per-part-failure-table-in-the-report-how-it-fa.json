@@ -2,6 +2,6 @@
  "item": "Failure modes: per-part failure table in the report (how it fails, what it takes with it, repair time); `weak_link` requirement proving the cheap part fails before the expensive one under the crash case",
  "session": "0f43a4e722",
  "since": 1793585665.9654949,
- "heartbeat": 1793586629.656747,
+ "heartbeat": 1793586828.3951285,
  "since_utc": "2026-11-02 02:14"
 }

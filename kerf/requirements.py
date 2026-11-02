@@ -796,3 +796,4 @@ from . import req_dynamic  # noqa: E402,F401  (impact_fea, stop_impact, natural_
 from . import req_motion  # noqa: E402,F401  (grip_hold, joint_speed, drop_impact: MuJoCo, kerf/sim.py)
 from . import failure  # noqa: E402,F401  (weak_link)
 from . import req_life  # noqa: E402,F401  (flex_strain, creep_limit, screw_locking)
+from . import req_human  # noqa: E402,F401  (repair_access)

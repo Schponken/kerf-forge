@@ -1325,3 +1325,10 @@ pushed for it and what I know:
   requirement and which check each rejected neighbour failed. tests/test_optimise.py (fake model + a real beam: finds
   t = 7 for the 24 MPa limit). Use story is now required only for projects in projects/ (test and scratch copies are not
   projects), so temp projects in tests are unaffected.
+
+## 2026-11-01 23:40 UTC-5 — Human factors (done), session e3d8373e
+- kerf/req_human.py + access.repair_reach: `repair_access` (field-repair parts come off the FINISHED device with a hex
+  key), use_story `handles` (finger opening, gloved when the story has gloves), `field_repair`, `carry_by`; ASSEMBLY.md
+  "Carrying and field repair". fpv_5in: arm_1's 6 screws reachable with a 2.5 mm key on the finished quad (PASS).
+- Running in the background: `kerf optimise fpv_5in` (arm_hole_2 / body_t / arm_t) after a full test run, aimed at the
+  two real fpv findings (arm_resonance, arm_breaks_first). The body crash couple is now written from the screw radii.
