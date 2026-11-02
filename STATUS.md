@@ -495,3 +495,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Separate saved follow-up: existing maker-output loops can follow output symlinks; their containment repair is
   assigned separately. This change validates design inputs and intentionally leaves maker-output behavior intact.
 - Completion is the source-export child only; the broader Fresh-eyes usability task remains open.
+
+## 2026-11-02 — Contained maker downloads (Codex)
+- Reproduced an output-file symlink exporting bytes from a harmless temporary outside fixture. Maker selections
+  now validate the output root, selected folders/files and recursive entries before starting ZIP creation. Links,
+  special files, wrong types and unreadable traversal fail explicitly; no partial archive is returned.
+- Missing optional outputs remain okay. Valid nested bytes/paths and the regular .glb preview exclusion remain;
+  additive supplier and fastener-report lists are preserved and exercised by a fixture. No changes to those constants.
+- 21 targeted tests PASS in 2.99 s: output root/selected/nested/file/dangling links, FIFO/socket rejection without
+  reads, wrong types, traversal errors, useful HTTP400, regular outputs and source-export rebuild compatibility.
+  Independent parent review approved. Stacked on source-export PR22; no full batch, actual project build, FEA,
+  printer action or real private data access. The earlier saved maker-output containment follow-up is resolved.
