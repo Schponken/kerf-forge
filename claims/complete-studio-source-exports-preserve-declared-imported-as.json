@@ -2,9 +2,9 @@
  "item": "Complete Studio source exports: preserve declared imported assets and nested design dependencies in downloaded project archives; reject missing or escaping sources without exporting caches or stale review approval.",
  "session": "codex-source-export",
  "since": 1793659733.627745,
- "heartbeat": 1793660639.6312141,
+ "heartbeat": 1793660699.095058,
  "provider": "Codex",
  "thread_id": "01a19e35-36af-7000-955d-7cf26845e15b",
  "since_utc": "2026-11-02 22:48",
- "activity": "Source ZIP closure verified with independent extracted geometry; malformed-contract errors covered; preparing PR"
+ "activity": "Source-export review complete; publishing scoped completed subitem and exact validation evidence"
 }
