@@ -214,3 +214,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Blocker for Spencer: the ChatGPT Codex environment "kerf-forge" will not publish ("Couldn't publish environment",
   no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
   then docs/status/CODEX_TASKS.md items in order.
+
+## 2026-11-02 20:35 UTC - Codex cloud environment published (Claude)
+- The first `kerf-forge` Codex environment was stuck: every publish failed and the draft never kept its settings. It is deleted (Spencer approved); a fresh one is **Published**.
+- Settings: install script `cd /workspace/kerf-forge && mkdir -p .cache/{uv,python,npm,playwright,xdg,matplotlib} && ./setup.sh`; full public internet; environment variables put the uv/npm/Playwright/XDG/matplotlib caches under `/workspace/kerf-forge/.cache` (gitignored, so the setup's downloads are still there when a task runs), `CC=gcc CXX=g++`.
+- Validation: `./setup.sh` exit 0, `kerf doctor` ALL OK. Warning only: in that sandbox the Arduino core download failed and simavr is missing, so `kerf firmware-check` reports NOT RUN there (whoever holds "Firmware proven" should make setup.sh install simavr or note it).
+- No new Codex chats started: open Codex PRs already cover the planned tasks (#4 parallel tests, #5 catalog fingerprints, #6 generated outputs/.gitignore, #3 setup retries); "Firmware proven" is claimed by another session. The Kerf manager reviews and merges them.
