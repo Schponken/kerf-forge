@@ -482,3 +482,27 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Boundary: batch lock/result publication still uses its older caller-index/upstream implementation. Only its
   read side is fixed here; a separate repair is needed before using a PR checkout to publish a batch. No batch,
   stress solve, physical hardware, project geometry, catalog, engineering threshold or review.json changed.
+
+## 2026-11-02 — Shared batch lifecycle (Codex)
+- Batch locking, minute heartbeats and result publication now use the isolated shared-main publisher. Fresh
+  locks block even the same session; each run gets a unique token, checked on every renewal/release/result.
+  Push races recheck current ownership, budget and existing holds. Lost push acknowledgements recognize the
+  same token. Caller code, branch, index and dirty files are never staged, committed, pulled, stashed or pushed.
+- Execution requires a clean checkout exactly at freshly fetched main and refuses unsynchronized/feature
+  revisions. It rechecks the tested HEAD/working files after the child finishes. Result and own-lock removal
+  publish atomically, naming the full tested SHA; newer main commits remain untested. Shared status reads the
+  saved result. An incomplete/unrecognized exit cannot replace previous evidence or become PASS; the existing
+  PLAN-only failure exclusion is explicit in the result and terminal output.
+- SIGINT/SIGTERM cleanup stops the process group and reaps the direct child before unlocking. Cancellation is
+  deferred while acquiring the lock or creating the child so cleanup always has the token/process handle.
+  SIGKILL/machine loss cannot guarantee process cleanup: the 90-minute lease expires, and surviving old processes
+  still need checking. This is not crash-proof exclusivity.
+- Validation: initial 49 focused claims/budget/batch tests passed; after review fixes, all 26 lifecycle tests
+  passed in 45.58 s, including real temporary bare remotes and harmless stand-in children, exact index bytes
+  after mtime-only changes, budget/lock races, lost acknowledgements, stale leases, later main changes, child
+  failure and cancellation injected at publication/spawn boundaries. Doctor ALL OK using existing dependencies.
+  The index regression found Git diff refreshing stat metadata: conflict detection now uses read-only ls-files;
+  that shared fix is also being folded into the prerequisite claims PR.
+- No actual kerf verify, full batch, stress solve, project geometry, catalog, threshold, hardware or review.json
+  was run/changed. The owner's full-batch hold remains in place. Stacked on the shared-claims PR; final base
+  compatibility integration and manager review remain before merge.

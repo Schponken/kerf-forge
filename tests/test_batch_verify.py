@@ -40,9 +40,10 @@ def test_status_says_when_a_batch_is_running(tmp_path, monkeypatch, capsys):
     """A fresh lock from any session means a full run is going: status says so instead of DUE."""
     lock = {"session": "other", "heartbeat": time.time() - 600}
     monkeypatch.setattr(bv, "shared_claims", lambda: {"batch-verify": lock})
-    monkeypatch.setattr(bv, "load", lambda: {})
-    monkeypatch.setattr(bv, "feature_commits", lambda c: [])
-    monkeypatch.setattr(bv, "plan_done", lambda: 0)
+    monkeypatch.setattr(bv.claims, "sync", lambda: "HEAD")
+    monkeypatch.setattr(bv, "load", lambda ref: {})
+    monkeypatch.setattr(bv, "feature_commits", lambda c, ref: [])
+    monkeypatch.setattr(bv, "plan_done", lambda text=None: 0)
     bv.cmd_status()
     assert "RUNNING NOW" in capsys.readouterr().out
     assert bv.lock_held_by_other("me") and not bv.lock_held_by_other("other")

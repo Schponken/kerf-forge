@@ -32,7 +32,8 @@ STALE_MIN = 90
 
 
 def git(*a, check=False, **kwargs):
-    return subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=check, **kwargs)
+    env = {**kwargs.pop("env", os.environ), "GIT_OPTIONAL_LOCKS": "0"}
+    return subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=check, env=env, **kwargs)
 
 
 def session_id() -> str:
@@ -109,7 +110,7 @@ def ensure_clean_git():
     gd = Path(git("rev-parse", "--git-dir").stdout.strip() or ".git")
     gd = gd if gd.is_absolute() else ROOT / gd
     busy = [n for n in ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD") if (gd / n).exists()]
-    if busy or git("diff", "--name-only", "--diff-filter=U").stdout.strip():
+    if busy or git("ls-files", "--unmerged").stdout.strip():
         raise GitBusy(f"claims: git is mid-{busy[0] if busy else 'conflict'}; finish or abort it first (nothing claimed)")
 
 
@@ -126,7 +127,7 @@ def sync():
         git("update-ref", "-d", ref)
 
 
-def publish(msg: str, change) -> bool:
+def publish(msg: str, change, *, expected_head: str | None = None, record: dict | None = None) -> bool:
     """Apply only explicit claim changes to current main, retrying ownership/budget decisions after races."""
     for _ in range(4):
         base = sync()
@@ -135,17 +136,26 @@ def publish(msg: str, change) -> bool:
             return False
         if not changes:
             return True
+        if expected_head is not None and base != expected_head:
+            raise GitBusy("batch: main advanced; update the clean checkout to origin/main and retry (nothing started)")
+        paths = {}
+        for key, value in changes.items():
+            if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", key):
+                raise GitBusy(f"claims: invalid claim name {key!r}; nothing published")
+            paths[f"claims/{key}.json"] = value
+        if record is not None:
+            if "batch-verify" not in changes or changes["batch-verify"] is not None:
+                raise GitBusy("batch: results must be published together with releasing the run lock")
+            paths["verify/BATCH.json"] = record
         with tempfile.TemporaryDirectory(prefix="kerf-claims-") as td:
             env = {**os.environ, "GIT_INDEX_FILE": str(Path(td) / "index")}
             git("read-tree", base, env=env, check=True)
-            for key, value in changes.items():
-                if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", key):
-                    raise GitBusy(f"claims: invalid claim name {key!r}; nothing published")
+            for path, value in paths.items():
                 if value is None:
-                    entry = f"0 {'0' * 40}\tclaims/{key}.json\n"
+                    entry = f"0 {'0' * 40}\t{path}\n"
                 else:
                     blob = git("hash-object", "-w", "--stdin", input=json.dumps(value, indent=1) + "\n", check=True).stdout.strip()
-                    entry = f"100644 {blob}\tclaims/{key}.json\n"
+                    entry = f"100644 {blob}\t{path}\n"
                 git("update-index", "--index-info", input=entry, env=env, check=True)
             tree = git("write-tree", env=env, check=True).stdout.strip()
         if tree == git("rev-parse", f"{base}^{{tree}}", check=True).stdout.strip():
