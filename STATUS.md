@@ -1254,3 +1254,9 @@ pushed for it and what I know:
   gave a singular mesh / NaN); attribution only rebuilds parts a param reaches, with a time budget (export 15+ -> 8.6 min).
   Tests added for each.
 - Still open for Spencer: the Studio-job scoped mode in .claude/hooks/stop_gate.py (see the entry above).
+- Props now count (2026-11-01 ~19:40, this session): a prop modelled as a `prop_disc` keep-out with a catalog is a
+  bought part — its weight rides on its motor (project.carry_props: all-up mass, CG, thrust/weight) and it is listed in
+  report.json `purchased` and the BOM (tests/test_props.py). Consequence found: **fpv_5in `twr` drops to 5.87:1 (min 6)**
+  once its four 5.1 in props are weighed (629 g all-up). Not fixed here (not this session's project): a lighter part,
+  or a re-derived output limit that still keeps the XT60 in rating. Also seen on quick checks, not from this change:
+  fpv_5in top_plate/strap_l,r overlap 0.13 mm3; tvc_drone ring_low mesh not watertight.

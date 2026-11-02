@@ -241,9 +241,13 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     for iid, it in proj.items.items():
         if it.role == "purchased" and it.shape is not None:
             rep["purchased"][iid] = {"catalog": it.spec.get("catalog"), "qty": it.spec.get("qty", 1),
-                                     "mass_g": round(checks.item_mass_g(it), 1)}
+                                     "mass_g": round(checks._purchased_mass_g(it), 1)}
             if it.spec.get("off_board"):
                 rep["purchased"][iid]["off_board"] = str(it.spec["off_board"])
+        elif it.role == "keepout" and it.spec.get("proxy") == "prop_disc" and it.spec.get("catalog"):
+            # a bought prop, modelled by its swept disc; its mass rides on its motor (project.carry_props)
+            rep["purchased"][iid] = {"catalog": it.spec.get("catalog"), "qty": it.spec.get("qty", 1),
+                                     "mass_g": round(checks._purchased_mass_g(it), 1), "on": it.spec.get("owner")}
     rep["mass"] = mass_split(proj, rep)
     if not any(it.error for it in proj.items.values()):
         try:

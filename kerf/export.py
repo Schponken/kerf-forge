@@ -306,7 +306,7 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
         for b in getattr(it.shape, "kerf_bom", None) or []:
             rows.append({**b, "qty": b["qty"] * it.spec.get("qty", 1), "note": f"{iid}: {b['note']}".rstrip(": ")})
     for iid, it in proj.items.items():
-        if it.role == "purchased":
+        if it.role == "purchased" or (it.role == "keepout" and it.spec.get("proxy") == "prop_disc" and it.spec.get("catalog")):
             from .wiring_out import link
             rows.append({"type": "purchased", "item": human_name(it.spec.get("catalog", ""), iid), "qty": it.spec.get("qty", 1),
                          "spec": it.spec.get("catalog", ""), "for": [iid],

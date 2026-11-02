@@ -34,6 +34,7 @@ class Item:
     diag: object = None       # kerf.diagnose.Diagnosis when the build failed
     cached: bool = False      # printed part taken from the build cache (kerf/partcache.py)
     cache_key: str | None = None
+    carried_g: float = 0.0    # bought things it carries that are only keep-outs in the model (a prop on its motor)
 
 
 @dataclass
@@ -208,7 +209,23 @@ def build(proj: Project, only: list[str] | None = None, cache: bool = True) -> P
             it.error = it.diag.message()
             it.trace = traceback.format_exc(limit=6)
         it.build_ms = int((time.time() - t0) * 1000)
+    carry_props(proj)
     return proj
+
+
+def carry_props(proj: Project) -> None:
+    """A prop is modelled as its swept disc (a keep-out), but it is a bought part with mass that flies: its catalog
+    weight rides on its owner (the motor), so all-up mass, CG and thrust/weight include it."""
+    from . import catalog
+    for it in proj.items.values():
+        it.carried_g = 0.0
+    for it in proj.items.values():
+        own = proj.items.get(it.spec.get("owner") or "")
+        if it.role == "keepout" and it.spec.get("proxy") == "prop_disc" and it.spec.get("catalog") and own is not None:
+            try:
+                own.carried_g += catalog.num(catalog.get(it.spec["catalog"]), "weight_g", "mass_g") * int(it.spec.get("qty", 1))
+            except Exception:  # noqa: BLE001 - a prop without a sourced weight adds nothing (and says so in the BOM)
+                pass
 
 
 def record_deps(proj: Project) -> None:

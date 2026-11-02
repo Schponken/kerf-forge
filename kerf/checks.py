@@ -207,22 +207,27 @@ def item_mass_g(item) -> float:
             shell = shell_volume(oriented(item.shape, item.spec.get("print_rot", [0, 0, 0])), item.spec, vol)
         return (shell + infill * max(vol - shell, 0)) / 1000 * rho
     if item.role == "purchased":
-        if "mass_g" in item.spec:
-            return float(item.spec["mass_g"])
-        try:
-            e = catalog.get(item.spec["catalog"])
-        except Exception:
-            return 0.0
-        try:
-            return catalog.num(e, "weight_g", "mass_g", "weight")
-        except Exception:
-            pass
-        # rods / tubes: catalog density (g/cm3) x cross-section x the item's length
-        L = item.spec.get("length", e.get("length"))
-        if isinstance(L, str) and e.get("density") and item.shape is not None:   # a param expression: the built tube
-            return item.shape.volume / 1000 * float(e["density"])
-        if e.get("density") and e.get("od") and L:
-            od, i_d = float(e["od"]), float(e.get("id") or 0.0)
-            return math.pi / 4 * (od ** 2 - i_d ** 2) * float(L) / 1000 * float(e["density"])
+        return _purchased_mass_g(item) + float(getattr(item, "carried_g", 0.0) or 0.0)
+    return 0.0
+
+
+def _purchased_mass_g(item) -> float:
+    """Catalog (or yaml mass_g) mass of one purchased item."""
+    if "mass_g" in item.spec:
+        return float(item.spec["mass_g"])
+    try:
+        e = catalog.get(item.spec["catalog"])
+    except Exception:
         return 0.0
+    try:
+        return catalog.num(e, "weight_g", "mass_g", "weight")
+    except Exception:
+        pass
+    # rods / tubes: catalog density (g/cm3) x cross-section x the item's length
+    L = item.spec.get("length", e.get("length"))
+    if isinstance(L, str) and e.get("density") and item.shape is not None:   # a param expression: the built tube
+        return item.shape.volume / 1000 * float(e["density"])
+    if e.get("density") and e.get("od") and L:
+        od, i_d = float(e["od"]), float(e.get("id") or 0.0)
+        return math.pi / 4 * (od ** 2 - i_d ** 2) * float(L) / 1000 * float(e["density"])
     return 0.0
