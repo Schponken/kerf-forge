@@ -654,11 +654,8 @@ def _yaml(d: Path) -> dict | None:
         return None
 
 
-def write_params(path: Path, values: dict) -> list[str]:
-    """Set params.<k>.value (or params.<k>: v) in a project.yaml in place, keeping every comment and line."""
-    if not values:
-        return []
-    text = path.read_bytes().decode("utf-8")   # source marks include original CRLF and Unicode characters
+def _yaml_edit_source(text):
+    """Source nodes/tokens and bounded alias counts for the two in-place YAML editors."""
     root = yaml.compose(text, Loader=yaml.SafeLoader)
     references, pending = {}, [root]
     while pending:
@@ -670,28 +667,37 @@ def write_params(path: Path, values: dict) -> list[str]:
             pending.extend(child for pair in node.value for child in pair)
         elif isinstance(node, yaml.SequenceNode):
             pending.extend(node.value)
+    return root, references, list(yaml.scan(text, Loader=yaml.SafeLoader))
 
-    def mapping(node, where):
-        if not isinstance(node, yaml.MappingNode):
-            raise ValueError(f"{where} must be a mapping")
-        if references[id(node)] > 1:
-            raise ValueError(f"{where}: aliased/shared parameters cannot be edited in place")
-        out = {}
-        for key, value in node.value:
-            if key.tag == "tag:yaml.org,2002:merge":
-                raise ValueError(f"{where}: merged parameters cannot be edited in place")
-            if key.tag != "tag:yaml.org,2002:str":
-                raise ValueError(f"{where}: parameter mapping keys must be strings")
-            if key.value in out:
-                raise ValueError(f"{where}: duplicate key {key.value!r}")
-            out[key.value] = value
-        return out
 
-    top = mapping(root, path.name)
-    params = mapping(top.get("params"), "params")
+def _yaml_edit_mapping(node, references, where):
+    if not isinstance(node, yaml.MappingNode):
+        raise ValueError(f"{where} must be a mapping")
+    if references[id(node)] > 1:
+        raise ValueError(f"{where}: aliased/shared mappings cannot be edited in place")
+    out = {}
+    for key, value in node.value:
+        if key.tag == "tag:yaml.org,2002:merge":
+            raise ValueError(f"{where}: merged mappings cannot be edited in place")
+        if key.tag != "tag:yaml.org,2002:str":
+            raise ValueError(f"{where}: mapping keys must be strings")
+        if key.value in out:
+            raise ValueError(f"{where}: duplicate key {key.value!r}")
+        out[key.value] = value
+    return out
+
+
+def write_params(path: Path, values: dict) -> list[str]:
+    """Set params.<k>.value (or params.<k>: v) in a project.yaml in place, keeping every comment and line."""
+    if not values:
+        return []
+    text = path.read_bytes().decode("utf-8")   # source marks include original CRLF and Unicode characters
+    root, references, source_tokens = _yaml_edit_source(text)
+    top = _yaml_edit_mapping(root, references, path.name)
+    params = _yaml_edit_mapping(top.get("params"), references, "params")
     data = yaml.safe_load(text) or {}
     known = data["params"]
-    tokens = {t.end_mark.index: t for t in yaml.scan(text, Loader=yaml.SafeLoader) if isinstance(t, yaml.ScalarToken)}
+    tokens = {t.end_mark.index: t for t in source_tokens if isinstance(t, yaml.ScalarToken)}
     changed, edits, expected = [], [], {}
     for k, v in values.items():
         if k not in params:
@@ -703,7 +709,7 @@ def write_params(path: Path, values: dict) -> list[str]:
         node = params[k]
         spec = known[k]
         if isinstance(node, yaml.MappingNode):
-            node = mapping(node, f"params.{k}").get("value")
+            node = _yaml_edit_mapping(node, references, f"params.{k}").get("value")
             if "min" in spec and v < spec["min"] - 1e-9:
                 raise ValueError(f"{k} = {v} is outside its allowed range: enter {spec['min']} or more")
             if "max" in spec and v > spec["max"] + 1e-9:
@@ -1190,43 +1196,62 @@ def part_materials(name: str) -> dict:
 
 def write_materials(path: Path, values: dict) -> list[str]:
     """Set parts.<part>.material in a project.yaml in place (flow `{...}` or block style), keeping every comment."""
-    text = path.read_text(encoding="utf-8")
+    if not values:
+        return []
+    text = path.read_bytes().decode("utf-8")
+    root, references, tokens = _yaml_edit_source(text)
+    top = _yaml_edit_mapping(root, references, path.name)
+    parts = _yaml_edit_mapping(top.get("parts"), references, "parts")
     data = yaml.safe_load(text) or {}
-    parts = data.get("parts") or {}
     known = {m["key"] for m in materials()}
-    changed = []
+    scalars = {t.end_mark.index: t for t in tokens if isinstance(t, yaml.ScalarToken)}
+    line_end = re.search(r"\r\n|\r|\n", text)
+    newline = line_end.group() if line_end else "\n"
+    changed, edits = [], []
     for part, mat in values.items():
-        if part not in parts or not isinstance(parts[part], dict):
+        if part not in parts or not isinstance(parts[part], yaml.MappingNode):
             raise ValueError(f"unknown printed part {part}")
-        if mat not in known:
+        if not isinstance(mat, str) or mat not in known:
             raise ValueError(f"unknown material {mat}")
-        if parts[part].get("material", "PETG") == mat:
+        node = parts[part]
+        fields = _yaml_edit_mapping(node, references, f"parts.{part}")
+        material = fields.get("material")
+        if material is not None:
+            if not isinstance(material, yaml.ScalarNode):
+                raise ValueError(f"parts.{part}.material must be a scalar")
+            if references[id(material)] > 1:
+                raise ValueError(f"parts.{part}.material: aliased/shared values cannot be edited in place")
+            token = scalars.get(material.end_mark.index)
+            if token is None:
+                raise ValueError(f"parts.{part}.material needs an explicit scalar value")
+            if token.style in ("|", ">"):
+                raise ValueError(f"parts.{part}.material must use inline scalar notation")
+        if data["parts"][part].get("material", "PETG") == mat:
             continue
-        sec = re.search(r"^parts:[ \t]*(#.*)?$", text, re.M)
-        m = re.compile(rf"^(?P<ind>[ \t]+){re.escape(part)}:[ \t]*(?P<rest>.*)$", re.M).search(text, sec.end() if sec else 0)
-        if not m:
-            raise ValueError(f"could not find parts.{part} in {path.name}")
-        ind = len(m.group("ind"))
-        nxt = re.compile(rf"^[ \t]{{0,{ind}}}\S", re.M).search(text, m.end())
-        end = nxt.start() if nxt else len(text)
-        seg = text[m.start():end]
-        if re.search(r"\bmaterial:", seg):
-            seg2 = re.sub(r"(\bmaterial:[ \t]*)([^,}\n#]+?)([ \t]*[,}\n#])", lambda x: x.group(1) + mat + x.group(3), seg, count=1)
-        elif m.group("rest").lstrip().startswith("{"):
-            seg2 = seg.replace("{", "{material: " + mat + ", ", 1)
+        if material is not None:
+            value = (json.dumps(mat, ensure_ascii=False) if token.style == '"' else
+                     "'" + mat.replace("'", "''") + "'" if token.style == "'" else mat)
+            edits.append((token.start_mark.index, token.end_mark.index, value))
         else:
-            child = re.search(r"\n([ \t]+)\S", seg)
-            pad = child.group(1) if child else " " * (ind + 2)
-            nl = seg.index("\n") if "\n" in seg else len(seg)
-            seg2 = seg[:nl] + f"\n{pad}material: {mat}" + seg[nl:]
-        text = text[:m.start()] + seg2 + text[end:]
+            kind = yaml.FlowMappingStartToken if node.flow_style else yaml.BlockMappingStartToken
+            start = next(t for t in tokens if isinstance(t, kind)
+                         and node.start_mark.index <= t.start_mark.index < node.end_mark.index)
+            at = start.end_mark.index
+            value = (f"material: {mat}" + (", " if node.value else "") if node.flow_style else
+                     f"material: {mat}{newline}" + " " * start.start_mark.column)
+            edits.append((at, at, value))
         changed.append(part)
-    check = yaml.safe_load(text) or {}
-    for part, mat in values.items():
-        if ((check.get("parts") or {}).get(part) or {}).get("material", "PETG") != mat:
+    for start, end, value in sorted(edits, reverse=True):
+        text = text[:start] + value + text[end:]
+    check = yaml.safe_load(text) if edits else data
+    for part, spec in data["parts"].items():
+        if not isinstance(spec, dict):
+            continue
+        expected = values.get(part, spec.get("material", "PETG"))
+        if check["parts"][part].get("material", "PETG") != expected:
             raise ValueError(f"material write check failed for {part}")
     if changed:
-        path.write_text(text, encoding="utf-8")
+        path.write_bytes(text.encode("utf-8"))
     return changed
 
 

@@ -265,3 +265,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)
 - [x] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project
 - [x] Studio parameter edit targeting: Save/Try/Restore update only selected numeric params values across block/flow/quoted YAML, preserve unrelated text and genuine no-ops, reject shared/merged/duplicate targets, and validate all edits before writing; synthetic regression and existing save/history tests.
+- [x] Studio material edit targeting: save only requested part material fields or insert missing fields at their own mapping; preserve PETG defaults, comments and no-ops; refuse shared/merged/duplicate ambiguity and verify unrequested material values; synthetic/API and shared parameter-editor regressions.

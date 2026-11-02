@@ -519,3 +519,28 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   Only the precise parameter-edit PLAN item is complete. No project build, stress/FEA or full batch run.
 - Final independent parent review approved this scoped parser edit. One additional regression preserves replacement
   of a huge YAML integer with a finite number without overflowing a needless float conversion during no-op detection.
+
+## 2026-11-02 — Target material saves precisely (Codex, material-edit-targeting; stacked on PR #27)
+- Reproduced on temporary YAML: base and arm shared an anchored part mapping; saving base=PLA returned only base
+  as changed but silently changed arm too. Nested same-name material fields failed final verification, and quoted
+  part keys or a flow-root parts mapping refused valid edits. No real project files were changed.
+- Material Save/Try now target only the requested material scalar token, or insert an absent field at its actual
+  block/flow mapping-start token. Two small existing YAML node/reference helpers are extracted from PR #27 and reused
+  by both editors. Known-material validation is retained; absent material still means PETG, so that save is a no-op.
+  Quoted keys/values, unshared anchor/tag prefixes, comments, BOM/Unicode, CRLF and missing final newlines survive.
+- Every requested target/material is checked before writing. Shared mapping/value aliases, duplicate/merged targets
+  and unsupported non-inline material scalars are refused; reference traversal remains bounded for recursive YAML.
+  Final verification includes unrequested part material values. Defaults and no-op file bytes/mtime stay unchanged.
+- Validation: read-only doctor ALL OK; shared environment reused, optional firmware tools unavailable. Batch status
+  and process checks preceded focused selections. Exact final command: `.venv/bin/python -m pytest -q
+  tests/test_studio_materials.py tests/test_studio_params.py
+  tests/test_studio_features.py::test_write_materials_flow_block_and_missing_keep_comments
+  tests/test_studio_features.py::test_trial_copy_takes_materials_and_leaves_the_project_alone
+  tests/test_studio.py::test_write_params_keeps_comments_and_checks_ranges
+  tests/test_studio.py::test_trial_copy_leaves_the_real_project_alone
+  tests/test_studio.py::test_times_history_restore_and_export tests/test_docs.py` — **91 passed in 2.24 s**.
+  This includes a local API regression with a synthetic project: shared save returns 400 without changing bytes;
+  an unshared save changes only the requested material. Full parameter-editor coverage protects the helper extraction.
+- Independent parent source/test review approved this scoped change with no remaining findings. Only the precise
+  material-edit PLAN item is complete. No parser dependency/framework, material property/default change, real design
+  edit, project build, stress/FEA or full batch. PR targets codex/parameter-edit-targeting to show only this follow-up.

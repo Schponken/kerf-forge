@@ -354,6 +354,14 @@ keys along the parameter path, and aliases sharing a target mapping/value, are r
 editing an anchor elsewhere. Unrelated aliases are left alone. The existing PyYAML source positions target scalar
 tokens, preserving unshared anchor/tag prefixes; no whole-document YAML rewrite is used. Tests: tests/test_studio_params.py.
 
+Material Save/Try use the same bounded YAML-source helpers for the selected `parts.<part>.material` field. A missing
+field is inserted at its own block/flow mapping token; an absent material still means PETG, so saving PETG does not
+add a field. Quoted part/material keys, nested unrelated material names and original line endings are preserved.
+Known-material validation and all target checks happen before writing. Shared mapping/value aliases, duplicate/merged
+targets and non-inline material scalars are refused. Final verification checks unrequested part materials too; saving
+one part must never change another. Tests: tests/test_studio_materials.py. These edits select existing catalog materials;
+they do not change material properties, defaults or engineering checks.
+
 - Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),
   `walls` (perimeter loops; default 4 on strength-checked parts, else 2; written into the plate 3MF),
   `load_axis` (x / -y / [x, y, z] / list: main stress direction in the part frame; warned if > 30 deg across layers),
