@@ -1094,7 +1094,7 @@ def list_quotes() -> list[dict]:
             q = json.loads(f.read_text(encoding="utf-8"))
             ctx_f = QUOTES / f"{name}.request.json"
             ctx = json.loads(ctx_f.read_text(encoding="utf-8")) if ctx_f.exists() else {}
-            out.append({"name": name, "description": (ctx.get("description") or "")[:160],
+            out.append({"name": name, "description": (ctx.get("description") or q.get("request") or "")[:160],
                         "options": len(q.get("options") or []), "time": f.stat().st_mtime})
         except Exception:  # noqa: BLE001 - a half-written quote is skipped, not fatal
             continue

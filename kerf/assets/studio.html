@@ -1490,8 +1490,9 @@ async function openQuote(name) {
     $("#ndesc").value = q.context.description || "";
     for (const input of document.querySelectorAll('#new-request [id^="i_"]')) input.value = (q.context.intake || {})[input.id.slice(2)] || "";
     setRequestKind();
-  }
+  } else if (q.request) $("#ndesc").value = q.request;   // an older run kept no copy of the request: start from its summary
   await showQuote(name);
+  if (!q.context) { const el = $("#quote"); if (el) el.insertAdjacentHTML("afterbegin", `<div class="banner warn">This options run is from before Studio kept a copy of your exact request, so its summary is filled in above. Check it says what you want, then choose.</div>`); }
   const el = $("#quote"); if (el) el.scrollIntoView({behavior: "smooth", block: "start"});
 }
 function quoteMatches(q, name) {
