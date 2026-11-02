@@ -38,4 +38,6 @@ links are clearly labelled illustrative test data. It is not a researched produc
 Still needed for full E8: run the real scenario research, settle trip duration/plant demand/location/water/power
 constraints with the user, choose an evidence-backed solution, then complete its project checks, build, independent
 review and scenario acceptance (including measured or sourced water demand, capacity and duty-cycle power).
+The [scenario quantity checks](SCENARIO_CHECKS.md) cover modeled internal capacity, explicit electrical duty and
+geometric sensor coverage; their synthetic examples do not complete E8.
 Neither that run nor the separate scenario-requirement engine item is completed by the intake change.

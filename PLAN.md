@@ -202,6 +202,8 @@ Work these in order unless one is blocked; each item is done only with tests and
   - [ ] Extend the library with the remaining module families from currently reviewed sources and support composing their interfaces into a new checked system
 - [ ] Whole-system output: flight-controller / microcontroller config and controller tuned in simulation (INAV / Betaflight diff for drones and wings, Arduino / Pi code for gadgets), checked by a sim test
 - [ ] Check against the scenario: scenario requirements (run time on the stated duty, capacity of a tank, coverage of a sensor) evaluated for E8
+  - [x] Scenario quantity engine: explicit active/idle electrical duty feeds existing run_time; modeled internal reservoir volume vs demand/reserve; geometric view-cone coverage; finite/schema/pose validation, specific advice, hand-calculated synthetic examples and tests
+  - [ ] Apply scenario acceptance to the chosen real E8 design with its owner after requirements/hardware are settled: measured or sourced demand, usable volume, electrical duty and sensing evidence; build/check/review (synthetic engine tests do not satisfy this)
 - [ ] Conventional planes + VTOL: tail volume coefficients and sizing, landing gear, transition thrust; eval E9 (trainer plane)
 - [ ] Ground robots: wheel / track sizing, slope tip-over, self-balancing (inverted pendulum) check; eval E10 (rover or balance bot)
 - [ ] Gearboxes: planetary and worm sets, strength-checked (Lewis / AGMA-style) and printable; used by one project

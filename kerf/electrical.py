@@ -54,6 +54,20 @@ class ElectricalError(ValueError):
     pass
 
 
+def duty_current(*, active_a, idle_a, on_s, period_s, peak_a) -> tuple[float, float]:
+    """Time-weighted average for a repeating on/idle cycle; the explicit peak still sizes the supply and wires."""
+    values = {"active_a": active_a, "idle_a": idle_a, "on_s": on_s, "period_s": period_s, "peak_a": peak_a}
+    for name, value in values.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+            raise ElectricalError(f"duty {name} must be a finite nonnegative number")
+    if period_s <= 0 or on_s > period_s:
+        raise ElectricalError("duty needs period_s > 0 and 0 <= on_s <= period_s")
+    if peak_a < max(active_a, idle_a):
+        raise ElectricalError("duty peak_a cannot be lower than active_a or idle_a")
+    fraction = on_s / period_s
+    return active_a * fraction + idle_a * (1 - fraction), float(peak_a)
+
+
 def ampacity(gauge) -> float:
     return float(catalog.get("wire.awg")["ampacity_a"][str(int(gauge))])
 
@@ -277,6 +291,14 @@ def analyse(proj, fm=None, eta=None) -> dict:
         """(avg_a, peak_a, source) the item itself draws at its feed voltage."""
         if i in draw_over:
             o = draw_over[i]
+            if "duty" in o:
+                if "avg_a" in o or "peak_a" not in o or not isinstance(o["duty"], dict):
+                    raise ElectricalError(f"electrical.draw '{i}': duty needs a mapping and explicit peak_a, without avg_a")
+                if set(o["duty"]) != {"active_a", "idle_a", "on_s", "period_s"}:
+                    raise ElectricalError(f"electrical.draw '{i}': duty needs exactly active_a, idle_a, on_s and period_s; "
+                                          "put peak_a beside duty")
+                avg, peak = duty_current(**o["duty"], peak_a=o["peak_a"])
+                return avg, peak, f"duty average ({o['duty']['on_s']:g}/{o['duty']['period_s']:g} s on): {o['why']}"
             return float(o["avg_a"]), float(o.get("peak_a", o["avg_a"])), f"electrical.draw: {o['why']}"
         path, e = _cat(proj, i)
         if i == bat or _is_connector(path) or "output_v" in e:

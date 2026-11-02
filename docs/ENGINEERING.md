@@ -199,8 +199,22 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
   Scaramuzza 2021, arXiv 2109.04741), motor efficiency eta 0.75 (same paper), kappa 1.281 for a coaxial pair at
   equal thrust (momentum theory, Simoes, IST). This is an estimate; measured motor tables beat it when catalogued.
 - `connector_access`: the battery plug and the FC USB port are reachable with the device assembled.
+- Repeating duty must declare active and idle current, on-time and period with measured/sourced evidence in
+  `electrical.draw.<item>.why`; the time-weighted average feeds the existing `run_time` model. Keep an explicit peak
+  at least as high as both currents; duty averaging never discounts startup/stall current, wire or supply ratings.
+  Include the controller's standby load and regulator losses. Battery capacity is the installed catalog pack's.
 - Every run declared in `wiring:` with gauge, colour and a cut length >= routed length + 15 %; route power runs
   through the frame's wire channels / keep-outs (`channel_clear` for enclosed channels).
+
+## 10c. Scenario quantities
+- `reservoir_capacity` uses a separately modeled **internal fluid volume**, not the tank's outer dimensions or
+  plastic volume. 1000 mm³ = 1 mL. Require a declared usable fraction for headspace/unpumpable water, plus any
+  reserve, and compare against measured/sourced daily demand × days away. It does not prove leaks or pump delivery.
+- `sensor_coverage` intersects a target-region solid with the existing `view_cone` in the assembled pose. Field of
+  view/range must come from the real sensor and its operating conditions. This proves only geometric volume
+  coverage; check obstructions through normal fit checks and validate resolution/detection in a real scenario.
+- Synthetic arithmetic fixtures prove the engine, not E8 or an actual watering design. Missing demand, duty,
+  capacity or sensor evidence remains unresolved rather than being filled with convenient defaults.
 
 ## 11. Assembly sanity
 - Tendon / wire channels are declared with `channel_clear` at the diameter of the tendon or wire plus clearance

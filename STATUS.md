@@ -451,3 +451,24 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
   check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
   skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
+
+## 2026-11-02 — Scenario quantity checks (Codex, scenario-checks)
+- `electrical.draw.<item>.duty` declares active/idle A and on/period seconds, with explicit peak_a and evidence
+  in why. Its average feeds the existing power tree and run_time; peak ratings, other loads and regulator losses
+  remain in that model. Missing/extra/conflicting fields, nonfinite/negative values and on-time > period fail clearly.
+- New req_scenario checks: reservoir_capacity derives days from an internal-fluid keep-out solid, explicit usable
+  fraction, reserve and daily demand; sensor_coverage measures target-region volume inside the existing view_cone
+  at a validated pose, restoring home. Rejects physical tank material as the region; small uncovered slivers fail
+  full coverage. Both run early with concept checks and have units, plain names and quantity-specific advice.
+- **76 targeted tests PASS** (scenario_checks, electrical, docs, glossary completeness, kerf_skill), including
+  hand-calculated volume/duty, real placed frustum intersections, partial/outside/boundary coverage, independent
+  peak ratings, bad schemas/poses and numeric overflow. Final selection: 4.56 s. Initial coverage fixture had its
+  lens axis aligned to the wrong joint; corrected the fixture, not the check or threshold. Parent review's duty
+  schema finding fixed; final independent code review found no remaining issue in this slice.
+- docs/SCENARIO_CHECKS.md shows explicitly synthetic E8 arithmetic. No plant demand, sensor capability or catalog
+  measurement was invented; real E8 acceptance stays open. Coverage does not prove occlusion/resolution/detection;
+  capacity does not prove pump delivery or water tightness. No real project geometry, catalog, review.json or
+  engineering thresholds changed. Existing geometry/electrical helpers reused without new dependencies.
+- PAUSED.json stress hold honored: no FEA/stress run, override or resumed work. No full suite, full project build,
+  physical hardware or actual E8 success claimed. Precise engine subitem complete; delivered by PR, no self-merge.
+- Current-main integration recheck: the same 76 targeted tests PASS in 21.43 s after the latest clearance/paused-work changes; all other sessions' STATUS entries kept. No stress checks invoked.

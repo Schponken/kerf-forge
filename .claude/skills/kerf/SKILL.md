@@ -215,6 +215,8 @@ Requirement checks (`requirements:` in project.yaml; arguments in each function'
 | `power_budget` | battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltages hold at avg and peak |
 | `flight_time` | hover minutes on 80 % of the pack (momentum-theory hover power + every other load) |
 | `run_time` | minutes on 80 % of the pack at every load's average draw (robots, gadgets) |
+| `reservoir_capacity` | days supplied by an internal fluid keep-out at stated daily demand, explicit usable fraction and reserve; outer tank/plastic volume is not capacity |
+| `sensor_coverage` | percent of a target keep-out inside a view-cone region at a pose; geometry only, not proof of visibility or detection |
 | `connector_access` | a plug / cable / finger reaches the battery plug or USB port with the device assembled |
 | `hard_stop` | a joint moved past an end of its range collides, i.e. a real mechanical stop holds it there |
 | `gear_bending` | Lewis tooth bending of a printed spur pair at the driving servo's stall torque |

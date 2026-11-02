@@ -290,6 +290,14 @@ TEXT = {
                                   "raise the friction force that holds it."],
 }
 TEXT.update({k: _stress for k in STRESS})
+TEXT.update({
+    "reservoir_capacity": lambda r, q, p: [f"Provide at least {r['needed_capacity_ml']:g} mL of internal reservoir "
+                                           f"capacity with the declared usable fraction and reserve; the model has "
+                                           f"{r['capacity_ml']:g} mL. Keep the demand tied to measured or sourced use."],
+    "sensor_coverage": lambda r, q, p: [f"Move or aim the sensor so at least {r['limit']:g}% of the target region "
+                                       f"is inside its sourced field of view (currently {r['value']:g}%). "
+                                       "Check for obstructions and validate real detection separately."],
+})
 TEXT.update({"natural_freq": _natural_freq, "static_torque": _servo, "mass_max": _mass, "thrust_to_weight": _twr,
              "flight_time": _time, "run_time": _time, "tip_over": _tip, "static_margin": _margin, "static_margin_tail": _margin,
              "stall_speed": _stall, "wing_loading": _loading, "spar_bending": _spar, "gear_bending": _gear,
