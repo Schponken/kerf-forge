@@ -644,6 +644,7 @@ def _claude_lines(raw: str):
         for c in ev.get("message", {}).get("content", []):
             if c.get("type") == "text" and c.get("text", "").strip():
                 out.append(c["text"].strip())
+                out.append("@@" + json.dumps({"k": "note", "text": c["text"].strip()[:400]}))   # for the thought web
             elif c.get("type") == "tool_use":
                 inp = c.get("input", {})
                 what = inp.get("description") or inp.get("command") or inp.get("file_path") or inp.get("prompt") or ""
@@ -651,7 +652,9 @@ def _claude_lines(raw: str):
             if c.get("type") == "tool_use":
                 ph = _phase(c.get("name", ""), inp)
                 out.append("@@" + json.dumps({"k": "tool", "name": c.get("name"), "what": str(what).splitlines()[0][:140] if what else "",
-                                               "phase": ph}))
+                                               "phase": ph, "query": str(inp.get("query") or "")[:160],
+                                               "url": str(inp.get("url") or "")[:300], "path": str(inp.get("file_path") or "")[:300],
+                                               "cmd": str(inp.get("command") or "").splitlines()[0][:200] if inp.get("command") else ""}))
     elif t == "result":
         bad = ev.get("is_error") or ev.get("subtype") != "success"
         out.append(f"== {'stopped with an error' if bad else 'finished'} after {round(ev.get('duration_ms', 0) / 60000, 1)} min ==")
@@ -1384,6 +1387,9 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if not parts:
                 return self._send(200, (ASSETS / "studio.html").read_bytes(), "text/html; charset=utf-8")
+            if len(parts) == 2 and parts[0] == "ui" and re.fullmatch(r"[\w-]+\.(js|css)", parts[1]) and (ASSETS / parts[1]).exists():
+                return self._send(200, (ASSETS / parts[1]).read_bytes(),
+                                  "text/javascript; charset=utf-8" if parts[1].endswith(".js") else "text/css; charset=utf-8")
             if parts == ["api", "projects"]:
                 return self._json({"projects": [summary(n) for n in project_names()], "claude": bool(claude_bin()),
                                    "platform": platform.system()})
@@ -1400,6 +1406,15 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(read_quote(parts[2]))
             if parts == ["api", "settings"]:
                 return self._json(settings())
+            if parts == ["api", "thoughtweb"]:
+                from . import thoughtweb
+                jid, nm = q.get("job", [""])[0], q.get("project", [""])[0]
+                if jid in JOBS:
+                    j = JOBS[jid]
+                    return self._json({**thoughtweb.from_events(j.events, j.label), "live": j.state == "running", "label": j.label})
+                if nm in project_names():
+                    return self._json({**thoughtweb.from_project(PROJECTS / nm), "live": False, "label": nm})
+                return self._err("no such job or project", 404)
             if parts == ["api", "printer"]:
                 return self._json(printer_info(live=q.get("live", ["0"])[0] == "1"))
             if parts == ["api", "work"]:

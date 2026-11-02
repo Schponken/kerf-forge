@@ -1473,3 +1473,11 @@ pushed for it and what I know:
 - The 3D model first: runs that make a viewer write a preview viewer.html right after the parts are built and placed
   (fpv_wing: ~3 min from a cold cache, ~5 s warm; it used to arrive after every check and file, ~22 min). Studio opens
   it on the run's "model" event, folds the job panel, and says the rest is running; the full viewer replaces it.
+
+## 2026-11-02 14:20 UTC-5 — Thought web (Spencer: "follow its thinking live, see the branches it explores and drops")
+- kerf/thoughtweb.py + kerf/assets/thoughtweb.js (served at /ui/): a growing map in the job panel of every Claude job
+  (new design, change, fix) and "More -> 🕸 How Kerf decided" for any project. Built only from the job's visible actions
+  and notes (no hidden reasoning): ideas branch, references hang off them, options are chosen (gold) or set aside
+  (grey, with the reason), the build trunk grows parts and tests; live every 1.5 s, replay afterwards. Studio's Claude
+  stream now records search queries, URLs, paths and notes as events. tests/test_thoughtweb.py (rules + a fake live
+  job drawn in the browser + a real project's map).
