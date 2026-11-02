@@ -17,7 +17,7 @@ def test_no_fix_and_no_silent_edits_on_a_project_another_session_is_editing(monk
     monkeypatch.setattr(studio, "_worked_on", lambda n: True)
     monkeypatch.setattr(studio, "_report", lambda d: {"ok": False, "problems": ["x"]})
     ok, why = studio.fixable("servo_link")
-    assert not ok and "another Claude session" in why           # auto-fix and the Fix button stand down
+    assert not ok and "another session has claimed" in why      # auto-fix and the Fix button stand down
     with pytest.raises(studio.Claimed):
         studio.guard_claimed("servo_link", False)
     studio.guard_claimed("servo_link", True)                   # the user said "change it anyway"

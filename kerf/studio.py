@@ -226,7 +226,7 @@ def fixable(name: str) -> tuple[bool, str]:
     if any(j.kind == "fix" and j.project == name and j.state == "running" for j in JOBS.values()):
         return False, "a fix is already running"
     if _worked_on(name):
-        return False, "another Claude session is working on this project right now (see Activity)"
+        return False, "another session has claimed this project (see Activity)"
     return True, ""
 
 
@@ -242,7 +242,7 @@ class Claimed(ValueError):
 
 def guard_claimed(name: str, override: bool):
     if not override and _worked_on(name):
-        raise Claimed("Another Claude session is working on this project right now (see Activity). Changing it here "
+        raise Claimed("Another session has claimed this project (see Activity). Changing it here "
                       "can clash with its edits. Change it anyway?")
 
 
@@ -511,7 +511,7 @@ def summary(name: str) -> dict:
 
 
 def _worked_on(name: str) -> bool:
-    """A fresh claim names this project (a Claude session is on it); running Studio jobs show as "working…" already."""
+    """A fresh shared claim names this project; ownership does not imply a running process."""
     from . import explain
     try:
         return explain.work_status(name, [], explain.claims(ROOT))["state"] == "claimed"
@@ -605,8 +605,10 @@ SESSIONS = {"at": 0.0, "list": []}
 
 
 def sessions(max_age: float = 30) -> list[dict]:
-    """Claude / Codex sessions working on a project right now (fresh claims naming it), for Studio's Activity list.
+    """Sessions with fresh shared claims naming a project, for Studio's Activity list.
     Cached for max_age s: /api/jobs is polled every few seconds."""
+    LIVE["work_until"] = time.time() + 90  # Activity is polled on every page, so shared ownership keeps refreshing.
+    _live_thread()
     if time.time() - SESSIONS["at"] < max_age:
         return SESSIONS["list"]
     from . import explain
@@ -1290,7 +1292,7 @@ def thumb_info(name: str) -> dict:
 
 # ---------------------------------------------------------------- follow live + Work tab (kerf/live.py)
 # One background thread, one `git fetch` at most every live.FETCH_EVERY seconds, only while a project is followed or
-# the Work tab is open. Updates follow tools/mac/start.sh's rule (clean tree, fast-forward only) and wait while a Studio
+# Activity is polled or the Work tab is open. Updates follow tools/mac/start.sh's rule (clean tree, fast-forward only) and wait while a Studio
 # job runs, so they never pull under a build or a Claude Code change.
 LIVE_DIR = ROOT / ".cache" / "studio_live"
 LIVE: dict = {"follow": {}, "last_fetch": 0.0, "fetch_error": None, "work_until": 0.0, "work": None, "work_key": None,
@@ -1385,6 +1387,7 @@ def live_tick(now: float | None = None) -> None:
     LIVE["last_fetch"] = now
     LIVE["fetch_error"] = live.fetch(ROOT)
     LIVE["work"] = None
+    SESSIONS["at"] = 0.0
     if LIVE["fetch_error"] or not followed:
         return
     up, head = live.upstream(ROOT), _git("rev-parse", "HEAD")
@@ -1438,14 +1441,11 @@ def work() -> dict:
     LIVE["work_until"] = time.time() + 90              # the tab is open: keep the shared fetch going
     _live_thread()
     # Claims are shared on main even when Studio itself runs from a feature branch.
-    ref = _git("symbolic-ref", "--quiet", "refs/remotes/origin/HEAD") or "origin/main"
-    revision = _git("rev-parse", "--verify", "-q", ref)
-    if not revision:
-        ref, revision = "@{u}", live.upstream(ROOT) or _git("rev-parse", "HEAD")
+    revision = live.shared_revision(ROOT)
     key = (revision, int(time.time() // 60))
     git_work = LIVE["work"]
     if git_work is None or LIVE["work_key"] != key:
-        git_work = live.work_data(ROOT, ref, picture=_work_picture)
+        git_work = live.work_data(ROOT, revision, picture=_work_picture)
         LIVE["work"] = git_work
         LIVE["work_key"] = key
     codex = codex_work.snapshot(ROOT)

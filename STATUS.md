@@ -478,3 +478,15 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   `claims.py next`. I followed the job's instruction and did not take new work, and did not write BLOCKED/YIELD (both
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
+
+## 2026-11-02 — Studio readers follow shared ownership (Codex)
+- Activity, Checks, edit/auto-fix guards and Work now read the same fetched main snapshot. Released claims never
+  return from stale feature files; non-Git copies retain valid local claims. Control files and malformed/nonfinite
+  records cannot become work cards. Claim freshness/update time comes only from heartbeat, not a newer file commit.
+- Claim text identifies Codex/Claude when explicit, otherwise another session, and says claimed rather than running.
+  Activity polling on any Studio page keeps the existing one-minute fetch loop active and refreshes its cached list;
+  no second fetch service or per-card network calls. Offline Work retains its partial-source indication.
+- Five focused regressions failed before their respective fixes. Final selection: 29 tests PASS in 9.09 s, including
+  real temporary Git snapshots, release/staleness/control handling, normal-page refresh, API guards and a real Activity
+  browser. The browser caught/fixed the age parser after wording changed to last update. No full batch, project build,
+  solver, paid model call or layout redesign. Architecture map updated; git diff --check passes.
