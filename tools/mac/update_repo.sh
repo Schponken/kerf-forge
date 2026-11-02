@@ -14,14 +14,21 @@ if [ -z "$LOCAL" ]; then
 fi
 INCOMING="$(git diff --name-only HEAD "$UP")"
 BOTH="$(comm -12 <(echo "$LOCAL" | sort -u) <(echo "$INCOMING" | sort -u))"
-if [ -n "$BOTH" ]; then
-  echo "NOT-UPDATED local changes in files the update also changes: $(echo $BOTH | tr '\n' ' ')- commit or undo them, then update"
+CLASH=""
+for f in $BOTH; do                               # same file changed on both sides: fine unless the same lines are
+  t="$(mktemp -d)"
+  git show "HEAD:$f" > "$t/base" 2>/dev/null; git show "$UP:$f" > "$t/up" 2>/dev/null; cp "$f" "$t/mine"
+  git merge-file -q -p "$t/mine" "$t/base" "$t/up" > /dev/null || CLASH="$CLASH $f"
+  rm -rf "$t"
+done
+if [ -n "$CLASH" ]; then
+  echo "NOT-UPDATED your local changes and the update change the same lines in:$CLASH - commit or undo them, then update"
   exit 0
 fi
 git stash push -q -m "kerf update $(date +%F_%H%M): local changes set aside" || { echo "NOT-UPDATED could not set local changes aside"; exit 0; }
 if git merge -q --ff-only "$UP"; then
-  git stash pop -q && echo "UPDATED $(git log --oneline -1 | cut -c1-60) (your local changes kept)" \
+  git stash pop -q >/dev/null 2>&1 && echo "UPDATED $(git log --oneline -1 | cut -c1-60) (your local changes kept)" \
     || echo "UPDATED but local changes are still set aside: git stash pop"
 else
-  git stash pop -q; echo "NOT-UPDATED fast-forward failed"
+  git stash pop -q >/dev/null 2>&1; echo "NOT-UPDATED fast-forward failed"
 fi
