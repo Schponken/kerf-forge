@@ -451,3 +451,23 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
   check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
   skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
+
+
+## 2026-11-02 — Board clearance baseline regression (Codex, board-proxy-clearance)
+- Reproduced exactly `tests/test_catalog.py::test_board_proxy_keeps_mounting_holes_clear`: the four original screw-head
+  probes passed; only the final height assertion failed (12.07 mm actual vs 10.07 mm expected). It omitted the existing
+  2 mm underside solder-tail envelope. Corrected the assertion to min.Z=-component_height_below and
+  max.Z=thickness+component_height, keeping every original clearance probe and tolerance. Added positive top-component
+  and underside-envelope coverage plus four underside screw-clearance probes. No production geometry, catalog values,
+  review files or engineering thresholds changed.
+- Source evidence: opened [Adafruit's own STEP](https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/815%20Servo%20Driver%2016%20Channel/815%20Servo%20Driver%2016%20Channel.step).
+  Bundled SHA256 is `71200cd8d6e03f5cd99293314124ca0f2c97ded824d0acda33f065fa140c3f6a`, matching
+  catalog/models/SOURCES.md. In the documented board frame its Z bounds are -2.009823..10.090177 mm; the proxy's
+  -2.0..10.07 mm agrees within vendor.py's existing 0.5 mm per-face tolerance. Its four actual mounting holes validate.
+  A focused PCA9685 vendor regression now validates that envelope and keeps the original joints, four fastener sites
+  and 100 vendor solids. The conservative underside keepout remains intact.
+- Validation: 77 passed in 12.80 s: all tests/test_catalog.py plus test_vendor.py's real PCA9685/Pico model,
+  wrong-placement and missing-mounting-hole nodes. Read-only doctor: ALL OK; optional Arduino/simavr tools unavailable.
+  Batch status checked and no overlapping target files before testing. No stress simulations, project rebuild,
+  full-suite run or new dependencies; the full batch remains on the owner's hold. Only this precise regression item
+  is complete; the self-growing catalog remains open.
