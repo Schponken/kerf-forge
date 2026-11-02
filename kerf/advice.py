@@ -139,8 +139,9 @@ def _mass(row, req, proj) -> list[str]:
     tips = [f"It is {v - lim:.0f} g over ({_pct(v / lim)})."]
     try:
         from .checks import item_mass_g
-        rows = sorted(((item_mass_g(it), i, it.role) for i, it in proj.items.items() if it.role in ("printed", "purchased")),
-                      reverse=True)[:4]
+        inc = set(req.get("include") or [])          # the requirement weighs only these items when it lists them
+        rows = sorted(((item_mass_g(it), i, it.role) for i, it in proj.items.items()
+                       if it.role in ("printed", "purchased") and (not inc or i in inc)), reverse=True)[:4]
         tips.append("Heaviest items: " + ", ".join(f"{i} {m:.0f} g" for m, i, _ in rows) + ".")
         printed = [(m, i) for m, i, r in rows if r == "printed"]
         if printed:

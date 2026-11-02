@@ -295,3 +295,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   PCA9685, 11210 B flash, every joint's simulated sweep inside its range (e.g. grip ch4 -32.4..31.8 of +/-32.5 deg).
 - Note: without arduino-cli + core installed (e.g. the Codex sandbox) the real-toolchain tests skip and
   firmware-check says NOT RUN, never PASS. Both items are in the next batched full run.
+
+## 2026-11-02 (Claude, specific advice)
+- kerf/advice.py: every failed requirement gets advice sized from its own numbers (beam-theory section change, catalog materials / servos strong enough, stiffness for frequency, CG shift, wing area, capacity, gear face ...); overlaps say depth, axis, position and which part gets the pocket; joint collisions give the angles and where to end the range. Cards show "What to do" + alternatives; `kerf check` / `kerf req` print "->" lines. Verified end to end on a tightened scratch copy of servo_link (servo pick DS3218/DS3225, bracket 27 % thicker or reorient, mass items from the requirement's include list).
+- Couldn't run drone_foldable_wings here: `kerf check --quick` is killed for memory in this container.
