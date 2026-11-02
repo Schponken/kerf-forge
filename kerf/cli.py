@@ -269,6 +269,8 @@ def main(argv=None) -> int:
     rn = sub.add_parser("run", help="run a project at a chosen depth: sketch | print | check | simulate | kit | ship")
     rn.add_argument("project"); rn.add_argument("--mode", required=True, choices=["sketch", "print", "check", "simulate", "kit", "ship"])
     rn.add_argument("--ship", action="store_true", help="confirm Ship it: send plate 1 to your printer once the kit passes and a design review is current")
+    op = sub.add_parser("optimise", help="search the project's `optimise:` params for a lighter / cheaper / stronger design that passes every check; writes out/OPTIMISE.md")
+    op.add_argument("project")
     rp = sub.add_parser("review-pack", help="write out/review/ (PACK.md, catalog.json, contact sheets) from the last build")
     rp.add_argument("project")
     fx = sub.add_parser("fixes", help="turn the last check's common findings into edits (--apply writes the mechanical ones)")
@@ -292,6 +294,11 @@ def main(argv=None) -> int:
         return verify(a.fast)
     if a.cmd == "run":
         return run_mode(a.project, a.mode, ship_confirmed=a.ship)
+    if a.cmd == "optimise":
+        from . import optimise
+        r = optimise.run(a.project)
+        _p(Path(r["file"]).read_text(encoding="utf-8"))
+        return 0 if r["best_report"].get("ok") else 1
     if a.cmd == "review-pack":
         from . import project as P, reviewpack
         proj = P.load(a.project)

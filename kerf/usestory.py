@@ -34,6 +34,7 @@ they are revisited).
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import numpy as np
 
@@ -56,7 +57,9 @@ def problems(proj) -> list[str]:
     """Schema problems: missing story (for a new project), missing fields, unknown hazards, missing numbers."""
     s = story(proj)
     if s is None:
-        if proj.dir.name in LEGACY or proj.data.get("check_only"):
+        from .project import PROJECTS
+        in_repo = Path(proj.dir).resolve().parent == Path(PROJECTS).resolve()
+        if proj.dir.name in LEGACY or proj.data.get("check_only") or not in_repo:   # scratch / test copies: not required
             return []
         return ["use_story: missing. Every new project states who uses it, where, how often and what goes wrong "
                 "(docs/ARCHITECTURE.md 'use_story'); the hazards become requirements"]

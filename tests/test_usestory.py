@@ -17,14 +17,18 @@ def _no_solve(monkeypatch):
 
 
 def proj(items, data=None, name="new_thing"):
+    from kerf.project import PROJECTS
     its = {k: NS(id=k, role=r, spec=s, shape=sh) for k, (r, s, sh) in items.items()}
-    return NS(items=its, data=data or {}, params={}, dir=Path("/x") / name,
+    return NS(items=its, data=data or {}, params={}, dir=Path(PROJECTS) / name,
               printed={k: v for k, v in its.items() if v.role == "printed"})
 
 
 def test_story_is_required_for_new_projects_and_checked_for_fields():
     assert "use_story: missing" in U.problems(proj({}))[0]
     assert U.problems(proj({}, name="pan_tilt")) == []                       # made before use stories
+    scratch = proj({})
+    scratch.dir = Path("/tmp/x/new_thing")
+    assert U.problems(scratch) == []                                          # test / scratch copies are not projects
     bad = {"use_story": {"who": "me", "where": ["desk"], "goes_wrong": [{"hazard": "lava"}, {"hazard": "drop"},
                                                                         {"hazard": "crash", "survive": False}]}}
     p = " | ".join(U.problems(proj({}, bad)))

@@ -1318,3 +1318,10 @@ pushed for it and what I know:
   sourced PETG creep data, and a project with a snap fit / hinge.
 - Not mine, seen in tests: test_maker_output::test_units_and_limit_direction fails because the new aero checks
   (static_margin, stall_speed, static_margin_tail, wing_loading, fold_hinge_moment, spar_bending) have no UNITS entry.
+
+## 2026-11-01 23:10 UTC-5 — Optimise then explain (done), session e3d8373e
+- `kerf optimise <p>` (kerf/optimise.py): `optimise:` block (vary / goal / max_runs / mode); pattern search on a scratch
+  copy, every evaluation a real check run; writes out/OPTIMISE.md with the table, the best point, the binding
+  requirement and which check each rejected neighbour failed. tests/test_optimise.py (fake model + a real beam: finds
+  t = 7 for the 24 MPa limit). Use story is now required only for projects in projects/ (test and scratch copies are not
+  projects), so temp projects in tests are unaffected.
