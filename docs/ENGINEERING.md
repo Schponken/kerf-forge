@@ -53,7 +53,8 @@ DESIGN.md says why.
 - Horizontal holes (axis parallel to the bed) print oval: use teardrop or add +0.2 mm, or orient holes vertically.
 
 ## 5. Walls and features
-- Wall thickness >= 1.2 mm anywhere (check fails < 0.8 mm), >= 1.6 mm on structural parts, >= 2.4 mm around heat-set
+- Wall thickness >= 1.2 mm anywhere (check fails < 0.8 mm on load-carrying parts; a part no strength check loads may go
+  to one 0.42 mm line, Bambu Studio's default for a 0.4 nozzle, as a warning), >= 1.6 mm on structural parts, >= 2.4 mm around heat-set
   inserts and screw bosses (use catalog `fdm_holes` min wall where given).
 - Perimeters: a part with a strength check (fea_static / cantilever_stress, or a copy of its file) prints with 4 wall
   loops by default (`walls` in project.yaml; 2 otherwise). FEA treats the part as solid; the stress peaks at the

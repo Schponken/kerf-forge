@@ -41,7 +41,7 @@ def miss(rep: dict) -> float:
     """How far a design is from passing: sum over failed requirements of (use - 1), 1 per other failure."""
     tot = 0.0
     for r in rep.get("requirements") or []:
-        if not r.get("ok"):
+        if not r.get("ok") and not r.get("advisory"):
             u = use(r)
             tot += (u - 1.0) if u is not None and u > 1.0 else 1.0
     other = [p for p in rep.get("problems") or [] if not p.startswith("requirement '")]

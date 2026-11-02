@@ -695,7 +695,7 @@ function reqTable(reqs) {
   if (!reqs || !reqs.length) return `<p class="note">No requirement checks.</p>`;
   return `<table><tr><th>Requirement</th><th>Result</th><th>Value</th><th>Limit</th><th style="width:24%">Margin</th></tr>${reqs.map((r, i) => `
     <tr class="reqrow" style="animation-delay:${i * 45}ms"><td><b title="${esc(glossCheck(r.check).means)}">${esc(glossCheck(r.check).name)}</b> <span class="why">${esc(r.id)}</span><div class="why">${esc(r.why || "")}</div></td>
-    <td>${r.skipped ? `<span class="badge skip">skipped</span>` : r.ok ? `<span class="badge ok">PASS</span>` : `<span class="badge bad">FAIL</span>`}</td>
+    <td>${r.skipped ? `<span class="badge skip">skipped</span>` : r.ok ? `<span class="badge ok">PASS</span>` : r.advisory ? `<span class="badge skip" title="${esc("Doesn't block printing: " + r.advisory)}">MISSED · advisory</span>` : `<span class="badge bad">FAIL</span>`}</td>
     <td class="num">${fmt(r.value)}${r.unit && r.value != null ? " " + esc(r.unit) : ""}</td><td class="num">${limitText(r)}</td><td>${mbar(r)}</td></tr>`).join("")}</table>`;
 }
 function limitText(r) {   // "max 4.7 kg·cm", "min 15 °", "40–48 mm"

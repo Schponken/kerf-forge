@@ -158,6 +158,37 @@ def _allowed(asm: Assembly) -> dict:
     return out
 
 
+def press_depth(soft, other) -> float | None:
+    """How deep `other` pushes into `soft` (mm): the largest distance from soft's surface of the corners and centre of
+    their shared volume. None when it can't be measured (mesh-only parts): then the overlap counts as a collision."""
+    try:
+        if geom.kmesh(soft.shape) is not None or geom.kmesh(other.shape) is not None:
+            return None
+        common = soft.shape.intersect(other.shape)
+        v, _ = geom.mesh(common, tol=0.2, ang=0.5)
+        if not len(v):
+            return 0.0
+        from build123d import Vertex
+        c = common.center()
+        pts = [*(tuple(map(float, p)) for p in v), (c.X, c.Y, c.Z)]
+        skin = soft.shape.faces()
+        return max(min(f.distance_to(Vertex(*p)) for f in skin) for p in pts)
+    except Exception:  # noqa: BLE001 - not measurable: treat as a collision
+        return None
+
+
+def squashed(ia, ib) -> bool:
+    """A declared squashable item (`compress_mm` + `compress_why`: foam pad, battery strap, wire bundle, Velcro) may be
+    pressed into by up to compress_mm; deeper, or between two rigid parts, it is a collision."""
+    for soft, other in ((ia, ib), (ib, ia)):
+        d_ok = soft.spec.get("compress_mm")
+        if d_ok and str(soft.spec.get("compress_why", "")).strip():
+            d = press_depth(soft, other)
+            if d is not None and d <= float(d_ok) + 0.01:
+                return True
+    return False
+
+
 def interference(asm: Assembly, pairs=None) -> list:
     items = asm.proj.items
     allow = _allowed(asm)
@@ -170,7 +201,7 @@ def interference(asm: Assembly, pairs=None) -> list:
             continue
         v = geom.overlap(items[a].shape, items[b].shape)
         lim, why = allow.get(frozenset((a, b)), (geom.OVERLAP_TOL_MM3, ""))
-        if v > max(lim, geom.OVERLAP_TOL_MM3):
+        if v > max(lim, geom.OVERLAP_TOL_MM3) and not squashed(items[a], items[b]):
             hits.append({"a": a, "b": b, "volume_mm3": round(v, 3)})
     from . import heads                     # screw heads fixed to their parts (set by pipeline after fasteners())
     return hits + heads.interference(asm, given, allow)

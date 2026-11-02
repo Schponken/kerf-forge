@@ -19,6 +19,9 @@ FALLBACK_DENSITY = {"PLA": 1.24, "PETG": 1.27, "CF-PETG": 1.29, "PA6-CF": 1.17, 
 # Limits. A failed check blocks the project; a warning is reported but allowed.
 MIN_WALL_FAIL = 0.8      # mm, 2nd-percentile local thickness
 MIN_WALL_WARN = 1.2
+# A part no strength check loads may go down to one extrusion line: Bambu Studio's default line width for a 0.4 mm
+# nozzle is 0.42 mm (https://forum.bambulab.com/t/default-line-width-of-0-42/20400). Load-carrying parts keep 0.8.
+MIN_WALL_LINE = 0.42
 OVERHANG_WARN = 0.03     # fraction of surface area needing support
 
 
@@ -111,7 +114,7 @@ def part_checks(item, printer: str, supports: str = "allowed") -> dict:
     shell = min(vol, area * 0.84) if km is not None else shell_volume(s, spec, vol)
     infill = float(spec.get("infill", 0.25))
     return {
-        "ok": not problems, "problems": problems, "warnings": warnings,
+        "ok": not problems, "problems": problems, "warnings": warnings, "min_wall_p02": None if p02 is None else round(p02, 3),
         "material": mat, "print_rot": rot, "size_mm": [round(x, 2) for x in size], "fits": fits,
         "volume_mm3": round(vol, 1), "mass_solid_g": round(vol / 1000 * rho, 1),
         "mass_est_g": round((shell + infill * max(vol - shell, 0)) / 1000 * rho, 1), "infill": infill,

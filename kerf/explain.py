@@ -191,7 +191,7 @@ def explain_requirement(r: dict) -> dict:
 def cards(rep: dict, parts=()) -> list[dict]:
     """Every blocking problem as a card, failed requirements included once (their 'requirement ... failed' problem
     line is replaced by the requirement's own card)."""
-    failed = [r for r in rep.get("requirements") or [] if not r.get("ok") and not r.get("skipped")]
+    failed = [r for r in rep.get("requirements") or [] if not r.get("ok") and not r.get("skipped") and not r.get("advisory")]
     ids = {r.get("id") for r in failed}
     out = []
     for p in rep.get("problems") or []:

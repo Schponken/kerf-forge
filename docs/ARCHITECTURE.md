@@ -142,6 +142,10 @@ assembly:
   allow_overlap:                # only with a physical reason
     - {pair: [servo, horn], max_mm3: 60, why: horn spline engages the servo output shaft}  # horn proxies with
       # catalog spline_engage get a spline bore and sit that far down over the spline, so need no allowance
+  # squashable items (foam pad, battery strap, wire bundle, Velcro): on the item, `compress_mm: 2` + `compress_why:`; a
+  # part pressing into it up to that depth is not a collision (assembly.squashed; deeper, or no reason, it is)
+  # load-carrying printed parts: any part a strength check names, or `structural: true` on the part; only they need
+  # 0.8 mm walls, any other part may go down to one 0.42 mm line (a warning; pipeline.thin_wall_rule)
   key_access:                   # assembly order for the hex-key check: these items go on after the group's screws
     - {group: hub_motor_top, before: [motor_plate, motor_bottom], why: top motor is screwed on before the bottom plate}
   sweeps:
@@ -177,6 +181,10 @@ requirements:
     ignore: [tendon]              # items allowed inside the channel
 ```
 Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each function's docstring):
+Any requirement except a strength check (requirements.STRENGTH_CHECKS) may add `advisory: "<why a miss is acceptable>"`:
+its miss is then a warning, not a problem (kept in the report and the Studio table as "advisory"); with no reason, or
+on a strength check, it is refused and blocks.
+
 | check | arguments (main) | value |
 |---|---|---|
 | `mass_max` | `max_g`, `include` | estimated mass (g) |

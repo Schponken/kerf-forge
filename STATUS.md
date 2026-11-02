@@ -257,3 +257,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Activity now lists sessions working on a project from fresh claims (☁ title · N to fix · last active); the Checks banner shows that session's latest commits. A claim covers the whole PLAN item, so per-problem ownership isn't known; the banner says so.
 - Not mine, seen while testing: tests/test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on fails on main (req event order vs start.reqs, after the "check in order of redesign cost" change). Fixed docs: `kerf req` was missing from the ARCHITECTURE CLI row.
 - Next: 3D guided tour, History comic strip, new-design briefing room.
+
+## 2026-11-02 (Claude, realistic limits)
+- Done: `advisory: <why>` requirements (a miss is a warning; refused on strength checks and without a reason; Studio shows "MISSED · advisory"; the optimiser and problem cards ignore it); thin-wall minimum 0.8 mm only on load-carrying parts (named by a strength check or `structural: true`), others down to one 0.42 mm line as a warning (Bambu Studio default line width, https://forum.bambulab.com/t/default-line-width-of-0-42/20400); squashable items `compress_mm` + `compress_why` (press-in depth measured, deeper = collision). tests/test_realistic_limits.py; docs + kerf skill.
+- No existing limit was loosened; every project's results are unchanged until its yaml opts in.
+- Candidates not done (need sources or design work): crash energy budget with bumper credit, vibration as stiffness target + filtering note, infill-aware FEA, single overall safety factor, A2L-calibrated motion clearance.

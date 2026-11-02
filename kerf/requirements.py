@@ -831,9 +831,14 @@ def run_all(proj, asm, quick: bool = False, only=None, pick=None, by_redesign_co
     return out
 
 
+# checks whose failure means a part could break: never `advisory`, and they make a part load-carrying (0.8 mm walls)
+STRENGTH_CHECKS = {"fea_static", "impact_fea", "cantilever_stress", "stop_impact", "natural_freq", "spar_bending", "gear_bending",
+                   "planetary_bending", "worm_drive", "flex_strain", "creep_limit", "weak_link", "drop_impact", "impact_case"}
+
+
 def _run_one(proj, asm, req, quick):
     out = []
-    kw = {k: v for k, v in req.items() if k not in ("check", "why", "id")}
+    kw = {k: v for k, v in req.items() if k not in ("check", "why", "id", "advisory")}
     name = req["check"]
     rid = req.get("id", name)
     if quick and name in SLOW:
@@ -850,6 +855,15 @@ def _run_one(proj, asm, req, quick):
     except Exception as e:  # noqa: BLE001
         r = {"ok": False, "value": None, "limit": None, "detail": f"check failed to run: {type(e).__name__}: {e}"}
     unit, bound = UNITS.get(name, ("", "limit"))
+    adv = req.get("advisory")
+    if adv is not None:                 # a miss is a warning, not a blocker: a reason is required, never for strength
+        if name in STRENGTH_CHECKS:
+            r = {**r, "ok": False, "detail": f"{r.get('detail', '')}; 'advisory' is not allowed on a strength check ({name}): "
+                 "a part that would break always blocks"}
+        elif not str(adv).strip() or adv is True:
+            r = {**r, "ok": False, "detail": f"{r.get('detail', '')}; 'advisory' needs the reason a miss is acceptable"}
+        else:
+            r = {**r, "advisory": str(adv).strip()}
     out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, **r})
     from . import progress
     progress.emit("req", id=rid, check=name, unit=unit, bound=bound, ok=bool(r.get("ok")), value=r.get("value"), limit=r.get("limit"),
