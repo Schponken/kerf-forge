@@ -183,6 +183,21 @@ Requirement checks (`requirements:` in project.yaml; arguments in each function'
 | `connector_access` | a plug / cable / finger reaches the battery plug or USB port with the device assembled |
 | `hard_stop` | a joint moved past an end of its range collides, i.e. a real mechanical stop holds it there |
 | `gear_bending` | Lewis tooth bending of a printed spur pair at the driving servo's stall torque |
+| `heat_limit` | (use story heat) every part's material heat deflection temperature above the stated max |
+| `rain_cover` | (use story rain) rain-sensitive electronics roofed from above |
+| `access_opening` | a 32 mm (38 mm gloved) finger opening to a handled item, clear to outside |
+| `impact_case` | (use story drop / crash) a strength case carries the stopping force, or an impact_fea simulates it |
+| `story_covered` | (use story "other") the named requirements exist |
+| `impact_fea` | drop / crash: impact force from the part's own FEA stiffness, scaled stress vs strength / sf |
+| `stop_impact` | a joint driven into its hard stop: inertia beyond it + stall torque on the stop |
+| `natural_freq` | first bending mode with a carried mass vs rotor / blade-pass (or stated) excitation |
+| `weak_link` | the cheap part uses more of its limit than the expensive ones under one event |
+| `flex_strain` | snap-fit / living-hinge root strain vs permissible strain |
+| `creep_limit` | a constant-load case under the material's documented creep-rupture stress / sf |
+| `screw_locking` | every metal-thread fastener group on a vibrating build names its locking |
+| `repair_access` | field-repair parts come off the finished device with a hex key |
+| `planetary_bending` | planetary set buildable + Lewis stress on the most loaded planet |
+| `worm_drive` | worm wheel Lewis stress, efficiency, self-locking when required |
 
 Always-on checks (no yaml needed): print checks per part (one solid, bed fit, watertight, overhang, wall thickness,
 `load_axis` across layers), interference at home, motion sweeps of every joint, fastener alignment + screw lengths,
