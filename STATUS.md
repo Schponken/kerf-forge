@@ -164,3 +164,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   click with the engine running but no window opens exactly one, a cold click starts the engine then opens one; the
   native app replaces it once `xcode-select --install` has run. setup.sh changed, so the next launch re-runs setup,
   which rebuilds the app in the background and reopens it. tests/test_mac_launcher.py (stubbed pgrep/curl/osascript/open).
+
+### 2026-11-02 — Engine speed: faster collision checks (session 01S68R6R)
+- Merged perf/mesh-prefilter. geom.overlap now caches each shape's own-frame box and runs a mesh prefilter (manifold3d)
+  before the exact B-rep boolean. Measured on drone_foldable_wings (A/B in one process): same hits over 6 poses,
+  interference pass 48.4 s -> 13.0 s, each motion-sweep step 3.6-4.2 s -> 0.03-0.06 s. Every reported volume is still
+  the exact boolean; `KERF_EXACT_OVERLAP=1` turns the prefilter off. Caches copy/pickle as empty (a deep-copied part
+  recomputes). Collision-heavy test files: 99 passed.
+- Next: part cache keyed on the engine modules a part uses (PLAN "Engine speed").
+- Pre-existing failures on main seen while testing (not from this change, owners please look):
+  test_board_proxy_keeps_mounting_holes_clear, test_servo_dims_are_the_catalog[servos.KST_X08_Plus],
+  test_every_requirement_check_listed, test_no_text_io_without_encoding (circuit.py:502, fwcheck.py:172).
