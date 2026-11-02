@@ -13,3 +13,22 @@ kerf.egg-info/
 .claude/state/session_id
 /out/
 .cache/
+# generated / scratch files that must not be committed (repo cleanup 2026-11-02)
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+**/node_modules/
+*.log
+.DS_Store
+*.orig
+*.rej
+*.bak
+*~
+*.swp
+*_old.*
+*_bak.*
+tmp_*
+/*.stl
+/*.3mf
+/*.step
+/*.png
