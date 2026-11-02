@@ -626,23 +626,32 @@ def _cyl_dist(q, R, h):
     return np.hypot(np.maximum(0.0, rho - R), dz)
 
 
-def _min_dist_sampled(v, f, dist) -> float:
-    """min of dist over the mesh surface sampled no coarser than SAMPLE_MM (trimesh subdivide_to_size), subdividing
-    only the triangles that can hold the minimum: dist to a convex solid is 1-Lipschitz, so no point of a triangle is
-    closer than dist(centroid) - (centroid to its farthest corner); triangles whose bound exceeds the nearest vertex
-    cannot lower the result. Gives exactly what subdividing the whole surface gives (the kept triangles subdivide
-    the same way), at a small fraction of the cost on large parts."""
+def _min_dist_sampled(v, f, dist, move=None, memo=None) -> float:
+    """min of dist over the mesh (v, f; own frame, `move` maps own-frame points to dist's frame) sampled no coarser
+    than SAMPLE_MM (trimesh subdivide_to_size), subdividing only the triangles that can hold the minimum: dist to a
+    convex solid is 1-Lipschitz, so no point of a triangle is closer than dist(centroid) - (centroid to its farthest
+    corner); a triangle whose bound exceeds the nearest vertex cannot lower the result. Each triangle's samples are
+    made once and kept in `memo` (face index -> own-frame points), so later poses and discs reuse them. Same value as
+    subdividing the whole surface (each triangle subdivides on its own edges alone)."""
     import trimesh
-    d = dist(v)
-    best = float(d.min())
-    tri = v[f]
+    move = move or (lambda p: p)
+    memo = {} if memo is None else memo
+    q = move(v)
+    best = float(dist(q).min())
+    tri = q[f]
     c = tri.mean(axis=1)
     r = np.linalg.norm(tri - c[:, None, :], axis=2).max(axis=1)
-    keep = dist(c) - r <= best + 1e-9
-    if not keep.any():
-        return best
-    pts, _ = trimesh.remesh.subdivide_to_size(v, f[keep], max_edge=SAMPLE_MM, max_iter=20)
-    return min(best, float(dist(pts).min()))
+    keep = np.flatnonzero(dist(c) - r <= best + 1e-9)
+    need = np.array([i for i in keep if i not in memo], dtype=np.int64)
+    if len(need):
+        nv, nf, idx = trimesh.remesh.subdivide_to_size(v, f[need], max_edge=SAMPLE_MM, max_iter=20, return_index=True)
+        order = np.argsort(idx, kind="stable")
+        bounds = np.searchsorted(idx[order], np.arange(len(need) + 1))
+        for j, fi in enumerate(need):
+            memo[int(fi)] = nv[np.unique(nf[order[bounds[j]:bounds[j + 1]]])]
+    if len(keep):
+        best = min(best, float(dist(move(np.concatenate([memo[int(i)] for i in keep]))).min()))
+    return best
 
 
 def _matrix(loc):
@@ -659,13 +668,13 @@ def _disc_gap(disc, other, cache) -> float:
         lo, hi = geom.bbox(disc.shape.located(Location()))
         cache[("disc", disc.id)] = ((hi[0] - lo[0]) / 2, hi[2] - lo[2])
     if ("mesh", other.id) not in cache:
-        cache[("mesh", other.id)] = _surface_mesh(other.shape)
+        cache[("mesh", other.id)] = (*_surface_mesh(other.shape), {})
     R, h = cache[("disc", disc.id)]
-    v, f = cache[("mesh", other.id)]
+    v, f, memo = cache[("mesh", other.id)]
     Ro, to = _matrix(other.shape.location)
     Rd, td = _matrix(disc.shape.location)
-    q = (v @ Ro.T + to - td) @ Rd          # world -> disc frame (rigid: subdivision commutes with it)
-    return _min_dist_sampled(q, f, lambda p: _cyl_dist(p, R, h))
+    return _min_dist_sampled(v, f, lambda p: _cyl_dist(p, R, h),
+                             move=lambda p: (p @ Ro.T + to - td) @ Rd, memo=memo)   # own -> world -> disc frame
 
 
 @check("prop_clearance")
