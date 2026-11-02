@@ -321,7 +321,7 @@ def status() -> int:
     return 0
 
 
-def new(name, title) -> int:
+def new(name, title, module=None) -> int:
     import re
     if not re.fullmatch(r"[a-z][a-z0-9_]{1,40}", name):
         _p("Choose a folder name with 2–41 lowercase letters, numbers or underscores, starting with a letter (for example desk_arm).")
@@ -330,6 +330,16 @@ def new(name, title) -> int:
     if d.exists():
         _p(f"projects/{name} already exists")
         return 1
+    if module:
+        from . import modules
+        try:
+            modules.instantiate(module, name, title, projects_dir=ROOT / "projects")
+        except (OSError, ValueError) as e:
+            _p(f"Could not create module instance: {e}")
+            return 1
+        _p(f"Created projects/{name} from {module}, with its source contract and checks. "
+           f"Read MODULE.md; this new project is not checked or reviewed. Run `kerf check {name}` next.")
+        return 0
     (d / "parts").mkdir(parents=True)
     import yaml
     title_yaml = yaml.safe_dump({"name": title}, allow_unicode=True, sort_keys=False).rstrip()
@@ -357,6 +367,9 @@ def main(argv=None) -> int:
     v.add_argument("--all-failures", action="store_true", help="don't stop pytest at the first failure (batched runs)")
     r = sub.add_parser("review-status", help='See whether an independent review covers the current design.', description='See whether an independent review covers the current design.'); r.add_argument("project")
     n = sub.add_parser("new", help='Create a project folder and starter files.', description='Create a project folder and starter files.'); n.add_argument("name"); n.add_argument("title")
+    n.add_argument("--module", help="start from a reusable assembly with its contract and checks (see kerf modules)")
+    md = sub.add_parser("modules", help="inspect reusable assemblies, interfaces, checks and source review status")
+    md.add_argument("module", nargs="?"); md.add_argument("--json", action="store_true")
     sub.add_parser("status", help='List project names and their build and review status.', description='List project names and their build and review status.')
     k = sub.add_parser("calibrate", help='Make a fit-test coupon for your printer and material.', description='Make a fit-test coupon for your printer and material.'); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
     f = sub.add_parser("feedback", help="fit measurements for a material (calibration), or a finding on a built project "
@@ -444,7 +457,28 @@ def main(argv=None) -> int:
         _p(json.dumps(s))
         return 0 if s["ok"] else 1
     if a.cmd == "new":
-        return new(a.name, a.title)
+        return new(a.name, a.title, a.module)
+    if a.cmd == "modules":
+        from . import modules
+        try:
+            rows = [modules.describe(k) for k in ([a.module] if a.module else modules.entries())]
+        except (OSError, ValueError) as e:
+            _p(f"Could not read module library: {e}")
+            return 1
+        if a.json:
+            _p(json.dumps(rows, indent=2, ensure_ascii=False))
+        else:
+            for m in rows:
+                _p(f"{m['id']} — {m['title']}\n  {m['description']}\n  Source review: {m['source_review']['why']}")
+                if a.module:
+                    _p("  Interfaces: " + "; ".join(f"{k}: {v}" for k, v in m["ports"].items()))
+                    _p("  Parameters: " + ", ".join(m["params"]))
+                    _p("  Inherited checks: " + ", ".join(r["id"] for r in m["requirements"]))
+                    for limit in m["limits"]:
+                        _p(f"  - {limit}")
+                _p(f"  Start: kerf new my_joint \"My joint\" --module {m['id']}")
+            _p("New instances need their own check, build and independent review. Inspect details with `kerf modules <module>`.")
+        return 0
     if a.cmd == "status":
         return status()
     if a.cmd == "studio":

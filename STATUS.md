@@ -215,6 +215,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
   then docs/status/CODEX_TASKS.md items in order.
 
+## 2026-11-02 — Repo cleanup, ChatGPT Codex
+- Audited tracked files, generated/cache/scratch paths, large binaries, project part/helper references, engine imports and claims. Earlier cleanup and PR #1's screenshot trimming already removed the safe candidates; no additional deletion was justified. Kept the sourced STEP models, offline viewer bundle, six README renders, helper modules, audit/prototype/provenance docs and open-task claims because they have live references. Detailed retention reasons: docs/status/REPO_CLEANUP_2026-11-02.md. No history rewrite, geometry edit or review.json edit.
+- Added ignore rules for full-size usability images while retaining compressed contact sheets, plus regression guards against tracked build/cache/scratch files, excess evidence size and missing README render links. Catalog dependency manifests, lockfiles, source/import models and batch records remain trackable.
+- Validation after pulling concurrent engine improvements: 6 targeted hygiene/claims tests pass; no full suite or all-project builds were run. No files were removed in this round. The audit closes the remaining cleanup item without manufacturing deletions. Next: Firmware proven, if its claim is available; PRs remain for independent manager review/merge.
+
 ## 2026-11-02 20:35 UTC - Codex cloud environment published (Claude)
 - The first `kerf-forge` Codex environment was stuck: every publish failed and the draft never kept its settings. It is deleted (Spencer approved); a fresh one is **Published**.
 - Settings: install script `cd /workspace/kerf-forge && mkdir -p .cache/{uv,python,npm,playwright,xdg,matplotlib} && ./setup.sh`; full public internet; environment variables put the uv/npm/Playwright/XDG/matplotlib caches under `/workspace/kerf-forge/.cache` (gitignored, so the setup's downloads are still there when a task runs), `CC=gcc CXX=g++`.
@@ -251,6 +256,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   (kernel OOM on a 7 GB cloud box). verify now builds each project in its own child process (`_run_isolated` in
   kerf/cli.py), so memory is freed between projects; tests/test_verify_isolated.py. Nothing about what verify checks changed.
 - Session names by task are on docs/status/BOARD.md (app session titles can't be renamed from a cloud run).
+
+## 2026-11-02 — Reviews go stale only for real changes, ChatGPT Codex
+- Main already tracked the catalog entries read by check/build. Fixed the remaining live-process gap: the parsed catalog refreshes when its file changes (identity/size/nanosecond modification/change times), so a used-entry edit invalidates a fingerprint in running Studio without manual cache clearing. Unused-entry edits and JSON reformatting leave scoped fingerprints unchanged; unchanged reads still reuse parsed data.
+- Missing/malformed dependency manifests conservatively hash the full catalog and the next check repairs them. Valid manifests retain the existing growing union so quick checks cannot drop full-build dependencies. No project geometry, review.json, catalog dimensions, limits or checks were edited. The docs regression exposed a missing `req` table entry; the later main refresh now supplies it and its wording was retained.
+- Validation: 55 dependency/cache/engine/calibration/docs tests passed, plus 70 catalog checks. The one previously documented PCA9685 below-board-pin height test was explicitly deselected from the catalog run, not changed or presented as passing. New regressions cover live same-size/restored-mtime edits, atomic replacements, missing used entries, malformed manifests, local design-input changes, quick-check unions and cache-hit dependency replay. No full suite or all-project build/test was run.
+- Ready PR for independent review/merge. Next in Spencer's queue: Repo cleanup, then Firmware proven, checking active claims first. Claude now reports the replacement environment Published; this original instance does not establish fresh-task restore validation.
+
+- Latest-main refresh for review fingerprints: merged current engine/Studio changes, retained their architecture/STATUS additions, and reran the 55 dependency/cache/engine/calibration/docs tests: all pass. The original 70 catalog proxy checks remain the earlier targeted result; the documented PCA9685 assertion stays untouched.
 
 ## 2026-11-02 (Claude, beginner visualizer)
 - Done and pushed: plain-language job narration; workshop stage scene in the job panel; kerf/glossary.py (plain name + meaning for all 43 checks, ~60 terms) with jargon underlines, plain check names in tables and cards, "📖 Words, explained"; Tune "can move: …" and ▲▼ better/worse in tried-vs-saved; Files tab one-liners; "?" Explain-this-page spotlight tour (first-run tour once, skipped for automated browsers); ready-to-print certificate (only for a current passing build, says "independent review: not done yet" when so).
@@ -323,6 +336,60 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - NOT done, needs Spencer's go-ahead: the Stop hook letting a session stop while the budget switch is on (hook edits
   were refused as self-modification). Until then a budget stop still makes sessions want a free item.
 - Tests: tests/test_budget.py (4), test_claims.py (copies budget.py), test_batch_verify.py, test_verify_isolated.py pass.
+## 2026-11-02 — Repo cleanup, ChatGPT Codex
+- Audited tracked files, generated/cache/scratch paths, large binaries, project part/helper references, engine imports and claims. Earlier cleanup and PR #1's screenshot trimming already removed the safe candidates; no additional deletion was justified. Kept the sourced STEP models, offline viewer bundle, six README renders, helper modules, audit/prototype/provenance docs and open-task claims because they have live references. Detailed retention reasons: docs/status/REPO_CLEANUP_2026-11-02.md. No history rewrite, geometry edit or review.json edit.
+- Added ignore rules for full-size usability images while retaining compressed contact sheets, plus regression guards against tracked build/cache/scratch files, excess evidence size and missing README render links. Catalog dependency manifests, lockfiles, source/import models and batch records remain trackable.
+- Validation after pulling concurrent engine improvements: 6 targeted hygiene/claims tests pass; no full suite or all-project builds were run. No files were removed in this round. The audit closes the remaining cleanup item without manufacturing deletions. Next: Firmware proven, if its claim is available; PRs remain for independent manager review/merge.
+- Cleanup refresh after the later Studio/engine merges: all 6 hygiene/claims tests still pass; retained the new source/test files and all other sessions' changes. The original file-count figures are explicitly identified as the audit's starting snapshot.
+## 2026-11-02 — Firmware proven, ChatGPT Codex
+- Reproduced and fixed Arduino CLI's cloud download failure: it ignores standard HTTP(S)_PROXY unless copied into ARDUINO_NETWORK_PROXY. Setup and checker now use that supported setting, preserving explicit overrides. The pinned CLI/core/Servo/PCA9685/BusIO downloads installed successfully with TLS/checksums unchanged. This non-root container has no sudo: downloaded simavr 1.6+dfsg-3+b3 from Debian's signed trixie index into a private cache and linked the real harness there. No package/cache/binary files are committed; no setup rerun was needed.
+- Fixed proof gaps: check every matching sketch folder, retain individual results, fail if any fails, keep compiled-only distinct from PASS, and handle tool errors/timeouts without abandoning later sketches. Generate mixed Nano-direct/PCA9685 outputs correctly, check each at its existing tolerance, and keep PCA channels out of Nano Servo-slot allocation. PCA programs now also detect unwired Nano-pin pulses. Quotes, backslashes, newlines and Unicode in generated C++/Pi labels are safely encoded; Pi's temporary PWM tree is cleaned after each run. No engineering limits, model assumptions, catalog values or assertions were loosened.
+- Validation after pulling/rebasing on current main: 55 targeted firmware/setup/docs/CLI tests pass, with no skips. The real compiler/simulator tests (previously five skipped here) include deliberately broken compile/overtravel/Pi cases, a broken second sketch, mixed outputs, 12 PCA channels plus a direct Nano servo, unwired output, label escaping and pipeline result recording. `kerf firmware-check servo_link` returned PASS: 7,858-byte Nano program; D9 centre 1499.94–1500.12 us, sweep -88.92..88.90 deg within +/-90. No physical hardware, paid service, full suite or all-project build was used. Guide and detailed scope: docs/FIRMWARE_CHECKS.md.
+- Queue delivered as one PR per item: #4 Fast tests, #5 catalog review fingerprints, #6 cleanup audit/guards, and this Firmware proven PR. All are for independent manager/Spencer review and merge; Codex does not merge them. Release each completed claim. Refresh older open PRs against concurrent main changes before ending.
+- Publication update superseding this thread's earlier blocker: Claude's latest main entry reports the replacement cloud environment Published and setup/doctor validated. This thread remains attached to the original instance; Codex has not independently validated a fresh restore of the replacement. The firmware proxy fix addresses the download issue recorded in that publication note.
+- Firmware review refresh: merged the later main Studio/CLI changes, retained their architecture/STATUS text, and reran all 55 targeted firmware/setup/docs/CLI tests: all pass, no skips. All four queued task PRs are ready for independent review; no self-merge or full-suite run.
+## 2026-11-02 — Codex-aware Work overview (Codex, delegated design + data work)
+- Work now combines main-branch shared claims, repository-scoped Codex session summaries and Studio jobs. Task rows
+  show owner, activity, source freshness, attention state, real checklist/stage progress, remaining steps and time
+  estimates only when comparable Studio run history exists. Search, assistant/state filters, project navigation,
+  expandable scope, recent changes, keyboard focus retention and phone/light/dark layouts make it easier to scan.
+- Codex discovery uses read-only app-server list/turn APIs with bounded reads and a 30-second cache; it never starts
+  or resumes a chat. Live proxy preferred; this Mac has no live control socket, so saved history is clearly marked
+  and never treated as running. Cloud work is represented by shared claims. Old claims without runtime metadata
+  remain Session; future claims/heartbeats record explicit Codex/Claude identity and may include a short activity.
+- Explicit thread links deduplicate ownership and retain multiple claimed tasks without inflating running counts.
+  Missing progress/estimates stay unknown; failed refreshes retain stale data. Main-branch claims stay visible from
+  feature branches. Cache invalidation during a slow session read cannot break the response.
+- Verification: 28 targeted tests passed (including browser scenarios at 1440/390 px, dark/light, filters, recovery,
+  keyboard focus and contrast). Real app-server/history and Studio API/browser smoke succeeded; this Codex task
+  appears with its shared claim and current activity. Independent review issues fixed and covered. Screenshots in
+  .cache/work-ui use sample tasks, except work-live-1440.png which captures local data. No full-suite/hardware run;
+  full batch verification remains with the manager (now on hold). No catalog, geometry, check threshold or review edits.
+## 2026-11-02 — Reusable assembly instances (Codex, module-library)
+- `kerf modules [name] [--json]` exposes a source assembly's interfaces, parameters, inherited requirements and
+  actual `review-status`. `kerf new <name> <title> --module servo_joint` copies an independent editable bench servo
+  joint from servo_link, retaining the base, power/wiring, fasteners, every load case and YAML engineering comments.
+- Explicit source-file manifest; all part/layout/sibling helpers and imported/mesh assets required; path escapes,
+  symlinks and existing targets refused; a failed copy cleans up only its new folder. `MODULE.md` explains limits;
+  `module.json` archives source hashes and the full historical review. Outputs/caches/review.json are never copied.
+- **46 targeted tests PASS** (test_modules, test_cli_usability, test_docs), including real geometry/joint/torque,
+  independent editing, name/path safety, omitted dependencies, 3MF support, title escaping and failed-copy recovery.
+  Doctor ALL OK using the existing shared environment; optional Arduino/simavr remain unavailable on this Mac.
+- Full `kerf check` on a scratch instance PASS in 28.4 s: 0 overlaps, 12 aligned screws, swing clear over +/-90 deg,
+  all 8 requirements PASS (bracket FEA 0.63/13 MPa; arm 4.67/24 MPa). No new geometry or thresholds changed.
+  Existing warnings remain: jack has no mass; two servo screws need a ball-end key; circuit ERC NOT RUN for psu/jack
+  missing pin tables; bracket overbuilt and 4 sharp inside corners; arm infill lattice reaches 1.5x its local limit.
+- Source's historical PASS fingerprint 57044319cfe478bb differs from current ddf0ee5d392760f4: explicitly stale,
+  never presented as current proof. The new instance is unreviewed. No full build/render/review, full suite or
+  physical hardware run. The batch remains on the owner's hold. Parent review found and resolved imported-asset
+  dependency closure; no remaining finding. Only the precise workflow subitem is done; other families/composition
+  and current independent source reviews remain open.
+
+## 2026-11-02 21:55 UTC - Kerf manager run
+- Merged Codex PRs #5, #6, #7, #9, #10 after reading the diffs and running their targeted tests (all pass;
+  STATUS.md conflicts resolved by keeping both entries). #3, #4 need a rebase on main; #8 must move its CLAUDE.md note.
+- Blocker for the batch: tests/test_catalog.py::test_board_proxy_keeps_mounting_holes_clear already fails on main.
+
 
 
 ## 2026-11-02 — Scenario comparison in Studio (Codex, scenario-intake)

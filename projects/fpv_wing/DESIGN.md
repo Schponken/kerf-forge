@@ -164,7 +164,7 @@ shelf electronics (GPS, FC, RX, ESC, VTX), antenna -> battery, strap, XT60 -> ha
 
 The outer elevon half (60 % of the surface) is driven only through the joiner rods, and free play on a control surface
 is the classic cause of flutter/buzz at 150-180 km/h. So: **two** 3 mm carbon rods (rods.cf_rod_3, 50 mm), one 4 mm and
-one 8.7 mm aft of the hinge in plan, the front one 4.6 mm (review measurements by slicing the STLs: at 10 mm aft only 0.80-0.85 mm of wall, at 9 mm 0.89-1.06 mm; the front rod at 4 mm had 0.81 mm against the rounded hinge nose, at 4.6 mm 1.26-1.43 mm; the web between the bores ~1.3-1.4 mm;
+one 8.7 mm aft of the hinge in plan, the front one 4.6 mm (review measurements by slicing the STLs: at 10 mm aft only 0.80-0.85 mm of wall, at 9 mm 0.89-1.06 mm; the front rod at 4 mm had 0.81 mm against the rounded hinge nose, at 4.6 mm 1.26-1.43 mm; at 8.7 mm (round 7) the aft wall tapers 1.09 -> 0.92 mm outboard and the web between the bores is 1.0-1.1 mm, two perimeters, light load;
 at 16 mm the section is only 4 mm thick). Both are **epoxied into the inner half** (5-min epoxy, bores +0.1 mm). In the
 **outer half** the bores print at 3.0 mm nominal (FDM holes come out ~0.1 mm small) and are **reamed with a 3.0 mm
 drill** to a push fit on the rods (catalog: rods are -0.03/-0.1 mm undersize), so the outer half slides off for crash
