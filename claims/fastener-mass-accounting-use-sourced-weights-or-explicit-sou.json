@@ -1,0 +1,9 @@
+{
+ "item": "Fastener mass accounting: use sourced weights or explicit source-backed estimates with generated hardware quantities; prevent double counting and report missing mass before relying on whole-system totals.",
+ "session": "codex-fastener-mass",
+ "since": 1793659071.180515,
+ "heartbeat": 1793659071.180515,
+ "provider": "Codex",
+ "thread_id": "01a19e15-de6d-78b1-b4d9-942e1fc9ce46",
+ "since_utc": "2026-11-02 22:37"
+}
