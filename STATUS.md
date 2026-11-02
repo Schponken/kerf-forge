@@ -1378,3 +1378,12 @@ pushed for it and what I know:
   still being designed by another session (parallel jaws); grip_hold needs prismatic / geared jaw support there.
   Note: req_dynamic.impact_fea (another session, same evening) is the 1-DOF FEA-spring drop; drop_impact adds the
   rigid-body rotation (effective mass of an off-centre hit) and the Hertz contact in series.
+
+## 2026-11-02 08:50 UTC-5 — Placeholder parts no longer flood the report (Spencer: "don't let this happen again")
+- Studio showed the Hawk-fold contract (every part still a STUB box) as "64 problems to fix". Now `ctx.stub("why")`
+  (or a part file whose docstring starts with STUB) marks a placeholder; kerf/pipeline._fold_stubs moves every
+  problem naming a stub to report.json `stub_problems` and leaves ONE "design in progress: N of M parts are
+  placeholders" problem; Studio shows "✎ being designed" and a banner instead of a problem count. On Hawk-fold: 65
+  stub problems folded into one line; what is left (motor vs xt60, aileron servos vs the main spars, motor holes with no
+  screw yet) are real contract problems for its owner. kerf skill step 2 now says stubs call ctx.stub and a project is
+  never left with one. tests/test_stubs.py.

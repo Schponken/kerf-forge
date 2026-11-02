@@ -386,6 +386,7 @@ function statusChips(p) {
   if (p.running && p.running.length) c.push(`<span class="chip info">● running</span>`);
   if (!p.built) c.push(`<span class="chip">not built</span>`);
   else if (p.ok) c.push(`<span class="chip ok">✓ checks pass</span>`);
+  else if (p.stubs) c.push(`<span class="chip info">✎ being designed</span>`);
   else c.push(`<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`);
   if (p.stale) c.push(`<span class="chip warn">changed since build</span>`);
   c.push(p.review && p.review.ok ? `<span class="chip ok">✓ reviewed</span>` : `<span class="chip warn">review needed</span>`);
@@ -433,6 +434,7 @@ async function refreshDetail() { if (S.sel && !S.newOpen) { const name = S.sel; 
 function statusPill(p) {
   if (p.running && p.running.length) return `<span class="pill info">● working…</span>`;
   if (!p.built) return `<span class="pill">not built yet</span>`;
+  if (!p.ok && p.stubs) return `<span class="pill info">✎ being designed: ${p.stubs} part${p.stubs == 1 ? "" : "s"} not modelled yet</span>`;
   return p.ok ? `<span class="pill ok">✓ ready to print</span>` : `<span class="pill bad">${p.problems} problem${p.problems == 1 ? "" : "s"} to fix</span>`;
 }
 function renderProject() {
@@ -597,6 +599,7 @@ function renderResults(el, rep) {
       <div class="stat"><b>${pass}</b><span>engineering checks pass</span></div>
       <div class="stat"><b>${tight}</b><span>with under 20 % margin</span></div>
       <div class="stat"><b>${W.length}</b><span>warnings to read</span></div></div>
+    ${(rep.stubs || []).length ? `<div class="banner info">Still being designed: ${rep.stubs.length} part${rep.stubs.length == 1 ? " is a" : "s are"} placeholder${rep.stubs.length == 1 ? "" : "s"} (${esc(rep.stubs.join(", "))}). Collisions with them are expected and hidden until they are modelled; the list below is what is left besides them.</div>` : ""}
     <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Parts fit, nothing collides at any joint angle, every screw lines up and can be reached, and strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.`}</div>
     ${P.length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Problems</h3><ul class="msgs">${P.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
     <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Engineering requirements</h3>${reqTable(rep.requirements)}</div>
@@ -1132,7 +1135,7 @@ function showGrid() {
   $("#main").innerHTML = `<div class="head"><h1>All projects</h1><p class="desc">${P.length} design${P.length == 1 ? "" : "s"}. Click one to open it.</p>
       ${unbuilt ? `<div class="actions"><button onclick="buildAll()">⚙ Build the ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}</button></div>` : ""}</div>
     <div class="body"><div class="pgrid">${P.map((p, i) => {
-      const run = p.running && p.running.length, st = run ? `<span class="chip info">● running</span>` : !p.built ? `<span class="chip">not built</span>` : p.ok ? `<span class="chip ok">✓ checks pass</span>` : `<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`;
+      const run = p.running && p.running.length, st = run ? `<span class="chip info">● running</span>` : !p.built ? `<span class="chip">not built</span>` : p.ok ? `<span class="chip ok">✓ checks pass</span>` : p.stubs ? `<span class="chip info">✎ being designed</span>` : `<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`;
       return `<div class="pcard" style="${first ? `animation-delay:${i * 40}ms` : "animation:none"}" onclick="select('${p.name}')">
         <div class="pic">${pic(p) ? `<img src="${pic(p)}" alt="" loading="lazy">` : "◇"}<span class="st">${st}</span></div>
         <div class="meta"><b>${esc(p.title)}</b><span>${p.review && p.review.ok ? "reviewed" : "review needed"}${p.cost_usd != null ? ` · $${fmt(p.cost_usd)}` : ""}${p.device_g != null ? ` · ${fmt(p.device_g)} g` : ""}${p.built_at ? ` · built ${new Date(p.built_at * 1000).toLocaleDateString()}` : ""}</span></div></div>`; }).join("") || `<div class="note">No projects yet.</div>`}</div></div>`;

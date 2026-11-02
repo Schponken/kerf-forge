@@ -379,6 +379,7 @@ def summary(name: str) -> dict:
             "cost_usd": (_numbers(rep) or {}).get("cost_usd"), "device_g": ((rep or {}).get("mass") or {}).get("device_g"),
             "built_at": (d / "out" / "report.json").stat().st_mtime if rep else None,
             "problems": len(rep.get("problems", [])) if rep else None,
+            "stubs": len(rep.get("stubs") or []) if rep else 0,       # placeholder parts: the design is still in progress
             "stale": bool(rep and rv.get("fingerprint") and rep.get("fingerprint") != rv.get("fingerprint")),
             "review": rv, "thumb": _thumb(d), "running": running, "build_s": estimate(name, "build")}
 
@@ -422,7 +423,7 @@ def detail(name: str) -> dict:
     trial = TRIALS / name
     trial_rep = _report(trial) if (trial / "out" / "viewer.html").exists() else None
     return {**summary(name), "params": params, "files": files, "docs": docs, "renders": renders[:40],
-            "report": {k: rep.get(k) for k in ("ok", "problems", "warnings", "maker_notes", "mass", "requirements", "bom", "seconds", "fingerprint")} if rep else None,
+            "report": {k: rep.get(k) for k in ("ok", "problems", "warnings", "maker_notes", "mass", "requirements", "bom", "seconds", "fingerprint", "stubs")} if rep else None,
             "viewer": "out/viewer.html" if (out / "viewer.html").exists() else None,
             "history": history(name),
             "estimate": {"build": estimate(name, "build"), "check": estimate(name, "check")},

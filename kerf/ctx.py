@@ -81,6 +81,7 @@ class Ctx:
         self.bom: list = []
         self.features: list = []      # design-intent ledger: what each feature is and why (kerf/intent.py)
         self.sharp_ok: list = []      # inside corners left sharp on purpose: {at, why} (kerf.edges.split_kept)
+        self.stub_why: str | None = None   # a placeholder solid during design (ctx.stub): its collisions are folded away
 
     # ---- joints (declare in the part's own frame) ----
     def rigid(self, label: str, loc: Location):
@@ -106,6 +107,11 @@ class Ctx:
         if not why or not str(why).strip():
             raise PartError(f"{self.id}: keep_sharp at {at} needs a why= (what sits in the corner)")
         self.sharp_ok.append({"at": [round(float(v), 2) for v in at], "why": str(why)})
+
+    def stub(self, why: str = "placeholder until the part is modelled"):
+        """Mark this part as a placeholder (design step 2, the contract): the build reports one 'design in progress'
+        problem instead of listing every collision with the placeholder solid."""
+        self.stub_why = str(why)
 
     # ---- design-intent ledger ----
     def add(self, shape, why: str, kind: str = "feature"):
@@ -178,4 +184,5 @@ class Ctx:
         shape.kerf_bom = list(self.bom)
         shape.kerf_features = [dict(f) for f in self.features]
         shape.kerf_sharp_ok = [dict(k) for k in self.sharp_ok]
+        shape.kerf_stub = self.stub_why
         return shape

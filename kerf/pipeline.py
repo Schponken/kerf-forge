@@ -476,6 +476,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         P.record_deps(proj)
         rep["fingerprint"] = proj.fingerprint()
     rep["maker_notes"] = maker_notes(rep["warnings"])
+    _fold_stubs(proj, rep)
     rep["ok"] = not rep["problems"]
     rep["seconds"] = round(time.time() - t0, 1)
     progress.emit("done", ok=rep["ok"], problems=len(rep["problems"]), seconds=rep["seconds"])
@@ -507,6 +508,26 @@ def _firmware_check(proj, asm, rep, out):
         rep["problems"] += [f"firmware: {p}" for p in res["problems"]]
     elif res["status"] in ("NOT_RUN", "COMPILED_ONLY"):
         rep["warnings"] += [f"firmware NOT verified ({res['status']}): {p}" for p in res["problems"]]
+
+
+def _fold_stubs(proj, rep: dict):
+    """Placeholder parts (ctx.stub / a STUB file) during design: every problem that names one is expected until it is
+    modelled, so they move to rep['stub_problems'] and ONE problem says the design is in progress."""
+    import re
+    stubs = sorted(pid for pid, it in proj.printed.items() if getattr(it.shape, "kerf_stub", None))
+    rep["stubs"] = stubs
+    if not stubs:
+        return
+    pat = re.compile(r"\b(" + "|".join(map(re.escape, stubs)) + r")\b")
+    keep, folded = [], []
+    for p in rep["problems"]:
+        (folded if pat.search(p) else keep).append(p)
+    rep["stub_problems"] = folded
+    n = len(proj.printed)
+    keep.insert(0, f"design in progress: {len(stubs)} of {n} printed parts are still placeholders ({', '.join(stubs)}); "
+                   f"{len(folded)} problem(s) involving them are expected until they are modelled (out/report.json "
+                   f"stub_problems)")
+    rep["problems"] = keep
 
 
 def summary(rep: dict) -> str:

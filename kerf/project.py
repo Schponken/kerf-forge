@@ -197,6 +197,9 @@ def build(proj: Project, only: list[str] | None = None, cache: bool = True) -> P
                         raise ProjectError(f"{f.name} has no build(ctx) function")
                     with calibrate.active(printer, it.spec.get("material")), partcache.recording() as deps:
                         it.shape = mod.build(ctx)          # this printer's measured fits
+                    if it.shape is not None and not getattr(it.shape, "kerf_stub", None) and \
+                            (mod.__doc__ or "").lstrip().upper().startswith("STUB"):
+                        it.shape.kerf_stub = "placeholder (its file says STUB)"     # stubs written before ctx.stub()
                     if it.shape is not None and hasattr(it.shape, "kerf_sites"):
                         partcache.store(ck, it.shape, deps)
             else:

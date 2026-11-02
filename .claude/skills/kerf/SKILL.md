@@ -15,7 +15,7 @@ DESIGN.md. Work through the steps in order; each has an output file and a gate.
 |---|---|---|---|
 | 0 Research | design-researcher subagent | `projects/<p>/REFERENCES.md`, new rows in `references/INDEX.md`, catalog entries | every purchased-part number in the catalog with a source |
 | 1 Size | you | `projects/<p>/DESIGN.md` | sizing math shows margin on every requirement |
-| 2 Contract | you | `projects/<p>/project.yaml` + stub parts | `kerf check <p> --quick` runs (stubs may collide) |
+| 2 Contract | you | `projects/<p>/project.yaml` + stub parts (`ctx.stub`) | `kerf check <p> --quick` runs (stub collisions fold into one "design in progress" line) |
 | 3 Parts | part-designer subagents in parallel | `projects/<p>/parts/*.py` | each part's own problems gone |
 | 4 Integrate | you | fixes at the owning part | `kerf check <p>` PASS |
 | 5 Strength + detail | you / part-designers | FEA + detail features | `kerf check <p>` PASS, FEA margins in DESIGN.md |
@@ -98,8 +98,10 @@ Search first, per part: for the whole device and for each printed part or sub-as
 Params, printed parts (`material`, `print_rot`, `load_axis`, `infill`), purchased items (catalog proxies with joints
 and fastener `groups:`), keep-outs (prop discs with `owner`, camera view, finger zones), the joint tree, allowed
 overlaps (only with a physical reason), sweeps/poses, and requirements. Schema: docs/ARCHITECTURE.md. Write stub
-parts (boxes with the right joints and interface calls) and run `kerf check <p> --quick` to prove the tree, joint
-frames and fastener groups line up before any detailed geometry.
+parts (boxes with the right joints and interface calls, each calling `ctx.stub("why")` before `ctx.finish`) and run
+`kerf check <p> --quick` to prove the tree, joint frames and fastener groups line up before any detailed geometry.
+Stubs show in the report and in Studio as ONE "design in progress" problem ("being designed"), never as a list of
+collisions; replacing a stub with the real part removes its `ctx.stub` call. A project is never left with a stub.
 
 ## 3. Parts in parallel
 Launch one `part-designer` subagent per independent printed part in a single message. Give each its contract from
