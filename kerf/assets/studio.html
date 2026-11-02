@@ -194,6 +194,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .wrecent ul{margin:6px 0 0;padding-left:18px}.wrecent li{margin:2px 0}
 .misstag{font-size:11px;margin-top:4px;white-space:nowrap}.misstag.nearmiss{color:#e0a030}.misstag.close{color:#e07a30}.misstag.faroff{color:var(--bad)}
 .fixalt{margin:-4px 0 6px;padding-left:20px}.fixalt li{margin:3px 0;color:var(--muted)}
+.toast.go{cursor:pointer}.toast.go:hover{filter:brightness(1.12)}.toastgo{display:block;margin-top:4px;font-size:11.5px;font-weight:600;color:var(--accent)}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{max-width:none;width:min(860px,94vw);height:min(820px,90vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
@@ -1260,8 +1261,10 @@ async function finished(j) {
   if (S.seenDone.has(j.id)) return; S.seenDone.add(j.id);
   const st = stageState(lastProjectEvents(S.ev));
   const ok = j.state === "done" && (!st.fin || st.fin.ok);
-  if (ok) { toast(j.label, j.kind === "design" ? "Claude Code finished the design." : j.kind === "edit" ? "Claude Code made the change." : j.kind === "fix" ? "Claude Code fixed it: every check passes." : "Every check passes.", "ok"); burst(); }
-  else { toast(j.label, j.state === "stopped" ? "Stopped." : st.fin ? `${st.fin.problems} problem(s): ${S.settings.autofix && j.kind !== "fix" ? "Claude Code is fixing them now." : "use 🔧 Fix these."}` : "Finished with an error; see the log.", "bad");
+  const target = jobTarget(j, ok), line = jobLine(j, ok, st);
+  if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) desktopNotify(j.label, line, target);
+  if (ok) { toast(j.label, line, "ok", target); burst(); }
+  else { toast(j.label, line, "bad", target);
     if (j.kind !== "fix" && S.settings.autofix) setTimeout(followFix, 1500);
     const mc = $("#mc"); mc.classList.add("shake"); setTimeout(() => mc.classList.remove("shake"), 500); }
   if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) { chime(ok); flashTitle(ok ? `✓ ${j.label}` : `✕ ${j.label}`); }
@@ -1303,13 +1306,26 @@ async function toggleAutofix() {
   refreshDetail();
 }
 function projTitle(n) { const p = (S.projects || []).find(x => x.name === n); return p ? p.title : n.replace(/_/g, " "); }
+async function openJob(id) {   // an Activity row: its project's page, with the job panel on top
+  const j = (S.jobsList || []).find(x => x.id === id);
+  if (j && j.project && j.project !== "*" && (S.projects || []).some(p => p.name === j.project) && S.sel !== j.project) await select(j.project, true);
+  watch(id);
+}
 async function openSession(n) { await select(n); setTab("results"); }
 async function pollJobs() {
   try {
-    const d = await api("/api/jobs"); S.jobsList = d.jobs;
+    const d = await api(NATIVE ? "/api/jobs?native=1" : "/api/jobs"); S.jobsList = d.jobs;
+    const was = S.jobStates || null; S.jobStates = Object.fromEntries(d.jobs.map(j => [j.id, j.state]));
+    if (was) for (const j of d.jobs) if (was[j.id] === "running" && j.state !== "running" && j.id !== S.job && !S.seenDone.has(j.id)) {
+      S.seenDone.add(j.id);
+      const ok = j.state === "done", target = jobTarget(j, ok), line = jobLine(j, ok, null);
+      toast(j.label, line, ok ? "ok" : "bad", target);
+      if (j.state !== "stopped") desktopNotify(j.label, line, target);
+      if (j.project === S.sel) refreshDetail();
+    }
     const J = [...d.jobs.filter(j => j.state === "running"), ...d.jobs.filter(j => j.state !== "running").slice(0, 3)];
     const SS = (d.sessions || []).filter(x => !J.some(j => j.state === "running" && j.project === x.project));
-    $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<div class="job" onclick="watch('${j.id}')" title="${esc(j.tail[0] || "")}">
+    $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<div class="job" onclick="openJob('${j.id}')" title="${esc(j.tail[0] || "")}">
       <span class="dot ${j.state}"></span><span class="lab">${esc(j.label)}</span><span class="note">${mmss(j.seconds)}</span></div>`).join("") +
       SS.map(x => `<div class="job sess" onclick="openSession('${x.project}')" title="${esc(x.text + (x.last ? "\nLatest: " + x.last.subject : ""))}">
       <span class="dot claimed"></span><span class="lab">☁ ${esc(projTitle(x.project))}${x.problems ? ` <small>· ${x.problems} to fix</small>` : ""}</span><span class="note">${esc((x.text.match(/last active ([^)]+)\)/) || [])[1] || "")}</span></div>`).join("") : "Nothing running.";
@@ -1317,11 +1333,37 @@ async function pollJobs() {
 }
 
 /* ---------- toasts + burst */
-function toast(title, msg, cls) {
-  const t = document.createElement("div"); t.className = "toast " + (cls || "");
-  t.innerHTML = `<b>${esc(title)}</b><span class="note" style="white-space:pre-wrap">${esc(msg)}</span>`;
+function toast(title, msg, cls, target) {   // target (see kerfOpen): a click goes to the view it is about
+  const t = document.createElement("div"); t.className = "toast " + (cls || "") + (target ? " go" : "");
+  t.innerHTML = `<b>${esc(title)}</b><span class="note" style="white-space:pre-wrap">${esc(msg)}</span>${target ? `<span class="toastgo">Open ›</span>` : ""}`;
+  if (target) { t.title = "Open it"; t.onclick = () => { kerfOpen(target); t.remove(); }; }
   $("#toasts").appendChild(t);
   setTimeout(() => { t.style.transition = "opacity .4s, transform .4s"; t.style.opacity = 0; t.style.transform = "translateX(30px)"; setTimeout(() => t.remove(), 450); }, 5200);
+}
+/* where a notification about a job or project should take you: "project:<name>:<tab>", "job:<id>" or "new" */
+function jobTarget(j, ok) {
+  if (j.kind === "quote") return "new";
+  if (!j.project || j.project === "*") return `job:${j.id}`;
+  if (j.kind === "design" && !(S.projects || []).some(p => p.name === j.project)) return `job:${j.id}`;
+  return `project:${j.project}:${!ok ? "results" : j.kind === "trial" ? "tune" : j.kind === "check" ? "results" : "model"}`;
+}
+async function kerfOpen(target) {
+  const [k, a, b] = String(target || "").split(":");
+  if (k === "project" && a) {
+    if (S.sel !== a || S.newOpen || S.grid || S.parts || S.work || !S.detail) await select(a, true);
+    if (S.sel === a) setTab(b || "model");
+  } else if (k === "job" && a) watch(a);
+  else if (k === "new") showNew();
+}
+window.kerfOpen = kerfOpen;   // the Mac app calls this when a desktop notification is clicked
+const NATIVE = (() => { try { return !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.kerf); } catch (e) { return false; } })();
+function desktopNotify(title, body, target) {   // in the Mac app: a real notification that opens this view when clicked
+  if (!NATIVE || S.settings.notify === false) return false;
+  try { window.webkit.messageHandlers.kerf.postMessage({title, body, target}); return true; } catch (e) { return false; }
+}
+function jobLine(j, ok, st) {
+  if (ok) return j.kind === "design" ? "Claude Code finished the design." : j.kind === "edit" ? "Claude Code made the change." : j.kind === "fix" ? "Claude Code fixed it: every check passes." : "Every check passes.";
+  return j.state === "stopped" ? "Stopped." : st && st.fin ? `${st.fin.problems} problem(s): ${S.settings.autofix && j.kind !== "fix" ? "Claude Code is fixing them now." : "use 🔧 Fix these."}` : "Finished with an error; see the log.";
 }
 function burst() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;

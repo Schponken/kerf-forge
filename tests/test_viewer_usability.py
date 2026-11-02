@@ -16,7 +16,8 @@ def test_viewer_keeps_device_and_off_board_mass(proj):
 
 
 @pytest.mark.browser
-def test_preview_outputs_and_copy_recovery_in_browser(proj, tmp_path):
+def test_preview_outputs_and_copy_recovery_in_browser(proj, tmp_path, monkeypatch):
+    monkeypatch.delenv("KERF_NO_ATTRIBUTION", raising=False)   # the inspector's code location comes from click-to-edit
     mass = {'device_g':25, 'off_board_g':317}
     rep = {'project':'LongProjectName' * 12 + ' <mount> & camera', 'ok':False, 'problems':['base: exported mesh is not watertight'], 'mass':mass,
            'bom':[{'type':'purchased','item':'Servo','spec':'servos.MG996R','qty':1,'buy':'https://shop.example/servo?a=1&b=2'},

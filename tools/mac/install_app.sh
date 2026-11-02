@@ -42,7 +42,7 @@ sleep 1
 
 BUILD="$(mktemp -d)"
 if [ "$NATIVE" = 1 ] && ! xcrun swiftc -O -target "$(uname -m)-apple-macos11.0" -o "$BUILD/KerfStudio" "$REPO/tools/mac/KerfStudio.swift" \
-    -framework Cocoa -framework WebKit; then
+    -framework Cocoa -framework WebKit -framework UserNotifications; then
   echo "The native app did not compile (error above): installing the single-window launcher instead."
   NATIVE=0
 fi

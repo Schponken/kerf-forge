@@ -114,7 +114,10 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
                 plates_.append(cur)
                 plate_mat.append(mat)
                 cur, x, y, row_h = [], gap, gap, 0.0
-            cur.append((iid, n, Pos(x + w / 2 - X / 2, y + h / 2 - Y / 2, 0) * s))
+            # whole 0.01 mm offsets: build123d's 3MF welds vertices by rounding to 1e-6 mm, so a plate copy then welds
+            # exactly like the part's own 3MF (validated in part_files); the bbox noise (~5e-7 mm) in w / h split
+            # near-coincident edge vertices into an invalid mesh (bionic_finger proximal, 2026-11-02)
+            cur.append((iid, n, Pos(round(x + w / 2 - X / 2, 2), round(y + h / 2 - Y / 2, 2), 0) * s))
             x += w + gap
             row_h = max(row_h, h)
         if cur:

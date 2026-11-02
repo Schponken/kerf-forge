@@ -259,6 +259,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   lead exit >= 3.4 mm behind the root face would let the nose run into the collar; the 0.3 mm lip is under one line
   width (harmless). Engine gap: nothing checks that OTHER parts stay clear during a stop's over-travel (hard_stop
   could report any part that collides before the stop pair does). Drone PLAN item stays open (claim released).
+- Re-review (review.json, fingerprint 93aa0e4d, FAIL on pre-existing blockers): the fairing's major is fixed (0.451 mm
+  at -3 deg, both sides; ligament back to its old stress). Fairing minors left open: no requirement guards that
+  over-travel gap (needs the engine feature above); the nose plan has a 1.4 mm wave at x 100-135 (taking the running
+  minimum of the ridge limit from x 95 aft would level it); keel wrap / lead exit as above. New pre-existing findings
+  for the drone's owner: spine ridge fillet meets each hub boss at zero clearance; hub and spine stressed past their
+  15 % infill lattice (kerf/infill.py, new engine check).
 
 ## 2026-11-02 21:00 UTC - Kerf manager: first batch verify was OOM-killed; fixed
 - `tools/batch_verify.py run` died (exit -9): `kerf verify` built all 11 projects in one process and grew past 6 GB
@@ -504,3 +510,34 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Follow-on main integration through eb5fc90 retains the new research trail and steering unchanged. Its browser
   test now carries the browser marker and shares the isolated worker browser; the collection contract asserts this.
   Those exact two tests PASS in 27.59 s. No other execution or benchmark repeated.
+
+## 2026-11-02 17:45 UTC-5 — for Spencer: Studio single-change jobs vs the Stop gate
+- A Studio change request says "do exactly this change ... do not start other PLAN work", but .claude/hooks/stop_gate.py
+  only lets a session end when every open PLAN item is claimed by others (or on BLOCKED / YIELD / 60 blocks). So a
+  finished Studio job (this one: drone_foldable_wings hub fairing, all pushed, claim released) keeps getting told to
+  `claims.py next`. I followed the job's instruction and did not take new work, and did not write BLOCKED/YIELD (both
+  would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
+  pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
+- (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.
+
+### 2026-11-02 — Full-suite speed (session 01S68R6R; measured on slices, no full run, per Spencer)
+- Found by timing one project's verify build by stage: viewer click-to-edit (kerf/attribution.py: traced rebuild of
+  every part + one rebuild per param, budget 240 s for the params alone) was 29 s of servo_link's 63 s and 303 s on
+  pan_tilt, in every project build of `kerf verify` and every test that writes a viewer, and it cannot change a result.
+  `kerf verify` and tests/conftest.py now set KERF_NO_ATTRIBUTION; `kerf build` keeps it; the two tests that use it
+  through the viewer turn it back on. pan_tilt verify build ~500 s -> 202 s; a 4-file test group 194 s -> 43 s.
+- geom.mesh_gap grows its search radius from 1 mm: a 1e4 mm radius made close curved parts 3.7 s per pose (worse than
+  exact); pan_tilt cam_clear 100 s -> 20 s, same values.
+- VERIFY.json now keeps the 30 slowest tests (--durations=30) and each project's build seconds: the next suite
+  speed-up should start there, not from a guess.
+- Not changed on purpose: projects still build from scratch (KERF_NO_CACHE) and drawings / renders stay in verify
+  (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
+  test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
+
+## 2026-11-02 — Fast-tests infrastructure compatibility refresh (Codex)
+- Merged main through 56d0d84 without rewriting history. The test-wide KERF_NO_ATTRIBUTION setting now coexists
+  with the browser/all-project markers and shared browser fixture; the viewer attribution assertion retains its
+  explicit opt-in and browser marker. Both STATUS histories and the stress pause remain intact.
+- Existing marker-selection contract PASS: 1 test in 8.82 s (its subprocesses only collect tests). Notification
+  and viewer-usability modules collect all 6 tests in 1.39 s. No browser, FEA, all-project build or full-suite
+  execution. Newly identified Work/Build-it/notification browser marker gaps are a separate small follow-up.

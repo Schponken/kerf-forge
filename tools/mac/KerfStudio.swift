@@ -4,8 +4,10 @@
 // Built by tools/mac/install_app.sh:  swiftc -O KerfStudio.swift -framework Cocoa -framework WebKit
 import Cocoa
 import WebKit
+import UserNotifications
 
-final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
+final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler,
+                 UNUserNotificationCenterDelegate {
     let repo = Bundle.main.object(forInfoDictionaryKey: "KerfRepo") as? String ?? ""
     var window: NSWindow!
     var web: WKWebView!
@@ -25,6 +27,9 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigation
             exit(0)
         }
         openLog()
+        let center = UNUserNotificationCenter.current()     // job notifications that open the right view when clicked
+        center.delegate = self
+        center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
         buildMenu()
         makeWindow()
         status("Starting Kerf Studio…")
@@ -209,7 +214,36 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigation
     }
 
     func userContentController(_ c: WKUserContentController, didReceive m: WKScriptMessage) {
-        if (m.body as? String) == "close" { NSApp.terminate(nil) }
+        if (m.body as? String) == "close" { NSApp.terminate(nil); return }
+        // {title, body, target} from the page: a desktop notification; clicking it calls the page's kerfOpen(target)
+        if let d = m.body as? [String: Any], let title = d["title"] as? String {
+            let content = UNMutableNotificationContent()
+            content.title = "Kerf Studio"
+            content.subtitle = title
+            content.body = (d["body"] as? String) ?? ""
+            content.sound = .default
+            content.userInfo = ["target": (d["target"] as? String) ?? ""]
+            let req = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+            UNUserNotificationCenter.current().add(req) { _ in }
+        }
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        let target = (response.notification.request.content.userInfo["target"] as? String) ?? ""
+        DispatchQueue.main.async {
+            NSApp.activate(ignoringOtherApps: true)
+            self.window.makeKeyAndOrderFront(nil)
+            if let data = try? JSONSerialization.data(withJSONObject: [target]), let arg = String(data: data, encoding: .utf8) {
+                self.web.evaluateJavaScript("window.kerfOpen && window.kerfOpen(\(arg)[0])", completionHandler: nil)
+            }
+            completionHandler()
+        }
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([])        // the window is in front: its own clickable pop-up already shows it
     }
 
     // MARK: browser behaviour a real app needs

@@ -1,9 +1,15 @@
 """Bounded workers, explicit expensive tests, and one isolated browser server per worker."""
+import os
 from pathlib import Path
 import selectors
 import subprocess
 
 import pytest
+
+# Viewer click-to-edit (kerf/attribution.py) rebuilds every part traced and once per param: ~30 s to minutes per
+# viewer, and no test needs it through the pipeline (tests/test_attribution.py calls it directly). kerf verify sets
+# the same switch for its project builds.
+os.environ.setdefault("KERF_NO_ATTRIBUTION", "1")
 
 
 @pytest.hookimpl(tryfirst=True)
