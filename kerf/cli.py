@@ -84,6 +84,38 @@ def check(name, full=False, quick=False) -> int:
     return 0 if rep["ok"] else 1
 
 
+def run_mode(name: str, mode: str, ship_confirmed: bool = False, runner=None) -> int:
+    """kerf run <p> --mode <m> (kerf/modes.py). Ship it: refused without --ship; after the kit it needs a current
+    design-review PASS, then hands plate 1 to the printer (kerf print --send 1)."""
+    from . import modes
+    from .pipeline import run, summary
+    try:
+        modes.confirm_ship(mode, ship_confirmed)
+    except modes.ShipNotConfirmed as e:
+        _p(f"FAIL {e}")
+        return 2
+    rep = (runner or run)(name, mode=mode)
+    _p(f"mode {mode}: {modes.GIVES[mode]} (stages: {', '.join(rep.get('stages', []))})")
+    _p(summary(rep))
+    if not rep["ok"] or mode != "ship":
+        return 0 if rep["ok"] else 1
+    rs = review_status(name)
+    if not rs["ok"]:
+        _p(f"FAIL Ship it needs a current design review PASS before anything prints: {rs['why']}")
+        return 1
+    from . import bambu
+    try:
+        r = bambu.run(name, send_plate=1, say=_p)
+    except (ValueError, RuntimeError) as e:
+        _p(f"FAIL {e}")
+        return 1
+    if r["sent"] is None or not r["sent"]["started"]:
+        _p(f"FAIL the printer did not report the job started: {(r['sent'] or {}).get('status')}")
+        return 1
+    _p("plate 1 is printing; send the next with `kerf print " + name + " --send 2` when it is off the bed")
+    return 0
+
+
 def projects() -> list[str]:
     return sorted(p.parent.name for p in (ROOT / "projects").glob("*/project.yaml"))
 
@@ -228,6 +260,9 @@ def main(argv=None) -> int:
     pc = sub.add_parser("price", help="price parts for a quote: kerf price servos.MG996R:2 screw:M3x8:socket:20 --grams 120")
     pc.add_argument("items", nargs="*"); pc.add_argument("--grams", type=float, default=0.0); pc.add_argument("--material", default="PETG")
     pc.add_argument("--json", action="store_true")
+    rn = sub.add_parser("run", help="run a project at a chosen depth: sketch | print | check | simulate | kit | ship")
+    rn.add_argument("project"); rn.add_argument("--mode", required=True, choices=["sketch", "print", "check", "simulate", "kit", "ship"])
+    rn.add_argument("--ship", action="store_true", help="confirm Ship it: send plate 1 to your printer once the kit passes and a design review is current")
     rp = sub.add_parser("review-pack", help="write out/review/ (PACK.md, catalog.json, contact sheets) from the last build")
     rp.add_argument("project")
     fx = sub.add_parser("fixes", help="turn the last check's common findings into edits (--apply writes the mechanical ones)")
@@ -247,6 +282,8 @@ def main(argv=None) -> int:
         return check(a.project, full=True)
     if a.cmd == "verify":
         return verify(a.fast)
+    if a.cmd == "run":
+        return run_mode(a.project, a.mode, ship_confirmed=a.ship)
     if a.cmd == "review-pack":
         from . import project as P, reviewpack
         proj = P.load(a.project)

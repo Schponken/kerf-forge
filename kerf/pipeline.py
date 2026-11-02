@@ -183,13 +183,20 @@ def _print_checks(it, printer, supports) -> dict:
     return r
 
 
-def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9) -> dict:
+def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9,
+        mode: str | None = None) -> dict:
+    """mode (kerf/modes.py: sketch | print | check | simulate | kit | ship) picks the stages; without it the old flags
+    do (sweeps = the full check, do_export / do_render = kerf build)."""
     t0 = time.time()
-    from . import catalog
+    from . import catalog, modes
     catalog.track()
+    stg = modes.stages(mode) if mode else modes.legacy(sweeps, do_export, do_render)
+    sweeps = "motion" in stg
     proj = P.load(name, overrides)
     progress.emit("start", project=proj.name, stages=[k for k, _ in progress.STAGES if (k != "motion" or sweeps)
-                                                       and (k != "export" or do_export or do_render) and (k != "renders" or do_render)],
+                                                       and (k != "requirements" or "requirements" in stg)
+                                                       and (k != "export" or stg & {"files", "docs", "viewer"})
+                                                       and (k != "renders" or "renders" in stg)],
                   parts=list(proj.printed), reqs=[r.get("id", r.get("check")) for r in proj.data.get("requirements") or []])
     progress.stage("build")
     P.build(proj)
@@ -197,7 +204,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     supports = proj.data.get("supports", "allowed")
     rep = {"project": proj.name, "dir": proj.dir.name, "fingerprint": proj.fingerprint(), "printer": printer,
            "params": proj.params, "parts": {}, "purchased": {}, "assembly": {}, "requirements": [],
-           "problems": [], "warnings": [],
+           "problems": [], "warnings": [], "mode": mode, "stages": sorted(stg),
            "cached_parts": [k for k, it in proj.printed.items() if it.cached]}   # kerf/partcache.py hits
     for iid, it in proj.items.items():
         if it.error:
@@ -300,10 +307,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             emodel = None
             powered = [i for i, it in proj.items.items() if it.role == "purchased"
                        and any(k in str(it.spec.get("catalog", "")) for k in ("servos.", "motors", "steppers", "boards."))]
-            if powered and not proj.data.get("wiring"):
+            if powered and not proj.data.get("wiring") and "electrical" in stg:
                 rep["warnings"].append(f"no electrical system: {', '.join(powered[:4])} need power and signal, but project.yaml "
                                        f"has no `electrical:` / `wiring:` (docs/ARCHITECTURE.md 'Electrical')")
-            if proj.data.get("wiring") or proj.data.get("electrical"):     # complete electrical system (kerf/electrical.py)
+            if (proj.data.get("wiring") or proj.data.get("electrical")) and "electrical" in stg:   # kerf/electrical.py
                 try:
                     emodel = electrical.analyse(proj)
                     rep["electrical"] = emodel
@@ -313,8 +320,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         rep["problems"] += rprob
                 except electrical.ElectricalError as e:
                     rep["problems"].append(f"electrical: {e}")
-            progress.stage("requirements")
-            rq = requirements.run_all(proj, asm, quick=not sweeps)
+            rq = []
+            if "requirements" in stg:
+                progress.stage("requirements")
+                rq = requirements.run_all(proj, asm, quick="fea" not in stg)
             fea_viz = {r["id"]: {**r.pop("_viz"), "part": (r.get("_field") or {}).get("part")}   # meshes stay out of report.json
                        for r in rq if "_viz" in r}
             fields: dict[str, list] = {}
@@ -350,15 +359,18 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 if not r["ok"]:
                     rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}")
             A.solve(asm)
-            if do_export or do_render:
+            if stg & {"files", "docs", "viewer", "renders"}:
                 progress.stage("export")
                 out = proj.out()
-                export.step_assembly(proj, out / "assembly.step")
                 export.glb(proj, out / "assembly.glb")
+                rep["files"] = {}
+            if stg & {"files", "renders"}:
                 export.glb(proj, out / "exploded.glb", explode=25.0)
                 export.glb(proj, out / "assembly_keepouts.glb", include_keepouts=True)
-                rep["files"] = {"parts": export.part_files(proj, out / "parts"),
-                                "plates": export.plates(proj, out / "plates", printer)}
+            if "files" in stg:
+                export.step_assembly(proj, out / "assembly.step")
+                rep["files"].update({"parts": export.part_files(proj, out / "parts"),
+                                     "plates": export.plates(proj, out / "plates", printer)})
                 try:                                    # per plate grams + time, per part slicer settings (kerf/printpkg.py)
                     from . import printpkg
                     rep["print"] = printpkg.write(proj, rep, rep["files"]["plates"], out / "plates")
@@ -379,6 +391,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         rep["warnings"] += [f"URDF {u['path']}: {m} ({c})" for sev, c, m in u["findings"] if sev != "error"]
                     except Exception as e:  # noqa: BLE001
                         rep["problems"].append(f"URDF could not be written: {type(e).__name__}: {e}")
+            if "docs" in stg:
                 rep["bom"] = export.bom(proj, fj, rep["parts"], out, pins=pinj,
                                         extra=wiring_out.bom_rows(emodel) if emodel else None)
                 if emodel:
@@ -386,18 +399,19 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     (out / "wiring.svg").write_text(wiring_out.svg(proj, emodel), encoding="utf-8")
                     rep["files"]["wiring"] = ["WIRING.md", "wiring.svg"]
                 try:  # ship package (kerf/ship.py): priced BOM + ASSEMBLY.md with a render per step when rendering
-                    rnd = (lambda g, pre, **kw: render_glb(g, pre, views="iso", sheet=False, **kw)) if do_render else None
+                    rnd = (lambda g, pre, **kw: render_glb(g, pre, views="iso", sheet=False, **kw)) if "renders" in stg else None
                     rep["files"]["ship"] = ship.write(proj, asm, rep, out, render=rnd)
                     if emodel:      # solder / wiring steps after the mechanical ones
                         wiring_out.append_assembly(out / "ASSEMBLY.md", emodel, proj)
                 except Exception as e:  # noqa: BLE001
                     rep["problems"].append(f"ship package (priced BOM / ASSEMBLY.md) could not be written: {type(e).__name__}: {e}")
+            if "viewer" in stg:
                 try:  # self-contained assembly viewer (kerf/viewer.py), after ASSEMBLY.md: its build-it-step-by-step mode
                     rep["files"]["viewer"] = "viewer.html"   # reads the step text; FEA fields colour the stress view
                     viewer.write(proj, asm, rep, out / "viewer.html", fea=fea_viz)
                 except Exception as e:  # noqa: BLE001 - a failure here is a build problem, not silent
                     rep["problems"].append(f"viewer.html could not be written: {type(e).__name__}: {e}")
-            if do_render:
+            if "renders" in stg:
                 progress.stage("renders")
                 out = proj.out("renders")
                 out.mkdir(exist_ok=True)
@@ -440,7 +454,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     rep["seconds"] = round(time.time() - t0, 1)
     progress.emit("done", ok=rep["ok"], problems=len(rep["problems"]), seconds=rep["seconds"])
     proj.out("report.json").write_text(json.dumps(rep, indent=1, default=str), encoding="utf-8")
-    if do_render:                       # the design-reviewer's compact input (kerf/reviewpack.py)
+    if "renders" in stg:                 # the design-reviewer's compact input (kerf/reviewpack.py)
         try:
             from . import reviewpack
             reviewpack.write(proj, rep, proj.out("report.json").parent)

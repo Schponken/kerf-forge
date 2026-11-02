@@ -2,6 +2,6 @@
  "item": "Modes: `kerf run <p> --mode sketch|print|check|simulate|kit|ship` (pipeline stages switched per mode, results reusable when upgrading to a deeper mode); `ship` refuses without an explicit `--ship` / Studio confirmation and is never a default; tests per mode (which stages ran, which files exist)",
  "session": "0f43a4e722",
  "since": 1793582369.0276191,
- "heartbeat": 1793582369.0276191,
+ "heartbeat": 1793582682.1493666,
  "since_utc": "2026-11-02 01:19"
 }
