@@ -24,6 +24,26 @@ git clone https://github.com/Schponken/kerf-forge && cd kerf-forge
 .venv/bin/kerf doctor      # environment self-test
 ```
 
+### First run
+
+You need Python 3.12 (setup can install it through `uv`), Node.js 20 or later and Internet access to download dependencies. On macOS, install Apple's Command Line Tools if setup asks for a compiler. On Linux, the headless renderer needs the graphics libraries listed in `setup.sh`; installing missing system packages requires administrator access.
+
+After setup prints **ALL OK**, start the app:
+
+```bash
+.venv/bin/kerf studio
+```
+
+Open **All projects**, choose **Servo test rig**, then **Build kit**. The first build can take several minutes. It checks the design and creates the model, shopping list, assembly guide and print plates. Open **Files & guides** after it finishes. Building a kit does not start your printer.
+
+You can build and inspect existing projects without Claude Code. **New design**, **Change something** and automatic fixes require Claude Code installed and signed in on the computer running Studio, and use your Claude plan. If auto-fix is on (under **More**), a failed build can start Claude Code and change the design.
+
+For a command-line first build, run `.venv/bin/kerf build servo_link`. Generated files are in `projects/servo_link/out/`: begin with `ASSEMBLY.md` and `bom.md`, read `WIRING.md`, then open `plates/plate_1.3mf` in Bambu Studio and review `plates/PRINT_SETTINGS.md` before slicing. Kerf's unsliced print time is a minimum; Bambu Studio gives the actual estimate.
+
+If Studio loses its connection, reconnect first; restart Studio if the server has stopped. With `--no-open`, use the address printed by the command. If a port is occupied, Studio prints the next available address. On macOS, the Dock app preserves local edits when checking for updates and can keep using the installed version while offline. A native Mac app install must be run on a Mac.
+
+Printer connection is optional for design and local builds. You can open the generated plates in Bambu Studio without giving Kerf printer access. Sending from Kerf needs the printer on the same reachable network and the LAN settings described below.
+
 ## Asking for a design
 
 In Claude Code, inside this repo:

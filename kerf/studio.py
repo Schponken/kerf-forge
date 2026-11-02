@@ -107,6 +107,7 @@ class Job:
 
 
 JOBS: dict[str, Job] = {}
+JOB_LOCK = threading.RLock()
 
 # ---------------------------------------------------------------- run times + version history (.cache/studio)
 TIMES = ROOT / ".cache" / "studio_times.json"
@@ -387,10 +388,22 @@ def busy() -> bool:
     return any(j.state == "running" for j in JOBS.values())
 
 
+def require_idle(project: str):
+    for current in JOBS.values():
+        if current.state == "running" and (project == "*" or current.project in (project, "*")):
+            raise ValueError(f"{current.label} is already running. Open Activity to follow it or stop it before changing this project.")
+
+
 def start_job(*a, **k) -> Job:
-    j = Job(*a, **k)
-    JOBS[j.id] = j
-    return j
+    prepare = k.pop("prepare", None)
+    project = a[1] if len(a) > 1 else k["project"]
+    with JOB_LOCK:
+        require_idle(project)
+        if prepare:
+            prepare()
+        j = Job(*a, **k)
+        JOBS[j.id] = j
+        return j
 
 
 PROGRESS_ENV = {"KERF_PROGRESS": "1", "PYTHONUNBUFFERED": "1"}
@@ -591,9 +604,15 @@ def write_params(path: Path, values: dict) -> list[str]:
         if k not in known:
             raise ValueError(f"unknown param {k}")
         v = float(v)
+        import math
+        if not math.isfinite(v):
+            raise ValueError(f"{k}: enter a finite number")
         spec = known[k]
-        if isinstance(spec, dict) and "min" in spec and "max" in spec and not (spec["min"] - 1e-9 <= v <= spec["max"] + 1e-9):
-            raise ValueError(f"{k} = {v} is outside its allowed range {spec['min']}..{spec['max']}")
+        if isinstance(spec, dict):
+            if "min" in spec and v < spec["min"] - 1e-9:
+                raise ValueError(f"{k} = {v} is outside its allowed range: enter {spec['min']} or more")
+            if "max" in spec and v > spec["max"] + 1e-9:
+                raise ValueError(f"{k} = {v} is outside its allowed range: enter {spec['max']} or less")
         pat_dict = re.compile(rf"^(\s+{re.escape(k)}:\s*\{{\s*value:\s*)([-+0-9.eE]+)", re.M)
         pat_plain = re.compile(rf"^(\s+{re.escape(k)}:\s*)([-+0-9.eE]+)(\s*(#.*)?)$", re.M)
         new, n = pat_dict.subn(lambda m: m.group(1) + _fmt_num(v), text, count=1)
@@ -1567,18 +1586,22 @@ class Handler(BaseHTTPRequestHandler):
                     j = start_job("check", name, kerf_cmd("optimise", name), f"Optimise {name}", env=PROGRESS_ENV)
                 elif action == "trial":
                     vals = {k: float(v) for k, v in (body.get("values") or {}).items()}
-                    trial_copy(name, vals, {str(k): str(v) for k, v in (body.get("materials") or {}).items()})
-                    j = start_job("trial", name, [PY, "-m", "kerf.studio", "_trial", name], f"Try new values on {name}", env=PROGRESS_ENV)
+                    j = start_job("trial", name, [PY, "-m", "kerf.studio", "_trial", name], f"Try new values on {name}", env=PROGRESS_ENV,
+                                  prepare=lambda: trial_copy(name, vals, {str(k): str(v) for k, v in (body.get("materials") or {}).items()}))
                 else:
                     return self._err(f"unknown action {action}")
                 return self._json({"job": j.id})
             if u.path == "/api/save":
-                changed = write_params(PROJECTS / name / "project.yaml", {k: float(v) for k, v in (body.get("values") or {}).items()})
+                with JOB_LOCK:
+                    require_idle(name)
+                    changed = write_params(PROJECTS / name / "project.yaml", {k: float(v) for k, v in (body.get("values") or {}).items()})
                 return self._json({"changed": changed})
             if u.path == "/api/open":
                 return self._json(open_in_app(name, body.get("what")))
             if u.path == "/api/restore":
-                return self._json({"changed": restore(name, str(body.get("stamp", "")))})
+                with JOB_LOCK:
+                    require_idle(name)
+                    return self._json({"changed": restore(name, str(body.get("stamp", "")))})
             if u.path == "/api/edit":
                 try:
                     j = edit_job(name, str(body.get("request", "")), str(body.get("title", "")))
@@ -1596,7 +1619,9 @@ class Handler(BaseHTTPRequestHandler):
                         out["error"] = f"copied, but the change didn't start: {e}"
                 return self._json(out)
             if u.path == "/api/save-materials":
-                return self._json({"changed": write_materials(PROJECTS / name / "project.yaml", {str(k): str(v) for k, v in (body.get("materials") or {}).items()})})
+                with JOB_LOCK:
+                    require_idle(name)
+                    return self._json({"changed": write_materials(PROJECTS / name / "project.yaml", {str(k): str(v) for k, v in (body.get("materials") or {}).items()})})
             if u.path == "/api/thumb":
                 return self._json(save_thumb(name, str(body.get("png", "")), body.get("fingerprint")))
             if u.path == "/api/live/follow":
@@ -1666,7 +1691,7 @@ def _watchdog(srv, idle: float, grace: float, bye_wait: float = 6.0):
 
 def serve(port: int = 8765, open_browser: bool = True, idle_exit: float | None = None) -> int:
     srv = None
-    for p in range(port, port + 20):
+    for p in range(port, min(port + 20, 65536)):
         try:
             srv = ThreadingHTTPServer(("127.0.0.1", p), Handler)
             port = p

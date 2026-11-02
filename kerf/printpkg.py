@@ -175,7 +175,7 @@ def write(proj, rep: dict, plates: list, outdir: Path, use_slicer: bool = True) 
         L += ["", "Print time without a slicer: the lower bound is the plastic volume pushed at the filament's maximum "
               "volumetric speed (Bambu profile value), which no slicer exceeds; walls, travel, the first layer and "
               "cooling make the real print several times longer. Open the plate in Bambu Studio and Slice for the "
-              "real time (Kerf slices automatically once `kerf print` is set up with your exported Bambu Studio settings, see kerf/bambu.py)."]
+              "real time. For a first print, open the plate files in Bambu Studio, select your printer and filament, then Slice. Review the sliced result before sending it to the printer."]
     L += ["", "## Material settings", "", "| Material | Bambu profile | Nozzle | Bed / plate | Part fan | Note |", "|---|---|---|---|---|---|"]
     for mat in sorted({it.spec.get("material", "PETG") for it in proj.printed.values()}):
         p = profile(mat)

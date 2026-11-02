@@ -52,8 +52,12 @@ def test_claude_stream_lines():
     ev = {"type": "assistant", "message": {"content": [{"type": "text", "text": "Researching"},
                                                        {"type": "tool_use", "name": "Bash", "input": {"command": "kerf check x\nmore"}}]}}
     lines = studio._claude_lines(json.dumps(ev))
-    assert lines[:2] == ["Researching", "  > Bash: kerf check x"]
-    assert json.loads(lines[2][2:]) == {"k": "tool", "name": "Bash", "what": "kerf check x", "phase": "check"}
+    assert [line for line in lines if not line.startswith("@@")] == ["Researching", "  > Bash: kerf check x"]
+    assert [json.loads(line[2:]) for line in lines if line.startswith("@@")] == [
+        {"k": "note", "text": "Researching"},
+        {"k": "tool", "name": "Bash", "what": "kerf check x", "phase": "check",
+         "query": "", "url": "", "path": "", "cmd": "kerf check x"},
+    ]
 
 
 @pytest.mark.parametrize("tool,inp,phase", [

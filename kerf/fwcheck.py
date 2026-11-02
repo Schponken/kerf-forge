@@ -169,7 +169,7 @@ import importlib.util, json, os, sys, tempfile
 root = tempfile.mkdtemp()
 for ch in (0, 1):
     os.makedirs(os.path.join(root, "pwmchip0", "pwm%d" % ch))
-open(os.path.join(root, "pwmchip0", "export"), "w").close()
+open(os.path.join(root, "pwmchip0", "export"), "w", encoding="utf-8").close()
 os.environ["KERF_PWM_ROOT"] = root
 spec = importlib.util.spec_from_file_location("bringup", sys.argv[1])
 m = importlib.util.module_from_spec(spec)
