@@ -37,6 +37,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/heads.py` | Socket screw heads as solids fixed to the part they seat on (catalog head_d x head_h), so interference and every sweep check a head standing proud of a moving part; countersunk heads are skipped |
 | `kerf/shanks.py` | Screw bodies: after fastener sizing, each screw (head seat to tip, 0.8 d cylinder) must not run into any item but the two it joins (a tip poking out of a nut into a neighbour, a screw reaching a prop disc) |
 | `kerf/electrical.py` | Complete electrical system from `electrical:` + `wiring:`: power tree, current per item and run (avg + peak), hover power (momentum theory), ratings (battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltage), routed wire lengths |
+| `kerf/circuit.py` | Electronics as a circuit: `wiring:` -> pin-level KiCad netlist (pins from catalog/pins.json: KiCad symbols from kicad-symbols or sourced pin tables), SKiDL ERC as a check (two outputs on one net, a power input with no source, unwired pins), conductor/terminal-capacity checks; out/kicad/<p>.net / .kicad_sch / erc.txt and out/schematic.svg / .pdf. Tests: tests/test_circuit.py |
 | `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
 | `kerf/req_gears.py` | Requirement `gear_bending`: Lewis tooth bending of a spur pair at actuator stall |
 | `kerf/aero.py` | Fixed wings: airfoils (NACA 4-digit generated; UIUC .dat files in catalog/airfoils, Selig or Lednicer, data in airfoils.json), `Planform` (straight-tapered swept wing from the centreline: chord, LE, twist, sections; `geometry()` = area, AR, taper, MAC, its station and LE x, neutral point at quarter MAC), `wing_solid` (ruled loft of polygon sections, TE thickened to `te_min`: exact volumes), `spar_point` / `spar_line` / `spar_channel`, `elevon_split` (bottom hinge at a chord fraction, top V gap, ends square to the hinge), stall speed, Reynolds number, elliptical-lift root moment. Tests: tests/test_aero.py |
@@ -302,6 +303,26 @@ wiring:
   the all-up `mass_max`.
 - `kerf build` writes `out/WIRING.md` (runs, loads, ratings, solder steps), `out/wiring.svg`, the electrical steps of `out/ASSEMBLY.md`, and
   adds wire (per gauge/colour, total mm) and heat-shrink rows with buy links to the BOM.
+
+## Circuit (kerf/circuit.py, catalog/pins.json)
+- Every item a run lands on needs a pin table in catalog/pins.json (key = catalog path or a prefix, longest wins):
+  `symbol: Lib:Name` from KiCad's kicad-symbols (pins, numbers, electrical types; `types` + `types_why` override a
+  generic all-passive symbol, e.g. a servo's PWM is an input) or `pins: [[number, name, type], ...]` with a `source`.
+  `ports.out` / `ports.in` map a port to its pins (+ first): '' = a power run's default, 'signal' = a signal run's,
+  `from: psu.dc` -> port 'dc'; `{name: [pins]}` instances are chosen by the run's `pin:` (ch1) or taken in order.
+  `optional` pins may stay open (KiCad no-connect flag, with `why`); `tied` pins are one node inside the part;
+  `max_conductors` caps wires per terminal.
+- A run may name its pins outright: `pins: {from: [T2, R2], to: [RX, TX]}`; its `conductors` must equal the pin count.
+  `electrical.mains` adds the inlet -> supply AC jumpers.
+- The check (part of the electrical stage) fails on any ERC error: two outputs on a net (e.g. UART TX to TX), a power
+  input on a net with no power output (a supply, battery, regulator or the Nano's USB-fed +5V), any pin left unwired
+  that is not optional. When any wired item has no pin table the ERC is not run and a warning names the items.
+- `kerf build` writes out/schematic.svg + .pdf (next to wiring.svg; nets drawn as labels), out/kicad/<p>.kicad_sch
+  (opens in KiCad 7+, its symbols in kerf_symbols.kicad_sym beside it), <p>.net and erc.txt. Fuses in a run are not
+  modelled as parts (the + conductor is one net through them).
+- 3D: a board / connector with a model in kicad-packages3D or a vendor STEP uses `proxy: step` (models in
+  catalog/models/ and catalog/models/kicad/, each with a SOURCES.md row); see catalog/models/kicad/SOURCES.md for what
+  KiCad has and has not.
 
 ## Item keys
 - Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),
