@@ -1332,3 +1332,12 @@ pushed for it and what I know:
   "Carrying and field repair". fpv_5in: arm_1's 6 screws reachable with a 2.5 mm key on the finished quad (PASS).
 - Running in the background: `kerf optimise fpv_5in` (arm_hole_2 / body_t / arm_t) after a full test run, aimed at the
   two real fpv findings (arm_resonance, arm_breaks_first). The body crash couple is now written from the screw radii.
+
+## 2026-11-02 00:05 UTC-5 — Learn from results (done), session e3d8373e
+- kerf/feedback.py: `kerf feedback <project> --part arm_1 --what broke --note "..." --case crash --file photo.jpg`
+  records a finding with Kerf's own prediction for that part (failure-table row) and keeps the evidence files under
+  projects/<p>/feedback/; `kerf feedback --learn [--apply]` writes LEARNED.md proposals (design fix after 2 repeats on a
+  part, ENGINEERING.md rule after the same problem on one material in 2 projects, "model gap" when a part broke at
+  < 50 % predicted use, fit reports -> the calibration route) and can append the rules to ENGINEERING.md. The old
+  `kerf feedback <material> <reports>` calibration route is unchanged. tests/test_feedback.py. **Spencer: record real
+  breakages / loose screws / fits with it; nothing real is recorded yet.**

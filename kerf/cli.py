@@ -256,7 +256,13 @@ def main(argv=None) -> int:
     n = sub.add_parser("new"); n.add_argument("name"); n.add_argument("title")
     sub.add_parser("status")
     k = sub.add_parser("calibrate"); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
-    f = sub.add_parser("feedback"); f.add_argument("material"); f.add_argument("reports", nargs="+")
+    f = sub.add_parser("feedback", help="fit measurements for a material (calibration), or a finding on a built project "
+                                        "(--what / --note / --file), or --learn from every recorded finding")
+    f.add_argument("material", nargs="?", help="a material (calibration reports follow) or a project name")
+    f.add_argument("reports", nargs="*")
+    f.add_argument("--part"); f.add_argument("--what"); f.add_argument("--note", default="")
+    f.add_argument("--case"); f.add_argument("--at"); f.add_argument("--file", action="append", default=[])
+    f.add_argument("--learn", action="store_true"); f.add_argument("--apply", action="store_true")
     f.add_argument("--printer", default=None)
     st = sub.add_parser("studio"); st.add_argument("--port", type=int, default=8765); st.add_argument("--no-open", action="store_true")
     st.add_argument("--idle-exit", type=float, default=None, metavar="SECONDS", help="quit when no window is open and nothing runs")
@@ -397,6 +403,31 @@ def main(argv=None) -> int:
         if pdir is not None:
             _p(f"written to {pdir.name}/REFERENCES.md — fill in the Decision line")
         return 0
+    if a.cmd == "feedback" and (a.learn or (a.material and (ROOT / "projects" / a.material / "project.yaml").exists())):
+        from . import feedback as FB
+        if a.learn:
+            props = FB.learn(FB.findings())
+            out = FB.write(props, ROOT / "LEARNED.md")
+            _p(out.read_text(encoding="utf-8"))
+            if a.apply:
+                _p(f"{FB.apply_rules(props, ROOT / 'docs' / 'ENGINEERING.md')} rule(s) appended to docs/ENGINEERING.md")
+            return 0
+        if not a.what:
+            _p("FAIL say what happened: --what " + " | ".join(FB.WHAT))
+            return 1
+        try:
+            r = FB.record(a.material, a.part, a.what, a.note, a.case, a.at, a.file)
+        except ValueError as e:
+            _p(f"FAIL {e}")
+            return 1
+        pred = r.get("predicted") or {}
+        _p(f"recorded finding #{r['n']} for {r['project']}" + (f" ({len(r['files'])} file(s) kept)" if r["files"] else "")
+           + (f"; Kerf had predicted {r['part']} to fail in {pred.get('fails_in')} at {pred['use']:.0%} of its limit"
+              if pred.get("use") is not None else ""))
+        return 0
+    if a.cmd == "feedback" and not (a.material and a.reports):
+        _p("FAIL kerf feedback <material> <report>... (fit calibration), kerf feedback <project> --what ... --note ..., or kerf feedback --learn")
+        return 1
     if a.cmd in ("calibrate", "feedback"):
         from . import calibrate as C
         printer = a.printer or C.DEFAULT_PRINTER

@@ -189,7 +189,7 @@ Work these in order unless one is blocked; each item is done only with tests and
   - [ ] creep_limit and flex_strain used by a project (needs sourced PETG creep data for a PETG constant-load part; no project has a snap fit or living hinge yet)
 - [x] Optimise then explain: `kerf optimise <p>` searches declared params (mass / cost / a requirement margin) within every check, writes the trade-off table; tested on a small project
 - [x] Human factors: reach / access checks from the use story (battery swap with gloves, tool access), carry and repair notes in ASSEMBLY.md
-- [ ] Learn from results: `kerf feedback` takes logs / photos / notes, records what failed where, and turns repeated findings into ENGINEERING.md rules or catalog corrections (with the evidence)
+- [x] Learn from results: `kerf feedback` takes logs / photos / notes, records what failed where, and turns repeated findings into ENGINEERING.md rules or catalog corrections (with the evidence)
 - [ ] Scenario intake + options: from a scenario-only brief, ask what matters, generate 2-3 options incl. buy-vs-build (search for existing / free designs first), compare cost / time / risk / fit, recommend one; Studio flow; eval E8 (scenario only: "my plants die when I travel")
 - [ ] Module library: proven modules extracted from finished projects (power system, servo joint, gripper, wing panel, motor mount, enclosure, drive train) with their contracts and checks; a new project can instantiate them; tests
 - [ ] Whole-system output: flight-controller / microcontroller config and controller tuned in simulation (INAV / Betaflight diff for drones and wings, Arduino / Pi code for gadgets), checked by a sim test
