@@ -2,9 +2,9 @@
  "item": "Studio shared-claim compatibility: project ownership, edit guards and Activity read shared main consistently with Work; exclude budget/control records from task cards and preserve offline source honesty.",
  "session": "codex-studio-shared-claims",
  "since": 1793658782.343585,
- "heartbeat": 1793659437.4126139,
+ "heartbeat": 1793659635.812395,
  "provider": "Codex",
  "thread_id": "01a19e35-36af-7000-955d-7cf26845e15b",
  "since_utc": "2026-11-02 22:33",
- "activity": "Shared Studio readers verified: 29 targeted tests pass; final review before integration into PR17"
+ "activity": "PR17 publisher and Studio readers integrated; 14 combined checks pass; independent final review"
 }
