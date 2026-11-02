@@ -108,10 +108,16 @@ def trace_lines(proj, pid: str) -> dict:
             last_line[id(frame)] = frame.f_lineno
         return local
 
+    seen: dict = {}       # co_filename -> is the part file (resolving a path on every call made big builds crawl)
+
     def glob(frame, event, arg):
-        if event == "call" and str(Path(frame.f_code.co_filename).resolve()) == fname:
-            return local
-        return None
+        if event != "call":
+            return None
+        cf = frame.f_code.co_filename
+        hit = seen.get(cf)
+        if hit is None:
+            hit = seen[cf] = str(Path(cf).resolve()) == fname
+        return local if hit else None
 
     old = sys.gettrace()
     sys.settrace(glob)
