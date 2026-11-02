@@ -345,3 +345,116 @@ def run(name: str, *, dry_run=False, send_plate: int | None = None, open_ui=Fals
             res["sent"] = send(cfg, target)
             say(f"sent {target.name}: {res['sent']['status']}")
     return res
+
+
+# ---------------------------------------------------------------- printer setup (`kerf printer setup / status`)
+
+SSDP_PORT = 2021          # Bambu printers announce themselves (NOTIFY, "USN: <serial>") on UDP 2021 on the LAN
+
+
+def ssdp_serial(host: str, wait_s: float = 12.0, sock=None) -> str | None:
+    """Listen for the printer's own SSDP NOTIFY on UDP 2021 (it repeats every few seconds) and read its serial (USN)."""
+    import re
+    import socket
+    s = sock or socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    try:
+        if sock is None:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind(("", SSDP_PORT))
+        s.settimeout(1.0)
+        t0 = time.time()
+        while time.time() - t0 < wait_s:
+            try:
+                data, (ip, _) = s.recvfrom(4096)
+            except OSError:
+                continue
+            txt = data.decode("utf-8", "ignore")
+            m = re.search(r"^USN:\s*(\S+)", txt, re.M | re.I)
+            loc = re.search(r"^Location:\s*(\S+)", txt, re.M | re.I)
+            if m and (ip == host or (loc and host in loc.group(1))):
+                return m.group(1).strip()
+    finally:
+        if sock is None:
+            s.close()
+    return None
+
+
+def mqtt_serial(host: str, access_code: str, wait_s: float = 8.0, client=None) -> str | None:
+    """Log in to the printer's MQTT broker and read the serial from the topic of its first report
+    (device/<serial>/report, subscribed with a wildcard). A wrong access code fails the login (rc 5)."""
+    import paho.mqtt.client as mqtt
+    found, err = {}, {}
+    c = client or mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"kerf-setup-{os.getpid()}")
+    c.username_pw_set(USER, access_code)
+    c.tls_set_context(_tls())
+
+    def on_connect(cl, u, flags, rc, props=None):
+        if getattr(rc, "is_failure", False) or (isinstance(rc, int) and rc != 0):
+            err["rc"] = str(rc)
+        else:
+            cl.subscribe("device/+/report")
+
+    def on_message(cl, u, m):
+        parts = m.topic.split("/")
+        if len(parts) == 3 and parts[0] == "device":
+            found["serial"] = parts[1]
+    c.on_connect, c.on_message = on_connect, on_message
+    c.connect(host, MQTT_PORT, keepalive=30)
+    c.loop_start()
+    try:
+        t0 = time.time()
+        while time.time() - t0 < wait_s and not found and not err:
+            time.sleep(0.2)
+    finally:
+        c.loop_stop()
+        c.disconnect()
+    if err:
+        raise PermissionError(f"the printer refused the login ({err['rc']}): check the access code on its LAN Only screen")
+    return found.get("serial")
+
+
+def save_config(cfg: dict, path: str | None = None) -> Path:
+    """Write ~/.kerf/bambu.json (owner-only: it holds the LAN access code), keeping any slicer settings."""
+    p = Path(path or os.environ.get("KERF_BAMBU_CONFIG") or Path.home() / ".kerf" / "bambu.json")
+    old = load_config(str(p))
+    old.update({k: v for k, v in cfg.items() if v})
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(old, indent=1), encoding="utf-8")
+    try:
+        p.chmod(0o600)
+    except OSError:
+        pass
+    return p
+
+
+def setup_printer(host: str, access_code: str, serial: str | None = None, say=print, ssdp=ssdp_serial,
+                  mqtt=mqtt_serial, probe=None, path: str | None = None) -> dict:
+    """Find the serial (given, SSDP, or the MQTT topic), prove the login with a status request, save the config."""
+    serial = serial or ssdp(host) or mqtt(host, access_code)
+    if not serial:
+        raise RuntimeError(f"no answer from {host}: is the printer on, on this network, with LAN Only + Developer Mode on?")
+    st = (probe or status)({"printer": {"host": host, "serial": serial, "access_code": access_code}})
+    cfg = save_config({"printer": {"host": host, "serial": serial, "access_code": access_code}}, path)
+    say(f"printer {serial} at {host}: connected ({st.get('gcode_state') or 'idle'}); saved {cfg}")
+    return {"serial": serial, "status": st, "config": str(cfg)}
+
+
+def status(cfg: dict | None = None, wait_s: float = 8.0, link=None) -> dict:
+    """One status read: pushall, then the merged report (gcode_state, mc_percent, ...)."""
+    cfg = cfg or load_config()
+    p = cfg.get("printer") or {}
+    missing = [k for k in ("host", "serial", "access_code") if not p.get(k)]
+    if missing:
+        raise ValueError(f"printer not set up (missing {missing}): run `kerf printer setup --host <ip> --code <access code>`")
+    m = link or MQTT(p["host"], p["serial"], p["access_code"])
+    try:
+        t0 = time.time()
+        m.publish(pushall_payload(1))
+        while time.time() - t0 < wait_s and not m.reports:
+            time.sleep(0.2)
+        if not m.reports:
+            raise RuntimeError(f"logged in to {p['host']} but no status report came back (serial {p['serial']} right?)")
+        return state(m.reports) or {"gcode_state": "IDLE"}
+    finally:
+        if link is None:
+            m.close()

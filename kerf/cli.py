@@ -285,6 +285,9 @@ def main(argv=None) -> int:
     f.add_argument("--printer", default=None)
     st = sub.add_parser("studio"); st.add_argument("--port", type=int, default=8765); st.add_argument("--no-open", action="store_true")
     st.add_argument("--idle-exit", type=float, default=None, metavar="SECONDS", help="quit when no window is open and nothing runs")
+    ps = sub.add_parser("printer", help="connect Kerf to the Bambu printer on the LAN (setup) or read its state (status)")
+    ps.add_argument("what", choices=["setup", "status"]); ps.add_argument("--host"); ps.add_argument("--code")
+    ps.add_argument("--serial", default=None)
     pr = sub.add_parser("print"); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
     pr.add_argument("--send", type=int, default=None, metavar="PLATE"); pr.add_argument("--open", action="store_true")
     fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
@@ -343,6 +346,20 @@ def main(argv=None) -> int:
     if a.cmd == "studio":
         from . import studio
         return studio.serve(a.port, open_browser=not a.no_open, idle_exit=a.idle_exit)
+    if a.cmd == "printer":
+        from . import bambu
+        try:
+            if a.what == "setup":
+                if not (a.host and a.code):
+                    _p("FAIL kerf printer setup --host <printer IP> --code <LAN access code> (printer screen: Settings > LAN Only)")
+                    return 1
+                bambu.setup_printer(a.host, a.code, a.serial, say=_p)
+            else:
+                _p(json.dumps(bambu.status(), indent=1))
+        except Exception as e:  # noqa: BLE001 - say what failed, in words
+            _p(f"FAIL {e}")
+            return 1
+        return 0
     if a.cmd == "print":
         from . import bambu
         try:
