@@ -236,20 +236,29 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   aerodynamic; keep the aero good at every sweep angle. Folded, the hub's flat root face (y = pivot_y) IS the wing's
   leading edge: at 70 deg it met the flow 20 deg off square, a 206 x 20 mm slab.
 - Done (parts/hub.py `root_cap`, collar trim; DESIGN.md hub contract): every chord station of the root face gets a
-  half-ellipse nose reaching min(1.25 x local half thickness, 10 mm) inboard (never past y 16: 2.0 mm off the spine
-  ridge at full spread, the tightest pose; folding only moves it out), from the LE to x 176, fading to a 0.3 mm lip
-  ahead of the boss collar; the collar's inboard flat cut (y 16) is now a half round, and its trim aft of the pin stays
-  at y 26 (that part swings inboard). Flat area within 30 deg of square to the flow at 70 deg fold: 2803 -> 51 mm2 (the
-  thin root strip aft of x 176); 0 / 35 deg: unchanged (11 / 0 mm2). hub_r 76.9 -> 81.4 g each, AUW 1582 -> 1591 g.
-- Tried and dropped (scratch FEA): a nose running into the collar, or a collar without its inboard half, put a stress
-  notch at the junction (hub_fea p99.9 31-40 MPa); stopping the nose 4.6 mm ahead of the collar fixed it.
-- Check: same 54 problems as before the change, all pre-existing and not about the root faces: wiring routes through
-  parts, ail_*_pwr/sig lead length, KiCad symbols missing, deck_fea (meshing error), spine_fea 53.6 MPa, hub_fea.
-  hub_fea p99.9 25.8 -> 24.2 MPa (limit 17.5); its deflection 7.8 -> 8.2 mm (limit 1.0, already 8x over): part mesh
-  noise (the nose alone, which only adds material, read 8.0), part the collar corners the half round removes.
-  Fold sweeps clear both sides; sm_*, stall, wing loading, spar, fold moments within 1 %.
-- Open for the drone's owner (not this change): the V keel under the root still crosses the folded flow as a 45 deg
-  wedge (structural, no square face); the pre-existing failures above.
+  half-ellipse nose reaching min(1.25 x local half thickness, 10 mm) inboard (never past y 16), from the LE to x 166,
+  fading to a 0.3 mm lip; the collar's inboard flat cut (y 16) is now a half round (its trim aft of the pin stays at
+  y 26: that part swings inboard). Flat area within 30 deg of square to the flow at 70 deg fold: 2803 -> 111 mm2 (the
+  thin root strip aft of x 166); 0 / 35 deg unchanged (11 / 0 mm2). hub 76.9 -> ~81 g each, AUW 1582 -> 1590 g.
+  Builder note (assembly_note): sand the nose's lower half after removing the tree supports.
+- Design review (review.json, FAIL) found one real problem in the first version: past full spread the nose reached the
+  spine ridge at -1.2 deg, before the stop post bites (~-1.4 deg; the sweep check only covers 0..70 and hard_stop only
+  compares aft_fuse with the hub). Fixed: where the ridge is, the reach is held 0.5 mm off it with the panel 3 deg past
+  spread (the stop_spread_* angle). Measured nose-to-spine gap: 4.1 / 2.5 / 0.45 mm at 0 / -1.4 / -3 deg, no overlap.
+  Ridge width and opening x moved to layout.py so hub, spine and aft_fuse read the same numbers (values unchanged).
+- Tried and dropped (scratch FEA): a nose running into the collar, or a collar without its inboard half, made a stress
+  notch (hub_fea p99.9 31-40 MPa); a nose ending at x 176 sat on the 2.4 mm ligament inboard of the aileron lead
+  channel (local max 15 -> 18 MPa); ending at 166 leaves that ligament as it was (max 15.2, low stress at the new end).
+- Check: the same pre-existing failures as before the change, none about the root faces: wiring routes through parts,
+  aileron lead length, KiCad symbols missing, deck_fea (meshing error), spine_fea 53.6 MPa, hub_fea. hub_fea reads
+  24.3 MPa p99.9 (was 25.8, limit 17.5), deflection 8.1 mm (was 7.8, limit 1.0): NOT a strength change - the nose adds
+  lightly loaded elements that move the percentile, and the mesh differs (reviewer compared the fields). Fold sweeps
+  clear; sm_*, stall, wing loading, spar, fold moments within 1 %.
+- Open (not this change): the V keel under the root still crosses the folded flow as a 45 deg ramp (reviewer: wrap
+  the nose down over it for x 130-176, which would also deepen the section where hub_fea fails); moving the aileron
+  lead exit >= 3.4 mm behind the root face would let the nose run into the collar; the 0.3 mm lip is under one line
+  width (harmless). Engine gap: nothing checks that OTHER parts stay clear during a stop's over-travel (hard_stop
+  could report any part that collides before the stop pair does). Drone PLAN item stays open (claim released).
 
 ## 2026-11-02 21:00 UTC - Kerf manager: first batch verify was OOM-killed; fixed
 - `tools/batch_verify.py run` died (exit -9): `kerf verify` built all 11 projects in one process and grew past 6 GB

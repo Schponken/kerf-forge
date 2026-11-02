@@ -103,8 +103,8 @@ parts:
   spine: {file: parts/spine.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed}
   hatch: {file: parts/hatch.py, material: PLA, print_rot: [180, 0, 0], infill: 0.15, walls: 2}
   motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: [Y, Z]}
-  hub_r: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed}
-  hub_l: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed}
+  hub_r: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed, assembly_note: "after taking the tree supports off, sand the lower half of the rounded root nose smooth (400 grit): folded, it is the wing's leading edge"}
+  hub_l: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed, assembly_note: "after taking the tree supports off, sand the lower half of the rounded root nose smooth (400 grit): folded, it is the wing's leading edge"}
   pinion_r: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
   pinion_l: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
   wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
