@@ -479,3 +479,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
 - (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.
+
+### 2026-11-02 — Full-suite speed (session 01S68R6R; measured on slices, no full run, per Spencer)
+- Found by timing one project's verify build by stage: viewer click-to-edit (kerf/attribution.py: traced rebuild of
+  every part + one rebuild per param, budget 240 s for the params alone) was 29 s of servo_link's 63 s and 303 s on
+  pan_tilt, in every project build of `kerf verify` and every test that writes a viewer, and it cannot change a result.
+  `kerf verify` and tests/conftest.py now set KERF_NO_ATTRIBUTION; `kerf build` keeps it; the two tests that use it
+  through the viewer turn it back on. pan_tilt verify build ~500 s -> 202 s; a 4-file test group 194 s -> 43 s.
+- geom.mesh_gap grows its search radius from 1 mm: a 1e4 mm radius made close curved parts 3.7 s per pose (worse than
+  exact); pan_tilt cam_clear 100 s -> 20 s, same values.
+- VERIFY.json now keeps the 30 slowest tests (--durations=30) and each project's build seconds: the next suite
+  speed-up should start there, not from a guess.
+- Not changed on purpose: projects still build from scratch (KERF_NO_CACHE) and drawings / renders stay in verify
+  (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
+  test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
