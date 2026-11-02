@@ -90,7 +90,8 @@ def _item(source, origin, now):
         activity = "Claim recorded; live activity is not available." if origin == "claim" else "No activity detail reported."
     attention = plain(source.get("attention"), 400) or None
     if not attention:
-        attention = {"stale": "No recent update. This session may have stopped; check before taking over.",
+        attention = {"stale": ("No recent ownership update. Check with this claim's owner before taking over."
+                                if origin == "claim" else "No recent update. This session may have stopped; check before taking over."),
                      "waiting": "This session is waiting for your input.",
                      "failed": "The last run failed. Open its activity to see what needs fixing."}.get(state)
     return {"id": f"{origin}:{source.get('id') or source.get('claim_id') or source.get('session') or title}",
@@ -173,14 +174,15 @@ def overview(data: dict, sessions=(), jobs=(), sources=(), now=None) -> dict:
         if item["state"] == "idle":
             item["state"] = "stale" if stale else "claimed"
             item["status_label"] = "No recent claim update" if stale else "Claimed · live status unavailable"
-            if stale:
-                item["attention"] = "No recent update. Check this session before taking over its task."
         item["chat_title"] = item["title"]
         item["source_label"] += " + Git claim"
         item["title"] = " + ".join(c["title"] for c in scopes)
         item["description"] = "\n\n".join(c["description"] for c in scopes if c["description"]) or item["description"]
-        item["claimed_tasks"] = [{"title": c["title"], "description": c["description"], "progress": c["progress"]}
-                                 for c in scopes]
+        item["claimed_tasks"] = scopes
+        attention_count = sum(bool(c["attention"]) for c in scopes)
+        if attention_count and not item["attention"]:
+            item["attention"] = (f"{attention_count} claimed task{'s need' if attention_count != 1 else ' needs'} attention. "
+                                 "Open scope to review each owner's update.")
         newest = max(claims, key=lambda c: number(c.get("updated_at"), 0))
         fresh_activity = max((c for c in claims if not c.get("stale") and c.get("activity")),
                              key=lambda c: number(c.get("updated_at"), 0), default=None)
