@@ -97,7 +97,7 @@ Plates are one material each (PLA / PETG / TPU need different temperatures).
 | hatch | PLA, 2 walls | flat on its outer face (smooth top on the bed, ribs up) | rests on the pod's ledges; rear tongue under the skin (notched round the antenna lead), 2 x M3 at the front + 2 x M3 at mid-length (x 130); two 2 x 3 mm ribs along its underside at y +-18 |
 | wing_l1 / r1 | PLA, 1 wall, 3 % (+ modifiers) | standing on the root face | servo pocket, lead channel, root and splice inserts |
 | wing_l2 / r2 | PLA, 1 wall, 3 % (+ modifier) | standing on the joint face, supports up the elevon slot under the TE stub | fin slot, splice insert |
-| elevon_l / r, elevon_lo / ro | PLA, 1 wall, 5 % | standing on the outboard end (120 / 180 mm tall), brim | joined by two 3 mm carbon rods (4 and 8.5 mm aft of the hinge); the inner half has the horn slot |
+| elevon_l / r, elevon_lo / ro | PLA, 1 wall, 5 % | standing on the outboard end (120 / 180 mm tall), brim | joined by two 3 mm carbon rods (4.6 and 8.7 mm aft of the hinge); the inner half has the horn slot |
 | horn_l / r | PETG, solid | flat | glued into the elevon slot; holes 9 / 12 / 15 mm under the hinge |
 | splice_l / r | PETG, 4 walls | flat | 2 x M3 up into the two segments |
 | fin_l / r | PETG, 2 walls | flat | stiffer than TPU at speed; glued into the tip slots |
@@ -164,11 +164,11 @@ shelf electronics (GPS, FC, RX, ESC, VTX), antenna -> battery, strap, XT60 -> ha
 
 The outer elevon half (60 % of the surface) is driven only through the joiner rods, and free play on a control surface
 is the classic cause of flutter/buzz at 150-180 km/h. So: **two** 3 mm carbon rods (rods.cf_rod_3, 50 mm), one 4 mm and
-one 8.5 mm aft of the hinge in plan (at 10 mm the review measured only 0.80-0.85 mm of wall round the bore; at 8.5 mm the section is ~5.25 mm deep, ~1.05 mm wall, and 1.4 mm of web between the two bores;
+one 8.7 mm aft of the hinge in plan, the front one 4.6 mm (review measurements by slicing the STLs: at 10 mm aft only 0.80-0.85 mm of wall, at 9 mm 0.89-1.06 mm; the front rod at 4 mm had 0.81 mm against the rounded hinge nose, at 4.6 mm 1.26-1.43 mm; the web between the bores ~1.3-1.4 mm;
 at 16 mm the section is only 4 mm thick). Both are **epoxied into the inner half** (5-min epoxy, bores +0.1 mm). In the
 **outer half** the bores print at 3.0 mm nominal (FDM holes come out ~0.1 mm small) and are **reamed with a 3.0 mm
 drill** to a push fit on the rods (catalog: rods are -0.03/-0.1 mm undersize), so the outer half slides off for crash
 repair but has no clearance to rattle in. With a single slip-fit rod at 5.3 mm the play was +-1.35 deg; any residual
-reaming clearance (<= 0.05 mm radial) at the 8.5 mm aft rod is < 0.3 deg, and a 25 mm hinge-tape band wrapped across
+reaming clearance (<= 0.05 mm radial) at the 8.7 mm aft rod is < 0.3 deg, and a 25 mm hinge-tape band wrapped across
 the split on both skins preloads it to zero. Crash repair: cut the band, slide the outer half (with its outer wing
 segment) off the rods, re-tape after.

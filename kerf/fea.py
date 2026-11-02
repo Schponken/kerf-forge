@@ -59,7 +59,7 @@ def _key(E, nu, pts, tets, fixed_facets, loads):
 
 
 DIRECT_MAX_DOFS = 120000  # sparse LU fallback stays under ~2 GB up to here (P2 tets)
-MAX_TETS = 80000  # quadratic tets with the AMG solver stay well under ~2 GB
+MAX_TETS = 80000  # measured 2026-11-02: ~40 kB per quadratic tet at peak (stress sampling chunked), ~3.5 GB at the cap
 
 
 def _mesh(shape, size: float):
@@ -123,7 +123,8 @@ def stiffness(basis, lam: float, mu: float, chunk: int = 8000):
     asm(linear_elasticity(lam, mu), basis), ~8x faster; tests/test_fea.py compares them). Chunked to bound memory."""
     from scipy.sparse import coo_matrix
     nd, nel = basis.Nbfun, basis.element_dofs.shape[1]
-    rows, cols, vals = [], [], []
+    idx = np.int32 if basis.N < 2**31 - 1 else np.int64      # 32-bit indices: half the triplet memory
+    K = None
     for e0 in range(0, nel, chunk):
         sl = slice(e0, min(e0 + chunk, nel))
         G = np.stack([basis.basis[i][0].grad[:, :, sl] for i in range(nd)])   # (dof, comp, dir, elem, qp)
@@ -132,11 +133,10 @@ def stiffness(basis, lam: float, mu: float, chunk: int = 8000):
         div = np.einsum("iaaeq->ieq", G)
         Ke = (2 * mu * np.einsum("iabeq,jabeq,eq->ije", eps, eps, dx, optimize=True)
               + lam * np.einsum("ieq,jeq,eq->ije", div, div, dx, optimize=True))
-        ed = basis.element_dofs[:, sl]
-        rows.append(np.broadcast_to(ed[:, None, :], Ke.shape).ravel())
-        cols.append(np.broadcast_to(ed[None, :, :], Ke.shape).ravel())
-        vals.append(Ke.ravel())
-    K = coo_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))), shape=(basis.N, basis.N)).tocsr()
+        ed = basis.element_dofs[:, sl].astype(idx)
+        Kc = coo_matrix((Ke.ravel(), (np.broadcast_to(ed[:, None, :], Ke.shape).ravel(),
+                                      np.broadcast_to(ed[None, :, :], Ke.shape).ravel())), shape=(basis.N, basis.N)).tocsr()
+        K = Kc if K is None else K + Kc          # summed per chunk: never all elements' triplets at once
     K.sum_duplicates()
     # couplings that cancel exactly in exact arithmetic come out as +-1e-13 round-off here; leaving them in changes the
     # sparsity pattern pyamg aggregates on (and broke convergence on servo_link's arm), so drop them
@@ -147,11 +147,27 @@ def stiffness(basis, lam: float, mu: float, chunk: int = 8000):
 
 
 AMG_MAXITER = 600
+VM_CHUNK = 6000
+
+
+def _von_mises(mesh, elem, u, lam: float, mu: float, chunk: int = VM_CHUNK) -> np.ndarray:
+    """von Mises stress (elements x quadrature points, intorder 4) of displacement u, built chunk by chunk so the
+    sampling basis never exists for the whole mesh at once (same values as one basis over all elements)."""
+    from skfem import Basis
+    from skfem.helpers import eye, sym_grad, trace
+    nel = mesh.t.shape[1]
+    out = []
+    for e0 in range(0, nel, chunk):
+        b = Basis(mesh, elem, intorder=4, elements=np.arange(e0, min(e0 + chunk, nel)))
+        eps = sym_grad(b.interpolate(u))
+        s = 2 * mu * eps + lam * eye(trace(eps), 3)
+        out.append(np.sqrt(0.5 * ((s[0, 0] - s[1, 1]) ** 2 + (s[1, 1] - s[2, 2]) ** 2 + (s[2, 2] - s[0, 0]) ** 2)
+                           + 3 * (s[0, 1] ** 2 + s[1, 2] ** 2 + s[2, 0] ** 2)))
+    return np.concatenate(out)
 
 
 def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = None, _depth: int = 0) -> dict:
     from skfem import Basis, ElementTetP2, ElementVector, FacetBasis, MeshTet, asm, condense
-    from skfem.helpers import eye, sym_grad, trace
     from skfem.models.elasticity import lame_parameters
 
     bb = shape.bounding_box()
@@ -182,7 +198,9 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
                 return dict(pickle.load(fh), cached=True)
         except Exception:  # noqa: BLE001 - a damaged cache entry is just a miss
             pass
-    basis = Basis(mesh, elem, intorder=4)          # stresses are sampled at these points
+    # dof numbering only (gets, doflocs): one quadrature point. The stress sampling basis (intorder 4, ~70 kB per
+    # element when built for the whole mesh, most of the solve's memory) is built per chunk after the solve (_von_mises)
+    basis = Basis(mesh, elem, intorder=1)
     lam, mu = lame_parameters(E_mpa, nu)
     # P2 gradients are linear on a straight-sided tet, so the stiffness integrand is quadratic: order 2 is exact.
     K = stiffness(Basis(mesh, elem, intorder=2), lam, mu)
@@ -234,10 +252,7 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
             raise RuntimeError("FEA direct fallback solve failed")
     u = x0.copy()
     u[I] = xI
-    eps = sym_grad(basis.interpolate(u))
-    s = 2 * mu * eps + lam * eye(trace(eps), 3)
-    vm = np.sqrt(0.5 * ((s[0, 0] - s[1, 1]) ** 2 + (s[1, 1] - s[2, 2]) ** 2 + (s[2, 2] - s[0, 0]) ** 2)
-                 + 3 * (s[0, 1] ** 2 + s[1, 2] ** 2 + s[2, 0] ** 2))
+    vm = _von_mises(mesh, elem, u, lam, mu)
     disp = np.vstack([u[basis.nodal_dofs[i]] for i in range(3)]).T
     # applied loads: the P2 basis reproduces linear fields, so sum(f) and sum(x cross f) are the exact resultants
     fx, fy, fz = (np.where(comp == c, f, 0.0) for c in range(3))

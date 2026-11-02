@@ -25,3 +25,21 @@ def test_insert_near_edge_warns_and_centred_is_clean():
     assert not p and w and "1.5 x d" in w[0]
     p, w, _ = holewall.check(_part(0.0))
     assert not p and not w
+
+
+def test_hole_lost_to_a_later_fillet_is_a_problem():
+    """A fillet built from the pre-cut shape's edges brings the blank back (fpv_wing splice plates): the registered
+    hole is filled in the finished part, and the check says so."""
+    from build123d import Axis, fillet
+    ctx = Ctx("plate", {}, {"spec": {"material": "PETG"}})
+    blank = Box(40, 22, 4, align=(Align.CENTER, Align.CENTER, Align.MAX))
+    cut = blank - iface.bolt_pattern(ctx, "g", "M3", [(0, 0)], Location(), kind="clearance", depth=4)
+    lost = fillet(cut.edges().filter_by(Axis.Z), 2.0)          # what splice.py did: works from the topo parent
+    if abs(lost.volume - blank.volume) > 50:                    # this build123d keeps the hole: nothing to prove here
+        lost = blank
+    item = types.SimpleNamespace(id="plate", shape=ctx.finish(lost), spec={"material": "PETG"})
+    p, _, _ = holewall.check(item)
+    assert p and "is filled in the finished part" in p[0]
+    ctx2 = Ctx("plate", {}, {"spec": {"material": "PETG"}})
+    good = ctx2.finish(blank - iface.bolt_pattern(ctx2, "g", "M3", [(0, 0)], Location(), kind="clearance", depth=4))
+    assert not holewall.check(types.SimpleNamespace(id="plate", shape=good, spec={"material": "PETG"}))[0]

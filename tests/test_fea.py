@@ -150,3 +150,20 @@ os.close(w)
 '''.replace('FAIL',repr(fail))
     r = subprocess.run([sys.executable,'-c',textwrap.dedent(code)],capture_output=True,text=True,timeout=30)
     assert r.returncode==0,r.stderr
+
+
+def test_von_mises_chunks_match_one_basis():
+    """fea._von_mises builds the intorder-4 sampling basis per chunk of elements (memory): identical to one basis
+    over the whole mesh."""
+    import numpy as np
+    from build123d import Box
+    from skfem import Basis, ElementTetP2, ElementVector, MeshTet
+    from skfem.models.elasticity import lame_parameters
+    from kerf import fea
+    pts, tets = fea._mesh(Box(20, 6, 4), 2.0)
+    mesh = MeshTet(pts.T, tets.T)
+    elem = ElementVector(ElementTetP2())
+    u = np.random.default_rng(0).normal(size=Basis(mesh, elem, intorder=1).N) * 1e-3
+    lam, mu = lame_parameters(2000.0, 0.35)
+    one = fea._von_mises(mesh, elem, u, lam, mu, chunk=10**9)
+    assert one.shape[0] == mesh.t.shape[1] and np.array_equal(one, fea._von_mises(mesh, elem, u, lam, mu, chunk=37))

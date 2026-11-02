@@ -25,6 +25,11 @@ DESIGN.md says why.
 | Thrust-to-weight, multirotor | >= 2.0 to fly; freestyle quad >= 6 |
 
 ## 3b. Strength verification
+- The FEA part is solid plastic; the print is walls + an infill lattice about 0.3 x infill^1.5 as strong (Ashby 2006).
+  Stress deeper than the walls must stay under that (kerf/infill.py, a warning): put 100 % infill modifiers (with a
+  `box`) where the stress runs through the inside, or add walls.
+- Crash cases may credit a soft bumper (`impact_fea` `bumper:`): a TPU pad in series lowers the peak force, counted
+  only while it squashes under 20 % of its thickness (bottoming out = no credit).
 - Every structural part gets an `fea_static` requirement: fixed where it is bolted (fastener group region), loaded
   where the load enters (joint/seat region), the realistic worst case x the factor in section 3, strength in the
   loaded layer direction. Deflection limits where stiffness matters (arms: tip deflection < 1% of length).
@@ -53,7 +58,8 @@ DESIGN.md says why.
 - Horizontal holes (axis parallel to the bed) print oval: use teardrop or add +0.2 mm, or orient holes vertically.
 
 ## 5. Walls and features
-- Wall thickness >= 1.2 mm anywhere (check fails < 0.8 mm), >= 1.6 mm on structural parts, >= 2.4 mm around heat-set
+- Wall thickness >= 1.2 mm anywhere (check fails < 0.8 mm on load-carrying parts; a part no strength check loads may go
+  to one 0.42 mm line, Bambu Studio's default for a 0.4 nozzle, as a warning), >= 1.6 mm on structural parts, >= 2.4 mm around heat-set
   inserts and screw bosses (use catalog `fdm_holes` min wall where given).
 - Perimeters: a part with a strength check (fea_static / cantilever_stress, or a copy of its file) prints with 4 wall
   loops by default (`walls` in project.yaml; 2 otherwise). FEA treats the part as solid; the stress peaks at the

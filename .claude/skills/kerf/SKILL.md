@@ -102,6 +102,10 @@ parts (boxes with the right joints and interface calls, each calling `ctx.stub("
 `kerf check <p> --quick` to prove the tree, joint frames and fastener groups line up before any detailed geometry.
 Stubs show in the report and in Studio as ONE "design in progress" problem ("being designed"), never as a list of
 collisions; replacing a stub with the real part removes its `ctx.stub` call. A project is never left with a stub.
+Realistic limits: soft things (foam pads, battery straps, wire bundles) get `compress_mm` + `compress_why` instead of an
+overlap allowance; a requirement that is a preference, not a safety or function limit (a target weight, a nice-to-have
+flight time), may be `advisory: "<why a miss is acceptable>"` (never a strength check); thin walls only block on parts
+a strength check loads (`structural: true` for one that carries load without a check).
 
 ## 3. Parts in parallel
 **Most expensive to redesign first** (Spencer, 2026-11-02). Before detailing anything, prove the concept numbers

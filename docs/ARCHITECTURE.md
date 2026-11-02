@@ -72,6 +72,8 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/req_life.py` | Design for life: `flex_strain` (snap / living-hinge root strain vs permissible single-snap strain, fatigue data required for repeated flexing), `creep_limit` (a constant-load strength case vs the catalog's documented creep-rupture stress / SF 3), `screw_locking` (vibrating projects: every metal-thread fastener group names nyloc / threadlocker / lock washer / safety wire; ASSEMBLY.md "Lock the screws that vibrate") |
 | `kerf/failure.py` | Failure modes: report.json `failure_modes` per printed part (most used strength case, how it fails from the print direction, bought parts mounted on it + price, screws to undo, reprint time lower bound from max flow + filament cost), written to ASSEMBLY.md "If it breaks" and PACK.md; `weak_link` (cheap case vs expensive cases, stress uses compared at the same applied force) |
 | placeholder parts | `ctx.stub("why")` (or a part file whose docstring starts with STUB) marks a contract-stage stub: kerf/pipeline._fold_stubs moves every problem naming a stub to report.json `stub_problems` and leaves one "design in progress" problem; `stubs` lists them; Studio shows "being designed" instead of a problem count |
+| `kerf/infill.py` | Infill-aware strength: after the FEA, every element deeper than the wall shell (walls x 0.42 mm) is held to the infill lattice strength, 0.3 x infill^1.5 of solid (Ashby 2006, Phil. Trans. R. Soc. A 364, eq. 3.5, bending-dominated) / sf; a miss is a warning naming where to add a 100 % infill modifier (`modifiers: [{box: [[x0,y0,z0],[x1,y1,z1]], infill: 1.0, ...}]`, part frame, counts inside the box), more walls or more infill; report parts.<p>.infill_check |
+| `kerf/advice.py` | Specific advice for what failed, worked out from the check's own numbers and settings instead of one sentence for every miss: per requirement check (how much thicker by beam theory, which catalog materials or servos are strong enough, how far to move the battery, how much more wing area or capacity ...; `advise(row, req, proj)`, stored as the row's `advice` list by requirements._run_one), and for assembly overlaps (`overlap`: depth, axis and position, the printed part gets the pocket since a bought part can't change) and joint collisions (`sweep`: the colliding angles, where to end the range, which part needs relief). Problems carry it after " — fix: "; kerf/explain.py and Studio cards show it ("What to do" + alternatives); `kerf check` / `kerf req` print it under the failed row |
 | `kerf/glossary.py` | Plain-English glossary: a plain name and one-sentence meaning for every requirement check (tests/test_glossary.py fails if a check is missing) and for the engineering / printing words Studio shows; served at `/api/glossary`; Studio underlines the first use of each word in a tab (hover or tap for the meaning), uses the plain check names in requirement tables and failed-requirement cards, and lists everything under "📖 Words, explained" |
 | `kerf/thoughtweb.py` | Thought web (Studio "🕸"): a simplified, near-live map of a design job built only from its visible actions (searches, pages opened, files read / written, commands) and its short notes, never hidden reasoning: ideas branch off the idea they share words with, sources hang off the idea they serve, DESIGN.md options are chosen / set aside with their reason, parts and tests grow the build trunk; `from_events` (live job, `/api/thoughtweb?job=`) and `from_project` (REFERENCES.md + DESIGN.md, `?project=`); drawn by kerf/assets/thoughtweb.js (force layout, replay) |
 | `kerf/req_dynamic.py` | Simulate it moving: `impact_fea` (drop F = mg + sqrt((mg)^2 + 2kmgh) / crash F = v sqrt(km), half-sine contact time), `stop_impact` (joint into its stop: w sqrt(k_t I) + stall torque, inertia of the subtree from each solid), `natural_freq` (Rayleigh f = sqrt(k / (m + 33/140 m_beam)) / 2 pi vs rotor / blade-pass rates from KV and hover thrust, or a stated Hz); k = |F|^2 / (f . u) from one fea_static solve (fea.static reports work_nmm), stresses scaled linearly |
@@ -142,6 +144,10 @@ assembly:
   allow_overlap:                # only with a physical reason
     - {pair: [servo, horn], max_mm3: 60, why: horn spline engages the servo output shaft}  # horn proxies with
       # catalog spline_engage get a spline bore and sit that far down over the spline, so need no allowance
+  # squashable items (foam pad, battery strap, wire bundle, Velcro): on the item, `compress_mm: 2` + `compress_why:`; a
+  # part pressing into it up to that depth is not a collision (assembly.squashed; deeper, or no reason, it is)
+  # load-carrying printed parts: any part a strength check names, or `structural: true` on the part; only they need
+  # 0.8 mm walls, any other part may go down to one 0.42 mm line (a warning; pipeline.thin_wall_rule)
   key_access:                   # assembly order for the hex-key check: these items go on after the group's screws
     - {group: hub_motor_top, before: [motor_plate, motor_bottom], why: top motor is screwed on before the bottom plate}
   sweeps:
@@ -177,6 +183,10 @@ requirements:
     ignore: [tendon]              # items allowed inside the channel
 ```
 Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each function's docstring):
+Any requirement except a strength check (requirements.STRENGTH_CHECKS) may add `advisory: "<why a miss is acceptable>"`:
+its miss is then a warning, not a problem (kept in the report and the Studio table as "advisory"); with no reason, or
+on a strength check, it is refused and blocks.
+
 | check | arguments (main) | value |
 |---|---|---|
 | `mass_max` | `max_g`, `include` | estimated mass (g) |
@@ -200,7 +210,7 @@ Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each funct
 | `access_opening` | `item`, `from_dir`, `gloved`, `ignore`, `diameter_mm` | overlap (mm3) of the 38 / 32 mm finger opening with other parts |
 | `impact_case` | `hazard`, `index` (generated from the use story) | force a `case: drop|crash` fea_static carries vs the work-energy stopping force (N) |
 | `story_covered` | `ids`, `what` (generated) | how many of the named requirements exist |
-| `impact_fea` | `part`, `fixed`, `loads` (hit pattern), `height_m` / `speed_m_s` / `hazard`, `mass_kg` / `mass_g`, `sf` (3) | von Mises p99.9 at the stiffness-based impact force (MPa) |
+| `impact_fea` | `part`, `fixed`, `loads` (hit pattern), `height_m` / `speed_m_s` / `hazard`, `mass_kg` / `mass_g`, `sf` (3), `bumper` {item, area_mm2, thick_mm}: a soft pad in series (Gent & Lindley bonded-pad stiffness; no credit past 20 % squash) | von Mises p99.9 at the stiffness-based impact force (MPa) |
 | `stop_impact` | `joint`, `part`, `fixed`, `loads` (stop contact), `speed_dps` / `actuator`, `sf` | von Mises p99.9 when the joint hits its stop (MPa) |
 | `natural_freq` | `part`, `fixed`, `loads` (mass point + direction), `carried_g` / `carried`, `excitation` ({hz} or {motor, throttle, prop / blades}), `min_ratio` / `separation` | first natural frequency (Hz) vs excitation |
 | `repair_access` | `parts`, `ball_end_ok` (true) | screws holding the parts that no key reaches on the finished device |
@@ -421,4 +431,4 @@ review stands, but the shipped ASSEMBLY.md / BOM / renders need `kerf build` (ve
 pytest passes; every project builds with `ok: true`; every project has a design-reviewer `review.json` with verdict
 PASS for the current fingerprint; every eval's `acceptance.py` passes on a fresh report; PLAN.md has no unchecked box.
 
-Per-part `modifiers` describe local print-setting volumes: `where`, `size`, `infill`, `walls` and `why`. Add these manually in the slicer; `kerf/export.py` lists the required settings in PRINT_SETTINGS.md.
+Per-part `modifiers` describe local print-setting volumes: `where`, `size`, `infill`, `walls` and `why` (and optionally `box`, part-frame corners in mm, so the infill strength check counts the modifier's infill there). Add these manually in the slicer; `kerf/export.py` lists the required settings in PRINT_SETTINGS.md.

@@ -190,6 +190,11 @@ def main(argv):
     if not argv or argv[0] == "list":
         return cmd_list() or 0
     cmd = argv[0]
+    if cmd in ("next", "take"):
+        import budget            # tools/budget.py: no new work while the usage-budget switch is on
+        if why := budget.stopped():
+            print(f"budget stop: {why}. Not claiming anything; push your work and stop.")
+            return 3
     if cmd == "next":
         return cmd_next()
     if cmd == "take":

@@ -66,12 +66,44 @@ def _story_hazard(proj, kind):
     raise ValueError(f"use_story has no surviving '{kind}' hazard: give height_m / speed_m_s here")
 
 
+# A bumper pad in series with the part: stiffness of a bonded pad E (1 + 2.2 S^2) A / t (square block; Gent & Lindley,
+# "The compression of bonded rubber blocks", Proc. IMechE 173 (1959) 111-117, via lakeslab.ep.wisc.edu/EMA611block.html),
+# S = loaded area / free (bulging) area. The force uses that UPPER stiffness (less credit); whether it bottoms out uses
+# the LOWER one (E A / t, free to slip) against a 20 % compression limit (95A polyurethane, the highest listed for that
+# hardness: https://gallaghercorp.com/?p=135); a pad that would bottom out gets no credit at all.
+BUMPER_MAX_STRAIN = 0.20
+
+
+def bumper_k(material: str, area_mm2: float, thick_mm: float) -> tuple[float, float, float]:
+    """(k_upper, k_lower, shape factor) of a square pad, N/mm."""
+    m = catalog.get(f"materials.{material}")
+    e_xy = catalog.num(m, "youngs_modulus_mpa", "tensile_modulus_mpa", "youngs_modulus", "E_mpa")
+    e_z = catalog.num(m, "youngs_modulus_z_mpa", default=e_xy)
+    a, t = float(area_mm2), float(thick_mm)
+    S = a / (4 * math.sqrt(a) * t)
+    return max(e_xy, e_z) * (1 + 2.2 * S * S) * a / t, min(e_xy, e_z) * a / t, S
+
+
+def _bumper(proj, bumper, k):
+    """Series stiffness with the bumper (N/mm) and what to say; k itself when there is none."""
+    if not bumper:
+        return k, None
+    it = proj.items[bumper["item"]]
+    mat = it.spec.get("material", "TPU")
+    ku, kl, S = bumper_k(mat, bumper["area_mm2"], bumper["thick_mm"])
+    return 1.0 / (1.0 / k + 1.0 / ku), {"item": bumper["item"], "material": mat, "k_upper_n_mm": round(ku, 1),
+                                         "k_lower_n_mm": round(kl, 1), "shape_factor": round(S, 2),
+                                         "max_mm": round(BUMPER_MAX_STRAIN * float(bumper["thick_mm"]), 2)}
+
+
 @check("impact_fea")
 def impact_fea(proj, asm, part, fixed, loads, hazard=None, height_m=None, speed_m_s=None, mass_kg=None, mass_g=None,
-               sf=3.0, direction="xy", mesh_size=None):
+               sf=3.0, direction="xy", mesh_size=None, bumper=None):
     """Drop or crash into `part`: the loads give where and in which direction it is hit (their sizes only set the
     pattern). Speed from height_m (drop), speed_m_s (crash) or the use story's hazard; mass = mass_kg / mass_g, the
-    story hazard's mass_kg, or the whole assembly. Value: the scaled von Mises p99.9 (MPa) vs strength / sf."""
+    story hazard's mass_kg, or the whole assembly. Value: the scaled von Mises p99.9 (MPa) vs strength / sf.
+    bumper: {item, area_mm2, thick_mm}: a soft pad (e.g. TPU) the hit goes through first, in series with the part;
+    credited only while it stays under 20 % compression (see BUMPER_MAX_STRAIN)."""
     from .usestory import _mass_kg
     h = _story_hazard(proj, hazard) if hazard and height_m is None and speed_m_s is None else {}
     height_m = height_m if height_m is not None else h.get("height_m")
@@ -81,22 +113,38 @@ def impact_fea(proj, asm, part, fixed, loads, hazard=None, height_m=None, speed_
     m = float(mass_kg if mass_kg is not None else (mass_g / 1000 if mass_g is not None else h.get("mass_kg") or _mass_kg(proj)))
     case = "drop" if height_m is not None else "crash"
     r, F0, k = _solve(proj, asm, part, fixed, loads, sf, direction, case, mesh_size)
-    kSI = k * 1000.0                                # N/m
+    def peak(k_n_mm):
+        kSI = k_n_mm * 1000.0                       # N/m
+        if height_m is not None:
+            W = m * G
+            return W + math.sqrt(W * W + 2 * kSI * W * float(height_m)), kSI
+        return float(speed_m_s) * math.sqrt(kSI * m), kSI
+    ks, bump = _bumper(proj, bumper, k)
+    F, kSI = peak(ks)
+    if bump:
+        squash = F / bump["k_lower_n_mm"]
+        bump["squash_mm"] = round(squash, 2)
+        if squash > bump["max_mm"]:                 # it would bottom out: no credit
+            bump["credited"] = False
+            F, kSI = peak(k)
+        else:
+            bump["credited"] = True
     if height_m is not None:
-        W = m * G
-        F = W + math.sqrt(W * W + 2 * kSI * W * float(height_m))
         v = math.sqrt(2 * G * float(height_m))
         how = f"drop {float(height_m):g} m ({v:.2f} m/s)"
     else:
         v = float(speed_m_s)
-        F = v * math.sqrt(kSI * m)
         how = f"crash at {v:g} m/s"
     t_ms = math.pi * math.sqrt(m / kSI) * 1000
     out, val, disp = _scaled(r, F / F0, F, how)
-    out["impact"] = {"force_n": round(F, 1), "stiffness_n_mm": k, "contact_ms": round(t_ms, 2), "mass_kg": round(m, 3)}
+    out["impact"] = {"force_n": round(F, 1), "stiffness_n_mm": k, "contact_ms": round(t_ms, 2), "mass_kg": round(m, 3),
+                     **({"bumper": bump} if bump else {})}
     out["detail"] = (f"{how}, {m:.3f} kg into {part} (stiffness {k:.0f} N/mm where it is hit): peak force {F:.0f} N over a "
                      f"{t_ms:.2f} ms half-sine contact, {disp:.2f} mm deflection; von Mises p99.9 {val:.1f} MPa vs "
                      f"{r['limit']} allowed (strength / SF {sf})")
+    if bump:
+        out["detail"] += (f"; bumper {bump['item']} ({bump['material']}) squashes {bump['squash_mm']} mm of its "
+                          f"{bump['max_mm']} mm limit" + ("" if bump["credited"] else ": it would bottom out, so no credit"))
     return out
 
 

@@ -15,7 +15,11 @@ Repo cleanup [ef40294b8e, 16:35]; Studio layout calmer [4c4e3822c9, 2026-11-01].
 
 ## Notes
 - Grippers & showcase polish holds 4 items at once; it should release the ones it is not actively on.
-- Open PRs: none. Batch verify: none recorded yet — due (next stopping session runs it).
+- Open PRs: none.
+- **Batch verify: ON HOLD (Spencer, 2026-11-02 ~21:25 UTC) until the active sessions above finish their items.**
+  Don't start `tools/batch_verify.py run` while they are working; the manager runs it once they are done.
+  The first attempt was OOM-killed (fixed: verify now builds each project in its own process, 5d6b72c);
+  pytest alone takes ~45 min and fpv_wing's full build ~30+ min / 4 GB on a cloud box.
 
 ## Most valuable free items
 1. Showcase rework, robot_arm (upper_arm + forearm from fork_link).

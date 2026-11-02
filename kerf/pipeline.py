@@ -7,7 +7,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import edges, partcache, progress, stressmap
+from . import advice, edges, partcache, progress, stressmap
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -167,6 +167,46 @@ def _fea_hygiene(proj) -> list:
     return out
 
 
+def load_carrying(proj, iid: str) -> bool:
+    """A part some strength check loads (it is named in one of its fields), or one marked `structural: true`."""
+    if proj.items[iid].spec.get("structural"):
+        return True
+    for q in proj.data.get("requirements") or []:
+        if q.get("check") in requirements.STRENGTH_CHECKS and any(v == iid or (isinstance(v, list) and iid in v) for v in q.values()):
+            return True
+    return False
+
+
+def thin_wall_rule(proj, iid: str, r: dict) -> dict:
+    """The 0.8 mm wall minimum is for load-carrying parts; any other part may go down to one line (checks.MIN_WALL_LINE):
+    its thin-wall problem becomes a warning. Returns a copy when it changes anything (cached results stay as stored)."""
+    p02 = r.get("min_wall_p02")
+    if p02 is None or not checks.MIN_WALL_LINE <= p02 < checks.MIN_WALL_FAIL or load_carrying(proj, iid):
+        return r
+    tag = f"{iid}: walls as thin as"
+    thin = [x for x in r["problems"] if x.startswith(tag)]
+    if not thin:
+        return r
+    return {**r, "problems": [x for x in r["problems"] if not x.startswith(tag)],
+            "warnings": [*r["warnings"], f"{iid}: walls as thin as {p02:.2f} mm; fine for a part no load passes through "
+                         f"(one {checks.MIN_WALL_LINE} mm line prints), but it is fragile: thicken it if it gets handled or knocked"]}
+
+
+def req_misses(rows) -> tuple[list, list]:
+    """(problems, warnings) for failed requirement rows: an `advisory` requirement's miss is a warning."""
+    probs, warns = [], []
+    for r in rows:
+        if r.get("ok"):
+            continue
+        sc = requirements.miss_scale(r)
+        line = f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}" + (f" [{sc}]" if sc else "")
+        if r.get("advisory"):
+            warns.append(f"advisory {line} (not blocking: {r['advisory']})")
+        else:
+            probs.append(line)
+    return probs, warns
+
+
 def _print_checks(it, printer, supports) -> dict:
     """Every per-part check: a function of the built part alone (cached with it by kerf/partcache.py)."""
     iid = it.id
@@ -252,13 +292,14 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     core = None
     if "requirements" in stg and not any(it.error for it in proj.items.values()):
         core = _redesign_first(proj, rep, quick="fea" not in stg and mode is not None)   # a chosen depth keeps its FEA choice
-        if core and not everything and any(not r["ok"] for r in core):
+        if core and not everything and any(not r["ok"] and not r.get("advisory") for r in core):
             for r in core:
                 r.pop("_viz", None)
                 r.pop("_field", None)
             rep["requirements"] = core
-            rep["problems"] += [f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}"
-                                for r in core if not r["ok"]]
+            mp, mw = req_misses(core)
+            rep["problems"] += mp
+            rep["warnings"] += mw
             rep["stopped_early"] = True
             rep["problems"].append("stopped before the detail checks (print, fit, fasteners, motion, wiring): the failed "
                                    "requirement(s) above change the design, so fix them first and the detail checks "
@@ -279,6 +320,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 r = _print_checks(it, printer, sup)
             if it.cache_key and it.spec.get("source") != "meshy":
                 partcache.store_extra(it.cache_key, f"print-{sup}", r, deps)
+        r = thin_wall_rule(proj, iid, r)
         progress.emit("part", id=iid, ok=not r.get("problems"), mass=r.get("mass_est_g"))
         if it.spec.get("airfoil"):          # a wing part names its airfoil: it must exist (catalog/airfoils or NACA)
             from . import aero
@@ -313,7 +355,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             hits = A.interference(asm)
             rep["assembly"]["interference"] = hits
             for h in hits:
-                rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position")
+                how = advice.overlap(proj, h["a"], h["b"]) if h["a"] in proj.items and h["b"] in proj.items else ""
+                rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position"
+                                       + (f" — fix: {how}" if how else ""))
             fj, fprob = A.fasteners(asm)
             rep["assembly"]["fasteners"] = fj
             rep["problems"] += fprob
@@ -343,7 +387,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 for s in sw:
                     if not s["clear"]:
                         c = s["collisions"][0]
-                        rep["problems"].append(f"moving joint '{s['joint']}' collides: {c['a']} hits {c['b']} ({c['volume_mm3']} mm3) at {c.get('at', c.get('pose'))}")
+                        how = advice.sweep(s, proj) if "range" in s else ""
+                        rep["problems"].append(f"moving joint '{s['joint']}' collides: {c['a']} hits {c['b']} ({c['volume_mm3']} mm3) at {c.get('at', c.get('pose'))}"
+                                               + (f" — fix: {how}" if how else ""))
             rep["assembly"]["joints"] = [{"name": e.name, "kind": e.kind, "parent": f"{e.parent}.{e.pjoint}",
                                           "child": f"{e.child}.{e.cjoint}", "range": list(e.range), "home": e.home}
                                          for e in asm.edges]
@@ -396,6 +442,16 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 if f:
                     fields.setdefault(f["part"], []).append(f)
             for part, cases in fields.items():
+                if part in rep["parts"] and part in proj.items:          # the inside is infill, not solid (kerf/infill.py)
+                    from . import infill
+                    try:
+                        ic = infill.check(proj.items[part], cases)
+                    except Exception as e:  # noqa: BLE001 - a geometry hiccup here must not hide the FEA results
+                        ic = {"warning": f"{part}: infill strength not checked ({type(e).__name__}: {e})"}
+                    if ic:
+                        rep["parts"][part]["infill_check"] = ic
+                        if ic.get("warning"):
+                            rep["warnings"].append(ic["warning"])
                 s = stressmap.summarize(cases)
                 if s and part in rep["parts"]:
                     rep["parts"][part]["stress"] = s
@@ -425,9 +481,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             bp, bw = export.bom_extra_check(proj, rep.get("assembly", {}).get("fasteners"))
             rep["problems"] += bp
             rep["warnings"] += bw
-            for r in rq:
-                if not r["ok"]:
-                    rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}")
+            mp, mw = req_misses(rq)
+            rep["problems"] += mp
+            rep["warnings"] += mw
             A.solve(asm)
             if stg & {"files", "docs", "viewer", "renders"}:
                 progress.stage("export")
@@ -640,6 +696,8 @@ def summary(rep: dict) -> str:
         L.append(f"  sweep {s['joint']:14s} {'clear' if s['clear'] else 'COLLIDES'} over {s.get('range', '')} ({s['samples']} samples)")
     for r in rep.get("requirements", []):
         L.append(f"  req {r['id']:20s} " + ("skipped (--quick)" if r.get("skipped") else req_line(r)))
+        for t in r.get("advice") or []:                 # what to change, worked out from this check (kerf/advice.py)
+            L.append(f"      -> {t}")
     for p in rep["problems"]:
         L.append(f"  PROBLEM: {p}")
     for w in rep["warnings"]:

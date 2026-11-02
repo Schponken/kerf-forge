@@ -112,6 +112,8 @@ def req(name, ids) -> int:
         _p(f"  {x['id']}: {req_line(x)}")
         if x.get("value") is None and x.get("detail"):
             _p(f"      {x['detail']}")
+        for t in x.get("advice") or []:
+            _p(f"      -> {t}")
     for p in r["problems"]:
         _p(f"PROBLEM {p}")
     _p(f"{'ok' if r['ok'] else 'FAIL'}: {len(r['results'])} requirement(s) in {time.time() - t:.1f} s "
@@ -216,22 +218,59 @@ def _run_isolated(name, check_only=False, fast=False) -> dict:
     return {"ok": False, "problems": [f"build process exited {r.returncode}: {(r.stderr or r.stdout)[-300:]}"]}
 
 
+class _Checkpoint:
+    """Finished verify steps (pytest, each project) for the current commit, so a run cut off by a usage limit, a
+    timeout or a kill resumes where it stopped instead of redoing an hour of work. Only used on a clean tree (tracked
+    files): the results then belong to that exact commit. Local file, cleared when a run completes."""
+    PATH = ROOT / ".claude" / "state" / "verify_checkpoint.json"
+
+    def __init__(self, fast, all_failures):
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "-uno"], cwd=ROOT, capture_output=True,
+                               text=True).stdout.strip()
+        self.key = None if dirty or not head else f"{head} fast={fast} all={all_failures}"
+        self.done = {}
+        try:
+            old = json.loads(self.PATH.read_text(encoding="utf-8"))
+            if self.key and old.get("key") == self.key:
+                self.done = old.get("done", {})
+        except Exception:  # noqa: BLE001 - no checkpoint
+            pass
+
+    def save(self, step, result):
+        self.done[step] = result
+        if self.key:
+            self.PATH.parent.mkdir(parents=True, exist_ok=True)
+            self.PATH.write_text(json.dumps({"key": self.key, "done": self.done}, default=str), encoding="utf-8")
+
+    def clear(self):
+        self.PATH.unlink(missing_ok=True)
+
+
 def verify(fast=False, all_failures=False) -> int:
     """The definition of done. Exit 0 only when everything passes."""
     t0 = time.time()
     results, fails = {}, []
     os.environ["KERF_NO_CACHE"] = "1"      # the definition of done builds every part from scratch (kerf/partcache.py)
     # tests read/write UTF-8 text without naming it; a C/POSIX locale (hooks, cron, nohup) would make that ASCII
-    r = subprocess.run([sys.executable, "-m", "pytest", "-q", *([] if all_failures else ["-x"]), "--no-header", "-p",
-                        "no:cacheprovider"], cwd=ROOT,
-                       capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
-    results["tests"] = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:]
-    if r.returncode != 0:
+    ck = _Checkpoint(fast, all_failures)
+    if "tests" not in ck.done:
+        r = subprocess.run([sys.executable, "-m", "pytest", "-q", *([] if all_failures else ["-x"]), "--no-header",
+                            "-p", "no:cacheprovider"], cwd=ROOT,
+                           capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
+        ck.save("tests", {"line": r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:],
+                          "ok": r.returncode == 0})
+    else:
+        _p("tests: reusing this commit's finished result (an earlier run was cut off)")
+    results["tests"] = ck.done["tests"]["line"]
+    if not ck.done["tests"]["ok"]:
         fails.append(f"unit tests: {results['tests']}")
     from . import project as P
     for name in projects():
         check_only = bool(P.load(name).data.get("check_only"))   # a user's own design, checked, not designed by Kerf
-        rep = _run_isolated(name, check_only, fast)
+        if name not in ck.done:
+            ck.save(name, _run_isolated(name, check_only, fast))
+        rep = ck.done[name]
         results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6]}
         if not rep["ok"]:
             fails.append(f"project {name}: {rep['problems'][:3]}")
@@ -251,6 +290,7 @@ def verify(fast=False, all_failures=False) -> int:
     open_items = [l.strip() for l in plan.splitlines() if l.strip().startswith("- [ ]")]
     if open_items:
         fails.append(f"PLAN.md has {len(open_items)} unchecked items, first: {open_items[0]}")
+    ck.clear()
     out = {"ok": not fails, "fails": fails, "results": results, "seconds": round(time.time() - t0, 1)}
     (ROOT / "VERIFY.json").write_text(json.dumps(out, indent=1, default=str), encoding="utf-8")
     for f in fails:

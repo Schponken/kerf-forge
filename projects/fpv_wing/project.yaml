@@ -50,14 +50,14 @@ parts:
         modifiers: [{where: "both spar sleeves, wall to wall", size: "the sleeves (a box round each V)", infill: 1.0, why: "the sleeves carry the wing's root moment across: FEA assumes them solid"},
                     {where: "the 12 insert bosses (nose, motor mount, hatch)", size: "12 mm cylinder round each", infill: 1.0, why: "heat-set inserts need solid plastic to grip"}]}
   hatch: {file: parts/hatch.py, material: PLA, print_rot: [180, 0, 0], infill: 0.15, walls: 2, supports: needed}
-  wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, modifiers: &inner_mods
+  wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, assembly_note: "Glue the tubes into this segment so no epoxy can reach the pod. Pull the segment off, wrap the pod-side length of each tube (the part inside the pod) in tape and put tape over the pod's side face round the root. Butter only the outboard part of each tube that sits deep in the segment, slide the segment back on and bolt the root. Once it has cured, unbolt and pull the segment off once, peel the tape and clean the root face, then refit it.", modifiers: &inner_mods
              [{where: "the two root inserts", size: "12 mm cylinder round each, 10 mm deep", infill: 1.0, walls: 3, why: "the root bolts' inserts need solid plastic (3 % infill gives them nothing)"},
               {where: "round the servo pocket", size: "the pocket + 4 mm all round", infill: 1.0, why: "the servo is glued to these walls"},
               {where: "the splice insert", size: "12 mm cylinder, 10 mm up from the bottom skin", infill: 1.0, why: "splice-plate insert"}]}
-  wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, modifiers: *inner_mods}
-  wing_l2: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: &outer_mods
+  wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, assembly_note: "Glue the tubes into this segment so no epoxy can reach the pod. Pull the segment off, wrap the pod-side length of each tube (the part inside the pod) in tape and put tape over the pod's side face round the root. Butter only the outboard part of each tube that sits deep in the segment, slide the segment back on and bolt the root. Once it has cured, unbolt and pull the segment off once, peel the tape and clean the root face, then refit it.", modifiers: *inner_mods}
+  wing_l2: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, assembly_note: "Slide it on the tubes dry (no glue): this outer segment is the replaceable one, held by its splice plate.", modifiers: &outer_mods
              [{where: "the splice insert", size: "12 mm cylinder, 10 mm up from the bottom skin", infill: 1.0, why: "splice-plate insert"}]}
-  wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: *outer_mods}
+  wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, assembly_note: "Slide it on the tubes dry (no glue): this outer segment is the replaceable one, held by its splice plate.", modifiers: *outer_mods}
   elevon_l: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: &elevon_mods
               [{where: "round the horn slot and the two joiner-rod bores", size: "4 mm all round", infill: 1.0, why: "glued horn tab and carbon joiner"}]}
   elevon_lo: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods,
@@ -71,8 +71,8 @@ parts:
   horn_r: {file: parts/horn.py, material: PETG, print_rot: [90, 0, 0], infill: 1.0, walls: 4}
   splice_l: {file: parts/splice.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4}
   splice_r: {file: parts/splice.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4}
-  fin_l: {file: parts/fin.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
-  fin_r: {file: parts/fin.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
+  fin_l: {file: parts/fin.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008, assembly_note: "Epoxy (5-minute) the fin's tab into the wing-tip slot; hold it square to the wing until it sets."}
+  fin_r: {file: parts/fin.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008, assembly_note: "Epoxy (5-minute) the fin's tab into the wing-tip slot; hold it square to the wing until it sets."}
   nose: {file: parts/nose.py, material: TPU, print_rot: [0, 90, 0], infill: 0.15, walls: 2}
   motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: Y}
 purchased:
@@ -97,10 +97,10 @@ purchased:
             held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
   servo_r: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60], assembly_note: "Pushrod: measure the stock KST arm and use the hole 8-11 mm from the spline centre (11 mm = 50 % of the servo torque, DESIGN.md); 1.2 mm music wire Z-bend through it, out through the slot aft of the pocket to the horn hole 12 mm under the hinge.", 
             held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
-  main_l: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
-  main_r: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
-  rear_l: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
-  rear_r: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
+  main_l: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the INNER wing segment's bore only (the outer segment slides on dry); slides dry into the pod sleeve, captured by the bolted wing root", assembly_note: "Fit it DRY into the pod sleeve now: no glue near the pod. The epoxy goes on at the inner wing segment's step, only on the length that sits in that segment."}
+  main_r: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the INNER wing segment's bore only (the outer segment slides on dry); slides dry into the pod sleeve, captured by the bolted wing root", assembly_note: "Fit it DRY into the pod sleeve now: no glue near the pod. The epoxy goes on at the inner wing segment's step, only on the length that sits in that segment."}
+  rear_l: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the INNER wing segment's bore only (the outer segment slides on dry); slides dry into the pod sleeve, captured by the bolted wing root", assembly_note: "Fit it DRY into the pod sleeve now: no glue near the pod. The epoxy goes on at the inner wing segment's step, only on the length that sits in that segment."}
+  rear_r: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the INNER wing segment's bore only (the outer segment slides on dry); slides dry into the pod sleeve, captured by the bolted wing root", assembly_note: "Fit it DRY into the pod sleeve now: no glue near the pod. The epoxy goes on at the inner wing segment's step, only on the length that sits in that segment."}
 keepouts:
   prop: {catalog: drone.props.hq_7x4x3, proxy: prop_disc, owner: motor, h: 8}
 assembly:
@@ -147,7 +147,7 @@ assembly:
     - {parent: nose.camera, child: camera.bottom}
   order: [pod, [main_l, main_r, rear_l, rear_r], [wing_l1, wing_r1], [servo_l, servo_r], [wing_l2, wing_r2], [splice_l, splice_r],
           [horn_l, horn_r], [elevon_l, elevon_r], [joiner_l, joiner_r, joiner2_l, joiner2_r], [elevon_lo, elevon_ro], [fin_l, fin_r], motor_mount, motor,
-          gps, fc, receiver, esc, vtx, vtx_ant, xt60, battery, strap, hatch, camera, nose]
+          gps, fc, receiver, esc, vtx, vtx_ant, xt60, strap, battery, hatch, camera, nose]
   key_access:
     - {group: motor, before: [pod], why: "the motor is screwed to the mount on the bench (heads sunk in the mount's front face) before the mount goes on the pod"}
   sweeps:

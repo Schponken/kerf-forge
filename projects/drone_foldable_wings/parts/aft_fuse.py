@@ -31,7 +31,7 @@ BULK_T = 3.0            # front bulkhead
 SHOULDER_R = 3.0        # top-corner radius at the pivots (fuse_stations use 12): sector sweep clearance
 COVER_T = 2.5           # spine cover thickness; its top is flush with fuse_top (spine.py reads this)
 GAP_COVER = 0.3         # spine cover to opening edge, per side
-OPEN_X = (100.0, 221.0)  # top opening for the spine
+OPEN_X = L.OPEN_X        # top opening for the spine
 CLEAR = 0.5             # moving printed parts (ENGINEERING s6)
 FILLET = 2.0           # inside-corner fillets on the load paths (ENGINEERING s5: r >= 1)
 STOP_GAP = 0.55         # sector end face to stop post at each end of the fold range
@@ -210,7 +210,7 @@ def build(ctx):
             posts = mirror(posts, Plane.XZ)
         mech += ctx.add(posts, why="mechanical stops: the sector's end faces meet them at 0 and fold_max", kind="stop")
     mech, failed = fillet_inside(ctx, mech, r=1.5)
-    body += mech & hull
+    body += mech & hull     # why: deck, ribs and stop posts (filleted above), trimmed to the fuselage outline
     # fillets where the deck, servo plate and keel rib meet the skin (straight walls from x 140 aft)
     wy = L.fuse_section(p, 160)[0] - SKIN
     cv = None

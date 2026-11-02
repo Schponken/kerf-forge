@@ -181,6 +181,8 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .tourlay .bub{position:fixed;width:340px;background:var(--card,#1b1d22);color:inherit;border:1px solid rgba(255,140,40,.4);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .job.sess .lab small{color:var(--muted)}.dot.claimed{background:#5aa9ff;box-shadow:0 0 0 3px rgba(90,169,255,.18)}
 .wrecent ul{margin:6px 0 0;padding-left:18px}.wrecent li{margin:2px 0}
+.misstag{font-size:11px;margin-top:4px;white-space:nowrap}.misstag.nearmiss{color:#e0a030}.misstag.close{color:#e07a30}.misstag.faroff{color:var(--bad)}
+.fixalt{margin:-4px 0 6px;padding-left:20px}.fixalt li{margin:3px 0;color:var(--muted)}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{width:min(1100px,94vw);height:min(760px,88vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
@@ -410,9 +412,24 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const api = async (path, body) => {
   const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
   const j = await r.json().catch(() => ({error: "bad response"}));
-  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  if (!r.ok || j.error) { const e = new Error(j.error || r.statusText); e.data = j; throw e; }
   return j;
 };
+/* a change to a project another Claude session is editing: ask, then send it again with override */
+async function apiChange(path, body) {
+  try { return await api(path, body); }
+  catch (e) {
+    if (!(e.data && e.data.claimed) || !confirm(e.message)) throw e;
+    return await api(path, {...body, override: true});
+  }
+}
+const slugName = v => String(v || "").trim().toLowerCase().replace(/[\s-]+/g, "_").replace(/[^a-z0-9_]/g, "").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+function uniqueName(n) { const have = new Set((S.projects || []).map(p => p.name)); let x = n, i = 2; while (x && have.has(x)) x = `${n.slice(0, 37)}_${i++}`; return x; }
+function openRunning(project) {   // a second click on a running job: show the one already running
+  const j = (S.jobsList || []).find(x => x.state === "running" && (x.project === project || x.project === "*"));
+  if (j) { watch(j.id); return true; }
+  return false;
+}
 const fileUrl = (p, rel) => `/files/${p}/${rel.split("/").map(encodeURIComponent).join("/")}`;
 const fmt = v => v == null ? "–" : (typeof v === "number" ? (Math.abs(v) >= 100 ? v.toFixed(0) : +v.toFixed(3)) : esc(Array.isArray(v) ? v.join(", ") : v));
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -488,6 +505,9 @@ function renderList() {
 }
 
 async function select(name, keepTab) {
+  const unsaved = Object.keys(S.edits || {}).length + Object.keys(S.medits || {}).length;
+  if (unsaved && name !== S.sel && !confirm(`You have ${unsaved} unsaved Tune change${unsaved == 1 ? "" : "s"} on this project. Leave and discard ${unsaved == 1 ? "it" : "them"}?`)) return;
+  if (name === S.sel && keepTab === undefined && S.detail && unsaved) { setTab(S.tab); return; }   // same project: keep the edits
   S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.work = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
@@ -686,7 +706,7 @@ function renderHistory(el) {
 }
 async function restoreVersion(stamp) {
   if (!confirm("Write this version's parameter values back into project.yaml? Part code is not changed. Build again afterwards.")) return;
-  try { const r = await api("/api/restore", {project: S.sel, stamp}); await refreshDetail(); setTab("history");
+  try { const r = await apiChange("/api/restore", {project: S.sel, stamp}); await refreshDetail(); setTab("history");
         toast("Restored", r.changed.length ? `Changed: ${r.changed.join(", ")}. Build to update the files.` : "Nothing to change.", "ok"); }
   catch (e) { toast("Not restored", e.message, "bad"); }
 }
@@ -695,8 +715,17 @@ function reqTable(reqs) {
   if (!reqs || !reqs.length) return `<p class="note">No requirement checks.</p>`;
   return `<table><tr><th>Requirement</th><th>Result</th><th>Value</th><th>Limit</th><th style="width:24%">Margin</th></tr>${reqs.map((r, i) => `
     <tr class="reqrow" style="animation-delay:${i * 45}ms"><td><b title="${esc(glossCheck(r.check).means)}">${esc(glossCheck(r.check).name)}</b> <span class="why">${esc(r.id)}</span><div class="why">${esc(r.why || "")}</div></td>
-    <td>${r.skipped ? `<span class="badge skip">skipped</span>` : r.ok ? `<span class="badge ok">PASS</span>` : `<span class="badge bad">FAIL</span>`}</td>
+    <td>${r.skipped ? `<span class="badge skip">skipped</span>` : r.ok ? `<span class="badge ok">PASS</span>` : r.advisory ? `<span class="badge skip" title="${esc("Doesn't block printing: " + r.advisory)}">MISSED · advisory</span>` : `<span class="badge bad">FAIL</span>${missTag(r)}`}</td>
     <td class="num">${fmt(r.value)}${r.unit && r.value != null ? " " + esc(r.unit) : ""}</td><td class="num">${limitText(r)}</td><td>${mbar(r)}</td></tr>`).join("")}</table>`;
+}
+function missTag(r) {   // how far a failed number misses (same bands as requirements.miss_scale)
+  const v = r.value, L = r.limit; let ref = null;
+  if (typeof v !== "number") return "";
+  if (r.bound === "range" && Array.isArray(L)) ref = typeof L[0] === "number" && v < L[0] ? L[0] : typeof L[1] === "number" && v > L[1] ? L[1] : null;
+  else if ((r.bound === "max" || r.bound === "min") && typeof L === "number") ref = L;
+  if (!ref) return "";
+  const f = Math.abs(v - ref) / Math.abs(ref), w = f <= 0.05 ? "near miss" : f <= 0.2 ? "close" : "far off";
+  return `<div class="misstag ${w.replace(" ", "")}">${w} · ${f < 0.005 ? "<1" : Math.round(f * 100)} %</div>`;
 }
 function limitText(r) {   // "max 4.7 kg·cm", "min 15 °", "40–48 mm"
   if (r.limit == null) return "–";
@@ -724,7 +753,7 @@ function issueCards(iss, raw) {
   return `<div style="margin-bottom:14px"><h3 style="margin:4px 0 10px">What's wrong (${cards.length})</h3>${cards.map((c, i) => `
     <div class="issue reqrow" style="animation-delay:${i * 40}ms"><div class="ihead">${c.kind_label ? `<span class="chip">${esc(c.kind_label)}</span>` : ""}<b>${esc(c.title)}</b>${c.part ? `<span class="ipart">${esc(c.part)}</span>` : ""}
       <span style="flex:1"></span><span class="chip ${on ? "info" : "warn"}">${on ? (w.state === "fixing" ? "being fixed" : w.state === "checking" ? "re-checking" : "being worked on") : "nobody on it"}</span></div>
-      ${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.fix ? `<p class="fixl"><b>Usual fix:</b> ${esc(c.fix)}</p>` : ""}
+      ${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.fix ? `<p class="fixl"><b>What to do:</b> ${esc(c.fix)}</p>` : ""}${(c.fixes || []).length ? `<ul class="fixalt">${c.fixes.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
       ${c.detail && c.detail !== c.title ? `<details><summary>Details for whoever fixes it</summary><code>${esc(c.detail)}</code></details>` : ""}</div>`).join("")}</div>`;
 }
 function renderResults(el, rep) {
@@ -769,7 +798,7 @@ function renderTune(el) {
       <div class="row" style="margin-top:14px;flex-wrap:wrap">
         <button class="primary" onclick="tryParams()" ${changed ? "" : "disabled"}>▶ Try these values</button>
         <button onclick="saveParams()" ${changed ? "" : "disabled"}>Save to design</button>
-        <button onclick="S.edits={};renderTab()" ${changed ? "" : "disabled"}>Reset</button>
+        <button onclick="S.edits={};S.medits={};renderTab()" ${changed ? "" : "disabled"}>Reset</button>
       </div>
       <p class="note">"Try" rebuilds a scratch copy with every check (fit, motion, strength) and you can watch it work live; your design files stay untouched.
         "Save" writes the values into project.yaml, then Build; a saved change needs a fresh design review.</p>
@@ -812,7 +841,7 @@ function compareTable(saved, tried) {   // the saved build's result next to the 
       <td><span class="fxs ${say === "now fails" || say === "worse" ? "down" : say === "now passes" || say === "better" ? "up" : say.startsWith("worse") ? "meh" : ""}">${say}</span></td></tr>`; }).join("")}</table>`;
 }
 function setParam(k, v, live) {
-  const p = S.detail.params.find(x => x.key === k); v = parseFloat(v);
+  const p = S.detail.params.find(x => x.key === k); v = Number(String(v).trim().replace(",", "."));   // "1,5" is 1.5, not 1
   if (!Number.isFinite(v) || (p.bounded && (v < p.min || v > p.max))) {
     toast("Value not changed", `${p.label}: enter a number${p.bounded ? ` from ${p.min} to ${p.max}` : ""}${p.unit ? " " + p.unit : ""}.`, "bad");
     renderTab(); return;
@@ -827,8 +856,8 @@ async function tryParams() { try { const r = await api("/api/run", {project: S.s
 async function saveParams() {
   if (!confirm("Write these values" + (Object.keys(S.medits).length ? " and materials" : "") + " into the design (project.yaml)? Build again afterwards; the design review will need to be redone.")) return;
   try {
-    if (Object.keys(S.edits).length) await api("/api/save", {project: S.sel, values: S.edits});
-    if (Object.keys(S.medits).length) await api("/api/save-materials", {project: S.sel, materials: S.medits});
+    if (Object.keys(S.edits).length) await apiChange("/api/save", {project: S.sel, values: S.edits});
+    if (Object.keys(S.medits).length) await apiChange("/api/save-materials", {project: S.sel, materials: S.medits});
     S.edits = {}; S.medits = {}; await refreshDetail(); setTab("tune"); toast("Saved", "Written to project.yaml. Build to update the files.", "ok"); }
   catch (e) { toast("Not saved", e.message, "bad"); }
 }
@@ -903,12 +932,12 @@ const STAGE_NAMES = {build: "Build parts", print: "Print checks", fit: "Fit & sc
 const PHASES = [["research","Research","🔎"],["plan","Plan","✎"],["contract","Contract","▤"],["parts","Model parts","◧"],["check","Check + fix","✓"],["build","Build","⚙"],["review","Review","◎"],["ship","Save","⬆"]];
 const TOOL_ICON = {WebSearch: "🔎", WebFetch: "🌐", Read: "📖", Write: "✎", Edit: "✎", Bash: "▶", Agent: "◆", Task: "◆", Grep: "⌕", Glob: "⌕", TaskCreate: "☑", TaskUpdate: "☑"};
 
-async function run(action) { try { const r = await api("/api/run", {project: S.sel, action}); watch(r.job); } catch (e) { toast("Couldn't start", e.message, "bad"); } }
+async function run(action) { try { const r = await api("/api/run", {project: S.sel, action}); watch(r.job); } catch (e) { if (!/already running/.test(e.message) || !openRunning(S.sel)) toast("Couldn't start", e.message, "bad"); } }
 function modeLabel(d, m) { return ((d.modes || []).find(x => x.mode === m) || {}).label || m; }
 function modeEst(d, m) { const x = (d.modes || []).find(x => x.mode === m); return x && x.estimate ? ` <small>${about(x.estimate)}</small>` : ""; }
 async function runMode(mode, confirmShip) {
   try { const r = await api("/api/run", {project: S.sel, action: "mode", mode, confirm_ship: confirmShip === true}); watch(r.job); }
-  catch (e) { toast("Couldn't start", e.message, "bad"); }
+  catch (e) { if (!/already running/.test(e.message) || !openRunning(S.sel)) toast("Couldn't start", e.message, "bad"); }
 }
 function askShip() {   // Ship it prints on the user's printer: its own confirmation, never a default
   const d = S.detail, m = ((d && d.modes) || []).find(x => x.mode === "ship") || {};
@@ -1227,7 +1256,7 @@ function projTitle(n) { const p = (S.projects || []).find(x => x.name === n); re
 async function openSession(n) { await select(n); setTab("results"); }
 async function pollJobs() {
   try {
-    const d = await api("/api/jobs");
+    const d = await api("/api/jobs"); S.jobsList = d.jobs;
     const J = [...d.jobs.filter(j => j.state === "running"), ...d.jobs.filter(j => j.state !== "running").slice(0, 3)];
     const SS = (d.sessions || []).filter(x => !J.some(j => j.state === "running" && j.project === x.project));
     $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<div class="job" onclick="watch('${j.id}')" title="${esc(j.tail[0] || "")}">
@@ -1310,7 +1339,7 @@ function showNew() {
 function autoname() {
   const n = $("#nname"); if (n.dataset.touched) return;
   const stop = new Set(["a","an","the","for","my","with","that","and","of","to","in","on","at","it","is"]);
-  n.value = ($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40);
+  n.value = uniqueName(($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40));
 }
 function intake() {
   const o = {}; for (const k of ["budget","power","mounting","environment","printer","material","notes","who","how_often","goes_wrong"]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
@@ -1318,7 +1347,7 @@ function intake() {
 }
 async function startQuote() {
   const r = await fetch("/api/quote", {method: "POST", headers: {"Content-Type": "application/json"},
-                                       body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value, intake: intake()})});
+                                       body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake()})});
   const j = await r.json().catch(() => ({error: "bad response"}));
   if (r.ok && j.job) { S.quoteFor = $("#nname").value.trim(); watch(j.job); toast("Working out options", "Claude Code is researching 2–3 ways to build it, with cost and print time.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
@@ -1340,7 +1369,7 @@ async function showQuote(name) {
 async function startNew(opt) {
   const option = typeof opt === "number" && S.quote ? S.quote.options[opt] : null;
   const r = await fetch("/api/new", {method: "POST", headers: {"Content-Type": "application/json"},
-                                     body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value, intake: intake(), option})});
+                                     body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake(), option})});
   const j = await r.json().catch(() => ({error: "bad response"}));
   if (r.ok && j.job) { watch(j.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
@@ -1529,7 +1558,10 @@ function openEdit(text, ctx) {
 async function startEdit() {
   const t = $("#edtxt").value.trim(); if (!t) return $("#edtxt").focus();
   $("#edgo").disabled = true;
-  const [r, j] = await postJson("/api/edit", {project: S.sel, request: t, title: S.editTitle}).catch(e => [{ok: false}, {error: e.message}]);
+  let [r, j] = await postJson("/api/edit", {project: S.sel, request: t, title: S.editTitle}).catch(e => [{ok: false}, {error: e.message}]);
+  if (j.claimed && confirm(j.error))
+    [r, j] = await postJson("/api/edit", {project: S.sel, request: t, title: S.editTitle, override: true}).catch(e => [{ok: false}, {error: e.message}]);
+  else if (j.claimed) { $("#edgo").disabled = false; return; }
   if (r.ok && j.job) { closeModal(); watch(j.job); toast("Change started", "Claude Code is on it. Watch it work in the panel.", "ok"); return; }
   $("#edgo").disabled = false;
   if (j.setup) { $("#edready").innerHTML = readyCard({code: j.setup, why: j.error}); return; }
@@ -1550,7 +1582,7 @@ function openDuplicate() {
 async function doDuplicate() {
   $("#dgo").disabled = true;
   try {
-    const r = await api("/api/duplicate", {project: S.sel, name: $("#dname").value.trim(), title: $("#dtitle").value.trim(), change: $("#dchange").value.trim()});
+    const r = await api("/api/duplicate", {project: S.sel, name: ($("#dname").value = slugName($("#dname").value)), title: $("#dtitle").value.trim(), change: $("#dchange").value.trim()});
     closeModal(); await loadProjects(); await select(r.name);
     if (r.job) { watch(r.job); toast("Copied, change started", `projects/${r.name}: Claude Code is making the change.`, "ok"); }
     else if (r.error) toast("Copied", r.error, "bad");

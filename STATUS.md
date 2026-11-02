@@ -268,3 +268,81 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Activity now lists sessions working on a project from fresh claims (☁ title · N to fix · last active); the Checks banner shows that session's latest commits. A claim covers the whole PLAN item, so per-problem ownership isn't known; the banner says so.
 - Not mine, seen while testing: tests/test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on fails on main (req event order vs start.reqs, after the "check in order of redesign cost" change). Fixed docs: `kerf req` was missing from the ARCHITECTURE CLI row.
 - Next: 3D guided tour, History comic strip, new-design briefing room.
+
+## 2026-11-02 (Claude, realistic limits)
+- Done: `advisory: <why>` requirements (a miss is a warning; refused on strength checks and without a reason; Studio shows "MISSED · advisory"; the optimiser and problem cards ignore it); thin-wall minimum 0.8 mm only on load-carrying parts (named by a strength check or `structural: true`), others down to one 0.42 mm line as a warning (Bambu Studio default line width, https://forum.bambulab.com/t/default-line-width-of-0-42/20400); squashable items `compress_mm` + `compress_why` (press-in depth measured, deeper = collision). tests/test_realistic_limits.py; docs + kerf skill.
+- No existing limit was loosened; every project's results are unchanged until its yaml opts in.
+- Candidates not done (need sources or design work): crash energy budget with bumper credit, vibration as stiffness target + filtering note, infill-aware FEA, single overall safety factor, A2L-calibrated motion clearance.
+
+### 2026-11-02 (session 4c4e3822c9): E7 fpv_wing DONE
+- `kerf build fpv_wing` PASS (fingerprint 3379006ef48d4ba7), design-reviewer PASS (round 5), evals/fpv_wing acceptance PASS.
+  1 m 6S flying wing, 1,361 g AUW, TWR 1.53, ~16 min, SM 9.2 %, wing loading 73 g/dm2, stall ~40 km/h.
+- Review rounds 3-5 fixed: hatch flutter (mid-length screws + ribs), antenna clash, pushrod exit slot, outer elevon play
+  (second CF rod, reamed push fit), pod alone on its plate (engine: parts >= 150 g print alone), builder notes in
+  ASSEMBLY.md (engine: held_by at each step, item tools in the tools list).
+- Open minors are one PLAN item ("fpv_wing follow-ups from review round 5").
+- Speed audit findings (12 + preflight) reported to Spencer; waiting on his go before implementing.
+
+### 2026-11-02 — Engine speed: redesign-cost order; prop_clearance 7x (session 01S68R6R)
+- `kerf check` / `kerf build` run concept + core-structure requirements first (requirements.REDESIGN_TIER,
+  redesign_order) and stop before the detail checks when one fails; `--all` runs everything. `--quick` includes the
+  core FEA (explicit sketch / print modes still skip FEA). Skill + design-reviewer follow the same order.
+- prop_clearance's gap screen: branch and bound on the mesh instead of 1 mm subdivision of every surface.
+  drone_foldable_wings: 173 s -> 25 s, same reported 27.5 mm (reported gaps are exact OCC distances).
+  A first attempt (prune + 1 mm subdivision) gave no speedup (163 vs 162 s) and the profile had misattributed the
+  cost; the direct profile showed long thin wing triangles subdivided into ~1e5 pieces each.
+- Open on drone_foldable_wings (found by `kerf req`): spine_fea 53.6 MPa vs 16 MPa allowed - spine needs redesign.
+
+## 2026-11-02 (Claude, realistic limits 2)
+- Done: near-miss scale on failed requirements (`requirements.miss_scale`: near miss <= 5 %, close <= 20 %, far off); kerf/infill.py (stress deeper than the walls vs the infill lattice, 0.3 x infill^1.5, Ashby 2006; warning; modifiers may carry a `box`); impact_fea `bumper:` (Gent & Lindley pad stiffness, no credit past 20 % squash, Gallagher 95A).
+- Reviewed, unchanged: natural_freq already checks the hover rotor and blade-pass rates against a cited 20 % separation; use-story checks only run for listed hazards; thrust already scales test voltage to the pack.
+- servo_link's arm now warns on infill strength (3 % of its volume over the lattice limit near [6.7, -8.1, 4.3]): a boxed 100 % infill modifier or more walls; left for the project's owner.
+
+## 2026-11-02 16:20 UTC-5 — Firmware proven + Electronics as a real circuit checked off (Claude, Spencer's session)
+- Code was pushed 2026-11-01 (44df72e firmware, b846908 circuit); this pass verified it on the current tree (batched
+  testing: targeted tests only). `pytest tests/test_fwcheck.py tests/test_firmware.py tests/test_circuit.py
+  tests/test_electrical.py`: all pass with the real toolchain (arduino-cli 1.3.1 + arduino:avr 1.8.6 + simavr; 26 in
+  fwcheck+circuit, incl. the broken-sketch FAIL test and schematic PDF). `kerf firmware-check robot_arm`: PASS, Nano +
+  PCA9685, 11210 B flash, every joint's simulated sweep inside its range (e.g. grip ch4 -32.4..31.8 of +/-32.5 deg).
+- Note: without arduino-cli + core installed (e.g. the Codex sandbox) the real-toolchain tests skip and
+  firmware-check says NOT RUN, never PASS. Both items are in the next batched full run.
+
+## 2026-11-02 (Claude, specific advice)
+- kerf/advice.py: every failed requirement gets advice sized from its own numbers (beam-theory section change, catalog materials / servos strong enough, stiffness for frequency, CG shift, wing area, capacity, gear face ...); overlaps say depth, axis, position and which part gets the pocket; joint collisions give the angles and where to end the range. Cards show "What to do" + alternatives; `kerf check` / `kerf req` print "->" lines. Verified end to end on a tightened scratch copy of servo_link (servo pick DS3218/DS3225, bracket 27 % thicker or reorient, mass items from the requirement's include list).
+- Couldn't run drone_foldable_wings here: `kerf check --quick` is killed for memory in this container.
+
+## 2026-11-02 21:25 UTC - Kerf manager
+- Spencer: hold the full batch test until the other sessions finish. The second run (with the fix) was
+  stopped mid-way and its lock removed; BOARD.md says the batch is on hold. Next manager run starts it once no claims
+  are active.
+- (01S68R6R, later) FEA memory halved: kerf/fea.py builds the intorder-4 stress basis per chunk after the solve and
+  sums the stiffness per chunk with int32 indices. drone_foldable_wings mount_fea (70k tets) OOM-killed a 7 GB machine
+  (so its full check could never finish there); now 2.7 GB peak, same stresses. MAX_TETS comment corrected.
+
+## 2026-11-02 (Claude, user-facing bug sweep)
+- Fixed: auto-fix / Fix no longer start on a project another session holds (they wasted a Claude run that then stopped); Save / Restore / materials / Change something ask before changing such a project (409 `claimed`, `override: true`); switching projects asks before dropping unsaved Tune values; a second Build/Check click opens the running job instead of an error; typed names are cleaned (`studio.slug`: "Hawk Drone" -> hawk_drone) and auto names avoid existing projects; Tune Reset clears material picks too; "1,5" reads as 1.5; a wrong printer access code now says so (was "serial right?"); spaces in a pasted code are ignored. tests/test_user_bugs.py; test_studio's bad-name case now uses "9 Bad!" (a name that can't be cleaned).
+- Seen, not mine: running test_studio.py together with the other Studio browser test files in ONE pytest process died with exit 141 after ~44 tests (each file alone passes); worth a look if the batch shows it. test_progress_events_are_off_by_default_and_ordered_when_on still fails on main (noted earlier).
+- (Claude, 2026-11-02 later) Mac updates no longer stall on local changes: tools/mac/update_repo.sh (used by start.sh and "Update Kerf Studio") sets aside local edits that don't touch the incoming files, fast-forwards, puts them back; overlapping files block the update with their names instead of silently staying on old code. Test in tests/test_mac_launcher.py.
+
+## 2026-11-02 22:00 UTC - Kerf manager: usage-limit awareness (Spencer: "pause before starting something that will be cut off")
+- tools/budget.py: shared budget switch (`stop "<why>" [--until UTC time]`, `resume`, `status`; claims/budget.json,
+  pushed; local .claude/state/BUDGET_STOP still works). While on: `claims.py next/take` refuse, the batch run waits.
+- Batch run waits until other sessions are done (Spencer): `batch_verify.py status` prints HELD instead of DUE while
+  any other session holds a fresh claim; the last one to finish runs it.
+- `kerf verify` checkpoints each finished step (pytest, each project) for the commit, so a run cut off by a limit or
+  a kill resumes instead of redoing ~1 h of work.
+- NOT done, needs Spencer's go-ahead: the Stop hook letting a session stop while the budget switch is on (hook edits
+  were refused as self-modification). Until then a budget stop still makes sessions want a free item.
+- Tests: tests/test_budget.py (4), test_claims.py (copies budget.py), test_batch_verify.py, test_verify_isolated.py pass.
+
+## 2026-11-02 — Fast-tests PR refreshed after FEA memory improvements (Codex)
+- Merged current main into PR #4 without rewriting history. Kept main's chunked stress sampling and int32
+  stiffness assembly together with the PR's native SIGPIPE protection. The only code conflict was additive tests:
+  both `test_von_mises_chunks_match_one_basis` and the three real broken-pipe child cases remain unchanged.
+- Marked the new user-bugs browser case so it reuses the worker browser and participates in quick/slow selection.
+- **34 targeted tests PASS** with the configured two file-grouped workers: 26 FEA/load/progress-order tests in
+  26.29 s, plus 8 browser/marker/fixture-isolation tests in 13.92 s. No worker loss. These are validation timings,
+  not a new speed comparison. An earlier run was interrupted to avoid overlapping another worker's FEA files
+  and is not counted. Installed only the existing PR-pinned pytest-xdist 3.8.0 and execnet in the shared Mac venv.
+- No equations, thresholds, solver settings, review.json or catalog values changed. Full batch remains on hold;
+  no full-suite/all-project/hardware run. PR remains for independent manager review; no self-merge.
