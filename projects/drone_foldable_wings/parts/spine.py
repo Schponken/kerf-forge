@@ -57,7 +57,11 @@ def build(ctx):
     # 4 M3 down counterbored wells into the aft fuselage's spine lugs; heads on a 4 mm floor above the cover underside
     body -= iface.bolt_pattern(ctx, "spine", "M3", A.SPINE_BOLTS, Location((0, 0, ztop)), kind="counterbore",
                                depth=ztop - z0, counterbore_depth=ztop - z0 - GRIP)
-    body, failed = fillet_inside(ctx, body, r=2.0)
+    def keep(at):
+        if abs(at[2] - p.spine_arm_z0) < 0.2 and abs(abs(at[1]) - RIDGE_HW) < 0.2:
+            return "arm underside to ridge side: the hub boss turns 0.5 mm under the arm, a fillet would reach into it"
+        return None
+    body, failed = fillet_inside(ctx, body, r=2.0, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     ctx.rigid("base", Location())
     ctx.rigid("gps", Location((GPS_X, 0, ztop)))

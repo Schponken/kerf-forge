@@ -33,7 +33,7 @@ def build(ctx):
     skin = skin + ctx.add(root, why="tongue root (0.5 mm into the skin, so they fuse)", kind="tongue")
     # aft: two M3 down through the skin into the beam's inserts
     top = Location(Plane(origin=(0, 0, p.fuse_top), x_dir=(1, 0, 0), z_dir=(0, 0, 1)))
-    skin = skin - iface.bolt_pattern(ctx, "hatch", "M3", F.hatch_bolts(p), top, kind="clearance", depth=F.SKIN + 0.01)
+    skin = skin - iface.bolt_pattern(ctx, "hatch", "M3", F.hatch_bolts(p), top, kind="clearance", depth=F.SKIN)
     skin, failed = fillet_inside(ctx, skin, r=1.0)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     ctx.rigid("base", Location())
