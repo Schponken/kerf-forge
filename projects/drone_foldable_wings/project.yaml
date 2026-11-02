@@ -100,11 +100,11 @@ params:
 parts:
   fwd_fuse: {file: parts/fwd_fuse.py, material: PLA, print_rot: [0, -90, 0], infill: 0.15, walls: 4, load_axis: X}
   aft_fuse: {file: parts/aft_fuse.py, material: PETG, print_rot: [0, -90, 0], infill: 0.25, walls: 4, load_axis: [X, Z]}
-  spine: {file: parts/spine.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, walls: 4, load_axis: [X, Y], supports: needed}
+  spine: {file: parts/spine.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed}
   hatch: {file: parts/hatch.py, material: PLA, print_rot: [180, 0, 0], infill: 0.15, walls: 2}
   motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: [Y, Z]}
-  hub_r: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
-  hub_l: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
+  hub_r: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed}
+  hub_l: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 4, load_axis: [X, Y], supports: needed}
   pinion_r: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
   pinion_l: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
   wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
@@ -211,7 +211,7 @@ wiring:
   v: 16.8
   gauge: 12
   color: red/black
-  length_mm: 100
+  length_mm: 110
   supplied: battery
   note: the pack's own lead
 - id: main
@@ -237,7 +237,7 @@ wiring:
   gauge: 14
   conductors: 3
   color: black
-  length_mm: 130
+  length_mm: 140
   note: ESC output leads forward through the nose bulkhead's wire hole to the motor; swap two if it spins the wrong way (tractor, prop pulls forward)
 - id: sweep_r_pwr
   from: esc.5v
@@ -245,7 +245,7 @@ wiring:
   v: 5.0
   gauge: 22
   color: red/brown
-  length_mm: 260
+  length_mm: 310
   note: the ESC's 5 V 5 A BEC feeds only the two sweep servos; MG996R lead (300 mm) aft through the bulkhead pass-through
 - id: sweep_l_pwr
   from: esc.5v
@@ -253,7 +253,7 @@ wiring:
   v: 5.0
   gauge: 22
   color: red/brown
-  length_mm: 260
+  length_mm: 300
   note: as sweep_r_pwr
 - id: ail_r_pwr
   from: fc.vx
@@ -277,7 +277,7 @@ wiring:
   v: 6.0
   gauge: 26
   color: red/brown
-  length_mm: 800
+  length_mm: 860
   note: extension out of the aft fuselage and along the boom under heat-shrink to the tail mount
 - id: rud_pwr
   from: fc.vx
@@ -285,7 +285,7 @@ wiring:
   v: 6.0
   gauge: 26
   color: red/brown
-  length_mm: 800
+  length_mm: 820
   note: as elev_pwr
 - id: gps_5v
   from: fc.4v5
@@ -293,7 +293,7 @@ wiring:
   v: 5.0
   gauge: 28
   color: red/black
-  length_mm: 260
+  length_mm: 320
   note: aft through the bulkhead and up through the spine to the GPS on its top
 - id: rx_5v
   from: fc.4v5
@@ -301,7 +301,7 @@ wiring:
   v: 5.0
   gauge: 28
   color: red/black
-  length_mm: 60
+  length_mm: 80
 - id: esc_sig
   from: fc
   to: esc
@@ -333,7 +333,7 @@ wiring:
   kind: signal
   gauge: 28
   color: orange
-  length_mm: 800
+  length_mm: 860
   pin: S4
 - id: rud_sig
   from: fc
@@ -341,7 +341,7 @@ wiring:
   kind: signal
   gauge: 28
   color: orange
-  length_mm: 800
+  length_mm: 820
   pin: S5
 - id: sweep_l_sig
   from: fc
@@ -349,7 +349,7 @@ wiring:
   kind: signal
   gauge: 28
   color: orange
-  length_mm: 260
+  length_mm: 320
   pin: S6
   note: 'INAV servo mixer: sweep from an RC switch / slider channel, + elevator trim k x sweep (DESIGN.md)'
 - id: sweep_r_sig
@@ -358,7 +358,7 @@ wiring:
   kind: signal
   gauge: 28
   color: orange
-  length_mm: 260
+  length_mm: 320
   pin: S7
   note: mirrored servo (reverse in the mixer); asymmetric sweep from the roll mix
 - id: gps_uart
@@ -367,7 +367,7 @@ wiring:
   kind: signal
   gauge: 28
   color: white/green
-  length_mm: 260
+  length_mm: 320
   note: GNSS TX/RX to UART, compass SDA/SCL to I2C
 - id: crsf
   from: fc
@@ -375,7 +375,7 @@ wiring:
   kind: signal
   gauge: 28
   color: white/green
-  length_mm: 60
+  length_mm: 80
   note: CRSF to UART2
 requirements:
 - id: sm_spread
@@ -390,7 +390,7 @@ requirements:
 - id: sm_half
   check: static_margin_tail
   min: 0.05
-  max: 0.6
+  max: 0.86
   halves:
     right: hub_r
     left: hub_l
@@ -398,11 +398,11 @@ requirements:
   pose:
     fold_r: 35
     fold_l: 35
-  why: 'half sweep (fast cruise / pull-out): still stable'
+  why: "half sweep (fast cruise / pull-out, 70-100 km/h): stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim (DESIGN.md): eta_t 0.9 x V_h (from this check) x a_t 3.28 /rad x tau 0.55 x 22 deg / CL 0.37 (1 g at 70 km/h, 1.58 kg, 18.15 dm2) = 0.86 MAC at V_h 0.51"
 - id: sm_folded
   check: static_margin_tail
   min: 0.05
-  max: 0.8
+  max: 1.95
   halves:
     right: hub_r
     left: hub_l
@@ -410,11 +410,11 @@ requirements:
   pose:
     fold_r: 70
     fold_l: 70
-  why: 'folded for the dive: stable (the upper bound is the elevator-trim limit, DESIGN.md)'
+  why: "folded for the dive: stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim (DESIGN.md): eta_t 0.9 x V_h (from this check) x a_t 3.28 /rad x tau 0.55 x 22 deg / CL 0.15 (DESIGN.md: the folded drone must still hold 1 g at ~95-110 km/h) = 1.95 MAC at V_h 0.47"
 - id: sm_asym
   check: static_margin_tail
   min: 0.05
-  max: 0.6
+  max: 0.86
   halves:
     right: hub_r
     left: hub_l
@@ -422,7 +422,7 @@ requirements:
   pose:
     fold_r: 70
     fold_l: 0
-  why: 'one side folded, the other spread (the worst asymmetric control input): still stable in pitch'
+  why: "one side folded, the other spread (asymmetric roll / yaw input in cruise): stable in pitch (>= 5 % MAC); upper bound = the most margin full up elevator can trim (DESIGN.md): eta_t 0.9 x V_h (from this check) x a_t 3.28 /rad x tau 0.55 x 22 deg / CL 0.37 (1 g at 70 km/h) = 0.86 MAC at V_h 0.51"
 - id: wing_loading
   check: wing_loading
   max_g_dm2: 65
