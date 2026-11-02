@@ -168,7 +168,8 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 ## Fixed-wing aircraft + calmer Studio (Spencer, 2026-11-01: "build things like the Darkwing-1 on MakerWorld")
 - [x] Studio layout: calmer and less overwhelming: one primary action, secondary actions in a menu, fewer chips and banners, plainer tabs, the 3D viewer's own header and button rows trimmed when it sits inside Studio
 - [x] Flying wings (kerf/aero.py): airfoils from the UIUC database (catalog/airfoils, sourced) and NACA 4-digit, swept / tapered / twisted wing lofts, split into printable segments, spar-tube channels, elevon cut + hinge joint, servo bays; wing geometry (area, MAC, neutral point); checks `static_margin`, `wing_loading`, `stall_speed`, `spar_bending`, each with a hand-calculated test
-- [ ] E7 `fpv_wing` — 1 m 6S FPV flying wing in the class of MakerWorld's Darkwing-1 (evals/fpv_wing/brief.md): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, acceptance.py PASS
+- [x] E7 `fpv_wing` — 1 m 6S FPV flying wing in the class of MakerWorld's Darkwing-1 (evals/fpv_wing/brief.md): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, acceptance.py PASS
+- [ ] fpv_wing follow-ups from review round 5 (PASS with minors): assembly order (strap before battery; spar-tube epoxy as a bench step with the wings, dry in the pod sleeve); kerf/ship.py splits an assembly_note at its colons (one bullet per note, or nested) + assembly_note on wing_l2/r2 and fins for their epoxy; front elevon joiner 4 -> ~4.6 mm aft (0.81 mm wall); plate packing keeps tall slender parts apart; hatch tongue support / flush heads / side lip; TPU belly skid; consumables in the mass model; splice-plate landing ramp; re-build + re-review
 
 ## Kerf vision: problem in, working thing out (Spencer, 2026-11-01; docs/VISION.md)
 Work these in order unless one is blocked; each item is done only with tests and a project or eval that uses it.

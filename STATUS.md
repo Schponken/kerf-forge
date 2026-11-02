@@ -262,3 +262,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Done: `advisory: <why>` requirements (a miss is a warning; refused on strength checks and without a reason; Studio shows "MISSED · advisory"; the optimiser and problem cards ignore it); thin-wall minimum 0.8 mm only on load-carrying parts (named by a strength check or `structural: true`), others down to one 0.42 mm line as a warning (Bambu Studio default line width, https://forum.bambulab.com/t/default-line-width-of-0-42/20400); squashable items `compress_mm` + `compress_why` (press-in depth measured, deeper = collision). tests/test_realistic_limits.py; docs + kerf skill.
 - No existing limit was loosened; every project's results are unchanged until its yaml opts in.
 - Candidates not done (need sources or design work): crash energy budget with bumper credit, vibration as stiffness target + filtering note, infill-aware FEA, single overall safety factor, A2L-calibrated motion clearance.
+
+### 2026-11-02 (session 4c4e3822c9): E7 fpv_wing DONE
+- `kerf build fpv_wing` PASS (fingerprint 3379006ef48d4ba7), design-reviewer PASS (round 5), evals/fpv_wing acceptance PASS.
+  1 m 6S flying wing, 1,361 g AUW, TWR 1.53, ~16 min, SM 9.2 %, wing loading 73 g/dm2, stall ~40 km/h.
+- Review rounds 3-5 fixed: hatch flutter (mid-length screws + ribs), antenna clash, pushrod exit slot, outer elevon play
+  (second CF rod, reamed push fit), pod alone on its plate (engine: parts >= 150 g print alone), builder notes in
+  ASSEMBLY.md (engine: held_by at each step, item tools in the tools list).
+- Open minors are one PLAN item ("fpv_wing follow-ups from review round 5").
+- Speed audit findings (12 + preflight) reported to Spencer; waiting on his go before implementing.
