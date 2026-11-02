@@ -1,0 +1,7 @@
+{
+ "item": "The 3D model first (Spencer, 2026-11-02): every run that makes a viewer writes a preview viewer.html as soon as the parts are built and placed (before print checks), Studio switches to it at once and folds the job panel while checks, files and renders carry on in the background; the full viewer replaces it at the end; a cold build of a big project reaches the model in minutes, not after every part's extras; tests",
+ "session": "4c4e3822c9",
+ "since": 1793640549.8263516,
+ "heartbeat": 1793640549.8263516,
+ "since_utc": "2026-11-02 17:29"
+}
