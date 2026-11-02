@@ -169,6 +169,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 #mc.open{display:flex;animation:popIn .35s cubic-bezier(.2,.9,.3,1.2) both}
 #mc.min .mcbody,#mc.min #mctw{display:none}
 #mctw{height:min(340px,38vh);margin:0 14px;flex:none}#mctw[hidden]{display:none}
+.fxa.up,.fxs.up{color:var(--ok)}.fxa.down,.fxs.down{color:var(--bad)}.fxs.meh{color:#e0a030}.fxs{font-weight:600}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{width:min(1100px,94vw);height:min(760px,88vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
@@ -745,7 +746,7 @@ function renderTune(el) {
       ${d.params.map(p => {
         const v = S.edits[p.key] ?? p.value, ch = p.key in S.edits;
         const unit = p.unit ? `<span class="unit" title="${p.unit_assumed ? "unit assumed: add unit: to this param in project.yaml" : "unit from project.yaml"}">${esc(p.unit)}${p.unit_assumed ? "*" : ""}</span>` : "";
-        const fx = p.affects ? `<div class="note affects">Affects ${p.affects.layout ? "the shared layout, so " : ""}${p.affects.parts.length ? esc(p.affects.parts.join(", ")) : "no part directly"}${p.affects.checks.length ? ` · checks: ${esc(p.affects.checks.join(", "))}` : ""}</div>` : "";
+        const fx = p.affects ? `<div class="note affects">Changes ${p.affects.layout ? "the shared measurements, so " : ""}${p.affects.parts.length ? esc(p.affects.parts.map(x => x.replace(/_/g, " ")).join(", ")) : "no part directly"}${p.affects.checks.length ? ` · can move: ${esc(plainChecks(p.affects.checks).join(", "))}` : ""}</div>` : "";
         return `<div class="param ${ch ? "changed" : ""}"><div class="top"><label for="r_${p.key}">${esc(p.label)}</label><span class="key">${esc(p.key)}</span></div>
           <div class="rng"><input type="range" id="r_${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" oninput="setParam('${p.key}', this.value, true)">
           <input type="number" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" onchange="setParam('${p.key}', this.value)">${unit}</div>
@@ -771,15 +772,29 @@ function renderTune(el) {
   </div>`;
   growBars(el);
 }
+function plainChecks(ids) {   // requirement ids -> their plain check names (kerf/glossary.py), each once
+  const R = Object.fromEntries(((S.detail.report || {}).requirements || []).map(r => [r.id, r.check]));
+  return [...new Set(ids.map(i => R[i] ? glossCheck(R[i]).name : i))];
+}
+function better(r, a, b) {   // did a requirement's value move the good way? (by its bound; a range: toward its middle)
+  if (a == null || b == null || Math.abs(b - a) < 1e-9) return 0;
+  if (r.bound === "max") return b < a ? 1 : -1;
+  if (r.bound === "min") return b > a ? 1 : -1;
+  if (r.bound === "range" && Array.isArray(r.limit) && r.limit.every(x => typeof x === "number")) {
+    const mid = (r.limit[0] + r.limit[1]) / 2; return Math.abs(b - mid) < Math.abs(a - mid) ? 1 : -1; }
+  return 0;
+}
 function compareTable(saved, tried) {   // the saved build's result next to the tried one, per requirement
   if (!tried || !tried.length) return `<p class="note">No requirement results for the try.</p>`;
   const sv = Object.fromEntries((saved || []).map(r => [r.id, r]));
-  return `<table><tr><th>Requirement</th><th>Saved</th><th>Tried</th><th>Change</th></tr>${tried.filter(r => !r.skipped).map(r => {
+  return `<table><tr><th>Requirement</th><th>Saved</th><th>Tried</th><th>Change</th><th>In plain words</th></tr>${tried.filter(r => !r.skipped).map(r => {
     const s = sv[r.id], a = s && typeof s.value === "number" ? s.value : null, b = typeof r.value === "number" ? r.value : null;
-    const dlt = a != null && b != null ? b - a : null, u = r.unit ? " " + esc(r.unit) : "";
-    return `<tr><td><b>${esc(r.id)}</b></td><td class="num">${s ? fmt(s.value) + u + (s.ok ? "" : " ✗") : "–"}</td>
+    const dlt = a != null && b != null ? b - a : null, u = r.unit ? " " + esc(r.unit) : "", g = better(r, a, b);
+    const say = !s || dlt == null || Math.abs(dlt) < 1e-9 ? "no change" : s.ok && !r.ok ? "now fails" : !s.ok && r.ok ? "now passes" : g > 0 ? "better" : g < 0 ? (r.ok ? "worse, still passes" : "worse") : "changed";
+    return `<tr><td><b title="${esc(glossCheck(r.check).means)}">${esc(glossCheck(r.check).name)}</b> <span class="why">${esc(r.id)}</span></td><td class="num">${s ? fmt(s.value) + u + (s.ok ? "" : " ✗") : "–"}</td>
       <td class="num">${fmt(r.value)}${u}${r.ok ? "" : " ✗"}</td>
-      <td class="num">${dlt == null || Math.abs(dlt) < 1e-9 ? "–" : (dlt > 0 ? "+" : "") + fmt(dlt) + u}</td></tr>`; }).join("")}</table>`;
+      <td class="num">${dlt == null || Math.abs(dlt) < 1e-9 ? "–" : `<span class="fxa ${g > 0 ? "up" : g < 0 ? "down" : ""}">${dlt > 0 ? "▲" : "▼"}</span> ${dlt > 0 ? "+" : ""}${fmt(dlt)}${u}`}</td>
+      <td><span class="fxs ${say === "now fails" || say === "worse" ? "down" : say === "now passes" || say === "better" ? "up" : say.startsWith("worse") ? "meh" : ""}">${say}</span></td></tr>`; }).join("")}</table>`;
 }
 function setParam(k, v, live) {
   const p = S.detail.params.find(x => x.key === k); v = parseFloat(v);

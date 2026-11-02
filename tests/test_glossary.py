@@ -39,3 +39,18 @@ out.shown = await p.$$eval('.glmodal .glrow', e => e.filter(x => x.style.display
     assert out["n"] == ["FEA=true", "stress=true", "heat-set insert=true"], out["n"]   # first use only; not in code or inside words
     assert out["name"] == "Doesn't shake itself apart"
     assert out["rows"] == len(glossary.CHECKS) + len(glossary.TERMS) and 1 <= out["shown"] < 5
+
+
+def test_tune_compare_says_better_or_worse_in_plain_words(server, tmp_path):  # noqa: F811
+    out = _browser(server + "/", """
+await p.waitForFunction(() => typeof compareTable === 'function' && GL.rx);
+out.html = await p.evaluate(() => { S.detail = {report: {requirements: []}};
+  const saved = [{id: 'w', check: 'mass_max', value: 300, ok: true, bound: 'max', limit: 350, unit: 'g'},
+                 {id: 't', check: 'thrust_to_weight', value: 6.4, ok: true, bound: 'min', limit: 6, unit: ':1'},
+                 {id: 'c', check: 'static_margin', value: 0.05, ok: true, bound: 'range', limit: [0.05, 0.15], unit: 'x MAC'}];
+  const tried = [{...saved[0], value: 280}, {...saved[1], value: 5.8, ok: false}, {...saved[2], value: 0.09}];
+  const d = document.createElement('div'); d.innerHTML = compareTable(saved, tried);
+  return [...d.querySelectorAll('tr')].slice(1).map(r => [r.querySelector('b').textContent, r.querySelector('.fxs').textContent, r.querySelector('.fxa').className]); });""", tmp_path)
+    assert out["errs"] == [], out
+    assert out["html"] == [["Total weight", "better", "fxa up"], ["Thrust vs weight", "now fails", "fxa down"],
+                           ["Flies stable (balance)", "better", "fxa up"]], out["html"]
