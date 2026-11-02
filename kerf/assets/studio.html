@@ -195,6 +195,9 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .misstag{font-size:11px;margin-top:4px;white-space:nowrap}.misstag.nearmiss{color:#e0a030}.misstag.close{color:#e07a30}.misstag.faroff{color:var(--bad)}
 .fixalt{margin:-4px 0 6px;padding-left:20px}.fixalt li{margin:3px 0;color:var(--muted)}
 .toast.go{cursor:pointer}.toast.go:hover{filter:brightness(1.12)}.toastgo{display:block;margin-top:4px;font-size:11.5px;font-weight:600;color:var(--accent)}
+.qready{margin-bottom:14px}.qrow{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;margin-top:8px;padding:9px 12px}
+#qbadge{margin:2px 14px 8px;padding:8px 10px;border-radius:9px;text-align:left;font-weight:600;background:rgba(255,180,60,.14);border:1px solid rgba(255,180,60,.45)}
+.dot.paused{background:#e0a030}.banner.paused{margin-bottom:10px}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{max-width:none;width:min(860px,94vw);height:min(820px,90vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
@@ -430,6 +433,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   <nav class="sidenav"><button id="nav_grid" onclick="showGrid()" title="Every project as a big card">▦ All projects</button>
     <button id="nav_parts" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button>
     <button id="nav_work" onclick="showWork()" title="Codex, Claude Code and Studio: current tasks, progress and next steps">◷ Work</button></nav>
+  <button id="qbadge" hidden onclick="openQuotesPage()" title="Ideas Kerf researched for you: pick one to design"></button>
   <input id="search" placeholder="Search projects" oninput="renderList()" style="display:none">
   <div id="plist"></div>
   <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
@@ -1196,10 +1200,11 @@ function renderMc(j) {
   const mc = $("#mc"); mc.classList.toggle("running", j.state === "running");
   $("#mctitle").textContent = j.label;
   $("#tring").className = "tring " + (j.state === "running" ? "" : j.state);
-  $("#tricon").textContent = j.state === "running" ? "" : j.state === "done" ? "✓" : "✕";
+  $("#tricon").textContent = j.state === "running" ? "" : j.state === "done" ? "✓" : j.state === "paused" ? "⏸" : "✕";
   $("#mcstop").style.display = j.state === "running" ? "" : "none";
   const body = $("#mcbody"), atEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 40;
   let html = "", pct = 0;
+  if (j.state === "paused") html += pausedCard(j);
   if ((j.kind === "design" || j.kind === "edit" || j.kind === "fix") && !S.tw && window.TW) {   // the thought web: what it explores, keeps, sets aside
     const jid = j.id, lab = j.label;   // a one-line summary appears by itself as soon as the research starts; it opens the full, steerable story
     S.tw = TW.mount($("#mctw"), `/api/thoughtweb?job=${jid}`, {mode: "strip", job: jid,
@@ -1264,8 +1269,8 @@ async function finished(j) {
   const target = jobTarget(j, ok), line = jobLine(j, ok, st);
   if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) desktopNotify(j.label, line, target);
   if (ok) { toast(j.label, line, "ok", target); burst(); }
-  else { toast(j.label, line, "bad", target);
-    if (j.kind !== "fix" && S.settings.autofix) setTimeout(followFix, 1500);
+  else { toast(j.label, line, j.state === "paused" ? "warn" : "bad", target);
+    if (j.kind !== "fix" && S.settings.autofix && j.state !== "paused") setTimeout(followFix, 1500);
     const mc = $("#mc"); mc.classList.add("shake"); setTimeout(() => mc.classList.remove("shake"), 500); }
   if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) { chime(ok); flashTitle(ok ? `✓ ${j.label}` : `✕ ${j.label}`); }
   // done: fold the panel down to its title bar after a moment, so it stops covering the page (click to reopen)
@@ -1273,7 +1278,11 @@ async function finished(j) {
     if (mc.matches(":hover") && k < 20) return setTimeout(() => fold(k + 1), 1500); mc.classList.add("min"); };
   setTimeout(fold, 3500);
   if (j.kind === "trial") S.tab = "tune";
-  if (j.kind === "quote" && ok) { if (!S.newOpen) showNew(); if ($("#nname") && !$("#nname").value) { $("#nname").value = j.project; $("#nname").dataset.touched = 1; } await showQuote(j.project); return; }
+  if (j.kind === "quote" && ok) {
+    const busy = S.newOpen && $("#ndesc") && $("#ndesc").value.trim() && slugName($("#nname").value) !== j.project;
+    if (busy) listQuotes(); else await openQuote(j.project);   // typing another request: it waits in "Options ready"
+    return;
+  }
   await loadProjects();
   if (j.project === S.sel || j.project === "*") await refreshDetail();
   else if (j.kind === "design" && S.projects.some(p => p.name === j.project)) select(j.project);
@@ -1308,6 +1317,7 @@ async function toggleAutofix() {
 function projTitle(n) { const p = (S.projects || []).find(x => x.name === n); return p ? p.title : n.replace(/_/g, " "); }
 async function openJob(id) {   // an Activity row: its project's page, with the job panel on top
   const j = (S.jobsList || []).find(x => x.id === id);
+  if (j && j.kind === "quote" && j.state === "done") return openQuote(j.project);
   if (j && j.project && j.project !== "*" && (S.projects || []).some(p => p.name === j.project) && S.sel !== j.project) await select(j.project, true);
   watch(id);
 }
@@ -1319,7 +1329,7 @@ async function pollJobs() {
     if (was) for (const j of d.jobs) if (was[j.id] === "running" && j.state !== "running" && j.id !== S.job && !S.seenDone.has(j.id)) {
       S.seenDone.add(j.id);
       const ok = j.state === "done", target = jobTarget(j, ok), line = jobLine(j, ok, null);
-      toast(j.label, line, ok ? "ok" : "bad", target);
+      toast(j.label, line, ok ? "ok" : j.state === "paused" ? "warn" : "bad", target);
       if (j.state !== "stopped") desktopNotify(j.label, line, target);
       if (j.project === S.sel) refreshDetail();
     }
@@ -1342,7 +1352,8 @@ function toast(title, msg, cls, target) {   // target (see kerfOpen): a click go
 }
 /* where a notification about a job or project should take you: "project:<name>:<tab>", "job:<id>" or "new" */
 function jobTarget(j, ok) {
-  if (j.kind === "quote") return "new";
+  if (j.state === "paused") return `job:${j.id}`;            // paused for usage: its panel has Resume now
+  if (j.kind === "quote") return `quote:${j.project}`;
   if (!j.project || j.project === "*") return `job:${j.id}`;
   if (j.kind === "design" && !(S.projects || []).some(p => p.name === j.project)) return `job:${j.id}`;
   return `project:${j.project}:${!ok ? "results" : j.kind === "trial" ? "tune" : j.kind === "check" ? "results" : "model"}`;
@@ -1353,6 +1364,8 @@ async function kerfOpen(target) {
     if (S.sel !== a || S.newOpen || S.grid || S.parts || S.work || !S.detail) await select(a, true);
     if (S.sel === a) setTab(b || "model");
   } else if (k === "job" && a) watch(a);
+  else if (k === "quote" && a) openQuote(a);
+  else if (k === "quotes") openQuotesPage();
   else if (k === "new") showNew();
 }
 window.kerfOpen = kerfOpen;   // the Mac app calls this when a desktop notification is clicked
@@ -1361,7 +1374,25 @@ function desktopNotify(title, body, target) {   // in the Mac app: a real notifi
   if (!NATIVE || S.settings.notify === false) return false;
   try { window.webkit.messageHandlers.kerf.postMessage({title, body, target}); return true; } catch (e) { return false; }
 }
+function untilText(u) { return u && u.until ? new Date(u.until * 1000).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : "later"; }
+function pausedCard(j) {   // Claude usage ran out mid-job: nothing is lost, it carries on when usage is back
+  return `<div class="banner warn paused"><b>⏸ Paused: Claude usage ran out.</b> Everything it did so far is saved.
+    ${j.resumed_by ? "It has been resumed." : `It carries on by itself around <b>${esc(untilText(j.usage))}</b>, when usage comes back (unless the budget switch is on).`}
+    ${j.resumable ? `<div class="row" style="margin-top:8px"><button class="primary" onclick="resumeJob('${j.id}')">▶ Resume now</button></div>` : ""}</div>`;
+}
+async function resumeJob(id) {
+  try { const r = await api("/api/resume", {job: id}); watch(r.job); toast("Resumed", "Claude Code is picking up where it stopped.", "ok"); }
+  catch (e) { toast("Not resumed", e.message, "bad"); }
+}
+async function openQuotesPage() { showNew(); await listQuotes(); const el = $("#quotesready"); if (el) el.scrollIntoView({block: "start"}); }
+async function pollQuotes() {   // the sidebar badge: options waiting for a choice, from anywhere in Studio
+  let qs = []; try { qs = (await api("/api/quotes")).quotes; } catch (e) { return; }
+  const b = $("#qbadge"); if (!b) return;
+  b.hidden = !qs.length;
+  b.textContent = qs.length == 1 ? `💡 Options ready: ${qs[0].name.replace(/_/g, " ")}` : `💡 ${qs.length} sets of options ready`;
+}
 function jobLine(j, ok, st) {
+  if (j.state === "paused") return `Paused: Claude usage ran out. It carries on around ${untilText(j.usage)}; nothing is lost.`;
   if (ok) return j.kind === "design" ? "Claude Code finished the design." : j.kind === "edit" ? "Claude Code made the change." : j.kind === "fix" ? "Claude Code fixed it: every check passes." : "Every check passes.";
   return j.state === "stopped" ? "Stopped." : st && st.fin ? `${st.fin.problems} problem(s): ${S.settings.autofix && j.kind !== "fix" ? "Claude Code is fixing them now." : "use 🔧 Fix these."}` : "Finished with an error; see the log.";
 }
@@ -1391,6 +1422,7 @@ function showNew() {
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
       <div id="ready"></div>
+      <div id="quotesready"></div>
       <div class="card" id="new-request">
         <label class="request-kind">Where are you starting?<select id="i_request_kind" onchange="setRequestKind()"><option value="">I know what I want to make</option><option value="scenario">I have a problem to solve</option></select></label>
         <label class="note" id="description-label" for="ndesc">What should it be?</label>
@@ -1435,11 +1467,32 @@ function showNew() {
     </div>`;
   for (const event of ["input", "change"]) $("#new-request").addEventListener(event, e => { if (!e.target.closest("#quote")) invalidateQuote(); });
   checkReady();
+  listQuotes();
 }
 function invalidateQuote() {
   if (!S.quote || (S.quote.context && quoteMatches(S.quote, S.quoteName))) return;
   S.quote = null;
   $("#quote").innerHTML = `<p class="note" role="status">Your request changed. Compare options again to use these answers.</p>`;
+}
+/* options that are ready to choose from (each from its own request), shown above the form; one click loads that
+   request back into the form with its options, so two option runs never mix */
+async function listQuotes() {
+  const el = $("#quotesready"); if (!el) return;
+  let qs = []; try { qs = (await api("/api/quotes")).quotes; } catch (e) { return; }
+  el.innerHTML = qs.length ? `<div class="card qready"><b>Options ready to choose from</b>${qs.map(q => `<button class="qrow" onclick="openQuote('${q.name}')">
+    <span><b>${esc(q.name.replace(/_/g, " "))}</b> · ${q.options} option${q.options == 1 ? "" : "s"}</span><span class="note">${esc(q.description)}</span></button>`).join("")}</div>` : "";
+}
+async function openQuote(name) {
+  if (!S.newOpen || !$("#ndesc")) showNew();
+  let q; try { q = await api(`/api/quote/${name}`); } catch (e) { return toast("No options yet", e.message, "bad"); }
+  $("#nname").value = name; $("#nname").dataset.touched = 1;
+  if (q.context) {
+    $("#ndesc").value = q.context.description || "";
+    for (const input of document.querySelectorAll('#new-request [id^="i_"]')) input.value = (q.context.intake || {})[input.id.slice(2)] || "";
+    setRequestKind();
+  }
+  await showQuote(name);
+  const el = $("#quote"); if (el) el.scrollIntoView({behavior: "smooth", block: "start"});
 }
 function quoteMatches(q, name) {
   return name === slugName($("#nname").value) && (!q.context || (q.context.description === $("#ndesc").value.trim() && JSON.stringify(Object.entries(q.context.intake).sort()) === JSON.stringify(Object.entries(intake()).sort())));
@@ -1520,7 +1573,8 @@ function readyCard(st) {
 }
 function showReady(st) {
   const el = $("#ready"); if (!el) return;
-  el.innerHTML = st.ok ? `<div class="banner ok">✓ Claude Code is installed, trusts this folder and is signed in.</div>` : readyCard(st);
+  el.innerHTML = st.ok ? `<div class="banner ok">✓ Claude Code is installed, trusts this folder and is signed in.</div>`
+    : st.code === "usage" ? `<div class="banner warn">⏸ ${esc(st.why)}</div>` : readyCard(st);
   for (const id of ["#nstart", "#nquote"]) { const b = $(id); if (b) b.disabled = !st.ok; }
 }
 async function checkReady() { const el = $("#ready"); if (el) el.innerHTML = `<div class="sk" style="height:44px;margin-bottom:14px"></div>`;
@@ -1864,7 +1918,7 @@ function closedScreen(quit = false) {
 
 addEventListener("resize", moveUline);
 loadProjects(); pollJobs(); loadSettings();
-setInterval(loadProjects, 5000); setInterval(pollJobs, 3000);
+setInterval(loadProjects, 5000); setInterval(pollJobs, 3000); setInterval(pollQuotes, 15000); setTimeout(pollQuotes, 1500);
 </script>
 </body>
 </html>

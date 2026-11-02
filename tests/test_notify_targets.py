@@ -47,6 +47,51 @@ await p.evaluate(n => { S.jobStates = {jx: 'running'}; S.seenDone.delete('jx'); 
 out.bg = await p.$$eval('.toast.go b', e => e.map(x => x.textContent));""", tmp_path)
     assert out["errs"] == [], out
     t = out["targets"]
-    assert t[0].endswith(":model") and t[1].endswith(":results") and t[2].endswith(":tune") and t[3] == "job:j9" and t[4] == "new", t
+    assert t[0].endswith(":model") and t[1].endswith(":results") and t[2].endswith(":tune") and t[3] == "job:j9" and t[4] == "quote:x", t
     assert out["opened"][1] == "results" and out["toastGone"] == 0
     assert any(x.startswith("Build kit: ") for x in out["bg"]), out
+
+
+def test_two_option_runs_each_open_with_their_own_request(server, tmp_path, monkeypatch):  # noqa: F811
+    import json
+    qd = tmp_path / "quotes"; qd.mkdir()
+    monkeypatch.setattr(studio, "QUOTES", qd)
+    good = {"title": "A", "summary": "s", "parts_printed": 5, "cost_usd": 21.5, "print_hours": 6, "risks": []}
+    for name, desc, titles in (("hawk_v2", "a folding hawk drone", ["Pivot root", "Swing arm"]),
+                               ("launcher", "a reusable drone launcher", ["Bungee rail", "Spring sled"])):
+        (qd / f"{name}.json").write_text(json.dumps({"options": [good | {"title": t} for t in titles], "recommended": 0}))
+        (qd / f"{name}.request.json").write_text(json.dumps({"description": desc, "intake": {}}))
+    assert [q["name"] for q in studio.list_quotes()] and {q["name"] for q in studio.list_quotes()} == {"hawk_v2", "launcher"}
+    out = _browser(server + "/", """
+await p.waitForFunction(() => typeof openQuote === 'function' && S.projects.length > 0);
+await p.evaluate(() => showNew()); await p.waitForSelector('#quotesready .qrow');
+out.rows = await p.$$eval('#quotesready .qrow b', e => e.map(x => x.textContent));
+await p.click('#quotesready .qrow:has-text("launcher")'); await p.waitForSelector('.qopt');
+out.l = await p.evaluate(() => [$('#ndesc').value, [...document.querySelectorAll('.qopt b')].map(x => x.textContent), document.querySelectorAll('.qopt button.primary:not([disabled])').length]);
+await p.evaluate(() => kerfOpen('quote:hawk_v2')); await p.waitForFunction(() => $('#ndesc').value === 'a folding hawk drone');
+await p.waitForFunction(() => [...document.querySelectorAll('.qopt b')].some(x => x.textContent === 'Pivot root'));
+out.h = await p.evaluate(() => [$('#nname').value, document.querySelectorAll('.qopt button.primary:not([disabled])').length]);""", tmp_path)
+    assert out["errs"] == [], out
+    assert set(out["rows"]) == {"hawk v2", "launcher"}
+    assert out["l"][0] == "a reusable drone launcher" and out["l"][1][:2] == ["Bungee rail", "Spring sled"] and out["l"][2] == 2, out
+    assert out["h"] == ["hawk_v2", 2], out                                      # each one's buttons are live, not blocked
+
+
+def test_paused_card_and_options_badge(server, tmp_path, monkeypatch):  # noqa: F811
+    import json
+    qd = tmp_path / "quotes"; qd.mkdir()
+    monkeypatch.setattr(studio, "QUOTES", qd)
+    good = {"title": "A", "summary": "s", "parts_printed": 5, "cost_usd": 21.5, "print_hours": 6, "risks": []}
+    (qd / "launcher.json").write_text(json.dumps({"options": [good, good | {"title": "B"}], "recommended": 0}))
+    out = _browser(server + "/", """
+await p.waitForFunction(() => typeof pollQuotes === 'function');
+await p.evaluate(() => pollQuotes()); await p.waitForSelector('#qbadge:not([hidden])');
+out.badge = await p.textContent('#qbadge');
+out.card = await p.evaluate(() => { const d = document.createElement('div');
+  d.innerHTML = pausedCard({id: 'j1', state: 'paused', resumable: true, usage: {until: 1893456000}}); return d.textContent; });
+out.target = await p.evaluate(() => jobTarget({id: 'j1', state: 'paused', kind: 'design', project: 'x'}, false));
+await p.click('#qbadge'); await p.waitForSelector('#quotesready .qrow');
+out.rows = await p.$$eval('#quotesready .qrow b', e => e.map(x => x.textContent));""", tmp_path)
+    assert out["errs"] == [], out
+    assert "launcher" in out["badge"] and "Resume now" in out["card"] and "Paused" in out["card"] and out["target"] == "job:j1"
+    assert out["rows"] == ["launcher"]
