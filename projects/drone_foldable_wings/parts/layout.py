@@ -20,12 +20,14 @@ MAIN_TUBE = "rods.cf_tube_8x6"
 REAR_TUBE = "rods.cf_tube_6x4"
 BOOM_TUBE = "rods.cf_tube_8x6"
 PIN = "rods.ss_rod_4"
-SWEEP_SERVO = "servos.MG90S"
-SWEEP_HORN = "servo_horns.aluminum_micro_21T"
+SWEEP_SERVO = "servos.MG996R"   # MG90S was too weak: back-driven at partial sweep under g (DESIGN.md)
+SWEEP_HORN = "servo_horns.aluminum_25T"
 SURF_SERVO = "servos.KST_X08_Plus"
+MOTOR = "drone.motors.2806_5_1300kv_7in"
+BATTERY = "drone.batteries.4S_1500"
 TE_MIN = 1.0                  # printed trailing edge: two perimeters + margin
 
-GEAR_M, Z_PINION, Z_SECTOR, GEAR_W = 1.5, 14, 28, 8.0      # 2:1 reduction servo -> wing
+GEAR_M, Z_PINION, Z_SECTOR, GEAR_W = 2.0, 15, 24, 8.0      # 1.6:1 servo -> wing: 70 deg fold = 112 deg of the 120 deg standard travel
 PIN_L = 50.0                  # stocked 4 mm rod length (catalog rods.ss_rod_4 lengths)
 PLATE_T = 6.0                 # deck and spine arm thickness at the pin
 GAP = 0.5                     # axial running clearance each end of the boss (ENGINEERING s8)

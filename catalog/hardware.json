@@ -594,7 +594,20 @@
    "idle_current_a": 0.01,
    "running_current_a": 0.25,
    "current_note": "TowerPro publishes no current figures. From ProtoSupplies' own tests (https://protosupplies.com/product/servo-motor-micro-mg90s/): stall 700 mA (labelled measured), idle ~10 mA typical, 120-250 mA while moving; 4.8-6 V. Reseller-measured, confidence typical; stall rises at 6 V. Size a BEC for stall x servo count when servos can be loaded simultaneously.",
-   "source_current": "https://protosupplies.com/product/servo-motor-micro-mg90s/"
+   "source_current": "https://protosupplies.com/product/servo-motor-micro-mg90s/",
+   "torque_6v_kgcm": 2.2,
+   "torque_6v_note": "TowerPro MG90S page (opened 2026-11-01): 'Stall torque: 1.8kg/cm (4.8V); 2.2kg/cm (6.6V)', speed 0.10 s/60 deg (4.8 V) / 0.08 s/60 deg (6.0 V). The vendor's higher-voltage figure is stated at 6.6 V, not 6.0 V; Waveshare lists 2.8 kg*cm @6 V. The lower 2.2 is used for 6 V.",
+   "voltage_min": 4.8,
+   "voltage_max": 6.0,
+   "pulse_us": [
+    1000,
+    2000
+   ],
+   "pulse_travel_deg": [
+    165,
+    195
+   ],
+   "source_pulse": "ProtoSupplies MG90S page (opened 2026-11-01): 'Operating voltage: 4.8-6 VDC (5V Typical)', 'Rotation: 180 deg (+/-15 deg)', 'The pulse can vary between 1mSec and 2mSec'. TowerPro publishes neither travel nor pulse width. Read as 1000-2000 us = 165-195 deg; firmware.us_per_deg takes the largest travel, so commanded angles are an upper bound. Real units differ: the flown Mistral TVC build (references/INDEX.md) measured ~12.8 us per servo degree (~78 deg per 1000 us), so MEASURE the travel at 500-2500 us before sizing a gear ratio that needs > 90 deg."
   },
   "MG996R": {
    "body_l": 40.9,
@@ -1283,6 +1296,21 @@
     "cells_min": 3,
     "cells_max": 6,
     "note": "Hobbywing Skywalker V2 series comparison table (opened 2026-11-01): Skywalker 60A V2, product no. 30216101, BL, 60A/80A cont./peak, 3-6S LiPo, BEC switch mode 5 V 7 A, wires red/black 12 AWG 100 mm input, 3 x black 14 AWG 100 mm output, 4.0 gold connectors (female) on the output, size 73 x 30 x 12 mm, 68 g (the table's size/weight rows read in product order: 100A 85x36x9/92 g, 80A 85x36x9/79 g, 60A 73x30x12/68 g). RaceDayQuads lists it at $41.99.",
+    "source": "https://www.hobbywing.com/en/products/skywalker-v2-series",
+    "confidence": "datasheet"
+   },
+   "skywalker_40a_v2": {
+    "model": "Hobbywing Skywalker 40A V2 (3-4S, 5 V 5 A switch BEC)",
+    "length": 60,
+    "width": 25,
+    "height": 8,
+    "weight_g": 36,
+    "esc_current_a": 40,
+    "esc_burst_a": 60,
+    "bec_5v_a": 5.0,
+    "cells_min": 3,
+    "cells_max": 4,
+    "note": "Hobbywing Skywalker V2 series comparison table (opened 2026-11-01): Skywalker 40A V2, product no. 80060022, 40A/60A cont./peak, 3-4S LiPo (NOT 6S), BEC switch mode 5 V 5 A, input red/black 14 AWG 100 mm, output 3 x black 16 AWG 75 mm, 3.5 mm gold connectors, size 60 x 25 x 8 mm, 36 g. Same size/weight as the 50A V2 (3-4S); the only lighter-than-60A model rated for 6S is the 50A-6S V2 (30216400: 50/70 A, 3-6S, 6 A BEC), which is 73 x 30 x 12 mm / 68 g like the 60A. Page anomaly: the 30A V2 row repeats the 40A current (40A/60A) and wire set.",
     "source": "https://www.hobbywing.com/en/products/skywalker-v2-series",
     "confidence": "datasheet"
    }

@@ -100,3 +100,9 @@ def test_fold_hinge_moment_by_hand(monkeypatch):
     lift = req_aero.fold_hinge_moment(proj, asm, joint="fold", item="wing_r", side="right", speed_kmh=72, cd=0.05, cl=1.0,
                                       stall_kgcm=2.0, ratio=2.0, root_y=50, samples=3)
     assert lift["value"] == pytest.approx(r["value"], abs=1e-6)          # lift is parallel to a vertical pivot axis
+    fr = req_aero.fold_hinge_moment(proj, asm, joint="fold", item="wing_r", side="right", speed_kmh=72, cd=0.05,
+                                    stall_kgcm=2.0, ratio=2.0, root_y=50, samples=3, extra_nmm=98.0665)
+    assert fr["value"] == pytest.approx(r["value"] + 1.0, abs=1e-3)      # + 1 kg.cm of pivot friction
+    fwd = req_aero.fold_hinge_moment(proj, asm, joint="fold", item="wing_r", side="right", speed_kmh=72, cd=-0.05,
+                                     stall_kgcm=2.0, ratio=2.0, root_y=50, samples=3)
+    assert fwd["value"] == pytest.approx(r["value"], abs=1e-6)            # a forward (suction) force: same size, other way

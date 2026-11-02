@@ -234,12 +234,15 @@ def static_margin_tail(proj, asm, min=0.05, max=0.25, wing="wing_", tail="htail_
 
 @check("fold_hinge_moment")
 def fold_hinge_moment(proj, asm, joint, item, side, speed_kmh, cd, cl=0.0, actuator=None, stall_kgcm=None, ratio=1.0,
-                      max_fraction=0.5, wing="wing_", root_y=0.0, samples=13, strips=40):
+                      max_fraction=0.5, wing="wing_", root_y=0.0, samples=13, strips=40, extra_nmm=0.0):
     """Aerodynamic moment about a wing sweep / fold joint: every strip of the moving half (`item`, |y| root_y..tip on
     `side`) carries drag q cd dA along the flight direction (+x, at its mid-chord) and lift q cl dA (+z, at its quarter
     chord), q = rho V^2 / 2 at `speed_kmh` (sea level); the moment about the joint axis, worst over `samples` angles of
     the joint range, against the actuator's stall torque (catalog, or `stall_kgcm`) x `ratio` (gear reduction from the
-    actuator to the joint) x `max_fraction`."""
+    actuator to the joint) x `max_fraction`. `cd` is the force coefficient along the flight direction: drag (+), or the
+    net chordwise force cd cos(a) - cl sin(a), which turns FORWARD (-) at high lift (leading-edge suction).
+    `extra_nmm` adds a moment the air load does not cover, e.g. pivot friction mu x 2 (root moment / support spacing)
+    x pin radius (state the arithmetic in the requirement's why)."""
     from . import assembly as A
     from .requirements import _axis_world, _ev
     root_y = _ev(root_y, proj.params or {})
@@ -264,6 +267,7 @@ def fold_hinge_moment(proj, asm, joint, item, side, speed_kmh, cd, cl=0.0, actua
         if abs(tau) >= worst:
             worst, at = abs(tau), float(ang)
     A.solve(asm)
+    worst += float(extra_nmm)
     kgcm = worst / 98.0665
     lim = float(stall_kgcm) * float(ratio) * float(max_fraction)
     return {"ok": kgcm <= lim + 1e-9, "value": round(kgcm, 3), "limit": round(lim, 3), "bound": "max", "unit": "kg·cm",
