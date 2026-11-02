@@ -418,7 +418,10 @@ slides along it) with the pin held on one side only, and a stocked length that r
 calibration profile, and the catalog entries the project reads. Every check/build records the catalog paths it read
 into `projects/<p>/catalog_deps.json` (a growing union; commit it), so an edit to a catalog entry the project does
 not use leaves its review current, and an edit to one it uses makes it stale. Without that file the whole catalog
-file is hashed.
+file is hashed. An unreadable or malformed dependency file also falls back to the whole catalog until the next
+check repairs it. Catalog reads refresh automatically when the file changes, so a running Studio process notices
+used-entry edits without restarting. Quick checks retain the union of earlier reads so they cannot discard
+dependencies of stages they did not run; cached part hits re-record their reads too.
 It also reports `out_stale` (and says so in `why`) when `out/report.json` was built from another fingerprint: the
 review stands, but the shipped ASSEMBLY.md / BOM / renders need `kerf build` (verify rebuilds everything anyway).
 
