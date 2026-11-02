@@ -1,0 +1,1687 @@
+{
+ "project": "fpv_wing",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "2f4cb0c6",
+   "time": "2026-11-01T16:20:59-05:00",
+   "subject": "fpv_wing airframe (pod, 4 wing segments, elevons, fins) passes quick check; attribution only rebuilds parts a param reaches + time budget (export 15+ min -> 8.6",
+   "parts": [
+    "elevon",
+    "fin",
+    "layout",
+    "pod",
+    "wing"
+   ]
+  },
+  {
+   "hash": "aadcaafa",
+   "time": "2026-11-01T17:08:22-05:00",
+   "subject": "fpv_wing: full aircraft - motor, prop, ESC, wing FC, servos, 6S 2200, GPS, VTX, camera, spar tubes from the catalog (new sourced entries + prices); nose (TPU, c",
+   "parts": [
+    "elevon",
+    "layout",
+    "motor_mount",
+    "nose",
+    "pod",
+    "wing"
+   ]
+  },
+  {
+   "hash": "1ff2aaaf",
+   "time": "2026-11-01T18:09:15-05:00",
+   "subject": "fpv_wing: wall-to-wall teardrop spar sleeves (pod FEA 28.6 -> 1.5 MPa), routes round GPS/VTX, priced build extras; fea.py drops sliver tets (singular mesh on th",
+   "parts": [
+    "pod"
+   ]
+  },
+  {
+   "hash": "8a14d0b0",
+   "time": "2026-11-01T21:02:12-05:00",
+   "subject": "fpv_wing review fixes (in progress): top hatch (access to electronics + root bolts), bolt-on outer segments (splice plates), split elevons with carbon joiner an",
+   "parts": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "motor_mount",
+    "nose",
+    "pod",
+    "splice",
+    "wing"
+   ]
+  },
+  {
+   "hash": "42b77bc8",
+   "time": "2026-11-01T21:38:38-05:00",
+   "subject": "fpv_wing: review fixes - splice grip on the thin side, hatch insert blocks to the skin, ledges merged into the end skins (watertight), nose key grooves (no feat",
+   "parts": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ]
+  },
+  {
+   "hash": "e74072cf",
+   "time": "2026-11-02T14:19:48-05:00",
+   "subject": "fpv_wing: design review round 3 (FAIL: hatch flutter + antenna clash, pushrod clash, outer elevon joiner play, crowded PLA plate)",
+   "parts": []
+  },
+  {
+   "hash": "ad5e9179",
+   "time": "2026-11-02T14:22:51-05:00",
+   "subject": "WIP fpv_wing review round 3: heavy parts (>= 150 g) print on their own plate (+test), pushrod exit slot, ESC/strap/linkage/CG docs fixed; elevon second joiner i",
+   "parts": [
+    "elevon",
+    "wing"
+   ]
+  },
+  {
+   "hash": "5e4641d6",
+   "time": "2026-11-02T14:28:04-05:00",
+   "subject": "fpv_wing: outer elevon half driven by two CF rods (second at 10 mm aft of the hinge), drilled push fit in the outer half: play ~1.35 -> <0.3 deg; quick check PA",
+   "parts": [
+    "hatch",
+    "pod"
+   ]
+  },
+  {
+   "hash": "7e2ce2c5",
+   "time": "2026-11-02T14:47:29-05:00",
+   "subject": "fpv_wing: hatch held at mid-length too (second M3 pair, round insert bosses) with two underside ribs, tongue notched round the VTX antenna, printed outer face d",
+   "parts": [
+    "pod"
+   ]
+  },
+  {
+   "hash": "1463c30b",
+   "time": "2026-11-02T15:09:35-05:00",
+   "subject": "fpv_wing: review round 4 (FAIL: builder notes never reach ASSEMBLY.md)",
+   "parts": []
+  },
+  {
+   "hash": "11226ae0",
+   "time": "2026-11-02T15:20:22-05:00",
+   "subject": "ASSEMBLY.md: each item's held_by reaches its step and items' tools join the tools list (+test); fpv_wing: builder notes (servo arm hole, ream outer elevon bores",
+   "parts": [
+    "elevon",
+    "motor_mount"
+   ]
+  },
+  {
+   "hash": "e273907f",
+   "time": "2026-11-02T15:59:06-05:00",
+   "subject": "E7 fpv_wing done: build PASS, design review PASS (round 5), acceptance PASS; follow-up minors as one PLAN item",
+   "parts": []
+  },
+  {
+   "hash": "68b57bc9",
+   "time": "2026-11-02T16:03:47-05:00",
+   "subject": "fpv_wing follow-ups: strap before battery, spar tubes fitted dry (epoxy only at the inner segment), epoxy notes for segments and fins, front elevon joiner 4.6 m",
+   "parts": [
+    "elevon",
+    "splice"
+   ]
+  },
+  {
+   "hash": "40ade74f",
+   "time": "2026-11-02T16:28:49-05:00",
+   "subject": "holewall: a registered hole that is filled in the finished solid is a PROBLEM (+test); fpv_wing splice plates: edges rounded before the holes are cut (a fillet ",
+   "parts": [
+    "elevon",
+    "splice"
+   ]
+  },
+  {
+   "hash": "3e0923de",
+   "time": "2026-11-02T16:52:29-05:00",
+   "subject": "fpv_wing follow-ups done: design review round 7 PASS (splice plates have their holes, all 52 sites open); remaining minors moved to the finish-items PLAN entry",
+   "parts": []
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "8a14d0b0",
+   "time": "2026-11-01T21:02:12-05:00",
+   "date": "2026-11-01",
+   "verdict": "FAIL",
+   "findings": 20
+  },
+  {
+   "commit": "e74072cf",
+   "time": "2026-11-02T14:19:48-05:00",
+   "date": "2026-11-02",
+   "verdict": "FAIL",
+   "findings": 15
+  },
+  {
+   "commit": "1463c30b",
+   "time": "2026-11-02T15:09:35-05:00",
+   "date": "2026-11-02",
+   "verdict": "FAIL",
+   "findings": 10
+  },
+  {
+   "commit": "e273907f",
+   "time": "2026-11-02T15:59:06-05:00",
+   "date": "2026-11-02",
+   "verdict": "PASS",
+   "findings": 9
+  },
+  {
+   "commit": "40ade74f",
+   "time": "2026-11-02T16:28:49-05:00",
+   "date": "2026-11-02",
+   "verdict": "FAIL",
+   "findings": 4
+  },
+  {
+   "commit": "3e0923de",
+   "time": "2026-11-02T16:52:29-05:00",
+   "date": "2026-11-02",
+   "verdict": "PASS",
+   "findings": 3
+  }
+ ],
+ "problems": [
+  {
+   "id": "fpv_wing-1",
+   "source": "review",
+   "severity": "blocker",
+   "part": "pod",
+   "issue": "The pod is a closed box with one way in: the front opening (y +-30, z -62.6 to +6). Above the shelf (top z -19.5) that leaves a 60 x 25.5 mm slot. Through it the build expects you to (a) foam-tape the GPS (x 5), FC + RX (x 52), ESC (x 88-161, partly under both spar sleeves with 1.7-2.5 mm clearance) and VTX (x 192, 237 mm deep, behind both sleeves), in the order front to back, so each part blocks the next; (b) drive the rear wing-root M3 at x 112 from inside, 157 mm deep, between the main sleeve (z about -6 to +14 at x 74-104) and the rear sleeve. A straight key at the bolt's z = 4 cannot get ",
+   "fix": "Give the pod real access. Either (1) make the electronics a removable sled: a 58 mm-wide printed tray on two rails above the battery, components no more than 12 mm tall, slid in through the front window under the sleeves and wired on the bench, with the FC USB at the front edge; or (2) cut a bolted or magnetic top hatch from x -10 to ~215 above the shelf and move the sleeves' crossing so the hatch",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-2",
+   "source": "review",
+   "severity": "major",
+   "part": "pod",
+   "issue": "The moment-carrying V sleeves are checked as solid PLA: the DESIGN.md hand check uses I = 7630 mm4 for a solid 20/8.2 tube (6.2 MPa), and the FEA is solid too. But the pod prints with walls: 2 at 15 % infill, which overrides ENGINEERING.md s5's 4-wall default for any part with an fea_static. As printed, the sleeve is two thin perimeter shells (about 0.9 mm at OD 20 and at the 8.2 bore) joined by 15 % infill. As a shell, I is about 3000 mm4, so the centreline stress is about 16 MPa against the 19.5 MPa limit, and the shell-to-shell shear through 15 % infill is not checked at all. The 2.4 mm ski",
+   "fix": "Put 100 % infill modifier volumes on both sleeves, the 8 insert bosses and the root-bolt pads, and write them into the plate 3MF and PRINT_SETTINGS.md. Or set the pod to walls: 6 (2.4 mm of skin is then all perimeter). Redo the DESIGN.md sleeve hand check for the section that actually prints.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-3",
+   "source": "review",
+   "severity": "major",
+   "part": "motor",
+   "issue": "Prop strike on every belly landing. The motor axis is at z = tail_z = -6 and the Gemfan 7040 radius is 89.2 mm, so the blade tip reaches z = -95. The pod belly is at -65, so the tip is 30 mm below the belly. With a tri-blade stopping at a random angle, a blade clears the ground only when it stops more than 48.6 deg from straight down, which is about 19 % of stops. DESIGN.md says the opposite ('clear of the ground on a belly landing'). prop_clear checks only clearance to the airframe, never to the ground.",
+   "fix": "Pick one: (a) a folding 2-blade pusher prop with spinner on the 5 mm shaft (catalog it with a source); the blades fold back on touchdown, which is standard on pusher wings; (b) raise the motor axis so the disc bottom sits at least 5 mm above the belly line (tail_z >= +29: a pylon above the TE); (c) cut pod depth and use a smaller prop, re-running twr. Add a ground-plane case to prop_clearance (bel",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-4",
+   "source": "review",
+   "severity": "major",
+   "part": "motor",
+   "issue": "The twr requirement passes on thrust from a different prop. The catalog motor note gives 2319 g with the HQ 7x4x3 and 2058 g with the Gemfan 7040, and the project's prop (drone.props.7in) is the Gemfan Flash 7040. Scaled to 22.2 V, 2058 g becomes 1849 g, so TWR = 1849 / 1357 = 1.36, below the brief's 1.5. The reported 1.54 is wrong.",
+   "fix": "Either catalog the HQ 7x4x3 (source: the iFlight test report already cited) and use it as the prop, or keep the Gemfan and resize: a 2807/2810-class motor, or cut ~120 g. Change the thrust_to_weight check to use the motor's thrust for the declared prop, not thrust_g_max.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-5",
+   "source": "review",
+   "severity": "major",
+   "part": "elevon_l",
+   "issue": "Printability: each elevon stands 314 mm tall on a 102 mm2 foot (the build warns about it). That is a 40 mm x ~5 mm, 1-wall, 5 % infill blade, about 60:1 height to thickness. On a moving bed it will sway, ring and very likely be knocked loose by the nozzle in the last 150 mm. The control horn sticks out of the side as a flat 10 x 14 mm overhang with nothing under it. Applies to elevon_r too.",
+   "fix": "Split each elevon at the segment line (y 280) into two pieces of about 150 mm, keyed with a 2-3 mm carbon rod along the hinge-line thickness. Or print it lying on its flat lower surface (the aft 24 % of MH 45 is almost flat) with the hinge bevel up. Make the horn a separate part bonded through a slot (see the next finding), or give it a 45 deg gusset so it prints without support.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-6",
+   "source": "review",
+   "severity": "major",
+   "part": "elevon_l",
+   "issue": "Control linkage (both elevons): (1) The horn hole is only about 9.7 mm from the hinge (3.5 aft, 9 down). The servo axis sits about 9.4 mm above the lower skin, so the servo arm must be at least about 12 mm to reach out of the pocket. The servo then sees about 1.2x the hinge moment, and nothing specifies the arm length. (2) The DESIGN.md hinge moment of 2.1 kgf.cm is already 64 % of the X08's ~3.2-3.3 kgf.cm at the 5 V Vx default (55 % at 6 V), which breaks ENGINEERING.md s3 (servo holding <= 50 % of stall), and no static_torque requirement checks it. (3) A 1.6 mm hole for 1.2 mm wire on a 9.7 ",
+   "fix": "Lengthen the horn to 15-18 mm below the hinge line. Make it a through-slot horn (PETG, plywood or G10) glued through both skins with a printed solid boss, or a 100 % infill modifier block round it. Use a 1.2 mm hole drilled to fit, or a clevis/EZ connector. Specify the servo arm hole radius to match the horn radius (about 1:1) and set the F405-WMO Vx jumper to 6 V. Move the horn outboard (toward m",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-7",
+   "source": "review",
+   "severity": "major",
+   "part": "wing_l2",
+   "issue": "The brief asks for 'bolted sections I can replace after a crash', and DESIGN.md says 'a crashed segment is reprinted alone'. But the outer segments are epoxied to the inner ones and to both spar tubes, and the elevon runs across the joint. Replacing a crashed outer segment means cutting it off epoxied carbon. The only bolted joints are the wing root (unreachable, see the blocker), nose and motor mount. Applies to wing_r2 and to the epoxied tubes in wing_l1/r1.",
+   "fix": "Bolt the inner and outer segments: two M3 per joint from a counterbored pocket in the lower skin into heat-set inserts in a solid-modifier boss across the joint face, or a printed joiner key. Let the outer segment slide on the tubes (slip fit, no epoxy) and fix it with the bolts or a grub screw on the main tube. Split the elevon at the joint so each segment carries its own piece.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-8",
+   "source": "review",
+   "severity": "major",
+   "part": "wing_l1",
+   "issue": "The root heat-set inserts (2 per side) and the servo pocket are cut into a 1-wall, 3 % infill part. Around the 4 mm insert hole the slicer makes one 0.45 mm perimeter, and behind it is about 15 mm-pitch infill, so the insert has nothing to melt into. DESIGN.md knows this ('add a 100 % infill modifier'), but the note is not in the plate 3MF (no modifier volumes), not in PRINT_SETTINGS.md and not in ASSEMBLY.md (report maker_notes is empty). Someone who prints the plate as delivered gets inserts that spin out and a servo glued to a single perimeter. Applies to wing_r1.",
+   "fix": "Write cylinder modifier volumes (100 % infill, 4 walls) round each root insert and a box modifier round the servo pocket into the per-part and plate 3MF. Add them to PRINT_SETTINGS.md and ASSEMBLY.md step 3. Also emit DESIGN.md maker notes into report.maker_notes so they reach the print package.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-9",
+   "source": "review",
+   "severity": "major",
+   "part": "pod",
+   "issue": "Battery retention: there are no strap slots and no stops, only 'a strip of anti-slip pad', which breaks ENGINEERING.md s9 ('strap slots for a 20 mm strap'). project.yaml says the pack is held by the 'nose in front', but the pack's front face is at x 64 and the nose is at x -45, a 109 mm free run. The XT60 and its solder joints lie in that run (x 50). In a nose-in arrival, 372 g of LiPo slides forward into its own connector.",
+   "fix": "Add two 20 x 3 mm strap slots through the bay floor (or side walls) at x about 90 and 150 for a velcro strap. Add a TPU or foam spacer, or a printed removable stop, ahead of the pack so its x is fixed at the balance position, with a channel for the lead and the XT60 beside it, not in front of it.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-10",
+   "source": "review",
+   "severity": "major",
+   "part": "pod",
+   "issue": "No cooling path. The 60 A ESC (73 x 30 x 12, 48 A peak) and an 800 mW TX800 VTX sit in a sealed PLA box. The only openings are a 15 mm lens hole, an 8 mm lead hole, a 7 mm antenna hole and the servo-lead holes. Foam-taped electronics heat-soak PLA (Tg ~55-60 C) over a 20-minute flight. The VTX at 800 mW dissipates several watts.",
+   "fix": "Add a ram-air inlet (NACA duct or louvred slot under the nose or on the pod front shoulders) and an exit in the low-pressure tail area (sides of the tail taper ahead of the mount), with the ESC and VTX heatsink in the flow. Limit the VTX to <= 400 mW in DESIGN.md until a bench heat-soak test shows more is OK.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-11",
+   "source": "review",
+   "severity": "major",
+   "part": "pod",
+   "issue": "The print package puts every part on ONE plate (plate_1.3mf) in three materials: PLA, PETG and TPU, which need different bed temperatures (55 / 70 / 35 C), a different plate surface for PETG and different nozzle temperatures. Eleven tall standing parts share one long print, so one toppled elevon wrecks the 310 mm pod beside it. The A2L cannot print this plate as delivered.",
+   "fix": "Pack plates by material, with the high-risk tall parts kept apart: pod alone; wing segments (2 per plate); elevons (or their split halves); TPU nose + fins; PETG mount. Change export.plates to never mix materials on a plate.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-12",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "Pod print: 310 mm tall, about 300 g, on a 48 x 50 mm foot (5 mm brim). The wing centre section's trailing edge (x = 250 + 0.27|y|) runs to x 263.6 at y +-50, so its lowest point starts 1.4 mm above the bed in air. That swept TE edge then climbs at about 15 deg from horizontal with no support. 7 sharp inside corners remain at the shelf front edge and the opening (3 in stressed zones).",
+   "fix": "End the centre section's TE at the rear face (pod_x1 = x_te(pod_hw) or trim the TE to x <= pod_x1 - 0) so the TE corners start on the bed, or add a 0.4 mm sacrificial fin under them. Add 1-2 mm fillets at the shelf front corners. Consider mouse-ear pads and a 60 mm/s outer-wall cap for the last 150 mm.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-13",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l2",
+   "issue": "Outboard of the elevon (y 460-500), the TE stub is a ceiling about 30 mm deep over the elevon slot as printed standing (overhang_pct 1.14 %). It is held on one side only and will droop on a 1-wall print. Same on wing_r2.",
+   "fix": "Chamfer the underside of the stub at 45 deg (the end face of the slot), or run the elevon to the tip.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-14",
+   "source": "review",
+   "severity": "minor",
+   "part": "fin_l",
+   "issue": "The TPU fin (2 walls, 15 %, E about 26 MPa) is about 130x softer than PLA. A rough estimate at 5 deg sideslip and 150 km/h gives about 3 mm tip deflection, with low torsional stiffness, so yaw damping drops and flutter is possible. Printed on its root, the root ahead of and behind the tab follows the wing's curved upper surface, so those faces are shallow overhangs in TPU, which makes a poor glue face. A TPU-to-PLA CA joint peels in a wingtip landing. Same on fin_r.",
+   "fix": "Make the fin PETG/PLA with a TPU bumper on the lower and trailing tip, or put a 2 mm carbon rod in the fin's thickness. Run the tab the full root chord, and print the fin on its flat side or with the root overhangs supported. Lock the tab with a pin through the wing skin.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-15",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l1",
+   "issue": "Brief: 'TPU where it lands'. A flying wing lands on its belly, and the belly here is the 2-wall PLA pod floor (which also carries the pack). Only the nose and fins are TPU. The servo arms and Z-bend pushrods also hang under the lower skin in the belly-slide zone.",
+   "fix": "Add a replaceable TPU belly skid (bolted or glued, 2-3 mm, x -40 to ~200), and if possible a small TPU fairing ahead of each servo arm.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-16",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "Wiring: the 12 AWG main lead (49.5 A peak) is routed 'over the GPS'. The QMC5883 compass is right under it, and the catalog note says to keep it away from power wires. The RP1's T antenna is taped inside the pod beside the carbon tubes and 6S leads, which costs range on a wing sold as long-range.",
+   "fix": "Run the main lead down the bay side wall away from the GPS (or disable the compass in INAV, which planes don't need). Bring the RX antenna out of the pod (e.g. through the wing root into the inner segment, or a vertical whip at the tail), or use a diversity RX.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-17",
+   "source": "review",
+   "severity": "minor",
+   "part": "motor_mount",
+   "issue": "The mount_strength load case pulls the motor aft (+x) and says 'a nose-in crash throws the motor + prop aft'. On a pusher, thrust pushes the motor forward into the plate, and in a nose-in crash its inertia also pushes forward. So the case checks screw pull-off, which is fine as a bound, but the stated reason is backwards. The 6 mm plate has no outside edge breaks. ASSEMBLY.md specifies M3 x 5 (2.0 mm engagement, exactly the catalog minimum) while DESIGN.md says M3 x 6.",
+   "fix": "Correct the 'why' (forward crash load and prop-strike side load), add a forward-load case, chamfer outside edges 0.5 mm, and settle on M3 x 6 (3 mm engagement, at the 3 mm max depth).",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-18",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "Balance: req_balance puts each printed part's mass at its solid centroid. For 1-wall, 3 % wing skins the mass sits further aft (perimeter centroid), about 1 % MAC on the swept wing. bat_x is 118 against a range max of 120, and the pack is 3 mm from the floor taper, so there is no aft adjustment left if the real aircraft comes out nose-heavy.",
+   "fix": "Shift the default bay position or shelf so the pack has +-15 mm of travel round the 10 % MAC point. Tell the builder to balance on the marked CG (x 146) and not trust the computed value.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-19",
+   "source": "review",
+   "severity": "minor",
+   "part": "nose",
+   "issue": "The 15 mm lens hole is in a 2.4 mm wall in front of a 155 deg lens, so the window edge limits the view to about +-68 deg and the image corners will vignette. Some walls are 1.13 mm (warning). The VTX antenna proxy is 20 mm tall where the catalog part is 95 mm (it stands about 117 mm above the chord plane).",
+   "fix": "Chamfer the lens window outward at about 70 deg half-angle, or let the lens barrel protrude flush. Model the antenna at its catalog length.",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-20",
+   "source": "review",
+   "severity": "minor",
+   "part": "elevon_r",
+   "issue": "The TE is 1.01 mm (2 perimeters), which is fragile on a hinged surface that gets handled. The URDF joint and link names collide (elevon_l / elevon_r).",
+   "fix": "Raise te_min to 1.2 mm. Rename the URDF links (e.g. elevon_l_link).",
+   "found_commit": "8a14d0b0",
+   "found_time": "2026-11-01T21:02:12-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "8a14d0b0",
+    "e74072cf",
+    "1463c30b",
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "42b77bc8",
+   "resolved_time": "2026-11-01T21:38:38-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "horn",
+    "layout",
+    "nose",
+    "pod",
+    "splice"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-21",
+   "source": "review",
+   "severity": "major",
+   "part": "hatch",
+   "issue": "The hatch (x -5 to 205, 72 mm wide, 1.7 mm PLA) is held only at its ends: 2 x M3 at x 4 and a tongue under the skin at x 205-213. Along its sides it just rests on the ledges (parts/pod.py ledge, parts/hatch.py), and nothing stops it lifting. The pod top sits above the wing's upper surface, in the suction field, and the bay is pressurised by the nose ram-air vents. So the net outward load is about 0.5-1.5 kPa at 100-150 km/h. As a 200 mm simply supported plate strip (I = 72 x 1.7^3 / 12 = 29.5 mm^4, E about 3 GPa), 500 Pa already gives about 7 mm of mid-span lift, and more at speed. The hatch w",
+   "fix": "Add a second pair of M3 + inserts at mid-length. x 100-140 is clear of both sleeves at |y| 30-36: the main sleeve ends at about x 95 there and the rear sleeve starts at about x 155. Put ledge blocks there like the front ones. Also stiffen the panel: give it a slight crown (2-3 mm camber across the 72 mm) or two longitudinal 3 x 3 mm ribs at |y| about 25. They sit between the sleeves and the cut pl",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-22",
+   "source": "review",
+   "severity": "major",
+   "part": "hatch",
+   "issue": "The hatch's rear tongue covers the VTX antenna's exit hole. The tongue spans x 204-213 and |y| <= 30, 0.2 mm under the pod's top skin (hatch.py TONGUE_L = 8 from HATCH_X[1] = 205). The antenna hole is a 7 mm hole at x = ant_x = 212, y 0 (pod.py line 165), so x 208.5-215.5. The tongue is a separate part, so the hole is never cut through it, and 4.5 of the hole's 7 mm lie over the tongue. The antenna's 95 mm coax tube runs from the VTX's MMCX up through that hole, right where the tongue has to slide in. The hatch cannot be fitted with the antenna installed. The interference check misses it becau",
+   "fix": "Move ant_x to 220 (the param allows up to 225; check that the hole stays clear of the tail-top slope and the motor-mount bosses), or cut a 7.5 mm notch in the tongue at y 0. Let the vtx_ant proxy start at the VTX connector (z of the shelf + VTX height), so a future clash is caught.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-23",
+   "source": "review",
+   "severity": "major",
+   "part": "wing_l1",
+   "issue": "At one end of the elevon throw the pushrod hits the servo pocket's aft edge. The servo pocket spans x 184.75-215.25 (tab span + 1, centred on servo_x 200). The output axis is at x 205.6, z 3.8, 8.2 mm above the lower skin (skin_z -4.4). DESIGN.md specifies an 8 mm arm hole and the horn hole 12 mm under the hinge (x about 268, z about -12.6). At +25 deg throw the horn hole moves about 5 mm aft, so the arm swings about 40 deg aft and its hole rises to z about -2.4. The pushrod line then crosses x 215.25 at z about -3.1, which is 0.65 mm inside the lower skin (-3.73 there), plus the wire's 0.6 mm",
+   "fix": "Cut a pushrod exit slot through the lower skin from the pocket's aft wall to about x 235 (3 mm wide at y = horn_y, deep enough for the arm hole's full arc), or use a 10-11 mm arm hole with the 15 mm horn hole (same 1.4-1.5:1 ratio, hole lower). Catalog the KST arm's hole radii with a source. Add a static_torque requirement for servo_l / servo_r at the 0.20 N m hinge moment times the arm/horn ratio",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ad5e9179",
+   "resolved_time": "2026-11-02T14:22:51-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 3,
+   "active_minutes_est": 3,
+   "parts_redrawn": [
+    "elevon",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-24",
+   "source": "review",
+   "severity": "major",
+   "part": "elevon_lo",
+   "issue": "The outer elevon halves (60 % of the surface, the outboard and most flutter-prone part) are driven only through the 3 mm carbon joiner. It is glued in the inner half and a slip fit in the outer half: the bore is JOINER_D + 0.25 (elevon.py line 63). The rod lies about 5.3 mm from the hinge axis (4 mm aft, 3.5 mm up), so 0.125 mm of radial clearance gives about +-1.35 deg of free rotation for the outer half about its hinge tape. Free play on a control surface is the classic cause of limit-cycle flutter and buzz, and this airframe is meant to fly at 150-180 km/h (DESIGN.md). The last review's fre",
+   "fix": "Make the outer bore a zero-play fit and keep it removable: print it at 3.0 mm and ream it to a push fit, and lock it with a tape band across the split on both skins, or a 2 mm pin/grub screw across the joint. Better still, add a second, smaller rod (2 mm) further aft (about 15 mm from the hinge) so the two halves are keyed together at a long lever arm. Note the outer half's removal in the ASSEMBLY",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ad5e9179",
+   "resolved_time": "2026-11-02T14:22:51-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 3,
+   "active_minutes_est": 3,
+   "parts_redrawn": [
+    "elevon",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-25",
+   "source": "review",
+   "severity": "major",
+   "part": "pod",
+   "issue": "Plates are now one material each (fixed), but plate_2.3mf puts every PLA part in one job: the 310 mm pod, 4 wing segments standing 220-230 mm on 1-wall, 3 % infill, 4 elevon halves standing 126-189 mm on footprints about 40 x 5 mm, and the hatch standing 72 mm on a 1.7 mm edge. That is about 626 g and at least 400 min. On the A2L's moving bed, if any one slender part comes loose, the nozzle drags it through the others and the 312 g, 200-minute pod is lost with it. The last review asked for the pod alone and the tall parts kept apart. Only the material split was done.",
+   "fix": "Change export.plates (generally, not just for this project) to split a material group: put a part over about 200 mm tall or over about 3 h on its own plate, and keep tall slender parts (height/footprint > 15) apart from heavy ones. For this project: pod alone; wing segments 2 per plate; elevon halves + hatch together; PETG and TPU as now.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-26",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "The ESC (73 mm long) cannot drop in from above. Between the sleeves the gap is only about 61 mm at y 0 and 60 mm at |y| 15 (main sleeve back edge about x 82-89, rear sleeve front about x 143-149), and in its final place the ESC sits partly under both sleeves (4 mm under their undersides). It goes in only by tilting it about 14 deg and sliding it under the rear sleeve, with 12 and 14 AWG leads already soldered. That works but is fiddly, and ASSEMBLY.md step 17 just says 'fit esc'. Also, 'one cable tie round the shelf' is impossible: the shelf runs wall to wall.",
+   "fix": "Add the tilt-and-slide instruction to step 17 (or shorten esc_x travel so the ESC sits between the sleeves, e.g. mounted on its side). Add two 3 x 1.5 mm cable-tie slots through the shelf beside the ESC.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-27",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "Battery swap: the pack is reached only with the nose off (4 x M3 x 16 into inserts, every flight), and the strap's velcro sits 60-170 mm inside the bay with 6 mm over the pack, where you cannot close it by hand. That works only if the strap is a pre-closed loop the pack slides into, and nothing says so. A field battery swap that needs a hex key and 4 screws in a TPU nose will wear the inserts out.",
+   "fix": "In ASSEMBLY.md, say the strap is closed once into a snug loop through the tabs and the pack slides into it. Consider a quick-release nose: 2 screws plus a hook/tongue at the top, or captive thumb screws.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-28",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "Mass margin is thin: TWR 1.54 against 1.5 allows only about 33 g of growth (1389 g). The 1356 g estimate (printed 726 + on-board 562 + wiring) does not include epoxy, foam tape, hinge tape, CA, heat-shrink, 18 brass inserts or about 22 screws, which is typically 20-35 g on a build like this. The real airframe will likely sit at TWR about 1.50-1.52 or below.",
+   "fix": "Add the consumables and fasteners to the mass model (bom_extra items with weight_g), or take mass out of the pod: it is 312 g and 'overbuilt' at 12 % utilisation; e.g. 3 walls in the hatch-side skins away from the bosses, or lightening windows in the shelf.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-29",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "26 inside corners are still sharp: 16 are declared (fillet would face down), 10 are not (vent slot corners at x 238, the shelf front at x -5 / y +-47, and the ledge ends at x -3). 6 of them are in stressed zones. At 12 % peak utilisation this is not a strength issue, but the vent corners in the belly are where landing cracks start.",
+   "fix": "Give the belly vents 2 mm end radii (slot shape instead of a box) and fillet or declare the rest.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-30",
+   "source": "review",
+   "severity": "minor",
+   "part": "hatch",
+   "issue": "The hatch prints standing on its 1.7 mm edge (363 mm2 contact, flagged by the build), 218 mm long and 72 mm tall. Printed flat on its outer face it would have a smooth bed-side finish on the visible top and no wobble.",
+   "fix": "Print it on its outer face (print_rot so the top skin is on the bed). The tongue then prints above its 3 mm root as a short cantilever, or give the root a 45 deg chamfer.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-31",
+   "source": "review",
+   "severity": "minor",
+   "part": "splice_l",
+   "issue": "The splice plate is a 30 x 50 mm block standing about 3.5-5 mm proud of the lower skin, with exposed socket heads. It sits in the belly-landing slide zone. Only its plan-view edges are filleted, so its forward face is a square step that catches grass and adds drag. Same on splice_r.",
+   "fix": "Chamfer or round the leading and trailing lower edges (e.g. a 3 mm x 30 deg ramp at the front) and counterbore the screw heads flush.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf",
+    "1463c30b",
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "68b57bc9",
+   "resolved_time": "2026-11-02T16:03:47-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 104,
+   "active_minutes_est": 104,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "motor_mount",
+    "pod",
+    "splice",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-32",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "Still open from the last review: there is no TPU belly skid (brief: 'TPU where it lands'; the belly is PLA and only the nose is TPU). The RX's T antenna is still taped inside the pod beside the carbon tubes. The VTX output is not capped in DESIGN.md (800 mW in the pod, with a small inlet: two 8 mm nose vents).",
+   "fix": "Add a replaceable 2-3 mm TPU skid under the bay (bolted into the floor or glued). Route the RX antenna out through the wing root or the tail. Cap the VTX at 400-600 mW in DESIGN.md until a bench heat-soak test.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf",
+    "1463c30b",
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5e4641d6",
+   "resolved_time": "2026-11-02T14:28:04-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 8,
+   "active_minutes_est": 8,
+   "parts_redrawn": [
+    "elevon",
+    "hatch",
+    "pod",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-33",
+   "source": "review",
+   "severity": "minor",
+   "part": "motor_mount",
+   "issue": "Stale or inconsistent documents. The mount_strength 'why' in project.yaml still describes 'the pylon carries the raised motor ... 24 mm above the upper pod bolts', but there is no pylon now. DESIGN.md says 'stock M3 x 6' for the motor screws, while ASSEMBLY.md and the fastener table use M3 x 5 (2 mm in the motor, exactly the catalog minimum). The DESIGN.md CG note still uses the 372 g pack ('372 / 1331 g'); the pack is now 302 g. The plate's outer edges have no edge break. report.maker_notes is still empty.",
+   "fix": "Rewrite the mount_strength why for the flush mount. Choose M3 x 6 (3 mm engagement, the max depth) in both places. Update the CG sensitivity (302 / 1356: about 2.2 mm of CG per 10 mm of pack). Add a 0.5 mm chamfer on the outer edges of the mount.",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ad5e9179",
+   "resolved_time": "2026-11-02T14:22:51-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 3,
+   "active_minutes_est": 3,
+   "parts_redrawn": [
+    "elevon",
+    "wing"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-34",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l1",
+   "issue": "The 100 % modifiers are now in project.yaml and PRINT_SETTINGS.md (fixed in substance), but they are not written into the plate 3MF as modifier volumes. Each one has to be placed by hand in the slicer, 'sized and placed as below' from a text table, which is easy to miss on a 10-part plate.",
+   "fix": "Emit the modifier volumes into the per-part and plate 3MF (Bambu Studio supports modifier parts in the 3MF config).",
+   "found_commit": "e74072cf",
+   "found_time": "2026-11-02T14:19:48-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 3483 bytes",
+   "rounds_seen": [
+    "e74072cf"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ad5e9179",
+   "resolved_time": "2026-11-02T14:22:51-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 3,
+   "active_minutes_est": 3,
+   "parts_redrawn": [
+    "elevon",
+    "wing"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-35",
+   "source": "review",
+   "severity": "major",
+   "part": "wing_l1",
+   "issue": "The fixes depend on things the builder must do, and the build outputs never tell them. (a) The servo torque limit is no longer checked by a requirement. It is now only the DESIGN.md instruction 'use the 8-11 mm arm hole, at 11 mm the servo sees 50 %'. The slot geometry is also only proven for that range. (b) elevon.py prints the outer-half joiner bores at 3.0 mm (OUTER_FIT = 0) and relies on them being reamed to a push fit. (c) project.yaml esc.held_by: 'goes in through the hatch tilted ~30 deg ... then slides forward under the sleeves'. (d) strap.held_by: 'closed into a loop before the nose g",
+   "fix": "Engine (general, not just this project): have the ASSEMBLY.md step writer print each purchased item's `held_by` under its 'Fit X onto Y' line, and add a per-joint or per-item `assembly_note` field for actions that aren't about holding something (ream, choose hole, tape). Add a test for it. Project: put the arm-hole instruction on the servo step ('use the arm hole 8-11 mm from the spline; measure i",
+   "found_commit": "1463c30b",
+   "found_time": "2026-11-02T15:09:35-05:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "1463c30b"
+   ],
+   "status": "resolved",
+   "resolved_commit": "11226ae0",
+   "resolved_time": "2026-11-02T15:20:22-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 11,
+   "active_minutes_est": 11,
+   "parts_redrawn": [
+    "elevon",
+    "motor_mount"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-36",
+   "source": "review",
+   "severity": "minor",
+   "part": "elevon_lo",
+   "issue": "The aft joiner bore leaves only about 0.80-0.85 mm of PLA each side. I sliced out/parts/elevon_lo.stl and elevon_l.stl: the minimum is 0.80 mm round the aft rod and 0.85-0.98 mm round the front one. The docstring says about 0.9 mm and the wall check reports about 1.0 mm, so the checker misses these bore walls. Reaming a 0.8 mm printed wall to a push fit can bulge the skin or split it along the layer line. The loads are small (about 20 N of bearing per rod), so this is about durability and finish, not strength.",
+   "fix": "Move the aft rod to about 8 mm from the hinge (wall about 1.1 mm), or use a 2 mm rod for the aft key (the brief allowed this). Check why the wall-thickness check doesn't see bore-to-skin walls.",
+   "found_commit": "1463c30b",
+   "found_time": "2026-11-02T15:09:35-05:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "1463c30b",
+    "e273907f",
+    "40ade74f",
+    "3e0923de"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-37",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l1",
+   "issue": "Plate 3 still holds every tall, slender PLA part: 4 wing segments 220-230 mm tall on 1 wall, 4 elevon halves up to 189 mm tall on 40 x 5 mm footprints, and the hatch on supports. That is about 3.4 h and 317 g. The pod is now safe on its own plate, which was the main risk. But if one elevon half comes loose it can still knock over the other eight.",
+   "fix": "In export.plates, also separate slender parts (height/footprint > 15) from the rest, or cap them at 2-3 per plate.",
+   "found_commit": "1463c30b",
+   "found_time": "2026-11-02T15:09:35-05:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "1463c30b",
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "11226ae0",
+   "resolved_time": "2026-11-02T15:20:22-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 11,
+   "active_minutes_est": 11,
+   "parts_redrawn": [
+    "elevon",
+    "motor_mount"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-38",
+   "source": "review",
+   "severity": "minor",
+   "part": "hatch",
+   "issue": "Printed outer face down, only the flat centre band touches the bed. The rounded side edges (the pod's corner radius) and the rear of the panel (the tail-top slope) rise off the bed, and so does the 8 mm tongue, which hangs 0.2 + 1.7 mm over the bed. That is the 8.3 % 'needs support' warning, and support marks end up on the visible edges. The screw heads (M3 x 6, plain clearance holes) stand about 3 mm proud in the airflow on top. The edge labyrinth/lip the last review suggested was not added, so the side gaps can still open about 1 mm between screws at speed.",
+   "fix": "Counterbore or countersink the four hatch screws (use countersunk M3, or a 1.5 mm counterbore into a local pad). Put a 0.5 mm lip on the side edges. A paint-on support blocker under the tongue only is enough.",
+   "found_commit": "1463c30b",
+   "found_time": "2026-11-02T15:09:35-05:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "1463c30b"
+   ],
+   "status": "resolved",
+   "resolved_commit": "11226ae0",
+   "resolved_time": "2026-11-02T15:20:22-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 11,
+   "active_minutes_est": 11,
+   "parts_redrawn": [
+    "elevon",
+    "motor_mount"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-39",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l1",
+   "issue": "The pushrod is still not modelled. Its clearance through the new slot (about 0.5 mm at full up-throw with the 8 mm arm hole: rod at z -4.40 against the skin at -3.29 at the slot end x 221.75, rod radius 0.6) is a hand calculation, done in this review. A later change to servo_x, horn_y or the throw would not be caught. The vtx_ant proxy still starts at pod_top, so a coax-vs-tongue clash would also go unchecked.",
+   "fix": "Model the pushrod as a keep-out line from the arm hole to the horn hole, swept with the elevon joint. Start the vtx_ant proxy (or a keep-out) at the VTX's MMCX.",
+   "found_commit": "1463c30b",
+   "found_time": "2026-11-02T15:09:35-05:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "1463c30b",
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "11226ae0",
+   "resolved_time": "2026-11-02T15:20:22-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 11,
+   "active_minutes_est": 11,
+   "parts_redrawn": [
+    "elevon",
+    "motor_mount"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-40",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "DESIGN.md 'CG and balance' tells the builder to set the CG '10-13 % MAC ahead of the neutral point', but static_margin reports 9.2 % at bat_x 118. The documented target and the modelled airframe disagree.",
+   "fix": "Either move bat_x forward about 2 mm (to 10 %) or change the text to the reported 9 % (inside the 5-15 % requirement).",
+   "found_commit": "1463c30b",
+   "found_time": "2026-11-02T15:09:35-05:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "1463c30b"
+   ],
+   "status": "resolved",
+   "resolved_commit": "11226ae0",
+   "resolved_time": "2026-11-02T15:20:22-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 11,
+   "active_minutes_est": 11,
+   "parts_redrawn": [
+    "elevon",
+    "motor_mount"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-41",
+   "source": "review",
+   "severity": "minor",
+   "part": "motor_mount",
+   "issue": "The plate's outer edges still have no edge break, and report.maker_notes is still empty. The mount_strength why and the M3 x 5 / x 6 conflict are fixed now.",
+   "fix": "Add a 0.5 mm chamfer on the outer edges.",
+   "found_commit": "1463c30b",
+   "found_time": "2026-11-02T15:09:35-05:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "1463c30b"
+   ],
+   "status": "resolved",
+   "resolved_commit": "11226ae0",
+   "resolved_time": "2026-11-02T15:20:22-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 11,
+   "active_minutes_est": 11,
+   "parts_redrawn": [
+    "elevon",
+    "motor_mount"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_wing-42",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "ASSEMBLY.md step order contradicts its own notes. Step 21 fits the battery 'held by the strap', but the strap is only fitted in step 22, and step 22 says the strap must be closed into a loop first so the pack can slide into it. Step 2 fits the four spar tubes onto the pod before the wings go on in step 3, but their held_by says they are epoxied into the wing segments' bores. Done in that order, epoxy on a tube being slid through the wing could also wipe onto the pod sleeve and glue the wing on for good.",
+   "fix": "Put the strap before the battery in assembly.order. Make the spar tubes a bench step with the wing segments (epoxy them into wing_l1/l2 first, let it cure, then slide them into the pod), or add a 'dry in the pod sleeve, no epoxy here' note.",
+   "found_commit": "e273907f",
+   "found_time": "2026-11-02T15:59:06-05:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "68b57bc9",
+   "resolved_time": "2026-11-02T16:03:47-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 5,
+   "active_minutes_est": 5,
+   "parts_redrawn": [
+    "elevon",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-43",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l1",
+   "issue": "Formatting slip in the new engine output. The item_notes writer splits assembly_note at its colons, so step 4 prints a bare 'Pushrod:' bullet followed by a sibling bullet with the text. Step 10 splits 'Ream ... first (they print at 3.0 mm, slightly under):' from 'A snug push fit...'. It is readable but looks broken. Steps 5 and 11 also say nothing about the epoxy that DESIGN.md / the BOM need there (inner-to-outer wing joint, fins into their slots), because printed parts have no held_by.",
+   "fix": "In kerf/ship.py, keep an assembly_note as one bullet, or nest the sub-bullets under it. Add assembly_note to wing_l2/r2 ('epoxy the joint faces and the spar into ...') and to fin_l/r ('epoxy the tab into the slot').",
+   "found_commit": "e273907f",
+   "found_time": "2026-11-02T15:59:06-05:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "68b57bc9",
+   "resolved_time": "2026-11-02T16:03:47-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 5,
+   "active_minutes_est": 5,
+   "parts_redrawn": [
+    "elevon",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-44",
+   "source": "review",
+   "severity": "minor",
+   "part": "hatch",
+   "issue": "Carried over: 8.3 % of the surface needs support (the tongue and the rounded edges lift off the bed). The M3 x 6 heads stand about 3 mm proud. There is no edge lip, so the side gaps can open between screws at speed.",
+   "fix": "Countersunk M3, or a counterbore into local pads; a 0.5 mm side lip; a paint-on support blocker under the tongue only.",
+   "found_commit": "e273907f",
+   "found_time": "2026-11-02T15:59:06-05:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "e273907f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "68b57bc9",
+   "resolved_time": "2026-11-02T16:03:47-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 5,
+   "active_minutes_est": 5,
+   "parts_redrawn": [
+    "elevon",
+    "splice"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-45",
+   "source": "review",
+   "severity": "blocker",
+   "part": "splice_l",
+   "issue": "splice_l and splice_r have no M3 clearance holes. Evidence: out/parts/splice_l.stl and splice_r.stl have Euler number 2 (genus 0, so no through-hole), and sections at z 0.2-4.7 mm have no inner loops. I instrumented a single-part build. The two hole cuts work: volume 5319 -> 5282.7 -> 5251.1 mm3, and the plate is a Solid. Then `fillet(plate.edges().filter_by(Axis.Z), 2.0)` works on the edges' topo_parent, which is the plate from BEFORE the cuts (5319 mm3, no inner wires), so the result (5306.7 mm3) has no holes. The new `chamfer(...)` line does the same. As printed, the plates cannot be screwe",
+   "fix": "In splice.py, do the plan-view fillet and the belly chamfer on the blank before the skin cut and the hole cuts. Or use the method form on the current shape: `plate = plate.fillet(2.0, plate.edges().filter_by(Axis.Z))`, then `plate = plate.chamfer(1.5, None, plate.faces().sort_by(Axis.Z)[0].outer_wire().edges())`. Then confirm genus 2 on the STL. Engine: in ctx.finish or the fastener check, probe e",
+   "found_commit": "40ade74f",
+   "found_time": "2026-11-02T16:28:49-05:00",
+   "review_round": 5,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "40ade74f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3e0923de",
+   "resolved_time": "2026-11-02T16:52:29-05:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 24,
+   "active_minutes_est": 24,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-46",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l1",
+   "issue": "The new epoxy step (wing_l1/r1 assembly_note) says to butter the tube, slide the segment back on and bolt the root, then 'wipe off any epoxy at the root face'. When the segment slides inboard over a buttered tube, its bore scrapes the epoxy toward the root face. The root is bolted to the pod side straight away, so that bead ends up trapped between the root face and the pod, where it cannot be wiped. That can glue the wing to the pod, or the tube into the sleeve: the very thing the note is meant to prevent. Also, the note is split at its ';', which leaves a bullet ending in ';'.",
+   "fix": "Change the note: wrap the length of each tube that sits in the pod in one layer of packing tape (or wax it), and put a strip of tape over the pod's side face at the root. Butter only the outboard two-thirds of the tube's length inside the segment, slide the segment on, and bolt the root so the pod is the alignment jig. After it cures, take the segment off once to peel the tape and clean the bead. ",
+   "found_commit": "40ade74f",
+   "found_time": "2026-11-02T16:28:49-05:00",
+   "review_round": 5,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "40ade74f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3e0923de",
+   "resolved_time": "2026-11-02T16:52:29-05:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 24,
+   "active_minutes_est": 24,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-47",
+   "source": "review",
+   "severity": "minor",
+   "part": "pod",
+   "issue": "Still open (tracked as its own PLAN item, not new): no TPU belly skid; consumables missing from the mass model (TWR 1.53 vs 1.5); slender-part spacing on the plates; hatch tongue support, flush heads and side lip (8.3 % support); proud socket heads on the splice plates (this round added the 1.5 mm belly chamfer, which does the ramp job). Also still open from earlier rounds: the pushrod has no keep-out, the vtx_ant proxy starts at pod_top, the RX antenna is inside the pod, there is no VTX power cap, TE_MIN is 1.0 (elevon walls 1.02-1.04 mm), the URDF joint and link names collide, and the modifi",
+   "fix": "As listed in the PLAN item and the previous review.",
+   "found_commit": "40ade74f",
+   "found_time": "2026-11-02T16:28:49-05:00",
+   "review_round": 5,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "40ade74f",
+    "3e0923de"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_wing-48",
+   "source": "review",
+   "severity": "minor",
+   "part": "wing_l1",
+   "issue": "The new note (wing_l1/r1 assembly_note, ASSEMBLY.md lines 66-74) has the right idea: the pod becomes the alignment jig, no epoxy reaches the pod, and you clean once after cure. But it says to wrap the pod-side length of each tube in tape and then slide it back into the pod sleeve. pod.py cuts that bore at od + 0.2 (0.1 mm radial), and FDM holes print about 0.1 mm small, so the tube is already a near-zero fit. One layer of packing tape (about 0.05 mm, more at the overlap) will jam the tube or get scraped off at the sleeve mouth. The note also does not say that the tube has to come out of the po",
+   "fix": "On the tube's pod-side length, use a zero-thickness release agent (paste wax or a thin film of petroleum jelly, wiped off after cure) in place of tape. Keep the tape strip on the pod's side face round the root. Add 'slide each tube out of the pod to treat its pod-side length, then refit it' so the order is clear.",
+   "found_commit": "3e0923de",
+   "found_time": "2026-11-02T16:52:29-05:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "10 real part files, median 4383 bytes",
+   "rounds_seen": [
+    "3e0923de"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 48,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 48
+  },
+  "open": 0,
+  "active_minutes_est": 1037,
+  "parts_redrawn": [
+   "elevon",
+   "hatch",
+   "horn",
+   "layout",
+   "motor_mount",
+   "nose",
+   "pod",
+   "splice",
+   "wing"
+  ],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}
