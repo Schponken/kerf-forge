@@ -32,6 +32,24 @@ def test_real_pico_model_matches_catalog_and_keeps_sites():
     assert len(s.solids()) == 17          # the vendor's parts, untouched
 
 
+def test_real_pca9685_model_matches_catalog_and_keeps_sites():
+    """The source model includes solder tails below the PCB; preserve its bounds and mounting holes."""
+    from kerf import catalog, vendor
+    spec = {"catalog": "boards.pca9685_adafruit", "proxy": "step", "base": "board",
+            "model": "adafruit_815_pca9685.step", "model_pos": [-29.21, -6.223, 0], "groups": {"holes": "p"}}
+    # Building validates all bounding-box faces and probes every mounting hole using vendor.py's existing limits.
+    s, ref = _build(spec), _board(spec)
+    e = catalog.get(spec["catalog"])
+    bb = s.bounding_box()
+    assert bb.min.Z == pytest.approx(-e["component_height_below"], abs=vendor.STEP_BBOX_TOL)
+    assert bb.max.Z == pytest.approx(e["thickness"] + e["component_height"], abs=vendor.STEP_BBOX_TOL)
+    assert sorted(s.joints) == sorted(ref.joints)
+    assert len(s.kerf_sites) == 4
+    assert [(x.group, x.screw, x.loc.position, x.grip) for x in s.kerf_sites] == [
+        (x.group, x.screw, x.loc.position, x.grip) for x in ref.kerf_sites]
+    assert len(s.solids()) == 100         # Adafruit's source assembly, unchanged
+
+
 @pytest.mark.parametrize("change,axis", [({"model_pos": [-24.5, 10.5, 0.5]}, "X"),       # 1 mm off along the board
                                          ({"model_pos": [-25.5, 10.5, 1.5]}, "Z"),       # floating 1 mm above its joint
                                          ({"model_rot": [-90, -90, 0], "model_pos": [-25.5, 10.5, -0.5]}, "Z")])  # upside down

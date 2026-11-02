@@ -174,7 +174,7 @@ def test_no_duplicate_keys():
 
 def test_board_proxy_keeps_mounting_holes_clear():
     """The components block must not cover the mounting holes, or no driver could reach the screws (robot_arm PCA9685)."""
-    from build123d import Align, Cylinder, Pos
+    from build123d import Align, Box, Cylinder, Pos
     e = catalog.get("boards.pca9685_adafruit")
     s = proxies.build(Ctx("pca", {}), {"catalog": "boards.pca9685_adafruit", "proxy": "board", "groups": {"holes": "g"}})
     t, comp = catalog.num(e, "thickness"), catalog.num(e, "component_height")
@@ -182,8 +182,19 @@ def test_board_proxy_keeps_mounting_holes_clear():
     for (x, y) in e["holes"]:
         probe = Pos(x, y, t + 0.01) * Cylinder(r, comp - 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
         assert (s & probe).volume < 1e-6
-    # ... while the parts block still exists between the holes
-    assert s.bounding_box().size.Z == pytest.approx(t + comp, abs=0.01)
+    # Adafruit's STEP includes solder tails below the PCB (catalog/models/SOURCES.md).
+    below = catalog.num(e, "component_height_below")
+    assert s.bounding_box().min.Z == pytest.approx(-below, abs=0.01)
+    assert s.bounding_box().max.Z == pytest.approx(t + comp, abs=0.01)
+    # Components remain between the holes, on both sides of the PCB.
+    top = Pos(0, 0, t + 0.01) * Cylinder(r, comp - 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    assert (s & top).volume == pytest.approx(top.volume)
+    x0, y0, x1, y1 = e["component_below_box"]
+    underside = Pos(x0, y0, -below + 0.01) * Box(x1 - x0, y1 - y0, below - 0.02, align=(Align.MIN, Align.MIN, Align.MIN))
+    assert (s & underside).volume == pytest.approx(underside.volume)
+    for (x, y) in e["holes"]:
+        probe = Pos(x, y, -below + 0.01) * Cylinder(r, below - 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        assert (s & probe).volume < 1e-6
 
 
 def test_rod_length_may_be_a_param_expression():

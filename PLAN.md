@@ -212,6 +212,7 @@ Work these in order unless one is blocked; each item is done only with tests and
 - [ ] Watertight + thermal: seal / gasket design rules and checks, wall thickness for water, component heat (ESC / motor / regulator) vs enclosure; used by one project
 - [ ] Ship it printer loop (opt-in only): print fit coupons on the A2L through the Bambu integration, read the measurements (entered or camera), apply them (`kerf calibrate`), send the final plates; dry-run tested
 - [ ] Self-growing catalog: research a missing part, validate against the vendor's STEP (bbox + holes), add it with sources automatically; tested on one new part
+- [x] Board proxy clearance regression: verify source-backed top and underside board envelopes while preserving screw access; fix the failing catalog mounting-hole test at its cause.
 
 ## Prove the whole system: code, motion, aero, flight, electronics (Spencer, 2026-11-01; Project doc kerf-tool-gaps.md)
 Each tool is adopted only where it beats what Kerf already does; the reason goes in STATUS.md. Reachable from the cloud: downloads.arduino.cc, PyPI, apt, firmware.ardupilot.org, gitlab.com/kicad (github.com source archives are blocked by the proxy).
