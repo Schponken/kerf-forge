@@ -499,10 +499,10 @@ def write(proj, out: Path, res: dict) -> dict:
     (kdir / "kerf_symbols.kicad_sym").write_text(res["_lib"].read_text(encoding="utf-8"), encoding="utf-8")
     (kdir / f"{proj.dir.name}.net").write_text(c.generate_netlist(), encoding="utf-8")
     cov = m["coverage"]
-    (kdir / "erc.txt").write_text(
+    (kdir / "erc.txt").write_text(encoding="utf-8", data=
         f"SKiDL ERC for {proj.dir.name}: {len(m['parts'])} parts, {len(m['nets'])} nets, {len(m['nc'])} no-connect flags\n"
         f"KiCad symbols: {', '.join(cov['kicad_symbol']) or '-'}\npin tables: {', '.join(cov['pin_table']) or '-'}\n\n"
-        + ("\n".join(res["erc"]) or "no ERC errors or warnings") + "\n", encoding="utf-8")
+        + ("\n".join(res["erc"]) or "no ERC errors or warnings") + "\n")
     files += [f"kicad/{proj.dir.name}.net", "kicad/kerf_symbols.kicad_sym", "kicad/erc.txt"]
     import shutil
     import tempfile

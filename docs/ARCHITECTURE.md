@@ -37,6 +37,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/heads.py` | Socket screw heads as solids fixed to the part they seat on (catalog head_d x head_h), so interference and every sweep check a head standing proud of a moving part; countersunk heads are skipped |
 | `kerf/shanks.py` | Screw bodies: after fastener sizing, each screw (head seat to tip, 0.8 d cylinder) must not run into any item but the two it joins (a tip poking out of a nut into a neighbour, a screw reaching a prop disc) |
 | `kerf/electrical.py` | Complete electrical system from `electrical:` + `wiring:`: power tree, current per item and run (avg + peak), hover power (momentum theory), ratings (battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltage), routed wire lengths |
+| `kerf/explain.py` | Plain-language problem explanations for Studio, CLI and review packs. |
 | `kerf/circuit.py` | Electronics as a circuit: `wiring:` -> pin-level KiCad netlist (pins from catalog/pins.json: KiCad symbols from kicad-symbols or sourced pin tables), SKiDL ERC as a check (two outputs on one net, a power input with no source, unwired pins), conductor/terminal-capacity checks; out/kicad/<p>.net / .kicad_sch / erc.txt and out/schematic.svg / .pdf. Tests: tests/test_circuit.py |
 | `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
 | `kerf/req_gears.py` | Requirement `gear_bending`: Lewis tooth bending of a spur pair at actuator stall |
@@ -418,3 +419,5 @@ review stands, but the shipped ASSEMBLY.md / BOM / renders need `kerf build` (ve
 ## Definition of done (`kerf verify`)
 pytest passes; every project builds with `ok: true`; every project has a design-reviewer `review.json` with verdict
 PASS for the current fingerprint; every eval's `acceptance.py` passes on a fresh report; PLAN.md has no unchecked box.
+
+Per-part `modifiers` describe local print-setting volumes: `where`, `size`, `infill`, `walls` and `why`. Add these manually in the slicer; `kerf/export.py` lists the required settings in PRINT_SETTINGS.md.

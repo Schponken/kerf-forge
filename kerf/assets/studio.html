@@ -325,6 +325,34 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 @media (max-width:900px){body{flex-direction:column;overflow:auto}#side{width:100%;height:auto;max-height:42vh}.grid2,.howit{grid-template-columns:1fr}#mc{width:calc(100vw - 36px)}}
+.grid2 > *, .howit > * {min-width:0}
+.head h1,.desc,.card {overflow-wrap:anywhere}
+.card {min-width:0}
+.tabs {overflow-x:auto;flex-shrink:0}
+.mats {overflow-x:auto}
+@media (max-width:900px){
+  html,body {height:100%;overflow:hidden}
+  #side {height:auto;max-height:38vh;min-height:0}
+  .brand {padding:10px 14px 6px}
+  #newbtn {padding:7px;margin-bottom:6px}
+  #search {padding:6px 10px;margin-bottom:4px}
+  #plist {min-height:56px}
+  #jobs {padding:6px 12px;max-height:80px;flex-shrink:0}
+  #main {min-height:0}
+  .head {padding:16px 16px 0}
+  .head h1 {font-size:22px}
+  .tabs {padding:0 16px}
+  .tab {padding:10px}
+  .body {padding:16px 16px 90px}
+  .grid2,.howit {grid-template-columns:minmax(0,1fr)}
+  .card {padding:14px}
+  .param .top {flex-wrap:wrap}
+  .param .rng {min-width:0}
+  .param input[type=range] {min-width:0}
+  .menu {max-width:calc(100vw - 32px)}
+  .menu.modes button {min-width:0;white-space:normal}
+}
+
 </style>
 </head>
 <body>
@@ -449,8 +477,9 @@ async function select(name, keepTab) {
   S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.work = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
+  $("#main").innerHTML = `<div class="body"><p role="status">Loading project…</p></div>`;
   let d;
-  try { d = await api(`/api/project/${name}`); } catch (e) { if (ticket === S.ticket) $("#main").innerHTML = `<div class="body"><div class="banner bad">${esc(e.message)}</div></div>`; return; }
+  try { d = await api(`/api/project/${name}`); } catch (e) { if (ticket === S.ticket) $("#main").innerHTML = `<div class="body"><div class="banner bad" role="alert">Couldn’t load this project: ${esc(e.message)}</div><button onclick="select(S.sel)">Try again</button></div>`; return; }
   if (ticket !== S.ticket) return;
   S.detail = d;
   renderProject();
@@ -461,7 +490,7 @@ function statusPill(p) {
   if (p.running && p.running.length) return `<span class="pill info">● working…</span>`;
   if (!p.built) return `<span class="pill">not built yet</span>`;
   if (!p.ok && p.stubs) return `<span class="pill info">✎ being designed: ${p.stubs} part${p.stubs == 1 ? "" : "s"} not modelled yet</span>`;
-  return p.ok ? `<span class="pill ok">✓ ready to print</span>` : `<span class="pill bad">${p.problems} problem${p.problems == 1 ? "" : "s"} to fix</span>`;
+  return p.ok ? `<span class="pill ok">✓ checks pass</span>` : `<span class="pill bad">${p.problems} problem${p.problems == 1 ? "" : "s"} to fix</span>`;
 }
 function renderProject() {
   const d = S.detail; if (!d) return;
@@ -506,6 +535,7 @@ function renderProject() {
           </div></span>
       </div>
     </div>
+    ${S.settings.autofix ? '<p class="note" style="margin:0 16px 10px">Auto-fix is on: a failed build can use your Claude Code plan and change this design. Turn it off under More.</p>' : ''}
     <nav class="tabs" id="tabs">${tabs.map(([k, l]) => `<button class="tab ${S.tab === k || (k === "files" && S.tab === "docs") ? "sel" : ""}" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}<span class="uline" id="uline"></span></nav>
     <div class="body" id="tabbody"></div>`;
   moveUline(); renderTab();
@@ -708,7 +738,10 @@ function compareTable(saved, tried) {   // the saved build's result next to the 
 }
 function setParam(k, v, live) {
   const p = S.detail.params.find(x => x.key === k); v = parseFloat(v);
-  if (isNaN(v)) return;
+  if (!Number.isFinite(v) || (p.bounded && (v < p.min || v > p.max))) {
+    toast("Value not changed", `${p.label}: enter a number${p.bounded ? ` from ${p.min} to ${p.max}` : ""}${p.unit ? " " + p.unit : ""}.`, "bad");
+    renderTab(); return;
+  }
   if (Math.abs(v - p.value) < 1e-9) delete S.edits[k]; else S.edits[k] = v;
   if (live) { const r = document.querySelector(`#r_${k}`); r.parentElement.querySelector("input[type=number]").value = v;
     r.closest(".param").classList.toggle("changed", k in S.edits); return; }
@@ -1368,14 +1401,17 @@ async function quitApp() {
     if (!confirm(`Still running:\n• ${j.running.join("\n• ")}\n\nStop ${j.running.length > 1 ? "them" : "it"} and quit?`)) return;
     r = await fetch("/api/quit", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({force: true})}).catch(() => null);
   }
-  closedScreen();
+  closedScreen(true);
 }
-function closedScreen() {
+function closedScreen(quit = false) {
   S.closed = true;
   document.body.innerHTML = `<div style="margin:auto;text-align:center;animation:fadeUp .4s both">
     <div class="logo" style="width:64px;height:64px;margin:0 auto 18px;border-radius:18px"><svg width="32" height="32" viewBox="0 0 30 30"><path d="M8 24V6m0 9 11-9m-7 6 9 12" stroke="#160a03" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <h2 style="margin:0 0 6px">Kerf Studio is closed</h2><p class="note">You can close this window. Click the Dock icon to open it again.</p></div>`;
-  setTimeout(() => window.close(), 400);
+    <h2 style="margin:0 0 6px">${quit ? "Kerf Studio is closed" : "Connection to Kerf Studio lost"}</h2>
+    <p class="note">${quit ? "You can close this window." : "The app may still be running. Reconnect to check your projects and jobs."}</p>
+    ${quit ? "" : '<button class="primary" onclick="location.reload()">Reconnect</button>'}
+    <p class="note">To start it again, open Kerf Studio on your Dock or run<br><code>.venv/bin/kerf studio --no-open</code> in the Kerf Forge folder.</p></div>`;
+  if (quit) setTimeout(() => window.close(), 400);
 }
 
 addEventListener("resize", moveUline);

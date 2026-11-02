@@ -269,34 +269,40 @@ def status() -> int:
 
 
 def new(name, title) -> int:
+    import re
+    if not re.fullmatch(r"[a-z][a-z0-9_]{1,40}", name):
+        _p("Choose a folder name with 2–41 lowercase letters, numbers or underscores, starting with a letter (for example desk_arm).")
+        return 1
     d = ROOT / "projects" / name
     if d.exists():
         _p(f"projects/{name} already exists")
         return 1
     (d / "parts").mkdir(parents=True)
-    text = (f"name: {title}\nprinter: Bambu Lab A2L\nparams: {{}}\nparts: {{}}\npurchased: {{}}\nassembly:\n  root: TODO\n"
+    import yaml
+    title_yaml = yaml.safe_dump({"name": title}, allow_unicode=True, sort_keys=False).rstrip()
+    text = (f"{title_yaml}\nprinter: Bambu Lab A2L\nparams: {{}}\nparts: {{}}\npurchased: {{}}\nassembly:\n  root: TODO\n"
             "  joints: []\nrequirements: []\nuse_story:              # who, where, how often, what goes wrong (kerf/usestory.py)\n"
             "  who: TODO\n  where: [indoor]\n  how_often: TODO\n  goes_wrong: []\n")
     (d / "project.yaml").write_text(text, encoding="utf-8")
-    _p(f"created projects/{name}")
+    _p(f"Created starter files in projects/{name}. Add parts and an assembly before building; for an AI-generated design, use New design in Kerf Studio.")
     return 0
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="kerf", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("doctor")
-    c = sub.add_parser("check"); c.add_argument("project"); c.add_argument("--quick", action="store_true")
-    b = sub.add_parser("build"); b.add_argument("project")
+    sub.add_parser("doctor", help='Check dependencies and headless rendering.', description='Check dependencies and headless rendering.')
+    c = sub.add_parser("check", help='Check geometry, fit, motion and strength without making print files.', description='Check geometry, fit, motion and strength without making print files.'); c.add_argument("project"); c.add_argument("--quick", action="store_true")
+    b = sub.add_parser("build", help='Check a project and create print plates, guides and a 3D viewer.', description='Check a project and create print plates, guides and a 3D viewer.'); b.add_argument("project")
     rq = sub.add_parser("req", help="evaluate just these requirements (ids or check names; none = all) on the assembled "
                                     "project: seconds instead of a full check")
     rq.add_argument("project"); rq.add_argument("ids", nargs="*")
-    v = sub.add_parser("verify"); v.add_argument("--fast", action="store_true")
+    v = sub.add_parser("verify", help='Run repository tests, project checks, reviews and evaluations.', description='Run repository tests, project checks, reviews and evaluations.'); v.add_argument("--fast", action="store_true")
     v.add_argument("--all-failures", action="store_true", help="don't stop pytest at the first failure (batched runs)")
-    r = sub.add_parser("review-status"); r.add_argument("project")
-    n = sub.add_parser("new"); n.add_argument("name"); n.add_argument("title")
-    sub.add_parser("status")
-    k = sub.add_parser("calibrate"); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
+    r = sub.add_parser("review-status", help='See whether an independent review covers the current design.', description='See whether an independent review covers the current design.'); r.add_argument("project")
+    n = sub.add_parser("new", help='Create a project folder and starter files.', description='Create a project folder and starter files.'); n.add_argument("name"); n.add_argument("title")
+    sub.add_parser("status", help='List project names and their build and review status.', description='List project names and their build and review status.')
+    k = sub.add_parser("calibrate", help='Make a fit-test coupon for your printer and material.', description='Make a fit-test coupon for your printer and material.'); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
     f = sub.add_parser("feedback", help="fit measurements for a material (calibration), or a finding on a built project "
                                         "(--what / --note / --file), or --learn from every recorded finding")
     f.add_argument("material", nargs="?", help="a material (calibration reports follow) or a project name")
@@ -305,14 +311,14 @@ def main(argv=None) -> int:
     f.add_argument("--case"); f.add_argument("--at"); f.add_argument("--file", action="append", default=[])
     f.add_argument("--learn", action="store_true"); f.add_argument("--apply", action="store_true")
     f.add_argument("--printer", default=None)
-    st = sub.add_parser("studio"); st.add_argument("--port", type=int, default=8765); st.add_argument("--no-open", action="store_true")
+    st = sub.add_parser("studio", help='Open the local point-and-click app.', description='Open the local point-and-click app.'); st.add_argument("--port", type=int, default=8765); st.add_argument("--no-open", action="store_true")
     st.add_argument("--idle-exit", type=float, default=None, metavar="SECONDS", help="quit when no window is open and nothing runs")
     ps = sub.add_parser("printer", help="connect Kerf to the Bambu printer on the LAN (setup) or read its state (status)")
     ps.add_argument("what", choices=["setup", "status"]); ps.add_argument("--host"); ps.add_argument("--code")
     ps.add_argument("--serial", default=None)
-    pr = sub.add_parser("print"); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
+    pr = sub.add_parser("print", help='Slice existing plates, open them, or send a selected plate to the printer.', description='Slice existing plates, open them, or send a selected plate to the printer.'); pr.add_argument("project"); pr.add_argument("--dry-run", action="store_true")
     pr.add_argument("--send", type=int, default=None, metavar="PLATE"); pr.add_argument("--open", action="store_true")
-    fd = sub.add_parser("find"); fd.add_argument("query"); fd.add_argument("--project", default=None)
+    fd = sub.add_parser("find", help='Search for existing models before making a new design.', description='Search for existing models before making a new design.'); fd.add_argument("query"); fd.add_argument("--project", default=None)
     pc = sub.add_parser("price", help="price parts for a quote: kerf price servos.MG996R:2 screw:M3x8:socket:20 --grams 120")
     pc.add_argument("items", nargs="*"); pc.add_argument("--grams", type=float, default=0.0); pc.add_argument("--material", default="PETG")
     pc.add_argument("--json", action="store_true")
@@ -329,12 +335,27 @@ def main(argv=None) -> int:
     fd.add_argument("--limit", type=int, default=8); fd.add_argument("--measure", type=int, default=4)
     for k in ("--add", "--title", "--license", "--dims", "--source"):
         fd.add_argument(k, default=None)
-    g = sub.add_parser("gallery"); g.add_argument("projects", nargs="*")
+    g = sub.add_parser("gallery", help='Create a gallery of built projects.', description='Create a gallery of built projects.'); g.add_argument("projects", nargs="*")
     sm = sub.add_parser("simulate", help="MuJoCo motion simulation of the URDF: servo limits, home hold, grip_hold / joint_speed / drop_impact")
     sm.add_argument("project")
     fw = sub.add_parser("firmware-check", help="compile + simulate the project's servo bring-up program (kerf/fwcheck.py)")
     fw.add_argument("project")
+    for parser in sub.choices.values():
+        if parser.description is None:
+            parser.description = f"{parser.prog}: use the options below; project names are listed by `kerf status`."
+        for action in parser._actions:
+            if action.dest == "project" and not action.help:
+                action.help = "project folder name (see kerf status), or a path containing project.yaml"
     a = ap.parse_args(argv)
+    if a.cmd == "studio" and not 1 <= a.port <= 65535:
+        ap.error("port must be from 1 to 65535")
+    if getattr(a, "project", None):
+        from . import project as P
+        try:
+            P.resolve_dir(a.project)
+        except P.ProjectError:
+            _p(f"Project '{a.project}' was not found. Run `kerf status` to see project names, or pass a folder containing project.yaml.")
+            return 1
     sys.path.insert(0, str(ROOT))
     if a.cmd == "doctor":
         return doctor()
@@ -356,6 +377,9 @@ def main(argv=None) -> int:
     if a.cmd == "review-pack":
         from . import project as P, reviewpack
         proj = P.load(a.project)
+        if not (proj.dir / "out" / "report.json").exists():
+            _p(f"No build report yet. Run `kerf build {a.project}` first, then try review-pack again.")
+            return 1
         rep = json.loads(proj.out("report.json").read_text(encoding="utf-8"))
         _p(str(reviewpack.write(proj, rep, proj.out("report.json").parent)))
         return 0

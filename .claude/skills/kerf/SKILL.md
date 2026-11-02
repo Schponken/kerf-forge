@@ -219,3 +219,18 @@ Drives (`kerf/drives.py`): `spur_pair` (gears at the right centre distance), `be
 
 Features (`kerf/features.py`): `channel`, `shell`, `gusset`, `teardrop_hole`, `threaded_rod`/`threaded_hole`
 (printed, >= M6), `gear_pair`, `snap_hook` and `living_hinge` (strain-checked), `label`, `pockets`, `safe_fillet`.
+
+### Motion and aircraft checks
+
+| Check | Inputs | What it checks |
+|---|---|---|
+| `grip_hold` | `joint` (the grip servo's joint), `pads` [moving jaw point, fixed jaw point] (item.label), `mass_g`, `friction` (number or catalog `friction.<jaw>-<object>`), `width_mm`, `size_mm`, `pad_t_mm`, `pad_mm`, `pose`, `torque_fraction` (0.5), `shake_g` (1), `shake_hz` (2), `max_slip_mm` (1), `actuator` | worst slip of the object across the jaws under gravity + the shake on three axes (mm) |
+| `joint_speed` | `end` (pose), `max_s`, `start` (pose, default home), `payload_g`, `payload_at`, `band_deg` (3) | time until every servo joint stays within band_deg of `end` (s; none = never) |
+| `drop_impact` | `part`, `at` (item.label hit point), `height_mm`, `radius_mm` (surface radius at the hit), `subtree` (joint: what falls; default all), `pose`, `down` (assembly-frame direction to the floor), `floor` (rigid or a catalog material), `payload_g`, `payload_at`, `fea` {`fixed`, `direction`, `sf`, `max_disp_mm`, `mesh_size`, `radius`} or `max_force_n` | peak contact force (N); limit = the force the part's FEA (crash case) allows |
+| `prop_ground` | `min_mm`, `props`, `up` | lowest prop disc above the ground plane the airframe stands on (mm) |
+| `static_margin` | `min` (0.05), `max` (0.15), `wing` (param prefix, `wing_`) | (neutral point x - assembled CG x) / MAC (range) |
+| `wing_loading` | `max_g_dm2`, `wing` | all-up mass / wing area (g/dm²) |
+| `stall_speed` | `max_kmh`, `cl_max` (wing; else 0.9 x airfoil clmax x cos quarter-chord sweep), `airfoil`, `wing` | sea-level stall speed (km/h) |
+| `spar_bending` | `tubes` (catalog tube paths in one half), `y_root` (mm, where they leave the centre section), `load_factor` (6), `sf` (1.5), `wing` | spar stress at y_root under load_factor g, elliptical lift, tubes sharing by E I / (strength / sf) |
+| `static_margin_tail` | `min`, `max`, `wing`, `tail` (param prefixes, `htail_` with its own `x_le0`), `halves` {right: item, left: item} + `root_y` (pivoting wing halves), `pose`, `eta_t` (0.9), `downwash`, `fuselage` {length_mm, width_mm, k_fus} | (NP - CG) / spread MAC of a wing + tail aircraft at the pose; NP from Raymer 12.6 lift slopes, 2 a / (pi A) downwash, strip-theory wing AC |
+| `fold_hinge_moment` | `joint`, `item`, `side`, `speed_kmh`, `cd`, `cl`, `actuator` or `stall_kgcm`, `ratio`, `max_fraction` (0.5), `root_y` | worst aerodynamic moment (kg·cm) about a wing sweep / fold joint over its range vs stall x ratio x fraction |
