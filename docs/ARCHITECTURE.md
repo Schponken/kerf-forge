@@ -197,6 +197,8 @@ Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each funct
 | `stop_impact` | `joint`, `part`, `fixed`, `loads` (stop contact), `speed_dps` / `actuator`, `sf` | von Mises p99.9 when the joint hits its stop (MPa) |
 | `natural_freq` | `part`, `fixed`, `loads` (mass point + direction), `carried_g` / `carried`, `excitation` ({hz} or {motor, throttle, prop / blades}), `min_ratio` / `separation` | first natural frequency (Hz) vs excitation |
 | `repair_access` | `parts`, `ball_end_ok` (true) | screws holding the parts that no key reaches on the finished device |
+| `planetary_bending` | `module`, `z_sun`, `z_planet`, `z_ring`, `n_planets`, `width`, `torque_nmm` (on the sun), `material`, `sf`, `direction`, `k_gamma` | Lewis stress on the most loaded planet (MPa); fails on impossible tooth counts |
+| `worm_drive` | `module`, `starts`, `z_wheel`, `worm_d`, `width`, `torque_out_nmm`, `material`, `sf`, `mu` / `friction`, `must_self_lock` | wheel Lewis stress (MPa); reports efficiency and self-locking |
 | `weak_link` | `cheap` (requirement id), `expensive` (ids), `min_ratio` (1) | cheap case's stress use / the highest other's at the same force |
 | `flex_strain` | `part`, `kind` (snap / hinge), `t_mm`, `L_mm`, `deflection_mm` / `angle_deg`, `cycles`, `across_layers` | root strain (%) vs permissible |
 | `creep_limit` | `case` (a strength requirement id), `sf` (3) | that case's stress vs documented creep rupture / sf (MPa) |

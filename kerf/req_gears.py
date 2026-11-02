@@ -46,3 +46,65 @@ def gear_bending(proj, asm, module, z_driver, z_driven, width, torque_nmm, mater
     return {"ok": s <= allow, "value": round(s, 2), "limit": round(allow, 2),
             "detail": f"Lewis tooth bending (MPa): Ft {t / (m * z1 / 2):.1f} N at the {int(z1)} T pitch circle, "
                       f"b {b:g} mm, m {m:g}, Y {min(lewis_y(int(z1)), lewis_y(int(z2))):.3f}; {material} {direction} / SF {sf}"}
+
+
+# Planetary sets: the most loaded planet. With a sun held on its shaft and the small position errors of real parts a
+# 3-planet set's mesh load factor reached K_gamma = 2.264 (one planet carrying 75 % of the torque): MATEC Web of
+# Conferences 287, 01003 (2019), Table 2 case D (fixed sun and ring, with position deviations;
+# https://www.matec-conferences.org/articles/matecconf/pdf/2019/36/matecconf_pt2019_01003.pdf). Printed sets have such
+# errors, so the default lets one planet carry 75 % for any planet count (n = 3: K_gamma = 2.25); give k_gamma for a
+# floating sun with a source.
+PLANET_SHARE_WORST = 0.75
+
+
+@check("planetary_bending")
+def planetary_bending(proj, asm, module, z_sun, z_planet, z_ring, n_planets, width, torque_nmm, material="PETG",
+                      sf=3.0, direction="xy", k_gamma=None):
+    """Lewis bending of the most loaded sun-planet mesh (input torque on the sun; the planet-ring mesh carries the
+    same tangential force on stronger internal teeth). Ft = T / r_sun / n * K_gamma, sigma = Ft / (b m Y_min)."""
+    from .drives import planetary_rules
+    p = proj.params or {}
+    m, zs, zp, zr, n, b, T = (_ev(module, p), int(_ev(z_sun, p)), int(_ev(z_planet, p)), int(_ev(z_ring, p)),
+                              int(_ev(n_planets, p)), _ev(width, p), _ev(torque_nmm, p))
+    bad = planetary_rules(zs, zp, zr, n, m)
+    kg = float(k_gamma) if k_gamma is not None else PLANET_SHARE_WORST * n
+    Ft = T / (m * zs / 2) / n * kg
+    sigma = Ft / (b * m * min(lewis_y(zs), lewis_y(zp)))
+    allow = _strength(material, direction) / sf
+    return {"ok": sigma <= allow and not bad, "value": round(sigma, 2), "limit": round(allow, 2),
+            "detail": "; ".join(bad) + ("; " if bad else "") + f"{n} planets, K_gamma {kg:.2f}: Ft {Ft:.1f} N on the most loaded "
+                      f"planet ({T:g} N*mm on the {zs}-tooth sun, r {m * zs / 2:g} mm); Lewis {sigma:.1f} MPa vs {material} "
+                      f"{direction} / SF {sf}; ratio {1 + zr / zs:.2f}:1 with the ring fixed"}
+
+
+from .requirements import UNITS as _U  # noqa: E402
+_U.update({"planetary_bending": ("MPa", "max")})
+
+
+@check("worm_drive")
+def worm_drive(proj, asm, module, starts, z_wheel, worm_d, width, torque_out_nmm, material="PETG", sf=3.0,
+               direction="xy", mu=None, friction="PETG-steel", must_self_lock=False):
+    """A worm set: Lewis bending of the wheel teeth at the output torque (Ft = T_out / r_wheel), the efficiency the
+    driving motor must cover, and (must_self_lock) proof that the load cannot back-drive it (tan lead < mu).
+    mu defaults to the catalog's `friction.<friction>` (dry, static)."""
+    from . import catalog
+    from .drives import worm_numbers
+    p = proj.params or {}
+    m, s, zw, d, b, T = (_ev(module, p), int(_ev(starts, p)), int(_ev(z_wheel, p)), _ev(worm_d, p), _ev(width, p),
+                         _ev(torque_out_nmm, p))
+    mu_ = float(mu) if mu is not None else float(catalog.get(f"friction.{friction}")["mu_static"])
+    ws = worm_numbers(m, s, zw, d, mu_)
+    Ft = T / (m * zw / 2)
+    sigma = Ft / (b * m * lewis_y(zw))
+    allow = _strength(material, direction) / sf
+    lock_ok = ws.self_locking or not must_self_lock
+    return {"ok": sigma <= allow and lock_ok, "value": round(sigma, 2), "limit": round(allow, 2),
+            "efficiency": round(ws.efficiency, 3), "self_locking": ws.self_locking,
+            "detail": f"{s}-start worm, {zw}-tooth wheel: {ws.ratio:g}:1, lead {ws.lead_deg:.1f} deg, efficiency "
+                      f"{ws.efficiency:.0%} at mu {mu_:g} (motor torque in = {T / ws.ratio / max(ws.efficiency, 1e-6):.0f} N*mm); "
+                      f"{'self-locking' if ws.self_locking else 'back-drivable'}"
+                      + ("" if lock_ok else " but the load must hold by itself: fewer starts / a bigger worm") +
+                      f"; wheel Lewis {sigma:.1f} MPa vs {material} {direction} / SF {sf}"}
+
+
+_U.update({"worm_drive": ("MPa", "max")})

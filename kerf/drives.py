@@ -226,3 +226,120 @@ def belt_keepout(center: float, z1: int, z2: int, width: float, margin: float = 
     outer, inner = hull(h + margin), hull(-margin)
     band = Pos(0, 0, -margin) * extrude(outer, width + 2 * margin) - Pos(0, 0, -margin - 1) * extrude(inner, width + 2 * margin + 2)
     return band
+
+
+@dataclass
+class Planetary:
+    module: float
+    z_sun: int
+    z_planet: int
+    z_ring: int
+    n_planets: int
+    width: float
+    center: float          # sun-to-planet centre distance m (z_sun + z_planet) / 2 (= the carrier pin radius)
+    ratio: float           # ring fixed, sun in, carrier out: 1 + z_ring / z_sun
+    planet_xy: list        # planet centres (mm), evenly spaced, the first on +X
+    ring_od: float         # outside diameter of the ring's rim
+    backlash_mm: float
+    warnings: list
+
+
+def planetary_rules(z_sun: int, z_planet: int, z_ring: int, n: int, module: float) -> list[str]:
+    """Why a planetary set cannot be built (empty = it can): tooth-count geometry, the equal-spacing assembly
+    condition (z_sun + z_ring) / n whole, and neighbouring planets' tip circles clear by >= 1 mm."""
+    bad = []
+    if z_ring != z_sun + 2 * z_planet:
+        bad.append(f"z_ring {z_ring} must be z_sun + 2 z_planet = {z_sun + 2 * z_planet} (coaxial sun and ring)")
+    if (z_sun + z_ring) % n:
+        bad.append(f"(z_sun + z_ring) / n = {(z_sun + z_ring) / n:.2f} is not whole: {n} equally spaced planets cannot "
+                   f"all mesh (pick tooth counts whose sum divides by {n})")
+    a = module * (z_sun + z_planet) / 2
+    gap = 2 * a * math.sin(math.pi / n) - module * (z_planet + 2)
+    if gap < 1.0:
+        bad.append(f"neighbouring planets' tips are {gap:.2f} mm apart (< 1 mm): use fewer planets or a bigger sun")
+    return bad
+
+
+def planetary(module: float, z_sun: int, z_planet: int, z_ring: int, n_planets: int, width: float,
+              backlash: float = GEAR_BACKLASH_MM):
+    """Sun, planets and ring of a printed planetary set, meshed in place (sun on the origin, planets at their carrier
+    positions, ring coaxial). Returns (sun, [planets], ring, Planetary). Ring fixed + carrier output: ratio
+    1 + z_ring / z_sun. The carrier (pins at `center` on planet_xy) is the project's own part."""
+    import py_gearworks as gw
+    if module < MIN_MODULE:
+        raise ValueError(f"module {module} is below {MIN_MODULE}: teeth that small do not print with a 0.4 mm nozzle")
+    if min(z_sun, z_planet) < MIN_TEETH:
+        raise ValueError(f"{min(z_sun, z_planet)} teeth is below {MIN_TEETH}; the undercut tooth root is too weak to print")
+    bad = planetary_rules(z_sun, z_planet, z_ring, n_planets, module)
+    if bad:
+        raise ValueError("; ".join(bad))
+    warn = [f"module {module} < {GOOD_MODULE}: only for a well-tuned printer; test-print the set first"] if module < GOOD_MODULE else []
+    coef = backlash / module / 2.0
+    sun = gw.SpurGear(int(z_sun), height=width, module=module, backlash=coef)
+    planets, xy = [], []
+    for k in range(n_planets):
+        th = 2 * math.pi * k / n_planets
+        p = gw.SpurGear(int(z_planet), height=width, module=module, backlash=coef)
+        p.mesh_to(sun, target_dir=np.array([math.cos(th), math.sin(th), 0.0]))
+        planets.append(p)
+        xy.append([round(float(p.center[0]), 4), round(float(p.center[1]), 4)])
+    ring = gw.SpurRingGear(int(z_ring), height=width, module=module, backlash=coef)
+    ring.mesh_to(planets[0], target_dir=np.array([1.0, 0.0, 0.0]))      # an internal mesh: this puts its centre on the sun's
+    if float(np.linalg.norm(np.asarray(ring.center)[:2])) > 1e-6:
+        raise RuntimeError(f"py_gearworks put the ring at {ring.center}, not on the sun axis")
+    R = ring.build_part()
+    info = Planetary(module, int(z_sun), int(z_planet), int(z_ring), int(n_planets), width,
+                     module * (z_sun + z_planet) / 2, 1 + z_ring / z_sun, xy, float(R.bounding_box().size.X), backlash, warn)
+    return Part(sun.build_part().wrapped), [Part(p.build_part().wrapped) for p in planets], Part(R.wrapped), info
+
+
+# ---- worm sets ----
+
+@dataclass
+class WormSet:
+    module: float            # axial module of the worm = transverse module of the wheel
+    starts: int
+    z_wheel: int
+    worm_d: float            # worm pitch diameter
+    center: float            # (worm_d + m z_wheel) / 2
+    ratio: float             # z_wheel / starts
+    lead_deg: float          # lead angle: atan(starts m / worm_d)
+    efficiency: float        # worm driving, at friction mu
+    self_locking: bool       # the wheel cannot drive the worm back (tan(lead) < mu)
+    mu: float
+
+
+def worm_numbers(module: float, starts: int, z_wheel: int, worm_d: float, mu: float, pressure_deg: float = 20.0) -> WormSet:
+    """Worm-set geometry and efficiency. Lead angle L = atan(starts m / d); worm driving efficiency
+    eta = (cos(phi_n) - mu tan L) / (cos(phi_n) + mu cot L) (the standard worm-driving efficiency, as in Shigley's
+    Mechanical Engineering Design, worm gearing); self-locking when the wheel cannot back-drive it: tan L < mu (the friction angle exceeds the lead
+    angle; vibration can still creep it, so a holding brake is safer where it matters)."""
+    lam = math.atan(starts * module / worm_d)
+    pn = math.radians(pressure_deg)
+    eta = (math.cos(pn) - mu * math.tan(lam)) / (math.cos(pn) + mu / math.tan(lam))
+    return WormSet(module, int(starts), int(z_wheel), worm_d, (worm_d + module * z_wheel) / 2, z_wheel / starts,
+                   math.degrees(lam), eta, math.tan(lam) < mu, mu)
+
+
+def worm(module: float, starts: int, worm_d: float, length: float, bore: float | None = None):
+    """A printable worm: 20 deg trapezoid thread (addendum 1 m, dedendum 1.25 m) swept on a helix of lead
+    pi m starts around a root cylinder, trimmed to `length` (Z from 0). Prints standing up: the flanks are 70 deg from
+    the bed, no support."""
+    from build123d import Box, Helix, Plane, Polyline, Wire, make_face, sweep
+    lead = math.pi * module * starts
+    r_root, h, pa = worm_d / 2 - 1.25 * module, 2.25 * module, math.radians(20)
+    w_root = math.pi * module / 2 + 2 * 1.25 * module * math.tan(pa)
+    w_tip = math.pi * module / 2 - 2 * 1.0 * module * math.tan(pa)
+    if worm_d / 2 - 1.25 * module < 2.0 + (bore or 0) / 2:
+        raise ValueError(f"worm pitch diameter {worm_d} leaves under 2 mm of root around the bore")
+    body = Cylinder(r_root, length + 2 * module * 4, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    body = Pos(0, 0, -module * 4) * body
+    for k in range(starts):
+        prof = Polyline((r_root - 0.2, -w_root / 2), (r_root + h, -w_tip / 2), (r_root + h, w_tip / 2), (r_root - 0.2, w_root / 2), close=True)
+        face = Pos(0, 0, -module * 4 + k * lead / starts) * (Plane.XZ * make_face(prof))
+        hx = Pos(0, 0, -module * 4 + k * lead / starts) * Helix(pitch=lead, height=length + 8 * module, radius=0.001)
+        body += sweep(face, path=Wire(hx), is_frenet=True)
+    body &= Box(worm_d * 2, worm_d * 2, length, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    if bore:
+        body -= Cylinder(bore / 2, length, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    return Part(body.wrapped)

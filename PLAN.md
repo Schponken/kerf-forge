@@ -197,6 +197,9 @@ Work these in order unless one is blocked; each item is done only with tests and
 - [ ] Conventional planes + VTOL: tail volume coefficients and sizing, landing gear, transition thrust; eval E9 (trainer plane)
 - [ ] Ground robots: wheel / track sizing, slope tip-over, self-balancing (inverted pendulum) check; eval E10 (rover or balance bot)
 - [ ] Gearboxes: planetary and worm sets, strength-checked (Lewis / AGMA-style) and printable; used by one project
+  - [x] drives.planetary (sun / planets / ring meshed by py_gearworks, tooth-count + assembly + neighbour rules) + planetary_bending (most loaded planet, K_gamma from a sourced 3-planet case); drives.worm (printable thread) + worm_numbers + worm_drive (wheel Lewis, efficiency, self-locking); tests/test_planetary.py
+  - [ ] worm wheel geometry (throated / helical wheel meshed to drives.worm, interference-checked)
+  - [ ] a project uses a planetary or worm set
 - [ ] Mixed manufacturing: laser-cut / CNC / carbon-plate parts as DXF / STEP for order services alongside printed parts, priced
 - [ ] Watertight + thermal: seal / gasket design rules and checks, wall thickness for water, component heat (ESC / motor / regulator) vs enclosure; used by one project
 - [ ] Ship it printer loop (opt-in only): print fit coupons on the A2L through the Bambu integration, read the measurements (entered or camera), apply them (`kerf calibrate`), send the final plates; dry-run tested
