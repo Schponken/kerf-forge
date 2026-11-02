@@ -40,5 +40,7 @@ def build(ctx):
         plate = plate - Pos(x, y, zb + grip - 0.01) * Cylinder(iface.screw_spec("M3", "PETG")["clearance"] / 2, zl - zb - grip + 0.03,
                                                              align=(Align.CENTER, Align.CENTER, Align.MIN))
     plate = fillet(plate.edges().filter_by(Axis.Z), 2.0)            # why: round plan-view corners (no snag on landing)
+    # why: a ramp all round the belly face, so a belly landing slides over the plate instead of catching its square step
+    plate = chamfer(plate.faces().sort_by(Axis.Z)[0].outer_wire().edges(), 1.5)
     ctx.rigid("base", Location())
     return ctx.finish(plate)
