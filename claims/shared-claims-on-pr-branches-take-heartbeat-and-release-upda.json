@@ -2,9 +2,9 @@
  "item": "Shared claims on PR branches: take, heartbeat and release update the shared main claim without publishing feature code; fresh ownership and budget controls hold across dirty worktrees and concurrent pushes; real-git tests.",
  "session": "codex-shared-claims",
  "since": 1793657364.4126668,
- "heartbeat": 1793658159.435251,
+ "heartbeat": 1793658204.999306,
  "provider": "Codex",
  "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
  "since_utc": "2026-11-02 22:09",
- "activity": "41 focused tests pass; publishing shared claim lifecycle PR"
+ "activity": "PR ready; preserving concurrent STATUS entries after main integration"
 }
