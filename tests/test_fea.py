@@ -109,3 +109,20 @@ def test_sliver_tets_are_dropped():
     tets = np.array([[0, 1, 2, 3], [0, 1, 2, 4]])            # the second lies flat in z = 0
     out = fea.drop_slivers(pts, tets, 1.0)
     assert out.tolist() == [[0, 1, 2, 3]]
+
+
+def test_von_mises_chunks_match_one_basis():
+    """fea._von_mises builds the intorder-4 sampling basis per chunk of elements (memory): identical to one basis
+    over the whole mesh."""
+    import numpy as np
+    from build123d import Box
+    from skfem import Basis, ElementTetP2, ElementVector, MeshTet
+    from skfem.models.elasticity import lame_parameters
+    from kerf import fea
+    pts, tets = fea._mesh(Box(20, 6, 4), 2.0)
+    mesh = MeshTet(pts.T, tets.T)
+    elem = ElementVector(ElementTetP2())
+    u = np.random.default_rng(0).normal(size=Basis(mesh, elem, intorder=1).N) * 1e-3
+    lam, mu = lame_parameters(2000.0, 0.35)
+    one = fea._von_mises(mesh, elem, u, lam, mu, chunk=10**9)
+    assert one.shape[0] == mesh.t.shape[1] and np.array_equal(one, fea._von_mises(mesh, elem, u, lam, mu, chunk=37))

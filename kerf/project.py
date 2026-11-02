@@ -23,6 +23,17 @@ class ProjectError(ValueError):
     pass
 
 
+def _read_deps(path: Path) -> set[str] | None:
+    """An unavailable/broken manifest must never exclude catalog inputs from the fingerprint."""
+    try:
+        paths = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(paths, list) or any(not isinstance(p, str) or not p for p in paths):
+        return None
+    return set(paths)
+
+
 @dataclass
 class Item:
     id: str
@@ -60,11 +71,11 @@ class Project:
         (Engine code is excluded so engine improvements don't invalidate every review; `kerf verify` rebuilds and
         re-checks every project from scratch, so an engine change that breaks a design still fails verify.)"""
         h = hashlib.sha256()
-        deps = self.dir / DEPS
-        if deps.exists():       # only the catalog entries this project reads (recorded by check/build)
-            h.update(catalog.deps_hash(json.loads(deps.read_text(encoding="utf-8"))).encode())
+        deps = _read_deps(self.dir / DEPS)
+        if deps is not None:    # only the catalog entries this project reads (recorded by check/build)
+            h.update(catalog.deps_hash(deps).encode())
         files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")),
-                 *([] if deps.exists() else [catalog.CATALOG]),
+                 *([] if deps is not None else [catalog.CATALOG]),
                  *sorted(p for p in (self.dir / "meshes").glob("*") if p.is_file()),     # Meshy shells
                  *sorted(p for p in (self.dir / "imports").glob("*") if p.is_file()),    # the user's own models
                  calibrate.profile_path(self.data.get("printer", calibrate.DEFAULT_PRINTER))]  # measured fits
@@ -239,7 +250,9 @@ def record_deps(proj: Project) -> None:
     """Add the catalog paths read since catalog.track() to projects/<p>/catalog_deps.json (union: a quick check never
     drops what a full build needed; an extra path only makes the fingerprint more sensitive)."""
     f = proj.dir / DEPS
-    old = set(json.loads(f.read_text(encoding="utf-8"))) if f.exists() else set()
+    old = _read_deps(f)
+    valid = old is not None
+    old = old or set()
     new = old | catalog.used()
-    if new != old or not f.exists():
+    if new != old or not valid:
         f.write_text(json.dumps(sorted(new), indent=1) + "\n", encoding="utf-8")

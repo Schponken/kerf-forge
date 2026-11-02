@@ -1,0 +1,4 @@
+{
+ "stress_sims": "Spencer, 2026-11-02: paused until we work on stress simulation later",
+ "_how": "kerf/requirements.py STRESS_SIMS (fea_static, impact_fea, stop_impact, natural_freq, drop_impact, weak_link) are reported NOT RUN while stress_sims is set. Remove the key (or set KERF_STRESS=1 for one run) to run them. PLAN items marked 'PAUSED:' are skipped by tools/claims.py next."
+}

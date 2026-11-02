@@ -72,6 +72,16 @@ def check(item) -> tuple[list, list, list]:
             continue
         zs = np.linspace(0.3, depth - 0.3, 4)
         r_hole, wall = _hole_r(s, sp)
+        # the hole must exist in the finished solid: a later fillet / chamfer built from an earlier shape's edges can
+        # silently bring back the uncut blank (fpv_wing splice plates shipped with no holes; the fastener check only
+        # proves the registered positions line up)
+        axis = ring_points(s.loc, 0.0, zs).reshape(len(zs), N_THETA, 3)[:, 0]
+        if m.contains(axis).mean() > 0.5:
+            at = np.round(geom.world_point(s.loc, (0, 0, 0)), 1).tolist()
+            problems.append(f"{item.id}: {s.screw} {s.kind} hole (group '{s.group}') at {at} is filled in the finished "
+                            f"part: the hole was cut, then a later operation rebuilt the solid without it (e.g. a fillet "
+                            f"or chamfer on edges taken from the shape before the cut); cut holes last")
+            continue
         wall_pts = ring_points(s.loc, r_hole + wall, zs)
         edge_pts = ring_points(s.loc, max(1.5 * sp["d"], r_hole + wall), zs)
         win = m.contains(wall_pts).reshape(len(zs), N_THETA)

@@ -37,6 +37,15 @@ button.upgrade{border-color:var(--accent)}
 .intake{margin-top:12px}.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:10px 0}
 .igrid label,.intake>label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
 .qopts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.qopt.rec{border-color:var(--accent)}
+.scenario-fields{display:grid;gap:12px;margin:16px 0}.scenario-fields[hidden]{display:none}
+.scenario-fields label,.request-kind{display:grid;gap:5px;color:var(--muted);font-size:12.5px}
+.request-kind{margin-bottom:14px}.request-kind select{max-width:400px}
+.qopt{min-width:0;overflow-wrap:anywhere}.qopt dl{margin:16px 0}.qopt dt{font-weight:650;margin-top:12px}
+.qopt .chip.ok{color:var(--ink)}
+.qopt dd{margin:3px 0 0;color:var(--muted)}.qopt h4{font-size:13px;margin:16px 0 6px}
+.qopt ul{padding-left:18px;margin:6px 0 16px}.qopt li+li{margin-top:8px}.qopt .source-note{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
+.qopt details{margin:16px 0}.qopt summary{cursor:pointer}.qopt .route{margin:4px 0 0;color:var(--muted);font-size:13px}
+@media(max-width:560px){.qopts{grid-template-columns:minmax(0,1fr)}}
 #partsbtn{display:none}
 .param .affects{margin-top:2px;opacity:.85}
 button:active{transform:scale(.97)}
@@ -182,6 +191,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .job.sess .lab small{color:var(--muted)}.dot.claimed{background:#5aa9ff;box-shadow:0 0 0 3px rgba(90,169,255,.18)}
 .wrecent ul{margin:6px 0 0;padding-left:18px}.wrecent li{margin:2px 0}
 .misstag{font-size:11px;margin-top:4px;white-space:nowrap}.misstag.nearmiss{color:#e0a030}.misstag.close{color:#e07a30}.misstag.faroff{color:var(--bad)}
+.fixalt{margin:-4px 0 6px;padding-left:20px}.fixalt li{margin:3px 0;color:var(--muted)}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{width:min(1100px,94vw);height:min(760px,88vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
@@ -252,7 +262,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 /* new design */
 .new{max-width:840px}
 .examples{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 16px}
-.examples button{font-size:12.5px;padding:5px 11px;border-radius:999px}
+.examples button{font-size:12.5px;padding:5px 11px;border-radius:999px;white-space:normal;text-align:left;max-width:100%}
 .row{display:flex;gap:10px;align-items:center}
 .howit{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
 .howit div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12.5px;color:var(--muted);animation:fadeUp .4s both}
@@ -291,15 +301,49 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .livetog{display:flex;align-items:center;gap:6px;font-weight:620;cursor:pointer;white-space:nowrap}
 .liveline{margin-top:6px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .liveline b{color:var(--ink);font-family:var(--mono);font-weight:600;margin-right:6px}
-.wtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
-.wtile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-.wtile b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.wtile span{font-size:12px;color:var(--muted)}
-.wcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:18px}
-.wcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
-.wcard.stale{opacity:.6}.wcard img{width:100%;aspect-ratio:4/3;object-fit:contain;background:var(--panel2)}
-.wcard .wb{padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}.wcard .wb p{margin:0;font-size:13px}
-.wfeed{list-style:none;margin:0;padding:0}.wfeed li{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;align-items:baseline}
-.wfeed time{font-family:var(--mono);color:var(--muted);min-width:44px}
+/* Work is an operating view: tasks first, evidence and uncertainty alongside each owner. */
+.work-page{min-height:100%;background:var(--bg);--work-ok:var(--ok)}
+:root[data-theme="light"] .work-page{--work-ok:#176d3d}
+.work-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:20px;animation:none}
+.work-head .desc{margin:5px 0 0;max-width:64ch}.work-refresh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:12px;color:var(--muted)}
+.work-page .body{padding-top:0;animation:none}.work-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:28px;align-items:start}
+.work-layout>*{min-width:0}.work-toolbar{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.work-filters{display:flex;gap:4px;flex-wrap:wrap}.work-filters button{border-color:transparent;background:none;padding:8px 10px;font-size:13px;color:var(--muted)}
+.work-filters button[aria-pressed=true]{background:var(--soft);color:var(--ink);border-color:var(--line)}
+.work-filters button span{margin-left:6px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.work-searches{display:flex;gap:8px;min-width:0;width:100%}.work-searches input{min-width:0;flex:1}.work-searches select{max-width:170px}
+.work-searches input,.work-searches select{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.work-searches input::placeholder{color:var(--muted);opacity:1}.work-page :is(button,a,input,select,summary):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.work-list{border-top:1px solid var(--line)}.work-item{padding:20px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.work-item-top{display:flex;justify-content:space-between;gap:16px;align-items:start}.work-item-title{min-width:0}.work-item h2{font-size:16px;line-height:1.4;letter-spacing:0;margin:0;font-weight:650}
+.work-owner{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:7px}.work-owner b{color:var(--ink);font-weight:600}
+.work-state{flex:none;display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:600;line-height:1.4;padding:4px 8px;border-radius:6px;background:var(--soft);color:var(--muted)}
+.work-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}.work-state.running,.work-state.working{background:var(--info-bg);color:var(--info)}
+.work-state.waiting,.work-state.blocked,.work-state.stale{background:var(--warn-bg);color:var(--warn)}.work-state.failed{background:var(--bad-bg);color:var(--bad)}.work-state.done{background:var(--ok-bg);color:var(--work-ok)}
+.work-activity{font-size:14px;line-height:1.55;margin:15px 0 10px;max-width:72ch}.work-activity.empty{color:var(--muted)}
+.work-attention{margin:10px 0 12px;color:var(--warn);font-size:13px;line-height:1.5}.work-attention strong{font-weight:600}
+.work-measures{display:flex;align-items:start;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.work-measures b{display:block;color:var(--ink);font-weight:550;margin-bottom:4px}
+.work-progress{flex:1;min-width:160px;max-width:300px}.work-progress progress,.work-plan progress{display:block;appearance:none;border:0;border-radius:3px;width:100%;height:5px;background:var(--soft);overflow:hidden}
+.work-progress progress::-webkit-progress-bar,.work-plan progress::-webkit-progress-bar{background:var(--soft)}.work-progress progress::-webkit-progress-value,.work-plan progress::-webkit-progress-value{background:var(--accent)}
+.work-progress progress::-moz-progress-bar,.work-plan progress::-moz-progress-bar{background:var(--accent)}
+.work-item-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}.work-actions{display:flex;gap:8px;flex-wrap:wrap}.work-actions button,.work-actions a.btn{font-size:12px;padding:6px 10px}
+.work-stamp{font-size:12px;color:var(--muted)}.work-detail{margin-top:14px;font-size:13px;color:var(--muted)}.work-detail summary{cursor:pointer;width:fit-content;padding:4px 0;color:var(--ink)}
+.work-detail p{max-width:72ch;line-height:1.6;margin:12px 0}.work-detail h3{font-size:13px;color:var(--ink);margin:16px 0 6px}.work-detail ul{padding-left:20px;margin:6px 0}.work-detail li{margin:5px 0}
+.work-detail dl{display:grid;grid-template-columns:82px minmax(0,1fr);gap:6px 12px;margin:14px 0 0}.work-detail dt{color:var(--muted)}.work-detail dd{margin:0;color:var(--ink)}
+.work-preview{display:block;width:180px;max-width:100%;height:135px;object-fit:contain;background:var(--panel2);margin-top:14px;border-radius:8px}
+.work-rail{padding-top:6px}.work-rail section+section{border-top:1px solid var(--line);padding-top:22px;margin-top:22px}.work-rail h2{font-size:14px;margin:0 0 12px}.work-rail p{font-size:12px;color:var(--muted);line-height:1.55;margin:8px 0}
+.work-plan strong{font-size:14px;font-variant-numeric:tabular-nums}.work-plan progress{margin:10px 0}.work-plan .work-plan-counts{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.work-projects{list-style:none;margin:0;padding:0}.work-projects li{display:flex;justify-content:space-between;gap:12px;margin:12px 0;font-size:13px}.work-projects span{color:var(--muted);font-size:12px;white-space:nowrap}
+.work-projects button{text-align:left;white-space:normal;border:0;background:none;padding:0;color:var(--ink);font-size:13px}.work-projects button:hover{text-decoration:underline}
+.work-feed{list-style:none;margin:0;padding:0}.work-feed li{margin:0 0 14px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.work-feed time{display:block;color:var(--muted);font-size:11px;margin-bottom:3px}.work-feed .work-completed{display:block;color:var(--work-ok);margin-top:3px}
+.work-source{margin:12px 0;font-size:12px;line-height:1.5}.work-source b{display:block;font-size:12px;color:var(--ink)}.work-source span{color:var(--muted)}
+.work-notice{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;margin-bottom:20px;font-size:13px;line-height:1.5;background:var(--panel)}
+.work-notice p{margin:0;max-width:72ch}.work-notice button{flex:none}.work-notice.error{border-color:var(--warn);color:var(--warn)}
+.work-empty{padding:32px 8px;max-width:66ch}.work-empty h2{font-size:16px;margin:0 0 8px}.work-empty p{font-size:14px;line-height:1.6;color:var(--muted);margin:0 0 16px}
+.work-skeleton{padding:20px 0;border-bottom:1px solid var(--line)}.work-skeleton .sk{height:12px;margin:12px 0;max-width:80%}
+@media(max-width:1200px){.work-layout{grid-template-columns:minmax(0,1fr) 220px;gap:22px}}
+@media(max-width:1050px){.work-layout{grid-template-columns:minmax(0,1fr)}.work-rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;border-top:1px solid var(--line);padding-top:24px}.work-rail section+section{border:0;padding:0;margin:0}}
+@media(max-width:600px){.work-head{flex-direction:column;gap:12px;padding-bottom:16px}.work-refresh{justify-content:flex-start}.work-item-top{flex-direction:column;gap:10px}.work-item{padding:18px 0}.work-rail{grid-template-columns:minmax(0,1fr)}.work-searches{flex-wrap:wrap}.work-searches input{flex-basis:100%}.work-searches select{max-width:none;width:100%}.work-filters{gap:2px}.work-filters button{padding:8px;font-size:12px}.work-measures{gap:14px}.work-notice{align-items:flex-start;flex-direction:column}.work-state{max-width:100%;white-space:normal}.work-item h2{font-size:15px}}
 .sidebtns{display:flex;gap:6px;margin:0 14px 8px}
 .sidebtns button{flex:1;padding:6px 8px;font-size:12.5px}
 .bell.off{opacity:.45}
@@ -382,7 +426,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
   <nav class="sidenav"><button id="nav_grid" onclick="showGrid()" title="Every project as a big card">▦ All projects</button>
     <button id="nav_parts" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button>
-    <button id="nav_work" onclick="showWork()" title="What the Claude Code sessions are doing right now (read from git)">◷ Work</button></nav>
+    <button id="nav_work" onclick="showWork()" title="Codex, Claude Code and Studio: current tasks, progress and next steps">◷ Work</button></nav>
   <input id="search" placeholder="Search projects" oninput="renderList()" style="display:none">
   <div id="plist"></div>
   <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
@@ -411,9 +455,24 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const api = async (path, body) => {
   const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
   const j = await r.json().catch(() => ({error: "bad response"}));
-  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  if (!r.ok || j.error) { const e = new Error(j.error || r.statusText); e.data = j; throw e; }
   return j;
 };
+/* a change to a project another Claude session is editing: ask, then send it again with override */
+async function apiChange(path, body) {
+  try { return await api(path, body); }
+  catch (e) {
+    if (!(e.data && e.data.claimed) || !confirm(e.message)) throw e;
+    return await api(path, {...body, override: true});
+  }
+}
+const slugName = v => String(v || "").trim().toLowerCase().replace(/[\s-]+/g, "_").replace(/[^a-z0-9_]/g, "").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+function uniqueName(n) { const have = new Set((S.projects || []).map(p => p.name)); let x = n, i = 2; while (x && have.has(x)) x = `${n.slice(0, 37)}_${i++}`; return x; }
+function openRunning(project) {   // a second click on a running job: show the one already running
+  const j = (S.jobsList || []).find(x => x.state === "running" && (x.project === project || x.project === "*"));
+  if (j) { watch(j.id); return true; }
+  return false;
+}
 const fileUrl = (p, rel) => `/files/${p}/${rel.split("/").map(encodeURIComponent).join("/")}`;
 const fmt = v => v == null ? "–" : (typeof v === "number" ? (Math.abs(v) >= 100 ? v.toFixed(0) : +v.toFixed(3)) : esc(Array.isArray(v) ? v.join(", ") : v));
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -489,6 +548,9 @@ function renderList() {
 }
 
 async function select(name, keepTab) {
+  const unsaved = Object.keys(S.edits || {}).length + Object.keys(S.medits || {}).length;
+  if (unsaved && name !== S.sel && !confirm(`You have ${unsaved} unsaved Tune change${unsaved == 1 ? "" : "s"} on this project. Leave and discard ${unsaved == 1 ? "it" : "them"}?`)) return;
+  if (name === S.sel && keepTab === undefined && S.detail && unsaved) { setTab(S.tab); return; }   // same project: keep the edits
   S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.work = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
@@ -687,7 +749,7 @@ function renderHistory(el) {
 }
 async function restoreVersion(stamp) {
   if (!confirm("Write this version's parameter values back into project.yaml? Part code is not changed. Build again afterwards.")) return;
-  try { const r = await api("/api/restore", {project: S.sel, stamp}); await refreshDetail(); setTab("history");
+  try { const r = await apiChange("/api/restore", {project: S.sel, stamp}); await refreshDetail(); setTab("history");
         toast("Restored", r.changed.length ? `Changed: ${r.changed.join(", ")}. Build to update the files.` : "Nothing to change.", "ok"); }
   catch (e) { toast("Not restored", e.message, "bad"); }
 }
@@ -734,7 +796,7 @@ function issueCards(iss, raw) {
   return `<div style="margin-bottom:14px"><h3 style="margin:4px 0 10px">What's wrong (${cards.length})</h3>${cards.map((c, i) => `
     <div class="issue reqrow" style="animation-delay:${i * 40}ms"><div class="ihead">${c.kind_label ? `<span class="chip">${esc(c.kind_label)}</span>` : ""}<b>${esc(c.title)}</b>${c.part ? `<span class="ipart">${esc(c.part)}</span>` : ""}
       <span style="flex:1"></span><span class="chip ${on ? "info" : "warn"}">${on ? (w.state === "fixing" ? "being fixed" : w.state === "checking" ? "re-checking" : "being worked on") : "nobody on it"}</span></div>
-      ${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.fix ? `<p class="fixl"><b>Usual fix:</b> ${esc(c.fix)}</p>` : ""}
+      ${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.fix ? `<p class="fixl"><b>What to do:</b> ${esc(c.fix)}</p>` : ""}${(c.fixes || []).length ? `<ul class="fixalt">${c.fixes.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
       ${c.detail && c.detail !== c.title ? `<details><summary>Details for whoever fixes it</summary><code>${esc(c.detail)}</code></details>` : ""}</div>`).join("")}</div>`;
 }
 function renderResults(el, rep) {
@@ -779,7 +841,7 @@ function renderTune(el) {
       <div class="row" style="margin-top:14px;flex-wrap:wrap">
         <button class="primary" onclick="tryParams()" ${changed ? "" : "disabled"}>▶ Try these values</button>
         <button onclick="saveParams()" ${changed ? "" : "disabled"}>Save to design</button>
-        <button onclick="S.edits={};renderTab()" ${changed ? "" : "disabled"}>Reset</button>
+        <button onclick="S.edits={};S.medits={};renderTab()" ${changed ? "" : "disabled"}>Reset</button>
       </div>
       <p class="note">"Try" rebuilds a scratch copy with every check (fit, motion, strength) and you can watch it work live; your design files stay untouched.
         "Save" writes the values into project.yaml, then Build; a saved change needs a fresh design review.</p>
@@ -822,7 +884,7 @@ function compareTable(saved, tried) {   // the saved build's result next to the 
       <td><span class="fxs ${say === "now fails" || say === "worse" ? "down" : say === "now passes" || say === "better" ? "up" : say.startsWith("worse") ? "meh" : ""}">${say}</span></td></tr>`; }).join("")}</table>`;
 }
 function setParam(k, v, live) {
-  const p = S.detail.params.find(x => x.key === k); v = parseFloat(v);
+  const p = S.detail.params.find(x => x.key === k); v = Number(String(v).trim().replace(",", "."));   // "1,5" is 1.5, not 1
   if (!Number.isFinite(v) || (p.bounded && (v < p.min || v > p.max))) {
     toast("Value not changed", `${p.label}: enter a number${p.bounded ? ` from ${p.min} to ${p.max}` : ""}${p.unit ? " " + p.unit : ""}.`, "bad");
     renderTab(); return;
@@ -837,8 +899,8 @@ async function tryParams() { try { const r = await api("/api/run", {project: S.s
 async function saveParams() {
   if (!confirm("Write these values" + (Object.keys(S.medits).length ? " and materials" : "") + " into the design (project.yaml)? Build again afterwards; the design review will need to be redone.")) return;
   try {
-    if (Object.keys(S.edits).length) await api("/api/save", {project: S.sel, values: S.edits});
-    if (Object.keys(S.medits).length) await api("/api/save-materials", {project: S.sel, materials: S.medits});
+    if (Object.keys(S.edits).length) await apiChange("/api/save", {project: S.sel, values: S.edits});
+    if (Object.keys(S.medits).length) await apiChange("/api/save-materials", {project: S.sel, materials: S.medits});
     S.edits = {}; S.medits = {}; await refreshDetail(); setTab("tune"); toast("Saved", "Written to project.yaml. Build to update the files.", "ok"); }
   catch (e) { toast("Not saved", e.message, "bad"); }
 }
@@ -913,12 +975,12 @@ const STAGE_NAMES = {build: "Build parts", print: "Print checks", fit: "Fit & sc
 const PHASES = [["research","Research","🔎"],["plan","Plan","✎"],["contract","Contract","▤"],["parts","Model parts","◧"],["check","Check + fix","✓"],["build","Build","⚙"],["review","Review","◎"],["ship","Save","⬆"]];
 const TOOL_ICON = {WebSearch: "🔎", WebFetch: "🌐", Read: "📖", Write: "✎", Edit: "✎", Bash: "▶", Agent: "◆", Task: "◆", Grep: "⌕", Glob: "⌕", TaskCreate: "☑", TaskUpdate: "☑"};
 
-async function run(action) { try { const r = await api("/api/run", {project: S.sel, action}); watch(r.job); } catch (e) { toast("Couldn't start", e.message, "bad"); } }
+async function run(action) { try { const r = await api("/api/run", {project: S.sel, action}); watch(r.job); } catch (e) { if (!/already running/.test(e.message) || !openRunning(S.sel)) toast("Couldn't start", e.message, "bad"); } }
 function modeLabel(d, m) { return ((d.modes || []).find(x => x.mode === m) || {}).label || m; }
 function modeEst(d, m) { const x = (d.modes || []).find(x => x.mode === m); return x && x.estimate ? ` <small>${about(x.estimate)}</small>` : ""; }
 async function runMode(mode, confirmShip) {
   try { const r = await api("/api/run", {project: S.sel, action: "mode", mode, confirm_ship: confirmShip === true}); watch(r.job); }
-  catch (e) { toast("Couldn't start", e.message, "bad"); }
+  catch (e) { if (!/already running/.test(e.message) || !openRunning(S.sel)) toast("Couldn't start", e.message, "bad"); }
 }
 function askShip() {   // Ship it prints on the user's printer: its own confirmation, never a default
   const d = S.detail, m = ((d && d.modes) || []).find(x => x.mode === "ship") || {};
@@ -1237,7 +1299,7 @@ function projTitle(n) { const p = (S.projects || []).find(x => x.name === n); re
 async function openSession(n) { await select(n); setTab("results"); }
 async function pollJobs() {
   try {
-    const d = await api("/api/jobs");
+    const d = await api("/api/jobs"); S.jobsList = d.jobs;
     const J = [...d.jobs.filter(j => j.state === "running"), ...d.jobs.filter(j => j.state !== "running").slice(0, 3)];
     const SS = (d.sessions || []).filter(x => !J.some(j => j.state === "running" && j.project === x.project));
     $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<div class="job" onclick="watch('${j.id}')" title="${esc(j.tail[0] || "")}">
@@ -1276,16 +1338,23 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
-  S.newOpen = true; S.sel = null; S.grid = false; S.parts = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
       <div id="ready"></div>
-      <div class="card">
-        <label class="note" for="ndesc">What should it be?</label>
+      <div class="card" id="new-request">
+        <label class="request-kind">Where are you starting?<select id="i_request_kind" onchange="setRequestKind()"><option value="">I know what I want to make</option><option value="scenario">I have a problem to solve</option></select></label>
+        <label class="note" id="description-label" for="ndesc">What should it be?</label>
         <textarea id="ndesc" placeholder="e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm" oninput="autoname()"></textarea>
-        <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname()">${esc(x)}</button>`).join("")}</div>
+        <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote()">${esc(x)}</button>`).join("")}</div>
         <label class="note" for="nname">Project folder name</label>
         <input id="nname" placeholder="desk_arm" oninput="this.dataset.touched=1">
+        <div class="scenario-fields" id="scenario-fields" hidden>
+          <label>What would a successful solution do?<input id="i_success" placeholder="e.g. keep six plants watered while I am away for 10 days"></label>
+          <label>What matters most?<select id="i_priority"><option value="">Help me weigh the trade-offs</option><option>Reliability and low maintenance</option><option>Lowest total cost</option><option>Ready as soon as possible</option><option>Learning and customization</option></select></label>
+          <label>How much time and effort can you give it?<input id="i_effort" placeholder="e.g. one evening to set up; no soldering"></label>
+          <p class="note">Compare buying, adapting an existing design and building. Unknown costs stay unknown. Nothing is purchased or printed here.</p>
+        </div>
         <details class="intake" open><summary><b>A few questions</b> <span class="note">(optional; they steer the design)</span></summary>
           <div class="igrid">
             <label>Budget, USD<input id="i_budget" placeholder="e.g. 60"></label>
@@ -1315,42 +1384,76 @@ function showNew() {
         <div style="animation-delay:240ms"><i>◎</i><b>Review</b>An independent reviewer inspects it; findings are fixed before it's called done.</div>
       </div>
     </div>`;
+  for (const event of ["input", "change"]) $("#new-request").addEventListener(event, e => { if (!e.target.closest("#quote")) invalidateQuote(); });
   checkReady();
+}
+function invalidateQuote() {
+  if (!S.quote || (S.quote.context && quoteMatches(S.quote, S.quoteName))) return;
+  S.quote = null;
+  $("#quote").innerHTML = `<p class="note" role="status">Your request changed. Compare options again to use these answers.</p>`;
+}
+function quoteMatches(q, name) {
+  return name === slugName($("#nname").value) && (!q.context || (q.context.description === $("#ndesc").value.trim() && JSON.stringify(Object.entries(q.context.intake).sort()) === JSON.stringify(Object.entries(intake()).sort())));
+}
+function setRequestKind() {
+  const scenario = $("#i_request_kind").value === "scenario";
+  $("#scenario-fields").hidden = !scenario;
+  $("#nstart").hidden = scenario;
+  $("#description-label").textContent = scenario ? "What is happening, and what needs to change?" : "What should it be?";
+  $("#ndesc").placeholder = scenario ? "e.g. my plants die when I travel" : "e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm";
+  $("#nquote").textContent = scenario ? "Compare ways to solve it" : "Show me 2–3 options first";
+  const examples = scenario ? ["my plants die when I travel", "I need steady aerial shots of my trail runs", "my desk cables keep falling behind the table"] : EXAMPLES;
+  $(".new .examples").innerHTML = examples.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote()">${esc(x)}</button>`).join("");
 }
 function autoname() {
   const n = $("#nname"); if (n.dataset.touched) return;
   const stop = new Set(["a","an","the","for","my","with","that","and","of","to","in","on","at","it","is"]);
-  n.value = ($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40);
+  n.value = uniqueName(($("#ndesc").value.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(w => w && !stop.has(w)).slice(0, 3).join("_") || "").replace(/^[^a-z]+/, "").slice(0, 40));
 }
 function intake() {
-  const o = {}; for (const k of ["budget","power","mounting","environment","printer","material","notes","who","how_often","goes_wrong"]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
+  const o = {}; for (const k of ["request_kind","budget","power","mounting","environment","printer","material","notes","who","how_often","goes_wrong", ...($("#i_request_kind").value === "scenario" ? ["success","priority","effort"] : [])]) { const el = $("#i_" + k); if (el && el.value.trim()) o[k] = el.value.trim(); }
   return o;
 }
 async function startQuote() {
   const r = await fetch("/api/quote", {method: "POST", headers: {"Content-Type": "application/json"},
-                                       body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value, intake: intake()})});
+                                       body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake()})});
   const j = await r.json().catch(() => ({error: "bad response"}));
-  if (r.ok && j.job) { S.quoteFor = $("#nname").value.trim(); watch(j.job); toast("Working out options", "Claude Code is researching 2–3 ways to build it, with cost and print time.", "ok"); return; }
+  if (r.ok && j.job) { S.quoteFor = $("#nname").value.trim(); watch(j.job); toast("Working out options", "Claude Code is researching the alternatives and their trade-offs.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
   toast("Couldn't start", j.error || r.statusText, "bad");
 }
 async function showQuote(name) {
   const el = $("#quote"); if (!el) return;
   try {
-    const q = await api(`/api/quote/${name}`); S.quote = q;
-    el.innerHTML = `<h3>Options</h3><div class="qopts">${q.options.map((o, i) => `<div class="card qopt ${i === q.recommended ? "rec" : ""}">
+    const q = await api(`/api/quote/${name}`); S.quote = q; S.quoteName = name;
+    if (q.context && !$("#ndesc").value.trim()) {
+      $("#ndesc").value = q.context.description;
+      for (const input of document.querySelectorAll('#new-request [id^="i_"]')) input.value = q.context.intake[input.id.slice(2)] || "";
+      setRequestKind();
+    }
+    const matches = quoteMatches(q, name);
+    const questions = q.questions || [];
+    el.innerHTML = `<h3>Options</h3>
+      ${!matches ? `<p class="banner warn">These options use earlier answers. Your edits are kept above; compare options again before designing.</p>` : ""}
+      ${questions.length ? `<div class="banner warn"><b>Before choosing</b><ul>${questions.map(x => `<li>${esc(x)}</li>`).join("")}</ul>Add the answers above, then compare again.</div>` : ""}
+      ${q.recommendation_reason ? `<p>${esc(q.recommendation_reason)}</p>` : ""}
+      <div class="qopts">${q.options.map((o, i) => `<div class="card qopt ${i === q.recommended ? "rec" : ""}">
       <b>${esc(o.title)}</b>${i === q.recommended ? ` <span class="chip ok">recommended</span>` : ""}<p>${esc(o.summary)}</p>
-      <div class="chips"><span class="chip">$${fmt(o.cost_usd)}</span><span class="chip">${fmt(o.print_hours)} h printing</span><span class="chip">${fmt(o.parts_printed)} printed parts</span></div>
+      ${o.route ? `<p class="route">${esc({buy:"Buy a ready-made solution",adapt:"Adapt an existing design",build:"Build a custom solution"}[o.route] || o.route)}</p>` : ""}
+      <div class="chips"><span class="chip">${o.cost_usd == null ? "Cost not yet known" : "$" + fmt(o.cost_usd) + (q.request_kind === "scenario" ? " estimated" : "")}</span><span class="chip">${o.print_hours == null ? "Print time not yet known" : fmt(o.print_hours) + " h printing"}</span><span class="chip">${fmt(o.parts_printed)} printed parts</span></div>
       ${o.cost_note || o.print_note ? `<p class="note">${esc([o.cost_note, o.print_note].filter(Boolean).join(" · "))}</p>` : ""}
+      ${o.fit || o.effort ? `<dl>${o.fit ? `<dt>Fit to your goal</dt><dd>${esc(o.fit)}</dd>` : ""}${o.effort ? `<dt>Your time and effort</dt><dd>${esc(o.effort)}</dd>` : ""}</dl>` : ""}
       ${(o.risks || []).length ? `<p class="note">Risks: ${o.risks.map(esc).join("; ")}</p>` : ""}
-      <button class="primary" onclick="startNew(${i})">Design this one</button></div>`).join("")}</div>
+      ${(o.sources || []).length ? `<details ${o.route === "buy" ? "open" : ""}><summary>Research sources</summary><ul>${o.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><span class="source-note">${esc(s.finding)}</span></li>`).join("")}</ul></details>` : ""}
+      ${(o.next_steps || []).length ? `<h4>Next steps</h4><ul>${o.next_steps.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${o.route === "buy" ? `<p class="note">Use the research links to check availability and decide. Kerf does not place an order.</p>` : `<button class="primary" onclick="startNew(${i})" ${!matches || questions.length ? "disabled" : ""}>${o.route === "adapt" ? "Adapt this option" : "Design this one"}</button>`}</div>`).join("")}</div>
       ${(q.assumptions || []).length ? `<p class="note">Assumed: ${q.assumptions.map(esc).join("; ")}</p>` : ""}`;
   } catch (e) { el.innerHTML = `<div class="banner bad">No options yet: ${esc(e.message)}</div>`; }
 }
 async function startNew(opt) {
   const option = typeof opt === "number" && S.quote ? S.quote.options[opt] : null;
   const r = await fetch("/api/new", {method: "POST", headers: {"Content-Type": "application/json"},
-                                     body: JSON.stringify({name: $("#nname").value.trim(), description: $("#ndesc").value, intake: intake(), option})});
+                                     body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake(), option, option_index: typeof opt === "number" ? opt : null})});
   const j = await r.json().catch(() => ({error: "bad response"}));
   if (r.ok && j.job) { watch(j.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
@@ -1476,40 +1579,113 @@ async function pollLive() {
 }
 setInterval(pollLive, 4000);
 
-/* ---------- Work: what the sessions are doing (read-only, from git: log, claims/, PLAN.md; shares Follow live's fetch) */
+/* ---------- Work: read-only task ownership and progress, with each source's limits kept visible. */
 async function showWork() {
   S.work = true; S.grid = false; S.parts = false; S.sel = null; S.newOpen = false; S.ticket = (S.ticket || 0) + 1; renderList();
-  if (!S.workData) $("#main").innerHTML = `<div class="head"><h1>Work</h1><p class="desc">Reading git…</p></div>`;
-  else renderWork();
+  renderWork();
   loadWork();
 }
 async function loadWork() {
-  if (!S.work) return;
-  try { const w = await api("/api/work"); if (S.work) { S.workData = w; renderWork(); } }
-  catch (e) { if (S.work) $("#main").innerHTML = `<div class="body"><div class="banner bad">${esc(e.message)}</div></div>`; }
+  if (!S.work || S.workLoading) return;
+  S.workLoading = true; renderWork();
+  try { const w = await api("/api/work"); S.workData = w; S.workError = null; }
+  catch (e) { S.workError = e.message; }
+  finally { S.workLoading = false; if (S.work) renderWork(); }
 }
 setInterval(() => { if (S.work) loadWork(); }, 15000);
+const WORK_STATES = {running:"Working",working:"Working",claimed:"Claimed",waiting:"Waiting for input",blocked:"Blocked",failed:"Failed",done:"Finished",stopped:"Stopped",stale:"Update overdue",idle:"Not running"};
+function workItems(w) {
+  if (Array.isArray(w.items)) return w.items;
+  return (w.cards || []).map((c,i) => ({id:c.session || `claim-${i}`,session:c.session,provider:"Session",title:c.item,
+    description:c.full,projects:c.project ? [{name:c.project,title:projTitle(c.project)}] : [],state:c.stale ? "stale" : "claimed",
+    updated_at:Date.now()/1000 - (Number(c.since_commit_min) || 0)*60,source_label:"Shared work claim",picture:c.picture}));
+}
+function workGroup(item) {
+  if (item.attention || ["waiting","blocked","failed","stale"].includes(item.state)) return "attention";
+  if (["working","running","claimed"].includes(item.state)) return "active";
+  return "recent";
+}
+function workFilter(value) { S.workFilter = value; renderWork(); }
+function workSearch(value) { S.workSearch = value; renderWork(); }
+function workProvider(value) { S.workProvider = value; renderWork(); }
+function workLink(value) {
+  try { const u = new URL(value); return ["https:","codex:"].includes(u.protocol) ? u.href : null; } catch { return null; }
+}
+function workAge(value) {
+  return Number.isFinite(Number(value)) && Number(value)>0 ? ago(Math.max(0,Date.now()/1000 - Number(value))) : "time unavailable";
+}
+function workAction(index, action, projectIndex=0) {
+  const item = S.workRendered[index]; if (!item) return;
+  if (action === "job" && item.job_id) return watch(item.job_id);
+  const project = (item.projects || [])[projectIndex];
+  if (!project) return;
+  if (action === "live") return openLive(project.name);
+  if (!S.projects.some(p => p.name === project.name)) return toast("Project not on this computer", "It will be available after this checkout receives the project files.", "bad");
+  return select(project.name);
+}
+function workTask(item,index) {
+  const state = Object.hasOwn(WORK_STATES,item.state) ? item.state : "idle", projects = item.projects || [];
+  const progress = item.progress, known = progress && Number.isFinite(progress.total) && progress.total>0 && Number.isFinite(progress.done) && progress.done>=0 && progress.done<=progress.total;
+  const eta = item.eta, timed = eta && Number.isFinite(eta.seconds) && eta.seconds>=0;
+  const link = workLink(item.url), description = item.description || "", remaining = Array.isArray(item.remaining) ? item.remaining : [];
+  const completed = ["done","stopped"].includes(state), detailId = String(item.id || index), focusId = `work-item-${encodeURIComponent(detailId)}`;
+  return `<article class="work-item" data-work-item="${esc(detailId)}">
+    <div class="work-item-top"><div class="work-item-title"><h2>${esc(item.title || "Untitled work")}</h2>
+      <div class="work-owner"><b>${esc(item.provider || "Session")}</b>${item.session ? `<span title="${esc(item.session)}">Session ${esc(String(item.session).slice(0,8))}</span>` : ""}<span>${esc(projects.map(p=>p.title || p.name).join(" · ") || "Kerf Studio")}</span></div></div>
+      <span class="work-state ${state}">${esc(item.status_label || WORK_STATES[state])}</span></div>
+    <p class="work-activity ${item.activity ? "" : "empty"}">${esc(item.activity || "No activity update has been reported for this task yet.")}</p>
+    ${item.attention ? `<p class="work-attention"><strong>Needs attention:</strong> ${esc(item.attention)}</p>` : ""}
+    <div class="work-measures">
+      <div class="work-progress">${known ? `<b>${progress.done} of ${progress.total} ${esc(progress.label || "steps complete")}</b><progress max="${progress.total}" value="${progress.done}" aria-label="${esc(progress.label || "Reported task progress")}"></progress>` : `<b>${completed ? "Run ended" : "Progress not reported"}</b><span>${completed ? "See the latest result above" : "An active session is not a completion percentage"}</span>`}</div>
+      <div><b>${completed ? "" : timed ? `About ${Math.max(1,Math.ceil(eta.seconds/60))} min left` : "No time estimate yet"}</b><span>${completed ? "" : timed ? esc(eta.basis || "Based on previous runs") : "Shown when this work has a reliable estimate"}</span></div>
+    </div>
+    <div class="work-item-footer"><div class="work-actions">
+      ${link ? `<a id="${focusId}-chat" class="btn" href="${esc(link)}" ${link.startsWith("https:") ? 'target="_blank" rel="noopener noreferrer"' : ""}>Open chat</a>` : ""}
+      ${item.job_id ? `<button id="${focusId}-job" onclick="workAction(${index},'job')">Watch job</button>` : ""}
+      ${projects.map((p,j)=>`<button id="${focusId}-project-${j}" onclick="workAction(${index},'project',${j})">${projects.length>1 ? esc(p.title || p.name) : "View project"}</button>`).join("")}
+      ${projects.length===1 && ["running","working","claimed"].includes(state) ? `<button id="${focusId}-live" onclick="workAction(${index},'live')">Follow 3D</button>` : ""}
+    </div><span class="work-stamp">Updated ${workAge(item.updated_at)}</span></div>
+    <details class="work-detail" data-work-id="${esc(detailId)}" ${S.workOpen?.has(detailId) ? "open" : ""}><summary id="${focusId}-scope">Scope &amp; next steps${remaining.length ? ` · ${remaining.length} remaining` : ""}</summary>
+      ${description && description !== item.activity ? `<p>${esc(description)}</p>` : ""}
+      <h3>${completed ? "Remaining work reported" : "Still to do"}</h3>${remaining.length ? `<ul>${remaining.map(step=>`<li>${esc(step)}</li>`).join("")}</ul>` : `<p>${state === "done" ? "No further steps were reported. Completion applies to this run, not the whole project." : "No checklist has been reported. The session may still be deciding the next step."}</p>`}
+      <dl>${item.started_at ? `<dt>Started</dt><dd>${esc(new Date(item.started_at*1000).toLocaleString())}</dd>` : ""}<dt>Source</dt><dd>${esc(item.source_label || item.source || "Reported session state")}</dd>${item.chat_title && item.chat_title !== item.title ? `<dt>Chat</dt><dd>${esc(item.chat_title)}</dd>` : ""}${item.branch ? `<dt>Branch</dt><dd>${esc(item.branch)}</dd>` : ""}</dl>
+      ${item.source_detail ? `<p>${esc(item.source_detail)}</p>` : ""}${typeof item.picture === "string" && /^\/(files|thumb)\//.test(item.picture) ? `<img class="work-preview" src="${esc(item.picture)}" alt="Latest saved project preview" loading="lazy">` : ""}
+    </details></article>`;
+}
 function renderWork() {
-  const w = S.workData, now = Date.now() / 1000;
-  const mins = m => m < 1 ? "just now" : m < 60 ? `${Math.round(m)} min ago` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min ago`;
-  const hhmm = s => new Date(s * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
-  $("#main").innerHTML = `<div class="head"><h1>Work</h1><p class="desc">What the Claude Code sessions are doing, read from origin (${esc(w.ref)}).
-      ${w.fetch_error ? `<span class="chip warn" title="${esc(w.fetch_error)}">offline: last known state</span>` : w.fetched ? `Checked ${ago(now - w.fetched)}; again every ${Math.round(w.every)} s while this is open.` : "Checking origin…"}</p></div>
-    <div class="body">
-      <div class="wtiles">
-        <div class="wtile"><b>${w.plan_done} / ${w.plan_total}</b><span>PLAN items done</span></div>
-        <div class="wtile"><b>${w.sessions}</b><span>session${w.sessions == 1 ? "" : "s"} working (claims fresher than ${w.stale_min} min)</span></div>
-        <div class="wtile"><b>${w.today}</b><span>item${w.today == 1 ? "" : "s"} checked off today</span></div>
-      </div>
-      <h3>Claimed work</h3>
-      <div class="wcards">${w.cards.map(c => `<div class="wcard ${c.stale ? "stale" : ""}">
-        ${c.picture ? `<img src="${esc(c.picture)}" alt="" loading="lazy">` : ""}
-        <div class="wb"><p title="${esc(c.full)}">${esc(c.item)}</p>
-          <span class="note">last commit ${mins(c.since_commit_min)}${c.stale ? ` <span class="chip warn">stale</span>` : ""}</span>
-          ${c.project ? `<button onclick="openLive('${esc(c.project)}')">◇ View 3D</button>` : ""}</div></div>`).join("") || `<p class="note">No session holds a claim right now.</p>`}</div>
-      <h3>Latest commits</h3>
-      <ul class="wfeed">${w.feed.map(c => `<li><time title="${esc(new Date(c.time * 1000).toLocaleString())}">${hhmm(c.time)}</time><span>${esc(c.subject)}</span>${c.done.length ? `<span class="chip ok" title="${esc(c.done.join("\n"))}">✓ ${c.done.length} done</span>` : ""}</li>`).join("")}</ul>
-    </div>`;
+  const w = S.workData, host = $("#main"), top = host.scrollTop, focused = document.activeElement;
+  S.workOpen ||= new Set();
+  host.querySelectorAll(".work-detail").forEach(el=>{ if(el.open) S.workOpen.add(el.dataset.workId); else S.workOpen.delete(el.dataset.workId); });
+  const focus = focused?.id?.startsWith("work-") ? {id:focused.id,start:focused.selectionStart,end:focused.selectionEnd} : null;
+  const items = w ? workItems(w) : [], group = S.workFilter || "all", query = (S.workSearch || "").trim().toLowerCase(), provider = S.workProvider || "all";
+  const counts = {all:items.length,active:0,attention:0,recent:0}; for (const item of items) counts[workGroup(item)]++;
+  const providers = [...new Set(items.map(i=>i.provider || "Session"))].sort();
+  const filtered = items.filter(i=>(group==="all" || workGroup(i)===group) && (provider==="all" || (i.provider || "Session")===provider) &&
+    (!query || [i.title,i.description,i.activity,i.provider,i.session,...(i.projects || []).map(p=>`${p.name} ${p.title}`)].join(" ").toLowerCase().includes(query)))
+    .sort((a,b)=>({attention:0,active:1,recent:2}[workGroup(a)] - {attention:0,active:1,recent:2}[workGroup(b)] || (b.updated_at || 0)-(a.updated_at || 0)));
+  S.workRendered = filtered;
+  const projects = new Map(); for (const i of items.filter(i=>["attention","active"].includes(workGroup(i)))) for (const p of i.projects || []) {
+    const entry = projects.get(p.name) || {...p,count:0}; entry.count++; projects.set(p.name,entry);
+  }
+  const planTotal = Number(w?.plan_total) || 0, planDone = Math.min(planTotal,Number(w?.plan_done) || 0), sources = w?.sources || [];
+  const feed = (w?.feed || []).filter(c=>! /^(claim(?::| heartbeat)|release claims?\b)/i.test(c.subject)).slice(0,6);
+  const error = S.workError || w?.fetch_error;
+  host.innerHTML = `<div class="work-page"><div class="head work-head"><div><h1>Work</h1><p class="desc">Who is working on what, what changed, and what needs you.</p></div>
+      <div class="work-refresh"><span role="status">${S.workLoading ? "Checking for updates…" : w ? `Updated ${workAge(w.updated_at || w.fetched)}` : "Connecting to work sources"}</span><button id="work-refresh" onclick="loadWork()" ${S.workLoading ? "disabled" : ""}>Refresh</button></div></div>
+    <div class="body">${error ? `<div class="work-notice error" role="alert"><p><strong>Couldn’t refresh ${S.workError ? "work" : "shared work"}.</strong> ${w ? "Showing the last available information. " : ""}${esc(error)}</p><button id="work-retry" onclick="loadWork()" ${S.workLoading ? "disabled" : ""}>Try again</button></div>` : ""}
+    ${!w ? `<div aria-busy="${S.workLoading ? "true" : "false"}">${S.workError ? `<div class="work-empty"><h2>Work is temporarily unavailable</h2><p>Refresh to reconnect. Your running jobs are not affected by this page.</p></div>` : Array.from({length:3},()=>`<div class="work-skeleton"><div class="sk" style="width:50%;height:20px"></div><div class="sk" style="width:75%"></div><div class="sk" style="width:35%"></div></div>`).join("")}</div>` : `
+    <div class="work-layout"><section aria-label="Tracked work"><div class="work-toolbar"><div class="work-filters" aria-label="Filter work">
+      ${[["all","All work"],["active","In progress"],["attention","Needs attention"],["recent","Recent"]].map(([key,label])=>`<button id="work-filter-${key}" onclick="workFilter('${key}')" aria-pressed="${group===key}">${label}<span>${counts[key]}</span></button>`).join("")}</div>
+      <div class="work-searches"><input id="work-search" type="search" aria-label="Search work" placeholder="Search tasks, projects or sessions" value="${esc(S.workSearch || "")}" oninput="workSearch(this.value)"><select id="work-provider" aria-label="Filter by assistant" onchange="workProvider(this.value)"><option value="all">All assistants</option>${providers.map(p=>`<option value="${esc(p)}" ${provider===p ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></div></div>
+      <div class="work-list">${filtered.length ? filtered.map(workTask).join("") : `<div class="work-empty"><h2>${items.length ? "No work matches these filters" : "No work is being reported yet"}</h2><p>${items.length ? "Try another project name or show all assistants and work states." : "Codex sessions, shared work claims, and jobs started in Studio appear here when available. Source status shows what this computer can currently see."}</p>${items.length ? `<button id="work-clear" onclick="S.workSearch='';S.workProvider='all';workFilter('all')">Clear filters</button>` : ""}</div>`}</div>
+    </section><aside class="work-rail" aria-label="Project context">
+      <section class="work-plan"><h2>Overall plan</h2><strong>${planDone} of ${planTotal} items complete</strong>${planTotal ? `<progress value="${planDone}" max="${planTotal}" aria-label="Completed plan items"></progress>` : ""}<div class="work-plan-counts"><span>${Math.max(0,planTotal-planDone)} remaining</span><span>${Number(w.today)||0} completed today</span></div><p>Plan items vary in size. This is scope completed, not a time estimate.</p></section>
+      ${projects.size ? `<section><h2>Where the work is</h2><ul class="work-projects">${[...projects.values()].map(p=>`<li><button id="work-project-${encodeURIComponent(p.name)}" onclick="workSearch(${esc(JSON.stringify(p.name))})">${esc(p.title || p.name)}</button><span>${p.count} task${p.count===1 ? "" : "s"}</span></li>`).join("")}</ul></section>` : ""}
+      <section><h2>Recent changes</h2>${feed.length ? `<ul class="work-feed">${feed.map(c=>`<li><time datetime="${new Date(c.time*1000).toISOString()}" title="${esc(new Date(c.time*1000).toLocaleString())}">${workAge(c.time)}</time>${esc(c.subject)}${c.done?.length ? `<span class="work-completed">${c.done.length} plan item${c.done.length===1 ? "" : "s"} completed</span>` : ""}</li>`).join("")}</ul>` : `<p>New commits and completed plan items will appear here.</p>`}</section>
+      <section><h2>What this page can see</h2>${sources.length ? sources.map(s=>`<div class="work-source"><b>${esc(s.name)}${s.state && !["ok","available","connected"].includes(s.state) ? ` · ${esc(s.state)}` : ""}</b><span>${esc(s.detail || "No source details reported")}</span>${s.updated_at ? `<p>Checked ${workAge(s.updated_at)}</p>` : ""}</div>`).join("") : `<p>Shared work comes from saved claims and commits. A fresh claim means someone owns the task; it does not prove they are running right now.</p>`}<p>Refreshes while this page is open. Estimates appear only when supported by reported progress or previous runs.</p></section>
+    </aside></div>`}</div></div>`;
+  host.scrollTop = top;
+  if (focus) { const el = document.getElementById(focus.id) || document.getElementById("work-search"); if (el) { el.focus({preventScroll:true}); if (el.id===focus.id && el.setSelectionRange && focus.start != null) el.setSelectionRange(focus.start,focus.end); } }
 }
 async function openLive(name) {
   if (!S.projects.some(p => p.name === name)) return toast("Not here yet", `projects/${name} isn't on this computer yet: it arrives with the next update.`, "bad");
@@ -1539,7 +1715,10 @@ function openEdit(text, ctx) {
 async function startEdit() {
   const t = $("#edtxt").value.trim(); if (!t) return $("#edtxt").focus();
   $("#edgo").disabled = true;
-  const [r, j] = await postJson("/api/edit", {project: S.sel, request: t, title: S.editTitle}).catch(e => [{ok: false}, {error: e.message}]);
+  let [r, j] = await postJson("/api/edit", {project: S.sel, request: t, title: S.editTitle}).catch(e => [{ok: false}, {error: e.message}]);
+  if (j.claimed && confirm(j.error))
+    [r, j] = await postJson("/api/edit", {project: S.sel, request: t, title: S.editTitle, override: true}).catch(e => [{ok: false}, {error: e.message}]);
+  else if (j.claimed) { $("#edgo").disabled = false; return; }
   if (r.ok && j.job) { closeModal(); watch(j.job); toast("Change started", "Claude Code is on it. Watch it work in the panel.", "ok"); return; }
   $("#edgo").disabled = false;
   if (j.setup) { $("#edready").innerHTML = readyCard({code: j.setup, why: j.error}); return; }
@@ -1560,7 +1739,7 @@ function openDuplicate() {
 async function doDuplicate() {
   $("#dgo").disabled = true;
   try {
-    const r = await api("/api/duplicate", {project: S.sel, name: $("#dname").value.trim(), title: $("#dtitle").value.trim(), change: $("#dchange").value.trim()});
+    const r = await api("/api/duplicate", {project: S.sel, name: ($("#dname").value = slugName($("#dname").value)), title: $("#dtitle").value.trim(), change: $("#dchange").value.trim()});
     closeModal(); await loadProjects(); await select(r.name);
     if (r.job) { watch(r.job); toast("Copied, change started", `projects/${r.name}: Claude Code is making the change.`, "ok"); }
     else if (r.error) toast("Copied", r.error, "bad");

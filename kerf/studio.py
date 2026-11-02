@@ -16,7 +16,7 @@ Everything goes through the same engine and CLI as the terminal; the studio only
   - thumbnails: the viewer's own picture of the model, kept per geometry fingerprint
   - notifications: a desktop notification (macOS / notify-send) when a long job ends; the page also chimes
   - follow live: a project's 3D view updates part by part while cloud sessions push to it (kerf/live.py)
-  - work: what the Claude Code sessions are doing (PLAN progress, fresh claims, latest commits), read from git
+  - work: shared claims, Codex sessions and Studio jobs, with activity, progress and source freshness
 Stdlib only (http.server + subprocess). Binds to 127.0.0.1: nothing is reachable from other machines.
 """
 from __future__ import annotations
@@ -227,7 +227,25 @@ def fixable(name: str) -> tuple[bool, str]:
         return False, "it is still being designed (placeholder parts): the designing session finishes it"
     if any(j.kind == "fix" and j.project == name and j.state == "running" for j in JOBS.values()):
         return False, "a fix is already running"
+    if _worked_on(name):
+        return False, "another Claude session is working on this project right now (see Activity)"
     return True, ""
+
+
+def slug(name: str) -> str:
+    """What a typed project name becomes: 'Hawk Drone' -> 'hawk_drone' (lowercase, spaces and dashes to _)."""
+    s = re.sub(r"[\s\-]+", "_", str(name).strip().lower())
+    return re.sub(r"_+", "_", re.sub(r"[^a-z0-9_]", "", s)).strip("_")
+
+
+class Claimed(ValueError):
+    """Changing a project another session is editing: allowed only when the user confirms (override)."""
+
+
+def guard_claimed(name: str, override: bool):
+    if not override and _worked_on(name):
+        raise Claimed("Another Claude session is working on this project right now (see Activity). Changing it here "
+                      "can clash with its edits. Change it anyway?")
 
 
 def fix_job(name: str) -> Job:
@@ -287,7 +305,7 @@ def printer_setup(host: str, code: str, serial=None) -> dict:
     """Connect to the printer on this Mac's network (LAN Only + Developer Mode), prove the login, save the config."""
     from . import bambu
     import ipaddress
-    host, code = host.strip(), code.strip()
+    host, code = host.strip(), "".join(code.split())          # "1234 5678" pasted with a space is the same code
     try:
         ipaddress.ip_address(host)
     except ValueError:
@@ -836,8 +854,16 @@ class ClaudeNotReady(ValueError):
 INTAKE_FIELDS = {"budget": "Budget (USD, purchased parts + filament)", "power": "Power", "mounting": "Mounting",
                  "environment": "Environment", "printer": "Printer", "material": "Material", "notes": "Other constraints",
                  "who": "Use story - who uses it", "how_often": "Use story - how often",
-                 "goes_wrong": "Use story - what goes wrong (drops, crashes, heat, rain, gloves)"}
+                 "goes_wrong": "Use story - what goes wrong (drops, crashes, heat, rain, gloves)",
+                 "request_kind": "Request kind", "success": "What a successful solution must do",
+                 "priority": "What matters most", "effort": "Time and effort available"}
 QUOTES = ROOT / ".cache" / "studio" / "quotes"
+
+
+def _intake(intake: dict | None) -> dict:
+    if intake is not None and not isinstance(intake, dict):
+        raise ValueError("intake answers must be an object")
+    return {k: str(v).strip() for k, v in (intake or {}).items() if k in INTAKE_FIELDS and str(v).strip()}
 
 
 def brief(description: str, intake: dict | None = None, option: dict | None = None) -> str:
@@ -845,7 +871,8 @@ def brief(description: str, intake: dict | None = None, option: dict | None = No
     and (after a quote) the option he picked."""
     from .ship import load_inventory
     L = [description.strip()]
-    answers = [f"- {INTAKE_FIELDS[k]}: {str(v).strip()}" for k, v in (intake or {}).items() if k in INTAKE_FIELDS and str(v).strip()]
+    intake = _intake(intake)
+    answers = [f"- {INTAKE_FIELDS[k]}: {v}" for k, v in intake.items()]
     if answers:
         L += ["", "Spencer's answers to the intake questions:", *answers]
     if any(str((intake or {}).get(k, "")).strip() for k in ("who", "how_often", "goes_wrong")):
@@ -858,10 +885,15 @@ def brief(description: str, intake: dict | None = None, option: dict | None = No
         L += ["", f"Spencer picked this option from the quote: {option.get('title', '')} - {option.get('summary', '')}"]
         if option.get("purchased"):
             L.append("Its purchased parts: " + ", ".join(f"{x.get('key')} x{x.get('qty', 1)}" for x in option["purchased"]))
+        if option.get("route"):
+            L += ["", "Selected option, including its evidence and unresolved risks:", json.dumps(option, ensure_ascii=False),
+                  "Keep these trade-offs and sources in DESIGN.md / REFERENCES.md; recheck estimates during design. "
+                  "Do not buy anything or send anything to a printer."]
     return "\n".join(L)
 
 
 def _check_new(name: str, description: str):
+    name = slug(name)
     if not NAME_RE.match(name):
         raise ValueError("name: lowercase letters, digits and _ (2-41 chars), starting with a letter")
     if (PROJECTS / name).exists():
@@ -873,7 +905,24 @@ def _check_new(name: str, description: str):
         raise ClaudeNotReady(ready)
 
 
-def new_design(name: str, description: str, intake: dict | None = None, option: dict | None = None) -> Job:
+def new_design(name: str, description: str, intake: dict | None = None, option: dict | None = None,
+               option_index: int | None = None) -> Job:
+    name = slug(name)
+    intake = _intake(intake)
+    if intake.get("request_kind") == "scenario" and option_index is None:
+        raise ValueError("compare options first, then choose an adapt or build option")
+    if option_index is not None:
+        q = read_quote(name)
+        if type(option_index) is not int or not 0 <= option_index < len(q["options"]):
+            raise ValueError("choose one of the quoted options")
+        context = q.get("context")
+        if context and context != {"description": description.strip(), "intake": intake}:
+            raise ValueError("your request changed; compare options again before designing")
+        if q.get("questions"):
+            raise ValueError("answer the open questions in your request, then compare options again")
+        option = q["options"][option_index]
+    if option and option.get("route") == "buy":
+        raise ValueError("this is a buy-only option: follow its sources and next steps; no design is needed")
     _check_new(name, description)
     exe = claude_bin()
     prompt = (f"/kerf {brief(description, intake, option)}\n\nProject folder name: projects/{name}. Spencer started this from "
@@ -885,14 +934,25 @@ def new_design(name: str, description: str, intake: dict | None = None, option: 
 def quote(name: str, description: str, intake: dict | None = None) -> Job:
     """Quote first: Claude researches and writes 2-3 candidate architectures with cost, print time and part count to
     .cache/studio/quotes/<name>.json (kerf skill, "Quote mode") and stops; nothing is designed until one is picked."""
+    name = slug(name)
+    intake = _intake(intake)
     _check_new(name, description)
-    QUOTES.mkdir(parents=True, exist_ok=True)
     out = QUOTES / f"{name}.json"
-    out.unlink(missing_ok=True)
     prompt = (f"/kerf QUOTE ONLY. {brief(description, intake)}\n\nWrite the quote to {out} as the kerf skill's Quote mode "
               f"says and stop: do not create projects/{name} or any design files.")
+    if intake.get("request_kind") == "scenario":
+        prompt += ("\nSCENARIO OPTIONS: use the scenario quote contract in Quote mode. Compare buying a ready-made "
+                   "solution with adapting an existing/free design or building one. Research first; cite the pages you "
+                   "actually opened. Show fit to the success criteria, effort, risks and the reason for the recommendation. "
+                   "Unknown prices/times stay null with an explanation, never zero. List unanswered questions; do not "
+                   "pretend an unverified assumption meets the scenario. No purchases or printer actions.")
+    def prepare():
+        QUOTES.mkdir(parents=True, exist_ok=True)
+        out.unlink(missing_ok=True)
+        (QUOTES / f"{name}.request.json").write_text(
+            json.dumps({"description": description.strip(), "intake": intake}), encoding="utf-8")
     return start_job("quote", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"],
-                     f"Options for: {description.strip()[:60]}", parse=_claude_lines)
+                     f"Options for: {description.strip()[:60]}", parse=_claude_lines, prepare=prepare)
 
 
 def read_quote(name: str) -> dict:
@@ -900,14 +960,16 @@ def read_quote(name: str) -> dict:
     f = QUOTES / f"{name}.json"
     if not NAME_RE.match(name) or not f.exists():
         raise ValueError("no quote yet")
-    q = json.loads(f.read_text(encoding="utf-8"))
-    opts = q.get("options") if isinstance(q, dict) else None
-    if not isinstance(opts, list) or not 1 <= len(opts) <= 3:
-        raise ValueError("the quote has no options (expected 1-3)")
-    for o in opts:
-        missing = [k for k in ("title", "summary", "parts_printed", "cost_usd", "print_hours") if o.get(k) in (None, "")]
-        if missing:
-            raise ValueError(f"quote option '{o.get('title', '?')}' is missing {', '.join(missing)}")
+    from .quotes import validate
+    context_file = QUOTES / f"{name}.request.json"
+    context = json.loads(context_file.read_text(encoding="utf-8")) if context_file.exists() else None
+    scenario = bool(context and context.get("intake", {}).get("request_kind") == "scenario")
+    q = validate(json.loads(f.read_text(encoding="utf-8")), scenario=scenario)
+    q.pop("context", None)  # The request comes from Studio's saved input, never from generated quote content.
+    if scenario:
+        q["request_kind"] = "scenario"
+    if context:
+        q["context"] = context
     return q
 
 
@@ -1029,6 +1091,7 @@ def duplicate(src: str, name: str, title: str = "") -> Path:
     files and the review stay behind (a copy is a new design: it is built and reviewed on its own)."""
     if src not in project_names():
         raise ValueError("no such project")
+    name = slug(name)
     if not NAME_RE.match(name):
         raise ValueError("name: lowercase letters, digits and _ (2-41 chars), starting with a letter")
     dst = PROJECTS / name
@@ -1366,15 +1429,42 @@ def _work_picture(name: str) -> str | None:
 
 
 def work() -> dict:
-    """The Work tab's data, recomputed after each fetch (and each minute, for the ages), from the fetched origin branch."""
-    from . import live
+    """Cache shared git work separately from live jobs and bounded Codex session observations."""
+    from . import codex_work, live, work as work_overview
     LIVE["work_until"] = time.time() + 90              # the tab is open: keep the shared fetch going
     _live_thread()
-    key = (live.upstream(ROOT) or _git("rev-parse", "HEAD"), int(time.time() // 60))
-    if LIVE["work"] is None or LIVE["work_key"] != key:
-        LIVE["work"] = live.work_data(ROOT, "@{u}", picture=_work_picture)
+    # Claims are shared on main even when Studio itself runs from a feature branch.
+    ref = _git("symbolic-ref", "--quiet", "refs/remotes/origin/HEAD") or "origin/main"
+    revision = _git("rev-parse", "--verify", "-q", ref)
+    if not revision:
+        ref, revision = "@{u}", live.upstream(ROOT) or _git("rev-parse", "HEAD")
+    key = (revision, int(time.time() // 60))
+    git_work = LIVE["work"]
+    if git_work is None or LIVE["work_key"] != key:
+        git_work = live.work_data(ROOT, ref, picture=_work_picture)
+        LIVE["work"] = git_work
         LIVE["work_key"] = key
-    return {**LIVE["work"], "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "every": live.FETCH_EVERY}
+    codex = codex_work.snapshot(ROOT)
+    now = time.time()
+    timings = _times()
+    jobs = []
+    with JOB_LOCK:
+        for j in list(JOBS.values()):
+            if j.state != "running" and now - (j.ended or j.started) >= 86400:
+                continue
+            kind = f"mode_{j.mode}" if j.mode else j.kind
+            runs = timings.get(j.project, {})
+            comparable = runs.get(kind) or runs.get({"mode_kit": "build", "mode_check": "check"}.get(kind, ""))
+            # A last report may be a quick check, so only recorded comparable runs support a countdown.
+            jobs.append({"id": j.id, "kind": j.kind, "project": j.project, "label": j.label,
+                         "state": j.state, "started": j.started, "mode": j.mode, "events": list(j.events),
+                         "estimate_seconds": estimate(j.project, kind) if comparable else None})
+    sources = [{"name": "Shared claims", "state": "partial" if LIVE["fetch_error"] or not LIVE["last_fetch"] else "ok",
+                "detail": "Last fetched repository state; claim updates show ownership, not live execution.",
+                "updated_at": LIVE["last_fetch"] or None}, codex["source"],
+               {"name": "Studio jobs", "state": "ok", "detail": "Jobs running on this computer and results from the last 24 hours.", "updated_at": now}]
+    return {**work_overview.overview(git_work, sessions=codex["sessions"], jobs=jobs, sources=sources, now=now),
+            "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "every": live.FETCH_EVERY}
 
 
 # ---------------------------------------------------------------- http
@@ -1569,7 +1659,8 @@ class Handler(BaseHTTPRequestHandler):
                     if u.path == "/api/quote":
                         j = quote(body.get("name", ""), body.get("description", ""), body.get("intake"))
                     else:
-                        j = new_design(body.get("name", ""), body.get("description", ""), body.get("intake"), body.get("option"))
+                        j = new_design(body.get("name", ""), body.get("description", ""), body.get("intake"),
+                                       body.get("option"), body.get("option_index"))
                 except ClaudeNotReady as e:
                     return self._json({"error": str(e), "setup": e.ready["code"]}, 409)
                 return self._json({"job": j.id})
@@ -1635,6 +1726,11 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     return self._err(f"unknown action {action}")
                 return self._json({"job": j.id})
+            if u.path in ("/api/save", "/api/restore", "/api/edit", "/api/save-materials"):
+                try:
+                    guard_claimed(name, body.get("override") is True)
+                except Claimed as e:
+                    return self._json({"error": str(e), "claimed": True}, 409)
             if u.path == "/api/save":
                 with JOB_LOCK:
                     require_idle(name)

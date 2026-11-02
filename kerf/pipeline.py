@@ -7,7 +7,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import edges, partcache, progress, stressmap
+from . import advice, edges, partcache, progress, stressmap
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -351,7 +351,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             hits = A.interference(asm)
             rep["assembly"]["interference"] = hits
             for h in hits:
-                rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position")
+                how = advice.overlap(proj, h["a"], h["b"]) if h["a"] in proj.items and h["b"] in proj.items else ""
+                rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position"
+                                       + (f" — fix: {how}" if how else ""))
             fj, fprob = A.fasteners(asm)
             rep["assembly"]["fasteners"] = fj
             rep["problems"] += fprob
@@ -381,7 +383,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 for s in sw:
                     if not s["clear"]:
                         c = s["collisions"][0]
-                        rep["problems"].append(f"moving joint '{s['joint']}' collides: {c['a']} hits {c['b']} ({c['volume_mm3']} mm3) at {c.get('at', c.get('pose'))}")
+                        how = advice.sweep(s, proj) if "range" in s else ""
+                        rep["problems"].append(f"moving joint '{s['joint']}' collides: {c['a']} hits {c['b']} ({c['volume_mm3']} mm3) at {c.get('at', c.get('pose'))}"
+                                               + (f" — fix: {how}" if how else ""))
             rep["assembly"]["joints"] = [{"name": e.name, "kind": e.kind, "parent": f"{e.parent}.{e.pjoint}",
                                           "child": f"{e.child}.{e.cjoint}", "range": list(e.range), "home": e.home}
                                          for e in asm.edges]
@@ -470,6 +474,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     rep["warnings"].append(f"failure table: {type(e).__name__}: {e}")
             _layer_proofs(proj, rep)
             rep["warnings"] += _fea_hygiene(proj)
+            if paused := [r["id"] for r in rq if r.get("paused")]:
+                rep["warnings"].append(f"stress simulations PAUSED ({requirements.stress_paused()}): {len(paused)} "
+                                       f"strength check(s) not run, strength unproven: {', '.join(paused)}")
             bp, bw = export.bom_extra_check(proj, rep.get("assembly", {}).get("fasteners"))
             rep["problems"] += bp
             rep["warnings"] += bw
@@ -687,7 +694,9 @@ def summary(rep: dict) -> str:
     for s in a.get("sweeps", []):
         L.append(f"  sweep {s['joint']:14s} {'clear' if s['clear'] else 'COLLIDES'} over {s.get('range', '')} ({s['samples']} samples)")
     for r in rep.get("requirements", []):
-        L.append(f"  req {r['id']:20s} " + ("skipped (--quick)" if r.get("skipped") else req_line(r)))
+        L.append(f"  req {r['id']:20s} " + ("PAUSED (stress simulations off)" if r.get("paused") else "skipped (--quick)" if r.get("skipped") else req_line(r)))
+        for t in r.get("advice") or []:                 # what to change, worked out from this check (kerf/advice.py)
+            L.append(f"      -> {t}")
     for p in rep["problems"]:
         L.append(f"  PROBLEM: {p}")
     for w in rep["warnings"]:

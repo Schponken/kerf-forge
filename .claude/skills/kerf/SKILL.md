@@ -52,6 +52,30 @@ searches), then write the JSON file the request names and STOP (no project folde
 the print-time lower bound); keys come from catalog/prices.json. Prefer the parts on hand the brief lists. Say in
 `cost_note` / `print_note` what is estimated. When he picks one, the full design starts with that option in the brief.
 
+### Scenario options ("SCENARIO OPTIONS" / Request kind: scenario)
+A problem is not yet a part specification. Use the supplied success criteria, priority and effort answers. Research
+ready-made solutions and existing/free designs before proposing custom work; open the original pages, check the
+license before recommending reuse, and explain what each source actually establishes. Do not fabricate a source,
+price, availability or performance claim. Buying a solution is a valid recommendation, and is never an order.
+
+Use the quote shape above with `request_kind: "scenario"`, **2-3 options**, one `route: "buy"` and at least one
+`route: "adapt"` or `route: "build"`. Each option also needs:
+- `fit`: how it meets the stated outcome and where evidence is still missing.
+- `effort`: hands-on setup/build time, skills and maintenance; distinguish this from print time and delivery time.
+- `sources`: `[{"title": "<original page>", "url": "<https URL you opened>", "finding": "<what it supports, date checked; reuse license where relevant>"}]`.
+- `risks` and `next_steps`: nonempty lists in plain words.
+- `cost_note` and `print_note`: evidence and estimate basis, including exclusions. Unknown `cost_usd` / `print_hours`
+  are JSON `null` with the missing evidence explained, never zero. A buy-only option has 0 printed parts / print hours;
+  an option that needs a printed adapter uses `adapt`. A quote is an estimate, not proof that the scenario works.
+
+At the top level add `recommendation_reason`, tying the zero-based `recommended` option to the user's priorities,
+`assumptions` (nonblocking, explicitly unverified), and `questions` (only unanswered questions that must be settled
+before a design can start). Studio shows those questions and waits for an updated comparison. Ask only what changes
+the choice: for "my plants die when I travel", likely trip duration, plant count/water needs, indoor/outdoor use,
+available water/power and tolerance for leaks. The user's success/notes fields can answer them; don't ask again.
+Do not create a project, buy anything, or send printer commands. Validate the saved JSON before stopping:
+`python -c 'import json; from kerf.quotes import validate; validate(json.load(open("<quote path>")), scenario=True)'`.
+
 ## 0. Research first
 Read `references/INDEX.md` — the library of open designs already studied (dimensions, licenses, failure lessons per
 device type). Then run the design-researcher subagent with the brief: it reuses the index, studies what is missing,

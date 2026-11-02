@@ -1,0 +1,245 @@
+{
+  "verdict": "FAIL",
+  "fingerprint": "0e66d4ebca7e3d69",
+  "reviewer": "design-reviewer",
+  "date": "2026-11-02",
+  "summary": "The hub root fairing does what Spencer asked aerodynamically. I re-measured its flat area square to the wind at 11 / 0 / 51 mm2 at 0 / 35 / 70 deg, and it gives the same nose at every sweep angle. But its 2.0 mm gap to the spine ridge is smaller than the spread stop's over-travel: the nose touches the ridge at about -1.15 deg, before the stop post engages at about -1.4 deg (a new major; the cap's reach needs a taper near the ridge). The project still fails on problems that were there before this change: hub_fea (24.2 vs 17.5 MPa, 8.2 vs 1.0 mm), spine_fea (3.4 times over), deck_fea not run, aileron leads 100 mm short, and about 45 wiring routes through solid parts.",
+  "findings": [
+    {
+      "severity": "major",
+      "part": "hub_r",
+      "issue": "root fairing: the new nose touches the spine ridge before the real spread stop does (hub_l is the mirror image and behaves the same). At full spread the cap's inboard edge is at y 16, 2.0 mm from the ridge (|y| 14). That gap sits about 100 mm ahead of the pin, so it closes after only about 1.15 deg of over-travel. The designed stop is the aft_fuse post, which sits 0.55 mm (STOP_GAP) from the sector end face at r about 22.5 mm, and it only engages at about 1.4 deg. I swept fold_r and fold_l past 0 with the built parts. The nose-to-ridge gap is 0.258 mm at -1.0 deg, 0.084 mm at -1.1 deg and touching at -1.2 deg (overlap 0.08 mm3, 7.2 mm3 by -1.4 deg), at the ridge's front corner (100.3, +-14, 3.4). The stop post still has 0.075 mm to go at -1.2 deg and reaches 0 at -1.4 deg. DESIGN.md says the forward pull in a 4 g pull-up 'presses the panel onto its 0 deg stop'. With gear backlash and servo deadband, the thing the panel actually lands on is the faired leading edge pressing into the ridge's sharp corner, with about 6 N on each side, and the two caps squeeze the ridge from both sides. Before this change the flat root face was 12 mm from the ridge (about 7 deg of margin). The hard_stop check passes because it only compares aft_fuse with the hub. It never asks which part touches first, so 'no new check problems' does not cover this.",
+      "fix": "Keep the cap clear of the ridge for the stop's whole over-travel plus margin. Where the ridge exists (x >= ~95), limit the cap's inboard edge per station: y_min(x) = 14 + 0.5 + (200 - x) * tan(1.4 deg + 1 deg). That is about 18.7 at x 100 and about 16.5 at x 150, so the reach drops to ~7 mm at the ridge's front and stays 10 mm ahead of x 95. Alternatively, tighten the spread stop so it engages before -0.8 deg (STOP_GAP ~0.3 mm at r 22.5). Do not notch the ridge. Add a requirement that proves it, e.g. a clearance or overlap check of hub_r/hub_l vs spine with fold_r/fold_l at -1.5 deg. Engine, so the next project gets it too: have hard_stop also report any other part that collides before the stop pair does."
+    },
+    {
+      "severity": "minor",
+      "part": "hub_r",
+      "issue": "root fairing: structurally the cap is neutral, and the 25.8 -> 24.2 MPa hub_fea drop is not a strength gain. I compared the cached FEA fields. The baseline mesh had 13.8k elements and the new one has 16.7k. The cap adds about 2400 lightly loaded elements (95th percentile 3 MPa), which pulls the 99.9th percentile down without lowering any real stress. Over the same change the volume peak went from 64 to 83 MPa and the deflection from 7.8 to 8.2 mm, which is mesh refinement. The declared 0.3 mm lip checks out: 6.1 MPa within 2 mm of (171.6, 26.0, 0.8), as its keep_sharp reason says. But where the cap ends at x 176 it lands on the root's thinnest ligament, between the root face and the aileron lead channel. The channel's last leg runs from (150, 40, 0.6) to lead_exit (188, 26, -3.0), so it ends in the root-face plane. Stress there rose from 15.5 to 18.7 MPa (element mean, at (176.4, 27.1, 2.5)), with 3 elements over the 17.5 MPa allowable. That same channel also holds the hub's hottest cell, about 38 MPa at (174, 29.2, -2.4), and it is the reason the cap had to stop at x 176.",
+      "fix": "Don't describe the cap as a strength improvement in STATUS.md or commits. Move L.lead_exit so the channel stays at least 2 wall thicknesses (>= 3.4 mm) behind the root face, e.g. exit at y >= 31 or inside the collar. This is a layout change, and the spine cover's lead slot and the aft_fuse arc slot must follow it. Then the cap can run on into the collar's half round without the notch, and the hub's worst hot spot goes away with it (see the hub_fea blocker)."
+    },
+    {
+      "severity": "minor",
+      "part": "hub_r",
+      "issue": "root fairing: print and mass. (a) As printed (boss on the bed, airfoil floating above it on tree supports, 30.9 % of the surface supported), the lower half of the half-ellipse nose faces down and sits on supports. The folded-mode leading edge will carry support scars on exactly the surface Spencer asked to be faired. (b) The 0.3 mm lip is thinner than one 0.42 mm line, so the slicer drops it or leaves a blob. That is harmless, but the shape that prints is not the modelled one. (c) The cap is an 18.2 cm3 solid loft per hub (hub 194.6 cm3). At 4 walls and 40 % infill that is roughly 8 g per hub of material that works at about 3 MPa, on an aircraft at 1591 of 1650 g with wing loading 87.7 of 95 g/dm2.",
+      "fix": "Add a height-range or part modifier giving the cap 10-15 % infill (walls unchanged). Tell the builder to sand the nose's lower half smooth after removing supports (ASSEMBLY note), or set support interface layers and a Z gap that leave a better finish there. Fade the lip either to >= 0.45 mm or to zero, e.g. end the loft on a degenerate section by intersecting with a fading wedge."
+    },
+    {
+      "severity": "minor",
+      "part": "hub_r",
+      "issue": "root fairing: what still faces the flow after the change. I re-measured the designer's own metric (planar B-rep faces within 30 deg of square to the relative wind). It is 11 mm2 at 0 deg, 0 mm2 at 35 deg and 51 mm2 at 70 deg, so the 2803 -> 51 mm2 claim reproduces. The nose has the same YZ section at every sweep angle, which is the right section by simple sweep theory (the flow mostly runs root-to-tip when folded). That answers the ask at 0, 35 and 70 deg. The planar metric does not catch two leftovers. (1) Folded at 70 deg, the V keel's inboard 45 deg face (x 130-205, y 26.3-36, down to z -9.4) sits directly behind the new nose and faces the wind about 49 deg off square. It is a 75 mm long, 10 mm deep ramp on the underside of the folded leading edge. (2) The boss column stands about 11 mm proud of the upper surface at the root trailing edge. DESIGN.md says both were 'left as is'.",
+      "fix": "For x 130..176, extend the cap's half-ellipse down to the keel's depth (the nose wraps the keel), so the keel's inboard face becomes the lower half of the nose. It stays 0.6 mm above the cover as the keel does now. This also adds section depth exactly where hub_fea fails, so the aero fix and the strength fix point the same way."
+    },
+    {
+      "severity": "blocker",
+      "part": "hub_r",
+      "issue": "hub_fea fails: p99.9 von Mises 24.2 MPa against 17.5 allowed (CF-PETG / SF 2), and 8.2 mm deflection at the root leading edge (14.7, 90) against a 1.0 mm limit, 8 times over. The load arrives where it should (32 N lift split across the spar sockets, 6.2 / -3.0 / 1.5 N m), and the plot's hot spot is where the load path says it should be: the thin root trailing edge between the rear spar and the boss. The architecture sends the whole half-wing's lift moment through the last 25 mm of the root airfoil (about 2-5 mm thick even with the keel and collar) into a 20 mm boss that is held only at its pin bore. The boss is printed with its layers stacked along the pin, so bending of the boss column pulls across the layer lines. The hottest cells are the lead channel ligament at (174, 29.2, -2.4), about 38 MPa element mean, and the trailing-edge corner behind the pin (210, 39.8, 0.1), 83 MPa peak. Only hub_r is analysed; hub_l is its mirror image and carries the same load.",
+      "fix": "Make the section from the rear spar socket to the boss a full-depth box: merge the keel, collar and root cap into one deep web, at least 15-20 mm deep, running into the boss. Grow the boss (r 10 -> 13) and the collar. Move the lead channel off the root-face ligament (see the fairing minor). Run the rear spar socket as close to the boss as the sector allows. If the deflection is still over 1 mm, bond a CF plate or tube in from the main spar socket to the boss. Do not loosen the 1 mm limit without a cited reason."
+    },
+    {
+      "severity": "blocker",
+      "part": "hub_l",
+      "issue": "hub_l is the mirror image of hub_r: same section, same 6 g load, same thin root trailing edge into a 20 mm boss. It has no FEA of its own, so the hub_r hub_fea failure (24.2 vs 17.5 MPa, 8.2 vs 1.0 mm) applies to it unchanged.",
+      "fix": "Fixed by the same hub.py change as hub_r (both are built from right_body). Re-run hub_fea after the fix. Optionally add a hub_l FEA case so the failure table stops showing hub_l as 'no strength case'."
+    },
+    {
+      "severity": "blocker",
+      "part": "spine",
+      "issue": "spine_fea fails: 53.6 MPa against 16 allowed (3.4 times over), and 2.1 mm deflection against 0.5. Each pin is in single shear at the arm: the load enters 33 mm along the pin, which adds a 5016 N mm moment at the bore. The arm is a 6 mm PETG plate hanging off the ridge, and its two root corners are declared sharp in the hottest zone (spine [200, +-14, 13.5], utilisation about 4.0). The wing's whole bearing couple goes through this plate, so the upper pivot would yield in the first hard pull-out.",
+      "fix": "Re-section the arm: 10-12 mm deep with a real fillet or gusset down to the ridge (reshape the boss top or the collar so the fillet has room). Or put the pin in double shear, or use an aluminium or CF top plate pressed onto the pin. Re-run spine_fea at the same load."
+    },
+    {
+      "severity": "blocker",
+      "part": "aft_fuse",
+      "issue": "deck_fea did not run ('PLC Error: A segment and a facet intersect'), so the lower pivot plate (deck) has no strength proof. It carries the same pin bearing couple that overloads the spine arm 3.4 times. The failure table lists aft_fuse at '0 %', which really means 'unknown'.",
+      "fix": "Clean up the deck and stop-post geometry so it meshes. It is probably the same sliver and sharp-corner geometry as the 103 undeclared corners below. Then run deck_fea and size the deck and ribs from the result."
+    },
+    {
+      "severity": "major",
+      "part": "aft_fuse",
+      "issue": "103 sharp inside corners (1281 mm of edge) are neither filleted nor declared, e.g. [226.4, 0, -15.5], [221, 0, -12.5], [218, +-26.2, -72.3], plus 8 that fillet_inside reported it could not do near (222, +-27.5..+-12, -24.5) and (210.7, +-8.7, -13). Several are on the deck, the keel rib and the rear lug, all in the pin load path.",
+      "fix": "Fix the corners that failed to fillet (adjust plate edges so a 1.5 mm cove fits) or declare each with its reason. In particular, fillet the deck-to-rib and rib-to-lug junctions."
+    },
+    {
+      "severity": "major",
+      "part": "ail_r",
+      "issue": "The aileron servo leads are too short: ail_r_pwr/sig and ail_l_pwr/sig are declared at 620 mm, but the routed path at full fold plus 15 % slack is 719.9 / 727.5 mm. As declared, the aileron servos cannot reach the flight controller.",
+      "fix": "Declare about 750 mm leads, or a 150-200 mm extension per servo (with a catalog entry and its source), and put the extension in the BOM and WIRING.md."
+    },
+    {
+      "severity": "major",
+      "part": "fwd_fuse",
+      "issue": "About 45 wiring routes pass through solid parts instead of holes or channels. The main lead and the phase wires go through fwd_fuse, motor_mount and the battery. The servo, GPS and tail leads go through fwd_fuse, aft_fuse, spine, hatch, tail_mount and hub_r. The aileron leads go through wing_r1/r2 and wing_l1/l2 (127-137 mm3 each), even though the wings have a 4 mm lead channel, so the declared route does not follow it. WIRING.md cannot be built as written.",
+      "fix": "Route every run through the features that exist: the wing and hub lead channel, the bulkhead pass-through, the spine GPS hole. Where none exists, add a hole or channel in the part that owns the wall. Then re-check until there are 0 'runs through' problems."
+    },
+    {
+      "severity": "minor",
+      "part": "spine",
+      "issue": "Aerodynamics at full spread: the ridge's front is a vertical face about 28 mm wide and 17 mm tall, chamfered only on its top edge. It sits square to the flow in the 32 mm channel the two new root caps now form ahead of x 100.",
+      "fix": "Give the ridge front a wedge or ogive nose in plan view (tapering from |y| 14 to ~4 over ~25 mm), not just a top chamfer. Keep the GPS pad and the front bolts (x 108) inside it."
+    },
+    {
+      "severity": "minor",
+      "part": "fwd_fuse",
+      "issue": "Overbuilt parts in a mass-limited aircraft. fwd_fuse is 183.5 g of PLA working at 6 % of allowable with 100 % of its volume cold, tail_mount is at 3 % and motor_mount at 4 %. AUW is 1591 of 1650 g, wing loading 87.7 of 95 g/dm2 and stall speed 41.5 of 45 km/h, so every gram matters.",
+      "fix": "Leave the wall count alone: ENGINEERING.md s5 keeps 4 perimeters on parts with a strength check. Remove idle material instead. Add lightening windows in the battery-bay side walls (outside the hatch ledges, kept clear of the strap slots), shorten or open the shelf where nothing sits, and lower the infill on fwd_fuse and tail_mount at the reported cold zones. Then re-run fuse_fea and tail_fea."
+    },
+    {
+      "severity": "minor",
+      "part": "pinion_r",
+      "issue": "The 4 M3 horn-screw holes leave only 71 % of the ring material near the tooth roots (pinion_l the same). Lewis bending already runs at 13.6 of 16 MPa (85 %).",
+      "fix": "Print at 100 % infill (already set) and check that the screw circle can move 0.5 mm inward on the horn pattern (catalog). If not, make the pinion 2 mm wider (the face width helps Lewis directly)."
+    },
+    {
+      "severity": "minor",
+      "part": "aft_fuse",
+      "issue": "The 4 sweep-servo screws on each side need a ball-end 2.5 mm key (a straight key hits the servo body), and the sweep_servo insert holes sit at 88 % edge material.",
+      "fix": "Put 'ball-end 2.5 mm key' in the ASSEMBLY tools list, or move the servo tab shelf so a straight key reaches."
+    },
+    {
+      "severity": "minor",
+      "part": "elevator",
+      "issue": "Thin walls below 1.2 mm: elevator 0.93, rudder 0.86, ail_r/l 1.02-1.03, hatch 1.01, tail_mount 1.12 mm.",
+      "fix": "Thicken the hinge-line webs and trailing-edge regions to >= 1.2 mm, or confirm they are single-line skins that the slicer prints as one 0.42 mm line, and say so in the part docstring."
+    },
+    {
+      "severity": "minor",
+      "part": "hub_r",
+      "issue": "Pre-existing print setup: the hub is printed boss-down, so the whole airfoil block floats about 15 mm above the bed on tree supports (30.9 % of the surface). That gives a poor lower surface on the most stressed and most aerodynamically exposed printed part.",
+      "fix": "Keep the orientation (the boss and gear need it), but add support interface layers and a 0.2 mm top Z distance for CF-PETG, and an ASSEMBLY note to sand the lower surface and the root nose."
+    },
+    {
+      "severity": "minor",
+      "part": "fwd_fuse",
+      "issue": "DESIGN.md is out of date. Its requirements table still says AUW <= 1150 g, wing loading <= 65 g/dm2, T/W >= 0.7, flight >= 25 min and hand launch. project.yaml checks 1650 / 95 / 0.45 / 12 and a bungee launch (Spencer's decision, commit 94fe2e3). The 'Results', 'Strength', 'Assembly order' and 'Risks' sections are referenced but empty.",
+      "fix": "Update the requirements table to the yaml values with the reason, and fill Results / Risks from report.json."
+    },
+    {
+      "severity": "minor",
+      "part": "aft_fuse",
+      "issue": "Environment and export: the circuit check did not run (KiCad symbol libraries not found), and the URDF has joint/link name collisions (ail_l, ail_r, elevator, rudder).",
+      "fix": "Run ./setup.sh to fetch kicad-symbols 7.0.11 and re-check. Rename the URDF joints (e.g. j_ail_l) in the URDF writer."
+    }
+  ],
+  "scores": {
+    "fwd_fuse": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "aft_fuse": {
+      "load_path": 2,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 2
+    },
+    "spine": {
+      "load_path": 2,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "hatch": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "motor_mount": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "hub_r": {
+      "load_path": 2,
+      "feature_purpose": 4,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "hub_l": {
+      "load_path": 2,
+      "feature_purpose": 4,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "pinion_r": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 4,
+      "finish": 3
+    },
+    "pinion_l": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 4,
+      "finish": 3
+    },
+    "wing_r1": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 4,
+      "finish": 3
+    },
+    "wing_l1": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 4,
+      "finish": 3
+    },
+    "wing_r2": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "wing_l2": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "ail_r": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 4,
+      "finish": 3
+    },
+    "ail_l": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 4,
+      "finish": 3
+    },
+    "tail_mount": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "hstab": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "elevator": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "fin": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    },
+    "rudder": {
+      "load_path": 3,
+      "feature_purpose": 3,
+      "print_intent": 3,
+      "finish": 3
+    }
+  }
+}

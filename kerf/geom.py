@@ -166,6 +166,24 @@ def _meshes_touch(a, b) -> bool:
     return (wa ^ wb).volume() > 0.0
 
 
+GAP_SCREEN_MM = 0.2    # > 2 x PREFILTER_DEFLECTION: how far a mesh gap can sit from the exact one, with margin
+
+
+def mesh_gap(a, b, search: float = 1e4):
+    """Gap (mm) between the two shapes' cached closed meshes (tessellated to PREFILTER_DEFLECTION, so within
+    2 x that of the exact B-rep distance; 0 when they touch or overlap), in a fraction of a second where OCC's exact
+    distance takes tens of seconds on lofted parts. None when either shape has no closed mesh."""
+    if kmesh(a) is not None or kmesh(b) is not None:
+        return None
+    ma, mb = _local_manifold(a), _local_manifold(b)
+    if ma is None or mb is None:
+        return None
+    wa, wb = ma.transform(_loc_matrix(a.location)), mb.transform(_loc_matrix(b.location))
+    if (wa ^ wb).volume() > 0.0:
+        return 0.0
+    return float(wa.min_gap(wb, search))
+
+
 def overlap(a, b) -> float:
     """Volume (mm^3) shared by two located shapes. 0 when they only touch."""
     if not bbox_overlap(a, b, pad=0.01):

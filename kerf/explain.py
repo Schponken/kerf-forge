@@ -27,7 +27,7 @@ RULES = [
     (r"^(?P<part>[\w.-]+): walls as thin as (?P<t>[\d.]+) mm",
      "Some walls are too thin to print ({t} mm)",
      "A printer lays plastic about 0.4 mm wide; walls under 0.8 mm print weak, ragged or not at all.",
-     "Thicken that area, or cut the thin sliver away.", "print"),
+     "Thicken it to at least 0.8 mm (1.2 mm prints reliably); this part carries load, so check the Stress view before thinning anything else. If the sliver does nothing, cut it away.", "print"),
     (r"^(?P<part>[\w.-]+) is (?P<n>\d+) separate solids",
      "It is {n} loose pieces instead of one part",
      "A printed part has to be one connected piece.",
@@ -47,7 +47,7 @@ RULES = [
     (r"^(?P<part>[\w.-]+): (?P<screw>M[\d.]+) (?P<hk>\w+) hole \(group '(?P<group>[^']+)'\) at \[(?P<at>[^\]]+)\] has less than (?P<wall>[\d.]+) mm of wall",
      "A screw hole is too close to the edge",
      "With under {wall} mm of plastic round it, the {screw} hole can split open when the screw is tightened or loaded.",
-     "Move the hole inward, or add material around it.", "fit"),
+     "Move the {screw} hole inward until {wall} mm of plastic surrounds it, add a boss (a raised ring) around it, or use a smaller screw.", "fit"),
     (r"^(?P<part>[\w.-]+) and (?P<other>[\w.-]+) overlap by (?P<v>[\d.]+) mm3",
      "Two parts are in the same space",
      "{part} and {other} overlap ({v} mm³), so they cannot both be assembled as drawn.",
@@ -76,10 +76,14 @@ RULES = [
      "A screw joint doesn't work",
      "The '{group}' screws don't line up, fit or engage as they should.",
      "See the details: usually a hole position, depth or screw length.", "fit"),
+    (r"^(?P<part>[\w.-]+?)(?: \([^)]*\))?[^:]*: no (?P<s>[\d.]+) mm (?:hex )?key can reach[^(]*\((?:straight )?hits (?P<hits>[^,)]+)",
+     "A screw can't be reached with a tool",
+     "No {s} mm hex key can get to the screw head (it hits {hits}), so it can't be tightened.",
+     "Open a straight channel a bit wider than the {s} mm key from the head out through {hits}, put this screw in before {hits} goes on (assembly `key_access`), or turn the screw to face an open side.", "assembly"),
     (r"^(?P<part>[\w.-]+?)(?: \([^)]*\))?[^:]*: no (?P<s>[\d.]+) mm (?:hex )?key can reach",
      "A screw can't be reached with a tool",
      "No {s} mm hex key can get to the screw head, so it can't be tightened.",
-     "Open a channel to it, or change the assembly order.", "assembly"),
+     "Open a straight channel a bit wider than the {s} mm key to the head, or change the assembly order so the blocking part goes on after this screw.", "assembly"),
     (r"^(?P<part>[\w.+ -]+?) cannot be (?:inserted|pushed onto)",
      "A part can't be put in place",
      "During assembly it would have to pass through another part.",
@@ -120,10 +124,34 @@ RULES = [
      "A part isn't attached to anything",
      "No screw, pin or strap holds it, so it would fall out.",
      "Give it a mount, or say what holds it.", "assembly"),
+    (r"^circuit: wiring names unknown item '(?P<item>[^']+)'",
+     "A wire goes to a part that isn't in the design",
+     "The wiring list connects to '{item}', but no part has that name.",
+     "Correct the name in `wiring:` to the part's id, or add '{item}' to the parts list.", "wiring"),
+    (r"^circuit: (?P<part>[\w.-]+) terminal (?P<t>\S+) takes (?P<lim>\d+) wire\(s\) but (?P<cnt>\d+) land",
+     "Too many wires on one terminal",
+     "{cnt} wires land on {part}'s {t} terminal, which holds {lim}.",
+     "Join the extra wires with a solder splice or a Wago-style connector before the terminal, or move one to a twin terminal of {part}.", "wiring"),
+    (r"^circuit ERC: .*output connected to output on net (?P<net>\S+): (?P<a>.+?) and (?P<b>.+?)(?: -|$)",
+     "Two outputs are wired together",
+     "{a} and {b} both drive the {net} wire, so they fight each other (common with a UART wired TX to TX).",
+     "Cross the pair: TX of one to RX of the other. If both really are outputs, give each its own wire.", "wiring"),
+    (r"^circuit ERC: Unconnected pin (?P<pin>.+?) is not wired",
+     "A pin that needs a wire has none",
+     "{pin} isn't connected to anything.",
+     "Add the wire in `wiring:`; if the pin really is unused, mark it optional with a reason in catalog/pins.json.", "wiring"),
+    (r"^circuit ERC: Insufficient drive current on net (?P<net>\S+)",
+     "A power input gets no power",
+     "Something on the {net} wire expects power, but nothing on that wire supplies it.",
+     "Wire that net to a supply output (the battery, a BEC / regulator or the board's 5 V pin).", "wiring"),
+    (r"^circuit ERC: No drivers for net (?P<net>\S+)",
+     "A signal wire has nothing driving it",
+     "Inputs on the {net} wire listen, but nothing sends on it.",
+     "Connect the output that should drive it (e.g. the flight controller's servo pin) to that wire.", "wiring"),
     (r"^circuit:",
      "The wiring diagram has an error",
      "Something is connected wrongly or not at all.",
-     "See the details.", "wiring"),
+     "The details say which wire or pin; fix that line in `wiring:` (names, terminals, or which pin goes where).", "wiring"),
     (r"^bom_extra",
      "A shopping-list entry is malformed",
      "One extra item in the parts list can't be read.",
@@ -151,6 +179,7 @@ class _Fmt(dict):
 
 def explain(msg: str, parts=()) -> dict:
     """{title, part, why, fix, kind, kind_label, detail} for one problem message."""
+    msg, _, own_fix = msg.partition(" — fix: ")     # a problem that carries its own worked-out fix uses it
     for rx, title, why, fix, kind in _COMPILED:
         m = rx.search(msg)
         if m:
@@ -158,13 +187,15 @@ def explain(msg: str, parts=()) -> dict:
             part = g.get("part") if "part" in g else None
             if part and g.get("other"):
                 part = f"{part} ↔ {g['other']}"
-            return {"title": title.format_map(g), "part": part, "why": why.format_map(g), "fix": fix.format_map(g),
-                    "kind": kind, "kind_label": KIND_LABEL[kind], "detail": msg}
+            return {"title": title.format_map(g), "part": part, "why": why.format_map(g),
+                    "fix": own_fix[:1].upper() + own_fix[1:] + "." if own_fix else fix.format_map(g),
+                    "kind": kind, "kind_label": KIND_LABEL[kind], "detail": msg + (f" — fix: {own_fix}" if own_fix else "")}
     head = msg.split(":", 1)
     part = head[0].strip() if len(head) > 1 and head[0].strip() in set(parts) else None
     body = head[1].strip() if part else msg
     title = re.split(r"[;(]", body, 1)[0].strip()
-    return {"title": (title[:1].upper() + title[1:])[:110], "part": part, "why": "", "fix": "", "kind": "other",
+    return {"title": (title[:1].upper() + title[1:])[:110], "part": part, "why": "",
+            "fix": own_fix[:1].upper() + own_fix[1:] + "." if own_fix else "", "kind": "other",
             "kind_label": KIND_LABEL["other"], "detail": msg}
 
 
@@ -187,8 +218,10 @@ def explain_requirement(r: dict) -> dict:
     sc = miss_scale(r)
     if sc:
         what += f" ({sc[0].upper()}{sc[1:]}.)"
+    tips = r.get("advice") or []
     return {"title": f"{name}: target missed", "part": None, "why": " ".join(x for x in (what, r.get("why") or "") if x),
-            "fix": "Change the design or its parts until it meets the target.", "kind": "engineering",
+            "fix": tips[0] if tips else "Change the design or its parts until it meets the target.", "fixes": tips[1:],
+            "kind": "engineering",
             "kind_label": KIND_LABEL["engineering"], "detail": f"requirement '{r.get('id')}' ({r.get('check')}): {r.get('detail') or ''}".strip()}
 
 

@@ -1,63 +1,27 @@
 {
   "verdict": "PASS",
-  "fingerprint": "3379006ef48d4ba7",
+  "fingerprint": "702965a967555095",
   "reviewer": "design-reviewer",
   "date": "2026-11-02",
-  "summary": "The one major from the last round is fixed, and I checked it in out/ASSEMBLY.md. Step 4 tells the builder to use the servo arm hole 8-11 mm from the spline. Step 9 prints the joiners' held_by (epoxy in the inner half, a reamed push fit in the outer). Step 10 says to ream the outer bores with a 3.0 mm drill, and the drill is in the tools list. Step 17 has the ESC tilt-in and step 22 has the strap loop. The geometry minors are also done. The aft joiner bore wall measures 0.97-1.05 mm in elevon_lo/ro (it was 0.80) and 1.08 mm in elevon_l. The motor mount now has a 0.8 mm chamfer on its aft edge, and the DESIGN.md CG text matches the 9.2 % that static_margin reports. No blocker or major findings remain. The minors below are left: a few step-order and wording slips in ASSEMBLY.md, the front joiner bore is now the thinnest wall (0.81-0.85 mm), and the earlier carried-over items.",
+  "summary": "The blocker is fixed. Both splice plates now have both M3 holes: out/parts/splice_l.stl and splice_r.stl have genus 2, and the render shows two holes plus the belly chamfer. I also checked every other exported STL by mapping each registered fastener site (report.json hole_walls) into print orientation using the bounding boxes in assembly.step. All 52 sites are open in the files that would be printed, and each part's genus fits its through-holes. The new holewall 'filled hole' check and its test pass (3/3). Moving the aft elevon rod 9 -> 8.7 mm gained only 0.03 mm of wall and cost 0.3 mm of web. The tube-epoxy note is better, but taping a tube that has to go back into a sleeve with almost no clearance will not work. Both are minors.",
   "findings": [
     {
       "severity": "minor",
-      "part": "pod",
-      "issue": "ASSEMBLY.md step order contradicts its own notes. Step 21 fits the battery 'held by the strap', but the strap is only fitted in step 22, and step 22 says the strap must be closed into a loop first so the pack can slide into it. Step 2 fits the four spar tubes onto the pod before the wings go on in step 3, but their held_by says they are epoxied into the wing segments' bores. Done in that order, epoxy on a tube being slid through the wing could also wipe onto the pod sleeve and glue the wing on for good.",
-      "fix": "Put the strap before the battery in assembly.order. Make the spar tubes a bench step with the wing segments (epoxy them into wing_l1/l2 first, let it cure, then slide them into the pod), or add a 'dry in the pod sleeve, no epoxy here' note."
-    },
-    {
-      "severity": "minor",
-      "part": "wing_l1",
-      "issue": "Formatting slip in the new engine output. The item_notes writer splits assembly_note at its colons, so step 4 prints a bare 'Pushrod:' bullet followed by a sibling bullet with the text. Step 10 splits 'Ream ... first (they print at 3.0 mm, slightly under):' from 'A snug push fit...'. It is readable but looks broken. Steps 5 and 11 also say nothing about the epoxy that DESIGN.md / the BOM need there (inner-to-outer wing joint, fins into their slots), because printed parts have no held_by.",
-      "fix": "In kerf/ship.py, keep an assembly_note as one bullet, or nest the sub-bullets under it. Add assembly_note to wing_l2/r2 ('epoxy the joint faces and the spar into ...') and to fin_l/r ('epoxy the tab into the slot')."
-    },
-    {
-      "severity": "minor",
       "part": "elevon_lo",
-      "issue": "After the aft rod moved, the front joiner bore is now the thinnest wall. I sliced out/parts/elevon_*.stl square to the rods. Aft bore (8.5 mm): 0.97-1.11 mm in elevon_lo/ro, 1.08 mm in elevon_l. Front bore (4 mm): 0.85 mm in elevon_lo/ro and 0.81 mm in elevon_l/r, against the round hinge nose. The web between the bores is 1.4-1.5 mm. The elevon.py docstring still says '10 mm vs 4 mm ... ~0.9 mm wall'.",
-      "fix": "Move the front rod to about 4.6 mm aft. The section there is deeper and further from the nose radius, and the web stays about 1 mm or more. Update the docstring to say 8.5 mm."
+      "issue": "Measured by ray-casting from the rod axes (joiner proxies in out/assembly.step) at 1 mm steps along the 25 mm each half holds. Aft bore wall: elevon_lo/ro 1.09 mm at the split, tapering to 0.92 mm at the rod's outboard end, under 1.0 mm over the outer ~12 mm. At 9 mm it was 0.89-1.06, so the 0.3 mm move bought 0.03 mm. elevon_l/r: 1.05 mm. The web between the bores is now 1.10 mm (lo/ro) and 1.00 mm (l/r); it was 1.30-1.40 because the bore centres are now 4.1 mm apart, not 4.4. The front bore is unchanged at 1.26-1.36 mm. DESIGN.md still says '~1 mm wall each' and 'web ~1.3-1.4 mm', and the elevon.py docstring says '~1.3 mm of web'. Both are wrong now. The part will still print: a 0.92 mm wall is two perimeters, and the rod's load is small.",
+      "fix": "Chord position is not what limits this wall; the section thinning toward the tip is. Either shorten JOINER_L to 40 mm (the rod then ends where the wall is still about 0.97-1.0 mm), or put the aft rod's z centre midway between the skins over the outer half rather than at the split. Then correct the DESIGN.md and docstring numbers to what you measure (aft wall, and web about 1.0-1.1 mm)."
     },
     {
       "severity": "minor",
       "part": "wing_l1",
-      "issue": "Carried over: plate 3 still holds every tall, slender PLA part (4 wing segments 220-230 mm tall, 4 elevon halves up to 189 mm tall on 40 x 5 mm footprints, the hatch). If one of them comes loose it can knock over the others.",
-      "fix": "In export.plates, keep slender parts (height/footprint > 15) apart, or cap them at 2-3 per plate."
-    },
-    {
-      "severity": "minor",
-      "part": "hatch",
-      "issue": "Carried over: 8.3 % of the surface needs support (the tongue and the rounded edges lift off the bed). The M3 x 6 heads stand about 3 mm proud. There is no edge lip, so the side gaps can open between screws at speed.",
-      "fix": "Countersunk M3, or a counterbore into local pads; a 0.5 mm side lip; a paint-on support blocker under the tongue only."
-    },
-    {
-      "severity": "minor",
-      "part": "wing_l1",
-      "issue": "Carried over: the pushrod is not modelled. Its clearance in the slot (about 0.5 mm at full throw) is a hand calculation. The vtx_ant proxy starts at pod_top, not at the MMCX.",
-      "fix": "Add a pushrod keep-out line swept with the elevon joint. Start the antenna proxy at the VTX connector."
+      "issue": "The new note (wing_l1/r1 assembly_note, ASSEMBLY.md lines 66-74) has the right idea: the pod becomes the alignment jig, no epoxy reaches the pod, and you clean once after cure. But it says to wrap the pod-side length of each tube in tape and then slide it back into the pod sleeve. pod.py cuts that bore at od + 0.2 (0.1 mm radial), and FDM holes print about 0.1 mm small, so the tube is already a near-zero fit. One layer of packing tape (about 0.05 mm, more at the overlap) will jam the tube or get scraped off at the sleeve mouth. The note also does not say that the tube has to come out of the pod to be taped.",
+      "fix": "On the tube's pod-side length, use a zero-thickness release agent (paste wax or a thin film of petroleum jelly, wiped off after cure) in place of tape. Keep the tape strip on the pod's side face round the root. Add 'slide each tube out of the pod to treat its pod-side length, then refit it' so the order is clear."
     },
     {
       "severity": "minor",
       "part": "pod",
-      "issue": "Carried over: no TPU belly skid; the RX antenna sits inside the pod next to the carbon tubes; VTX power is not capped pending a heat-soak test; the mass model has no consumables (TWR 1.53 vs 1.5 leaves about 25 g).",
-      "fix": "A bolted TPU skid; route the RX antenna out of the pod; a 400-600 mW cap in DESIGN.md; consumables as bom_extra weight_g."
-    },
-    {
-      "severity": "minor",
-      "part": "splice_l",
-      "issue": "Carried over: square forward step and proud socket heads in the belly-landing slide zone (same on splice_r).",
-      "fix": "A 30 deg ramp on the leading and trailing lower edges, and counterbored heads."
-    },
-    {
-      "severity": "minor",
-      "part": "elevon_r",
-      "issue": "Carried over: TE_MIN 1.0 mm (walls of 1.01-1.04 mm are flagged on all elevon halves). The URDF joint and link names collide. The modifier volumes are only a text table, not written into the 3MF.",
-      "fix": "TE_MIN 1.2 mm; rename the URDF links; write the modifiers into the 3MF."
+      "issue": "Still open, tracked in their own PLAN item (not new): no TPU belly skid; consumables missing from the mass model (TWR 1.53 against 1.5); slender-part spacing on the plates; hatch tongue support, flush heads and side lip (8.3 % support); proud socket heads on the splice plates; no pushrod keep-out; the vtx_ant proxy starts at pod_top; the RX antenna is inside the pod; no VTX power cap; TE_MIN 1.0 (elevon walls 1.02-1.05 mm); URDF joint and link names collide; modifiers not written into the 3MF.",
+      "fix": "As listed in that PLAN item and the previous review."
     }
   ],
   "scores": {
@@ -69,12 +33,12 @@
     "wing_r2": {"load_path": 4, "feature_purpose": 4, "print_intent": 3, "finish": 3},
     "elevon_l": {"load_path": 4, "feature_purpose": 4, "print_intent": 3, "finish": 3},
     "elevon_r": {"load_path": 4, "feature_purpose": 4, "print_intent": 3, "finish": 3},
-    "elevon_lo": {"load_path": 4, "feature_purpose": 4, "print_intent": 3, "finish": 3},
-    "elevon_ro": {"load_path": 4, "feature_purpose": 4, "print_intent": 3, "finish": 3},
+    "elevon_lo": {"load_path": 3, "feature_purpose": 4, "print_intent": 3, "finish": 3},
+    "elevon_ro": {"load_path": 3, "feature_purpose": 4, "print_intent": 3, "finish": 3},
     "horn_l": {"load_path": 4, "feature_purpose": 4, "print_intent": 4, "finish": 3},
     "horn_r": {"load_path": 4, "feature_purpose": 4, "print_intent": 4, "finish": 3},
-    "splice_l": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
-    "splice_r": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "splice_l": {"load_path": 4, "feature_purpose": 4, "print_intent": 4, "finish": 3},
+    "splice_r": {"load_path": 4, "feature_purpose": 4, "print_intent": 4, "finish": 3},
     "fin_l": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
     "fin_r": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 3},
     "nose": {"load_path": 3, "feature_purpose": 4, "print_intent": 4, "finish": 4},
