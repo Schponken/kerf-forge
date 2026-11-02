@@ -9,11 +9,9 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$HOME/.claude/loc
 export LANG="${LANG:-en_US.UTF-8}" PYTHONUTF8=1 PYTHONUNBUFFERED=1
 cd "$REPO" 2>/dev/null || { echo "ERROR Kerf Forge folder not found: $REPO"; exit 1; }
 echo "--- $(date) Kerf Studio app start"
-# updates: fast-forward only, never over local changes; skipped quietly when offline
-if [ -z "$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then
-  echo "STATUS Checking for updates…"
-  git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=10 pull -q --ff-only 2>&1 || true
-fi
+# updates: local changes are set aside and put back (tools/mac/update_repo.sh); skipped quietly when offline
+echo "STATUS Checking for updates…"
+./tools/mac/update_repo.sh . 2>&1 || true
 SUM="$(shasum pyproject.toml setup.sh tools/render/package.json 2>/dev/null | shasum | cut -c1-16)"
 if [ "$SUM" != "$(cat "$STATE/deps.sum" 2>/dev/null)" ] || [ ! -x .venv/bin/kerf ]; then
   echo "STATUS Installing updates (the first time can take a few minutes)…"
