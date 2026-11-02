@@ -68,6 +68,10 @@ Other Claude sessions may be working in this repo at the same time. To never bre
   get small, targeted edits — never rewrites — so concurrent changes merge cleanly. New engine features go in new
   functions or new modules where possible. STATUS.md: append your own dated entry; don't edit others' entries.
 - **Heartbeat:** run `tools/claims.py beat` before each commit (it stages the claim file, so run it before `git commit`, not after) so your claim stays fresh.
+  Add a short activity sentence, for example `tools/claims.py beat "Checking wing clearances; wiring checks next"`,
+  so Studio's Work page can explain current work. Codex's thread id and Claude's explicit runtime identity are
+  recorded automatically when present. Keep remaining work as real PLAN checkboxes; never invent completion
+  percentages or time estimates for a claim.
 - **Finishing an item:** check it off in PLAN.md, `tools/claims.py release`, push, then `tools/claims.py next`.
   When every open item is claimed by other active sessions and your work is pushed, the Stop hook lets you stop.
 
@@ -128,9 +132,13 @@ Other Claude sessions may be working in this repo at the same time. To never bre
   started without the user's explicit choice.
 - Budget: Spencer caps Claude usage at **60 % of the weekly limit**. Sessions cannot read the meter, so keep each
   session's work tight (no repeated full builds when a quick check or one requirement shows the answer), push
-  often, and stop starting new items when Spencer says the cap is near (he may write `.claude/state/BUDGET_STOP`;
-  when it exists, finish and push the current item, then stop; the Stop hook does not honour it yet - that hook edit
-  needs Spencer's go-ahead, see STATUS.md).
+  often, and stop starting new items when Spencer says the cap is near. The switch is `tools/budget.py stop "<why>"
+  [--until "YYYY-MM-DD HH:MM"]` (UTC, shared via git; `resume` clears it; a local `.claude/state/BUDGET_STOP` works
+  too). While it is on, `claims.py next/take` refuse and the full batch run waits: finish and push the current item,
+  release, then stop (the Stop hook does not honour it yet - that hook edit needs Spencer's go-ahead).
+- Don't start what a limit would cut off: before a long step (a full build, a design-reviewer round, a batch run)
+  check `tools/budget.py status`; commit + push before it so nothing is lost. `kerf verify` resumes a cut-off run
+  on the same commit from its checkpoint, and the batch run waits until other sessions are done (Spencer, 2026-11-02).
 
 ## Escape hatch (rare)
 

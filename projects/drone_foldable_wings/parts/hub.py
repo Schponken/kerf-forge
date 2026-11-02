@@ -186,8 +186,8 @@ def build(ctx):
             ctx.keep_sharp(c["at"], f"teardrop roof of the {what}: printed without support, the {what.split()[0]} part lies in it")
         elif abs(abs(c["at"][1]) - p.pivot_y) < 0.1 and CAP_X1 - CAP_FADE < c["at"][0] <= CAP_X1:
             ctx.keep_sharp(c["at"], f"the root cap's {CAP_LIP} mm lip where it fades out: thinner than one extrusion line, "
-                                    "no fillet fits; FEA ~6 MPa at the lip itself (allowable 17.5), the hot cell is the "
-                                    "aileron lead channel 3-6 mm outboard")
+                                    "no fillet fits; FEA 5-10 MPa within 3 mm of it (allowable 17.5), the hot cell is "
+                                    "the aileron lead channel further outboard")
     ctx.rigid("pivot", L.pivot_axis(p, s).location)
     ctx.rigid("wing", Location())
     ctx.rigid("main", L.tube_loc(p, "main", s))

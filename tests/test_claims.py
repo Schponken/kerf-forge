@@ -24,7 +24,7 @@ def test_two_sessions(tmp_path):
     a = tmp_path / "a"
     sh(tmp_path, "git", "clone", "-q", "r.git", "a")
     (a / "tools").mkdir()
-    shutil.copy(TOOL, a / "tools/claims.py")
+    shutil.copy(TOOL, a / "tools/claims.py"); shutil.copy(TOOL.with_name("budget.py"), a / "tools/budget.py")  # claims.py checks the budget switch
     (a / "PLAN.md").write_text(PLAN)
     (a / ".gitignore").write_text(".claude/state/\n")
     for c in (["add", "-A"], ["-c", "user.email=a@b", "-c", "user.name=t", "commit", "-qm", "init"], ["push", "-q", "-u", "origin", "main"]):
@@ -51,7 +51,7 @@ def test_refuses_mid_rebase(tmp_path):
     a = tmp_path / "a"
     sh(tmp_path, "git", "clone", "-q", "r.git", "a")
     (a / "tools").mkdir()
-    shutil.copy(TOOL, a / "tools/claims.py")
+    shutil.copy(TOOL, a / "tools/claims.py"); shutil.copy(TOOL.with_name("budget.py"), a / "tools/budget.py")  # claims.py checks the budget switch
     (a / "PLAN.md").write_text(PLAN)
     (a / ".gitignore").write_text(".claude/state/\n")
     sh(a, "git", "config", "user.email", "a@b"); sh(a, "git", "config", "user.name", "t")

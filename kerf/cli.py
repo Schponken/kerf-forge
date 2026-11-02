@@ -218,22 +218,59 @@ def _run_isolated(name, check_only=False, fast=False) -> dict:
     return {"ok": False, "problems": [f"build process exited {r.returncode}: {(r.stderr or r.stdout)[-300:]}"]}
 
 
+class _Checkpoint:
+    """Finished verify steps (pytest, each project) for the current commit, so a run cut off by a usage limit, a
+    timeout or a kill resumes where it stopped instead of redoing an hour of work. Only used on a clean tree (tracked
+    files): the results then belong to that exact commit. Local file, cleared when a run completes."""
+    PATH = ROOT / ".claude" / "state" / "verify_checkpoint.json"
+
+    def __init__(self, fast, all_failures):
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "-uno"], cwd=ROOT, capture_output=True,
+                               text=True).stdout.strip()
+        self.key = None if dirty or not head else f"{head} fast={fast} all={all_failures}"
+        self.done = {}
+        try:
+            old = json.loads(self.PATH.read_text(encoding="utf-8"))
+            if self.key and old.get("key") == self.key:
+                self.done = old.get("done", {})
+        except Exception:  # noqa: BLE001 - no checkpoint
+            pass
+
+    def save(self, step, result):
+        self.done[step] = result
+        if self.key:
+            self.PATH.parent.mkdir(parents=True, exist_ok=True)
+            self.PATH.write_text(json.dumps({"key": self.key, "done": self.done}, default=str), encoding="utf-8")
+
+    def clear(self):
+        self.PATH.unlink(missing_ok=True)
+
+
 def verify(fast=False, all_failures=False) -> int:
     """The definition of done. Exit 0 only when everything passes."""
     t0 = time.time()
     results, fails = {}, []
     os.environ["KERF_NO_CACHE"] = "1"      # the definition of done builds every part from scratch (kerf/partcache.py)
     # tests read/write UTF-8 text without naming it; a C/POSIX locale (hooks, cron, nohup) would make that ASCII
-    r = subprocess.run([sys.executable, "-m", "pytest", "-q", *([] if all_failures else ["-x"]), "--no-header", "-p",
-                        "no:cacheprovider"], cwd=ROOT,
-                       capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
-    results["tests"] = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:]
-    if r.returncode != 0:
+    ck = _Checkpoint(fast, all_failures)
+    if "tests" not in ck.done:
+        r = subprocess.run([sys.executable, "-m", "pytest", "-q", *([] if all_failures else ["-x"]), "--no-header",
+                            "-p", "no:cacheprovider"], cwd=ROOT,
+                           capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
+        ck.save("tests", {"line": r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:],
+                          "ok": r.returncode == 0})
+    else:
+        _p("tests: reusing this commit's finished result (an earlier run was cut off)")
+    results["tests"] = ck.done["tests"]["line"]
+    if not ck.done["tests"]["ok"]:
         fails.append(f"unit tests: {results['tests']}")
     from . import project as P
     for name in projects():
         check_only = bool(P.load(name).data.get("check_only"))   # a user's own design, checked, not designed by Kerf
-        rep = _run_isolated(name, check_only, fast)
+        if name not in ck.done:
+            ck.save(name, _run_isolated(name, check_only, fast))
+        rep = ck.done[name]
         results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6]}
         if not rep["ok"]:
             fails.append(f"project {name}: {rep['problems'][:3]}")
@@ -253,6 +290,7 @@ def verify(fast=False, all_failures=False) -> int:
     open_items = [l.strip() for l in plan.splitlines() if l.strip().startswith("- [ ]")]
     if open_items:
         fails.append(f"PLAN.md has {len(open_items)} unchecked items, first: {open_items[0]}")
+    ck.clear()
     out = {"ok": not fails, "fails": fails, "results": results, "seconds": round(time.time() - t0, 1)}
     (ROOT / "VERIFY.json").write_text(json.dumps(out, indent=1, default=str), encoding="utf-8")
     for f in fails:
@@ -283,7 +321,7 @@ def status() -> int:
     return 0
 
 
-def new(name, title) -> int:
+def new(name, title, module=None) -> int:
     import re
     if not re.fullmatch(r"[a-z][a-z0-9_]{1,40}", name):
         _p("Choose a folder name with 2–41 lowercase letters, numbers or underscores, starting with a letter (for example desk_arm).")
@@ -292,6 +330,16 @@ def new(name, title) -> int:
     if d.exists():
         _p(f"projects/{name} already exists")
         return 1
+    if module:
+        from . import modules
+        try:
+            modules.instantiate(module, name, title, projects_dir=ROOT / "projects")
+        except (OSError, ValueError) as e:
+            _p(f"Could not create module instance: {e}")
+            return 1
+        _p(f"Created projects/{name} from {module}, with its source contract and checks. "
+           f"Read MODULE.md; this new project is not checked or reviewed. Run `kerf check {name}` next.")
+        return 0
     (d / "parts").mkdir(parents=True)
     import yaml
     title_yaml = yaml.safe_dump({"name": title}, allow_unicode=True, sort_keys=False).rstrip()
@@ -319,6 +367,9 @@ def main(argv=None) -> int:
     v.add_argument("--all-failures", action="store_true", help="don't stop pytest at the first failure (batched runs)")
     r = sub.add_parser("review-status", help='See whether an independent review covers the current design.', description='See whether an independent review covers the current design.'); r.add_argument("project")
     n = sub.add_parser("new", help='Create a project folder and starter files.', description='Create a project folder and starter files.'); n.add_argument("name"); n.add_argument("title")
+    n.add_argument("--module", help="start from a reusable assembly with its contract and checks (see kerf modules)")
+    md = sub.add_parser("modules", help="inspect reusable assemblies, interfaces, checks and source review status")
+    md.add_argument("module", nargs="?"); md.add_argument("--json", action="store_true")
     sub.add_parser("status", help='List project names and their build and review status.', description='List project names and their build and review status.')
     k = sub.add_parser("calibrate", help='Make a fit-test coupon for your printer and material.', description='Make a fit-test coupon for your printer and material.'); k.add_argument("--material", default="PETG"); k.add_argument("--printer", default=None)
     f = sub.add_parser("feedback", help="fit measurements for a material (calibration), or a finding on a built project "
@@ -406,7 +457,28 @@ def main(argv=None) -> int:
         _p(json.dumps(s))
         return 0 if s["ok"] else 1
     if a.cmd == "new":
-        return new(a.name, a.title)
+        return new(a.name, a.title, a.module)
+    if a.cmd == "modules":
+        from . import modules
+        try:
+            rows = [modules.describe(k) for k in ([a.module] if a.module else modules.entries())]
+        except (OSError, ValueError) as e:
+            _p(f"Could not read module library: {e}")
+            return 1
+        if a.json:
+            _p(json.dumps(rows, indent=2, ensure_ascii=False))
+        else:
+            for m in rows:
+                _p(f"{m['id']} — {m['title']}\n  {m['description']}\n  Source review: {m['source_review']['why']}")
+                if a.module:
+                    _p("  Interfaces: " + "; ".join(f"{k}: {v}" for k, v in m["ports"].items()))
+                    _p("  Parameters: " + ", ".join(m["params"]))
+                    _p("  Inherited checks: " + ", ".join(r["id"] for r in m["requirements"]))
+                    for limit in m["limits"]:
+                        _p(f"  - {limit}")
+                _p(f"  Start: kerf new my_joint \"My joint\" --module {m['id']}")
+            _p("New instances need their own check, build and independent review. Inspect details with `kerf modules <module>`.")
+        return 0
     if a.cmd == "status":
         return status()
     if a.cmd == "studio":

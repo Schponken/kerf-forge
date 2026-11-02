@@ -53,3 +53,14 @@ def test_sweep_collision_says_where_to_stop_or_make_room():
     proj = NS(items={"wing": NS(role="printed"), "hub": NS(role="printed")})
     t = advice.sweep(s, proj)
     assert "from 70 to 80°" in t and "end the range at about 65°" in t and "wing or hub" in t
+
+
+def test_wiring_errors_get_their_own_fix_not_see_the_details():
+    for m, words in [("circuit: wiring names unknown item 'esc2'", "esc2"),
+                     ("circuit: pdb terminal BAT+ takes 2 wire(s) but 3 land on it", "splice"),
+                     ("circuit ERC: output connected to output on net TX1: fc.TX1 and gps.TX - two outputs", "TX of one to RX"),
+                     ("circuit ERC: Unconnected pin gps.VCC is not wired (wire it, or ...)", "optional"),
+                     ("circuit ERC: Insufficient drive current on net N5 for pin rx.VCC", "supply output"),
+                     ("circuit: something odd", "wiring:")]:
+        c = explain.explain(m)
+        assert words in c["fix"] and c["fix"] != "See the details.", (m, c)

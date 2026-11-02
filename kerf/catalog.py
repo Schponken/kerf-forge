@@ -25,9 +25,19 @@ def _no_dupes(pairs):
     return d
 
 
-@lru_cache(maxsize=1)
 def load() -> dict:
-    return json.loads(CATALOG.read_text(encoding="utf-8"), object_pairs_hook=_no_dupes)
+    """Reuse parsed data until the file changes, including in a running Studio process."""
+    s = CATALOG.stat()
+    return _load(CATALOG, (s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns))
+
+
+@lru_cache(maxsize=1)
+def _load(path: Path, stamp: tuple) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_no_dupes)
+
+
+# Keep the existing explicit cache-reset interface for callers/tests changing catalog paths.
+load.cache_clear = _load.cache_clear
 
 
 _USED: set | None = None

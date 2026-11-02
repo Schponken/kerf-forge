@@ -1,0 +1,21 @@
+servo_joint:
+  title: Bench servo joint
+  source: servo_link
+  description: A bench-mounted MG996R joint with its arm, bracket, base, power supply and controller.
+  files:
+    - project.yaml
+    - parts/base.py
+    - parts/bracket.py
+    - parts/arm.py
+    - parts/layout.py
+    - DESIGN.md
+    - REFERENCES.md
+  ports:
+    mount: base
+    output: arm.tip
+    motion: swing
+  limits:
+    - Screw the base to the bench before powering the servo; the free-standing tipping check is not a stall-reaction check.
+    - Keep the power supply, jack and Nano on the desk as declared in the source contract.
+    - The arm's payload, motion range, materials and load cases are inherited unchanged; changes need new checks and review.
+    - This is a complete starting assembly. Combining it with another mechanism needs a new interface and system-level checks.
