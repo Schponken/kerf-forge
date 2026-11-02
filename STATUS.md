@@ -176,6 +176,15 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   test_board_proxy_keeps_mounting_holes_clear, test_servo_dims_are_the_catalog[servos.KST_X08_Plus],
   test_every_requirement_check_listed, test_no_text_io_without_encoding (circuit.py:502, fwcheck.py:172).
 
+## 2026-11-02 — Fresh-eyes usability pass, ChatGPT: viewer round
+- Fixed together in the assembly viewer: previews no longer report unrun checks as successful; pending shopping/print tabs give a next step; known problems stay visible during previews. The writer retains device/off-board mass (servo_link: 198 g on the device, 317 g off it), buying and plate links work, internal references fold under details, and existing shared problem explanations are reused without editing Studio Checks wording.
+- Fixed clipboard denial: if both clipboard methods fail, offer the exact text for manual copying instead of falsely saying Copied. Successful fallback still works. Fixed long-name/source-reference wrapping; the reproduced phone overflow was 1713 px on a 390 px screen.
+- Validation after pulling current main and the collision/cache changes: 20 targeted tests passed (viewer, new browser regressions, maker output, existing explanations), including desktop/phone and light/dark cases. No full suite or all-project build was run under the updated workflow. Evidence: docs/usability/2026-11-02/VIEWER.md and one 357 KB contact sheet; full captures stay outside Git.
+- Environment publication: saved draft and runtime both specify unrestricted public Internet; public HTTPS example.com returned 200. Installation/startup instructions and the explicit kerf-forge checkout path/commit are saved. Publication remains impossible through the exposed tools: they can read status/save drafts but have no Publish/Retry operation or publication-error endpoint. The panel's “Couldn't publish environment” backend cause is not exposed; a saved draft is not a published snapshot. Continue with software work; no extra permission is needed.
+- Next round: output files and setup/install recovery, with a fresh main/claims/BOARD check. Reserved Studio areas and claimed project geometry were not edited. PRs are for another session or Spencer to review and merge.
+
+- Viewer round final probe: corrected the contradictory “without hitting anything” text on failed sweeps and marked skipped checks neutrally as not checked; the browser regression asserts both. Final affected-area run: 20 passed.
+
 ### 2026-11-02 — Engine speed: part cache follows the engine files a part uses; `kerf req` (session 01S68R6R)
 - kerf/partcache.py no longer hashes every kerf/*.py into each key: each build records (sys.monitoring) the engine
   files whose code ran, widened by their imports and the top-level import closure, and lookup re-hashes just those.
