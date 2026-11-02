@@ -225,3 +225,23 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   Fixed (if/else), install_app.sh now falls back to the single-window launcher if the compile ever fails, and
   `tools/mac/Update Kerf Studio.command` (double-click updater) refuses to restart the engine while a Studio job runs
   (the first run of it stopped the Hawk-fold design job; its files were kept: hub.py, DESIGN.md uncommitted on the Mac).
+
+## 2026-11-02 15:25 UTC-5 — drone_foldable_wings: hub root ends faired for the folded mode (Studio request, Spencer)
+- Request: hub_r / hub_l's faces where the wing meets the fuselage at full spread face forward when folded and must be
+  aerodynamic; keep the aero good at every sweep angle. Folded, the hub's flat root face (y = pivot_y) IS the wing's
+  leading edge: at 70 deg it met the flow 20 deg off square, a 206 x 20 mm slab.
+- Done (parts/hub.py `root_cap`, collar trim; DESIGN.md hub contract): every chord station of the root face gets a
+  half-ellipse nose reaching min(1.25 x local half thickness, 10 mm) inboard (never past y 16: 2.0 mm off the spine
+  ridge at full spread, the tightest pose; folding only moves it out), from the LE to x 176, fading to a 0.3 mm lip
+  ahead of the boss collar; the collar's inboard flat cut (y 16) is now a half round, and its trim aft of the pin stays
+  at y 26 (that part swings inboard). Flat area within 30 deg of square to the flow at 70 deg fold: 2803 -> 51 mm2 (the
+  thin root strip aft of x 176); 0 / 35 deg: unchanged (11 / 0 mm2). hub_r 76.9 -> 81.4 g each, AUW 1582 -> 1591 g.
+- Tried and dropped (scratch FEA): a nose running into the collar, or a collar without its inboard half, put a stress
+  notch at the junction (hub_fea p99.9 31-40 MPa); stopping the nose 4.6 mm ahead of the collar fixed it.
+- Check: same 54 problems as before the change, all pre-existing and not about the root faces: wiring routes through
+  parts, ail_*_pwr/sig lead length, KiCad symbols missing, deck_fea (meshing error), spine_fea 53.6 MPa, hub_fea.
+  hub_fea p99.9 25.8 -> 24.2 MPa (limit 17.5); its deflection 7.8 -> 8.2 mm (limit 1.0, already 8x over): part mesh
+  noise (the nose alone, which only adds material, read 8.0), part the collar corners the half round removes.
+  Fold sweeps clear both sides; sm_*, stall, wing loading, spar, fold moments within 1 %.
+- Open for the drone's owner (not this change): the V keel under the root still crosses the folded flow as a 45 deg
+  wedge (structural, no square face); the pre-existing failures above.
