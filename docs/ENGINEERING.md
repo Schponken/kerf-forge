@@ -161,6 +161,17 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
 - Cable path from base to wrist that survives the full motion range.
 - Gripper: opening and grip force stated in DESIGN.md.
 
+## 10a. Motion simulated (kerf/sim.py, `kerf simulate <p>`)
+- Statics (`static_torque`) prove a pose can be held; MuJoCo proves the motion: `joint_speed` moves the arm between
+  poses with each servo limited to its catalog stall torque, falling linearly to zero at its catalog no-load speed
+  (a DC motor behind a gearbox), so a move that needs more torque than the servo has is slow or never arrives.
+- `grip_hold`: the grip servo squeezes at `torque_fraction` of stall (0.5 by default, the same half-stall rule as
+  static_torque) and the object must not slip more than 1 mm under gravity plus a 1 g shake on each axis. By hand it
+  holds while 2 mu N >= m (g + a); friction comes from the catalog `friction` section (sourced) or is stated.
+- `drop_impact`: a drop's peak force comes from an elastic Hertz contact (part E, Poisson, the hit surface's radius)
+  in series with the part's own FEA stiffness at the hit point, undamped (no energy lost: the highest peak). That
+  force is then a crash load case for `fea_static` (SF 3).
+
 ## 10b. Electrical (every project that moves or powers anything)
 - Derive the whole electrical system, not only what the brief names: controller/FC, ESCs or drivers, receiver +
   antenna, VTX + antenna + camera for FPV, BEC/regulator for servos and logic, battery, strap + pad, power connector,

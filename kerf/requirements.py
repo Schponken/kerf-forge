@@ -718,7 +718,7 @@ def prop_ground(proj, asm, min_mm, props=None, up=(0, 0, 1)):
                       f"(resting level; negative = the prop hits the ground)"}
 
 
-SLOW = {"fea_static"}
+SLOW = {"fea_static", "drop_impact"}
 
 
 # What each check's value and limit mean, for people: unit, and whether the limit is a maximum, a minimum or a range.
@@ -729,6 +729,7 @@ UNITS = {
     "prop_clearance": ("mm", "min"), "prop_ground": ("mm", "min"), "hard_stop": ("mm³ overlap", "min"), "gear_bending": ("MPa", "max"),
     "power_budget": ("× rating", "max"), "flight_time": ("min", "min"), "run_time": ("min", "min"),
     "cg": ("mm", "max"), "connector_access": ("", "clear"),
+    "grip_hold": ("mm slip", "max"), "joint_speed": ("s", "max"), "drop_impact": ("N", "max"),
 }
 
 
@@ -792,3 +793,4 @@ from . import req_gears  # noqa: E402,F401  (gear_bending)
 from . import req_aero  # noqa: E402,F401  (static_margin, wing_loading, stall_speed, spar_bending)
 from . import usestory  # noqa: E402,F401  (heat_limit, rain_cover, access_opening, impact_case, story_covered)
 from . import req_dynamic  # noqa: E402,F401  (impact_fea, stop_impact, natural_freq)
+from . import req_motion  # noqa: E402,F401  (grip_hold, joint_speed, drop_impact: MuJoCo, kerf/sim.py)

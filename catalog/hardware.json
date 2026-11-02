@@ -318,6 +318,21 @@
    ]
   }
  },
+ "friction": {
+  "_note": "Static (breakaway) friction coefficients for grip checks (requirement grip_hold, kerf/req_motion.py). Key = jaw material - object material, dry.",
+  "PETG-steel": {
+   "mu_static": 0.27,
+   "source": "https://tribology.rs/journals/2024/2024-1/9-1546.pdf",
+   "confidence": "paper",
+   "note": "Stoimenov, Kandeva, Zagorski, Panev, 'Static and Kinetic Friction of 3D Printed Polymers and Composites', Tribology in Industry 46(1) 2024: FDM PETG on a ground steel counterbody (Ra 0.123 um), dry: static friction force 8 N at 30 N normal load = 0.27 (text; COF figures 7-10 not tabulated). It rises with load (PETG +150 % force at 70 N), so 0.27 is the low, conservative end for a light hobby grip."
+  },
+  "PLA-steel": {
+   "mu_static": 0.30,
+   "source": "https://tribology.rs/journals/2024/2024-1/9-1546.pdf",
+   "confidence": "paper",
+   "note": "Same paper and test: FDM PLA on ground steel, dry: static friction force 9 N at 30 N normal load = 0.30 (+55 % force at 70 N)."
+  }
+ },
  "materials": {
   "PLA": {
    "density": 1.24,

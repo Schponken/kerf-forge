@@ -22,6 +22,7 @@ dependencies = [
   "pyyaml>=6",
   "pytest>=8",
   "cadgen==0.8.4",
+  "mujoco==3.3.7",   # motion simulation (kerf/sim.py, kerf simulate)
   "pybullet>=3.2",   # URDF load test (tests/test_urdf.py); Spencer's simulators   # engineering-drawing PDFs (kerf/drawings.py); pins build123d <0.14 (docs/teardowns/text-to-cad.md)
 ]
 [project.scripts]

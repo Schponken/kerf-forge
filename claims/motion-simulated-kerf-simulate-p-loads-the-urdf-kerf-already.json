@@ -2,6 +2,6 @@
  "item": "Motion simulated: `kerf simulate <p>` loads the URDF Kerf already exports into MuJoCo (pip `mujoco`, pinned) with real masses / inertias from the parts and catalog, servo torque and speed limits from the catalog; requirement kinds `grip_hold` (object of the stated mass / friction held under 1 g shake without slipping), `joint_speed` (move between poses within the stated time without exceeding servo torque) and `drop_impact` (peak contact force from a drop of the stated height, fed to fea_static as a load case); hand-checked tests (pendulum period, static holding torque); used by robot_arm and robotic_gripper_desk",
  "session": "8669badf70",
  "since": 1793583975.1613467,
- "heartbeat": 1793583975.1613467,
+ "heartbeat": 1793585634.1452022,
  "since_utc": "2026-11-02 01:46"
 }

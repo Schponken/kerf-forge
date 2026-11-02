@@ -278,6 +278,8 @@ def main(argv=None) -> int:
     for k in ("--add", "--title", "--license", "--dims", "--source"):
         fd.add_argument(k, default=None)
     g = sub.add_parser("gallery"); g.add_argument("projects", nargs="*")
+    sm = sub.add_parser("simulate", help="MuJoCo motion simulation of the URDF: servo limits, home hold, grip_hold / joint_speed / drop_impact")
+    sm.add_argument("project")
     a = ap.parse_args(argv)
     sys.path.insert(0, str(ROOT))
     if a.cmd == "doctor":
@@ -318,6 +320,9 @@ def main(argv=None) -> int:
             _p(f"FAIL the printer did not report the job started: {r['sent']['status']}")
             return 1
         return 0
+    if a.cmd == "simulate":
+        from . import sim
+        return sim.simulate(a.project, say=_p)
     if a.cmd == "gallery":
         from . import gallery
         r = gallery.build(a.projects or None)
