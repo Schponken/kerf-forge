@@ -1429,3 +1429,23 @@ pushed for it and what I know:
   there (pod trace now 92 s).
 - drawings: ISO 5455 enlargement scales (2:1, 5:1) after the reductions, so tiny parts (fpv_wing horns) get drawings.
 - fpv_wing: check PASS (all 14 requirements); full build + review next.
+## 2026-11-02 11:50 UTC-5 — Studio: Follow live + Work tab (Spencer: watch the cloud sessions design, without slowing them)
+- **Follow live** (3D model tab, off by default): while on, Studio's one background thread runs `git fetch` at most once
+  every 60 s; when origin commits touch projects/<p>/ (part files, project.yaml, layout) it fast-forwards the working copy
+  with tools/mac/start.sh's rule (clean tree + `--ff-only`; otherwise "can't update: local changes" and following stops;
+  it waits while a Studio job runs) and rebuilds ONLY the changed items (plus the ancestors that place them and the
+  children that move with them) in a child process through the normal part build + cache: geometry + meshes, no checks,
+  FEA, review or tests. The viewer swaps the meshes in place (`__kerf.liveSwap`; camera, pose and selection kept) and the
+  changed parts glow ~2 s; one line under it gives "HH:MM <commit subject>". A part that fails mid-edit keeps its last
+  good mesh and shows "being edited"; placeholders show "being designed". A project never built on the Mac gets a
+  geometry-only model from the first live rebuild. No timeline/scrubber (Spencer: hold off). kerf/live.py.
+- **Work** (sidebar, read-only, shares the same fetch): PLAN done / total, sessions working (claims fresher than
+  STALE_MIN 90), items checked off today; a card per claim (item, minutes since the claim file's last commit = that
+  session's last beat/commit, stale flag; for a project item its out/ render and "View 3D" = open it with Follow live
+  on); the last 20 commit subjects with PLAN check-offs marked. Everything from git (log, claims/, PLAN.md at origin).
+- Tests: tests/test_live.py (change detection between commits, ff refused on a dirty tree + follow stops, ≤60 s fetch
+  cadence, last good mesh kept on a failed build incl. a real servo_link rebuild, Work data from a temp repo with fake
+  claims/commits, Studio routes smoke). Also checked by hand in headless Chromium: liveSwap on a real servo_link viewer
+  (moved + new part, glow on then off after 2 s, no page errors) and the Studio page (Work tab renders tiles / cards /
+  feed; Follow live loads /live/<p>/viewer.html).
+- Spencer, on the Mac: quit and reopen Kerf Studio (its start.sh pulls), open a project's 3D model, tick "Follow live".

@@ -240,7 +240,8 @@ function capShader(sh) {
 }
 const b64 = (s, Type) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Type(u.buffer); };
 const groups = new Map(), pickables = [];
-for (const it of D.items) {
+for (const it of D.items) addItem(it);
+function addItem(it) {
   const geo = new T.BufferGeometry();
   geo.setAttribute('position', new T.BufferAttribute(b64(it.verts, Float32Array), 3));
   geo.setIndex(new T.BufferAttribute(b64(it.tris, Uint32Array), 1));
@@ -256,6 +257,34 @@ for (const it of D.items) {
   geo.computeBoundingBox(); g.userData.box = geo.boundingBox;
   g.visible = !keep; scene.add(g); groups.set(it.id, g);
   if (!keep) pickables.push(mesh);
+}
+
+// ---------- follow live (Kerf Studio): new meshes for the parts a cloud session just changed, swapped in place; the
+// camera, pose and selection stay; the swapped parts glow for ~2 s.
+function liveSwap(items, removed = [], ms = 2000) {
+  const hit = [];
+  for (const it of items) {
+    let g = groups.get(it.id);
+    it.joints = (it.joints || (g && g.userData.it.joints) || []).filter(n => J.has(n));
+    if (!g) { D.items.push(it); addItem(it); g = groups.get(it.id); if (it.role === 'printed') printed.push(it); hit.push(it.id); continue; }
+    const geo = new T.BufferGeometry();
+    geo.setAttribute('position', new T.BufferAttribute(b64(it.verts, Float32Array), 3));
+    geo.setIndex(new T.BufferAttribute(b64(it.tris, Uint32Array), 1));
+    geo.computeVertexNormals(); geo.computeBoundingBox();
+    const m = g.userData.mesh, e = g.userData.edges;
+    m.geometry.dispose(); m.geometry = geo; e.geometry.dispose(); e.geometry = new T.EdgesGeometry(geo, 28);
+    const old = g.userData.it;
+    for (const k of ['verts', 'tris', 'nv', 'nt', 'faceStart', 'explode', 'label', 'src']) if (it[k] !== undefined) old[k] = it[k];
+    old.attr = null; delete old._fs; delete old.stress; delete old._su; delete g.userData.scol;
+    g.userData.box = geo.boundingBox; g.visible = old.role !== 'keepout';
+    hit.push(it.id);
+  }
+  for (const id of removed) { const g = groups.get(id); if (g) g.visible = false; }
+  pose(); paint();
+  for (const id of hit) setGlow(id, 1);            // a plain timer, not a tween: it shows even with reduced motion
+  setTimeout(() => { for (const id of hit) { setGlow(id, 0); const g = groups.get(id); if (g) g.userData.glow = false; } redraw(); }, ms);
+  redraw();
+  return hit;
 }
 
 // ---------- kinematics: compose ancestor joint motions about their home axes, then explode ----------
@@ -1034,7 +1063,7 @@ ctl.addEventListener('change', redraw);
   requestAnimationFrame(loop);
 })(performance.now());
 window.__kerf = { D, setJ, pose, groups, view, fit, inspect, faceOf, camera: cam, set explode(v) { explode = v; pose(); },
-  snapshot, compare, clearCompare, paint, restyle, get colorMode() { return colorMode; }, set colorMode(m) { colorMode = m; paint(); },
+  snapshot, liveSwap, compare, clearCompare, paint, restyle, get colorMode() { return colorMode; }, set colorMode(m) { colorMode = m; paint(); },
   cut(on, ax = 'y', t = null, flip = null) { CUT.on = on; CUT.ax = ax; if (on) cutDefaults(); if (t != null) CUT.t = t; if (flip != null) CUT.flip = flip; applyCut(); },
   asm: { get on() { return AS.on; }, get i() { return AS.i; }, cards: AS.cards, show: showCard, go, get busy() { return TW.length > 0; }, set speed(v) { speed = v; } } };
 })();

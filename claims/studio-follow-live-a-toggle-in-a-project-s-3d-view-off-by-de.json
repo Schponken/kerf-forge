@@ -2,6 +2,6 @@
  "item": "Studio \"Follow live\": a toggle in a project's 3D view (off by default); while on, `git fetch` at most every 60 s, fast-forward (clean tree only, else \"can't update: local changes\" and stop) when origin commits touch projects/<p>/, rebuild ONLY the changed parts (geometry + meshes, no checks), swap them into the viewer in place with the camera kept, highlight ~2 s, one line with the commit subject + time; a part that fails mid-edit keeps its last good mesh (\"being edited\"); placeholders \"being designed\"; no timeline/scrubber; tests",
  "session": "4ad5e4e55b",
  "since": 1793637515.02732,
- "heartbeat": 1793637515.02732,
+ "heartbeat": 1793638311.4354496,
  "since_utc": "2026-11-02 16:38"
 }

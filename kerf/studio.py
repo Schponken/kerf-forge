@@ -15,6 +15,8 @@ Everything goes through the same engine and CLI as the terminal; the studio only
   - compare: any build's geometry (kept per version) or the saved design next to a Try, as per-vertex distances
   - thumbnails: the viewer's own picture of the model, kept per geometry fingerprint
   - notifications: a desktop notification (macOS / notify-send) when a long job ends; the page also chimes
+  - follow live: a project's 3D view updates part by part while cloud sessions push to it (kerf/live.py)
+  - work: what the Claude Code sessions are doing (PLAN progress, fresh claims, latest commits), read from git
 Stdlib only (http.server + subprocess). Binds to 127.0.0.1: nothing is reachable from other machines.
 """
 from __future__ import annotations
@@ -524,6 +526,7 @@ def detail(name: str) -> dict:
             "report": {k: rep.get(k) for k in ("ok", "problems", "warnings", "maker_notes", "mass", "requirements", "bom", "seconds", "fingerprint", "stubs")} if rep else None,
             "viewer": "out/viewer.html" if (out / "viewer.html").exists() else None,
             "history": history(name),
+            "live_on": bool(LIVE["follow"].get(name, {}).get("on")),
             "estimate": {"build": estimate(name, "build"), "check": estimate(name, "check")},
             "modes": mode_menu(name, rep), "last_mode": (rep.get("mode") or ("kit" if rep.get("files") else None)) if rep else None,
             "summary_numbers": _numbers(rep),
@@ -1155,6 +1158,162 @@ def thumb_info(name: str) -> dict:
     return {"url": f"/thumb/{name}.png?v={int(f.stat().st_mtime)}", "fingerprint": meta.get("fingerprint")}
 
 
+# ---------------------------------------------------------------- follow live + Work tab (kerf/live.py)
+# One background thread, one `git fetch` at most every live.FETCH_EVERY seconds, only while a project is followed or
+# the Work tab is open. Updates follow tools/mac/start.sh's rule (clean tree, fast-forward only) and wait while a Studio
+# job runs, so they never pull under a build or a Claude Code change.
+LIVE_DIR = ROOT / ".cache" / "studio_live"
+LIVE: dict = {"follow": {}, "last_fetch": 0.0, "fetch_error": None, "work_until": 0.0, "work": None, "work_key": None,
+              "thread": None}
+
+
+def _live_state(name: str) -> dict:
+    return LIVE["follow"].setdefault(name, {"on": False, "seq": 0, "data": None, "seeded": False, "changed": {},
+                                            "removed": {}, "line": "", "error": None, "editing": {}, "designing": [],
+                                            "building": False, "needs_full": False})
+
+
+def live_data(name: str) -> dict:
+    """The followed project's viewer data: the last build's viewer.html on this computer (or a blank model that the first
+    live rebuild fills), then updated in place part by part."""
+    from . import live
+    st = _live_state(name)
+    if st["data"] is None:
+        from .viewer import embedded
+        v = PROJECTS / name / "out" / "viewer.html"
+        d = embedded(v) if v.exists() else None
+        st["data"], st["seeded"] = (d or live.blank_data(name, f"projects/{name}")), d is not None
+        st["needs_full"] = d is None
+        rep = _report(PROJECTS / name) or {}
+        st["designing"] = list(rep.get("stubs") or [])     # placeholders: shown as "being designed", as everywhere else
+    return st["data"]
+
+
+def follow(name: str, on: bool) -> dict:
+    st = _live_state(name)
+    st["on"], st["error"] = bool(on), None
+    if on:
+        live_data(name)
+        _live_thread()
+    return live_info(name, st["seq"])
+
+
+def live_info(name: str, since: int = 0) -> dict:
+    """What the page needs: state, the one-line latest commit, and the items whose mesh changed after `since`."""
+    st = _live_state(name)
+    d = st["data"]
+    items = [it for it in (d or {}).get("items", []) if st["changed"].get(it["id"], 0) > since] if since < st["seq"] else []
+    return {"on": st["on"], "seq": st["seq"], "line": st["line"], "error": st["error"], "editing": st["editing"],
+            "designing": st["designing"], "building": st["building"], "ready": bool(d and d.get("items")),
+            "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "items": items,
+            "removed": [i for i, s in st["removed"].items() if s > since]}
+
+
+def _live_rebuild(name: str, ids: list[str] | None, removed: list[str] | None = None, line: str | None = None) -> None:
+    """Child process `python -m kerf.live`: geometry + meshes of those items only, merged into the live viewer data."""
+    from . import live
+    st = _live_state(name)
+    data = live_data(name)
+    st["building"] = True
+    try:
+        LIVE_DIR.mkdir(parents=True, exist_ok=True)
+        out = LIVE_DIR / f"{name}.json"
+        out.unlink(missing_ok=True)
+        r = subprocess.run([PY, "-m", "kerf.live", name, str(out), *(ids if ids is not None else ["ALL"])], cwd=ROOT,
+                           capture_output=True, text=True, timeout=1800, env={**os.environ, "PYTHONUNBUFFERED": "1"})
+        if r.returncode != 0 or not out.exists():
+            tail = (r.stdout + r.stderr).strip().splitlines()[-1:] or [f"exit {r.returncode}"]
+            st["editing"].update({i: f"live rebuild stopped: {tail[0][:160]}" for i in (ids or [])})
+            return
+        res = json.loads(out.read_text(encoding="utf-8"))
+        m = live.merge(data, res, removed)
+        st["seq"] += 1
+        for i in m["changed"]:
+            st["changed"][i] = st["seq"]
+        for i in m["removed"]:
+            st["removed"][i] = st["seq"]
+        st["editing"] = {**{k: v for k, v in st["editing"].items() if k not in res["items"] and k not in (removed or [])},
+                         **m["editing"]}
+        st["designing"] = sorted((set(st["designing"]) - set(res["items"])) | set(m["designing"]))
+        if line is not None:
+            st["line"] = line
+    finally:
+        st["building"] = False
+
+
+def live_tick(now: float | None = None) -> None:
+    """One step of the background loop (also called directly by tests)."""
+    from . import live
+    now = time.time() if now is None else now
+    followed = [n for n, s in LIVE["follow"].items() if s["on"] and n in project_names()]
+    for n in followed:
+        if _live_state(n)["needs_full"]:
+            _live_state(n)["needs_full"] = False        # one try; a failure shows as "being edited"
+            _live_rebuild(n, None)                      # never built here: first whole-model geometry
+    if not (followed or now < LIVE["work_until"]) or now - LIVE["last_fetch"] < live.FETCH_EVERY:
+        return
+    LIVE["last_fetch"] = now
+    LIVE["fetch_error"] = live.fetch(ROOT)
+    LIVE["work"] = None
+    if LIVE["fetch_error"] or not followed:
+        return
+    up, head = live.upstream(ROOT), _git("rev-parse", "HEAD")
+    if not up or up == head:
+        return
+    changes = {n: live.changed_parts(ROOT, head, up, n) for n in followed}
+    relevant = {n: c for n, c in changes.items() if c["items"] or c["removed"]}
+    if not relevant:
+        return
+    if busy():                                          # a Studio build / Claude Code job is working in this folder
+        for n in relevant:
+            _live_state(n)["line"] = "update waiting: a Studio job is running"
+        return
+    ok, why = live.fast_forward(ROOT)
+    if not ok:
+        for n in followed:
+            st = _live_state(n)
+            st["error"], st["on"] = why, False          # stop following; the page says why
+        return
+    for n, c in relevant.items():
+        s = live.last_subject(ROOT, head, up, n)
+        line = f"{time.strftime('%H:%M', time.localtime(s['time']))} {s['subject']}" if s else None
+        _live_rebuild(n, None if c["all"] else c["items"], c["removed"], line)
+
+
+def _live_loop():
+    while True:
+        time.sleep(2.0)
+        try:
+            live_tick()
+        except Exception as e:  # noqa: BLE001 - the loop never dies; the page shows the reason
+            LIVE["fetch_error"] = f"{type(e).__name__}: {e}"[:200]
+
+
+def _live_thread():
+    if LIVE["thread"] is None or not LIVE["thread"].is_alive():
+        LIVE["thread"] = threading.Thread(target=_live_loop, daemon=True)
+        LIVE["thread"].start()
+
+
+def _work_picture(name: str) -> str | None:
+    if name not in project_names():
+        return None
+    rel = _thumb(PROJECTS / name)
+    return f"/files/{name}/{rel}" if rel else thumb_info(name)["url"]
+
+
+def work() -> dict:
+    """The Work tab's data, recomputed after each fetch (and each minute, for the ages), from the fetched origin branch."""
+    from . import live
+    LIVE["work_until"] = time.time() + 90              # the tab is open: keep the shared fetch going
+    _live_thread()
+    key = (live.upstream(ROOT) or _git("rev-parse", "HEAD"), int(time.time() // 60))
+    if LIVE["work"] is None or LIVE["work_key"] != key:
+        LIVE["work"] = live.work_data(ROOT, "@{u}", picture=_work_picture)
+        LIVE["work_key"] = key
+    return {**LIVE["work"], "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "every": live.FETCH_EVERY}
+
+
 # ---------------------------------------------------------------- http
 def inventory_keys() -> list[dict]:
     """Everything that can go in "My parts": every priced key (catalog parts and fastener / wire packs)."""
@@ -1243,6 +1402,18 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(settings())
             if parts == ["api", "printer"]:
                 return self._json(printer_info(live=q.get("live", ["0"])[0] == "1"))
+            if parts == ["api", "work"]:
+                return self._json(work())
+            if parts[:2] == ["api", "live"] and len(parts) == 3:
+                if parts[2] not in project_names():
+                    return self._err("no such project", 404)
+                return self._json(live_info(parts[2], int(q.get("since", ["0"])[0])))
+            if parts[0] == "live" and len(parts) == 3 and parts[2] == "viewer.html":
+                if parts[1] not in project_names():
+                    return self._err("no such project", 404)
+                from .viewer import html as viewer_html
+                d = live_data(parts[1])
+                return self._send(200, viewer_html({**d, "live_seq": _live_state(parts[1])["seq"]}).encode(), "text/html; charset=utf-8")
             if parts == ["api", "compare"]:
                 nm = q.get("project", [""])[0]
                 if nm not in project_names():
@@ -1413,6 +1584,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"changed": write_materials(PROJECTS / name / "project.yaml", {str(k): str(v) for k, v in (body.get("materials") or {}).items()})})
             if u.path == "/api/thumb":
                 return self._json(save_thumb(name, str(body.get("png", "")), body.get("fingerprint")))
+            if u.path == "/api/live/follow":
+                return self._json(follow(name, bool(body.get("on"))))
             return self._err("not found", 404)
         except ValueError as e:
             return self._err(e)

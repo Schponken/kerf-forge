@@ -269,6 +269,20 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .pcard .meta{padding:12px 14px}
 .pcard .meta b{display:block;font-size:15px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard .meta span{font-size:12px;color:var(--muted)}
+/* follow live + Work tab */
+.livebar{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.livetog{display:flex;align-items:center;gap:6px;font-weight:620;cursor:pointer;white-space:nowrap}
+.liveline{margin-top:6px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.liveline b{color:var(--ink);font-family:var(--mono);font-weight:600;margin-right:6px}
+.wtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.wtile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.wtile b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.wtile span{font-size:12px;color:var(--muted)}
+.wcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:18px}
+.wcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.wcard.stale{opacity:.6}.wcard img{width:100%;aspect-ratio:4/3;object-fit:contain;background:var(--panel2)}
+.wcard .wb{padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}.wcard .wb p{margin:0;font-size:13px}
+.wfeed{list-style:none;margin:0;padding:0}.wfeed li{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;align-items:baseline}
+.wfeed time{font-family:var(--mono);color:var(--muted);min-width:44px}
 .sidebtns{display:flex;gap:6px;margin:0 14px 8px}
 .sidebtns button{flex:1;padding:6px 8px;font-size:12.5px}
 .bell.off{opacity:.45}
@@ -321,7 +335,8 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   </div>
   <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
   <nav class="sidenav"><button id="nav_grid" onclick="showGrid()" title="Every project as a big card">▦ All projects</button>
-    <button id="nav_parts" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button></nav>
+    <button id="nav_parts" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button>
+    <button id="nav_work" onclick="showWork()" title="What the Claude Code sessions are doing right now (read from git)">◷ Work</button></nav>
   <input id="search" placeholder="Search projects" oninput="renderList()" style="display:none">
   <div id="plist"></div>
   <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
@@ -404,7 +419,7 @@ async function loadProjects() {
     const d = await api("/api/projects");
     S.projects = d.projects; S.claude = d.claude; S.platform = d.platform;
     renderList();
-    if (!S.sel && S.projects.length && !S.newOpen && !S.grid) select(S.projects[0].name);
+    if (!S.sel && S.projects.length && !S.newOpen && !S.grid && !S.work) select(S.projects[0].name);
     if (S.grid) showGrid();
     fillPictures();
     if (!S.projects.length && !S.newOpen) welcome();
@@ -414,7 +429,7 @@ async function loadProjects() {
 function renderList() {
   const unbuilt = S.projects.filter(p => !p.built).length;
   $("#search").style.display = S.projects.length > 6 ? "" : "none";
-  document.querySelectorAll(".sidenav button").forEach(b => b.classList.toggle("on", (b.id === "nav_grid" && S.grid) || (b.id === "nav_parts" && S.parts)));
+  document.querySelectorAll(".sidenav button").forEach(b => b.classList.toggle("on", (b.id === "nav_grid" && S.grid) || (b.id === "nav_parts" && S.parts) || (b.id === "nav_work" && S.work)));
   const est = S.projects.filter(p => !p.built).reduce((a, p) => a + (p.build_s || 0), 0);
   $("#buildall button").textContent = `⚙ Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}${est ? " (" + about(est) + ")" : ""}`;
   const q = ($("#search").value || "").toLowerCase(), first = !S.listed; S.listed = true;
@@ -427,7 +442,7 @@ function renderList() {
 }
 
 async function select(name, keepTab) {
-  S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
+  S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.work = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
   let d;
@@ -503,12 +518,16 @@ function renderTab() {
   const d = S.detail, el = $("#tabbody"), t = S.tab;
   if (!el) return;
   el.style.animation = "none"; el.offsetHeight; el.style.animation = "";
-  if (t === "model") {
+  if (t === "model" && liveOf(d).on) {
+    el.innerHTML = liveBar(d) + `<iframe class="viewer" id="mainviewer" onload="liveLoaded(this)" src="/live/${d.name}/viewer.html?t=${Date.now()}"></iframe>
+      <div class="liveline" id="liveline">${liveLine(liveOf(d))}</div>`;
+  } else if (t === "model") {
     const vers = (d.history || []).filter(h => h.geom && h.fingerprint !== (d.report || {}).fingerprint);
     el.innerHTML = d.viewer ? `${vers.length ? `<div class="cmpbar"><span class="note">Compare with an earlier build</span>
         <select id="cmpsel" onchange="compareWith(this.value)"><option value="">—</option>${vers.map(h => `<option value="${h.stamp}">${esc(new Date(h.time * 1000).toLocaleString())}${h.ok ? "" : " (had problems)"}</option>`).join("")}</select>
         <span class="note" id="cmpnote"></span></div>` : ""}
       <iframe class="viewer" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>` : notBuilt("The 3D model appears here after the first build.");
+    el.insertAdjacentHTML("afterbegin", liveBar(d));
   } else if (t === "tune") renderTune(el);
   else if (t === "results") renderResults(el, d.report);
   else if (t === "files") renderFiles(el);
@@ -518,7 +537,7 @@ function renderTab() {
 
 /* ---------- My parts (catalog/inventory.json) */
 async function showParts() {
-  S.newOpen = true; S.sel = null; S.grid = false; S.parts = true; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.sel = null; S.grid = false; S.parts = true; S.work = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   const d = await api("/api/inventory"); S.inv = {...d.items}; S.invKeys = d.keys;
   renderParts();
 }
@@ -1129,6 +1148,93 @@ async function trialLoaded(f) {
 // the 3D viewer (same origin) hands its "Do it" requests and compare events to the studio through this
 window.kerfStudio = {edit: (text, ctx) => openEdit(text, ctx || {}), compareCleared() { const s = $("#cmpsel"); if (s) s.value = ""; }};
 
+/* ---------- follow live: the 3D view updates part by part as cloud sessions push (kerf/live.py) */
+S.live = {};
+const liveOf = d => S.live[d.name] || (S.live[d.name] = {on: !!d.live_on, seq: 0});
+const ago = s => s < 60 ? "just now" : s < 3600 ? `${Math.round(s / 60)} min ago` : `${Math.floor(s / 3600)} h ${Math.round(s % 3600 / 60)} min ago`;
+function liveBar(d) {
+  const lv = liveOf(d);
+  return `<div class="livebar"><label class="livetog" title="Checks origin once a minute; when a session pushes changes to this project, only the changed parts are rebuilt (geometry only, no checks) and swapped in here"><input type="checkbox" ${lv.on ? "checked" : ""} onchange="setFollow('${d.name}', this.checked)"> Follow live</label>
+    ${lv.error ? `<span class="chip bad">${esc(lv.error)}</span>` : `<span class="note">${lv.on ? "watching origin for this project's commits" : "off: shows this computer's last build"}</span>`}</div>`;
+}
+function liveLine(lv) {
+  const bits = [];
+  bits.push(lv.line ? `<b>${esc(lv.line.slice(0, 5))}</b>${esc(lv.line.slice(6))}` : `<span>no new commits for this project yet</span>`);
+  if (lv.building) bits.push(`<span class="chip info">updating…</span>`);
+  for (const [id, why] of Object.entries(lv.editing || {})) bits.push(`<span class="chip warn" title="${esc(why)}">${esc(id)}: being edited</span>`);
+  for (const id of lv.designing || []) bits.push(`<span class="chip info">${esc(id)}: being designed</span>`);
+  if (lv.fetch_error) bits.push(`<span class="chip warn" title="${esc(lv.fetch_error)}">offline</span>`);
+  else if (lv.fetched) bits.push(`<span>· checked ${ago(Date.now() / 1000 - lv.fetched)}</span>`);
+  return bits.join(" ");
+}
+async function setFollow(name, on) {
+  try { const r = await api("/api/live/follow", {project: name, on}); S.live[name] = {...r, items: undefined, on: r.on, seq: 0}; }
+  catch (e) { toast("Couldn't change Follow live", e.message, "bad"); }
+  if (S.detail && S.detail.name === name) { S.detail.live_on = S.live[name].on; renderTab(); }
+}
+async function liveLoaded(f) {
+  syncTheme(f);
+  const K = await waitKerf(f), d = S.detail; if (!K || !d) return;
+  const lv = liveOf(d); lv.seq = K.D.live_seq || 0; lv.full = K.D.items.length > 0;
+}
+async function pollLive() {
+  const d = S.detail; if (!d || S.tab !== "model" || S.work || S.grid || S.parts || S.newOpen) return;
+  const lv = liveOf(d); if (!lv.on) return;
+  let r; try { r = await api(`/api/live/${d.name}?since=${lv.seq || 0}`); } catch (e) { return; }
+  if (!S.detail || S.detail.name !== d.name) return;
+  Object.assign(lv, {line: r.line, editing: r.editing, designing: r.designing, building: r.building, error: r.error, fetched: r.fetched, fetch_error: r.fetch_error});
+  if (!r.on) { lv.on = false; d.live_on = false; if (r.error) toast("Stopped following", r.error, "bad"); return renderTab(); }
+  const f = $("#mainviewer"), K = f && kv(f);
+  if (K && K.liveSwap) {
+    if (!lv.full && r.ready) { f.src = `/live/${d.name}/viewer.html?t=${Date.now()}`; return; }   // first model: load it whole
+    if (r.items.length || r.removed.length) K.liveSwap(r.items, r.removed);
+    lv.seq = r.seq;
+  }
+  const ln = $("#liveline"); if (ln) ln.innerHTML = liveLine(lv);
+}
+setInterval(pollLive, 4000);
+
+/* ---------- Work: what the sessions are doing (read-only, from git: log, claims/, PLAN.md; shares Follow live's fetch) */
+async function showWork() {
+  S.work = true; S.grid = false; S.parts = false; S.sel = null; S.newOpen = false; S.ticket = (S.ticket || 0) + 1; renderList();
+  if (!S.workData) $("#main").innerHTML = `<div class="head"><h1>Work</h1><p class="desc">Reading git…</p></div>`;
+  else renderWork();
+  loadWork();
+}
+async function loadWork() {
+  if (!S.work) return;
+  try { const w = await api("/api/work"); if (S.work) { S.workData = w; renderWork(); } }
+  catch (e) { if (S.work) $("#main").innerHTML = `<div class="body"><div class="banner bad">${esc(e.message)}</div></div>`; }
+}
+setInterval(() => { if (S.work) loadWork(); }, 15000);
+function renderWork() {
+  const w = S.workData, now = Date.now() / 1000;
+  const mins = m => m < 1 ? "just now" : m < 60 ? `${Math.round(m)} min ago` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min ago`;
+  const hhmm = s => new Date(s * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+  $("#main").innerHTML = `<div class="head"><h1>Work</h1><p class="desc">What the Claude Code sessions are doing, read from origin (${esc(w.ref)}).
+      ${w.fetch_error ? `<span class="chip warn" title="${esc(w.fetch_error)}">offline: last known state</span>` : w.fetched ? `Checked ${ago(now - w.fetched)}; again every ${Math.round(w.every)} s while this is open.` : "Checking origin…"}</p></div>
+    <div class="body">
+      <div class="wtiles">
+        <div class="wtile"><b>${w.plan_done} / ${w.plan_total}</b><span>PLAN items done</span></div>
+        <div class="wtile"><b>${w.sessions}</b><span>session${w.sessions == 1 ? "" : "s"} working (claims fresher than ${w.stale_min} min)</span></div>
+        <div class="wtile"><b>${w.today}</b><span>item${w.today == 1 ? "" : "s"} checked off today</span></div>
+      </div>
+      <h3>Claimed work</h3>
+      <div class="wcards">${w.cards.map(c => `<div class="wcard ${c.stale ? "stale" : ""}">
+        ${c.picture ? `<img src="${esc(c.picture)}" alt="" loading="lazy">` : ""}
+        <div class="wb"><p title="${esc(c.full)}">${esc(c.item)}</p>
+          <span class="note">last commit ${mins(c.since_commit_min)}${c.stale ? ` <span class="chip warn">stale</span>` : ""}</span>
+          ${c.project ? `<button onclick="openLive('${esc(c.project)}')">◇ View 3D</button>` : ""}</div></div>`).join("") || `<p class="note">No session holds a claim right now.</p>`}</div>
+      <h3>Latest commits</h3>
+      <ul class="wfeed">${w.feed.map(c => `<li><time title="${esc(new Date(c.time * 1000).toLocaleString())}">${hhmm(c.time)}</time><span>${esc(c.subject)}</span>${c.done.length ? `<span class="chip ok" title="${esc(c.done.join("\n"))}">✓ ${c.done.length} done</span>` : ""}</li>`).join("")}</ul>
+    </div>`;
+}
+async function openLive(name) {
+  if (!S.projects.some(p => p.name === name)) return toast("Not here yet", `projects/${name} isn't on this computer yet: it arrives with the next update.`, "bad");
+  try { const r = await api("/api/live/follow", {project: name, on: true}); S.live[name] = {on: r.on, seq: 0}; } catch (e) { return toast("Couldn't follow it", e.message, "bad"); }
+  select(name);
+}
+
 /* ---------- modal: change something, duplicate */
 function modal(html) { $("#modalbox").innerHTML = html; $("#modal").classList.add("open"); const t = $("#modalbox textarea") || $("#modalbox input"); if (t) t.focus(); }
 function closeModal() { $("#modal").classList.remove("open"); }
@@ -1182,7 +1288,7 @@ async function doDuplicate() {
 
 /* ---------- all projects as big cards */
 function showGrid() {
-  const first = !S.grid; S.grid = true; S.parts = false; S.sel = null; S.newOpen = false; renderList();
+  const first = !S.grid; S.grid = true; S.parts = false; S.work = false; S.sel = null; S.newOpen = false; renderList();
   const P = S.projects;
   const unbuilt = P.filter(p => !p.built).length;
   $("#main").innerHTML = `<div class="head"><h1>All projects</h1><p class="desc">${P.length} design${P.length == 1 ? "" : "s"}. Click one to open it.</p>
