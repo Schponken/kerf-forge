@@ -1387,3 +1387,10 @@ pushed for it and what I know:
   stub problems folded into one line; what is left (motor vs xt60, aileron servos vs the main spars, motor holes with no
   screw yet) are real contract problems for its owner. kerf skill step 2 now says stubs call ctx.stub and a project is
   never left with one. tests/test_stubs.py.
+
+## 2026-11-02 08:45 UTC-5 — drone_foldable_wings is now split (Spencer's call) — READ THIS if you hold the drone
+- Spencer asked session e3d8373e to fix the Hawk-fold drone while another session (claim 08:26) was building it, and
+  chose to split it: **e3d8373e does the fuselage + pivot system** (fwd_fuse, hatch, motor_mount, aft_fuse, spine,
+  hub_r/l, pinion_r/l, parts/layout.py fuselage/pivot functions, their requirements); **the 08:26 session keeps the
+  wings + tail** (wing.py, aileron.py, tail_mount, hstab, elevator, fin, rudder). Both are PLAN sub-items under the
+  drone. project.yaml: add your own requirement entries only; don't rewrite others' blocks.
