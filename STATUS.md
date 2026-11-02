@@ -307,3 +307,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - (01S68R6R, later) FEA memory halved: kerf/fea.py builds the intorder-4 stress basis per chunk after the solve and
   sums the stiffness per chunk with int32 indices. drone_foldable_wings mount_fea (70k tets) OOM-killed a 7 GB machine
   (so its full check could never finish there); now 2.7 GB peak, same stresses. MAX_TETS comment corrected.
+
+## 2026-11-02 (Claude, user-facing bug sweep)
+- Fixed: auto-fix / Fix no longer start on a project another session holds (they wasted a Claude run that then stopped); Save / Restore / materials / Change something ask before changing such a project (409 `claimed`, `override: true`); switching projects asks before dropping unsaved Tune values; a second Build/Check click opens the running job instead of an error; typed names are cleaned (`studio.slug`: "Hawk Drone" -> hawk_drone) and auto names avoid existing projects; Tune Reset clears material picks too; "1,5" reads as 1.5; a wrong printer access code now says so (was "serial right?"); spaces in a pasted code are ignored. tests/test_user_bugs.py; test_studio's bad-name case now uses "9 Bad!" (a name that can't be cleaned).
+- Seen, not mine: running test_studio.py together with the other Studio browser test files in ONE pytest process died with exit 141 after ~44 tests (each file alone passes); worth a look if the batch shows it. test_progress_events_are_off_by_default_and_ordered_when_on still fails on main (noted earlier).
