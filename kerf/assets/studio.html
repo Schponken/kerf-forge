@@ -178,8 +178,8 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 #mc{position:fixed;right:18px;bottom:18px;width:min(760px,calc(100vw - 330px));max-height:min(74vh,720px);display:none;flex-direction:column;z-index:6;
   background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
 #mc.open{display:flex;animation:popIn .35s cubic-bezier(.2,.9,.3,1.2) both}
-#mc.min .mcbody,#mc.min #mctw{display:none}
-#mctw{height:min(340px,38vh);margin:0 14px;flex:none}#mctw[hidden]{display:none}
+#mc.min .mcbody{display:none}
+#mctw{margin:8px 14px 2px;flex:none}#mctw[hidden]{display:none}#mc.min #mctw{margin-bottom:10px}
 .fxa.up,.fxs.up{color:var(--ok)}.fxa.down,.fxs.down{color:var(--bad)}.fxs.meh{color:#e0a030}.fxs{font-weight:600}
 .scene{display:flex;gap:14px;align-items:center;padding:12px 14px;margin:4px 0 10px;border-radius:12px;background:linear-gradient(135deg,rgba(255,140,40,.12),rgba(255,140,40,.03));border:1px solid rgba(255,140,40,.25)}
 .scene .stage{position:relative;width:64px;height:52px;flex:none}.scene .who{position:absolute;left:2px;bottom:0;font-size:34px;animation:sbob 1.6s ease-in-out infinite}
@@ -195,7 +195,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .misstag{font-size:11px;margin-top:4px;white-space:nowrap}.misstag.nearmiss{color:#e0a030}.misstag.close{color:#e07a30}.misstag.faroff{color:var(--bad)}
 .fixalt{margin:-4px 0 6px;padding-left:20px}.fixalt li{margin:3px 0;color:var(--muted)}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
-.twmodal .card{width:min(1100px,94vw);height:min(760px,88vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
+.twmodal .card{max-width:none;width:min(860px,94vw);height:min(820px,90vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
   background:linear-gradient(var(--grid) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/22px 22px}
 #mc.running .scan{opacity:1}
@@ -603,7 +603,7 @@ function renderProject() {
           <div class="menu" id="moremenu">
             <button onclick="run('check')">✓ Check everything <span class="sub">no files${e.check ? " · " + about(e.check) : ""}</span></button>
             <button onclick="run('quick')">⚡ Quick check <span class="sub">no motion or strength</span></button>
-            <button onclick="showDecided('${d.name}')">🕸 How Kerf decided <span class="sub">the research, options and choices behind this design</span></button>
+            <button onclick="showDecided('${d.name}')">🧭 How Kerf decided <span class="sub">what it researched, the options it weighed and why it chose this one</span></button>
             <button onclick="showGlossary()">📖 Words, explained <span class="sub">every term and check in plain English</span></button>
             <button onclick="toggleAutofix()">🔧 Auto-fix failed builds: ${S.settings.autofix ? "on" : "off"} <span class="sub">Claude Code fixes the problems a build finds, then rebuilds</span></button>
             <hr>
@@ -1053,13 +1053,16 @@ function narrate(t) {
   }
 }
 function closeMc() { $("#mc").classList.remove("open"); S.job = null; if (S.tw) { S.tw.stop(); S.tw = null; } }
-function showDecided(name) {   // a finished project's map: its research, the options it weighed, what it built
+function showDecided(name, job, label) {   // "How Kerf decided": a finished project's story, or a running job's (steerable)
   const el = document.createElement("div"); el.className = "modal twmodal";
-  el.innerHTML = `<div class="card" style="width:min(1100px,94vw);max-width:none;height:min(760px,88vh);display:flex;flex-direction:column"><div class="row" style="justify-content:space-between"><h3 style="margin:0">🕸 How Kerf decided: ${esc(name)}</h3><button id="twclose">Close</button></div>
-    <p class="note" style="margin:4px 0 0">Each branch is a question it researched, each small dot a source it read. Gold is what it chose, grey is what it set aside and why. ▶ Replay grows it again.</p><div class="twhost"></div></div>`;
+  el.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">How Kerf decided: ${esc(label || name)}</h3><button id="twclose">Close</button></div><div class="twhost"></div></div>`;
   document.body.appendChild(el);
-  const tw = TW.mount(el.querySelector(".twhost"), `/api/thoughtweb?project=${encodeURIComponent(name)}`);
-  el.querySelector("#twclose").onclick = () => { tw.stop(); el.remove(); };
+  const url = job ? `/api/thoughtweb?job=${job}` : `/api/thoughtweb?project=${encodeURIComponent(name)}`;
+  const tw = TW.mount(el.querySelector(".twhost"), url, {job});
+  const close = () => { tw.stop(); el.remove(); document.removeEventListener("keydown", esc_); };
+  const esc_ = e => { if (e.key === "Escape") close(); };
+  el.querySelector("#twclose").onclick = close; el.onclick = e => { if (e.target === el) close(); };
+  document.addEventListener("keydown", esc_);
 }
 function toggleMin() { $("#mc").classList.toggle("min"); }
 async function stopJob() { if (S.job && confirm("Stop this job?")) await api("/api/stop", {job: S.job}).catch(e => toast("Couldn't stop", e.message, "bad")); }
@@ -1197,7 +1200,9 @@ function renderMc(j) {
   const body = $("#mcbody"), atEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 40;
   let html = "", pct = 0;
   if ((j.kind === "design" || j.kind === "edit" || j.kind === "fix") && !S.tw && window.TW) {   // the thought web: what it explores, keeps, sets aside
-    $("#mctw").hidden = false; S.tw = TW.mount($("#mctw"), `/api/thoughtweb?job=${j.id}`);
+    const jid = j.id, lab = j.label;   // a one-line summary appears by itself as soon as the research starts; it opens the full, steerable story
+    S.tw = TW.mount($("#mctw"), `/api/thoughtweb?job=${jid}`, {mode: "strip", job: jid,
+      onResearch: () => { if (S.job === jid) $("#mctw").hidden = false; }, onOpen: () => showDecided(null, jid, lab)});
   }
   if (j.kind === "design" || j.kind === "edit" || j.kind === "fix") {
     const tools = S.ev.filter(e => e.k === "tool"), seen = new Set(tools.map(e => e.phase).filter(Boolean));
