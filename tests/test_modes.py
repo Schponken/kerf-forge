@@ -50,3 +50,40 @@ def test_ship_refuses_without_confirmation(capsys):
         raise AssertionError("nothing may run before Ship it is confirmed")
     assert cli.run_mode("servo_link", "ship", ship_confirmed=False, runner=boom) == 2
     assert "explicit go-ahead" in capsys.readouterr().out
+
+
+def test_model_first(rig, monkeypatch, capsys):
+    """The 3D model comes first (Spencer, 2026-11-02): a preview viewer is written and announced before the print
+    checks start, the parts go back to where they were modelled for those checks, and the full viewer replaces it."""
+    from kerf import pipeline, viewer
+    seen = {}
+    real = viewer.write
+
+    def spy(proj, asm, rep, path, fea=None, preview=False):
+        if preview:
+            seen["at_stage"] = list(seen.get("stages", []))
+            seen["data"] = viewer.data(proj, asm, rep, preview=True)
+        return real(proj, asm, rep, path, fea=fea, preview=preview)
+    stage = pipeline.progress.stage
+    monkeypatch.setattr(pipeline.progress, "stage", lambda k: (seen.setdefault("stages", []).append(k), stage(k)))
+    monkeypatch.setattr(pipeline.viewer, "write", spy)
+    before = run(str(rig), mode="check")["parts"]                 # no viewer stage: no preview
+    assert "data" not in seen
+    seen["stages"] = []
+    rep = run(str(rig), mode="sketch")
+    assert "print" not in seen["at_stage"]                        # written before the print checks began
+    d = seen["data"]
+    assert d["report"]["preview"] is True and d["steps"] is None and "when the checks finish" in d["attr_error"]
+    assert "3D model ready" in capsys.readouterr().out
+    assert {k: v["problems"] for k, v in rep["parts"].items()} == {k: v["problems"] for k, v in before.items()}
+    full = viewer.embedded(rig / "out" / "viewer.html")
+    assert full["report"]["preview"] is False                     # the final viewer replaced the preview
+
+
+def test_studio_shows_the_model_first():
+    """Studio opens the 3D tab on the run's "model" event and says the rest is still running."""
+    html = (ROOT / "kerf" / "assets" / "studio.html").read_text(encoding="utf-8")
+    assert 'j.events.some(e => e.k === "model")' in html and "async function modelReady(j)" in html
+    assert "still checking, making the print files and pictures in the background" in html
+    viewer_html = (ROOT / "kerf" / "assets" / "viewer.html").read_text(encoding="utf-8")
+    assert "R.preview ? 'checks running…'" in viewer_html

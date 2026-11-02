@@ -95,7 +95,7 @@ def joint_motion(asm, e) -> dict:
     return out
 
 
-def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None = None) -> dict:
+def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None = None, preview: bool = False) -> dict:
     """Everything the page shows. Leaves the assembly at its home pose.
     fea: the build's FEA surface fields by requirement id (pipeline `fea_viz`), for the stress colours.
     assembly_md: out/ASSEMBLY.md text, for the build-it-step-by-step mode."""
@@ -115,9 +115,12 @@ def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None 
                 js.append(e.name)
             n = e.parent
         chain[iid] = list(reversed(js))  # root-most joint first
-    try:  # click-to-edit: which line and params made each face (kerf/attribution.py)
+    if preview:   # the first look: the model now, click-to-edit and build steps when the checks finish
+        attr, attr_error = {}, "click-to-edit is added when the checks finish"
+    else:
+      try:  # click-to-edit: which line and params made each face (kerf/attribution.py)
         attr, attr_error = attribution.compute(proj), None
-    except Exception as e:  # noqa: BLE001 - the viewer still works without it; the page says why
+      except Exception as e:  # noqa: BLE001 - the viewer still works without it; the page says why
         attr, attr_error = {}, f"{type(e).__name__}: {e}"
     A.solve(asm)
     stress = _stress_cases(proj, fea or {})
@@ -149,13 +152,17 @@ def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None 
     a = rep.get("assembly") or {}
     rp["assembly"] = {k: a.get(k) for k in ("interference", "fasteners", "sweeps")}
     rp["ok"] = not rep.get("problems")
+    rp["preview"] = preview                    # checks still running: the page says so instead of PASS / FAIL
     params = {}
     for name, spec in (proj.data.get("params") or {}).items():
         sp = spec if isinstance(spec, dict) else {"value": spec}
         params[name] = {k: sp.get(k) for k in ("value", "min", "max", "step", "label", "unit")}
-    try:   # build it step by step: parts, screws, inserts and the ASSEMBLY.md text per step
+    if preview:
+        steps, steps_error = None, "the build-it steps are added when the checks finish"
+    else:
+      try:   # build it step by step: parts, screws, inserts and the ASSEMBLY.md text per step
         steps, steps_error = assembly_steps(proj, asm, rep, assembly_md), None
-    except Exception as e:  # noqa: BLE001 - the rest of the viewer works without it; the page says why
+      except Exception as e:  # noqa: BLE001 - the rest of the viewer works without it; the page says why
         steps, steps_error = None, f"{type(e).__name__}: {e}"
     A.solve(asm)
     return {"items": out_items, "joints": joints, "report": rp, "params": params, "attr_error": attr_error,
@@ -193,11 +200,16 @@ def html(d: dict) -> str:
     return page.replace("/*KV3*/", lib.replace("</script", "<\\/script"), 1)
 
 
-def write(proj, asm, rep: dict, path, fea: dict | None = None) -> Path:
+def write(proj, asm, rep: dict, path, fea: dict | None = None, preview: bool = False) -> Path:
+    """preview: the quick first viewer, written as soon as the parts are placed (no click-to-edit, no build steps,
+    status "checks running"); the full one replaces it at the end of the run."""
     path = Path(path)
     md = path.parent / "ASSEMBLY.md"
-    path.write_text(html(data(proj, asm, rep, fea=fea, assembly_md=md.read_text(encoding="utf-8") if md.exists() else None)),
-                    encoding="utf-8")
+    page = html(data(proj, asm, rep, fea=fea, assembly_md=md.read_text(encoding="utf-8") if md.exists() and not preview else None,
+                     preview=preview))
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(page, encoding="utf-8")
+    tmp.replace(path)                       # whole file at once: Studio may be loading it while a run goes on
     return path
 
 

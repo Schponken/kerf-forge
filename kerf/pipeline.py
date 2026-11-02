@@ -186,6 +186,30 @@ def _print_checks(it, printer, supports) -> dict:
     return r
 
 
+def first_look(proj, rep):
+    """The 3D model first (Spencer, 2026-11-02): as soon as the parts are built and placed, write a preview
+    viewer.html (no click-to-edit, no build steps, status "checks running") and say so; every check, file and render
+    then runs on, and the full viewer replaces it at the end."""
+    import time as _t
+    from build123d import Location
+    t0 = _t.time()
+    home = {iid: Location(it.shape.location.wrapped) for iid, it in proj.items.items() if it.shape is not None}
+    try:
+        asm = A.plan(proj)
+        A.solve(asm)
+        out = proj.out()
+        viewer.write(proj, asm, rep, out / "viewer.html", preview=True)
+    except Exception as e:  # noqa: BLE001 - the full viewer at the end still comes; never fail a run here
+        rep["warnings"].append(f"preview viewer could not be written: {type(e).__name__}: {e}")
+        return
+    finally:     # the print checks below judge each part where it was modelled, not where the assembly put it
+        for iid, loc in home.items():
+            proj.items[iid].shape.location = loc
+    progress.emit("model", path="out/viewer.html", seconds=round(_t.time() - t0, 1))
+    if not progress.on():
+        print(f"3D model ready: {out / 'viewer.html'} (checks and files continue)", flush=True)
+
+
 def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9,
         mode: str | None = None) -> dict:
     """mode (kerf/modes.py: sketch | print | check | simulate | kit | ship) picks the stages; without it the old flags
@@ -218,6 +242,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     from . import find
     for q in find.pending_decisions(proj.dir):
         rep["warnings"].append(f"REFERENCES.md: `kerf find \"{q}\"` has no reuse decision yet (Decision: TODO)")
+    if "viewer" in stg and not any(it.error for it in proj.items.values()):
+        first_look(proj, rep)                 # the 3D model first; every check below runs on after it
     progress.stage("print")
     for iid, it in proj.printed.items():
         if it.shape is None:

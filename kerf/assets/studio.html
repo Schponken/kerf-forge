@@ -526,7 +526,8 @@ function renderTab() {
     el.innerHTML = d.viewer ? `${vers.length ? `<div class="cmpbar"><span class="note">Compare with an earlier build</span>
         <select id="cmpsel" onchange="compareWith(this.value)"><option value="">—</option>${vers.map(h => `<option value="${h.stamp}">${esc(new Date(h.time * 1000).toLocaleString())}${h.ok ? "" : " (had problems)"}</option>`).join("")}</select>
         <span class="note" id="cmpnote"></span></div>` : ""}
-      <iframe class="viewer" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>` : notBuilt("The 3D model appears here after the first build.");
+      ${(d.running || []).length ? `<div class="banner info" style="margin-bottom:10px">⟳ ${esc(d.running[0])}: still checking, making the print files and pictures in the background. This model is ready to look at; it refreshes with the full version when that finishes.</div>` : ""}
+      <iframe class="viewer" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>` : (d.running || []).length ? `<div class="card empty"><b>Building the 3D model…</b>It shows here first, as soon as the parts are made; the checks and files follow in the background.</div>` : notBuilt("The 3D model appears here after the first build.");
     el.insertAdjacentHTML("afterbegin", liveBar(d));
   } else if (t === "tune") renderTune(el);
   else if (t === "results") renderResults(el, d.report);
@@ -827,10 +828,21 @@ async function pollJob() {
     const j = await api(`/api/job/${id}?since=${S.since}&esince=${S.esince}`);
     if (id !== S.job) return;
     S.lines.push(...j.lines); S.since = j.n; S.ev.push(...j.events); S.esince = j.ne;
+    if (j.events.some(e => e.k === "model")) modelReady(j);
     renderMc(j);
     if (j.state === "running") setTimeout(pollJob, 900);
     else finished(j);
   } catch (e) { setTimeout(pollJob, 2500); }
+}
+/* the 3D model first: the run writes a preview viewer as soon as the parts are placed; show it at once, fold the job
+   panel to its title bar, and let the checks, files and renders carry on behind it */
+async function modelReady(j) {
+  if (!j.project) return;
+  if (S.sel !== j.project) { toast("3D model ready", `${j.project}: open it to look while the checks finish.`, "ok"); return; }
+  S.tab = "model";
+  await refreshDetail();
+  $("#mc").classList.add("min");
+  toast("3D model ready", "Checks, print files and pictures keep running in the background.", "ok");
 }
 function lastProjectEvents(ev) { let i = -1; ev.forEach((e, n) => { if (e.k === "start") i = n; }); return i < 0 ? ev : ev.slice(i); }
 function stageState(ev) {

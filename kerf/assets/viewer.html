@@ -192,8 +192,8 @@ const fmt = (x, d = 1) => (x == null || isNaN(x)) ? '–' : Number(x).toFixed(d)
 
 // ---------- header ----------
 $('title').textContent = R.project || 'Assembly';
-$('status').textContent = R.ok ? 'PASS' : `FAIL · ${(R.problems || []).length} problem${(R.problems || []).length === 1 ? '' : 's'}`;
-$('status').className = 'pill ' + (R.ok ? 'ok' : 'bad');
+$('status').textContent = R.preview ? 'checks running…' : R.ok ? 'PASS' : `FAIL · ${(R.problems || []).length} problem${(R.problems || []).length === 1 ? '' : 's'}`;
+$('status').className = 'pill ' + (R.preview ? '' : R.ok ? 'ok' : 'bad');
 const printed = D.items.filter(i => i.role === 'printed'), bought = D.items.filter(i => i.role === 'purchased');
 const massP = printed.reduce((s, i) => s + ((R.parts || {})[i.id]?.mass_est_g || 0), 0);
 const massB = Object.values(R.purchased || {}).reduce((s, p) => s + (p.mass_g || 0) * (p.qty || 1), 0);
