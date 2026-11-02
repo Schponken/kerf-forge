@@ -35,6 +35,8 @@ CHECKS = {
     "rain_cover": ("Rain cover", "Electronics that mustn't get wet have a roof over them."),
     "repair_access": ("Repairable in the field", "The screws you'd undo for a field repair can be reached with a screwdriver."),
     "run_time": ("Run time", "How long the battery runs it under normal use."),
+    "reservoir_capacity": ("Water lasts the trip", "How long the modeled internal reservoir lasts at the declared daily demand, after unusable volume and reserve."),
+    "sensor_coverage": ("Target inside the field of view", "How much of the target region fits inside the modeled view cone; this does not prove detection or unobstructed visibility."),
     "screw_locking": ("Screws stay put", "Screws on a vibrating machine have something (nyloc nut, threadlocker) so they don't shake loose."),
     "size_max": ("Overall size", "The whole thing fits inside the size limit."),
     "spar_bending": ("Wing spar strength", "The wing's main tube can carry the flying loads without bending too far or breaking."),

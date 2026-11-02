@@ -813,7 +813,7 @@ def miss_scale(r: dict) -> str:
 REDESIGN_TIER = {
     **dict.fromkeys(("mass_max", "size_max", "thrust_to_weight", "flight_time", "run_time", "power_budget", "cg",
                      "static_margin", "static_margin_tail", "wing_loading", "stall_speed", "tip_over", "static_torque",
-                     "joint_speed", "grip_hold", "prop_ground"), 0),
+                     "joint_speed", "grip_hold", "prop_ground", "reservoir_capacity", "sensor_coverage"), 0),
     **dict.fromkeys(("fea_static", "impact_fea", "drop_impact", "spar_bending", "fold_hinge_moment", "gear_bending",
                      "planetary_bending", "worm_drive", "cantilever_stress", "flex_strain", "creep_limit",
                      "natural_freq", "stop_impact"), 1),
@@ -935,6 +935,7 @@ def _run_one(proj, asm, req, quick):
 
 from . import req_balance  # noqa: E402,F401  (registers the balance checks: cg)
 from . import req_electrical  # noqa: E402,F401  (power_budget, flight_time, run_time, connector_access)
+from . import req_scenario  # noqa: E402,F401  (reservoir_capacity, sensor_coverage)
 from . import req_stops  # noqa: E402,F401  (hard_stop)
 from . import req_gears  # noqa: E402,F401  (gear_bending)
 from . import req_aero  # noqa: E402,F401  (static_margin, wing_loading, stall_speed, spar_bending)

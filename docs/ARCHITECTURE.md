@@ -43,6 +43,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/explain.py` | Plain-language problem explanations for Studio, CLI and review packs. |
 | `kerf/circuit.py` | Electronics as a circuit: `wiring:` -> pin-level KiCad netlist (pins from catalog/pins.json: KiCad symbols from kicad-symbols or sourced pin tables), SKiDL ERC as a check (two outputs on one net, a power input with no source, unwired pins), conductor/terminal-capacity checks; out/kicad/<p>.net / .kicad_sch / erc.txt and out/schematic.svg / .pdf. Tests: tests/test_circuit.py |
 | `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
+| `kerf/req_scenario.py` | `reservoir_capacity` from a modeled internal fluid keep-out vs declared demand/reserve; `sensor_coverage` measures geometric target volume inside an existing view cone, without claiming visibility or detection |
 | `kerf/req_gears.py` | Requirement `gear_bending`: Lewis tooth bending of a spur pair at actuator stall |
 | `kerf/aero.py` | Fixed wings: airfoils (NACA 4-digit generated; UIUC .dat files in catalog/airfoils, Selig or Lednicer, data in airfoils.json), `Planform` (straight-tapered swept wing from the centreline: chord, LE, twist, sections; `geometry()` = area, AR, taper, MAC, its station and LE x, neutral point at quarter MAC), `wing_solid` (ruled loft of polygon sections, TE thickened to `te_min`: exact volumes), `spar_point` / `spar_line` / `spar_channel`, `elevon_split` (bottom hinge at a chord fraction, top V gap, ends square to the hinge), stall speed, Reynolds number, elliptical-lift root moment. Tests: tests/test_aero.py |
 | `kerf/req_aero.py` | Requirements `static_margin`, `wing_loading`, `stall_speed`, `spar_bending`, judged on the planform in params (`wing_` prefix); `static_margin_tail` (wing + horizontal tail, wing halves that pivot / fold placed by their items at a pose) and `fold_hinge_moment` (drag / lift on a pivoting wing half about its joint vs the actuator). Tests: tests/test_aero_morph.py |
@@ -236,6 +237,8 @@ on a strength check, it is refused and blocks.
 | `power_budget` | (`fm`, `eta`) — reads `electrical:` / `wiring:` | worst load / rating (must be <= 1) |
 | `flight_time` | `min_min`, (`fm`, `eta`) | hover minutes on usable capacity |
 | `run_time` | `min_min` | minutes at every load's average draw |
+| `reservoir_capacity` | `volume` (internal-fluid keep-out item), `daily_ml`, `days`, `usable_fraction`, `reserve_ml` (0) | days = (internal mm³ / 1000 × usable fraction − reserve) / daily demand; rejects the solid tank material as a volume region |
+| `sensor_coverage` | `view` (view_cone keep-out), `target` (separate solid keep-out), `min_fraction` (1), `pose` | percent of target volume inside the assembled field of view; geometric coverage only, no occlusion/resolution/detection proof |
 | `connector_access` | `item`, `direction` (item axis), `length_mm`, `size`, `at`, `ignore`, `pose` | `clear` or the items in the way |
 
 `cantilever_stress` cuts the part with the section plane, takes the section's area and second-moment tensor, and
@@ -269,6 +272,8 @@ electrical:
   usable: 0.8                 # usable capacity fraction (80 % rule); fm / eta / bec_eff override the defaults
   # cruise: {speed_kmh: 70, l_over_d: 8, eta: 0.5, why: "..."}   # fixed wing: motor draw = W V / (L/D) / eta instead of hover
   draw: {rx: {avg_a: 0.1, peak_a: 0.1, why: "..."}}         # only where the catalog has no current figure
+  # Repeating duty: use duty instead of avg_a, and retain an explicit peak for wire/supply ratings.
+  # draw: {pump: {duty: {active_a: 1, idle_a: 0.1, on_s: 15, period_s: 60}, peak_a: 2, why: "measured duty/current evidence"}}
   limits: {stack: {peak_a: 100, why: "ESC current limit configured to 25 A per motor"}}   # a real, set cap
   # kind: current_limit (default: configured and enforced) | throttle_estimate (how hard it will be driven: the wiring
   # is then rated for peak_a x 1.15, since nothing stops the real current exceeding an estimate)
@@ -278,6 +283,10 @@ wiring:
   - {id: ph1, from: stack.esc, to: motor_1, v: 25.2, gauge: 20, conductors: 3, length_mm: 120, route: [arm_1.motor]}
   - {id: crsf, from: stack, to: receiver, kind: signal, gauge: 28, length_mm: 60}
 ```
+- Duty average = active_a × on_s / period_s + idle_a × (1 − on_s / period_s), in amperes; all values finite and
+  nonnegative, period_s > 0, on_s <= period_s, and peak_a >= both active/idle currents. The existing power tree
+  still includes controller/standby loads, regulator losses and the explicit peak. `run_time` uses its normal
+  usable battery capacity. The example currents are illustrative; actual designs need sourced or measured evidence.
 - Wire ends: `ends: {from: screw, to: header}` on a run, else the item's catalog `terminal`, else `solder`
   (solder | screw | lever | header | plug): the WIRING/ASSEMBLY step says what to do at each end and heat-shrink is
   counted only for soldered ends. `power_budget` also checks voltage drop: each load's input after the IR drop of
