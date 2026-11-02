@@ -346,6 +346,14 @@ wiring:
   KiCad has and has not.
 
 ## Item keys
+Studio parameter Save, Try and history Restore edit only the requested numeric scalar under the actual `params`
+mapping (a bare number or its `value` field). Block/flow mappings and quoted keys are supported; comments, unrelated
+same-name keys, Unicode and original line endings survive. A genuine no-op preserves file bytes and mtime. Every
+requested value must pass the existing finite/min/max and numeric-write checks before any write. Duplicate or merged
+keys along the parameter path, and aliases sharing a target mapping/value, are refused with an error rather than
+editing an anchor elsewhere. Unrelated aliases are left alone. The existing PyYAML source positions target scalar
+tokens, preserving unshared anchor/tag prefixes; no whole-document YAML rewrite is used. Tests: tests/test_studio_params.py.
+
 - Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),
   `walls` (perimeter loops; default 4 on strength-checked parts, else 2; written into the plate 3MF),
   `load_axis` (x / -y / [x, y, z] / list: main stress direction in the part frame; warned if > 30 deg across layers),
