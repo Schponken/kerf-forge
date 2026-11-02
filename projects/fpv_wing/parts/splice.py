@@ -30,6 +30,11 @@ def build(ctx):
         y0, y1 = sorted((s * ya, s * yb))
         plate = plate - aero.wing_solid(pf, y0, y1)                # why: top face follows the bottom skin
     plate = aero.largest(plate)
+    # edges first, holes last: a fillet / chamfer taken from an earlier shape's edges rebuilds that shape (it once
+    # brought back the uncut blank and the plates shipped with no holes)
+    plate = plate.fillet(2.0, plate.edges().filter_by(Axis.Z))     # why: round plan-view corners (no snag on landing)
+    # why: a ramp all round the belly face, so a belly landing slides over the plate instead of catching its square step
+    plate = plate.chamfer(1.5, None, plate.faces().sort_by(Axis.Z)[0].outer_wire().edges())
     for (x, y, zl) in holes:
         loc = Location(Plane(origin=(x, y, zb), x_dir=(1, 0, 0), z_dir=(0, 0, -1)))
         # the top follows the sloped skin, so the plate is thinnest on the ring's low side: that is the clamped grip
@@ -39,6 +44,5 @@ def build(ctx):
         # why: the rest of the hole, up through the sliver of plate on the high side to the skin
         plate = plate - Pos(x, y, zb + grip - 0.01) * Cylinder(iface.screw_spec("M3", "PETG")["clearance"] / 2, zl - zb - grip + 0.03,
                                                              align=(Align.CENTER, Align.CENTER, Align.MIN))
-    plate = fillet(plate.edges().filter_by(Axis.Z), 2.0)            # why: round plan-view corners (no snag on landing)
     ctx.rigid("base", Location())
     return ctx.finish(plate)

@@ -13,7 +13,7 @@ The sector gear below the boss (inside the fuselage) carries the servo torque; i
 aft fuselage's stop posts at 0 and fold_max. The aileron lead runs from the outer face through the root block to
 beside the boss and straight down through the sector web.
 Folded, the root end is the wing's leading edge, so it is a rounded nose (root_cap) and the collar's inboard side
-is a half round, not a flat cut: no flat face meets the flow at any sweep angle (2803 -> 51 mm2 square-on at 70 deg).
+is a half round, not a flat cut: no flat face meets the flow at any sweep angle (2803 -> 111 mm2 square-on at 70 deg).
 """
 from build123d import *
 import math
@@ -33,9 +33,12 @@ LEAD_R = 12.0           # lead drop beside the boss (layout lead_exit: 12 mm ahe
 CAP_K = 1.25            # root cap: inboard reach / local half thickness (elliptic nose, finer than a semicircle)
 CAP_MAX = 10.0          # root cap reach cap: inboard edge at y >= pivot_y - 10 = 16, 2 mm off the spine ridge (|y| 14)
 CAP_N = 13              # points round each cap section's half-ellipse
-CAP_X1 = 176.0          # cap ends 4.6 mm ahead of the collar's front tip (x 180.6): run into the collar it made a notch
-CAP_FADE = 16.0         #   (hub FEA p99.9 25.8 -> 37.5 MPa); its reach fades over the last 16 mm to a 0.3 mm lip
+CAP_X1 = 166.0          # cap end: run into the collar (front tip x 180.6) it made a notch (hub FEA p99.9 25.8 -> 37.5);
+CAP_FADE = 16.0         #   ended at 176 it sat on the 2.4 mm ligament inboard of the aileron lead channel (15 -> 18 MPa);
+                        #   at 166 that ligament is 7 mm and stays as it was. Reach fades over the last 16 mm to a lip
 CAP_LIP = 0.3
+STOP_OVER = 3.0         # deg the panel may swing past spread before its stop is proven to bite (stop_spread_*: beyond -3);
+RIDGE_CLR = 0.5         #   ahead of the pin that swings the cap inboard, so its reach is held RIDGE_CLR off the ridge there
 
 
 def root_cap(p, pf):
@@ -53,12 +56,18 @@ def root_cap(p, pf):
     up, lo = s[:i + 1][::-1], s[i:]
     assert len(up) == len(lo), "root cap pairs upper and lower airfoil vertices: they must come in equal numbers"
     ph = np.linspace(0.0, math.pi, CAP_N)
+    x_ridge = L.OPEN_X[0] - 5.0                            # 5 mm ahead of the spine ridge's front face
     secs = []
     for u, l in zip(up[1:], lo[1:]):
         if max(u[0], l[0]) > CAP_X1:
             break
         zm, h = (u[2] + l[2]) / 2, (u[2] - l[2]) / 2
-        a = min(CAP_K * h, CAP_MAX) * min(1.0, (CAP_X1 - u[0]) / CAP_FADE)
+        x = min(u[0], l[0])
+        # over-travel: a point (pivot_x - x) ahead of the pin swings that far x tan(STOP_OVER) inboard; ahead of the
+        # ridge the limit eases off (0.25 mm per mm) so the nose has no step
+        ridge = (p.pivot_y - L.RIDGE_HW - RIDGE_CLR - (p.pivot_x - x) * math.tan(math.radians(STOP_OVER))
+                 + 0.25 * max(0.0, x_ridge - x))
+        a = min(CAP_K * h, CAP_MAX, ridge) * min(1.0, (CAP_X1 - u[0]) / CAP_FADE)
         a = max(a, CAP_LIP)
         pts = [(float(u[0] + (l[0] - u[0]) * (1 - math.cos(f)) / 2), float(p.pivot_y - a * math.sin(f)), float(zm + h * math.cos(f)))
                for f in ph]
@@ -177,8 +186,8 @@ def build(ctx):
             ctx.keep_sharp(c["at"], f"teardrop roof of the {what}: printed without support, the {what.split()[0]} part lies in it")
         elif abs(abs(c["at"][1]) - p.pivot_y) < 0.1 and CAP_X1 - CAP_FADE < c["at"][0] <= CAP_X1:
             ctx.keep_sharp(c["at"], f"the root cap's {CAP_LIP} mm lip where it fades out: thinner than one extrusion line, "
-                                    "no fillet fits; FEA ~6 MPa at the lip itself (allowable 17.5), the hot cell is the "
-                                    "aileron lead channel 3-6 mm outboard")
+                                    "no fillet fits; FEA 5-10 MPa within 3 mm of it (allowable 17.5), the hot cell is "
+                                    "the aileron lead channel further outboard")
     ctx.rigid("pivot", L.pivot_axis(p, s).location)
     ctx.rigid("wing", Location())
     ctx.rigid("main", L.tube_loc(p, "main", s))

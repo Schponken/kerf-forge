@@ -483,7 +483,8 @@ def _split(note: str, indent: str = "  ") -> list[str]:
     """A long note becomes one sub-bullet per sentence or clause, so no step line is a wall of text."""
     if len(note) <= 160:
         return [f"{indent}- {note}"]
-    parts = [x.strip() for x in re.split(r"(?<=[.;:])\s+(?=[A-Za-z(])", note) if x.strip()]
+    # a colon introduces what follows ("Pushrod: measure the arm"), so it never ends a bullet; sentences and ';' do
+    parts = [x.strip() for x in re.split(r"(?<=[.;])\s+(?=[A-Za-z(])", note) if x.strip()]
     return [f"{indent}- {x[0].upper() + x[1:]}" for x in parts]
 
 

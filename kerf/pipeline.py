@@ -7,7 +7,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import edges, partcache, progress, stressmap
+from . import advice, edges, partcache, progress, stressmap
 from . import access, assembly as A, checks, electrical, export, heads, hole_axes, holewall, pins, project as P, requirements, shanks, ship, viewer, wiring_out
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -198,7 +198,8 @@ def req_misses(rows) -> tuple[list, list]:
     for r in rows:
         if r.get("ok"):
             continue
-        line = f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}"
+        sc = requirements.miss_scale(r)
+        line = f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}" + (f" [{sc}]" if sc else "")
         if r.get("advisory"):
             warns.append(f"advisory {line} (not blocking: {r['advisory']})")
         else:
@@ -350,7 +351,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             hits = A.interference(asm)
             rep["assembly"]["interference"] = hits
             for h in hits:
-                rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position")
+                how = advice.overlap(proj, h["a"], h["b"]) if h["a"] in proj.items and h["b"] in proj.items else ""
+                rep["problems"].append(f"{h['a']} and {h['b']} overlap by {h['volume_mm3']} mm3 in the assembled position"
+                                       + (f" — fix: {how}" if how else ""))
             fj, fprob = A.fasteners(asm)
             rep["assembly"]["fasteners"] = fj
             rep["problems"] += fprob
@@ -380,7 +383,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 for s in sw:
                     if not s["clear"]:
                         c = s["collisions"][0]
-                        rep["problems"].append(f"moving joint '{s['joint']}' collides: {c['a']} hits {c['b']} ({c['volume_mm3']} mm3) at {c.get('at', c.get('pose'))}")
+                        how = advice.sweep(s, proj) if "range" in s else ""
+                        rep["problems"].append(f"moving joint '{s['joint']}' collides: {c['a']} hits {c['b']} ({c['volume_mm3']} mm3) at {c.get('at', c.get('pose'))}"
+                                               + (f" — fix: {how}" if how else ""))
             rep["assembly"]["joints"] = [{"name": e.name, "kind": e.kind, "parent": f"{e.parent}.{e.pjoint}",
                                           "child": f"{e.child}.{e.cjoint}", "range": list(e.range), "home": e.home}
                                          for e in asm.edges]
@@ -433,6 +438,16 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 if f:
                     fields.setdefault(f["part"], []).append(f)
             for part, cases in fields.items():
+                if part in rep["parts"] and part in proj.items:          # the inside is infill, not solid (kerf/infill.py)
+                    from . import infill
+                    try:
+                        ic = infill.check(proj.items[part], cases)
+                    except Exception as e:  # noqa: BLE001 - a geometry hiccup here must not hide the FEA results
+                        ic = {"warning": f"{part}: infill strength not checked ({type(e).__name__}: {e})"}
+                    if ic:
+                        rep["parts"][part]["infill_check"] = ic
+                        if ic.get("warning"):
+                            rep["warnings"].append(ic["warning"])
                 s = stressmap.summarize(cases)
                 if s and part in rep["parts"]:
                     rep["parts"][part]["stress"] = s
@@ -677,6 +692,8 @@ def summary(rep: dict) -> str:
         L.append(f"  sweep {s['joint']:14s} {'clear' if s['clear'] else 'COLLIDES'} over {s.get('range', '')} ({s['samples']} samples)")
     for r in rep.get("requirements", []):
         L.append(f"  req {r['id']:20s} " + ("skipped (--quick)" if r.get("skipped") else req_line(r)))
+        for t in r.get("advice") or []:                 # what to change, worked out from this check (kerf/advice.py)
+            L.append(f"      -> {t}")
     for p in rep["problems"]:
         L.append(f"  PROBLEM: {p}")
     for w in rep["warnings"]:

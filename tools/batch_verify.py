@@ -20,7 +20,7 @@ LOCK = ROOT / "claims" / "batch-verify.json"
 BATCH_ITEMS = 4          # PLAN check-offs since the last batch that make one due
 MAX_AGE_H = 24           # or any feature commit older than this since the last batch
 LOCK_STALE_MIN = 90
-CHORE = re.compile(r"^(claim|claim heartbeat|release claims?|STATUS\b|batch verify|Merge )", re.I)
+CHORE = re.compile(r"^(claim|claim heartbeat|release claims?|STATUS\b|batch verify|budget:|Merge )", re.I)
 
 
 def git(*a):
@@ -67,6 +67,16 @@ def due(rec: dict, feats: list, done_now: int, now: float | None = None) -> tupl
     return False, f"{len(feats)} feature commits / {new_items} items waiting (batch at {BATCH_ITEMS} items or {MAX_AGE_H} h)"
 
 
+def running_now() -> str | None:
+    """'session S, started/heartbeat N min ago' while a fresh lock says a full run is going (any machine), else None."""
+    try:
+        c = json.loads(LOCK.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    age = (time.time() - float(c.get("heartbeat", 0))) / 60
+    return f"session {c.get('session')}, last heartbeat {age:.0f} min ago" if age < LOCK_STALE_MIN else None
+
+
 def lock_held_by_other(sid: str) -> bool:
     try:
         c = json.loads(LOCK.read_text(encoding="utf-8"))
@@ -92,6 +102,27 @@ def push(msg: str, *paths) -> bool:
     return False
 
 
+def others_working(sid: str | None = None) -> list[str]:
+    """Sessions other than this one holding a fresh PLAN claim. Spencer, 2026-11-02: the full run waits until the
+    other sessions are done, so it tests their finished work instead of being redone after it."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import claims
+    sid = sid or claims.session_id()
+    return sorted({c.get("session") for k, c in claims.load().items()
+                   if k not in (LOCK.stem, "budget") and c.get("session") != sid and claims.fresh(c)})
+
+
+def hold_reason() -> str:
+    """Why a due batch must not start now ('' = it may): the usage-budget switch, or other sessions still working."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import budget
+    if why := budget.stopped():
+        return f"budget stop ({why})"
+    if who := others_working():
+        return f"{len(who)} other session(s) still working ({', '.join(who)}); the last one to finish runs it"
+    return ""
+
+
 def cmd_status() -> int:
     rec = load()
     feats = feature_commits(rec.get("commit"))
@@ -103,7 +134,12 @@ def cmd_status() -> int:
             print(f"  FAIL {f}")
     else:
         print("last batch: none recorded")
-    print(("DUE: " if d else "not due: ") + why)
+    run = running_now()
+    if run:      # Spencer, 2026-11-02: check for a running full suite before starting one
+        print(f"RUNNING NOW: a full batch is in progress ({run}); do not start another, wait for its result")
+    else:
+        held = hold_reason() if d else ""
+        print(f"HELD (due: {why}): {held}" if held else ("DUE: " if d else "not due: ") + why)
     return 0
 
 
@@ -114,6 +150,9 @@ def cmd_run(force=False) -> int:
     d, why = due(rec, feats, plan_done())
     if not (d or force):
         print("not due: " + why)
+        return 0
+    if (held := hold_reason()) and (not force or held.startswith("budget stop")):
+        print(f"due ({why}) but HELD: {held}")
         return 0
     sid = session_id()
     if lock_held_by_other(sid):

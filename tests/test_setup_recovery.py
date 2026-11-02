@@ -16,6 +16,10 @@ def _exe(path, text):
     path.chmod(0o755)
 
 
+def _git(repo, *args):
+    return subprocess.check_output(['git', *args], cwd=repo, text=True, stderr=subprocess.PIPE).strip()
+
+
 @pytest.mark.parametrize('cache_name', ['chromium-1', 'chromium-1243'])
 def test_setup_repairs_stale_or_interrupted_browser_cache(tmp_path, cache_name):
     shutil.copyfile(ROOT / 'setup.sh', tmp_path / 'setup.sh')
@@ -70,21 +74,24 @@ def _startup(tmp_path):
     _exe(repo / 'setup.sh', 'echo setup >> "$START_TEST_EVENTS"')
     _exe(repo / '.venv/bin/kerf', 'echo "kerf $*" >> "$START_TEST_EVENTS"')
     _exe(repo / 'tools/mac/install_app.sh', 'exit 0')
+    shutil.copy2(ROOT / 'tools/mac/update_repo.sh', repo / 'tools/mac/update_repo.sh')
+    (repo / 'project.yaml').write_text('baseline\n', encoding='utf-8')
+    origin = tmp_path / 'origin.git'
+    _git(tmp_path, 'init', '-q', '--bare', '-b', 'main', str(origin))
+    _git(repo, 'init', '-q', '-b', 'main')
+    _git(repo, 'config', 'user.name', 'Setup test')
+    _git(repo, 'config', 'user.email', 'test@example.invalid')
+    _git(repo, 'add', '.')
+    _git(repo, 'commit', '-qm', 'Installed copy')
+    _git(repo, 'remote', 'add', 'origin', str(origin))
+    _git(repo, 'push', '-qu', 'origin', 'main')
     script = tmp_path / 'start.sh'
     text = (ROOT / 'tools/mac/start.sh').read_text(encoding='utf-8')
     text = '\n'.join(line for line in text.splitlines() if not line.startswith('export PATH='))
     text = text.replace('STATE="$HOME/Library/Application Support/KerfStudio"', 'STATE="$START_TEST_STATE"')
     script.write_text(text, encoding='utf-8')
-    b = tmp_path / 'bin'
-    b.mkdir()
-    _exe(b / 'git', '''if [ "$1" = status ]; then
- [ "${START_TEST_DIRTY:-0}" = 1 ] && echo ' M project.yaml'
- exit 0
-fi
-echo pull >> "$START_TEST_EVENTS"
-[ "${START_TEST_OFFLINE:-0}" != 1 ]''')
     events = tmp_path / 'events'
-    env = {**os.environ,'PATH':str(b)+os.pathsep+os.defpath,'START_TEST_EVENTS':str(events),
+    env = {**os.environ,'START_TEST_EVENTS':str(events),
            'START_TEST_STATE':str(tmp_path/'state')}
     return repo, script, events, env
 
@@ -101,17 +108,29 @@ def test_lockfile_only_change_reinstalls_and_cached_launch_does_not(tmp_path):
     assert events.read_text(encoding='utf-8').splitlines().count('setup') == 2
 
 
-@pytest.mark.parametrize('state,expected,pulls', [({'START_TEST_DIRTY':'1'},'Keeping your local changes',0),
-                                                 ({'START_TEST_OFFLINE':'1'},'Could not update',1)])
-def test_dirty_or_offline_launch_preserves_files_and_still_starts(tmp_path, state, expected, pulls):
+@pytest.mark.parametrize('state,expected', [('conflicting', 'Update skipped'), ('offline', 'Could not update')])
+def test_dirty_or_offline_launch_preserves_files_and_still_starts(tmp_path, state, expected):
     repo, script, events, env = _startup(tmp_path)
     original = 'my local work\n'
     (repo/'project.yaml').write_text(original,encoding='utf-8')
-    r = subprocess.run(['bash',str(script),str(repo)],env={**env,**state},capture_output=True,text=True,timeout=15)
+    before = _git(repo, 'rev-parse', 'HEAD')
+    if state == 'offline':
+        _git(repo, 'remote', 'set-url', 'origin', str(tmp_path / 'unreachable.git'))
+    else:
+        other = tmp_path / 'other'
+        _git(tmp_path, 'clone', '-q', str(tmp_path / 'origin.git'), str(other))
+        _git(other, 'config', 'user.name', 'Setup test')
+        _git(other, 'config', 'user.email', 'test@example.invalid')
+        (other / 'project.yaml').write_text('incoming work\n', encoding='utf-8')
+        _git(other, 'commit', '-qam', 'Remote change')
+        _git(other, 'push', '-q')
+    r = subprocess.run(['bash',str(script),str(repo)],env=env,capture_output=True,text=True,timeout=15)
     assert r.returncode == 0 and expected in r.stdout
     assert (repo/'project.yaml').read_text(encoding='utf-8') == original
     calls = events.read_text(encoding='utf-8').splitlines()
-    assert calls.count('pull') == pulls and any(x.startswith('kerf studio') for x in calls)
+    assert _git(repo, 'rev-parse', 'HEAD') == before and any(x.startswith('kerf studio') for x in calls)
+    if state == 'conflicting':
+        assert 'project.yaml' in r.stdout and 'same lines' in r.stdout
 
 
 def test_installer_and_startup_use_the_same_lockfile_sensitive_stamp(tmp_path):

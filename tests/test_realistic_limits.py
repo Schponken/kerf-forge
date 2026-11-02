@@ -49,3 +49,52 @@ def test_squashable_items_take_a_press_up_to_their_depth():
     rigid = NS(spec={"compress_mm": 2}, shape=foam.shape)                       # no reason given: stays rigid
     assert not assembly.squashed(rigid, block(1.0))
     assert abs(assembly.press_depth(foam, block(1.5)) - 1.5) < 0.05
+
+
+def test_misses_say_how_far_off():
+    near = {"ok": False, "value": 186.0, "limit": 195.0, "bound": "min"}
+    assert requirements.miss_scale(near) == "near miss: 5 % short"
+    assert requirements.miss_scale({"ok": False, "value": 300, "limit": 250, "bound": "max"}) == "close: 20 % over"
+    assert requirements.miss_scale({"ok": False, "value": 0.30, "limit": [0.05, 0.15], "bound": "range"}).startswith("far off: 100 %")
+    assert requirements.miss_scale({"ok": True, "value": 1, "limit": 2, "bound": "max"}) == ""
+    assert requirements.miss_scale({"ok": False, "value": [1, 2], "limit": [3, 3], "bound": "max"}) == ""
+    probs, _ = pipeline.req_misses([{**near, "id": "f", "detail": "first mode", "unit": "Hz"}])
+    assert probs[0].endswith("[near miss: 5 % short]")
+    from kerf import explain
+    assert "(Near miss: 5 % short.)" in explain.explain_requirement({**near, "id": "f", "check": "natural_freq", "unit": "Hz"})["why"]
+
+
+def test_infill_lattice_strength_inside_the_walls():
+    from kerf import infill
+    assert infill.lattice_factor(1.0) == 1.0 and abs(infill.lattice_factor(0.25) - 0.0375) < 1e-9   # Ashby 2006 eq. 3.5
+    shape = Box(40, 20, 10)                                          # walls 2 x 0.42 = 0.84 mm shell
+    pts = [[0, 0, 0], [0, 0, 4.8]]                                   # centre (5 mm deep) and just under the top skin
+    d = infill.depth_below_surface(shape, __import__("numpy").array(pts, float))
+    assert abs(d[0] - 5.0) < 0.2 and d[1] < 0.84
+    field = {"c": pts, "vol": [1.0, 1.0], "vm": [2.0, 30.0]}         # inside: 2 MPa; skin: 30 MPa
+    item = NS(id="p", spec={"infill": 0.25, "walls": 2}, shape=shape)
+    r = infill.check(item, [{"field": field, "allow": 20.0}])        # lattice allows 20 x 0.0375 = 0.75 MPa inside
+    assert r["use"] > 2.5 and "100 % infill modifier" in r["warning"]
+    boxed = NS(id="p", spec={"infill": 0.25, "walls": 2, "modifiers": [{"box": [[-5, -5, -5], [5, 5, 5]], "infill": 1.0}]}, shape=shape)
+    assert infill.check(boxed, [{"field": field, "allow": 20.0}])["warning"] == ""
+    assert infill.check(NS(id="s", spec={"infill": 1.0}, shape=shape), [{"field": field, "allow": 20.0}]) is None
+
+
+def test_bumper_pad_lowers_crash_force_only_while_it_does_not_bottom_out(monkeypatch):
+    import math
+    from kerf import req_dynamic as D
+    ku, kl, S = D.bumper_k("TPU", 400, 4)                     # 20 x 20 mm TPU pad, 4 mm thick: S = 400 / 320 = 1.25
+    assert abs(S - 1.25) < 1e-9 and abs(kl - 9.2 * 100) < 1e-6 and abs(ku - 9.2 * (1 + 2.2 * 1.25 ** 2) * 100) < 1e-6
+    r0 = {"ok": True, "value": 10.0, "limit": 20.0, "max_disp_mm": 0.1, "applied_force_n": [0, 0, 10], "detail": ""}
+    monkeypatch.setattr(D, "_solve", lambda *a, **k: (dict(r0), 10.0, 2000.0))   # part: 2000 N/mm
+    proj = NS(items={"pad": NS(spec={"material": "TPU"})}, data={})
+    pad = {"item": "pad", "area_mm2": 400, "thick_mm": 4}
+    bare = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=1.0, mass_kg=0.1)
+    soft = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=1.0, mass_kg=0.1, bumper=pad)
+    assert abs(bare["impact"]["force_n"] - math.sqrt(2e6 * 0.1)) < 1
+    ks = 1 / (1 / 2000 + 1 / ku)
+    assert soft["impact"]["bumper"]["credited"] and abs(soft["impact"]["force_n"] - math.sqrt(ks * 1e3 * 0.1)) < 1
+    hard = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=3.0, mass_kg=0.6, bumper=pad)   # 2.9 mm squash > 0.8 mm
+    hard_bare = D.impact_fea(proj, None, "arm", {}, [], speed_m_s=3.0, mass_kg=0.6)
+    assert not hard["impact"]["bumper"]["credited"] and hard["impact"]["force_n"] == hard_bare["impact"]["force_n"]
+    assert "no credit" in hard["detail"]

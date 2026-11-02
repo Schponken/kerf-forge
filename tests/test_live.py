@@ -233,6 +233,8 @@ def test_work_data_from_git(repo):
 
 # ---------------------------------------------------------------- Studio smoke: routes answer, page has the controls
 def test_studio_live_and_work_routes(monkeypatch):
+    from kerf import codex_work
+    monkeypatch.setattr(codex_work, "snapshot", lambda root: {"sessions": [], "source": {"name": "Codex", "state": "unavailable"}})
     monkeypatch.setattr(studio, "_live_thread", lambda: None)            # no background fetch of the real repo in tests
     monkeypatch.setattr(studio, "LIVE", {"follow": {}, "last_fetch": 0.0, "fetch_error": None, "work_until": 0.0,
                                          "work": None, "work_key": None, "thread": None})

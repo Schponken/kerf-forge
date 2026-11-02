@@ -318,3 +318,11 @@ def test_held_by_and_item_tools_reach_assembly_md(tmp_path):
     md = (tmp_path / "ASSEMBLY.md").read_text()
     assert "  - Held by: foam tape; tilt it 30 deg to get it past the sleeves." in md.split("## Step 2")[1]
     assert "  - 3.0 mm drill bit (reams the joiner bores)" in md.split("## Step")[0]
+
+
+def test_long_note_never_breaks_at_a_colon():
+    """A colon introduces what follows, so it never ends a bullet (fpv_wing review: a bare "Pushrod:" bullet)."""
+    note = ("Pushrod: measure the stock arm and use the hole 8-11 mm from the spline centre, which keeps the servo at or "
+            "under half its rated torque. Then Z-bend the wire through it and out through the slot to the horn.")
+    lines = ship._split(note)
+    assert lines[0].startswith("  - Pushrod: measure the stock arm") and len(lines) == 2

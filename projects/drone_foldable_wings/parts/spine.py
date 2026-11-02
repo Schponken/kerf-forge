@@ -22,7 +22,7 @@ L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 _aspec = importlib.util.spec_from_file_location("dfw_aft_fuse", _here.with_name("aft_fuse.py"))
 A = importlib.util.module_from_spec(_aspec); _aspec.loader.exec_module(A)   # opening outline, cover, bolt sites
 
-RIDGE_HW = 14.0         # ridge half width (DESIGN: |y| <= 14 between the wing roots)
+RIDGE_HW = L.RIDGE_HW   # ridge half width (DESIGN: |y| <= 14 between the wing roots)
 ARM_R = 8.0             # arm end round the pin
 GRIP = 4.0              # spine material under each screw head (well floor above the cover underside)
 GPS_X = 150.0

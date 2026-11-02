@@ -235,6 +235,10 @@ class MQTT:
         self.c.username_pw_set(USER, access_code)
         self.c.tls_set_context(_tls())
         self.c.on_message = lambda c, u, m: self.reports.append(json.loads(m.payload or b"{}"))
+        self.rc = None                                   # the broker's answer to the login (rc 5 = wrong access code)
+        def on_connect(c, u, flags, rc, props=None):
+            self.rc = rc
+        self.c.on_connect = on_connect
         self.c.connect(host, port, keepalive=30)
         self.c.subscribe(f"device/{serial}/report")
         self.c.loop_start()
@@ -449,6 +453,12 @@ def status(cfg: dict | None = None, wait_s: float = 8.0, link=None) -> dict:
     m = link or MQTT(p["host"], p["serial"], p["access_code"])
     try:
         t0 = time.time()
+        while link is None and m.rc is None and time.time() - t0 < 5:
+            time.sleep(0.1)
+        rc = getattr(m, "rc", None)
+        if rc is not None and (getattr(rc, "is_failure", False) or (isinstance(rc, int) and rc != 0)):
+            raise PermissionError(f"the printer refused the access code ({rc}): copy it again from the printer's "
+                                  f"Settings > LAN Only screen (it changes when LAN Only is switched off and on)")
         m.publish(pushall_payload(1))
         while time.time() - t0 < wait_s and not m.reports:
             time.sleep(0.2)

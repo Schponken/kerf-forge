@@ -119,7 +119,7 @@ def test_api_refuses_bad_input(server):
     assert _post(server + "/api/run", {"project": "nope", "action": "check"})[0] == 404
     assert _post(server + "/api/run", {"project": "servo_link", "action": "rm"})[0] == 400
     assert _post(server + "/api/save", {"project": "servo_link", "values": {"arm_len": 9999}})[0] == 400
-    assert _post(server + "/api/new", {"name": "Bad Name!", "description": "x"})[0] == 400
+    assert _post(server + "/api/new", {"name": "9 Bad!", "description": "x"})[0] == 400
     assert _post(server + "/api/new", {"name": "servo_link", "description": "x"})[0] == 400
 
 

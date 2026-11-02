@@ -9,14 +9,17 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$HOME/.claude/loc
 export LANG="${LANG:-en_US.UTF-8}" PYTHONUTF8=1 PYTHONUNBUFFERED=1
 cd "$REPO" 2>/dev/null || { echo "ERROR Kerf Forge folder not found: $REPO"; exit 1; }
 echo "--- $(date) Kerf Studio app start"
-# updates: fast-forward only, never over local changes; skipped quietly when offline
-if [ -z "$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then
-  echo "STATUS Checking for updates…"
-  git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=10 pull -q --ff-only 2>&1 \
-    || echo "STATUS Could not update; keeping the installed copy. Try again when the connection or repository issue is resolved."
-else
-  echo "STATUS Keeping your local changes; updates skipped."
-fi
+# The shared updater preserves local edits; report its recovery guidance in the app window too.
+echo "STATUS Checking for updates…"
+./tools/mac/update_repo.sh . 2>&1 | while IFS= read -r line; do
+  case "$line" in
+    OFFLINE*) echo "STATUS Could not update; keeping this copy. ${line#OFFLINE }" ;;
+    NOT-UPDATED*) echo "STATUS Update skipped; keeping this copy. ${line#NOT-UPDATED }" ;;
+    UPDATED*) echo "STATUS Updated: ${line#UPDATED }" ;;
+    UP-TO-DATE) : ;;
+    *) echo "  $line" ;;
+  esac
+done
 SUM="$(shasum pyproject.toml setup.sh tools/render/package.json tools/render/package-lock.json 2>/dev/null | shasum | cut -c1-16)"
 if [ "$SUM" != "$(cat "$STATE/deps.sum" 2>/dev/null)" ] || [ ! -x .venv/bin/kerf ]; then
   echo "STATUS Installing updates (the first time can take a few minutes)…"

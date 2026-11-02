@@ -16,7 +16,7 @@ Everything goes through the same engine and CLI as the terminal; the studio only
   - thumbnails: the viewer's own picture of the model, kept per geometry fingerprint
   - notifications: a desktop notification (macOS / notify-send) when a long job ends; the page also chimes
   - follow live: a project's 3D view updates part by part while cloud sessions push to it (kerf/live.py)
-  - work: what the Claude Code sessions are doing (PLAN progress, fresh claims, latest commits), read from git
+  - work: shared claims, Codex sessions and Studio jobs, with activity, progress and source freshness
 Stdlib only (http.server + subprocess). Binds to 127.0.0.1: nothing is reachable from other machines.
 """
 from __future__ import annotations
@@ -225,7 +225,25 @@ def fixable(name: str) -> tuple[bool, str]:
         return False, "it is still being designed (placeholder parts): the designing session finishes it"
     if any(j.kind == "fix" and j.project == name and j.state == "running" for j in JOBS.values()):
         return False, "a fix is already running"
+    if _worked_on(name):
+        return False, "another Claude session is working on this project right now (see Activity)"
     return True, ""
+
+
+def slug(name: str) -> str:
+    """What a typed project name becomes: 'Hawk Drone' -> 'hawk_drone' (lowercase, spaces and dashes to _)."""
+    s = re.sub(r"[\s\-]+", "_", str(name).strip().lower())
+    return re.sub(r"_+", "_", re.sub(r"[^a-z0-9_]", "", s)).strip("_")
+
+
+class Claimed(ValueError):
+    """Changing a project another session is editing: allowed only when the user confirms (override)."""
+
+
+def guard_claimed(name: str, override: bool):
+    if not override and _worked_on(name):
+        raise Claimed("Another Claude session is working on this project right now (see Activity). Changing it here "
+                      "can clash with its edits. Change it anyway?")
 
 
 def fix_job(name: str) -> Job:
@@ -285,7 +303,7 @@ def printer_setup(host: str, code: str, serial=None) -> dict:
     """Connect to the printer on this Mac's network (LAN Only + Developer Mode), prove the login, save the config."""
     from . import bambu
     import ipaddress
-    host, code = host.strip(), code.strip()
+    host, code = host.strip(), "".join(code.split())          # "1234 5678" pasted with a space is the same code
     try:
         ipaddress.ip_address(host)
     except ValueError:
@@ -860,6 +878,7 @@ def brief(description: str, intake: dict | None = None, option: dict | None = No
 
 
 def _check_new(name: str, description: str):
+    name = slug(name)
     if not NAME_RE.match(name):
         raise ValueError("name: lowercase letters, digits and _ (2-41 chars), starting with a letter")
     if (PROJECTS / name).exists():
@@ -872,6 +891,7 @@ def _check_new(name: str, description: str):
 
 
 def new_design(name: str, description: str, intake: dict | None = None, option: dict | None = None) -> Job:
+    name = slug(name)
     _check_new(name, description)
     exe = claude_bin()
     prompt = (f"/kerf {brief(description, intake, option)}\n\nProject folder name: projects/{name}. Spencer started this from "
@@ -883,6 +903,7 @@ def new_design(name: str, description: str, intake: dict | None = None, option: 
 def quote(name: str, description: str, intake: dict | None = None) -> Job:
     """Quote first: Claude researches and writes 2-3 candidate architectures with cost, print time and part count to
     .cache/studio/quotes/<name>.json (kerf skill, "Quote mode") and stops; nothing is designed until one is picked."""
+    name = slug(name)
     _check_new(name, description)
     QUOTES.mkdir(parents=True, exist_ok=True)
     out = QUOTES / f"{name}.json"
@@ -1027,6 +1048,7 @@ def duplicate(src: str, name: str, title: str = "") -> Path:
     files and the review stay behind (a copy is a new design: it is built and reviewed on its own)."""
     if src not in project_names():
         raise ValueError("no such project")
+    name = slug(name)
     if not NAME_RE.match(name):
         raise ValueError("name: lowercase letters, digits and _ (2-41 chars), starting with a letter")
     dst = PROJECTS / name
@@ -1364,15 +1386,42 @@ def _work_picture(name: str) -> str | None:
 
 
 def work() -> dict:
-    """The Work tab's data, recomputed after each fetch (and each minute, for the ages), from the fetched origin branch."""
-    from . import live
+    """Cache shared git work separately from live jobs and bounded Codex session observations."""
+    from . import codex_work, live, work as work_overview
     LIVE["work_until"] = time.time() + 90              # the tab is open: keep the shared fetch going
     _live_thread()
-    key = (live.upstream(ROOT) or _git("rev-parse", "HEAD"), int(time.time() // 60))
-    if LIVE["work"] is None or LIVE["work_key"] != key:
-        LIVE["work"] = live.work_data(ROOT, "@{u}", picture=_work_picture)
+    # Claims are shared on main even when Studio itself runs from a feature branch.
+    ref = _git("symbolic-ref", "--quiet", "refs/remotes/origin/HEAD") or "origin/main"
+    revision = _git("rev-parse", "--verify", "-q", ref)
+    if not revision:
+        ref, revision = "@{u}", live.upstream(ROOT) or _git("rev-parse", "HEAD")
+    key = (revision, int(time.time() // 60))
+    git_work = LIVE["work"]
+    if git_work is None or LIVE["work_key"] != key:
+        git_work = live.work_data(ROOT, ref, picture=_work_picture)
+        LIVE["work"] = git_work
         LIVE["work_key"] = key
-    return {**LIVE["work"], "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "every": live.FETCH_EVERY}
+    codex = codex_work.snapshot(ROOT)
+    now = time.time()
+    timings = _times()
+    jobs = []
+    with JOB_LOCK:
+        for j in list(JOBS.values()):
+            if j.state != "running" and now - (j.ended or j.started) >= 86400:
+                continue
+            kind = f"mode_{j.mode}" if j.mode else j.kind
+            runs = timings.get(j.project, {})
+            comparable = runs.get(kind) or runs.get({"mode_kit": "build", "mode_check": "check"}.get(kind, ""))
+            # A last report may be a quick check, so only recorded comparable runs support a countdown.
+            jobs.append({"id": j.id, "kind": j.kind, "project": j.project, "label": j.label,
+                         "state": j.state, "started": j.started, "mode": j.mode, "events": list(j.events),
+                         "estimate_seconds": estimate(j.project, kind) if comparable else None})
+    sources = [{"name": "Shared claims", "state": "partial" if LIVE["fetch_error"] or not LIVE["last_fetch"] else "ok",
+                "detail": "Last fetched repository state; claim updates show ownership, not live execution.",
+                "updated_at": LIVE["last_fetch"] or None}, codex["source"],
+               {"name": "Studio jobs", "state": "ok", "detail": "Jobs running on this computer and results from the last 24 hours.", "updated_at": now}]
+    return {**work_overview.overview(git_work, sessions=codex["sessions"], jobs=jobs, sources=sources, now=now),
+            "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "every": live.FETCH_EVERY}
 
 
 # ---------------------------------------------------------------- http
@@ -1633,6 +1682,11 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     return self._err(f"unknown action {action}")
                 return self._json({"job": j.id})
+            if u.path in ("/api/save", "/api/restore", "/api/edit", "/api/save-materials"):
+                try:
+                    guard_claimed(name, body.get("override") is True)
+                except Claimed as e:
+                    return self._json({"error": str(e), "claimed": True}, 409)
             if u.path == "/api/save":
                 with JOB_LOCK:
                     require_idle(name)
