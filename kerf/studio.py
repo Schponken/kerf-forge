@@ -1426,6 +1426,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(read_quote(parts[2]))
             if parts == ["api", "settings"]:
                 return self._json(settings())
+            if parts == ["api", "glossary"]:
+                from . import glossary
+                return self._json(glossary.as_json())
             if parts == ["api", "thoughtweb"]:
                 from . import thoughtweb
                 jid, nm = q.get("job", [""])[0], q.get("project", [""])[0]

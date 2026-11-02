@@ -169,6 +169,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 #mc.open{display:flex;animation:popIn .35s cubic-bezier(.2,.9,.3,1.2) both}
 #mc.min .mcbody,#mc.min #mctw{display:none}
 #mctw{height:min(340px,38vh);margin:0 14px;flex:none}#mctw[hidden]{display:none}
+abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{width:min(1100px,94vw);height:min(760px,88vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
   background:linear-gradient(var(--grid) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/22px 22px}
@@ -211,7 +212,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .lrow:last-child{border-bottom:none}
 .lrow .n{font-weight:620;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lrow .n small{display:block;font-weight:400;color:var(--muted);font-size:11px}
-.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px}
+.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px;white-space:nowrap}
 .new-in .badge{animation:pop .45s .15s both}
 .badge.ok{background:var(--ok-bg);color:var(--ok)}.badge.bad{background:var(--bad-bg);color:var(--bad)}.badge.skip{background:var(--soft);color:var(--muted)}
 .feed{display:flex;flex-direction:column;gap:4px}
@@ -525,6 +526,7 @@ function renderProject() {
             <button onclick="run('check')">✓ Check everything <span class="sub">no files${e.check ? " · " + about(e.check) : ""}</span></button>
             <button onclick="run('quick')">⚡ Quick check <span class="sub">no motion or strength</span></button>
             <button onclick="showDecided('${d.name}')">🕸 How Kerf decided <span class="sub">the research, options and choices behind this design</span></button>
+            <button onclick="showGlossary()">📖 Words, explained <span class="sub">every term and check in plain English</span></button>
             <button onclick="toggleAutofix()">🔧 Auto-fix failed builds: ${S.settings.autofix ? "on" : "off"} <span class="sub">Claude Code fixes the problems a build finds, then rebuilds</span></button>
             <hr>
             <button onclick="openIn('plates')" ${plates ? "" : "disabled"}>▦ Open plates in Bambu Studio</button>
@@ -569,6 +571,49 @@ function renderTab() {
   else if (t === "files") renderFiles(el);
   else if (t === "docs") renderDocs(el);
   else if (t === "history") renderHistory(el);
+  if (t !== "model") glossify(el);
+}
+
+/* ---------- plain-English layer (kerf/glossary.py): jargon gets a dotted underline; hover or tap shows the meaning */
+const GL = {checks: {}, terms: {}, rx: null};
+fetch("/api/glossary").then(r => r.json()).then(g => {
+  GL.checks = g.checks; GL.terms = {};
+  for (const [k, v] of Object.entries(g.terms)) GL.terms[k.toLowerCase()] = [k, v];
+  const keys = Object.keys(g.terms).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  GL.rx = new RegExp(`(^|[^\\w-])(${keys.join("|")})(?![\\w-])`, "i");
+  if (S.detail) renderTab();
+}).catch(() => {});
+function glossCheck(c) { return GL.checks[c] || {name: c || "", means: ""}; }
+function glossify(root) {   // wraps the first use of each glossary word in this element (never inside inputs, code or links)
+  if (!GL.rx || !root) return;
+  const seen = new Set(), walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n =>
+    n.parentElement.closest("code,pre,a,button,input,select,textarea,label,abbr,script,style,svg,iframe,th,h1,.key,.num,[title]") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  const nodes = []; while (walk.nextNode()) nodes.push(walk.currentNode);
+  for (const n of nodes) {
+    let node = n, m;
+    while (node && (m = GL.rx.exec(node.nodeValue))) {
+      const word = m[2], key = word.toLowerCase(), at = m.index + m[1].length;
+      if (seen.has(key)) { const rest = node.splitText(at + word.length); node = rest; continue; }
+      seen.add(key);
+      const mid = node.splitText(at), rest = mid.splitText(word.length);
+      const ab = document.createElement("abbr"); ab.className = "gl"; ab.textContent = word; ab.title = GL.terms[key][1]; ab.tabIndex = 0;
+      ab.onclick = e => { e.stopPropagation(); toast(GL.terms[key][0], GL.terms[key][1], "info"); };
+      mid.replaceWith(ab); node = rest;
+    }
+  }
+}
+function showGlossary() {   // every word and every check, searchable
+  const el = document.createElement("div"); el.className = "modal glmodal";
+  const rows = [...Object.values(GL.terms).map(([k, v]) => [k, v, "word"]), ...Object.entries(GL.checks).map(([k, c]) => [c.name, c.means, "check · " + k])]
+    .sort((a, b) => a[0].localeCompare(b[0]));
+  el.innerHTML = `<div class="card" style="width:min(720px,94vw);max-height:84vh;display:flex;flex-direction:column"><div class="row" style="justify-content:space-between"><h3 style="margin:0">📖 Words Kerf uses, in plain English</h3><button>Close</button></div>
+    <input type="search" placeholder="Search, e.g. FEA, infill, servo" style="margin:10px 0">
+    <div class="gllist" style="overflow:auto">${rows.map(([k, v, t]) => `<div class="glrow"><b>${esc(k)}</b> <span class="note">${esc(t)}</span><div>${esc(v)}</div></div>`).join("")}</div></div>`;
+  document.body.appendChild(el);
+  const close = () => el.remove();
+  el.querySelector("button").onclick = close; el.onclick = e => { if (e.target === el) close(); };
+  const q = el.querySelector("input"); q.focus();
+  q.oninput = () => el.querySelectorAll(".glrow").forEach(r => r.style.display = r.textContent.toLowerCase().includes(q.value.toLowerCase()) ? "" : "none");
 }
 
 /* ---------- My parts (catalog/inventory.json) */
@@ -636,7 +681,7 @@ async function restoreVersion(stamp) {
 function reqTable(reqs) {
   if (!reqs || !reqs.length) return `<p class="note">No requirement checks.</p>`;
   return `<table><tr><th>Requirement</th><th>Result</th><th>Value</th><th>Limit</th><th style="width:24%">Margin</th></tr>${reqs.map((r, i) => `
-    <tr class="reqrow" style="animation-delay:${i * 45}ms"><td><b>${esc(r.id)}</b> <span class="why">${esc(r.check)}</span><div class="why">${esc(r.why || "")}</div></td>
+    <tr class="reqrow" style="animation-delay:${i * 45}ms"><td><b title="${esc(glossCheck(r.check).means)}">${esc(glossCheck(r.check).name)}</b> <span class="why">${esc(r.id)}</span><div class="why">${esc(r.why || "")}</div></td>
     <td>${r.skipped ? `<span class="badge skip">skipped</span>` : r.ok ? `<span class="badge ok">PASS</span>` : `<span class="badge bad">FAIL</span>`}</td>
     <td class="num">${fmt(r.value)}${r.unit && r.value != null ? " " + esc(r.unit) : ""}</td><td class="num">${limitText(r)}</td><td>${mbar(r)}</td></tr>`).join("")}</table>`;
 }
