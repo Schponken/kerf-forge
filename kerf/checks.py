@@ -200,6 +200,9 @@ def shell_volume(s, spec, vol=None) -> float:
 
 def item_mass_g(item) -> float:
     """Mass used for statics: printed parts from geometry, purchased parts from the catalog."""
+    if item.role == "manufactured":
+        from .manufacturing import mass_g
+        return mass_g(item)
     if item.role == "printed":
         # every mass / CG / thrust / endurance requirement asks again; the answer depends on the geometry and the
         # spec only (not on where the part sits), so it is kept on the shape (copy-safe slot, geom._Memo)

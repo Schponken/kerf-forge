@@ -325,7 +325,7 @@ def restore(name: str, stamp: str) -> list[str]:
     return write_params(PROJECTS / name / "project.yaml", {k: v for k, v in vals.items() if k in known})
 
 
-EXPORT_DIRS = ("plates", "parts", "drawings", "firmware", "assembly_steps")
+EXPORT_DIRS = ("plates", "parts", "drawings", "firmware", "assembly_steps", "manufacturing")
 EXPORT_FILES = ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "wiring.svg", "viewer.html")
 
 
@@ -538,9 +538,9 @@ def detail(name: str) -> dict:
     files = []
     out = d / "out"
     if out.exists():
-        for rel in ("plates", "parts", "drawings"):
+        for rel in ("plates", "parts", "drawings", "manufacturing"):
             for f in sorted((out / rel).glob("*")) if (out / rel).exists() else []:
-                if f.suffix in (".3mf", ".stl", ".md", ".pdf"):
+                if f.suffix in (".3mf", ".stl", ".md", ".pdf", ".step", ".dxf", ".json"):
                     files.append(str(f.relative_to(d)))
         for f in ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "viewer.html", f"{name}_urdf.zip"):
             if (out / f).exists():
@@ -549,7 +549,7 @@ def detail(name: str) -> dict:
             if f.suffix in (".ino", ".py", ".md"):
                 files.append(str(f.relative_to(d)))
     docs = [f for f in ("DESIGN.md", "REFERENCES.md", "out/ASSEMBLY.md", "out/WIRING.md", "out/firmware/BRINGUP.md", "out/bom.md",
-                        "out/plates/PRINT_SETTINGS.md", "out/OPTIMISE.md") if (d / f).exists()]
+                        "out/plates/PRINT_SETTINGS.md", "out/manufacturing/ORDER.md", "out/OPTIMISE.md") if (d / f).exists()]
     renders = sorted(str(p.relative_to(d)) for p in (out / "renders").glob("*.png")) if (out / "renders").exists() else []
     trial = TRIALS / name
     trial_rep = _report(trial) if (trial / "out" / "viewer.html").exists() else None
@@ -1131,7 +1131,8 @@ def materials() -> list[dict]:
 
 
 def part_materials(name: str) -> dict:
-    return {k: v.get("material", "PETG") for k, v in (_read_yaml(name).get("parts") or {}).items() if isinstance(v, dict)}
+    return {k: v.get("material", "PETG") for k, v in (_read_yaml(name).get("parts") or {}).items()
+            if isinstance(v, dict) and "manufacturing" not in v}
 
 
 def write_materials(path: Path, values: dict) -> list[str]:
@@ -1142,7 +1143,7 @@ def write_materials(path: Path, values: dict) -> list[str]:
     known = {m["key"] for m in materials()}
     changed = []
     for part, mat in values.items():
-        if part not in parts or not isinstance(parts[part], dict):
+        if part not in parts or not isinstance(parts[part], dict) or "manufacturing" in parts[part]:
             raise ValueError(f"unknown printed part {part}")
         if mat not in known:
             raise ValueError(f"unknown material {mat}")

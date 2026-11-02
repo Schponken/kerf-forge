@@ -339,7 +339,16 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
         size = " × ".join(f"{v:.0f}" for v in size) + " mm" if size else "size ?"
         rows.append({"type": "printed", "item": iid, "qty": it.spec.get("qty", 1), "spec": it.spec.get("material", "PETG"),
                      "note": f"{r.get('mass_est_g', '?')} g each, {size}"})
-    for iid, it in proj.printed.items():      # bits a part's features need (ctx.bom_item, e.g. the tripod nut)
+    from . import manufacturing
+    for iid, it in proj.manufactured.items():
+        m = it.spec["manufacturing"]
+        current = m.get("quote_fingerprint") == manufacturing.quote_fingerprint(it)
+        quote = "saved quote matches this geometry and quantity" if current and m.get("price_key") else \
+            "quote missing or out of date; request a new exact supplier quote"
+        rows.append({"type": "manufactured", "item": iid, "qty": it.spec.get("qty", 1), "spec": manufacturing.label(it),
+                     "note": f"{manufacturing.mass_g(it):g} g each; order files in manufacturing/; {quote}",
+                     "price_key": m.get("price_key", "") if current else "", "link": m["density_source"]})
+    for iid, it in proj.fabricated.items():      # bits a part's features need (ctx.bom_item, e.g. the tripod nut)
         for b in getattr(it.shape, "kerf_bom", None) or []:
             rows.append({**b, "qty": b["qty"] * it.spec.get("qty", 1), "note": f"{iid}: {b['note']}".rstrip(": ")})
     for iid, it in proj.items.items():

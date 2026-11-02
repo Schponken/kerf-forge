@@ -39,8 +39,17 @@ def mass_split(proj, rep) -> dict:
             off += m
         else:
             on += m
-    return {"printed_g": round(printed, 1), "on_board_g": round(on, 1), "device_g": round(printed + on, 1),
-            "off_board_g": round(off, 1)}
+    made = 0.0
+    for it in proj.manufactured.values():
+        if it.shape is None:
+            continue
+        mass = checks.item_mass_g(it) * int(it.spec.get("qty", 1))
+        if it.spec.get("off_board"):
+            off += mass
+        else:
+            made += mass
+    return {"printed_g": round(printed, 1), "on_board_g": round(on, 1), "device_g": round(printed + on + made, 1),
+            "off_board_g": round(off, 1), **({"manufactured_g": round(made, 1)} if proj.manufactured else {})}
 
 
 _BALL = re.compile(r"^(M[\d.]+) screw in (\w+) \(group '(\w+)'\) at .*?a straight ([\d.]+) mm hex key hits")
@@ -265,7 +274,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                                                        and (k != "requirements" or "requirements" in stg)
                                                        and (k != "export" or stg & {"files", "docs", "viewer"})
                                                        and (k != "renders" or "renders" in stg)],
-                  parts=list(proj.printed), reqs=[r.get("id", r.get("check")) for r in proj.data.get("requirements") or []])
+                  parts=list(proj.fabricated), reqs=[r.get("id", r.get("check")) for r in proj.data.get("requirements") or []])
     progress.stage("build")
     P.build(proj)
     printer = proj.data.get("printer", "Bambu Lab A2L")
@@ -273,7 +282,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     rep = {"project": proj.name, "dir": proj.dir.name, "fingerprint": proj.fingerprint(), "printer": printer,
            "params": proj.params, "parts": {}, "purchased": {}, "assembly": {}, "requirements": [],
            "problems": [], "warnings": [], "mode": mode, "stages": sorted(stg),
-           "cached_parts": [k for k, it in proj.printed.items() if it.cached]}   # kerf/partcache.py hits
+           "cached_parts": [k for k, it in proj.fabricated.items() if it.cached]}   # kerf/partcache.py hits
     for iid, it in proj.items.items():
         if it.error:
             rep["problems"].append(f"{iid} failed to build: {it.error}")
@@ -328,6 +337,17 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         rep["parts"][iid] = r
         rep["problems"] += r["problems"]
         rep["warnings"] += r["warnings"]
+    if proj.manufactured:
+        from . import manufacturing
+        rep["manufactured"] = {}
+        for iid, it in proj.manufactured.items():
+            if it.shape is None:
+                continue
+            r = manufacturing.part_check(it)
+            rep["manufactured"][iid] = r
+            rep["problems"] += r["problems"]
+            rep["warnings"] += r["warnings"]
+            progress.emit("part", id=iid, ok=not r["problems"], mass=r["mass_est_g"])
     for iid, it in proj.items.items():
         if it.role == "purchased" and it.shape is not None and checks.item_mass_g(it) <= 0:
             rep["warnings"].append(f"{iid}: no mass (catalog {it.spec.get('catalog')} has no weight_g and the item no mass_g): "
@@ -496,6 +516,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 export.step_assembly(proj, out / "assembly.step")
                 rep["files"].update({"parts": export.part_files(proj, out / "parts"),
                                      "plates": export.plates(proj, out / "plates", printer)})
+                if proj.manufactured or (out / "manufacturing/order.json").exists():
+                    from . import manufacturing
+                    rep["files"]["manufacturing"] = manufacturing.write(proj, out / "manufacturing")
                 try:                                    # per plate grams + time, per part slicer settings (kerf/printpkg.py)
                     from . import printpkg
                     rep["print"] = printpkg.write(proj, rep, rep["files"]["plates"], out / "plates")
@@ -509,6 +532,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     from . import urdf
                     try:
                         masses = {**{k: v["mass_est_g"] for k, v in rep["parts"].items()},
+                                  **{k: v["mass_est_g"] for k, v in rep.get("manufactured", {}).items()},
                                   **{k: v["mass_g"] for k, v in rep["purchased"].items()}}
                         u = urdf.write(proj, out, asm, masses)
                         rep["files"]["urdf"] = [u["path"], u["zip"]]
@@ -561,7 +585,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                         export.glb(proj, g)
                         render_glb(g, out / f"pose_{e.name}_{tag}", views="iso", sheet=False)
                     A.solve(asm)
-                for iid, it in proj.printed.items():
+                for iid, it in proj.fabricated.items():
                     g = proj.out(f"part_{iid}.glb")
                     s = checks.oriented(it.shape, it.spec.get("print_rot", [0, 0, 0]))
                     s.label = iid
@@ -569,8 +593,10 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     geom.write_glb([s], g, 0.03, 0.2, label=iid)       # mesh-aware (fused Meshy parts)
                     lo, hi = geom.bbox(s)
                     dx, dy, dz = (float(v) for v in (hi - lo))
+                    view_note = "manufactured part (reference grid: 10 mm squares)" if it.role == "manufactured" else \
+                        "shown as printed (the gridded plate is the print bed, 10 mm squares)"
                     render_glb(g, out / f"part_{iid}", sheet=True,
-                               title=f"{iid}: {dx:.0f} x {dy:.0f} x {dz:.0f} mm overall, shown as printed (the gridded plate is the print bed, 10 mm squares)")
+                               title=f"{iid}: {dx:.0f} x {dy:.0f} x {dz:.0f} mm overall, {view_note}")
         except P.ProjectError as e:
             rep["problems"].append(f"assembly: {e}")
         except Exception as e:  # noqa: BLE001
@@ -639,7 +665,7 @@ def _fold_stubs(proj, rep: dict):
     """Placeholder parts (ctx.stub / a STUB file) during design: every problem that names one is expected until it is
     modelled, so they move to rep['stub_problems'] and ONE problem says the design is in progress."""
     import re
-    stubs = sorted(pid for pid, it in proj.printed.items() if getattr(it.shape, "kerf_stub", None))
+    stubs = sorted(pid for pid, it in proj.fabricated.items() if getattr(it.shape, "kerf_stub", None))
     rep["stubs"] = stubs
     if not stubs:
         return
@@ -648,8 +674,9 @@ def _fold_stubs(proj, rep: dict):
     for p in rep["problems"]:
         (folded if pat.search(p) else keep).append(p)
     rep["stub_problems"] = folded
-    n = len(proj.printed)
-    keep.insert(0, f"design in progress: {len(stubs)} of {n} printed parts are still placeholders ({', '.join(stubs)}); "
+    n = len(proj.fabricated)
+    kind = "parts" if proj.manufactured else "printed parts"
+    keep.insert(0, f"design in progress: {len(stubs)} of {n} {kind} are still placeholders ({', '.join(stubs)}); "
                    f"{len(folded)} problem(s) involving them are expected until they are modelled (out/report.json "
                    f"stub_problems)")
     rep["problems"] = keep
@@ -681,9 +708,12 @@ def run_requirements(name: str, only=None, overrides=None) -> dict:
 def summary(rep: dict) -> str:
     L = [f"{'PASS' if rep['ok'] else 'FAIL'}  {rep['project']}  ({rep['seconds']} s, fingerprint {rep['fingerprint']})"]
     if rep.get("cached_parts"):
-        L.append(f"  {len(rep['cached_parts'])}/{len(rep['parts'])} parts unchanged, taken from the build cache")
+        L.append(f"  {len(rep['cached_parts'])}/{len(rep['parts']) + len(rep.get('manufactured', {}))} parts unchanged, taken from the build cache")
     for iid, r in rep["parts"].items():
         L.append(f"  part {iid:18s} {'ok ' if r['ok'] else 'BAD'} {r['size_mm']} mm  {r['mass_est_g']} g  overhang {r['overhang_pct']}%  wall p2 {r['wall_p02_mm']} mm")
+    for iid, r in rep.get("manufactured", {}).items():
+        L.append(f"  stock {iid:17s} {'ok ' if r['ok'] else 'BAD'} {r['size_mm']} mm  {r['mass_est_g']:.2f} g  "
+                 f"{r['manufacturing']['process']} (stock strength not verified)")
     a = rep.get("assembly", {})
     if "interference" in a:
         L.append(f"  interference: {len(a['interference'])} overlapping pairs")

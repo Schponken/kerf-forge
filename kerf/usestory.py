@@ -183,7 +183,9 @@ def heat_limit(proj, asm, max_c, parts=None):
     """Every printed part keeps its shape at max_c: the material's ISO 75 heat deflection temperature (datasheet,
     catalog) above max_c, at 0.45 MPa for every part and at 1.8 MPa for parts that carry a strength case."""
     stressed = {r.get("part") for r in proj.data.get("requirements") or [] if r.get("check") in ("fea_static", "cantilever_stress")}
-    bad, worst = [], math.inf
+    bad = [f"{pid}: manufactured stock heat resistance is not verified; add a stock-specific thermal model"
+           for pid, it in proj.items.items() if it.role == "manufactured" and (not parts or pid in parts)]
+    worst = math.inf
     for pid, it in proj.printed.items():
         if parts and pid not in parts:
             continue

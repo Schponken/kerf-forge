@@ -422,6 +422,26 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Merged PR #11 (scenario options; tests/test_scenario.py pass). test_studio's progress-order
   test already fails on main; PR #4 fixes it once rebased.
 
+## 2026-11-02 22:00 UTC — Mixed manufacturing handoff (Codex, PR #13)
+- Custom stock parts use the existing parts/build/import contract with manufacturing metadata. Exact local-frame
+  STEP and proven constant-section DXF (including holes, millimetres) accompany printed plates; stock parts appear
+  in mass/CG/URDF, assembly, drawings, BOM, viewer and Studio supplier files/ZIP. Printer offsets, filament controls
+  and slicer plates exclude them. Stock mass uses sourced density times current CAD volume, not FDM infill.
+- Exact quote keys bind to geometry, stock, process and quantity; missing or changed quotes stay unpriced. Pockets,
+  bevels and thickness mismatches cannot silently become through-cut DXF. Rebuilds retire only obsolete files named
+  by the previous generated manufacturing manifest. No supplier order or hardware action.
+- Stock strength/thermal models and supplier limits are not implemented. Structural declarations, direct/derived
+  strength cases and heat checks covering stock fail explicitly instead of using a default printed polymer.
+  PLAN checks off the tested handoff subitem only; the broader engineering/project-proof work remains open.
+- Validation: 11 manufacturing tests cover real mixed pipeline/DXF/STEP output, quote expiry, density mass, print
+  exclusion, URDF, drawings, calibration isolation, nested strength rejection and obsolete-file cleanup. Existing
+  ship/maker/calibration/use-story/drawing/docs checks pass; 3 Studio compatibility checks pass. Final latest-main
+  manufacturing/docs/pause selection: 19 pass. Six FEA regressions passed before Spencer paused stress simulations;
+  the pause is retained and no later solve was run. Guard tests replace the solver with a failure sentinel.
+  Chromium fixture inspection has no page errors and shows the made-to-order part correctly. Independent parent
+  code review found no remaining blocker. A broader ship selection was interrupted upon reaching an all-project
+  geometry test and replaced with bounded selectors; no full batch, supplier order or hardware run.
+
 ## 2026-11-02 22:30 UTC - Stress simulations paused (Spencer: "pause all the stress simulations, we will work on that later")
 - PAUSED.json at the repo root switches off every FEA-backed check (fea_static, impact_fea, stop_impact,
   natural_freq, drop_impact, weak_link: kerf/requirements.py STRESS_SIMS). They show "PAUSED (stress simulations

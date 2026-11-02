@@ -66,9 +66,9 @@ def feature_keys() -> list[str]:
 
 # ---------------------------------------------------------------- applying offsets (called from iface)
 @contextlib.contextmanager
-def active(printer: str | None, material: str | None):
+def active(printer: str | None, material: str | None, *, enabled=True):
     """Use this printer + material's offsets for every iface call inside the block."""
-    tok = _ACTIVE.set((printer or DEFAULT_PRINTER, mat_key(material)))
+    tok = _ACTIVE.set((printer or DEFAULT_PRINTER, mat_key(material)) if enabled else None)
     try:
         yield
     finally:
