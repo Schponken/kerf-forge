@@ -52,6 +52,13 @@ Full `kerf verify` runs are expensive, so they are batched: one run covers many 
 - **A failed batch blocks new work:** fix each failure at its cause (never by loosening a check), push, then
   `tools/batch_verify.py run --force` to confirm.
 - `kerf verify` still defines a finished repo; batching changes when it runs, not what it checks.
+- The batch runner requires a clean checkout whose HEAD exactly matches freshly fetched `origin/main`; update
+  it explicitly before running. It refuses dirty/feature snapshots and never pulls, stashes or publishes caller
+  edits. Shared locks use a unique run token and a heartbeat every minute; a fresh lock blocks even the same session.
+- Results and own-lock release publish together to main, naming the full tested commit. Later main commits remain
+  untested. The existing batch exclusion for unfinished PLAN items is recorded explicitly; it is not full verify PASS.
+  SIGINT/SIGTERM stop the child process group and reap the direct child before unlocking. SIGKILL or machine loss cannot guarantee
+  process cleanup; abandoned leases expire after 90 minutes, and surviving old processes still need checking.
 
 ## Parallel sessions
 
