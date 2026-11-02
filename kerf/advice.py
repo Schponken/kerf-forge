@@ -180,6 +180,14 @@ def _tip(row, req, proj) -> list[str]:
             f"atan(edge distance / height)."]
 
 
+def _wheel_drive(row, req, proj) -> list[str]:
+    if row.get("limiting") == "motor torque":
+        return ["Use more continuous wheel torque at the required speed, a smaller wheel radius, or less load/grade. "
+                "Recheck gearing losses and traction; stall torque is not a continuous rating."]
+    return ["The declared wheel loads and tire grip limit this climb. Reduce the grade or change the tire/contact "
+            "design, then measure traction and wheel load shares again; extra motor torque alone cannot remove wheel slip."]
+
+
 def _margin(row, req, proj) -> list[str]:
     v, lim = row.get("value"), row.get("limit")
     if not (_num(v) and isinstance(lim, (list, tuple)) and len(lim) == 2):
@@ -291,6 +299,7 @@ TEXT = {
 }
 TEXT.update({k: _stress for k in STRESS})
 TEXT.update({"natural_freq": _natural_freq, "static_torque": _servo, "mass_max": _mass, "thrust_to_weight": _twr,
+             "wheel_drive": _wheel_drive,
              "flight_time": _time, "run_time": _time, "tip_over": _tip, "static_margin": _margin, "static_margin_tail": _margin,
              "stall_speed": _stall, "wing_loading": _loading, "spar_bending": _spar, "gear_bending": _gear,
              "planetary_bending": _gear, "worm_drive": _gear, "heat_limit": _heat, "flex_strain": _flex,

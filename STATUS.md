@@ -464,3 +464,27 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Job panel: a one-line strip (stage, current question, counts, latest finding) appears by itself when research starts and stays visible when the panel is folded; it opens the full trail.
 - Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
 - Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
+
+
+## 2026-11-02 — Steady wheel-drive sizing (Codex, ground-robot-checks)
+- Added one `wheel_drive` requirement: sustained uphill grade plus rolling force against the sum of each independent
+  wheel's smaller continuous-torque and traction limit. Inputs explicitly declare radius, delivered continuous wheel
+  torque, slope, rolling/static-friction coefficients and each driven wheel's normal-load fraction; nonempty torque
+  and terrain/load source rationales are required. No assumed tire coefficients, new catalog ratings or dependencies.
+- Reused `item_mass_g` and `wiring_mass_g`, with explicit payload/selection support. Unknown/zero, negative or nonfinite
+  selected component mass is an error with source guidance, rather than an optimistic zero-mass pass; invalid wire
+  lengths/conductors, input ranges and nonfinite results also fail. Report includes grade/rolling force, each wheel's
+  capacity and limiting cause; ordinary units, redesign ordering, glossary, advice, architecture and skill are wired.
+- Kept existing `tip_over` for all-direction static slope support and `power_budget` / `run_time` for declared electrical
+  draw. The current catalog lacks continuous wheel-drive ratings, so servo stall torque and drone current are not
+  repurposed as ratings. ENGINEERING.md cites primary MIT friction-experiment and Maxon motor-selection guidance, plus
+  the original Foundations of Physics incline derivation; the YAML example and all new force budgets are synthetic.
+- Validation: 69 passed in 2.47 s (tests/test_ground.py, test_tip_over.py, test_req_balance.py, test_advice.py, test_docs.py,
+  test_kerf_skill.py and test_glossary.py::test_every_check_has_a_plain_name_and_meaning). Includes unequal/unloaded wheel
+  loads, hand-computed grade/rolling force, motor/traction limits, exact boundaries, mass/wiring/payload integration,
+  missing mass, invalid inputs and YAML/report integration. Initial isolated run had a test-only chained pytest.approx
+  comparison error, corrected before the complete pass. Read-only doctor ALL OK; optional Arduino/simavr unavailable.
+- Only the precise steady-drive PLAN child is complete. No real rover/E10, speed, starting, acceleration/inertia,
+  braking, turning, uneven/soft terrain, coupled differential, self-balancing or hardware validation is claimed.
+  Geometry, catalog values and existing checks are unchanged. No stress simulations, project builds or full batch;
+  batch status/overlap checks performed and the owner's full-batch hold retained.

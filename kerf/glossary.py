@@ -46,6 +46,7 @@ CHECKS = {
     "story_covered": ("Use story covered", "Every risk listed in how it will be used has a check that answers it."),
     "thrust_to_weight": ("Thrust vs weight", "How many times its own weight the motors can lift; more means livelier flight."),
     "tip_over": ("Won't tip over", "How far it can lean before it falls over."),
+    "wheel_drive": ("Steady uphill drive", "Whether declared wheel torque and tire grip can sustain a straight climb; starting, speed and balance need separate checks."),
     "weak_link": ("Cheap part breaks first", "In a crash the cheap, easy-to-reprint part gives way before the expensive or hard-to-replace one."),
     "wing_loading": ("Weight per wing area", "How much weight each bit of wing carries; lower means slower, gentler flying."),
     "worm_drive": ("Worm gear strength", "A worm gear's teeth are strong enough, and it holds its position without power."),

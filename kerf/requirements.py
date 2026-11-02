@@ -953,6 +953,7 @@ def _run_one(proj, asm, req, quick):
 
 
 from . import req_balance  # noqa: E402,F401  (registers the balance checks: cg)
+from . import req_ground  # noqa: E402,F401  (steady wheel_drive torque and traction)
 from . import req_electrical  # noqa: E402,F401  (power_budget, flight_time, run_time, connector_access)
 from . import req_stops  # noqa: E402,F401  (hard_stop)
 from . import req_gears  # noqa: E402,F401  (gear_bending)

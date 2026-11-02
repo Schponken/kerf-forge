@@ -210,6 +210,7 @@ Requirement checks (`requirements:` in project.yaml; arguments in each function'
 | `cantilever_stress` | beam-theory stress at a named section (sizing hand check) |
 | `cg` | assembled centre of gravity vs a reference line (lateral, height), over poses |
 | `tip_over` | static tip-over angle from CG height and the support polygon |
+| `wheel_drive` | steady uphill force vs each independent wheel's continuous torque and declared traction/load share; explicit sourced inputs, no acceleration/speed/runtime or E10 proof |
 | `channel_clear` | an internal channel (tendon, wire) is open end to end for a diameter, over poses |
 | `prop_clearance` | prop discs clear each other and every other item, at home and over sweeps |
 | `power_budget` | battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltages hold at avg and peak |
