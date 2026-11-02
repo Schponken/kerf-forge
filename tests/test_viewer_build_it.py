@@ -6,7 +6,11 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
+
 from kerf import assembly as A, project as P, viewer
+
+pytestmark = pytest.mark.browser
 
 YAML = """
 name: Build it test
@@ -60,9 +64,9 @@ def test_build_it_labels_closeups_and_bench_context(tmp_path):
     page.write_text(viewer.html(data), encoding="utf-8")
     root = Path(__file__).resolve().parents[1]
     script = tmp_path / "check.mjs"
-    script.write_text("""import {chromium} from 'PLAYWRIGHT';
+    script.write_text("""import {browser} from 'PLAYWRIGHT';
 import assert from 'node:assert/strict';
-const b = await chromium.launch({args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']});
+const b = await browser();
 try {
   const p = await b.newPage({viewport: {width: 1280, height: 800}}); const errors = []; p.on('pageerror', e => errors.push(e.message));
   await p.goto('file://PAGE'); await p.waitForFunction(() => window.__kerf);
@@ -89,7 +93,7 @@ try {
   assert.ok(overlap < 0.05 * area, `the label must not cover its part (${overlap} of ${area} px2)`);
   assert.deepEqual(errors, []);
 } finally { await b.close(); }
-""".replace("PLAYWRIGHT", str(root / "tools/render/node_modules/playwright/index.mjs")).replace("PAGE", str(page))
+""".replace("PLAYWRIGHT", str(root / "tests/browser.mjs")).replace("PAGE", str(page))
        .replace("NUBSTEP", json.dumps(nub["n"])), encoding="utf-8")
     r = subprocess.run(["node", str(script)], capture_output=True, text=True, timeout=180)
     assert r.returncode == 0, r.stdout + r.stderr

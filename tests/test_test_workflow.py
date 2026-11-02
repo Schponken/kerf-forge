@@ -12,7 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.mark.slow
 def test_markers_select_expensive_tests_without_removing_them():
-    files = ["tests/test_viewer.py", "tests/test_ship.py", "tests/test_fea.py", "tests/test_thoughtweb.py"]
+    browser_files = ["tests/test_work_page.py", "tests/test_viewer_build_it.py"]
+    files = ["tests/test_viewer.py", "tests/test_ship.py", "tests/test_fea.py", "tests/test_thoughtweb.py",
+             "tests/test_notify_targets.py", *browser_files]
     def collect(*options):
         r = subprocess.run([sys.executable, "-m", "pytest", "-n", "0", "--collect-only", "-q", *files, *options],
                            cwd=ROOT, capture_output=True, text=True, timeout=60)
@@ -25,6 +27,12 @@ def test_markers_select_expensive_tests_without_removing_them():
     projects = collect("-m", "all_projects")
     assert all_tests == quick | expensive and quick.isdisjoint(expensive)
     assert browsers and projects and browsers | projects <= expensive
+    for path in browser_files:
+        nodes = {node for node in all_tests if node.startswith(path + "::")}
+        assert nodes and nodes <= browsers
+    assert "tests/test_notify_targets.py::test_page_targets_and_click_through" in browsers
+    assert {"tests/test_notify_targets.py::test_server_leaves_notifications_to_the_mac_app_while_it_is_open",
+            "tests/test_notify_targets.py::test_swift_app_posts_clickable_notifications"} <= quick
     assert "tests/test_thoughtweb.py::test_studio_draws_it_live_and_for_a_project" in browsers
     assert "tests/test_fea.py::test_cantilever_matches_beam_theory" in expensive
     assert "tests/test_viewer.py::test_page_kinematics_match_engine" in quick

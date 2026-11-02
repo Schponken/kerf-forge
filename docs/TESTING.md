@@ -24,6 +24,10 @@ Then include the marked tests for anything the change touches:
 - `all_projects`: cross-project coverage, also `slow`. Run these when changing the general contract they verify,
   or leave them to the scheduled batch. This marker does not make all-project builds part of per-change testing.
 
+Mark browser-only modules with `pytestmark = pytest.mark.browser`; in mixed modules, decorate only the tests
+that open Chromium. Use `tests/browser.mjs` so marked tests connect to the shared worker browser. The collection
+contract covers Work, Build-it and notification navigation, while notification server/source checks stay quick.
+
 The viewer's three-part fixture builds once per worker; every test receives a deep copy so moving joints cannot
 alter the next test's starting pose. Tests that change source, parameters, caches or environment keep their own fixtures.
 

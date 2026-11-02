@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 from types import SimpleNamespace as NS
 
+import pytest
+
 from kerf import studio
 from test_studio import _browser, server  # noqa: F401  (fixture)
 
@@ -28,6 +30,7 @@ def test_swift_app_posts_clickable_notifications():
     assert "-framework UserNotifications" in inst
 
 
+@pytest.mark.browser
 def test_page_targets_and_click_through(server, tmp_path):  # noqa: F811
     out = _browser(server + "/", """
 await p.waitForFunction(() => typeof kerfOpen === 'function' && S.projects.length > 1);
