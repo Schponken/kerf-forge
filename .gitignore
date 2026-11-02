@@ -32,3 +32,10 @@ tmp_*
 /*.3mf
 /*.step
 /*.png
+# Full-resolution usability captures belong in PR evidence, not the source tree.
+docs/usability/**/*.png
+docs/usability/**/*.jpg
+docs/usability/**/*.jpeg
+docs/usability/**/*.webp
+!docs/usability/**/*-contact.jpg
+!docs/usability/**/*-contact.webp
