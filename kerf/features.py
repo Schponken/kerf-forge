@@ -331,36 +331,6 @@ def _fillet_faces_down(shape, e, up) -> bool:
     return False
 
 
-def _end_cove(shape, e, r, trim):
-    """A cove prism for concave edge e that stops `trim` short of each end (where the faces are interrupted by another
-    feature's blend, so kerf.coves refuses the full length). The stubs left are shorter than kerf.edges.MIN_LEN: fillet
-    run-outs. None when the edge is not straight between two flat faces, too short, or the corner is nearly flat."""
-    from build123d import Circle, Polygon, extrude
-    fs = [f for f in shape.faces() if any(e.is_same(x) for x in f.edges())]
-    if len(fs) != 2 or e.geom_type.name != "LINE" or any(f.geom_type.name != "PLANE" for f in fs):
-        return None
-    v0, v1 = (Vector(*v) for v in e.vertices())
-    L = (v1 - v0).length
-    if L <= 2 * trim + 0.5:
-        return None
-    c = e.center()
-    n1, n2 = fs[0].normal_at(c), fs[1].normal_at(c)
-    d = (v1 - v0).normalized()
-    t1, t2 = d.cross(n1).normalized(), d.cross(n2).normalized()   # in each face, perpendicular to the edge
-    t1 = t1 if t1.dot(n2) > 0 else -t1                             # pointing away from the corner, along the face
-    t2 = t2 if t2.dot(n1) > 0 else -t2
-    a = math.acos(max(-1.0, min(1.0, t1.dot(t2))))                 # the corner's open (air) angle
-    if not math.radians(20) < a < math.radians(170):
-        return None
-    k = r / math.tan(a / 2)
-    ctr = (t1 + t2).normalized() * (r / math.sin(a / 2))
-    pl = Plane(origin=v0 + d * trim, x_dir=t1, z_dir=d)
-    loc = lambda v: (v.dot(pl.x_dir), v.dot(pl.y_dir))           # noqa: E731
-    sink = -(t1 + t2).normalized() * 0.02                          # corner vertex 0.02 into the material: a clean fuse
-    prof = Polygon(loc(sink), loc(t1 * k), loc(ctr), loc(t2 * k), align=None) - Pos(*loc(ctr)) * Circle(r)
-    return extrude(pl * prof, amount=L - 2 * trim)
-
-
 def fillet_inside(ctx, shape, r: float = 1.0, keep=None, occ: bool = False):
     """Round every sharp inside corner the build check would report (kerf.edges.sharp_inside: straight concave edges
     between flat faces, the corners of interface features exempt) with radius r, then r / 2 on those whose faces are
@@ -434,9 +404,9 @@ def fillet_inside(ctx, shape, r: float = 1.0, keep=None, occ: bool = False):
             break
         prisms = []
         for e in todo:
+            # (a cove stopped short of an interrupted end was tried and dropped: its end step made a worse notch than
+            # the sharp corner - the pan_tilt yoke knock peak went 17 -> 44 MPa; such corners stay sharp and reported)
             cv = coves.cove(shape, e, size)
-            if cv is None:                   # a face is interrupted near an end: stop the cove short of both ends
-                cv = _end_cove(shape, e, size, trim=min(1.5, size * 1.5))
             if cv is not None and cv.volume > 0:
                 prisms.append(cv)
         shape = apply(shape, prisms)
