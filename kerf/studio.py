@@ -361,6 +361,47 @@ EXPORT_DIRS = ("plates", "parts", "drawings", "firmware", "assembly_steps")
 EXPORT_FILES = ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "wiring.svg", "viewer.html")
 
 
+def _maker_files(project_dir: Path) -> dict[str, Path]:
+    """Validate selected generated files before archiving; never traverse links or read special files."""
+    import stat
+    from .sources import inside
+
+    out = inside(project_dir, "out")
+    if not out.exists():
+        return {}
+    if not stat.S_ISDIR(out.lstat().st_mode):
+        raise ValueError("Expected maker output directory: out")
+    selected = {}
+    def checked(path, directory=False):
+        relative = path.relative_to(project_dir).as_posix()
+        inside(project_dir, relative)
+        mode = path.lstat().st_mode
+        if not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)):
+            kind = "directory" if directory else "regular file"
+            raise ValueError(f"Expected maker output {kind}: {relative}")
+    def unreadable(error):
+        raise error
+    for relative in EXPORT_DIRS:
+        folder = inside(out, relative)
+        if not folder.exists():
+            continue
+        checked(folder, directory=True)
+        for directory, dirs, files in os.walk(folder, followlinks=False, onerror=unreadable):
+            for child in dirs:
+                checked(Path(directory) / child, directory=True)
+            for child in files:
+                path = Path(directory) / child
+                checked(path)
+                if path.suffix != ".glb":
+                    selected[path.relative_to(out).as_posix()] = path
+    for relative in EXPORT_FILES:
+        path = inside(out, relative)
+        if path.exists():
+            checked(path)
+            selected[relative] = path
+    return dict(sorted(selected.items()))
+
+
 def export_zip(name: str) -> bytes:
     """Everything a maker needs in one zip: print plates and parts, STEP, BOM, guides, drawings, bring-up program,
     plus the design files (project.yaml, DESIGN.md, part sources)."""
@@ -371,15 +412,11 @@ def export_zip(name: str) -> bytes:
         raise ValueError("no such project")
     d = inside(PROJECTS, name)
     sources = design_files(d)  # Validate every declared input before starting an archive.
+    maker_files = _maker_files(d)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        for rel in EXPORT_DIRS:
-            for f in sorted((d / "out" / rel).rglob("*")) if (d / "out" / rel).exists() else []:
-                if f.is_file() and f.suffix != ".glb":
-                    z.write(f, f"{name}/{f.relative_to(d / 'out')}")
-        for rel in EXPORT_FILES:
-            if (d / "out" / rel).exists():
-                z.write(d / "out" / rel, f"{name}/{rel}")
+        for relative, f in maker_files.items():
+            z.write(f, f"{name}/{relative}")
         for relative, f in sources.items():
             z.write(f, f"{name}/design/{relative}")
     return buf.getvalue()
@@ -1852,7 +1889,7 @@ class Handler(BaseHTTPRequestHandler):
                 try:
                     body = export_zip(nm)
                 except (ValueError, OSError) as e:
-                    return self._err(f"Couldn't export sources: {e}")
+                    return self._err(f"Couldn't export project: {e}")
                 try:
                     self.send_response(200)
                     self.send_header("Content-Type", "application/zip")
