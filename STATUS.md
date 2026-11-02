@@ -470,3 +470,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Job panel: a one-line strip (stage, current question, counts, latest finding) appears by itself when research starts and stays visible when the panel is folded; it opens the full trail.
 - Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
 - Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
+
+## 2026-11-02 — Duplicate-name regression follows intended UX (Codex)
+- Reproduced the reported test_studio_features duplicate failure: its old assertion rejected "Bad Name", although
+  commit 29f49fef intentionally accepts friendly names and normalizes them (already covered by test_user_bugs).
+  Updated only tests, preserving production slugging and every original copy/title/comment/output/review assertion.
+- Added positive normalized names and traversal-like input constrained to projects/, normalized-name collisions,
+  invalid/empty/too-long slugs, unchanged original content/file lists and excluded Python/pytest caches.
+  13 exact duplicate/name tests PASS in 2.19 s; git diff --check passes. The original node failed before the update.
+- Reused the shared environment; doctor ALL OK with existing optional Arduino/simavr warnings. No product/UI change,
+  paid model call, browser rerun, full batch, project build or stress simulation. Broad Fresh-eyes work remains open.

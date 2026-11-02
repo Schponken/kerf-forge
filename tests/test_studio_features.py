@@ -73,18 +73,45 @@ def test_trial_copy_takes_materials_and_leaves_the_project_alone(tmp_path, monke
 
 
 def test_duplicate_copies_design_files_only_and_renames(tmp_path, monkeypatch):
-    _proj(tmp_path, monkeypatch)
+    src = _proj(tmp_path, monkeypatch)
+    for cache in (src / "parts" / "__pycache__", src / ".pytest_cache"):
+        cache.mkdir()
+        (cache / "cached").write_text("old result")
     dst = studio.duplicate("demo", "demo_v2", "Demo rig, long arm")
     assert (dst / "parts" / "base.py").exists() and (dst / "DESIGN.md").exists()
     assert not (dst / "out").exists() and not (dst / "review.json").exists()
+    assert not (dst / "parts" / "__pycache__").exists() and not (dst / ".pytest_cache").exists()
     txt = (dst / "project.yaml").read_text()
     assert yaml.safe_load(txt)["name"] == "Demo rig, long arm" and "# the title" in txt
     assert yaml.safe_load(studio.duplicate("demo", "demo_v3").joinpath("project.yaml").read_text())["name"] == "Demo rig (copy)"
-    for bad in ("Bad Name", "demo_v2", "x"):
-        with pytest.raises(ValueError):
-            studio.duplicate("demo", bad)
+    assert (src / "project.yaml").read_text() == YAML
+    assert (src / "out" / "report.json").exists() and (src / "review.json").exists()
     with pytest.raises(ValueError, match="no such project"):
         studio.duplicate("nope", "fine_name")
+
+
+@pytest.mark.parametrize(("typed", "folder"), [
+    ("Bad Name", "bad_name"),
+    ("  Desk---Arm v2!  ", "desk_arm_v2"),
+    ("../../outside-copy", "outside_copy"),
+])
+def test_duplicate_cleans_typed_names_inside_projects(tmp_path, monkeypatch, typed, folder):
+    src = _proj(tmp_path, monkeypatch)
+    dst = studio.duplicate("demo", typed)
+    assert dst == src.parent / folder and dst.resolve().parent == src.parent.resolve()
+    assert yaml.safe_load((dst / "project.yaml").read_text())["name"] == "Demo rig (copy)"
+    assert "# the title" in (dst / "project.yaml").read_text()
+    assert (src / "project.yaml").read_text() == YAML
+
+
+@pytest.mark.parametrize("typed", ["demo", " Demo! ", "DEMO---", "x", "...", "../", "123", "a" * 42])
+def test_duplicate_rejects_normalized_collisions_and_invalid_names(tmp_path, monkeypatch, typed):
+    src = _proj(tmp_path, monkeypatch)
+    before = sorted(p.relative_to(src.parent) for p in src.parent.rglob("*"))
+    with pytest.raises(ValueError, match="already exists|name:"):
+        studio.duplicate("demo", typed)
+    assert sorted(p.relative_to(src.parent) for p in src.parent.rglob("*")) == before
+    assert (src / "project.yaml").read_text() == YAML
 
 
 def _item(iid, verts, tris):
