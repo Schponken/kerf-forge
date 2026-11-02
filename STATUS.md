@@ -493,3 +493,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Not changed on purpose: projects still build from scratch (KERF_NO_CACHE) and drawings / renders stay in verify
   (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
   test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
+
+## 2026-11-02 (Claude, Learning Mode phases 2 and 3)
+- `kerf diary <p>` / `--all` (kerf/diary.py) rebuilds each project's diary from git history into learning/diary/<p>.json + .md:
+  review.json versions followed from round to round, check PASS/FAIL events and commit-noted problems ("crashed at 97 deg"),
+  stage per problem (before parts / rough / detail / final review, from the part files in the tree at that commit) and cost
+  (active-minute estimate, part modules redrawn). Costs are ESTIMATES. `kerf diary <p> --log-session [FILE]` adds a Claude Code
+  session log's measured token usage (counted once per API message id; the log repeats usage on every content block).
+- `kerf lookback [<p>]` (kerf/lessons.py) maps each problem to a lesson by keyword rules (no AI), says the earliest stage and what
+  would have caught it, groups across projects, and writes learning/lessons.json + learning/LESSONS.md. Ladder: 1 project = note,
+  2+ = instruction, 2+ with final-review finding or redraws = PROPOSED gate (nothing is enforced; Spencer approves).
+- Limits: the stage of a review finding is always "final review" once parts are real (every review.json is the design reviewer's),
+  so nearly every cross-project lesson reaches "proposed gate"; the keyword rules leave ~80 of ~700 problems unclassified; check
+  results are only read from commit messages. No check, threshold, catalog value or test was changed; .claude/ untouched.
+- Tests: tests/test_diary.py, tests/test_lessons.py, tests/test_docs.py (targeted only).

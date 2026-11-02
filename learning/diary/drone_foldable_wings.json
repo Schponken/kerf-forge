@@ -863,19 +863,42 @@
    "active_minutes_est": null,
    "parts_redrawn": [],
    "target_redrawn": false
+  },
+  {
+   "id": "drone_foldable_wings-25",
+   "source": "commit",
+   "severity": null,
+   "part": null,
+   "issue": "drone_foldable_wings: sweep servos get their real travel (0..113.1 / -113.1..0: the full sweep crashed at 97 deg past the proxy's default +-90); Spencer's decision (keep 4S 1.1 m, ~13 min, bungee launch): T/W >= 0.45 (climb after launch), stall <= 45 km/h (landing), wing loading <= 95, flight >= 12 ",
+   "fix": "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01S68R6RMA2zrtEUQnseVeaH",
+   "found_commit": "94fe2e3c",
+   "found_time": "2026-11-02T11:45:03-05:00",
+   "stage": "detail",
+   "stage_why": "15 real part files, median 4243 bytes",
+   "rounds_seen": [
+    "94fe2e3c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "94fe2e3c",
+   "resolved_time": "2026-11-02T11:45:03-05:00",
+   "resolved_how": "noted and fixed in the same commit",
+   "wall_minutes": 65,
+   "active_minutes_est": 65,
+   "parts_redrawn": [],
+   "target_redrawn": false
   }
  ],
  "sessions": [],
  "totals": {
-  "problems": 24,
+  "problems": 25,
   "by_stage": {
    "before parts": 0,
    "rough": 0,
-   "detail": 0,
+   "detail": 1,
    "final review": 24
   },
   "open": 21,
-  "active_minutes_est": 69,
+  "active_minutes_est": 134,
   "parts_redrawn": [
    "hub"
   ],

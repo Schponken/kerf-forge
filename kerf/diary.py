@@ -27,6 +27,7 @@ ROUGH_BYTES = 1500          # median part file below this = stub parts (drone_fo
 GAP_CAP_MIN = 90            # a gap between two commits counts at most this long as active work
 SIM_MIN = 0.25              # same part and this much word overlap = the same finding in the next review round
 STAGES = ("before parts", "rough", "detail", "final review")
+_NOTED = re.compile(r"\b(crashed|clashed|collided|touched at|rubbed|did not fit|would not fit|could not (fit|reach)|cannot (be )?(fit|reach|installed)|too short|too thin)\b", re.I)
 _EVENT = re.compile(r"\b(quick check|check|build|verify|acceptance)\b[^.;:\n]{0,24}?\b(PASS|FAIL)\b", re.I)
 
 
@@ -218,8 +219,20 @@ def build(repo: Path | str | None, p: str) -> dict:
     for pr in pending.values():
         pr.update(status="open", resolved_commit=None, resolved_time=None, resolved_how=None, **_cost(cms, pr["_ci"], None, None, p, mods))
 
+    # problems a commit message itself reports ("crashed at 97 deg", "touched at -1.2 deg"): found and fixed in that commit
+    for k, c in enumerate(cms):
+        if f"projects/{p}/review.json" in c["files"] or not _NOTED.search(c["subject"]):
+            continue
+        stage, why = stage_at(repo, p, c["hash"], "check")
+        gap = (_t(c["time"]) - _t(cms[k - 1]["time"])).total_seconds() / 60 if k else 0
+        problems.append({"id": f"{p}-{len(problems) + 1}", "source": "commit", "severity": None, "part": None,
+                         "issue": c["subject"][:300], "fix": c["body"][:300], "found_commit": c["hash"][:8], "found_time": c["time"],
+                         "stage": stage, "stage_why": why, "rounds_seen": [c["hash"][:8]], "status": "resolved",
+                         "resolved_commit": c["hash"][:8], "resolved_time": c["time"], "resolved_how": "noted and fixed in the same commit",
+                         "wall_minutes": round(gap), "active_minutes_est": round(min(gap, GAP_CAP_MIN)),
+                         "parts_redrawn": _modules_changed(cms, k, k, p), "target_redrawn": False})
     for pr in problems:
-        pr.pop("_ci"), pr.pop("_target")
+        pr.pop("_ci", None), pr.pop("_target", None)
     d = {"project": p, "built_from": "git history", "cost_is_estimate": True,
          "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
          "commits": [{"hash": c["hash"][:8], "time": c["time"], "subject": c["subject"][:160],

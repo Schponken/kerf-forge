@@ -1,7 +1,7 @@
 # Diary: drone_foldable_wings
 
-24 problems recorded (21 open). Found at: before parts 0, rough 0, detail 0, final review 24.
-Estimated active fix time 69 min; parts redrawn: hub. Costs are estimates from git (commit times, edited part files).
+25 problems recorded (21 open). Found at: before parts 0, rough 0, detail 1, final review 24.
+Estimated active fix time 134 min; parts redrawn: hub. Costs are estimates from git (commit times, edited part files).
 
 ## Review rounds
 
@@ -14,9 +14,9 @@ Estimated active fix time 69 min; parts redrawn: hub. Costs are estimates from g
 
 | Id | Sev | Part | Stage | Status | ~min | Redrawn | What |
 |---|---|---|---|---|---|---|---|
-| 1 | major | hub_r | final review | resolved | 23 | hub | root fairing: the new nose touches the spine ridge before the real spread stop does (hub_l |
-| 2 | minor | hub_r | final review | resolved | 23 | hub | root fairing: structurally the cap is neutral, and the 25.8 -> 24.2 MPa hub_fea drop is no |
-| 3 | minor | hub_r | final review | resolved | 23 | hub | root fairing: print and mass. (a) As printed (boss on the bed, airfoil floating above it o |
+| 1 | major | hub_r | final review | resolved | 23 | 1: hub | root fairing: the new nose touches the spine ridge before the real spread stop does (hub_l |
+| 2 | minor | hub_r | final review | resolved | 23 | 1: hub | root fairing: structurally the cap is neutral, and the 25.8 -> 24.2 MPa hub_fea drop is no |
+| 3 | minor | hub_r | final review | resolved | 23 | 1: hub | root fairing: print and mass. (a) As printed (boss on the bed, airfoil floating above it o |
 | 4 | minor | hub_r | final review | open |  |  | root fairing: what still faces the flow after the change. I re-measured the designer's own |
 | 5 | blocker | hub_r | final review | open |  |  | hub_fea fails: p99.9 von Mises 24.2 MPa against 17.5 allowed (CF-PETG / SF 2), and 8.2 mm  |
 | 6 | blocker | hub_l | final review | open |  |  | hub_l is the mirror image of hub_r: same section, same 6 g load, same thin root trailing e |
@@ -38,3 +38,4 @@ Estimated active fix time 69 min; parts redrawn: hub. Costs are estimates from g
 | 22 | major | hub_r | final review | open |  |  | Infill (pre-existing geometry; the engine check is new, kerf/infill.py). hub_r prints at 1 |
 | 23 | major | spine | final review | open |  |  | Zero running clearance to each hub boss (pre-existing geometry, found now; this change did |
 | 24 | major | spine | final review | open |  |  | Infill (pre-existing geometry; the engine check is new). The spine prints at 15 % infill,  |
+| 25 | commit |  | detail | resolved | 65 |  | drone_foldable_wings: sweep servos get their real travel (0..113.1 / -113.1..0: the full s |

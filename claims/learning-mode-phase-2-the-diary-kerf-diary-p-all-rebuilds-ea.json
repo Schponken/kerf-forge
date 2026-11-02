@@ -2,7 +2,8 @@
  "item": "Learning Mode phase 2, the diary: `kerf diary <p>` / `--all` rebuilds each project's diary from git history (review.json versions, check results, commits touching the project): every problem with the stage it was found at (before parts / rough / detail / final review) and its cost (wall time to the resolving commit, parts redrawn; historical costs marked as estimates); `kerf diary --log-session` sums a Claude Code session log's token usage into the diary; output in `learning/diary/<p>.json` + `.md`; tests/test_diary.py",
  "session": "b88502f1e9",
  "since": 1793662300.317334,
- "heartbeat": 1793662300.317334,
+ "heartbeat": 1793662781.9488719,
  "provider": "Claude Code",
- "since_utc": "2026-11-02 23:31"
+ "since_utc": "2026-11-02 23:31",
+ "activity": "Learning Mode phases 2 and 3 done; releasing"
 }

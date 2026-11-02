@@ -1,0 +1,35 @@
+{
+ "project": "check_shelf_bracket",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "73db3bb0",
+   "time": "2026-11-01T20:37:47-05:00",
+   "subject": "Check it on your own design: printed parts can import a STEP / STL / 3MF model (kerf/imported.py) with declared joints, moving joints and fastener sites; check_",
+   "parts": []
+  }
+ ],
+ "reviews": [],
+ "problems": [],
+ "sessions": [],
+ "totals": {
+  "problems": 0,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 0
+  },
+  "open": 0,
+  "active_minutes_est": 0,
+  "parts_redrawn": [],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}

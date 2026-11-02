@@ -1,0 +1,1665 @@
+{
+ "project": "servo_link",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "c2b6a204",
+   "time": "2026-10-30T17:03:57-04:00",
+   "subject": "Kerf Forge foundation: engine, checks, FEA, interfaces, proxies, seed project, evals, guardrails",
+   "parts": [
+    "arm",
+    "base",
+    "bracket",
+    "layout"
+   ]
+  },
+  {
+   "hash": "3743ad19",
+   "time": "2026-10-30T17:59:52-04:00",
+   "subject": "Merge verified catalog; dotted catalog keys; motor/stack mount tests; screw-length tolerance; design-only fingerprint; seed DESIGN/REFERENCES; status notes",
+   "parts": []
+  },
+  {
+   "hash": "48b367ea",
+   "time": "2026-10-30T18:05:54-04:00",
+   "subject": "Seed project review fixes: tip test-mass hole, pilot-hole servo tabs, teardrop foot holes, window dog-bones, gusset fillets, cable-tie slots, stall-torque FEA a",
+   "parts": [
+    "arm",
+    "bracket"
+   ]
+  },
+  {
+   "hash": "1b846f6e",
+   "time": "2026-10-30T18:31:55-04:00",
+   "subject": "Review round 2: servo mounts top-first from behind (MG996R cable boss), cable boss + travel in catalog and proxy, material-aware pilot holes, build notes reach ",
+   "parts": [
+    "base",
+    "bracket",
+    "layout"
+   ]
+  },
+  {
+   "hash": "23a30b61",
+   "time": "2026-10-30T18:41:03-04:00",
+   "subject": "servo_link: third review PASS; tests for pilot material, top_through, notes; reviewer follow-ups in PLAN",
+   "parts": []
+  },
+  {
+   "hash": "b8284255",
+   "time": "2026-10-30T18:41:13-04:00",
+   "subject": "servo_link independent re-review PASS; record its minor follow-ups as a Phase 1 item; status entry",
+   "parts": []
+  },
+  {
+   "hash": "b9c75548",
+   "time": "2026-10-30T18:41:36-04:00",
+   "subject": "Restore servo_link/review.json from 23a30b6 (third review PASS); b828425 accidentally committed merge-conflict markers into it",
+   "parts": []
+  },
+  {
+   "hash": "3352a403",
+   "time": "2026-10-30T19:24:41-04:00",
+   "subject": "servo_mount: 0.5 mm 45-degree lead-in chamfer on the window's entry face (both mounting styles), exact-width test; servo_link arm comment + DESIGN notes",
+   "parts": [
+    "arm"
+   ]
+  },
+  {
+   "hash": "4cbe662b",
+   "time": "2026-10-30T19:33:09-04:00",
+   "subject": "servo_link: design-reviewer PASS for fingerprint d38a4988bf376d66 (lead-in chamfer verified on the entry/bed face)",
+   "parts": []
+  },
+  {
+   "hash": "bc24372d",
+   "time": "2026-10-30T19:39:01-04:00",
+   "subject": "servo_link: design-reviewer PASS (fingerprint ed0039103648c353); DESIGN sizes match the build (2.60 mm PETG pilots, 0.4 mm lead-in); check off lead-in item; sta",
+   "parts": []
+  },
+  {
+   "hash": "0450e8b5",
+   "time": "2026-10-30T21:25:47-04:00",
+   "subject": "servo_link: design-reviewer PASS with re-sourced MG996R (fingerprint 43b35f19; tab_z checked at 26.5 and 30.2); DESIGN numbers updated, washers required for the",
+   "parts": []
+  },
+  {
+   "hash": "e8e21275",
+   "time": "2026-10-31T01:40:44+00:00",
+   "subject": "servo_link follow-ups (engine): insertion paths respect assembly.order (test); horn proxy slides spline_engage over the spline (25T: 4.0 mm, sourced) with a bor",
+   "parts": []
+  },
+  {
+   "hash": "62482fe5",
+   "time": "2026-10-31T02:14:06+00:00",
+   "subject": "servo_link: complete electrics (MEAN WELL 5 V adapter, SparkFun barrel-jack adapter, Arduino Nano; wiring, power_budget, plug/USB access), DESIGN.md electrics; ",
+   "parts": [
+    "base",
+    "bracket"
+   ]
+  },
+  {
+   "hash": "dcfa480e",
+   "time": "2026-10-31T02:30:30+00:00",
+   "subject": "servo_link review 2 fixes: mains cord, USB Mini-B, 3-pin header, ball-end driver in BOM; common ground at the jack; routes clear of the base; buy links for adap",
+   "parts": []
+  },
+  {
+   "hash": "b99dc7b9",
+   "time": "2026-10-31T02:38:10+00:00",
+   "subject": "servo_link: review PASS (9cd85f37); PLAN item done, follow-up engine item added; STATUS",
+   "parts": []
+  },
+  {
+   "hash": "1d79f40d",
+   "time": "2026-10-31T03:04:29+00:00",
+   "subject": "Electrical/assembly-doc follow-ups: power_budget voltage drop (avg must hold, peak sag reported; tests by hand), wire-end verbs (ends:/catalog terminal: solder|",
+   "parts": []
+  },
+  {
+   "hash": "35c8a101",
+   "time": "2026-10-31T03:09:33+00:00",
+   "subject": "servo_link: electrics before the horn so the servo can be centred; horn/arm assembly notes (centre at 1500 us, threadlocker)",
+   "parts": []
+  },
+  {
+   "hash": "d2573c9f",
+   "time": "2026-10-31T03:13:32+00:00",
+   "subject": "Electrical/assembly-doc follow-ups done; servo_link review PASS (a4eacf65); STATUS",
+   "parts": []
+  },
+  {
+   "hash": "c7c4993c",
+   "time": "2026-10-31T10:16:42+00:00",
+   "subject": "E6 stumbles #8/#19/#20: SG90 gear boss + lead-exit envelope (flex), servo_mount lead clearance, stock SG90 arm horns, insert onto placed children, horn centre-s",
+   "parts": []
+  },
+  {
+   "hash": "c9079258",
+   "time": "2026-10-31T11:14:22+00:00",
+   "subject": "servo_link audit fixes A-8, A-15..A-17: bench M4 screws in BOM + step 0, tip_over 'stand' (new include: param, test), bracket_fea held at the screw heads only, ",
+   "parts": []
+  },
+  {
+   "hash": "21ae8dc0",
+   "time": "2026-10-31T11:20:04+00:00",
+   "subject": "servo_link audit fixes done: review PASS at 46118d7a3ecd48d5 (socket-head bench screws fit the counterbore, stand 15 deg)",
+   "parts": []
+  },
+  {
+   "hash": "c3e2f857",
+   "time": "2026-10-31T22:04:42-04:00",
+   "subject": "Maker-facing reports: units and min/max on every check, device vs off-board mass, held_by/off_board with an unattached-item check, off-board section in ASSEMBLY",
+   "parts": []
+  },
+  {
+   "hash": "9a8f1fbe",
+   "time": "2026-10-31T22:57:28-04:00",
+   "subject": "BOM: every project purchase priced from a shop page; merged notes; biggest packs",
+   "parts": []
+  },
+  {
+   "hash": "b51131a5",
+   "time": "2026-10-31T23:38:29-04:00",
+   "subject": "ASSEMBLY.md: bench sub-assemblies join at their parent's step, step 0 test-fit, servo centring, bring-up programs",
+   "parts": []
+  },
+  {
+   "hash": "ed1f9473",
+   "time": "2026-11-01T13:35:58-05:00",
+   "subject": "params state their unit (mm / \u00b0 / teeth) in the six finished projects; test",
+   "parts": []
+  },
+  {
+   "hash": "f4d3ec2a",
+   "time": "2026-11-01T13:42:44-05:00",
+   "subject": "wiring steps: 'nano pin D9' / 'driver channel 1' (no doubled names); servo_link horn note defers to Step 0b",
+   "parts": []
+  },
+  {
+   "hash": "c6b0070f",
+   "time": "2026-11-01T15:35:14-05:00",
+   "subject": "servo_link: detail pass (every inside corner filleted, gusset toes declared), style radii, Load -> section and overbuilt notes",
+   "parts": [
+    "bracket"
+   ]
+  },
+  {
+   "hash": "e519768e",
+   "time": "2026-11-01T17:48:49-05:00",
+   "subject": "servo_link review fixes: edge breaks on the foot front and gusset slopes, Load -> section row and overbuilt text corrected to the FEA; print orientation names X",
+   "parts": [
+    "bracket"
+   ]
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "48b367ea",
+   "time": "2026-10-30T18:05:54-04:00",
+   "date": "2026-10-30",
+   "verdict": "FAIL",
+   "findings": 11
+  },
+  {
+   "commit": "1b846f6e",
+   "time": "2026-10-30T18:31:55-04:00",
+   "date": "2026-10-30",
+   "verdict": "FAIL",
+   "findings": 8
+  },
+  {
+   "commit": "23a30b61",
+   "time": "2026-10-30T18:41:03-04:00",
+   "date": "2026-10-30",
+   "verdict": "PASS",
+   "findings": 5
+  },
+  {
+   "commit": "4cbe662b",
+   "time": "2026-10-30T19:33:09-04:00",
+   "date": "2026-10-30",
+   "verdict": "PASS",
+   "findings": 3
+  },
+  {
+   "commit": "bc24372d",
+   "time": "2026-10-30T19:39:01-04:00",
+   "date": "2026-10-30",
+   "verdict": "PASS",
+   "findings": 3
+  },
+  {
+   "commit": "0450e8b5",
+   "time": "2026-10-30T21:25:47-04:00",
+   "date": "2026-10-30",
+   "verdict": "PASS",
+   "findings": 6
+  },
+  {
+   "commit": "b99dc7b9",
+   "time": "2026-10-31T02:38:10+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 5
+  },
+  {
+   "commit": "35c8a101",
+   "time": "2026-10-31T03:09:33+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 4
+  },
+  {
+   "commit": "d2573c9f",
+   "time": "2026-10-31T03:13:32+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 4
+  },
+  {
+   "commit": "21ae8dc0",
+   "time": "2026-10-31T11:20:04+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 4
+  },
+  {
+   "commit": "e519768e",
+   "time": "2026-11-01T17:48:49-05:00",
+   "date": "2026-11-01",
+   "verdict": "PASS",
+   "findings": 10
+  }
+ ],
+ "problems": [
+  {
+   "id": "servo_link-1",
+   "source": "review",
+   "severity": "major",
+   "part": "arm",
+   "issue": "No way to attach the payload at the tip. DESIGN.md and requirement arm_torque are built around a 50 g test weight at arm.tip (100 mm from the pivot), but arm.py ends in a solid rounded tip with no hole or hook. The user would have to tape the weight on somewhere near the end, so the lever arm (and the torque being tested) is not repeatable.",
+   "fix": "In arm.py cut a vertical clearance hole on the arm.tip axis at (0, -arm_len): M3 clearance (3.5 mm, leaving about 5.2 mm of wall each side in the 14 mm arm) or M4 (4.5 mm). An M3 bolt with stacked nuts or washers, or a hanging hook, then puts the 50 g exactly at 100 mm. Add a line to the DESIGN.md assembly order saying how the test mass is made and hung.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-2",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The servo tab hole pattern (49.5 x 10 mm, 4.2 mm holes) is marked UNVERIFIED in the catalog and REFERENCES.md (it is copied from a DS3218 drawing), yet it is locked into heat-set inserts. An M3 screw in a 4.2 mm tab hole can only shift about 0.6 mm, so if the real servo uses the 48 mm Futaba-style spacing the screws will not start.",
+   "fix": "Before printing the bracket, caliper-measure the actual MG996R's tab hole centres and record the verified value with a source in catalog/hardware.json. Or first print a 2 mm-thick test plate with just the window and the 4 holes (about 10 minutes) and test-fit the servo.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-3",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The tab screws are sized for bare tabs: tab_t 2.5 mm plus M3x8 gives 5.5 mm of thread in the insert. The MG996R ships with rubber grommets and brass eyelets, which the catalog's 4.2 mm hole note anticipates. With those fitted, the tab stack is roughly twice as thick and the screw grips only a couple of threads. Without grommets, a 5.5 mm socket head rests on just a 0.65 mm ring of plastic tab around the 4.2 mm hole.",
+   "fix": "In DESIGN.md assembly step 3, state 'leave the rubber grommets out; fit an M3 washer under each screw head' and add 4x M3 washers to the BOM. Alternatively, size the screws for the grommet stack and declare that grip.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-4",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Only 2.1 mm of plastic separates each tab-screw insert hole from the servo window: the hole edge is at x = 22.75 mm and the window edge at x = 20.65 mm. That meets the catalog minimum (1.6 mm) but not the 2.4 mm in ENGINEERING section 5. Melting an insert this close to a free edge in PETG tends to bulge the thin web into a window that has only 0.3 mm of clearance per side, which can stop the servo body from passing.",
+   "fix": "Cut the window to the body width only between the tab hole rows. Or reduce the window's length clearance to 0.4 mm and add 0.5 mm local relief behind each insert, giving at least 2.4 mm of web. At minimum, melt the inserts with the servo out and check the window afterwards.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-5",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "When printed on its back, the foot stands vertical, so the 4 M3 clearance holes in the foot print as horizontal holes. Their tops will sag, contrary to ENGINEERING section 4.",
+   "fix": "Make these foot holes teardrop-shaped, with the point toward the print +Z, or open them to 3.7 mm.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-6",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Inside corners on the load path have no fillets, contrary to ENGINEERING section 5: where the gussets meet the wall and the foot, and the four corners of the servo window, which carry the tab-screw couple.",
+   "fix": "Add r>=1 mm fillets at the gusset roots. For the window, use r=1 mm corner fillets (the servo case corners are radiused) or dog-bone reliefs.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-7",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The bracket_fea load case understates the load and uses a lower safety factor than the rules require. Each +/-18.6 N load is spread over a box from x=1 to x=30.75 mm, so its centroid is about 15.9 mm from the axis rather than at the 24.75 mm screw position. The applied moment is about 590 N*mm, roughly 64% of the 922 N*mm stall moment. The case also uses SF 2.0 against layer-direction strength, while ENGINEERING section 3 asks for SF 3.0 across layers. The current margin is about 30x, so the verdict does not change, but the check would under-report on larger parameter values.",
+   "fix": "Apply each force on a small box (about 3 mm) centred on the tab-screw insert positions (x = +/-servo_hx/2, z = pivot_h +/- 5), and set sf: 3.0.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-8",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm",
+   "issue": "ENGINEERING section 8 calls for a second support for the servo output when the link is longer than about 60 mm, and this arm is 100 mm. DESIGN.md does not explain why the rule is not followed here. In practice it is fine: about 0.6 N static radial load on the MG996R's ball-bearing output. But the rules require a written justification.",
+   "fix": "Add a sizing line to DESIGN.md giving the radial load and overturning moment on the output (static and at full slew) and why the servo's own bearings carry them without a second support.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-9",
+   "source": "review",
+   "severity": "minor",
+   "part": "horn",
+   "issue": "The arm screws (M3x8 through the 6 mm arm) engage only the 2 mm aluminium horn disc, about 4 threads. A socket screw tightened to its full rated torque will strip the thread.",
+   "fix": "Note in the DESIGN.md assembly order: 'snug only, about 0.5 N*m, use threadlocker'. Do not lengthen the screws, because the tips would reach toward the servo case top.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-10",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "The rig must be screwed down. Unclamped, it resists tipping about a base edge with only about 0.12 N*m (185 g x 63.8 mm), well below the MG996R's 0.92 N*m stall torque, so a fast slew with the 50 g weight will make it hop. DESIGN.md mentions the M4 bench holes but never says they are required.",
+   "fix": "State in DESIGN.md that the base must be screwed or clamped to the bench (or have rubber feet plus a clamp) before powering the servo.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-11",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Nothing is provided for the servo cable. Its exit position on the case is not in the catalog, so it is unverified whether the cable exit or strain relief clears the window (0.3 mm clearance per side) when the body is pushed through bottom-first. There is also no cable anchor behind the wall.",
+   "fix": "Check the exit position on the real servo. If it lies within the 8 mm wall, add a roughly 4 mm cable notch at that end of the window, centred between the two insert holes. Add a cable-tie slot on the back face of the wall.",
+   "found_commit": "48b367ea",
+   "found_time": "2026-10-30T18:05:54-04:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1415 bytes (stubs)",
+   "rounds_seen": [
+    "48b367ea"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1b846f6e",
+   "resolved_time": "2026-10-30T18:31:55-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 26,
+   "active_minutes_est": 26,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "layout"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-12",
+   "source": "review",
+   "severity": "blocker",
+   "part": "bracket",
+   "issue": "The servo cannot be fitted. bracket.py puts the tabs on the wall's front face, so the 26.6 mm of case below the tabs has to pass through the window (41.3 x 20.6 mm, 0.3 mm clearance per side for a 40.7 mm body). The catalog source for servos.MG996R (electronicoscaldas MG996R_Tower-Pro.pdf, side view) shows the lead's strain-relief boss at the bottom of the output-end face. Scaled from that drawing, it sticks out about 6.6 mm (almost as far as the 6.65 mm tab), is about 4 mm tall and sits 3-7 mm above the case bottom. The boss is near the bottom, so it is the first thing that has to pass throug",
+   "fix": "Turn the mount around. Put the tabs on the wall's BACK face and slide the servo in top-first from behind. Then only the 10 mm case top (36.6 - 26.6, no boss) passes through the 8 mm wall, and it stands about 2 mm proud of the front face. Steps: set seat = Location((0, 0, p.pivot_h), (-90, 0, 0)) on the back face, and cut the pilot holes from the back face (tab-screw heads then sit behind the wall,",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-13",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm",
+   "issue": "The tip hole fixes the earlier major finding: a 3.5 mm hole at (0, -arm_len) with 5.25 mm of wall each side, confirmed in the geometry. The test mass that DESIGN.md and the BOM specify cannot be built, though. A DIN 125 M8 washer (16 OD, 8.4 ID, 1.6 thick) weighs about 1.8 g, so 50 g takes about 27 washers, a stack about 44 mm long. An M3 x 20 through the 6 mm arm with a 2.4 mm nut leaves about 11.6 mm, room for only about 13 g. M8 washers on a 3 mm shank also sit up to 2.7 mm off-centre, which moves the load point and defeats the reason for the hole.",
+   "fix": "Change the BOM line and assembly step 7 to something that works. For example, hang a 50 g calibration weight or fishing sinker from the hole on a wire loop. Or use M3 x 50 + nut with a slug of known mass. Or use an M8 x 30 bolt + 2 nuts (about 50 g) hung on an S-hook through the hole. Then weigh the actual mass on a kitchen scale and note it.",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-14",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog. The same datasheet's top view hints that one end's tabs have U-slots open to the end and that the width spacing may be more than 10 mm (it scales to about 12 mm, but the drawing is low resolution). DESIGN.md now tells the builder to caliper the real servo first, which is an acceptable mitigation.",
+   "fix": "Keep the DESIGN.md note. When the servo is in hand, record the measured hole centres and the boss dimensions in catalog/hardware.json, with the measurement noted as the source.",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-15",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The tab screws are now thread-forming M3 screws in 2.72 mm pilot holes, confirmed 7.2 mm deep. That removes the thin-web problem: the pilot-hole edge is at x = 23.39 and the window at 20.65, a 2.74 mm web. But ENGINEERING section 7 limits self-tapping to light, rarely removed parts, and a servo test rig exists to have servos swapped in and out. Also, iface.screw_spec always uses the PLA pilot value (2.72). The catalog note for fdm_holes.M3 gives 2.60 for PETG, and this part is PETG, so each screw gets less thread engagement than intended.",
+   "fix": "Once the mount is reversed (see the blocker), consider clearance holes with M3 nuts on the front face, or keep the pilot holes and add a DESIGN.md line saying they are good for about 5-10 servo swaps. At the engine level, make screw_spec pick the pilot diameter by the part's material (catalog already lists PETG HF 2.60), with a test.",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-16",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm",
+   "issue": "The arm carries the payload but has no fea_static requirement, which ENGINEERING section 3b asks of every structural part. A hand check shows a large margin: the in-plane section modulus is 6 x 14^2 / 6 = 196 mm^3, giving 0.27 MPa under gravity and about 4.7 MPa if the servo stalls against a blocked tip. But the rule asks for the proof, plus a deflection limit (1% of length).",
+   "fix": "Add an fea_static requirement for the arm: fixed at the horn bolt circle, a stall-torque-equivalent force (922 N*mm / 100 mm = 9.2 N) at arm.tip, XY strength, SF 2, max_disp_mm 1.0.",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-17",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "bracket.py wraps the gusset-root fillet in try/except and appends to ctx.notes, with the comment 'reviewer sees the corners in the renders'. But ctx.notes (shape.kerf_notes) is never written into report.json, so if the fillet ever failed, nothing would report it. I rebuilt the part and confirmed the fillet is applied today (8 faces of r = 1.5, empty notes). The design just should not depend on that luck.",
+   "fix": "Either drop the try/except so a failed fillet stops the build, or (engine) copy kerf_notes into the report's per-part warnings, with a test.",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-18",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The docs are stale after the switch to pilot holes. The bracket.py module docstring still says the tabs bolt to 'M3 heat-set inserts' and that 'the inserts face up for installation'. REFERENCES.md 'Decisions' still says the 8 mm wall is sized for a 6.7 mm insert hole.",
+   "fix": "Update both to say thread-forming pilot holes, with the 2.74 mm web reasoning.",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-19",
+   "source": "review",
+   "severity": "minor",
+   "part": "servo",
+   "issue": "The catalog source datasheet says the MG996R rotates 'approximately 120 degrees (60 in each direction)' with standard pulses. The project gives the servo range [-90, 90], and neither the catalog nor DESIGN.md says what that assumes. Mechanically the sweep is clear (confirmed in the report and the pose renders), but a user driving it with a stock 1000-2000 us servo library will only get about +/-60 degrees.",
+   "fix": "Add a travel field to the catalog entry with this source, and a DESIGN.md line saying that +/-90 needs roughly 500-2500 us pulse widths (for example Arduino Servo.attach(pin, 500, 2500)), to be confirmed on the real servo.",
+   "found_commit": "1b846f6e",
+   "found_time": "2026-10-30T18:31:55-04:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "1b846f6e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "23a30b61",
+   "resolved_time": "2026-10-30T18:41:03-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-20",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Hex-key access to the two tab screws on the cable end (x = +24.75, z = 78 and 88). These screws are now driven from behind, the side where the cable boss sits. The boss covers z 79-87, between the two holes and only about 1 mm from each screw axis, 16 mm behind the screw heads. A straight 2.5 mm key on the screw axis (radius 1.5) grazes the boss: I measured 3.1 mm^3 of overlap per key path against the servo proxy. The two screws at the far end are clear. A standard L-key's 18 mm short leg puts its bend inside the boss's depth band, so the key can only turn through the lower half-circle. ENGINE",
+   "fix": "Add to DESIGN.md assembly step 3: drive the two cable-end tab screws with a 2.5 mm ball-end hex driver (or a straight driver tilted a few degrees), before routing the lead. Engine: add a tool-access check that sweeps a hex-key cylinder, about 1.5 mm radius and 60 mm long, back along each male fastener axis and flags hits on other items. Add a test for it.",
+   "found_commit": "23a30b61",
+   "found_time": "2026-10-30T18:41:03-04:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "23a30b61"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3352a403",
+   "resolved_time": "2026-10-30T19:24:41-04:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 44,
+   "active_minutes_est": 44,
+   "parts_redrawn": [
+    "arm"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-21",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The servo window has only 0.3 mm clearance per side, and the servo enters it from the back face, which is the first-layer face on the printer (print_rot [90,0,0]). First-layer squish (elephant foot) shrinks exactly that edge. The window also has no lead-in, so a slightly oversize servo case or a seam bulge will catch on the sharp bed-side edge.",
+   "fix": "Cut a 0.5 mm x 45 deg chamfer around the window's back-face edge (inside the servo_mount cutter when top_through=True, so every project gets it). That gives a lead-in and absorbs elephant foot. Keep slicer elephant-foot compensation on.",
+   "found_commit": "23a30b61",
+   "found_time": "2026-10-30T18:41:03-04:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "23a30b61"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3352a403",
+   "resolved_time": "2026-10-30T19:24:41-04:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 44,
+   "active_minutes_est": 44,
+   "parts_redrawn": [
+    "arm"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-22",
+   "source": "review",
+   "severity": "minor",
+   "part": "engine",
+   "issue": "Three engine changes from this round have no test in tests/, which CLAUDE.md requires: (1) screw_spec(material=...) choosing self_tap_pilot_petg (I confirmed the bracket pilot is 2.60 mm and 7.2 mm deep with a 0.8 mm floor, but no test pins this); (2) servo_mount(top_through=True) with its mirrored, flipped bolt pattern, which only this project exercises; (3) pipeline copying kerf_notes into report warnings. The engine also still cannot see the original blocker class. The boss is now in the proxy, but interference is only checked in the final pose, so a bottom-first mount through a tight windo",
+   "fix": "Add tests: screw_spec('M3', 'PETG')['tap'] == 2.6 and the PLA default stays 2.72; a top_through servo plate plus MG996R proxy with 4 aligned fasteners and no interference; a part that appends a note, with the note appearing in report warnings. Also add an insertion-path check for servo_mount: sweep the servo proxy along the window axis from its insertion side to its seat and report hits. Test it w",
+   "found_commit": "23a30b61",
+   "found_time": "2026-10-30T18:41:03-04:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "23a30b61"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3352a403",
+   "resolved_time": "2026-10-30T19:24:41-04:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 44,
+   "active_minutes_est": 44,
+   "parts_redrawn": [
+    "arm"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-23",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Carried over: the tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog, and so is the cable-boss geometry, which is scaled from the drawing. The tool-access margin in the first finding depends on both. DESIGN.md's 'check before printing' note covers the tab holes only.",
+   "fix": "Extend the DESIGN.md caliper note to cover the boss position and size as well. When a servo is in hand, record the measured values in catalog/hardware.json, noting the measurement as the source.",
+   "found_commit": "23a30b61",
+   "found_time": "2026-10-30T18:41:03-04:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "23a30b61",
+    "4cbe662b",
+    "bc24372d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3352a403",
+   "resolved_time": "2026-10-30T19:24:41-04:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 44,
+   "active_minutes_est": 44,
+   "parts_redrawn": [
+    "arm"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-24",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm",
+   "issue": "The comment in arm.py still says 'an M3 screw carries the 50 g weight', but DESIGN.md and the BOM now hang a calibration weight or sinker on a wire loop or S-hook. The 3.5 mm tip hole works for both.",
+   "fix": "Update the comment to say the test mass hangs on a wire loop or S-hook through the tip hole (see DESIGN.md).",
+   "found_commit": "23a30b61",
+   "found_time": "2026-10-30T18:41:03-04:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1421 bytes (stubs)",
+   "rounds_seen": [
+    "23a30b61"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3352a403",
+   "resolved_time": "2026-10-30T19:24:41-04:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 44,
+   "active_minutes_est": 44,
+   "parts_redrawn": [
+    "arm"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-25",
+   "source": "review",
+   "severity": "minor",
+   "part": "engine",
+   "issue": "Still open from the last review (engine half): nothing in the engine checks assembly access. I re-probed the current assembly. A straight 3 mm hex key on the two cable-end tab screw axes (x = +24.75, z = 78 and 88) still overlaps the servo's cable boss by 3.1 mm^3 each; the far-end screws are clear. DESIGN.md step 3 now says to use a ball-end driver there, so this project is covered. But kerf check would not catch the same problem, or a bottom-first servo that cannot pass its window, on the next project. The pilot-material, top_through and part-notes tests from the earlier finding are now in t",
+   "fix": "Finish the open PLAN item 'Assembly-access checks': (a) sweep a hex-key cylinder along each male fastener axis from the head side and report screws that need a ball-end driver; (b) sweep parts that declare an `insert:` path into their seat and report collisions. Test both: this rig's cable-end screws must be flagged as ball-end, and a bottom-first MG996R through a tight window must fail.",
+   "found_commit": "4cbe662b",
+   "found_time": "2026-10-30T19:33:09-04:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "4cbe662b",
+    "bc24372d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0450e8b5",
+   "resolved_time": "2026-10-30T21:25:47-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 113,
+   "active_minutes_est": 96,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-26",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "New: the lead-in chamfer thins the wall between the window and the tab pilot holes at the back face. The pilot holes are 2.60 mm at x = +/-24.75, so their inner edges are at |x| = 23.45. Deeper than 0.5 mm the window edge is at 20.65 and leaves a 2.8 mm wall; at the back face the chamfer moves the window edge to 21.1, leaving 2.35 mm. That is just under the 2.4 mm boss-wall guideline (ENGINEERING section 5), over only the first ~0.5 mm (2-3 layers) of the bed face, which is exactly where the thread-forming screw starts and pushes plastic outward. The risk is low: the tab clamps that zone, and ",
+   "fix": "In iface.servo_mount, limit lead_in to keep at least 2.4 mm between the chamfered window edge and the female hole edges (here at most 0.45 mm per side on the ends), or leave the chamfer off the two short ends next to the tab holes and keep it on the long sides. Add a test that checks the remaining wall.",
+   "found_commit": "4cbe662b",
+   "found_time": "2026-10-30T19:33:09-04:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "4cbe662b"
+   ],
+   "status": "resolved",
+   "resolved_commit": "bc24372d",
+   "resolved_time": "2026-10-30T19:39:01-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 6,
+   "active_minutes_est": 6,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-27",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "New: DESIGN.md describes the old numbers. Sizing says '2.72 mm pilot holes', but the built PETG bracket uses the catalog's self_tap_pilot_petg value of 2.60 mm (2.72 is the PLA value). It also says '0.5 mm x 45 deg lead-in chamfer', but servo_lead_in now cuts it to 0.4 mm to keep the 2.4 mm wall. The geometry is right; only the record is out of date, and someone drilling out or checking holes from DESIGN.md would use the wrong numbers.",
+   "fix": "In DESIGN.md Sizing, change the pilot to '2.60 mm (PETG HF vertical; catalog fdm_holes.M3.self_tap_pilot_petg)'. Change the window line to 'lead-in requested 0.5 mm, reduced automatically to 0.4 mm so the wall to the tab pilot holes stays >= 2.4 mm (ENGINEERING section 5)'.",
+   "found_commit": "bc24372d",
+   "found_time": "2026-10-30T19:39:01-04:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "bc24372d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0450e8b5",
+   "resolved_time": "2026-10-30T21:25:47-04:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 107,
+   "active_minutes_est": 90,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-28",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "DESIGN.md and project.yaml still quote the replaced catalog values. DESIGN.md line 29 says the lead-in is limited to 0.4 mm; the build now gives 0.30 mm because the window grew to 41.5 mm. Lines 32-33 and 85 give the boss as ~6.6 mm proud, 4 mm tall, 3-7 mm above the case bottom; the catalog envelope is now 7.0 proud, 8.0 tall, z 2.5-10.5, 8.0 wide. Line 85 and the project.yaml bom_extra washer spec say 4.2 mm tab holes; they are 4.5 mm keyhole slots open to the tab end. Line 25 says inserts would leave 2.1 mm of wall; with the new window that is 2.0 mm (24.75 - 20.75 - 2.0). The geometry is r",
+   "fix": "In DESIGN.md: lead-in 'asked for 0.5 mm, reduced automatically to 0.30 mm'. Insert wall '2.0 mm'. Boss 'keep-out envelope 7.0 mm proud, 8 mm wide, 2.5-10.5 mm above the case bottom'. Tab holes '4.5 mm keyhole slots open to the tab end'. Also add a line that tab_z is unconfirmed (26.5-30.2) and was checked at both ends. In the project.yaml bom_extra washer spec, replace '4.2 mm' with '4.5 mm keyhol",
+   "found_commit": "0450e8b5",
+   "found_time": "2026-10-30T21:25:47-04:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "0450e8b5"
+   ],
+   "status": "resolved",
+   "resolved_commit": "62482fe5",
+   "resolved_time": "2026-10-31T02:14:06+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 48,
+   "active_minutes_est": 48,
+   "parts_redrawn": [
+    "base",
+    "bracket"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "servo_link-29",
+   "source": "review",
+   "severity": "minor",
+   "part": "servo",
+   "issue": "The keyhole slots make the washers load-bearing, not optional. A DIN 125 M3 washer (7 mm OD) centred on a hole at x = 24.75 reaches x = 28.25, which is 1.25 mm past the 54 mm tab end, so it bears on a partial ring, roughly 1.25 mm strips on each side of the slot. That is adequate for the in-plane stall couple: the +/-18.6 N acts in Z, across the slots, which open along X. But the washer is the only thing stopping the head from pulling into the slot. The fastener check also counts a 2.5 mm grip without the 0.5 mm washer, so engagement is really 5.0 mm in the 7.2 mm pilot (minimum 4.5), not 5.5.",
+   "fix": "Leave the geometry as it is. In DESIGN.md assembly step 3 say 'washers are required (the tab holes are slots open to the end)' and note that M3 x 8 gives 5.0 mm of thread with the washer. If the grommets are ever left in, the screws must go to M3 x 12.",
+   "found_commit": "0450e8b5",
+   "found_time": "2026-10-30T21:25:47-04:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "0450e8b5"
+   ],
+   "status": "resolved",
+   "resolved_commit": "62482fe5",
+   "resolved_time": "2026-10-31T02:14:06+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 48,
+   "active_minutes_est": 48,
+   "parts_redrawn": [
+    "base",
+    "bracket"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-30",
+   "source": "review",
+   "severity": "minor",
+   "part": "engine",
+   "issue": "The servo's insertion path can't be proven by kerf check. access.insertion_paths moves the whole subtree, and assembly.order doesn't change that. I declared `insert: {direction: [0,0,1], distance: 45}` on the servo and the check reported a false failure, because it dragged the horn and arm, which go on later, through the bracket. With the servo moved alone (my own probe) the path is clear. So this project leaves its top-first insertion undeclared, and the boss-vs-window question that this catalog change raised is protected only by manual probes.",
+   "fix": "In access.insertion_paths, leave out of the moving set any subtree items that assembly.order installs after the inserted item, and add a test for that case. Then add `insert` for the servo and `order: [base, bracket, servo, horn, arm]` to servo_link/project.yaml, so the top-first path through the 41.5 x 20.6 window is checked every build.",
+   "found_commit": "0450e8b5",
+   "found_time": "2026-10-30T21:25:47-04:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "0450e8b5"
+   ],
+   "status": "resolved",
+   "resolved_commit": "62482fe5",
+   "resolved_time": "2026-10-31T02:14:06+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 48,
+   "active_minutes_est": 48,
+   "parts_redrawn": [
+    "base",
+    "bracket"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-31",
+   "source": "review",
+   "severity": "minor",
+   "part": "horn",
+   "issue": "The horn proxy seats the hub bottom on top of the 6.3 mm spline, but a real 25T horn slides over the spline. That puts the modelled horn and arm about 4 mm further from the wall than the real ones. The modelled arm-to-wall-face gap is 10.5 mm at nominal tab_z and 7.1 mm at tab_z 30.2. Assuming about 4 mm of spline engagement, the real gap is roughly 6.5 mm and 3 mm (estimated; the disc itself would sit about 1 mm in front of the wall face at tab_z 30.2). Nothing collides even then. But the margin the sweep reports is optimistic, and a deeper-seating horn on a servo with a high tab could rub th",
+   "fix": "Add a spline-engagement value to catalog servo_horns.aluminum_25T, with a source or a caliper measurement. In the proxy, seat the horn by that engagement instead of on the spline top. Rebuild and re-sweep. Until then, when the real servo arrives, measure tab underside to case top as well as the hole pattern.",
+   "found_commit": "0450e8b5",
+   "found_time": "2026-10-30T21:25:47-04:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "0450e8b5"
+   ],
+   "status": "resolved",
+   "resolved_commit": "62482fe5",
+   "resolved_time": "2026-10-31T02:14:06+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 48,
+   "active_minutes_est": 48,
+   "parts_redrawn": [
+    "base",
+    "bracket"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-32",
+   "source": "review",
+   "severity": "minor",
+   "part": "catalog",
+   "issue": "The servos.MG996R note is dated '2026-10-31', a day after this review. tab_z is still marked UNCONFIRMED. I checked that 26.5-30.2 causes no collision, but the pivot height, arm clearance and horn position all move with it.",
+   "fix": "Correct the date in the note. Measure tab_z on a real servo and record it with that measurement as the source.",
+   "found_commit": "0450e8b5",
+   "found_time": "2026-10-30T21:25:47-04:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "0450e8b5"
+   ],
+   "status": "resolved",
+   "resolved_commit": "62482fe5",
+   "resolved_time": "2026-10-31T02:14:06+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 48,
+   "active_minutes_est": 48,
+   "parts_redrawn": [
+    "base",
+    "bracket"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-33",
+   "source": "review",
+   "severity": "minor",
+   "part": "engine",
+   "issue": "The FEA pictures show a different peak from report.json. fea_bracket_fea.png says 0.65 MPa while the report says 0.88; fea_arm_fea.png says 7.28 MPa while the report says 11.49. The render colours surface triangles and the report takes the peak over all elements. The hot spots are where the load path says they should be: the lower window corners next to the tab-screw load boxes on the bracket, and the hub neck on the arm, with the load at the tip. The limits are judged on p99.9, so nothing passes that shouldn't, but a reviewer comparing the numbers could be misled.",
+   "fix": "In kerf/fea_render.py, title the picture 'surface peak X MPa (volume peak Y, p99.9 Z)', with Y and Z taken from the FEA result dict.",
+   "found_commit": "0450e8b5",
+   "found_time": "2026-10-30T21:25:47-04:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "rough",
+   "stage_why": "4 part files, median 1430 bytes (stubs)",
+   "rounds_seen": [
+    "0450e8b5"
+   ],
+   "status": "resolved",
+   "resolved_commit": "62482fe5",
+   "resolved_time": "2026-10-31T02:14:06+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 48,
+   "active_minutes_est": 48,
+   "parts_redrawn": [
+    "base",
+    "bracket"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-34",
+   "source": "review",
+   "severity": "minor",
+   "part": "engine",
+   "issue": "The generated packages still give the wrong action words. WIRING.md and the Electrical section of ASSEMBLY.md say 'solder jack -> servo' and 'solder nano -> jack', but both ends are screw terminals or a header; the run notes printed after them say so, so the correct instruction is there. ASSEMBLY.md step 6 (servo) still leaves out the washers, removing the grommets, the top-first insertion from behind and the ball-end driver. DESIGN.md and the BOM have all of these. This is an engine issue in ship.py and wiring_out.py, not this project's design.",
+   "fix": "In wiring_out.steps, choose the verb per end ('clamp into the screw terminal' for connector items, 'solder to the header' when the run declares a header end). In ship.py, add to each fastener step the matching bom_extra items, the ball-end warnings from hex_keys and the item's insert direction. Add tests.",
+   "found_commit": "b99dc7b9",
+   "found_time": "2026-10-31T02:38:10+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "b99dc7b9"
+   ],
+   "status": "resolved",
+   "resolved_commit": "35c8a101",
+   "resolved_time": "2026-10-31T03:09:33+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 31,
+   "active_minutes_est": 31,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-35",
+   "source": "review",
+   "severity": "minor",
+   "part": "engine",
+   "issue": "Nothing checks voltage drop. Checked as AWG 24, the adapter cord drops about 0.42 V at the 2.5 A stall, so the servo would see about 4.5 V, below its 4.8 V minimum, while the report still shows 'servo input 5.0 V' as passing. DESIGN.md now states this, and the effect is harmless here: the rig uses 11 % of stall torque and runs at 0.9 A.",
+   "fix": "Add an IR-drop term along each feed path at peak current (resistance at 100 C, both conductors, plus connector resistance where catalogued) to the voltage-range check.",
+   "found_commit": "b99dc7b9",
+   "found_time": "2026-10-31T02:38:10+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "b99dc7b9"
+   ],
+   "status": "resolved",
+   "resolved_commit": "35c8a101",
+   "resolved_time": "2026-10-31T03:09:33+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 31,
+   "active_minutes_est": 31,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-36",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the 20 mm horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its top and bottom edges, and the arm is 2.5 mm off the wall face. It is clear in every probe, and DESIGN.md now says to measure tab_z before printing.",
+   "fix": "Measure tab_z on the real servo and catalogue it. Optionally make the window about 1 mm taller (the pilot-hole wall depends on X, not on the window height) to remove the rub risk outright.",
+   "found_commit": "b99dc7b9",
+   "found_time": "2026-10-31T02:38:10+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "b99dc7b9",
+    "35c8a101",
+    "d2573c9f",
+    "21ae8dc0",
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-37",
+   "source": "review",
+   "severity": "minor",
+   "part": "servo",
+   "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented and now in the BOM as a tool.",
+   "fix": "None.",
+   "found_commit": "b99dc7b9",
+   "found_time": "2026-10-31T02:38:10+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "b99dc7b9",
+    "35c8a101",
+    "d2573c9f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "21ae8dc0",
+   "resolved_time": "2026-10-31T11:20:04+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 522,
+   "active_minutes_est": 189,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-38",
+   "source": "review",
+   "severity": "minor",
+   "part": "project",
+   "issue": "Some BOM rows have no buy link or price: the mains cord, the Mini-B cable, the header, the AWG 22 wire, the adapter, the jack and the Nano. The total of $14.86 therefore leaves out most of the electrics, and the adapter alone costs more than that.",
+   "fix": "Add catalog/prices.json entries (or bom_extra links) for these rows so the BOM total is real.",
+   "found_commit": "b99dc7b9",
+   "found_time": "2026-10-31T02:38:10+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "b99dc7b9"
+   ],
+   "status": "resolved",
+   "resolved_commit": "35c8a101",
+   "resolved_time": "2026-10-31T03:09:33+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 31,
+   "active_minutes_est": 31,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-39",
+   "source": "review",
+   "severity": "minor",
+   "part": "project",
+   "issue": "The generated ASSEMBLY.md fits the electrics last (step 6, after the horn at step 4). The horn step says only 'fit horn' and does not say to centre the servo first. DESIGN.md step 5 says 'centre the servo electrically, press the horn on', and that needs the Nano wired and powered, which in the generated order hasn't happened yet. Followed literally, the horn goes on at whatever angle the servo shaft happens to be. Home could then be one or more spline teeth (14.4 deg each) off vertical, and the commanded +/-90 deg would not be the swept +/-90 deg. It is clear up to about 120 deg (I checked the",
+   "fix": "Either put [psu, jack, nano] and the wiring before the horn in assembly.order, or add an assembly_note on the horn: 'first wire up (Electrical section) and run servo.write(90), i.e. 1500 us, then press the horn on with the arm pointing straight up; fit the centre screw'. The arm step should also carry DESIGN.md's 'snug about 0.5 N*m, medium threadlocker' note.",
+   "found_commit": "35c8a101",
+   "found_time": "2026-10-31T03:09:33+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "35c8a101"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d2573c9f",
+   "resolved_time": "2026-10-31T03:13:32+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 4,
+   "active_minutes_est": 4,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-40",
+   "source": "review",
+   "severity": "minor",
+   "part": "catalog",
+   "issue": "The adapter's DC cord gauge is still assumed (now AWG 22, the thinnest gauge whose chassis ampacity covers the 6 A rating), not sourced. The result does not depend on it: 24 AWG gives 4.81 V running, still at or above 4.8. The stall sag of 4.57 V is reported as a soft limit and does no harm at 11 % torque use.",
+   "fix": "Cite the GST60A datasheet's DC cable specification, or measure the cord, and record it in electronics.supplies.meanwell_gst60a05.",
+   "found_commit": "35c8a101",
+   "found_time": "2026-10-31T03:09:33+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "35c8a101",
+    "d2573c9f",
+    "21ae8dc0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c6b0070f",
+   "resolved_time": "2026-11-01T15:35:14-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 2486,
+   "active_minutes_est": 528,
+   "parts_redrawn": [
+    "bracket"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-41",
+   "source": "review",
+   "severity": "minor",
+   "part": "project",
+   "issue": "out/report.json (written 03:09:43) is newer than the build outputs (bom.md 03:09:00, renders and ASSEMBLY.md at 03:09:12). It holds 'seconds: 4.6', has no assembly.sweeps key, and the FEA requirements have value null. So a `kerf check --quick` overwrote the full build report after the build. The fingerprint is correct, and my own full run passes with the numbers above, but anything that reads the sweep or FEA results from out/report.json (viewer, README results, evals) sees a partial report.",
+   "fix": "Re-run `kerf build servo_link` last, so out/report.json is the full build report. Optionally, have quick checks write their report somewhere else or keep the last full results.",
+   "found_commit": "d2573c9f",
+   "found_time": "2026-10-31T03:13:32+00:00",
+   "review_round": 9,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "d2573c9f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "21ae8dc0",
+   "resolved_time": "2026-10-31T11:20:04+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 487,
+   "active_minutes_est": 153,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-42",
+   "source": "review",
+   "severity": "minor",
+   "part": "jack",
+   "issue": "The catalog entry electronics.connectors.dc_jack_5521_screw has no weight_g (kerf warning). The jack sits on the desk, not on the rig, so it does not affect rig_mass or stand.",
+   "fix": "Add a sourced weight to the catalog entry when one is available.",
+   "found_commit": "21ae8dc0",
+   "found_time": "2026-10-31T11:20:04+00:00",
+   "review_round": 10,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "21ae8dc0"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c6b0070f",
+   "resolved_time": "2026-11-01T15:35:14-05:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 1995,
+   "active_minutes_est": 371,
+   "parts_redrawn": [
+    "bracket"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-43",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket / arm",
+   "issue": "The servo tab pilot holes and the arm's horn holes are under the 1.5 d edge distance (88 % ring material), because the purchased parts' hole patterns force it. DESIGN.md 'Edge distance' records the deviation and the FEA margin covers it.",
+   "fix": "None (documented deviation).",
+   "found_commit": "21ae8dc0",
+   "found_time": "2026-10-31T11:20:04+00:00",
+   "review_round": 10,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "21ae8dc0",
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-44",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "DESIGN.md 'Load -> section' says the bracket's moment peaks at 'wall bending at its root over the foot'. That is wrong for the design load case. The stall couple (+/-18.6 N along Z at the tab pilots) bends the 88 mm wall IN its own plane, and the FEA puts the peaks at the servo-window corners (bracket hot zone [-20.8, 7.8, 69.7]) and in the foot by the outer screws (peak 1.36 MPa at [38.4, 15.4, 5.0]). The wall root over the foot is the stress map's coldest region (cold zones [-36.2, 7.8, 8.0], [-20.8, 7.8, 8.0], [25.5, 7.8, 8.0], 0-1 % use). The section reasoning in the record therefore does ",
+   "fix": "Rewrite the bracket row: the peak is where the window interrupts the wall between the pilot pairs and the foot, and in the foot plate between the wall and the outer screws. Say the wall root and the gussets are there for out-of-plane stiffness (servo mass and the swinging arm), which no FEA case loads.",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-45",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The overbuilt justification has the right conclusion but wrong support. (a) It says 'the 80 mm wall width'; wall_w is 88 mm (report params). (b) 'the base less': the base has no FEA or stress map, so no utilisation exists to back that. (c) 'the stand check wants the mass low' argues for the foot and base, not for the 88 x 93 x 8 wall: most of the wall's mass is above the pivot line's midpoint and raises the CG, and `stand` has 37.1 deg against a 15 deg requirement. (d) The 7.2 mm pilot depth sets 8 mm only at the four pilot bosses, not across the whole slab. The 4 % figure itself is correct (s",
+   "fix": "Correct 80 to 88 mm. Drop 'the base less' or add a base load case. Justify the wall with stiffness the FEA does not load (out-of-plane: the 55 g servo cantilevered behind the wall, arm inertia on fast swings; deflection now 0.021 mm) plus print simplicity (one flat bed face that the tabs seat on). Optional ~15 g saving: a 2-3 mm pocket in the front face below the tie slots, inside an 8 mm frame th",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-46",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Outside edges are broken only in places, so the edge language claimed in DESIGN.md ('0.6-1.0 mm edge chamfers'; style edge_break 0.8) does not hold on this part. Mesh check of out/parts/bracket.stl: the wall top front edge and the top corners have 1.0 mm chamfers, and the wall's outer vertical edges got r1.5 only because the gusset-root edge filter (|x| = gusset_x + gusset_t/2 = 44) happens to catch them. Still sharp 90 deg: all four gusset hypotenuse edges (~51 mm and ~59 mm each) and the whole perimeter of the foot's front face (85, 88 and 2 x 46 mm). These are the edges a hand grabs. ENGINE",
+   "fix": "After the cuts, chamfer 0.8 mm on the convex edges of the gusset hypotenuse faces and the foot's front face, leaving the bed face alone. Select them explicitly, not with group_by(Axis.Z)[-1], which picks up only the wall top. Make the wall-side r1.5 deliberate, or say in the code that the gusset-root filter is meant to include it.",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-47",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Gusset toe kept sharp (sharp_kept at [+/-40, 42.6, 6.0]). The stated reason is true: the hypotenuse rises 43.9 over 35.5 = 51 deg, so the open corner is 129 deg (Kt is small), and the FEA shows the toe in the coldest band. I accept it. But a knife-edge wedge tip is the amateur way to end a gusset: it is the part that chips and the reason OCC cannot fillet it.",
+   "fix": "Optional: end the gusset with a 1-1.5 mm vertical flat at the toe (polygon vertex at foot_t + 1.5 instead of a point). The toe can then take the standard r1 fillet and sharp_kept becomes empty.",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-48",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm",
+   "issue": "Constant 18 x 6 mm section from hub to tip, although the DESIGN table itself says the moment runs from 0 at the tip to 922 N mm at the hub. Stiffness governs (deflection 0.751 of 1.0 mm, stress 17 % of allowable), and the stress map shows the outer 40 % idle (cold zones at 0.6-2.6 % use). The bending depth is in the right plane (in-plane width, loads along the layers) and the r4 hub blend is right. The bar is acceptable, not derived.",
+   "fix": "Optional: taper the width from ~22 mm at the hub blend to ~12 mm at the tip (tip boss kept at r6 around the 3.4 mm hole). For a tip load that moves stiffness to the root and should keep deflection at or under 0.75 mm with less tip mass; re-run arm_fea. Also add a 0.4 mm bed-side chamfer so elephant's foot does not lip the edge that rides next to the horn.",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-49",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "A flat slab with holes. Every feature has a purpose (blind M3 inserts with a floor, which I verified by section, 7.6 mm M4 counterbores, r6 corners, 0.8 mm top chamfer), but two purposeful features are missing. Nothing locates the bracket foot: 4 x M3 in 3.4 mm clearance holes is the only registration. And the servo lead and the desk wiring leave the rig with no anchor on the base.",
+   "fix": "Optional: a 0.5 mm deep pocket or two 1 mm ribs matching the foot outline (0.2 mm clearance per side), so the foot drops in square before the screws go in. Add a cable-tie slot pair or a notch at the base's rear edge for the servo lead.",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-50",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "out/plates/PRINT_SETTINGS.md labels the bracket orientation 'on its front (-Y) face', while DESIGN.md and the part docstring call the same face (part y = 0, the face the tabs seat on) the BACK face. The 3MF carries the correct rotation, but a user re-orienting by hand could flip it, and then the window would need a bridge and the lead-in would end up on the wrong face.",
+   "fix": "Engine-side: name faces by the part's own docstring or the axis only ('-Y face'), or add a project-level orientation note that the print package quotes.",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "servo_link-51",
+   "source": "review",
+   "severity": "minor",
+   "part": "jack / catalog",
+   "issue": "Carried over: dc_jack_5521_screw has no weight_g (it sits on the desk, so no effect on rig_mass or stand). The adapter cord is assumed to be 22 AWG without a source (worst case already checked).",
+   "fix": "Add the sourced weight and cord gauge when they are available.",
+   "found_commit": "e519768e",
+   "found_time": "2026-11-01T17:48:49-05:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 1638 bytes",
+   "rounds_seen": [
+    "e519768e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 51,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 33,
+   "detail": 0,
+   "final review": 18
+  },
+  "open": 0,
+  "active_minutes_est": 2396,
+  "parts_redrawn": [
+   "arm",
+   "base",
+   "bracket",
+   "layout"
+  ],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}
