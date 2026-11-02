@@ -1429,6 +1429,7 @@ pushed for it and what I know:
   there (pod trace now 92 s).
 - drawings: ISO 5455 enlargement scales (2:1, 5:1) after the reductions, so tiny parts (fpv_wing horns) get drawings.
 - fpv_wing: check PASS (all 14 requirements); full build + review next.
+
 ## 2026-11-02 11:50 UTC-5 — Studio: Follow live + Work tab (Spencer: watch the cloud sessions design, without slowing them)
 - **Follow live** (3D model tab, off by default): while on, Studio's one background thread runs `git fetch` at most once
   every 60 s; when origin commits touch projects/<p>/ (part files, project.yaml, layout) it fast-forwards the working copy

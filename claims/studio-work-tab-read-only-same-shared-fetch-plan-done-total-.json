@@ -2,6 +2,6 @@
  "item": "Studio \"Work\" tab (read-only, same shared fetch): PLAN done/total, sessions working (fresh claims), items checked off today; a card per fresh claim (item, time since that session's last commit, stale past STALE_MIN, project snapshot + \"View 3D\" opening Follow live); feed of the last ~20 commits marking PLAN check-offs; all from git (log, claims/, PLAN.md); tests",
  "session": "4ad5e4e55b",
  "since": 1793637520.9786417,
- "heartbeat": 1793638311.4354496,
+ "heartbeat": 1793638600.136283,
  "since_utc": "2026-11-02 16:38"
 }
