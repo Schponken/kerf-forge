@@ -3,6 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 # Mac: first (so a later failing step can't skip it), keep the Kerf Studio app in step with its source; rebuilds it in the background when tools/mac changed
+# (without Apple's command line tools it installs the single-window launcher; with them, the native one-window app)
 if [ "$(uname)" = "Darwin" ] && [ -d "$HOME/Applications/Kerf Studio.app" ]; then
   ./tools/mac/install_app.sh --if-outdated || true
 fi

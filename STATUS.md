@@ -1481,3 +1481,10 @@ pushed for it and what I know:
   (grey, with the reason), the build trunk grows parts and tests; live every 1.5 s, replay afterwards. Studio's Claude
   stream now records search queries, URLs, paths and notes as events. tests/test_thoughtweb.py (rules + a fake live
   job drawn in the browser + a real project's map).
+- 14:45 Mac app, one window (Spencer): the app on his Mac was still the first launcher (a script that opened a new
+  Chrome app window on every click and quit, so the Dock never showed it running); the native single-instance app
+  never got built (most likely no Apple command line tools for swiftc). install_app.sh now installs, when swiftc is
+  missing, a launcher that keeps ONE window: a click while it is open brings that window forward (System Events), a
+  click with the engine running but no window opens exactly one, a cold click starts the engine then opens one; the
+  native app replaces it once `xcode-select --install` has run. setup.sh changed, so the next launch re-runs setup,
+  which rebuilds the app in the background and reopens it. tests/test_mac_launcher.py (stubbed pgrep/curl/osascript/open).

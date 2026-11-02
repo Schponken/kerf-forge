@@ -14,6 +14,8 @@ appsum() { (cd "$REPO" && shasum tools/mac/KerfStudio.swift tools/mac/install_ap
 # script that called us (possibly the running app's own start-up) is never blocked or killed by the rebuild.
 if [ "${1:-}" = "--if-outdated" ]; then
   [ "$(appsum)" = "$(cat "$STATE/app.sum" 2>/dev/null)" ] && exit 0
+  # the single-window browser launcher (no Apple command line tools yet): keep it until swiftc appears
+  [ "$(appsum)-fallback" = "$(cat "$STATE/app.sum" 2>/dev/null)" ] && ! xcrun -f swiftc >/dev/null 2>&1 && exit 0
   echo "Kerf Studio app is out of date: rebuilding it in the background (log: $LOG)"
   nohup "$0" --update >>"$LOG" 2>&1 </dev/null &
   exit 0
@@ -26,11 +28,10 @@ if [ "${1:-}" = "--update" ]; then
 fi
 [ -x "$REPO/.venv/bin/kerf" ] || "$REPO/setup.sh"
 # the app is a small native program (tools/mac/KerfStudio.swift); compiling it needs Apple's command line tools
-if ! xcrun -f swiftc >/dev/null 2>&1; then
-  xcode-select --install 2>/dev/null || true
-  echo "Apple's command line tools are needed to build the app. Finish the install window that just opened, then run this again."
-  exit 1
-fi
+# Without them (no swiftc) the app is a small launcher instead that still keeps ONE window: a click while it is open
+# brings that window forward (it never opens a second one); `xcode-select --install` once upgrades it to the native app.
+NATIVE=1
+xcrun -f swiftc >/dev/null 2>&1 || NATIVE=0
 # remember which dependency set is installed, so the app only re-runs setup when it changes
 (cd "$REPO" && shasum pyproject.toml setup.sh tools/render/package.json | shasum | cut -c1-16) > "$STATE/deps.sum"
 
@@ -40,8 +41,38 @@ pkill -f "KerfStudio/browser" 2>/dev/null || true
 sleep 1
 
 BUILD="$(mktemp -d)"
-xcrun swiftc -O -target "$(uname -m)-apple-macos11.0" -o "$BUILD/KerfStudio" "$REPO/tools/mac/KerfStudio.swift" \
-  -framework Cocoa -framework WebKit
+if [ "$NATIVE" = 1 ]; then
+  xcrun swiftc -O -target "$(uname -m)-apple-macos11.0" -o "$BUILD/KerfStudio" "$REPO/tools/mac/KerfStudio.swift" \
+    -framework Cocoa -framework WebKit
+else
+  echo "Apple's command line tools are not installed: installing the single-window launcher (run 'xcode-select --install' for the native app)."
+  cat > "$BUILD/KerfStudio" <<LAUNCH
+#!/bin/bash
+# Kerf Studio launcher (no native build yet): one window only. Open -> focus it; not open -> start the engine, open it.
+REPO="$REPO"; URL="http://127.0.0.1:8765/"
+STATE="\$HOME/Library/Application Support/KerfStudio"; BR="\$STATE/browser"; LOG="\$HOME/Library/Logs/KerfStudio.log"
+mkdir -p "\$STATE" "\$(dirname "\$LOG")"
+export PATH="/opt/homebrew/bin:/usr/local/bin:\$HOME/.local/bin:\$PATH"
+up() { curl -fs "\${URL}api/projects" >/dev/null 2>&1; }
+PID="\$(pgrep -o -f -- "--user-data-dir=\$BR")"
+if [ -n "\$PID" ] && up; then
+  WINS="\$(osascript -e "tell application \\"System Events\\" to count windows of (first process whose unix id is \$PID)" 2>/dev/null || echo 0)"
+  osascript -e "tell application \\"System Events\\" to set frontmost of (first process whose unix id is \$PID) to true" >/dev/null 2>&1
+  [ "\${WINS:-0}" -gt 0 ] && exit 0          # the window is there: it is in front now, nothing new opens
+fi
+if ! up; then
+  nohup "\$REPO/tools/mac/start.sh" "\$REPO" >>"\$LOG" 2>&1 &
+  for i in \$(seq 1 240); do up && break; sleep 0.25; done
+fi
+for b in "Google Chrome" "Microsoft Edge" "Brave Browser" "Chromium"; do
+  if [ -d "/Applications/\$b.app" ] || [ -d "\$HOME/Applications/\$b.app" ]; then
+    open -na "\$b" --args --app="\$URL" --window-size=1440,920 --user-data-dir="\$BR"; exit 0
+  fi
+done
+open "\$URL"
+LAUNCH
+  chmod +x "$BUILD/KerfStudio"
+fi
 
 rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 mv "$BUILD/KerfStudio" "$APP/Contents/MacOS/KerfStudio"
@@ -81,6 +112,6 @@ if ! defaults read com.apple.dock persistent-apps 2>/dev/null | grep -q "Kerf St
   defaults write com.apple.dock persistent-apps -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>file://${APP// /%20}/</string><key>_CFURLStringType</key><integer>15</integer></dict></dict></dict>"
   killall Dock
 fi
-appsum > "$STATE/app.sum"
+if [ "$NATIVE" = 1 ]; then appsum > "$STATE/app.sum"; else echo "$(appsum)-fallback" > "$STATE/app.sum"; fi
 echo "Installed: $APP (on your Dock). Opening it now..."
 open "$APP"
