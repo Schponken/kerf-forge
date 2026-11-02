@@ -482,3 +482,23 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Boundary: batch lock/result publication still uses its older caller-index/upstream implementation. Only its
   read side is fixed here; a separate repair is needed before using a PR checkout to publish a batch. No batch,
   stress solve, physical hardware, project geometry, catalog, engineering threshold or review.json changed.
+
+## 2026-11-02 17:45 UTC-5 — for Spencer: Studio single-change jobs vs the Stop gate
+- A Studio change request says "do exactly this change ... do not start other PLAN work", but .claude/hooks/stop_gate.py
+  only lets a session end when every open PLAN item is claimed by others (or on BLOCKED / YIELD / 60 blocks). So a
+  finished Studio job (this one: drone_foldable_wings hub fairing, all pushed, claim released) keeps getting told to
+  `claims.py next`. I followed the job's instruction and did not take new work, and did not write BLOCKED/YIELD (both
+  would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
+  pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
+
+## 2026-11-02 — Studio readers follow shared ownership (Codex)
+- Activity, Checks, edit/auto-fix guards and Work now read the same fetched main snapshot. Released claims never
+  return from stale feature files; non-Git copies retain valid local claims. Control files and malformed/nonfinite
+  records cannot become work cards. Claim freshness/update time comes only from heartbeat, not a newer file commit.
+- Claim text identifies Codex/Claude when explicit, otherwise another session, and says claimed rather than running.
+  Activity polling on any Studio page keeps the existing one-minute fetch loop active and refreshes its cached list;
+  no second fetch service or per-card network calls. Offline Work retains its partial-source indication.
+- Five focused regressions failed before their respective fixes. Final selection: 29 tests PASS in 9.09 s, including
+  real temporary Git snapshots, release/staleness/control handling, normal-page refresh, API guards and a real Activity
+  browser. The browser caught/fixed the age parser after wording changed to last update. No full batch, project build,
+  solver, paid model call or layout redesign. Architecture map updated; git diff --check passes.

@@ -1312,7 +1312,7 @@ async function pollJobs() {
     $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<div class="job" onclick="watch('${j.id}')" title="${esc(j.tail[0] || "")}">
       <span class="dot ${j.state}"></span><span class="lab">${esc(j.label)}</span><span class="note">${mmss(j.seconds)}</span></div>`).join("") +
       SS.map(x => `<div class="job sess" onclick="openSession('${x.project}')" title="${esc(x.text + (x.last ? "\nLatest: " + x.last.subject : ""))}">
-      <span class="dot claimed"></span><span class="lab">☁ ${esc(projTitle(x.project))}${x.problems ? ` <small>· ${x.problems} to fix</small>` : ""}</span><span class="note">${esc((x.text.match(/last active ([^)]+)\)/) || [])[1] || "")}</span></div>`).join("") : "Nothing running.";
+      <span class="dot claimed"></span><span class="lab">☁ ${esc(projTitle(x.project))}${x.problems ? ` <small>· ${x.problems} to fix</small>` : ""}</span><span class="note">${esc((x.text.match(/last update ([^)]+)\)/) || [])[1] || "")}</span></div>`).join("") : "Nothing running.";
   } catch (e) {}
 }
 
