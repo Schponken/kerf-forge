@@ -1,9 +1,8 @@
 """Stop gate: the session may only end when the definition of done is met.
 
-Done = `kerf verify` passes (tests, every project, every review current, every eval, PLAN.md fully checked)
-       AND the working tree is clean AND every commit is pushed.
-Escape: .claude/state/BLOCKED (external blocker) is honoured only when verify's sole failures are PLAN items
-that depend on the blocker; it is reported, never silent. A runaway guard allows a stop after 60 consecutive blocks.
+Done (batched testing, Spencer 2026-11-02) = working tree clean, every commit pushed, no claim held, the last
+batched full test run (tools/batch_verify.py) not failed and none due, and every open PLAN item claimed by another
+active session. Escape: .claude/state/BLOCKED (external blocker), reported, never silent. A runaway guard allows a stop after 60 consecutive blocks.
 """
 import json, os, subprocess, sys, time
 root = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
@@ -36,42 +35,39 @@ if os.path.exists(yield_f) and not git("status", "--porcelain").stdout.strip():
 kerf = os.path.join(root, ".venv/bin/kerf")
 if not os.path.exists(kerf):
     block("The environment is not set up (.venv/bin/kerf missing). Run ./setup.sh and continue the work in PLAN.md.")
-r = subprocess.run([kerf, "verify"], cwd=root, capture_output=True, text=True, timeout=3500)
-out = (r.stdout + r.stderr)[-6000:]
-blocked = os.path.exists(os.path.join(state, "BLOCKED"))
-if r.returncode != 0:
-    if blocked:
-        note = open(os.path.join(state, "BLOCKED")).read()[:800]
-        fails = [l for l in out.splitlines() if l.startswith("FAIL ")]
-        if fails and all("PLAN.md" in l for l in fails):
-            print(json.dumps({"systemMessage": f"Stop allowed on a recorded external blocker: {note}"}))
-            sys.exit(0)
-    # Parallel sessions: if this session holds no claim, its work is committed and pushed, and every open PLAN item
-    # is being worked on by another active session (tools/claims.py), this session may stop; the others finish.
-    if not git("status", "--porcelain").stdout.strip():
-        git("fetch", "-q")
-        ahead = git("rev-list", "--count", "@{u}..HEAD").stdout.strip()
-        cl = subprocess.run([sys.executable, os.path.join(root, "tools/claims.py"), "others-cover"], cwd=root,
-                            capture_output=True, text=True)
-        mine = subprocess.run([sys.executable, os.path.join(root, "tools/claims.py"), "mine"], cwd=root,
-                              capture_output=True, text=True).stdout.strip()
-        if ahead in ("", "0") and cl.returncode == 0 and not mine:
-            print(json.dumps({"systemMessage": "Stop allowed: everything this session did is pushed, and every open "
-                                               "PLAN item is claimed by another active session."}))
-            sys.exit(0)
-    block("kerf verify is not passing, so the work is not finished. If your claimed item is done, check it off in "
-          "PLAN.md, run `python3 tools/claims.py release`, then `python3 tools/claims.py next` to take the next free "
-          "item. Fix these and keep going "
-          "(update STATUS.md, commit and push as you go):\n" + out)
+# Batched testing (Spencer, 2026-11-02): no full `kerf verify` per session. Each change runs the tests and checks it
+# touches; the full suite runs in batches via tools/batch_verify.py (CLAUDE.md "Batched testing").
 st = git("status", "--porcelain").stdout.strip()
 if st:
-    block("verify passes, but there are uncommitted changes. Commit them with a clear message and push:\n" + st[:1500])
+    block("There are uncommitted changes. Run the tests/checks your change touches, then commit and push:\n" + st[:1500])
 git("fetch", "-q")
 ahead = git("rev-list", "--count", "@{u}..HEAD")
 if ahead.returncode != 0:
-    block("verify passes, but this branch has no upstream. Push it: git push -u origin HEAD")
+    block("This branch has no upstream. Push it: git push -u origin HEAD")
 if ahead.stdout.strip() not in ("", "0"):
-    block(f"verify passes, but {ahead.stdout.strip()} commit(s) are not pushed. Run git push.")
+    block(f"{ahead.stdout.strip()} commit(s) are not pushed. Run git pull --rebase, then git push.")
+py = os.path.join(root, ".venv/bin/python")
+py = py if os.path.exists(py) else sys.executable
+def tool(*a):
+    return subprocess.run([py, *a], cwd=root, capture_output=True, text=True)
+mine = tool(os.path.join(root, "tools/claims.py"), "mine").stdout.strip()
+if mine:
+    block("You still hold a claim. Finish it (targeted tests pass, PLAN box checked, STATUS.md entry), then "
+          "`tools/claims.py release` and push:\n" + mine[:800])
+bs = tool(os.path.join(root, "tools/batch_verify.py"), "status").stdout
+if "last batch: FAIL" in bs:
+    block("The last batched test run FAILED. Fixing it comes before new work: fix each failure at its cause "
+          "(never by loosening a check), push, then `tools/batch_verify.py run --force`:\n" + bs[:3000])
+if "DUE:" in bs:
+    block("A batched full test run is due. Run `.venv/bin/python tools/batch_verify.py run` (it skips itself if "
+          "another session is already running it), fix anything it reports, then continue:\n" + bs[:1500])
+blocked = os.path.exists(os.path.join(state, "BLOCKED"))
+cover = tool(os.path.join(root, "tools/claims.py"), "others-cover")
+if cover.returncode != 0 and not blocked:
+    block("Open PLAN items are free. Take the next one: `.venv/bin/python tools/claims.py next`.")
+if blocked:
+    print(json.dumps({"systemMessage": "Stop allowed on a recorded external blocker: "
+                                       + open(os.path.join(state, "BLOCKED")).read()[:800]}))
 if os.path.exists(counter):
     os.remove(counter)
 open(os.path.join(state, "DONE"), "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))

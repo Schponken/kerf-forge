@@ -7,9 +7,9 @@ work, never a roadmap and never "should work".
 
 ## Non-negotiables
 
-1. **Never stop with work unfinished.** The job is done only when `.venv/bin/kerf verify` prints `VERIFY PASSED`,
-   every box in PLAN.md is checked, and everything is committed and pushed. A Stop hook enforces this. If it blocks
-   you, read the reason and keep working. Do not argue with it, weaken it, or edit it.
+1. **Never stop with work unfinished.** Your item is done when its tests and checks pass, its PLAN box is checked,
+   its claim is released, and everything is committed and pushed. A Stop hook enforces this (and runs a batched full
+   test run when one is due). If it blocks you, read the reason and keep working. Do not argue with it, weaken it, or edit it.
 2. **Never fake a pass.** Do not loosen a check, threshold, eval acceptance file, catalog value, or test so that something
    passes. Do not write review.json yourself (only the design-reviewer subagent does). Do not mark a PLAN item done
    unless the thing works and is covered by a test or check. If a limit is genuinely wrong, fix it with a cited source
@@ -32,7 +32,20 @@ work, never a roadmap and never "should work".
 3. Several sessions may work on this repo at once. Claim your work before starting it:
    `.venv/bin/python tools/claims.py next` claims the first open PLAN item nobody is working on (or `take "<item text>"`
    for a specific one) and pushes the claim. Work only on what you claimed. See "Parallel sessions" below.
-4. Run `.venv/bin/kerf verify --fast` to see the current state before changing anything.
+4. Run `.venv/bin/python tools/batch_verify.py status`. If the last batch FAILED, fixing it is your first job.
+
+## Batched testing (Spencer, 2026-11-02)
+
+Full `kerf verify` runs are expensive, so they are batched: one run covers many sessions' features.
+- **Per change:** run only what the change touches: the test files for the code you changed (`.venv/bin/pytest -q
+  tests/test_<x>.py ...`), new tests for your feature, and `kerf check <project>` / `kerf build <project>` for projects
+  you changed. Never the full suite for a single change.
+- **Per batch:** `tools/batch_verify.py run` runs the full suite (pytest without stopping at the first failure, every
+  project, reviews, evals) once 4+ PLAN items have been checked off since the last batch, or untested work is 24 h old.
+  It records verify/BATCH.json with the batch's commits as suspects. The Stop hook tells you when one is due.
+- **A failed batch blocks new work:** fix each failure at its cause (never by loosening a check), push, then
+  `tools/batch_verify.py run --force` to confirm.
+- `kerf verify` still defines a finished repo; batching changes when it runs, not what it checks.
 
 ## Parallel sessions
 

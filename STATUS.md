@@ -1450,3 +1450,13 @@ pushed for it and what I know:
   (moved + new part, glow on then off after 2 s, no page errors) and the Studio page (Work tab renders tiles / cards /
   feed; Follow live loads /live/<p>/viewer.html).
 - Spencer, on the Mac: quit and reopen Kerf Studio (its start.sh pulls), open a project's 3D model, tick "Follow live".
+
+## 2026-11-02 12:15 UTC-5 — batched testing (Spencer: "ship multiple sessions' features and then test them all at once")
+- No more full `kerf verify` per session or per change. Per change: the tests and checks it touches. Full suite: one
+  batched run (tools/batch_verify.py) when 4+ PLAN items are checked off since the last batch or untested work is 24 h
+  old; pytest no longer stops at the first failure in that run (`kerf verify --all-failures`), so one run reports every
+  break, recorded in verify/BATCH.json with the batch's commits as suspects. A failed batch blocks new work until fixed.
+- Stop hook: stops when the work is pushed, no claim is held, no batch is due or failed, and other sessions cover the
+  open items (it no longer runs verify itself). SessionStart shows the batch status. CLAUDE.md "Batched testing".
+- Tests: tests/test_batch_verify.py 6 passed; hook exercised in a scratch clone (dirty tree blocks; SessionStart prints
+  the batch status). First batch not run yet: it is due now and the next session that stops will run it.

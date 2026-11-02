@@ -10,5 +10,9 @@ plan = open(os.path.join(root, "PLAN.md")).read()
 todo = [l.strip() for l in plan.splitlines() if l.strip().startswith("- [ ]")]
 msgs.append(f"PLAN.md: {len(todo)} unchecked items. Next: {todo[0] if todo else 'none'}")
 msgs.append("STATUS.md (tail):\n" + status)
-msgs.append("Read CLAUDE.md now. Work until `.venv/bin/kerf verify` passes and everything is pushed.")
+bv = subprocess.run([sys.executable, os.path.join(root, "tools/batch_verify.py"), "status"], cwd=root,
+                    capture_output=True, text=True).stdout.strip()
+msgs.append("Batched testing (tools/batch_verify.py status):\n" + bv)
+msgs.append("Read CLAUDE.md now. Per change, run the tests and checks it touches; the full suite runs in batches. "
+            "Work until your items are done and everything is pushed.")
 print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "\n\n".join(msgs)}}))
