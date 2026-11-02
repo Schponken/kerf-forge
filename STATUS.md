@@ -299,6 +299,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 (Claude, specific advice)
 - kerf/advice.py: every failed requirement gets advice sized from its own numbers (beam-theory section change, catalog materials / servos strong enough, stiffness for frequency, CG shift, wing area, capacity, gear face ...); overlaps say depth, axis, position and which part gets the pocket; joint collisions give the angles and where to end the range. Cards show "What to do" + alternatives; `kerf check` / `kerf req` print "->" lines. Verified end to end on a tightened scratch copy of servo_link (servo pick DS3218/DS3225, bracket 27 % thicker or reorient, mass items from the requirement's include list).
 - Couldn't run drone_foldable_wings here: `kerf check --quick` is killed for memory in this container.
-- 21:50 Spencer: hold the full batch test until the other sessions finish. The second run (with the fix) was
+
+## 2026-11-02 21:50 UTC - Kerf manager
+- Spencer: hold the full batch test until the other sessions finish. The second run (with the fix) was
   stopped mid-way and its lock removed; BOARD.md says the batch is on hold. Next manager run starts it once no claims
   are active.
