@@ -512,3 +512,26 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   accepted limitation. Doctor ALL OK using shared dependencies; optional firmware tools remain unavailable.
 - Parent code/screenshot review findings are fixed and covered. No full batch, stress solve, physical hardware,
   project geometry, catalog, engineering threshold or review.json changed; full verification remains on hold.
+
+
+### 2026-11-02 — Preserve useful Work progress descriptions (Codex; stacked on PR #23)
+- Reproduced public progress text being replaced by a generic tool label. Codex records now retain
+  the latest nonempty public message in `activity` and separately report the later tool's bounded
+  `action` label. A newer public message clears the old action. Live in-progress and saved/waiting
+  actions retain their distinct wording; raw commands, arguments, outputs and reasoning stay private.
+- Work renders the action as a secondary line below the progress description and includes it in search.
+  No-summary fallback stays a single line. Claim records cannot assert tool activity, both claim-overlay
+  paths clear displaced session actions, and stale snapshots clear current actions and set `live=None`.
+  A newer claim can replace stale text while the runtime warning remains; no running/stopped inference.
+- Validation: **37 focused tests pass in 13.70 s** (Codex reader, Work overview, both browser scenarios,
+  docs). Final freshness integration and affected reader/overview selection: **31 pass in 3.25 s**.
+  These selections overlap. Browser checks cover 1440/390 px, light/dark, search, escaping, duplicate
+  suppression, active/attention filters, refresh/focus/open details and no overflow. New text contrast
+  is measured against the actual Work background at the unchanged 4.5:1 threshold; the initial test
+  incorrectly treated a transparent row as black. Four action captures reviewed in `.cache/work-activity/`.
+- Test integration only: copied the exact existing 13-line `tests/browser.mjs` from PR #4's
+  fast-tests-refresh worktree, verified byte-identical, and routed both Work scripts through it. It
+  reuses a worker browser when supplied, otherwise starts its own; no marker/config/fixture edits.
+- Impeccable incumbent refinement: 13 preexisting mechanical findings, none in changed Work selectors.
+  Doctor ALL OK with reused dependencies (optional Arduino/simavr unavailable). Existing phone shell
+  height is unchanged. No real Codex session connection, full batch, stress run, geometry or review edits.

@@ -98,7 +98,8 @@ def _item(source, origin, now):
             "provider": provider, "session": str(source.get("session") or source.get("id") or ""),
             "title": title, "description": full, "projects": _projects(source), "state": state,
             "status_label": LABELS[state] if origin == "claim" else plain(source.get("status_label"), 120) or LABELS[state],
-            "activity": activity, "updated_at": updated,
+            "activity": activity, "action": plain(source.get("action"), 120) if origin == "session" and state != "stale" else "",
+            "updated_at": updated,
             "started_at": number(source.get("started_at")), "source": origin,
             "source_label": plain(source.get("source_label") or source.get("source"), 160)
                             or {"claim": "Git claim", "session": "Local session", "job": "Studio job"}[origin],
@@ -188,11 +189,13 @@ def overview(data: dict, sessions=(), jobs=(), sources=(), now=None) -> dict:
                              key=lambda c: number(c.get("updated_at"), 0), default=None)
         if item["live"] is False and fresh_activity:
             item["activity"] = plain(fresh_activity["activity"], 400)
+            item["action"] = ""
             item["updated_at"] = number(fresh_activity.get("updated_at"))
         elif item["live"] is not True and number(newest.get("updated_at"), 0) > (item["updated_at"] or 0):
             item["updated_at"] = number(newest.get("updated_at"))
             if newest.get("activity"):
                 item["activity"] = plain(newest["activity"], 400)
+                item["action"] = ""
         item["projects"] = _projects({"projects": item["projects"] + [p for c in scopes for p in c["projects"]]})
         if len(scopes) == 1:
             if not item["progress"]:
