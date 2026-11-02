@@ -23,7 +23,7 @@ L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 HORN_SLOT = (10.0, 2.5, 4.2)     # x length, y width (horn 2.4 thick + 0.1), depth into the surface from 1 mm under the hinge
 JOINER_D = 3.0                    # catalog rods.cf_rod_3
 JOINER_L = 50.0
-JOINER_AFT = (4.0, 10.0)          # mm aft of the hinge (in plan) of the front / aft rod
+JOINER_AFT = (4.0, 8.5)            # mm aft of the hinge (in plan) of the front / aft rod
 OUTER_FIT = 0.0                   # outer-half bore printed at the rod size (prints ~0.1 under), reamed 3.0 mm: push fit
 
 

@@ -102,8 +102,17 @@ parts (boxes with the right joints and interface calls, each calling `ctx.stub("
 `kerf check <p> --quick` to prove the tree, joint frames and fastener groups line up before any detailed geometry.
 Stubs show in the report and in Studio as ONE "design in progress" problem ("being designed"), never as a list of
 collisions; replacing a stub with the real part removes its `ctx.stub` call. A project is never left with a stub.
+Realistic limits: soft things (foam pads, battery straps, wire bundles) get `compress_mm` + `compress_why` instead of an
+overlap allowance; a requirement that is a preference, not a safety or function limit (a target weight, a nice-to-have
+flight time), may be `advisory: "<why a miss is acceptable>"` (never a strength check); thin walls only block on parts
+a strength check loads (`structural: true` for one that carries load without a check).
 
 ## 3. Parts in parallel
+**Most expensive to redesign first** (Spencer, 2026-11-02). Before detailing anything, prove the concept numbers
+(mass, thrust/weight, flight or run time, power, CG / static margin, wing loading, servo torque) with
+`kerf req <p>` on the stubs, then design the load-carrying parts that the most others mate with (frame, spine, hub)
+and prove their FEA with `kerf req <p> <id>` before launching the leaf parts. `kerf check` follows the same order:
+it runs these requirements first and stops before the detail checks when one fails (`--all` to run everything).
 Launch one `part-designer` subagent per independent printed part in a single message. Give each its contract from
 DESIGN.md: envelope, every interface (exact iface call, group, location and frame), loads and load path, print
 orientation, material, and which other parts it must clear. Parts that depend on each other's geometry go to the

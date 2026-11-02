@@ -28,7 +28,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigation
         buildMenu()
         makeWindow()
         status("Starting Kerf Studio…")
-        ping { ok in ok ? self.load() : self.startServer() }
+        ping { ok in if ok { self.load() } else { self.startServer() } }
         Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in self.health() }
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in self.health() }
     }
@@ -321,7 +321,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavigation
         NSApp.mainMenu = main
     }
 
-    @objc func reloadPage() { loaded ? web.reload() : startServer() }
+    @objc func reloadPage() { if loaded { _ = web.reload() } else { startServer() } }   // reload() returns WKNavigation?
 }
 
 let app = NSApplication.shared

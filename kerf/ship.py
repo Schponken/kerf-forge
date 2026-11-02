@@ -180,12 +180,12 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
         md.append("| " + " | ".join(values) + " |")
     md.append("")
     md.append((f"**Priced so far: ${summary['total_usd']:.2f}**. Not priced yet ({len(summary['unpriced'])}): "
-               f"{', '.join(summary['unpriced'])}, so the real total is higher"
+               f"{', '.join(map(cell, summary['unpriced']))}, so the real total is higher"
                if summary["unpriced"] else f"**Total: ${summary['total_usd']:.2f}**")
               + (f" — {len(summary['approximate'])} row(s) priced from a different pack (see their notes): "
-                 f"{', '.join(summary['approximate'])}" if summary.get("approximate") else "")
+                 f"{', '.join(map(cell, summary['approximate']))}" if summary.get("approximate") else "")
               + (f" — {len(summary['on_hand'])} row(s) partly or wholly from your parts on hand (not counted): "
-                 f"{', '.join(summary['on_hand'])}" if summary.get("on_hand") else "")
+                 f"{', '.join(map(cell, summary['on_hand']))}" if summary.get("on_hand") else "")
               + ". Fasteners are priced per piece from assortment packs; printed parts as filament only. Prices are a "
                 "dated snapshot; confirm current prices at the shop. Shipping and tax are excluded.")
     if summary.get("packs_usd"):
@@ -200,7 +200,7 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
             n, q = summary["packs"][k], summary["pack_qty"][k]
             what = (f"{k.split(':', 1)[1]} filament, {n} x {q / 1000:g} kg spool" if k.startswith("material:")
                     else f"{names.get(k, k)}, {n} x pack of {q:g}")
-            return f"{what} = ${cost[k]:.2f}"
+            return f"{cell(what)} = ${cost[k]:.2f}"
         big = sorted(cost, key=lambda k: -cost[k])[:3]
         if big:
             md.append("Biggest packs: " + "; ".join(pack(k) for k in big) + ".")
@@ -208,6 +208,14 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
 
 
 # ---------------------------------------------------------------- assembly steps
+
+def item_notes(proj, iid: str) -> list[str]:
+    """How the item is held (project.yaml `held_by`: tape, strap, glue, a loop to close): it used to only silence
+    the "nothing holds it" check and never reached the builder (design review). `assembly_note` is in fit_notes."""
+    it = proj.items.get(iid)
+    hb = (it.spec.get("held_by") if it is not None else None) or ""
+    return [f"  - Held by: {hb.rstrip('.')}."] if hb else []
+
 
 def steps(asm) -> list[list[str]]:
     """Ordered build steps, each a list of item ids fitted together (keep-outs excluded)."""
@@ -537,7 +545,8 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
     tools = (sorted(keys) + (["soldering iron with a heat-set insert tip", "a flat plate to press inserts flush"] if any_insert else [])
              + (["a vise or small hammer to press dowel pins"] if any(not p.get('screw_pivot') and not p.get('shoulder') for p in all_pins) else [])
              + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for p in all_pins) else [])
-             + wiring_tools(rep.get("electrical")))
+             + wiring_tools(rep.get("electrical"))
+             + sorted({t for it in proj.items.values() for t in (it.spec.get("tools") or [])}))
     L += ["- Tools:" + ("" if tools else " none")] + [f"  - {t}" for t in tools]
     L += ["- Shopping list with links and prices: [bom.md](bom.md)."]
     if firmware_info:
@@ -631,6 +640,7 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
                 L.append(f"- Fit **{f['item']}**{qty} ({f['what']}) onto **{o['parent']}** (joint `{o['joint']}`){moves}.")
                 L += horn_note(f["item"], o["parent"])
             L += fit_notes(proj, rep, f["item"])
+            L += item_notes(proj, f["item"])
         L += pin_lines(s["pins"])
         L += screw_lines(s["screws"], s["groups"])
         for a in s["attach"]:

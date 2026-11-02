@@ -167,6 +167,45 @@ def _fea_hygiene(proj) -> list:
     return out
 
 
+def load_carrying(proj, iid: str) -> bool:
+    """A part some strength check loads (it is named in one of its fields), or one marked `structural: true`."""
+    if proj.items[iid].spec.get("structural"):
+        return True
+    for q in proj.data.get("requirements") or []:
+        if q.get("check") in requirements.STRENGTH_CHECKS and any(v == iid or (isinstance(v, list) and iid in v) for v in q.values()):
+            return True
+    return False
+
+
+def thin_wall_rule(proj, iid: str, r: dict) -> dict:
+    """The 0.8 mm wall minimum is for load-carrying parts; any other part may go down to one line (checks.MIN_WALL_LINE):
+    its thin-wall problem becomes a warning. Returns a copy when it changes anything (cached results stay as stored)."""
+    p02 = r.get("min_wall_p02")
+    if p02 is None or not checks.MIN_WALL_LINE <= p02 < checks.MIN_WALL_FAIL or load_carrying(proj, iid):
+        return r
+    tag = f"{iid}: walls as thin as"
+    thin = [x for x in r["problems"] if x.startswith(tag)]
+    if not thin:
+        return r
+    return {**r, "problems": [x for x in r["problems"] if not x.startswith(tag)],
+            "warnings": [*r["warnings"], f"{iid}: walls as thin as {p02:.2f} mm; fine for a part no load passes through "
+                         f"(one {checks.MIN_WALL_LINE} mm line prints), but it is fragile: thicken it if it gets handled or knocked"]}
+
+
+def req_misses(rows) -> tuple[list, list]:
+    """(problems, warnings) for failed requirement rows: an `advisory` requirement's miss is a warning."""
+    probs, warns = [], []
+    for r in rows:
+        if r.get("ok"):
+            continue
+        line = f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}"
+        if r.get("advisory"):
+            warns.append(f"advisory {line} (not blocking: {r['advisory']})")
+        else:
+            probs.append(line)
+    return probs, warns
+
+
 def _print_checks(it, printer, supports) -> dict:
     """Every per-part check: a function of the built part alone (cached with it by kerf/partcache.py)."""
     iid = it.id
@@ -211,9 +250,10 @@ def first_look(proj, rep):
 
 
 def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=None, sweep_samples=9,
-        mode: str | None = None) -> dict:
+        mode: str | None = None, everything: bool = False) -> dict:
     """mode (kerf/modes.py: sketch | print | check | simulate | kit | ship) picks the stages; without it the old flags
-    do (sweeps = the full check, do_export / do_render = kerf build)."""
+    do (sweeps = the full check, do_export / do_render = kerf build). The requirements whose failure means a redesign
+    run first (_redesign_first); if one fails the run stops before the detail checks unless `everything`."""
     t0 = time.time()
     from . import catalog, modes
     catalog.track()
@@ -244,6 +284,22 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
         rep["warnings"].append(f"REFERENCES.md: `kerf find \"{q}\"` has no reuse decision yet (Decision: TODO)")
     if "viewer" in stg and not any(it.error for it in proj.items.values()):
         first_look(proj, rep)                 # the 3D model first; every check below runs on after it
+    core = None
+    if "requirements" in stg and not any(it.error for it in proj.items.values()):
+        core = _redesign_first(proj, rep, quick="fea" not in stg and mode is not None)   # a chosen depth keeps its FEA choice
+        if core and not everything and any(not r["ok"] and not r.get("advisory") for r in core):
+            for r in core:
+                r.pop("_viz", None)
+                r.pop("_field", None)
+            rep["requirements"] = core
+            mp, mw = req_misses(core)
+            rep["problems"] += mp
+            rep["warnings"] += mw
+            rep["stopped_early"] = True
+            rep["problems"].append("stopped before the detail checks (print, fit, fasteners, motion, wiring): the failed "
+                                   "requirement(s) above change the design, so fix them first and the detail checks "
+                                   "run on the design that stays (`--all` runs everything anyway)")
+            return _finish(proj, rep, stg, t0, overrides)
     progress.stage("print")
     for iid, it in proj.printed.items():
         if it.shape is None:
@@ -259,6 +315,7 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                 r = _print_checks(it, printer, sup)
             if it.cache_key and it.spec.get("source") != "meshy":
                 partcache.store_extra(it.cache_key, f"print-{sup}", r, deps)
+        r = thin_wall_rule(proj, iid, r)
         progress.emit("part", id=iid, ok=not r.get("problems"), mass=r.get("mass_est_g"))
         if it.spec.get("airfoil"):          # a wing part names its airfoil: it must exist (catalog/airfoils or NACA)
             from . import aero
@@ -363,7 +420,8 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rq = []
             if "requirements" in stg:
                 progress.stage("requirements")
-                rq = requirements.run_all(proj, asm, quick="fea" not in stg)
+                rest = (lambda r: requirements.redesign_tier(r) is None) if core is not None else None
+                rq = (core or []) + requirements.run_all(proj, asm, quick="fea" not in stg, pick=rest)
                 from . import usestory
                 rep["problems"] += usestory.problems(proj)
                 rep["use_story"] = usestory.summary(proj)
@@ -404,9 +462,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             bp, bw = export.bom_extra_check(proj, rep.get("assembly", {}).get("fasteners"))
             rep["problems"] += bp
             rep["warnings"] += bw
-            for r in rq:
-                if not r["ok"]:
-                    rep["problems"].append(f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}")
+            mp, mw = req_misses(rq)
+            rep["problems"] += mp
+            rep["warnings"] += mw
             A.solve(asm)
             if stg & {"files", "docs", "viewer", "renders"}:
                 progress.stage("export")
@@ -501,6 +559,26 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             import traceback
             rep["problems"].append(f"assembly step crashed: {type(e).__name__}: {e}")
             rep.setdefault("traces", {})["assembly"] = traceback.format_exc(limit=8)
+    return _finish(proj, rep, stg, t0, overrides)
+
+
+def _redesign_first(proj, rep, quick=False):
+    """Spencer, 2026-11-02: check first what would take the most work to redesign, so no effort goes into detail
+    checks (and fixes) on a design about to change. Runs the requirements in requirements.REDESIGN_TIER (concept,
+    then structure of the most connected parts; FEA included even in --quick) on the placed assembly, before the
+    print, fit and motion checks. None if they could not run (then the normal stage runs every requirement)."""
+    try:
+        asm = A.plan(proj)
+        A.solve(asm)
+        return requirements.run_all(proj, asm, quick=quick, pick=lambda r: requirements.redesign_tier(r) is not None,
+                                    by_redesign_cost=True)
+    except Exception as e:  # noqa: BLE001 - the fit stage reports assembly problems properly
+        rep["warnings"].append(f"redesign-level requirements could not run first ({type(e).__name__}: {e}); "
+                               "they run with the others")
+        return None
+
+
+def _finish(proj, rep, stg, t0, overrides):
     if not overrides:           # record what this build read from the catalog, then the fingerprint that depends on it
         P.record_deps(proj)
         rep["fingerprint"] = proj.fingerprint()

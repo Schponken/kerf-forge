@@ -67,3 +67,18 @@ def test_invalid_shop_link_is_not_emitted_as_an_executable_link(tmp_path):
     assert 'Link unavailable' in text and '[buy]' not in text and 'javascript:' not in text
     with (tmp_path/'bom.csv').open(encoding='utf-8',newline='') as f:
         assert next(csv.DictReader(f))['buy']=='javascript:alert(1)'
+
+
+def test_budget_summaries_keep_special_item_names_readable(tmp_path):
+    from test_ship import PRICES
+    name='<span> & hinge | bracket'
+    rows=[{'type':'hardware','item':name,'qty':2,'spec':'','note':'','price_key':'tie'},
+          {'type':'hardware','item':'A < B | C','qty':1,'spec':'','note':''}]
+    summary=ship.price_bom(rows,PRICES,inventory={'tie':1})
+    ship.write_bom(rows,summary,tmp_path)
+    text=(tmp_path/'bom.md').read_text(encoding='utf-8')
+    footer=text.split('**Priced so far:',1)[1]
+    assert '<span>' not in text and '&lt;span&gt; &amp; hinge \\| bracket' in footer
+    assert 'A &lt; B \\| C' in footer and 'Biggest packs:' in footer
+    with (tmp_path/'bom.csv').open(encoding='utf-8',newline='') as f:
+        assert next(csv.DictReader(f))['item']==name

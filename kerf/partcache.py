@@ -86,8 +86,18 @@ def _monitor() -> bool:
 _GRAPH: dict | None = None
 
 
+_IMPORTS: dict = {}
+
+
 def _kerf_imports(src: str, pkg_relative: bool) -> tuple[set, set]:
     """(all, top-level) names of kerf modules a source imports. pkg_relative: `from . import x` means kerf.x."""
+    k = (hashlib.sha256(src.encode()).hexdigest(), pkg_relative)
+    if k not in _IMPORTS:
+        _IMPORTS[k] = _parse_imports(src, pkg_relative)
+    return _IMPORTS[k]
+
+
+def _parse_imports(src: str, pkg_relative: bool) -> tuple[set, set]:
     import ast
     try:
         tree = ast.parse(src)

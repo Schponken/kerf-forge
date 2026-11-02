@@ -18,7 +18,7 @@ assembly:
 requirements:
   - {id: light, check: mass_max, max_g: 500}
   - {id: tiny, check: mass_max, max_g: 1}
-  - {id: tall, check: size_max, max_mm: 200}
+  - {id: tall, check: size_max, max_mm: [200, 200, 200]}
 """
 BLOCK = """
 from build123d import *

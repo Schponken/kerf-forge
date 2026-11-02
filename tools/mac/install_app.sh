@@ -41,10 +41,12 @@ pkill -f "KerfStudio/browser" 2>/dev/null || true
 sleep 1
 
 BUILD="$(mktemp -d)"
-if [ "$NATIVE" = 1 ]; then
-  xcrun swiftc -O -target "$(uname -m)-apple-macos11.0" -o "$BUILD/KerfStudio" "$REPO/tools/mac/KerfStudio.swift" \
-    -framework Cocoa -framework WebKit
-else
+if [ "$NATIVE" = 1 ] && ! xcrun swiftc -O -target "$(uname -m)-apple-macos11.0" -o "$BUILD/KerfStudio" "$REPO/tools/mac/KerfStudio.swift" \
+    -framework Cocoa -framework WebKit; then
+  echo "The native app did not compile (error above): installing the single-window launcher instead."
+  NATIVE=0
+fi
+if [ "$NATIVE" = 0 ]; then
   echo "Apple's command line tools are not installed: installing the single-window launcher (run 'xcode-select --install' for the native app)."
   cat > "$BUILD/KerfStudio" <<LAUNCH
 #!/bin/bash
