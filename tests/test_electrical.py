@@ -170,7 +170,9 @@ def test_input_voltage_range(tmp_path):
 def test_outputs_written(tmp_path):
     from kerf import pipeline
     _proj(tmp_path)
-    rep = pipeline.run(str(tmp_path / "elec"), sweeps=False, do_export=True)
+    # everything: the fixture's XT60 peaks above its rating (power_budget fails), which normally stops the run before
+    # the files (pipeline._redesign_first); this test is about the files
+    rep = pipeline.run(str(tmp_path / "elec"), sweeps=False, do_export=True, everything=True)
     out = tmp_path / "elec" / "out"
     for f in ("WIRING.md", "wiring.svg", "ASSEMBLY.md", "bom.csv"):
         assert (out / f).exists(), f

@@ -613,13 +613,36 @@ def channel_clear(proj, asm, path, diameter, poses=None, ignore=None, tol_frac=1
 SAMPLE_MM = 1.0
 
 
-def _surface_points(shape) -> np.ndarray:
-    """Points on a shape's surface (its own frame, Location()), no two neighbours more than SAMPLE_MM apart."""
-    import trimesh
+def _surface_mesh(shape):
+    """A shape's surface mesh in its own frame (Location())."""
     from build123d import Location
-    v, f = geom.mesh(shape.located(Location()), tol=0.05, ang=0.2)
-    v, _ = trimesh.remesh.subdivide_to_size(v, f, max_edge=SAMPLE_MM, max_iter=20)
-    return v
+    return geom.mesh(shape.located(Location()), tol=0.05, ang=0.2)
+
+
+def _cyl_dist(q, R, h):
+    """Distance from points (cylinder frame: axis z, bottom at z=0) to the solid cylinder of radius R, height h."""
+    rho = np.hypot(q[..., 0], q[..., 1])
+    dz = np.maximum(0.0, np.abs(q[..., 2] - h / 2) - h / 2)
+    return np.hypot(np.maximum(0.0, rho - R), dz)
+
+
+def _min_dist_sampled(v, f, dist) -> float:
+    """min of dist over the mesh surface sampled no coarser than SAMPLE_MM (trimesh subdivide_to_size), subdividing
+    only the triangles that can hold the minimum: dist to a convex solid is 1-Lipschitz, so no point of a triangle is
+    closer than dist(centroid) - (centroid to its farthest corner); triangles whose bound exceeds the nearest vertex
+    cannot lower the result. Gives exactly what subdividing the whole surface gives (the kept triangles subdivide
+    the same way), at a small fraction of the cost on large parts."""
+    import trimesh
+    d = dist(v)
+    best = float(d.min())
+    tri = v[f]
+    c = tri.mean(axis=1)
+    r = np.linalg.norm(tri - c[:, None, :], axis=2).max(axis=1)
+    keep = dist(c) - r <= best + 1e-9
+    if not keep.any():
+        return best
+    pts, _ = trimesh.remesh.subdivide_to_size(v, f[keep], max_edge=SAMPLE_MM, max_iter=20)
+    return min(best, float(dist(pts).min()))
 
 
 def _matrix(loc):
@@ -635,15 +658,14 @@ def _disc_gap(disc, other, cache) -> float:
     if ("disc", disc.id) not in cache:
         lo, hi = geom.bbox(disc.shape.located(Location()))
         cache[("disc", disc.id)] = ((hi[0] - lo[0]) / 2, hi[2] - lo[2])
-    if ("pts", other.id) not in cache:
-        cache[("pts", other.id)] = _surface_points(other.shape)
+    if ("mesh", other.id) not in cache:
+        cache[("mesh", other.id)] = _surface_mesh(other.shape)
     R, h = cache[("disc", disc.id)]
+    v, f = cache[("mesh", other.id)]
     Ro, to = _matrix(other.shape.location)
     Rd, td = _matrix(disc.shape.location)
-    q = (cache[("pts", other.id)] @ Ro.T + to - td) @ Rd          # world -> disc frame (Rd is orthonormal)
-    rho = np.hypot(q[:, 0], q[:, 1])
-    dz = np.maximum(0.0, np.abs(q[:, 2] - h / 2) - h / 2)
-    return float(np.min(np.hypot(np.maximum(0.0, rho - R), dz)))
+    q = (v @ Ro.T + to - td) @ Rd          # world -> disc frame (rigid: subdivision commutes with it)
+    return _min_dist_sampled(q, f, lambda p: _cyl_dist(p, R, h))
 
 
 @check("prop_clearance")
@@ -743,8 +765,44 @@ def describe(r: dict) -> str:
     return f"{r.get('value')}{u} ({bound} {lim})"
 
 
-def run_all(proj, asm, quick: bool = False, only=None) -> list:
-    """Every requirement's result. only: requirement ids or check names to run (the rest are left out)."""
+# What a failed check costs to fix (Spencer, 2026-11-02: "look in the places that would require the most work to
+# redesign first"). 0: the concept - weight, power, flight, balance, size, actuator sizing; a fail changes motors,
+# battery, servos or the layout, and with them every part. 1: a structural part's strength or stiffness; a fail
+# reshapes that part and what bolts to it. Not listed: detail (clearances, access, stops, locking), fixed locally.
+REDESIGN_TIER = {
+    **dict.fromkeys(("mass_max", "size_max", "thrust_to_weight", "flight_time", "run_time", "power_budget", "cg",
+                     "static_margin", "static_margin_tail", "wing_loading", "stall_speed", "tip_over", "static_torque",
+                     "joint_speed", "grip_hold", "prop_ground"), 0),
+    **dict.fromkeys(("fea_static", "impact_fea", "drop_impact", "spar_bending", "fold_hinge_moment", "gear_bending",
+                     "planetary_bending", "worm_drive", "cantilever_stress", "flex_strain", "creep_limit",
+                     "natural_freq", "stop_impact"), 1),
+}
+
+
+def redesign_tier(req) -> int | None:
+    return REDESIGN_TIER.get(req["check"])
+
+
+def redesign_order(proj, reqs) -> list:
+    """Most expensive to redesign first: concept checks, then structural checks of the most connected parts (a part
+    many others mate with drags them along when it changes), then the rest in project.yaml order."""
+    joints = (proj.data.get("assembly") or {}).get("joints") or []
+    links: dict = {}
+    for j in joints:
+        for end in (j.get("parent"), j.get("child")):
+            if isinstance(end, str):
+                links[end.split(".")[0]] = links.get(end.split(".")[0], 0) + 1
+
+    def rank(ir):
+        i, r = ir
+        t = redesign_tier(r)
+        return (2 if t is None else t, -links.get(str(r.get("part", r.get("item", ""))), 0), i)
+    return [r for _, r in sorted(enumerate(reqs), key=rank)]
+
+
+def run_all(proj, asm, quick: bool = False, only=None, pick=None, by_redesign_cost: bool = False) -> list:
+    """Every requirement's result. only: requirement ids or check names to run (the rest are left out); pick: a
+    predicate on the requirement; by_redesign_cost: run them in redesign_order."""
     out = []
     from . import usestory
     story_p = usestory.numbers(proj) if usestory.story(proj) else {}
@@ -752,7 +810,8 @@ def run_all(proj, asm, quick: bool = False, only=None) -> list:
     if story_p:                                   # story_drop_n etc. usable in requirement expressions
         proj.params.update(story_p)
     try:
-        for req in list(proj.data.get("requirements") or []) + usestory.requirements(proj):
+        reqs = [r for r in list(proj.data.get("requirements") or []) + usestory.requirements(proj) if pick is None or pick(r)]
+        for req in (redesign_order(proj, reqs) if by_redesign_cost else reqs):
             if only is not None and req.get("id", req["check"]) not in only and req["check"] not in only:
                 continue
             out.append(_run_one(proj, asm, req, quick))

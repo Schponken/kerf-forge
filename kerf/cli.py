@@ -92,9 +92,9 @@ def doctor() -> int:
     return 0 if not bad else 1
 
 
-def check(name, full=False, quick=False) -> int:
+def check(name, full=False, quick=False, everything=False) -> int:
     from .pipeline import run, summary
-    rep = run(name, sweeps=not quick, do_export=full, do_render=full)
+    rep = run(name, sweeps=not quick, do_export=full, do_render=full, everything=everything)
     _p(summary(rep))
     if rep.get("traces"):
         for k, t in rep["traces"].items():
@@ -293,7 +293,10 @@ def main(argv=None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("doctor", help='Check dependencies and headless rendering.', description='Check dependencies and headless rendering.')
     c = sub.add_parser("check", help='Check geometry, fit, motion and strength without making print files.', description='Check geometry, fit, motion and strength without making print files.'); c.add_argument("project"); c.add_argument("--quick", action="store_true")
+    c.add_argument("--all", action="store_true", dest="everything",
+                   help="run every check even when a redesign-level requirement fails (normally the run stops there)")
     b = sub.add_parser("build", help='Check a project and create print plates, guides and a 3D viewer.', description='Check a project and create print plates, guides and a 3D viewer.'); b.add_argument("project")
+    b.add_argument("--all", action="store_true", dest="everything", help="as for check")
     rq = sub.add_parser("req", help="evaluate just these requirements (ids or check names; none = all) on the assembled "
                                     "project: seconds instead of a full check")
     rq.add_argument("project"); rq.add_argument("ids", nargs="*")
@@ -360,9 +363,9 @@ def main(argv=None) -> int:
     if a.cmd == "doctor":
         return doctor()
     if a.cmd == "check":
-        return check(a.project, quick=a.quick)
+        return check(a.project, quick=a.quick, everything=a.everything)
     if a.cmd == "build":
-        return check(a.project, full=True)
+        return check(a.project, full=True, everything=a.everything)
     if a.cmd == "req":
         return req(a.project, a.ids)
     if a.cmd == "verify":
