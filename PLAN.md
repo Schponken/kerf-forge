@@ -151,6 +151,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 ## Requests from Spencer (Kerf Studio)
 - [ ] `robotic_gripper_desk` — robotic gripper for the desk robot arm (Studio request 2026-10-31): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS
 - [ ] `robotic_gripper_claw` — geared two-finger claw for the desk robot arm (Studio request 2026-10-31, "a robotic gripper claw"): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, tests/test_claw_fits_arm.py
+- [ ] `drone_foldable_wings` — morphing-wing drone: wings spread for long stable flight, fold back like a hawk for controlled dives, asymmetric fold for extra control (Studio request 2026-11-01): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS
 
 ## Studio + viewer features (Spencer's picks, 2026-11-01)
 - [x] Viewer cut-away: a slider slices the model on X / Y / Z (flip side), cut faces drawn solid so walls, channels and inserts read as a section; works with explode, joints and every other mode
