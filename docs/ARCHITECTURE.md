@@ -74,7 +74,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/firmware.py` | Bring-up / sweep-test programs from the `wiring:` signal rows' `pin:` (Nano `D9`, Pi `GPIO18`, PCA9685 `ch3`, flight controller `M4`) and each servo's horn-joint range: an Arduino sketch (Nano direct, or Nano + PCA9685) or a Raspberry Pi Python script (hardware PWM, `dtoverlay=pwm-2chan`) in `out/firmware/`, plus BRINGUP.md (flight-controller projects: a props-off first power-up checklist). Commands: c centre (1500 us), s sweep, j/+/- jog, x stop. Degrees use the smallest us/deg the servo's datasheet allows (`servos.<x>.pulse_us` / `pulse_travel_deg`, else 1000-2000 us = 180 deg), so a joint never moves further than commanded; the automatic sweep stays inside +/- the smaller end of the range because the servo's + direction is unknown. ASSEMBLY.md Step 0b uses it to centre servos before any horn goes on |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM (with a buy / source link column) |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` (parts drawn as plastic, not glTF's default metal; near-black parts lifted with light edges; a 10 mm grid plate as the floor; `labels` = call-outs with leaders, `focus` = camera framed on those nodes with context, `title` = a line on the sheet). Assembly-step images: a bench sub-assembly alone, otherwise the parts on so far plus this step's parts in colour, framed and labelled, this step's screws in red backed out of their holes, earlier screws grey; part sheets carry the overall size and show the part as printed on the plate |
-| `kerf/cli.py` | `kerf doctor | gallery | simulate | check | build | run --mode | verify | review-status | new | status | calibrate | feedback | find | fixes | price | print | review-pack | studio` |
+| `kerf/cli.py` | `kerf doctor | gallery | simulate | check | build | run --mode | verify | review-status | new | status | calibrate | feedback | find | fixes | price | print | review-pack | optimise | studio` |
 
 ## project.yaml
 ```yaml
@@ -182,6 +182,19 @@ Requirement checks (all in `kerf.requirements.REGISTRY`; arguments in each funct
 | `joint_speed` | `end` (pose), `max_s`, `start` (pose, default home), `payload_g`, `payload_at`, `band_deg` (3) | time until every servo joint stays within band_deg of `end` (s; none = never) |
 | `drop_impact` | `part`, `at` (item.label hit point), `height_mm`, `radius_mm` (surface radius at the hit), `subtree` (joint: what falls; default all), `pose`, `down` (assembly-frame direction to the floor), `floor` (rigid or a catalog material), `payload_g`, `payload_at`, `fea` {`fixed`, `direction`, `sf`, `max_disp_mm`, `mesh_size`, `radius`} or `max_force_n` | peak contact force (N); limit = the force the part's FEA (crash case) allows |
 | `hard_stop` | `joint`, `beyond` (a value past an end of the range), `min_mm3` (default 1) | parent/child overlap at `beyond` (mm3) |
+| `prop_ground` | `min_mm`, `props`, `up` | lowest prop disc above the ground plane the airframe stands on (mm) |
+| `heat_limit` | `max_c`, `parts` (use story heat) | smallest margin between a part's ISO 75 heat deflection temperature (1.8 MPa for strength-checked parts) and max_c (°C) |
+| `rain_cover` | `items` (default: rain-sensitive electronics), `grid`, `min_cover` | least-roofed share of a sensitive item's top |
+| `access_opening` | `item`, `from_dir`, `gloved`, `ignore`, `diameter_mm` | overlap (mm3) of the 38 / 32 mm finger opening with other parts |
+| `impact_case` | `hazard`, `index` (generated from the use story) | force a `case: drop|crash` fea_static carries vs the work-energy stopping force (N) |
+| `story_covered` | `ids`, `what` (generated) | how many of the named requirements exist |
+| `impact_fea` | `part`, `fixed`, `loads` (hit pattern), `height_m` / `speed_m_s` / `hazard`, `mass_kg` / `mass_g`, `sf` (3) | von Mises p99.9 at the stiffness-based impact force (MPa) |
+| `stop_impact` | `joint`, `part`, `fixed`, `loads` (stop contact), `speed_dps` / `actuator`, `sf` | von Mises p99.9 when the joint hits its stop (MPa) |
+| `natural_freq` | `part`, `fixed`, `loads` (mass point + direction), `carried_g` / `carried`, `excitation` ({hz} or {motor, throttle, prop / blades}), `min_ratio` / `separation` | first natural frequency (Hz) vs excitation |
+| `weak_link` | `cheap` (requirement id), `expensive` (ids), `min_ratio` (1) | cheap case's stress use / the highest other's at the same force |
+| `flex_strain` | `part`, `kind` (snap / hinge), `t_mm`, `L_mm`, `deflection_mm` / `angle_deg`, `cycles`, `across_layers` | root strain (%) vs permissible |
+| `creep_limit` | `case` (a strength requirement id), `sf` (3) | that case's stress vs documented creep rupture / sf (MPa) |
+| `screw_locking` | `locking` ({group: nyloc / threadlocker / lock washer / safety wire}) | metal-thread groups without locking on a vibrating project |
 | `static_margin` | `min` (0.05), `max` (0.15), `wing` (param prefix, `wing_`) | (neutral point x - assembled CG x) / MAC (range) |
 | `wing_loading` | `max_g_dm2`, `wing` | all-up mass / wing area (g/dm²) |
 | `stall_speed` | `max_kmh`, `cl_max` (wing; else 0.9 x airfoil clmax x cos quarter-chord sweep), `airfoil`, `wing` | sea-level stall speed (km/h) |

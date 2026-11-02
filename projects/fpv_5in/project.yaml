@@ -189,10 +189,12 @@ requirements:
     max_disp_mm: 1.0
     fixed: {sites: posts, radius: 5.5}      # post feet (screw seat + the 9 mm foot on the top face): the top-plate + battery mass is the main inertia it is held by
     loads:
-      # lever on the arm (supports at r 38 / 52, 33.06 N at r 113): inner nut pulls the body down 144.0 N,
-      # the arm top presses up on the body underside around the outer screw with 177.1 N
-      - {box: [[23.8, 23.8, body_t - 3.21], [29.9, 29.9, body_t - 3.19]], force_n: [0, 0, -144.0]}   # nut seat (nut sunk 0.5 mm + 2.7 pocket)
-      - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
+      # lever on the arm (supports at r arm_hole_1 / arm_hole_2, 33.06 N at motor_r): inner nut pulls the body down (144.0 N at 38 / 52 / 113),
+      # the arm top presses up on the body underside around the outer screw (177.1 N)
+      - {box: [["arm_hole_1 / sqrt(2) - 3.1", "arm_hole_1 / sqrt(2) - 3.1", body_t - 3.21], ["arm_hole_1 / sqrt(2) + 3.0", "arm_hole_1 / sqrt(2) + 3.0", body_t - 3.19]],
+         force_n: [0, 0, "-33.06 * (motor_r - arm_hole_2) / (arm_hole_2 - arm_hole_1)"]}   # nut seat (nut sunk 0.5 mm + 2.7 pocket)
+      - {box: [["arm_hole_2 / sqrt(2) - 4", "arm_hole_2 / sqrt(2) - 4", -0.01], ["arm_hole_2 / sqrt(2) + 4", "arm_hole_2 / sqrt(2) + 4", 0.01]],
+         force_n: [0, 0, "33.06 * (motor_r - arm_hole_1) / (arm_hole_2 - arm_hole_1)"]}
   - {id: arm_breaks_first, check: weak_link, cheap: arm_strength, expensive: [body_strength, body_strength_3],
      why: "use story: in a crash the 20 g arm (about 1 h to reprint, 6 screws) must break before the body that carries the stack, camera and top plate"}
   - {id: screws_stay_put, check: screw_locking,
@@ -209,8 +211,10 @@ requirements:
     max_disp_mm: 1.0
     fixed: {any: [{sites: posts, radius: 5.5}, {sites: arm_3, radius: 6.0}]}   # arm_3 clamp: screw + nut seat and the arm top round it
     loads:
-      - {box: [[23.8, 23.8, body_t - 3.21], [29.9, 29.9, body_t - 3.19]], force_n: [0, 0, -144.0]}
-      - {box: [[32.8, 32.8, -0.01], [40.8, 40.8, 0.01]], force_n: [0, 0, 177.1]}
+      - {box: [["arm_hole_1 / sqrt(2) - 3.1", "arm_hole_1 / sqrt(2) - 3.1", body_t - 3.21], ["arm_hole_1 / sqrt(2) + 3.0", "arm_hole_1 / sqrt(2) + 3.0", body_t - 3.19]],
+         force_n: [0, 0, "-33.06 * (motor_r - arm_hole_2) / (arm_hole_2 - arm_hole_1)"]}
+      - {box: [["arm_hole_2 / sqrt(2) - 4", "arm_hole_2 / sqrt(2) - 4", -0.01], ["arm_hole_2 / sqrt(2) + 4", "arm_hole_2 / sqrt(2) + 4", 0.01]],
+         force_n: [0, 0, "33.06 * (motor_r - arm_hole_1) / (arm_hole_2 - arm_hole_1)"]}
   # top plate: posts print upright, so post bending runs across the layers (direction z). Crash case: a 50 g hit on
   # battery + pad + strap (215 g CNHL pack + ~15 g) = 0.23 kg x 50 x 9.81 = 112.8 N, applied at the pack CG 21 mm above
   # the plate top (3 mm pad + half the 36 mm pack): force on the plate top + its 112.8 x 21 = 2369 N*mm tipping couple.
@@ -243,3 +247,8 @@ requirements:
      why: "Betaflight CLI is needed (motor_output_limit 74): fit the FC with its USB-C port facing +Y (right); +Y between the right-hand arms is open from the board out past the body edge for a USB-C plug (12 x 7 mm) + 45 mm of cable. If that turns the FC's arrow sideways, set board_align_yaw (90 / 270) in Betaflight. +X is the camera, -X the VTX + XT60 lead, so +/-Y are the sides to use"}
   - {id: xt60_plug, check: connector_access, item: xt60, direction: [-1, 0, 0], length_mm: 30,
      why: "the battery plug goes straight into the XT60 from the rear with the frame assembled"}
+optimise:                  # kerf optimise fpv_5in: the arm crash couple, the arm's resonance and the weak link all depend on these
+  vary: {arm_hole_2: [52, 58, 2], body_t: [7, 8, 0.5], arm_t: [10, 12, 0.5]}
+  goal: {minimise: mass}
+  max_runs: 14
+  mode: check
