@@ -105,8 +105,12 @@ def build(ctx):
         ctx.rigid(tag, Location(((STRAP_X0 + STRAP_X1) / 2, sy * (20 + STRAP_T / 2), H - STRAP_T)))
     ctx.rigid("strap_top", Location(((STRAP_X0 + STRAP_X1) / 2, 0, H + T)))
     # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5)
-    s, left = F.fillet_inside(ctx, s, 1.0, keep=lambda at: (
-        "XT60 cradle: the connector's square body sits in it with 0.3 mm clearance")
-        if XT60_X - xl / 2 - 2.5 < at[0] < XT60_X + xl / 2 + 2.5 and abs(at[1]) < xw / 2 + 2.0 else None)
+    def keep(at):
+        if XT60_X - xl / 2 - 2.5 < at[0] < XT60_X + xl / 2 + 2.5 and abs(at[1]) < xw / 2 + 2.0:
+            return "XT60 cradle: the connector's square body sits in it with 0.3 mm clearance"
+        if STRAP_X0 - 0.5 <= at[0] <= STRAP_X1 + 0.5:
+            return "battery strap notch: the 20 mm strap lies flat in it, its edges against the notch ends"
+        return None
+    s, left = F.fillet_inside(ctx, s, 1.0, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(s, color="#2a2d31")
