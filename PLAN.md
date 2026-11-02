@@ -264,3 +264,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Audit fixes: engine majors ENG-1..ENG-6 (each with a test), re-check every project
   - [x] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)
 - [x] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project
+- [x] Studio parameter edit targeting: Save/Try/Restore update only selected numeric params values across block/flow/quoted YAML, preserve unrelated text and genuine no-ops, reject shared/merged/duplicate targets, and validate all edits before writing; synthetic regression and existing save/history tests.

@@ -656,39 +656,85 @@ def _yaml(d: Path) -> dict | None:
 
 def write_params(path: Path, values: dict) -> list[str]:
     """Set params.<k>.value (or params.<k>: v) in a project.yaml in place, keeping every comment and line."""
-    text = path.read_text(encoding="utf-8")
+    if not values:
+        return []
+    text = path.read_bytes().decode("utf-8")   # source marks include original CRLF and Unicode characters
+    root = yaml.compose(text, Loader=yaml.SafeLoader)
+    references, pending = {}, [root]
+    while pending:
+        node = pending.pop()
+        references[id(node)] = references.get(id(node), 0) + 1
+        if references[id(node)] > 1:           # count aliases, but never follow recursive/shared nodes again
+            continue
+        if isinstance(node, yaml.MappingNode):
+            pending.extend(child for pair in node.value for child in pair)
+        elif isinstance(node, yaml.SequenceNode):
+            pending.extend(node.value)
+
+    def mapping(node, where):
+        if not isinstance(node, yaml.MappingNode):
+            raise ValueError(f"{where} must be a mapping")
+        if references[id(node)] > 1:
+            raise ValueError(f"{where}: aliased/shared parameters cannot be edited in place")
+        out = {}
+        for key, value in node.value:
+            if key.tag == "tag:yaml.org,2002:merge":
+                raise ValueError(f"{where}: merged parameters cannot be edited in place")
+            if key.tag != "tag:yaml.org,2002:str":
+                raise ValueError(f"{where}: parameter mapping keys must be strings")
+            if key.value in out:
+                raise ValueError(f"{where}: duplicate key {key.value!r}")
+            out[key.value] = value
+        return out
+
+    top = mapping(root, path.name)
+    params = mapping(top.get("params"), "params")
     data = yaml.safe_load(text) or {}
-    known = data.get("params") or {}
-    changed = []
+    known = data["params"]
+    tokens = {t.end_mark.index: t for t in yaml.scan(text, Loader=yaml.SafeLoader) if isinstance(t, yaml.ScalarToken)}
+    changed, edits, expected = [], [], {}
     for k, v in values.items():
-        if k not in known:
+        if k not in params:
             raise ValueError(f"unknown param {k}")
         v = float(v)
         import math
         if not math.isfinite(v):
             raise ValueError(f"{k}: enter a finite number")
+        node = params[k]
         spec = known[k]
-        if isinstance(spec, dict):
+        if isinstance(node, yaml.MappingNode):
+            node = mapping(node, f"params.{k}").get("value")
             if "min" in spec and v < spec["min"] - 1e-9:
                 raise ValueError(f"{k} = {v} is outside its allowed range: enter {spec['min']} or more")
             if "max" in spec and v > spec["max"] + 1e-9:
                 raise ValueError(f"{k} = {v} is outside its allowed range: enter {spec['max']} or less")
-        pat_dict = re.compile(rf"^(\s+{re.escape(k)}:\s*\{{\s*value:\s*)([-+0-9.eE]+)", re.M)
-        pat_plain = re.compile(rf"^(\s+{re.escape(k)}:\s*)([-+0-9.eE]+)(\s*(#.*)?)$", re.M)
-        new, n = pat_dict.subn(lambda m: m.group(1) + _fmt_num(v), text, count=1)
-        if not n:
-            new, n = pat_plain.subn(lambda m: m.group(1) + _fmt_num(v) + (m.group(3) or ""), text, count=1)
-        if not n:
-            raise ValueError(f"could not find params.{k} in {path.name}")
-        if new != text:
-            changed.append(k)
-        text = new
-    check = yaml.safe_load(text)
-    for k, v in values.items():
+        if not isinstance(node, yaml.ScalarNode) or node.tag not in ("tag:yaml.org,2002:int", "tag:yaml.org,2002:float"):
+            raise ValueError(f"params.{k}: needs a numeric scalar or a mapping with numeric value")
+        if references[id(node)] > 1:
+            raise ValueError(f"params.{k}: aliased/shared values cannot be edited in place")
+        token = tokens[node.end_mark.index]
+        if token.style in ("|", ">"):
+            raise ValueError(f"params.{k}: numeric values must use inline scalar notation")
+        old = spec["value"] if isinstance(spec, dict) else spec
+        expected[k] = v
+        if old == v:                         # a real no-op preserves spelling, comments, bytes and file mtime
+            continue
+        number = _fmt_num(v)
+        if token.style in ("'", '"'):        # preserve explicit numeric tags and any scalar quote style
+            number = token.style + number + token.style
+        if number == text[token.start_mark.index:token.end_mark.index]:
+            continue
+        edits.append((token.start_mark.index, token.end_mark.index, number))
+        changed.append(k)
+    for start, end, number in sorted(edits, reverse=True):
+        text = text[:start] + number + text[end:]
+    check = yaml.safe_load(text) if edits else data
+    for k, v in expected.items():
         got = check["params"][k]["value"] if isinstance(check["params"][k], dict) else check["params"][k]
-        if abs(float(got) - float(v)) > 1e-9:
+        if not math.isfinite(float(got)) or abs(float(got) - v) > 1e-9:
             raise ValueError(f"param write check failed for {k}")
-    path.write_text(text, encoding="utf-8")
+    if edits:
+        path.write_bytes(text.encode("utf-8"))
     return changed
 
 

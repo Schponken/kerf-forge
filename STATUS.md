@@ -493,3 +493,29 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Not changed on purpose: projects still build from scratch (KERF_NO_CACHE) and drawings / renders stay in verify
   (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
   test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
+
+## 2026-11-02 23:20 UTC — Target parameter saves precisely (Codex, parameter-edit-targeting)
+- Reproduced the baseline on temporary YAML: metadata.length=3 before params.length=10 was silently changed to 10
+  by a no-op save of length=10, while the real parameter was unchanged and reported changed. A normal block-style
+  parameter with value/min/max refused a valid edit. Both came from matching names across the entire file with regex.
+- Save/Try/history Restore now locate the actual params mapping/value through existing PyYAML nodes and edit only
+  its numeric ScalarToken span. Block/flow mappings and quoted keys work; tags and unshared anchors retain their
+  prefixes. Original Unicode/BOM/CRLF, comments, bounds and unrelated same-name values are preserved. Exact no-ops
+  keep file bytes and mtime; changed reports omit unchanged formatted tokens.
+- All requested finite/range and existing numeric-format verification checks happen before any write. Duplicate
+  keys/merges along the parameter path and shared aliases targeting mappings/values are refused. Reference traversal
+  counts aliases while stopping on visited identities, including recursive YAML. Unrelated aliases are untouched.
+  No parser dependency, whole-document YAML rewrite, source-export change or project geometry edit.
+- Read-only doctor ALL OK (shared dependencies reused; optional firmware tools unavailable). Batch status/process
+  checks preceded focused tests. Exact final selection: `.venv/bin/python -m pytest -q tests/test_studio_params.py
+  tests/test_studio.py::test_write_params_keeps_comments_and_checks_ranges
+  tests/test_studio.py::test_trial_copy_leaves_the_real_project_alone
+  tests/test_studio.py::test_times_history_restore_and_export tests/test_studio.py::test_api_refuses_bad_input
+  tests/test_studio_features.py::test_trial_copy_takes_materials_and_leaves_the_project_alone
+  tests/test_usability.py tests/test_docs.py` — **69 passed in 5.67 s**.
+- Coverage includes the reported same-name/no-op bug, block/flow/quoted forms, multiple edits, tag/anchor prefixes,
+  literal byte preservation, second-invalid-edit rollback, duplicate/merge/shared target refusal, bounded recursive
+  aliases, precision-verification failure, existing Save/Try/Restore/API bounds and usability regressions.
+  Only the precise parameter-edit PLAN item is complete. No project build, stress/FEA or full batch run.
+- Final independent parent review approved this scoped parser edit. One additional regression preserves replacement
+  of a huge YAML integer with a finite number without overflowing a needless float conversion during no-op detection.
