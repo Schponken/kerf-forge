@@ -777,7 +777,7 @@ function snapshot(w = 480, h = 360) {
 }
 
 // ---------- build it, step by step (data: kerf/viewer.py assembly_steps, text: ASSEMBLY.md)
-const SD = D.steps, AS = { on: false, i: 0, tok: 0, cards: [], vis: new Set(), future: new Set(), ghostOn: true, playing: false, userCam: false, glyphs: [], labels: [], done: new Set() };
+const SD = D.steps, AS = { on: false, i: 0, tok: 0, cards: [], vis: new Set(), future: new Set(), ctx: new Set(), ghostOn: true, playing: false, userCam: false, glyphs: [], labels: [], done: new Set() };
 const DKEY = `kerf-done:${D.project_dir}:${R.fingerprint || ''}`;
 try { AS.done = new Set(JSON.parse(localStorage.getItem(DKEY) || '[]')); } catch (e) {}
 const saveDone = () => { try { localStorage.setItem(DKEY, JSON.stringify([...AS.done])); } catch (e) {} };
@@ -789,7 +789,7 @@ if (SD && SD.steps && SD.steps.length) {
 } else if (D.steps_error) console.warn('viewer: no step-by-step mode:', D.steps_error);
 function asmVisible(id) {
   if (!AS.on) return true;
-  return AS.vis.has(id) || (AS.ghostOn && AS.future.has(id));
+  return AS.vis.has(id) || AS.ctx.has(id) || (AS.ghostOn && AS.future.has(id));
 }
 function setGlow(id, k) {
   const g = groups.get(id); if (!g) return;
@@ -799,7 +799,9 @@ function setGlow(id, k) {
 }
 function itemLook(id) {   // full / ghost (still to come) / hidden, by the step's sets
   const g = groups.get(id); if (!g) return;
-  if (AS.future.has(id) && !AS.vis.has(id)) { look(g, 0.045); g.userData.edges.material.opacity = 0.09; }
+  if (AS.vis.has(id)) look(g, 1);
+  else if (AS.ctx.has(id)) { look(g, 0.2); g.userData.edges.material.opacity = 0.25; }   // the build a bench step joins
+  else if (AS.future.has(id)) { look(g, 0.045); g.userData.edges.material.opacity = 0.09; }
   else look(g, 1);
 }
 const STEEL = new T.MeshStandardMaterial({ color: 0xb9c0c8, metalness: 0.75, roughness: 0.32, clippingPlanes: CLIP });
@@ -830,16 +832,52 @@ function insertGlyph(x) {
 function placeInsert(g, out) { g.position.copy(g.userData.at).addScaledVector(g.userData.dir, -out); }
 function addGlyph(parentId, obj) { (groups.get(parentId) || scene).add(obj); AS.glyphs.push(obj); return obj; }
 function clearGlyphs() { for (const o of AS.glyphs) o.parent && o.parent.remove(o); AS.glyphs = []; for (const L of AS.labels) L.el.remove(); AS.labels = []; }
-function label(html, cls, at) { const el = document.createElement('div'); el.className = 'lab ' + (cls || ''); el.innerHTML = html; $('labels').appendChild(el); const L = { el, at, kill() { el.remove(); const k = AS.labels.indexOf(L); if (k >= 0) AS.labels.splice(k, 1); } }; AS.labels.push(L); return L; }
+function label(html, cls, at, box) { const el = document.createElement('div'); el.className = 'lab ' + (cls || ''); el.innerHTML = html; $('labels').appendChild(el); const L = { el, at, box, kill() { el.remove(); const k = AS.labels.indexOf(L); if (k >= 0) AS.labels.splice(k, 1); } }; AS.labels.push(L); return L; }
 const centreOf = id => () => { const g = groups.get(id); if (!g || !g.visible) return null; return g.userData.box.getCenter(new T.Vector3()).applyMatrix4(g.matrix); };
+const boxIn = id => () => { const g = groups.get(id); if (!g || !g.visible) return null; return g.userData.box.clone().applyMatrix4(g.matrix); };
 const worldOf = (obj) => () => obj.parent ? obj.getWorldPosition(new T.Vector3()) : null;
+function screenRect(b) {    // a world box's rectangle on screen (px), or null when it is behind the camera
+  const w = stage.clientWidth, h = stage.clientHeight, r = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (let k = 0; k < 8; k++) {
+    const v = new T.Vector3(k & 1 ? b.max.x : b.min.x, k & 2 ? b.max.y : b.min.y, k & 4 ? b.max.z : b.min.z).project(cam);
+    if (v.z > 1) return null;
+    const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h;
+    r.x0 = Math.min(r.x0, x); r.x1 = Math.max(r.x1, x); r.y0 = Math.min(r.y0, y); r.y1 = Math.max(r.y1, y);
+  }
+  return r;
+}
 function updLabels() {
+  // A label sits BESIDE what it names (right of its on-screen box, or left when there is no room), never on top of
+  // it, and labels are pushed apart so none covers another.
   if (!AS.labels.length) return;
-  const w = stage.clientWidth, h = stage.clientHeight;
+  const w = stage.clientWidth, h = stage.clientHeight, placed = [];
   for (const L of AS.labels) {
-    const p = L.at(); if (!p) { L.el.style.opacity = 0; continue; }
-    const v = p.project(cam), ok = v.z < 1 && Math.abs(v.x) < 1.02 && Math.abs(v.y) < 1.02;
-    L.el.style.opacity = ok ? 1 : 0; L.el.style.left = ((v.x + 1) / 2 * w) + 'px'; L.el.style.top = ((1 - v.y) / 2 * h) + 'px';
+    let x, y;
+    const b = L.box && L.box();
+    const r = b && screenRect(b);
+    if (r) {
+      const lw = (L.el.offsetWidth || 120) + 18, lh0 = L.el.offsetHeight || 22;
+      if (r.x1 < 0 || r.x0 > w || r.y1 < 0 || r.y0 > h) { L.el.style.opacity = 0; continue; }
+      // right of the part, else left, else above, else below; the first that fits on screen
+      const cy = Math.min(Math.max((r.y0 + r.y1) / 2, lh0), h - lh0), cx = Math.min(Math.max((r.x0 + r.x1) / 2 - lw / 2, 6), w - lw);
+      const opts = [[r.x1 + 4, cy, r.x1 + 4 + lw <= w], [r.x0 - lw - 6, cy, r.x0 - lw - 6 >= 0],
+                    [cx, r.y0 - lh0, r.y0 - 2 * lh0 >= 0], [cx, r.y1 + lh0, r.y1 + 2 * lh0 <= h]];
+      const o = opts.find(q => q[2]) || [Math.min(Math.max(r.x1 + 4, 6), w - lw), cy];
+      x = o[0]; y = o[1];
+    } else {
+      const p = L.at(); if (!p) { L.el.style.opacity = 0; continue; }
+      const v = p.project(cam);
+      if (!(v.z < 1 && Math.abs(v.x) < 1.02 && Math.abs(v.y) < 1.02)) { L.el.style.opacity = 0; continue; }
+      x = (v.x + 1) / 2 * w + 8; y = (1 - v.y) / 2 * h;
+    }
+    const lh = (L.el.offsetHeight || 22) + 4, lw = (L.el.offsetWidth || 120) + 10;
+    for (let k = 0; k < 12; k++) {      // nudge down until it clears every label already placed
+      const hit = placed.find(q => Math.abs(q.y - y) < lh && x < q.x + q.w && q.x < x + lw);
+      if (!hit) break;
+      y = hit.y + lh;
+    }
+    placed.push({ x, y, w: lw });
+    L.el.style.opacity = 1; L.el.style.left = x + 'px'; L.el.style.top = y + 'px';
   }
 }
 function pathLine(a, b) {
@@ -848,6 +886,11 @@ function pathLine(a, b) {
   ln.computeLineDistances(); ln.renderOrder = 5; scene.add(ln); AS.glyphs.push(ln); return ln;
 }
 const VIEWDIRS = [[1, -1.25, 0.9], [-1, -1.25, 0.9], [1, 1.25, 0.9], [-1, 1.25, 0.9], [1.4, -0.4, 0.7], [-0.4, -1.4, 0.7], [0.3, -1, 1.6]].map(v => new T.Vector3(...v).normalize());
+// a ring of views every 30 deg at 15 / 35 / 55 / 75 deg above the horizon (z is up), plus the hand-picked ones above
+for (const el of [15, 35, 55, 75]) for (let az = 0; az < 360; az += 30) {
+  const e = el * Math.PI / 180, a = az * Math.PI / 180;
+  VIEWDIRS.push(new T.Vector3(Math.cos(e) * Math.cos(a), Math.cos(e) * Math.sin(a), Math.sin(e)));
+}
 const occRay = new T.Raycaster();
 function viewFor(s, box) {
   // Best view for a step: the new parts not hidden behind the parts already on (rays from each candidate camera to
@@ -862,6 +905,8 @@ function viewFor(s, box) {
   for (const x of [...s.screws, ...s.inserts]) pts.push([new T.Vector3(...x.at).addScaledVector(new T.Vector3(...x.dir), -(x.len * 0.5 + 3)), all]);
   const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 8), d = r / Math.sin(cam.fov * Math.PI / 360) * 1.12;
   const cur = cam.position.clone().sub(ctl.target).normalize();
+  const nuDims = nu.map(id => groups.get(id) && groups.get(id).userData.box.getSize(new T.Vector3())).filter(Boolean);
+  const areaMax = Math.max(1e-9, ...VIEWDIRS.map(v => nuDims.reduce((a, d) => a + Math.abs(v.x) * d.y * d.z + Math.abs(v.y) * d.x * d.z + Math.abs(v.z) * d.x * d.y, 0)));
   let best = VIEWDIRS[0], bs = Infinity;
   for (const v of VIEWDIRS) {
     const eye = c.clone().addScaledVector(v, d);
@@ -871,13 +916,34 @@ function viewFor(s, box) {
       const dir = p.clone().sub(eye), L = dir.length(); occRay.set(eye, dir.normalize()); occRay.far = L - 0.5;
       if (occRay.intersectObjects(bl, false).length) hid++;
     }
-    const sc = (pts.length ? hid / pts.length : 0) * 2 + 0.5 * Math.max(0, ...offs.map(o => Math.abs(v.dot(o)))) - 0.15 * v.dot(cur);
+    // how much of the new parts' broad faces this view sees (an edge-on view of a plate shows nothing useful)
+    const area = nuDims.reduce((a, d) => a + Math.abs(v.x) * d.y * d.z + Math.abs(v.y) * d.x * d.z + Math.abs(v.z) * d.x * d.y, 0);
+    const sc = (pts.length ? hid / pts.length : 0) * 2 + 0.5 * Math.max(0, ...offs.map(o => Math.abs(v.dot(o)))) - 0.15 * v.dot(cur)
+      - 0.45 * (areaMax ? area / areaMax : 0);
     if (sc < bs) { bs = sc; best = v; }
   }
   return best;
 }
+function focusBox(s, offs) {
+  // What the camera frames for a step: the new parts (home and flown-in positions, their screws and inserts) with
+  // some of the build round them. Small parts get a close-up instead of the whole build; a left / right pair far
+  // apart is shown on its first side (the step text and chips name both).
+  const nu = s.groups.flatMap(g => g.items).filter(id => groups.get(id));
+  const whole = boxOf(s.present).union(boxOf(nu, offs));
+  if (!nu.length) return whole;
+  const size = id => groups.get(id).userData.box.getSize(new T.Vector3()).length();
+  const ctr = id => groups.get(id).userData.box.getCenter(new T.Vector3());
+  const big = Math.max(...nu.map(size)), c0 = ctr(nu[0]);
+  const near = nu.filter(id => ctr(id).distanceTo(c0) < Math.max(4 * big, 60));
+  const nb = boxOf(near).union(boxOf(near, offs));
+  for (const x of [...s.screws, ...s.inserts]) { const p = new T.Vector3(...x.at); if (p.distanceTo(c0) < Math.max(4 * big, 60)) nb.expandByPoint(p); }
+  const nd = nb.getSize(new T.Vector3()).length(), wd = whole.getSize(new T.Vector3()).length();
+  if (near.length === nu.length && nd > 0.4 * wd) return whole;
+  const ctx = Math.max(nd * 0.6, 25);          // enough of the build round it to see where it goes
+  return nb.clone().expandByScalar(ctx).intersect(whole.clone().expandByScalar(ctx));
+}
 function resetPose() { asmOff.clear(); for (const j of D.joints) val.set(j.name, j.home); explode = 0; const ex = $('ex'); if (ex) { ex.value = 0; $('exv').textContent = '0 mm'; } pose(); }
-function setSets(vis, future) { AS.vis = new Set(vis); AS.future = new Set(future); for (const id of solidIds) itemLook(id); applyVis(); }
+function setSets(vis, future, ctx) { AS.vis = new Set(vis); AS.future = new Set(future); AS.ctx = new Set((ctx || []).filter(i => !AS.vis.has(i))); for (const id of solidIds) itemLook(id); applyVis(); }
 async function demoJoint(name, tok) {
   const j = J.get(name); if (!j) return;
   const u = j.kind === 'revolute' ? '°' : ' mm', c = groups.get(j.child) ? centreOf(j.child) : null;
@@ -891,7 +957,7 @@ async function flyIn(grp, tok, k) {   // parts appear back along the way they go
   const off = new T.Vector3(...grp.off), from = new Map();
   for (const id of grp.items) { asmOff.set(id, off.clone()); from.set(id, off.clone()); AS.vis.add(id); AS.future.delete(id); look(groups.get(id), 0); }
   applyVis(); pose();
-  for (const id of grp.items) label(`<b>${esc(id)}</b> <span>${esc(groups.get(id).userData.it.label || '')}</span>`, '', centreOf(id));
+  for (const id of grp.items) label(`<b>${esc(id)}</b> <span>${esc(groups.get(id).userData.it.label || '')}</span>`, '', centreOf(id), boxIn(id)).id = id;
   await tween(300, t => { for (const id of grp.items) { look(groups.get(id), t); setGlow(id, t); } }, lin);
   return async () => {
     if (tok !== AS.tok) return;
@@ -941,7 +1007,8 @@ async function showCard(i, animate = true) {
   }
   const s = c.s, nu = new Set(s.groups.flatMap(g => g.items));
   const future = s.bench_for ? [] : [...stepItems].filter(id => !s.present.includes(id));
-  setSets(s.present.filter(id => !nu.has(id)), [...future, ...nu]);
+  const benchCtx = s.bench_for ? (SD.steps.filter(t => !t.bench_for && t.n < s.bench_for).pop() || { present: [] }).present : [];
+  setSets(s.present.filter(id => !nu.has(id)), [...future, ...nu], benchCtx);
   // what earlier steps left in place: their screws driven home, their inserts pressed in (steel / brass, no glow)
   for (const t of SD.steps) {
     if (t.n >= s.n || (t.bench_for && t.bench_for > s.n && !s.bench_for)) continue;
@@ -949,9 +1016,9 @@ async function showCard(i, animate = true) {
     for (const x of t.inserts) if (s.present.includes(x.item)) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
   }
   const offs = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)])));
-  const box = boxOf(s.present).union(boxOf([...nu], offs));
+  const box = focusBox(s, offs);
   if (!animate) {
-    setSets(s.present, future);
+    setSets(s.present, future, benchCtx);
     for (const sc of s.screws) placeScrew(addGlyph(AS.vis.has(sc.female) ? sc.female : sc.male, screwGlyph(sc)), 0, 0);
     for (const x of s.inserts) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
     return frameBox(box, viewFor(s, box), 0);
@@ -1084,7 +1151,9 @@ ctl.addEventListener('change', redraw);
 window.__kerf = { D, setJ, pose, groups, view, fit, inspect, faceOf, camera: cam, set explode(v) { explode = v; pose(); },
   snapshot, liveSwap, compare, clearCompare, paint, restyle, get colorMode() { return colorMode; }, set colorMode(m) { colorMode = m; paint(); },
   cut(on, ax = 'y', t = null, flip = null) { CUT.on = on; CUT.ax = ax; if (on) cutDefaults(); if (t != null) CUT.t = t; if (flip != null) CUT.flip = flip; applyCut(); },
-  asm: { get on() { return AS.on; }, get i() { return AS.i; }, cards: AS.cards, show: showCard, go, get busy() { return TW.length > 0; }, set speed(v) { speed = v; } } };
+  asm: { get on() { return AS.on; }, get i() { return AS.i; }, cards: AS.cards, show: showCard, go, get busy() { return TW.length > 0; }, set speed(v) { speed = v; },
+         focusBox, screenRect, get ctx() { return [...AS.ctx]; }, get vis() { return [...AS.vis]; },
+         labels() { return AS.labels.map(L => ({ id: L.id, el: L.el.getBoundingClientRect(), opacity: +L.el.style.opacity })); } } };
 })();
 </script>
 </body>

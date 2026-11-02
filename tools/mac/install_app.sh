@@ -109,7 +109,15 @@ iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/KerfStudio.icns"
 codesign --force --deep -s - "$APP" >/dev/null 2>&1 || true   # ad-hoc signature so macOS runs it
 touch "$APP"
 
-# Dock: add once (re-runs don't duplicate it)
+# Dock: exactly one Kerf Studio tile. Older installs / launchers left copies: remove every Kerf Studio tile that isn't
+# this app (tools/mac/dock_dedupe.py; other Dock items untouched), then add this one if it isn't there.
+PYD="$REPO/.venv/bin/python"; [ -x "$PYD" ] || PYD="$(command -v python3 || true)"
+if [ -n "$PYD" ] && defaults export com.apple.dock - > "$STATE/dock.before.plist" 2>/dev/null; then
+  if "$PYD" "$REPO/tools/mac/dock_dedupe.py" "$APP" < "$STATE/dock.before.plist" > "$STATE/dock.after.plist" 2> "$STATE/dock.log" \
+     && ! grep -q "removed 0 " "$STATE/dock.log"; then
+    defaults import com.apple.dock "$STATE/dock.after.plist" && cat "$STATE/dock.log" && killall Dock
+  fi
+fi
 if ! defaults read com.apple.dock persistent-apps 2>/dev/null | grep -q "Kerf Studio.app"; then
   defaults write com.apple.dock persistent-apps -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>file://${APP// /%20}/</string><key>_CFURLStringType</key><integer>15</integer></dict></dict></dict>"
   killall Dock
