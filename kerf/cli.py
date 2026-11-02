@@ -204,12 +204,19 @@ def _out_stale(proj, fp) -> str:
     return "" if ofp == fp else f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
 
 
+def _slowest_tests(stdout: str) -> list:
+    """pytest --durations lines ("12.34s call tests/test_x.py::test_y"), slowest first."""
+    import re
+    return [l.strip() for l in stdout.splitlines() if re.match(r"\s*\d+\.\d+s (call|setup|teardown) ", l)][:30]
+
+
 def _run_isolated(name, check_only=False, fast=False) -> dict:
     """Build one project in a child process so its OCC/mesh memory is returned to the OS before the next one
     (all projects in one process grew past 6 GB and was OOM-killed on a 7 GB machine, 2026-11-02)."""
     code = ("import json,sys; from kerf.pipeline import run; n,c,f=sys.argv[1],sys.argv[2]=='1',sys.argv[3]=='1'; "
             "r=run(n,mode='check') if c else run(n,sweeps=True,do_export=not f,do_render=not f); "
-            "print('KERF_RESULT '+json.dumps({'ok':bool(r['ok']),'problems':[str(p) for p in r['problems']]}))")
+            "print('KERF_RESULT '+json.dumps({'ok':bool(r['ok']),'problems':[str(p) for p in r['problems']],"
+            "'seconds':r.get('seconds')}))")
     r = subprocess.run([sys.executable, "-c", code, name, "1" if check_only else "0", "1" if fast else "0"], cwd=ROOT,
                        capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
     for line in reversed(r.stdout.splitlines()):
@@ -257,13 +264,14 @@ def verify(fast=False, all_failures=False) -> int:
     ck = _Checkpoint(fast, all_failures)
     if "tests" not in ck.done:
         r = subprocess.run([sys.executable, "-m", "pytest", "-q", *([] if all_failures else ["-x"]), "--no-header",
-                            "-p", "no:cacheprovider"], cwd=ROOT,
+                            "-p", "no:cacheprovider", "--durations=30"], cwd=ROOT,
                            capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
         ck.save("tests", {"line": r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:],
-                          "ok": r.returncode == 0})
+                          "ok": r.returncode == 0, "slowest": _slowest_tests(r.stdout)})
     else:
         _p("tests: reusing this commit's finished result (an earlier run was cut off)")
     results["tests"] = ck.done["tests"]["line"]
+    results["slowest_tests"] = ck.done["tests"].get("slowest", [])   # where the next speed-up should look
     if not ck.done["tests"]["ok"]:
         fails.append(f"unit tests: {results['tests']}")
     from . import project as P
@@ -272,7 +280,7 @@ def verify(fast=False, all_failures=False) -> int:
         if name not in ck.done:
             ck.save(name, _run_isolated(name, check_only, fast))
         rep = ck.done[name]
-        results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6]}
+        results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6], "seconds": rep.get("seconds")}
         if not rep["ok"]:
             fails.append(f"project {name}: {rep['problems'][:3]}")
         if check_only:

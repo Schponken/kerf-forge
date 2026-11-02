@@ -506,3 +506,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   fake executable/script paths. Every assertion is retained; no Mesher, global locale or production slicer change.
 - Independent parent review approved the final validation/fixture diff. Only this precise PLAN item is complete;
   no new physical validation or finished-project claim.
+
+### 2026-11-02 — Full-suite speed (session 01S68R6R; measured on slices, no full run, per Spencer)
+- Found by timing one project's verify build by stage: viewer click-to-edit (kerf/attribution.py: traced rebuild of
+  every part + one rebuild per param, budget 240 s for the params alone) was 29 s of servo_link's 63 s and 303 s on
+  pan_tilt, in every project build of `kerf verify` and every test that writes a viewer, and it cannot change a result.
+  `kerf verify` and tests/conftest.py now set KERF_NO_ATTRIBUTION; `kerf build` keeps it; the two tests that use it
+  through the viewer turn it back on. pan_tilt verify build ~500 s -> 202 s; a 4-file test group 194 s -> 43 s.
+- geom.mesh_gap grows its search radius from 1 mm: a 1e4 mm radius made close curved parts 3.7 s per pose (worse than
+  exact); pan_tilt cam_clear 100 s -> 20 s, same values.
+- VERIFY.json now keeps the 30 slowest tests (--durations=30) and each project's build seconds: the next suite
+  speed-up should start there, not from a guess.
+- Not changed on purpose: projects still build from scratch (KERF_NO_CACHE) and drawings / renders stay in verify
+  (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
+  test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
