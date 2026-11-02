@@ -3,7 +3,7 @@
 Its rear face matches the pod's front face; four M3 go from lugs on its outside, along X, into the heat-set inserts
 round the pod's front opening (screw heads on washers: TPU). Each lug has a driver channel in front of it, so a hex
 key reaches the head along the screw axis. The camera (19 mm micro) sits against the inside of the tip, looking out
-through a lens hole, held by two M2 through the side cheeks into its side holes. TPU 95A takes the landings and
+through a square window (front flush with the tip), held by two M2 through the side cheeks into its side holes. TPU 95A takes the landings and
 belly-slides; printed standing on its rear face (walls lean in less than 30 deg, the 2 mm tip is a short bridge).
 """
 from build123d import *
@@ -43,12 +43,15 @@ def build(ctx):
     inner = POD._loft([(x + (0.01 if i == 0 else WALL if i == 2 else 0), hw, zb, zt, r) for i, (x, hw, zb, zt, r) in enumerate(st)], WALL)
     body = outer - ctx.cut(inner, why="hollow shell: camera and wires inside, the bay behind", kind="shell")
     zc = cam_z(p)
-    xt = x0 - NOSE_L + WALL                       # inside of the tip = camera front
+    xt = x0 - NOSE_L                              # the camera's front sits flush with the tip (155 deg lens: no rim in view)
     # camera cheeks: fill the gap between the camera sides and the tip walls round the side screws
     cheeks = Pos(xt + CAM / 2, 0, zc) * Box(CAM, 40, 14) - Pos(xt + CAM / 2, 0, zc) * Box(CAM + 2, CAM + 0.4, 16)
     body = body + ctx.add(cheeks & outer, why="camera cheeks: side screws into the camera's M2 holes", kind="cheek")
-    # why: lens window through the tip
-    body = body - Pos(x0 - NOSE_L - 1, 0, zc) * Rot(0, 90, 0) * Cylinder(7.5, WALL + 4, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    # why: square window through the tip: the camera's front face fills it, flush (the lens's 155 deg view is clear)
+    body = body - Pos(x0 - NOSE_L - 1, 0, zc) * Box(WALL + 4, CAM + 0.4, CAM + 0.4, align=(Align.MIN, Align.CENTER, Align.CENTER))
+    for s in (-1, 1):
+        # why: cooling air in: two 8 mm vents through the lower sides, into the bay behind (out under the tail)
+        body = body - Pos(x0 - 32, s * 22, zc - 10) * Rot(0, 90, 0) * Cylinder(4, 18, align=(Align.CENTER, Align.CENTER, Align.MIN))
     # why: camera side screws (M2 clearance) through cheeks and walls, at the camera's side holes
     body = body - Pos(xt + CAM_HOLE_BACK, 0, zc) * Rot(90, 0, 0) * Cylinder(1.25, 60)
     # bolt lugs on the outside of the rear rim, screws along +X into the pod inserts
@@ -59,7 +62,11 @@ def build(ctx):
         body = body - ctx.cut(reach, why="hex-key channel to the lug's screw head", kind="tool access")
     face = Location(Plane(origin=(x0 - LUG_L, 0, 0), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))    # local (u, v) = world (y, -z)
     body = body - iface.bolt_pattern(ctx, "nose", "M3", [(y, -z) for (y, z) in POD.nose_bolts(p)], face, kind="clearance", depth=LUG_L)
-    body, failed = fillet_inside(ctx, body, r=1.0)
+    def keep(at):
+        if at[0] < xt + CAM + 3 and abs(at[1]) < CAM / 2 + 3 and abs(at[2] - zc) < CAM / 2 + 3:
+            return "the camera's square body sits in the window and between the cheeks"
+        return None
+    body, failed = fillet_inside(ctx, body, r=1.0, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     ctx.rigid("camera", Location((xt + CAM / 2, 0, zc - CAM / 2)))
     ctx.rigid("base", Location())

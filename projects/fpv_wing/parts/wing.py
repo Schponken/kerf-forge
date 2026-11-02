@@ -31,7 +31,8 @@ def build(ctx):
     ya, yb = (p.pod_hw, p.seg_split_y) if inner else (p.seg_split_y, p.semi)
     y0, y1 = (ya, yb) if s > 0 else (-yb, -ya)
     body = aero.wing_solid(pf, y0, y1)
-    # spar tubes: a slip fit (tube OD + 0.3) so the segment slides on and is glued
+    # spar tubes: a slip fit (tube OD + 0.3): epoxied into the inner segment, the outer segment slides on and is held by
+    # the splice plate's two M3 (bolt-on, replaceable after a crash)
     for which, od in (("main", p.main_od), ("rear", p.rear_od)):
         a, b = L.tube_line(p, which, s)
         if abs(b[1]) > min(abs(y0), abs(y1)):
@@ -41,7 +42,7 @@ def build(ctx):
     if max(abs(y0), abs(y1)) > p.elevon_y0 and min(abs(y0), abs(y1)) < p.elevon_y1:
         body, _, (ha, hb) = aero.elevon_split(pf, body, e0, e1, p.hinge_frac, gap_deg=p.elevon_gap_deg)
         body = aero.largest(body)
-        if not inner:      # the elevon turns about its hinge line, which this outer segment carries
+        if inner:          # the elevon turns about its hinge line; the inner half (with the horn) hinges on this segment
             d = tuple((hb - ha) / np.linalg.norm(hb - ha))
             ctx.revolute("elevon", Axis(tuple(ha), d), range=(-p.elevon_throw, p.elevon_throw))
     if inner:
@@ -63,6 +64,7 @@ def build(ctx):
         a, b = L.lead_line(p, s)
         body = body - ctx.cut(aero.cylinder_between(a, b, 8.0, extend=1.0), why="servo lead (and its plug) to the pod", kind="wire channel")
         ctx.rigid("servo", L.servo_location(p, s))
+        ctx.rigid("splice", Location())
         ctx.rigid("root", Location())
     else:
         _f = importlib.util.spec_from_file_location("wing_fin", pathlib.Path(__file__).with_name("fin.py"))
@@ -71,6 +73,13 @@ def build(ctx):
         body = body - ctx.cut(slot, why="the fin's tab is glued in here", kind="fin slot")
         ctx.rigid("joint", Location())
         ctx.rigid("tip", Location())
+
+    # splice plate under the joint: one M3 heat-set insert each side of the split, from the bottom skin up
+    for (x, y, zl) in L.splice_holes(p, s):
+        if (abs(y) < p.seg_split_y) == inner:
+            loc = Location(Plane(origin=(x, y, zl), x_dir=(1, 0, 0), z_dir=(0, 0, -1)))
+            body = body - iface.bolt_pattern(ctx, f"splice_{'l' if s < 0 else 'r'}", "M3", [(0, 0)], loc, kind="heatset",
+                                             depth=8, teardrop="auto")
 
     def keep(at):
         if inner and abs(at[0] - p.servo_x) < 20 and p.servo_out_y - 5 < abs(at[1]) < p.servo_y + 25:

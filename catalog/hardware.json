@@ -1212,6 +1212,21 @@
     "cells": 6,
     "c_rating": 40,
     "c_burst": 80
+   },
+   "6S_1800": {
+    "model": "CNHL MiniStar 1800mAh 22.2V 6S 120C (XT60)",
+    "length": 87,
+    "width": 58,
+    "height": 34,
+    "weight_g": 302,
+    "connector": "XT60",
+    "note": "CNHL page (stock no. 1801206G, opened 2026-11-01): 'Size 58 x 34 x 87mm' (+/-1-5 mm), approx. 302 g (+/-5 g), 120C continuous / 240C burst on the spec line (the page title says max 200C: the lower 200C is used as c_burst), XT60, 12 AWG, JST-XH balance. Price on the page: $33.99.",
+    "source": "https://chinahobbyline.com/products/cnhl-ministar-series-1800mah-22-2v-6s-120c-lipo-battery-with-xt60-plug",
+    "confidence": "datasheet",
+    "capacity_mah": 1800,
+    "cells": 6,
+    "c_rating": 120,
+    "c_burst": 200
    }
   },
   "connectors": {

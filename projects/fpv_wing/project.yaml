@@ -32,42 +32,60 @@ params:
   fin_inset: {value: 6, unit: mm, min: 4, max: 15, step: 1, label: Fin inset from the wing tip}
   pod_x0: {value: -45, unit: mm, min: -70, max: -20, step: 5, label: Pod front face}
   pod_x1: {value: 265, unit: mm, min: 250, max: 290, step: 5, label: Pod rear face (motor mount)}
-  pod_bottom: {value: -65, unit: mm, min: -72, max: -60, step: 1, label: Pod bottom}
+  pod_bottom: {value: -62, unit: mm, min: -72, max: -60, step: 1, label: Pod bottom}
   pod_top: {value: 22, unit: mm, min: 16, max: 30, step: 1, label: Pod top}
   tail_hw: {value: 24, unit: mm, min: 18, max: 30, step: 1, label: Pod tail half width}
   tail_h: {value: 50, unit: mm, min: 36, max: 56, step: 1, label: Pod tail height}
-  tail_z: {value: -6, unit: mm, min: -20, max: 5, step: 1, label: Pod tail centre height (motor axis)}
+  tail_z: {value: -6, unit: mm, min: -20, max: 5, step: 1, label: Pod tail centre height}
   bay_top: {value: -21.5, unit: mm, min: -26, max: -18, step: 0.5, label: Battery bay top (shelf underside)}
   shelf_x1: {value: 215, unit: mm, min: 190, max: 230, step: 5, label: Shelf rear end}
-  bat_x: {value: 118, unit: mm, min: 50, max: 120, step: 1, label: Battery centre x (sets the CG)}
+  bat_x: {value: 118, unit: mm, min: 50, max: 135, step: 1, label: Battery centre x (sets the CG)}
   fc_x: {value: 52, unit: mm, min: 40, max: 60, step: 1, label: Flight controller centre x}
   esc_x: {value: 125, unit: mm, min: 115, max: 135, step: 1, label: ESC centre x}
   vtx_x: {value: 192, unit: mm, min: 180, max: 200, step: 1, label: VTX centre x}
-  ant_x: {value: 172, unit: mm, min: 160, max: 174, step: 1, label: VTX antenna x (through the pod top)}
+  ant_x: {value: 212, unit: mm, min: 208, max: 225, step: 1, label: VTX antenna x (through the pod top, behind the hatch)}
+  motor_z: {value: -6, unit: mm, min: -10, max: 0, step: 1, label: "Motor axis height (level with the CG: no pitch-down on a full-throttle launch)"}
 parts:
-  pod: {file: parts/pod.py, material: PLA, print_rot: [0, 90, 0], infill: 0.15, walls: 2, load_axis: Y}
-  wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
-  wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
-  wing_l2: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
-  wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
-  elevon_l: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45}
-  elevon_r: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45}
-  fin_l: {file: parts/fin.py, material: TPU, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
-  fin_r: {file: parts/fin.py, material: TPU, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
+  pod: {file: parts/pod.py, material: PLA, print_rot: [0, 90, 0], infill: 0.15, walls: 4, load_axis: Y, supports: needed,
+        modifiers: [{where: "both spar sleeves, wall to wall", size: "the sleeves (a box round each V)", infill: 1.0, why: "the sleeves carry the wing's root moment across: FEA assumes them solid"},
+                    {where: "the 10 insert bosses (nose, motor mount, hatch)", size: "12 mm cylinder round each", infill: 1.0, why: "heat-set inserts need solid plastic to grip"}]}
+  hatch: {file: parts/hatch.py, material: PLA, print_rot: [90, 0, 0], infill: 0.15, walls: 2}
+  wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, modifiers: &inner_mods
+             [{where: "the two root inserts", size: "12 mm cylinder round each, 10 mm deep", infill: 1.0, walls: 3, why: "the root bolts' inserts need solid plastic (3 % infill gives them nothing)"},
+              {where: "round the servo pocket", size: "the pocket + 4 mm all round", infill: 1.0, why: "the servo is glued to these walls"},
+              {where: "the splice insert", size: "12 mm cylinder, 10 mm up from the bottom skin", infill: 1.0, why: "splice-plate insert"}]}
+  wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, modifiers: *inner_mods}
+  wing_l2: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: &outer_mods
+             [{where: "the splice insert", size: "12 mm cylinder, 10 mm up from the bottom skin", infill: 1.0, why: "splice-plate insert"}]}
+  wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: *outer_mods}
+  elevon_l: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: &elevon_mods
+              [{where: "round the horn slot and the joiner-rod bore", size: "4 mm all round", infill: 1.0, why: "glued horn tab and carbon joiner"}]}
+  elevon_lo: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
+  elevon_r: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
+  elevon_ro: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
+  horn_l: {file: parts/horn.py, material: PETG, print_rot: [90, 0, 0], infill: 1.0, walls: 4}
+  horn_r: {file: parts/horn.py, material: PETG, print_rot: [90, 0, 0], infill: 1.0, walls: 4}
+  splice_l: {file: parts/splice.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4}
+  splice_r: {file: parts/splice.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4}
+  fin_l: {file: parts/fin.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
+  fin_r: {file: parts/fin.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2, airfoil: naca0008}
   nose: {file: parts/nose.py, material: TPU, print_rot: [0, 90, 0], infill: 0.15, walls: 2}
   motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: Y}
 purchased:
   motor: {catalog: drone.motors.2806_5_1300kv_7in, proxy: motor, groups: {mount: motor}}
-  battery: {catalog: drone.batteries.6S_2200, proxy: box, color: "#c8a400",
-            held_by: "the bay itself: floor below, shelf above (1 mm over the pack), side walls, nose in front; a strip of anti-slip pad on the floor stops it sliding"}
+  battery: {catalog: drone.batteries.6S_1800, proxy: box, color: "#c8a400",
+            held_by: "the 20 mm strap through the two floor tabs, over the pack"}
   xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, lying on the bay floor in front of the pack"}
   esc: {catalog: drone.escs.skywalker_60a_v2, proxy: box, color: "#2050a0", held_by: "double-sided foam tape on the shelf plus one cable tie round the shelf"}
   fc: {catalog: drone.fcs.f405_wmo, proxy: box, color: "#204080", held_by: "double-sided foam tape (soft-mounts the gyro) on the shelf, arrow forward"}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "double-sided tape on the shelf beside the FC; T antenna along the pod side wall"}
   gps: {catalog: drone.gps.m9n_5883, proxy: box, color: "#303030", held_by: "double-sided foam tape on the front of the shelf, flat, arrow forward, under plain PLA (no carbon above it)"}
   vtx: {catalog: drone.vtx.tx800, proxy: box, size: [28, 28, 8], color: "#1a1a1a", held_by: "double-sided foam tape on the rear of the shelf, heatsink up"}
-  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 20], color: "#20a0a0",
-            held_by: "screwed onto the VTX's MMCX; its tube up through the hole in the pod top, head standing on the pod"}
+  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 95], color: "#20a0a0",
+            held_by: "screwed onto the VTX's MMCX; its 95 mm tube up through the hole in the pod top behind the hatch, head on top"}
+  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 69, 1.8], color: "#404040", held_by: "through the two floor tabs and over the pack (Velcro)"}
+  joiner_l: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied into the inner elevon half, a slip fit in the outer half"}
+  joiner_r: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied into the inner elevon half, a slip fit in the outer half"}
   camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], held_by: "2 x M2 x 6 through the nose cheeks into its side holes"}
   servo_l: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
             held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
@@ -78,7 +96,7 @@ purchased:
   rear_l: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
   rear_r: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
 keepouts:
-  prop: {catalog: drone.props.7in, proxy: prop_disc, owner: motor, h: 8}
+  prop: {catalog: drone.props.hq_7x4x3, proxy: prop_disc, owner: motor, h: 8}
 assembly:
   root: pod
   joints:
@@ -86,8 +104,18 @@ assembly:
     - {parent: pod.wing_r, child: wing_r1.root}
     - {parent: wing_l1.root, child: wing_l2.joint}
     - {parent: wing_r1.root, child: wing_r2.joint}
-    - {parent: wing_l2.elevon, child: elevon_l.hinge, name: elevon_l, home: 0}
-    - {parent: wing_r2.elevon, child: elevon_r.hinge, name: elevon_r, home: 0}
+    - {parent: wing_l1.elevon, child: elevon_l.hinge, name: elevon_l, home: 0}
+    - {parent: wing_r1.elevon, child: elevon_r.hinge, name: elevon_r, home: 0}
+    - {parent: elevon_l.outer, child: elevon_lo.inner}
+    - {parent: elevon_r.outer, child: elevon_ro.inner}
+    - {parent: elevon_l.horn, child: horn_l.base}
+    - {parent: elevon_r.horn, child: horn_r.base}
+    - {parent: elevon_l.joiner, child: joiner_l.end_a}
+    - {parent: elevon_r.joiner, child: joiner_r.end_a}
+    - {parent: wing_l1.splice, child: splice_l.base}
+    - {parent: wing_r1.splice, child: splice_r.base}
+    - {parent: pod.hatch, child: hatch.base}
+    - {parent: pod.strap, child: strap.bottom}
     - {parent: wing_l2.tip, child: fin_l.tip}
     - {parent: wing_r2.tip, child: fin_r.tip}
     - {parent: pod.nose, child: nose.base}
@@ -109,8 +137,9 @@ assembly:
     - {parent: pod.vtx, child: vtx.bottom}
     - {parent: pod.vtx_ant, child: vtx_ant.bottom}
     - {parent: nose.camera, child: camera.bottom}
-  order: [pod, [main_l, main_r, rear_l, rear_r], [wing_l1, wing_r1], [servo_l, servo_r], [wing_l2, wing_r2], [elevon_l, elevon_r],
-          [fin_l, fin_r], motor_mount, motor, gps, fc, receiver, esc, vtx, vtx_ant, xt60, battery, camera, nose]
+  order: [pod, [main_l, main_r, rear_l, rear_r], [wing_l1, wing_r1], [servo_l, servo_r], [wing_l2, wing_r2], [splice_l, splice_r],
+          [horn_l, horn_r], [elevon_l, elevon_r], [joiner_l, joiner_r], [elevon_lo, elevon_ro], [fin_l, fin_r], motor_mount, motor,
+          gps, fc, receiver, esc, vtx, vtx_ant, xt60, battery, strap, hatch, camera, nose]
   key_access:
     - {group: motor, before: [pod], why: "the motor is screwed to the mount on the bench (heads sunk in the mount's front face) before the mount goes on the pod"}
   sweeps:
@@ -130,14 +159,14 @@ wiring:
   # world points [x, y, z]: x aft from the root leading edge, y right, z up from the root chord plane
   - {id: bat_lead, from: battery, to: xt60, v: 25.2, gauge: 12, color: red/black, length_mm: 120, supplied: battery,
      note: "the pack's own lead (comes with the battery)"}
-  - {id: main, from: xt60, to: fc, v: 25.2, gauge: 12, color: red/black, length_mm: 230,
-     route: [[-25, 0, -48], [-25, -12, -5], [30, -12, -5]],
-     note: "XT60 pigtail up the front of the bay, over the GPS, to the FC's BAT pads; the FC's current sensor sees everything"}
+  - {id: main, from: xt60, to: fc, v: 25.2, gauge: 12, color: red/black, length_mm: 260,
+     route: [[-25, -36, -50], [-25, -36, -10], [30, -30, -10]],
+     note: "XT60 pigtail up the left front corner of the bay (away from the GPS compass) to the FC's BAT pads; the FC's current sensor sees everything"}
   - {id: esc_pwr, from: fc.esc, to: esc, v: 25.2, gauge: 12, color: red/black, length_mm: 120,
      note: "FC ESC pads to the ESC's input leads (cut the ESC's leads to length, no connector)"}
-  - {id: phases, from: esc.esc, to: motor, v: 25.2, gauge: 14, conductors: 3, color: black, length_mm: 220,
-     route: [[175, 0, -8], [212, 0, -8], [250, 0, -22], [272, 0, -22]],
-     note: "ESC output leads (14 AWG, 4 mm bullets) back along the shelf, through the hole low in the rear wall and the same hole in the mount, up to the motor base; swap two phases if it spins the wrong way (pusher)"}
+  - {id: phases, from: esc.esc, to: motor, v: 25.2, gauge: 14, conductors: 3, color: black, length_mm: 230,
+     route: [[175, 0, -8], [212, 0, -8], [250, 0, -22], [273, 0, -22]],
+     note: "ESC output leads (14 AWG, 4 mm bullets) back along the shelf, through the hole low in the rear wall and the same hole in the mount, to the motor base; swap two phases if it spins the wrong way (pusher)"}
   - {id: gps_5v, from: fc.4v5, to: gps, v: 5.0, gauge: 28, color: red/black, length_mm: 90}
   - {id: rx_5v, from: fc.4v5, to: receiver, v: 5.0, gauge: 28, color: red/black, length_mm: 60}
   - {id: vtx_5v, from: fc.4v5, to: vtx, v: 5.0, gauge: 26, color: red/black, length_mm: 210,
@@ -145,10 +174,10 @@ wiring:
      note: "beside the ESC, under the spar sleeves, to the VTX"}
   - {id: cam_pwr, from: fc.vbat, to: camera, v: 25.2, gauge: 28, color: red/black, length_mm: 180,
      route: [[30, -12, -5], [-20, 0, -5]], note: "filtered Vbat pad to the camera (5-36 V), out through the front opening into the nose"}
-  - {id: servo_l_pwr, from: fc.vx, to: servo_l, v: 5.0, gauge: 26, color: red/brown, length_mm: 360,
+  - {id: servo_l_pwr, from: fc.vx, to: servo_l, v: 6.0, gauge: 26, color: red/brown, length_mm: 360,
      route: [[100, -30, -8], [lead_x1, "-(pod_hw - 3)", lead_z1], [lead_x0, "-lead_y0", lead_z0]],
-     note: "the servo's own lead (+ an extension if short) out of the pocket, along the wing's channel, through the pod side wall to the FC's Vx/S5 header"}
-  - {id: servo_r_pwr, from: fc.vx, to: servo_r, v: 5.0, gauge: 26, color: red/brown, length_mm: 360,
+     note: "the servo's own lead (+ an extension if short) out of the pocket, along the wing's channel, through the pod side wall to the FC's Vx/S5 header; bridge the FC's Vx=6V pads (Matek manual) so the servos get 6 V (3.85 kgf.cm)"}
+  - {id: servo_r_pwr, from: fc.vx, to: servo_r, v: 6.0, gauge: 26, color: red/brown, length_mm: 360,
      route: [[100, 30, -8], [lead_x1, "pod_hw - 3", lead_z1], [lead_x0, lead_y0, lead_z0]],
      note: "as the left one, to the S6 header"}
   - {id: esc_sig, from: fc, to: esc, kind: signal, gauge: 28, color: white, length_mm: 120, pin: S1,
@@ -182,7 +211,7 @@ requirements:
   - {id: twr, check: thrust_to_weight, motors: [motor], min_ratio: 1.5,
      why: "brief: >= 1.5 for a fast FPV wing (climbs out of a hand launch); catalog thrust at 23.42 V scaled to the 22.2 V nominal pack"}
   - {id: flight_time, check: flight_time, min_min: 12,
-     why: "long-range FPV: at least 12 min at 80 km/h cruise on 80 % of the 2200 mAh pack"}
+     why: "long-range FPV: at least 12 min at 80 km/h cruise on 80 % of the 1800 mAh pack"}
   - {id: prop_clear, check: prop_clearance, min_mm: 5, joints: [elevon_l, elevon_r],
      why: "the 7 in prop clears every part by 5 mm, also with the elevons at full throw"}
   - {id: span, check: size_max, max_mm: [600, 1050, 250], why: "brief: span 950-1050 mm; fits on the bench / in a car"}
@@ -191,7 +220,7 @@ requirements:
     check: fea_static
     part: motor_mount
     case: crash
-    why: "twice the motor's full thrust (2 x 2319 g = 45.5 N) pulling the motor screws away from the pod (a nose-in crash throws the motor + prop aft with less: 62 g x 50 g = 30 N); plate held only at its four pod bolts"
+    why: "the pylon carries the raised motor: twice its full thrust (2 x 2319 g = 45.5 N) along the axis at the motor screws, 24 mm above the upper pod bolts, the plate held only at its four pod bolts (a nose-in crash throws motor + prop aft with less: 64 g x 50 g = 31 N)"
     direction: xy            # the plate prints flat: its bending stress lies in the layers
     sf: 3.0
     max_disp_mm: 0.5

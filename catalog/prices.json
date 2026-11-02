@@ -278,6 +278,22 @@
     "source": "https://www.getfpv.com/propellers/mini-quad-propellers/hqprop-dp-7x4x3-propeller-set-of-4-light-grey.html",
     "note": "GetFPV 'HQProp DP 7X4X3 Propeller (Set of 4 - Light Grey)', 2 CW + 2 CCW, $3.99: the wing uses one of the pusher-direction pair, the rest are spares."
   },
+  "rods.cf_rod_3": {
+    "buy": "https://www.ebay.com/itm/331978207686",
+    "pack_qty": 1,
+    "pack_usd": 3.21,
+    "checked": "2026-11-01",
+    "source": "https://www.ebay.com/itm/331978207686",
+    "note": "eBay '1 x Diameter 3mm x Length 800mm Premium 100% Carbon Fiber Rod (Pultruded)', one 800 mm rod, GBP 2.40 (~$3.21 shown by eBay). One rod gives both 50 mm elevon joiners with plenty left; the BOM's two pieces overstate it by one rod."
+  },
+  "drone.batteries.6S_1800": {
+    "buy": "https://chinahobbyline.com/products/cnhl-ministar-series-1800mah-22-2v-6s-120c-lipo-battery-with-xt60-plug",
+    "pack_qty": 1,
+    "pack_usd": 33.99,
+    "checked": "2026-11-01",
+    "source": "https://chinahobbyline.com/products/cnhl-ministar-series-1800mah-22-2v-6s-120c-lipo-battery-with-xt60-plug",
+    "note": "CNHL store 'CNHL MiniStar 1800mAh 22.2V 6S 120C Lipo Battery with XT60 Plug', 1 pack, $33.99 (2-pack $67.98)."
+  },
   "dowel:3x16": {
     "buy": "https://www.zoro.com/i/G3411725/",
     "pack_qty": 10,

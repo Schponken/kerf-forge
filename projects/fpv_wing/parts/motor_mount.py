@@ -22,17 +22,20 @@ CB = 3.0          # motor screw counterbore: 3 mm grip + the motor's 3 mm thread
 def build(ctx):
     p = ctx.p
     x0 = p.pod_x1
-    w, h = 2 * p.tail_hw, p.tail_h
-    plate = Pos(x0 + PLATE_T / 2, 0, p.tail_z) * Rot(0, 90, 0) * extrude(RectangleRounded(h, w, 10), PLATE_T / 2, both=True)
+    # the tail's outline (the motor axis sits level with the CG, so a full-throttle launch doesn't pitch the nose
+    # down; the prop can touch on a belly landing - an accepted trade-off, DESIGN.md)
+    w = 2 * p.tail_hw
+    zlo, zhi = p.tail_z - p.tail_h / 2, max(p.tail_z + p.tail_h / 2, p.motor_z + 21.0)
+    plate = Pos(x0 + PLATE_T / 2, 0, (zlo + zhi) / 2) * Rot(0, 90, 0) * extrude(RectangleRounded(zhi - zlo, w, 10), PLATE_T / 2, both=True)
     # four M3 into the pod's tail inserts, heads on the aft face
     aft = Location(Plane(origin=(x0 + PLATE_T, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))      # local (u, v) = world (y, z)
     plate = plate - iface.bolt_pattern(ctx, "motor_mount", "M3", POD.mount_bolts(p), aft, kind="clearance", depth=PLATE_T)
     # motor base pattern, heads sunk in the front face
-    front = Location(Plane(origin=(x0, 0, p.tail_z), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))
+    front = Location(Plane(origin=(x0, 0, p.motor_z), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))
     plate = plate - iface.motor_mount(ctx, L.MOTOR, front, "motor", PLATE_T, kind="counterbore", counterbore_depth=CB,
                                       center_hole=8.0)
     # why: the motor's phase leads leave its base sideways and go through here into the pod (same hole in the tail)
     plate = plate - Pos(x0, 0, POD.lead_hole_z(p)) * Rot(0, 90, 0) * Cylinder(POD.LEAD_HOLE_D / 2, 2 * PLATE_T + 2)
-    ctx.rigid("motor", Location(Plane(origin=(x0 + PLATE_T, 0, p.tail_z), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
+    ctx.rigid("motor", Location(Plane(origin=(x0 + PLATE_T, 0, p.motor_z), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
     ctx.rigid("base", Location())
     return ctx.finish(plate)

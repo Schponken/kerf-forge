@@ -12,10 +12,12 @@ AIRFOIL = "mh45"
 MAIN_TUBE = "rods.cf_tube_8x6"      # bending spar (strength data: catalog, REFERENCES.md)
 REAR_TUBE = "rods.cf_tube_6x4"
 MOTOR = "drone.motors.2806_5_1300kv_7in"
+BATTERY = "drone.batteries.6S_1800"
 SERVO = "servos.KST_X08_Plus"
 SERVO_X = 200.0          # servo tab-plane centre x: between the spars at its station (DESIGN.md)
 SERVO_Y = 228.0          # |y| of the servo's tab plane; the output points inboard, the arm sits at |y| ~217
-LEAD_ROOT_X = 130.0      # where the servo lead's channel meets the root face (between the root bolts and the rear spar)
+LEAD_ROOT_X = 130.0
+SPLICE_X = 226.0         # splice-plate screws: between the main (198) and rear (255) spars at the split      # where the servo lead's channel meets the root face (between the root bolts and the rear spar)
 
 
 TE_MIN = 1.0                           # printed trailing edge: two perimeters of a 0.4 mm nozzle plus margin
@@ -71,6 +73,19 @@ def servo_location(p, side):
 def lead_line(p, side):
     """Servo lead channel (pocket end, root end), world points."""
     return ((p.lead_x0, side * p.lead_y0, p.lead_z0), (p.lead_x1, side * (p.pod_hw - 3.0), p.lead_z1))
+
+
+def splice_holes(p, side):
+    """(x, y, z of the bottom skin) of the splice plate's two M3: between the spars, 14 mm each side of the split."""
+    pf = planform(p)
+    out = []
+    for dy in (-14.0, 14.0):
+        y = p.seg_split_y + dy
+        x = SPLICE_X
+        frac = (x - pf.x_le(y)) / pf.chord(y)
+        mid = aero.spar_point(pf, y, frac)
+        out.append((x, side * y, float(mid[2] - aero.depth_at(pf, y, frac) / 2)))
+    return out
 
 
 def planform(p):
