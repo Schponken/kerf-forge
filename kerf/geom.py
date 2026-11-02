@@ -51,9 +51,35 @@ def bbox(shape):
     return np.array([b.min.X, b.min.Y, b.min.Z]), np.array([b.max.X, b.max.Y, b.max.Z])
 
 
+def _fast_box(shape):
+    """World axis-aligned box that CONTAINS the shape (may be a little larger when rotated): the shape's own-frame box,
+    computed once and cached on the shape, with its 8 corners moved by the current location. bbox() re-derives an
+    optimal box from the exact geometry on every call (OCC BRepBndLib.AddOptimal), which was > 90 % of the time of an
+    assembly interference pass (820 pairs x 2 boxes per pose on drone_foldable_wings)."""
+    km = kmesh(shape)
+    if km is not None:
+        return bbox(shape)
+    try:
+        cached = getattr(shape, "_kerf_box", None)
+        M = _loc_matrix(shape.location)
+        if cached is None or not cached[0].IsPartner(shape.wrapped):
+            lo, hi = bbox(shape)
+            corners = np.array([[x, y, z] for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])])
+            local = (corners - M[:, 3]) @ M[:, :3]                       # world -> own frame
+            cached = (shape.wrapped, local.min(axis=0), local.max(axis=0))
+            shape._kerf_box = cached
+        _, llo, lhi = cached
+        corners = np.array([[x, y, z] for x in (llo[0], lhi[0]) for y in (llo[1], lhi[1]) for z in (llo[2], lhi[2])])
+        w = corners @ M[:, :3].T + M[:, 3]
+        return w.min(axis=0), w.max(axis=0)
+    except Exception:  # noqa: BLE001 - odd shape types: the exact box
+        return bbox(shape)
+
+
 def bbox_overlap(a, b, pad: float = 0.0) -> bool:
-    amin, amax = bbox(a)
-    bmin, bmax = bbox(b)
+    """Could a and b touch? Conservative (never False for touching shapes): cached boxes moved with the shapes."""
+    amin, amax = _fast_box(a)
+    bmin, bmax = _fast_box(b)
     return bool(np.all(amin - pad <= bmax) and np.all(bmin - pad <= amax))
 
 
