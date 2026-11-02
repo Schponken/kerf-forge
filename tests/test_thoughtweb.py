@@ -85,6 +85,9 @@ await p.waitForTimeout(3500);
 out.ideas = await p.$$eval('#mctw .n.idea', e => e.length);
 out.sources = await p.$$eval('#mctw .n.source', e => e.length);
 out.now = await p.textContent('#mctw .now');
+out.feed = await p.$$eval('#mc .feed .fi .w', e => e.map(x => x.textContent));
+out.tips = await p.$$eval('#mc .feed .fi', e => e.map(x => x.title));
+out.scene = await p.textContent('#mc .scene b');
 await p.screenshot({{path: '{tmp_path}/live.png'}});
 await p.evaluate(() => closeMc());
 await p.evaluate(() => showDecided('drone_foldable_wings'));
@@ -94,6 +97,12 @@ out.opts = await p.$$eval('.twmodal .n.option', e => e.map(x => x.getAttribute('
 await p.screenshot({{path: '{tmp_path}/project.png'}});""", tmp_path)
     assert out["errs"] == [], out
     assert out["ideas"] >= 3 and out["sources"] >= 2 and ":" in out["now"]
+    feed = " | ".join(out["feed"])   # plain-language narration, newest first; raw tool + argument kept on hover
+    for said in ("Testing that everything fits", "Drawing the hub", "Writing the plan", "real part sizes in the parts catalog",
+                 "Reading a page on shop.iflight.com", "Looking up “2806.5 motor thrust"):
+        assert said in feed, feed
+    assert any(t.startswith("Bash: ") for t in out["tips"]), out["tips"]
+    assert out["scene"] in ("Testing and fixing", "Finished"), out["scene"]   # the workshop scene for the current stage
     assert any("chosen" in c for c in out["opts"]) and any("set_aside" in c for c in out["opts"])
     import shutil
     shutil.copy(tmp_path / "live.png", ROOT / ".cache" / "tw_live.png")

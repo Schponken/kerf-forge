@@ -93,6 +93,7 @@ def test_pruned_sampling_equals_full_subdivision():
     R, h = 60.0, 8.0
     for shape in (Box(200, 30, 6), Rot(20, 10, 0) * Cylinder(10, 120), Sphere(25), Box(40, 40, 40) - Sphere(24)):
         v, f = geom.mesh(shape, tol=0.05, ang=0.2)
+        memo = {}
         for _ in range(6):
             M = Rot(*rng.uniform(-180, 180, 3)) * Pos(*rng.uniform(-90, 90, 3))
             t = M.wrapped.Transformation()
@@ -103,3 +104,5 @@ def test_pruned_sampling_equals_full_subdivision():
             want = float(rq._cyl_dist(full, R, h).min())
             got = rq._min_dist_sampled(q, f, lambda p: rq._cyl_dist(p, R, h))
             assert got == pytest.approx(want, abs=1e-9)
+            got = rq._min_dist_sampled(v, f, lambda p: rq._cyl_dist(p, R, h), move=lambda p: p @ A.T + b, memo=memo)
+            assert got == pytest.approx(want, abs=1e-9)                 # own frame + memo shared across placements

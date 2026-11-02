@@ -170,7 +170,9 @@ def explain(msg: str, parts=()) -> dict:
 
 def explain_requirement(r: dict) -> dict:
     """A failed requirement row as a card."""
-    name = CHECK_NAMES.get(r.get("check", ""), r.get("check", "") or r.get("id", ""))
+    from kerf import glossary
+    c = r.get("check", "")
+    name = CHECK_NAMES.get(c) or (glossary.name(c) if c in glossary.CHECKS else c or r.get("id", ""))
     u = r.get("unit") or ""
     unit = u if u.startswith((":", "%", "°", "x ")) else f" {u}" if u else ""
     val, lim, bound = r.get("value"), r.get("limit"), r.get("bound") or "limit"

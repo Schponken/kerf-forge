@@ -7,6 +7,7 @@
  "drone.motors.2806_5_1300kv_7in",
  "drone.props.hq_7x4x3",
  "electronics.receivers.elrs_nano",
+ "electronics.wire_misc.heatshrink_3mm",
  "fdm_fits.pin",
  "fdm_holes.M3",
  "materials.CF-PETG",
