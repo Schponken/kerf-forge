@@ -53,6 +53,15 @@ def _rigid_part(sh):
     return out
 
 
+AXES = [np.array(v, float) for v in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1))]
+
+
+def _enclosed(point, present, extent: float) -> bool:
+    """True when the point is shut in: a thin ray from it hits an item in every one of the six axis directions. A key
+    whose handle end sits there is inside a closed box (no hand can hold it), however clear its shank is."""
+    return all(_blocked(_rod(point, d, 0.5, extent), present) for d in AXES)
+
+
 def _ball_end_dir(start, z, k, present, n_azimuth=12):
     """A ball-end key direction (tilted k['ball_deg'] off the screw axis) that clears `present`, else None."""
     a = math.radians(k["ball_deg"])
@@ -62,7 +71,8 @@ def _ball_end_dir(start, z, k, present, n_azimuth=12):
     for t in np.linspace(0, 2 * math.pi, n_azimuth, endpoint=False):
         d = math.cos(a) * z + math.sin(a) * (math.cos(t) * ex + math.sin(t) * ey)
         # the ball end sits in the socket, so the tilted shank starts one key radius up the axis
-        if not _blocked(_rod(start + z * k["r"], d, k["r"], k["reach"]), present):
+        if not _blocked(_rod(start + z * k["r"], d, k["r"], k["reach"]), present) and \
+                not _enclosed(start + z * k["r"] + d * k["reach"], present, k.get("extent", 2000.0)):
             return d
     return None
 
@@ -90,6 +100,8 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
             if fs.role == "female":
                 female_items.setdefault(fs.group, set()).add(i)
     all_shapes = [(i, _rigid_part(it.shape)) for i, it in items.items() if it.shape is not None and it.role != "keepout"]
+    los = [geom.bbox(sh) for _, sh in all_shapes]
+    extent = float(np.linalg.norm(np.max([b[1] for b in los], axis=0) - np.min([b[0] for b in los], axis=0))) if los else 1.0
     # sub-assemblies a linear order can't express: {group, before: [items], why} = those items go on after this
     # group's screws are driven (e.g. each motor of a coax pair is screwed to its own plate before the plates join)
     later = {}
@@ -113,6 +125,9 @@ def hex_key_reach(asm, n_azimuth: int = 12) -> tuple[list, list, list]:
             top = o + z * (screw_spec(s.screw)["head_h"] if s.kind in HEAD_ON_SURFACE else 0.0)
             start = top + z * 0.05           # the key tip sits in the socket; start just above the head
             hits = _blocked(_rod(start, z, k["r"], k["reach"]), present)
+            k["extent"] = extent
+            if not hits and _enclosed(start + z * k["reach"], present, extent):
+                hits = ["(a closed cavity: the key's handle end would be shut in)"]
             res = {"item": iid, "group": s.group, "screw": s.screw, "key_mm": k["s"], "at": np.round(top, 2).tolist(),
                    "straight": not hits, "blocked_by": hits}
             if hits:

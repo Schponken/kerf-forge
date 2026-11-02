@@ -86,20 +86,26 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
         lo, hi = geom.bbox(s)
         for n in range(int(it.spec.get("qty", 1))):
             copies.append((iid, n, s, float(hi[0] - lo[0]), float(hi[1] - lo[1])))
-    copies.sort(key=lambda c: -c[4])
-    plates_, cur, x, y, row_h = [], [], gap, gap, 0.0
-    for c in copies:
-        iid, n, s, w, h = c
-        if x + w + gap > X:
-            x, y, row_h = gap, y + row_h + gap, 0.0
-        if y + h + gap > Y:
+    # one material per plate: PLA, PETG and TPU want different bed and nozzle temperatures (and plate surfaces)
+    mats = sorted({proj.items[c[0]].spec.get("material", "PETG") for c in copies})
+    plates_, plate_mat = [], []
+    for mat in mats:
+        group = sorted((c for c in copies if proj.items[c[0]].spec.get("material", "PETG") == mat), key=lambda c: -c[4])
+        cur, x, y, row_h = [], gap, gap, 0.0
+        for c in group:
+            iid, n, s, w, h = c
+            if x + w + gap > X:
+                x, y, row_h = gap, y + row_h + gap, 0.0
+            if y + h + gap > Y:
+                plates_.append(cur)
+                plate_mat.append(mat)
+                cur, x, y, row_h = [], gap, gap, 0.0
+            cur.append((iid, n, Pos(x + w / 2 - X / 2, y + h / 2 - Y / 2, 0) * s))
+            x += w + gap
+            row_h = max(row_h, h)
+        if cur:
             plates_.append(cur)
-            cur, x, y, row_h = [], gap, gap, 0.0
-        cur.append((iid, n, Pos(x + w / 2 - X / 2, y + h / 2 - Y / 2, 0) * s))
-        x += w + gap
-        row_h = max(row_h, h)
-    if cur:
-        plates_.append(cur)
+            plate_mat.append(mat)
     out = []
     for k, plate in enumerate(plates_, 1):
         f = outdir / f"plate_{k}.3mf"
@@ -115,7 +121,7 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
                 m.add_shape(s, linear_deflection=0.01, angular_deflection=0.1, part_number=f"{iid}_{n + 1}")
             m.write(str(f))
         _write_part_settings(f, {f"{iid}_{n + 1}": proj.items[iid].spec for iid, n, _ in plate})
-        out.append({"file": f.name, "parts": [f"{iid} #{n + 1}" for iid, n, _ in plate]})
+        out.append({"file": f.name, "material": plate_mat[k - 1], "parts": [f"{iid} #{n + 1}" for iid, n, _ in plate]})
     (outdir / "PRINT_SETTINGS.md").write_text(print_settings_md(proj), encoding="utf-8")
     return out
 
@@ -135,7 +141,24 @@ def print_settings_md(proj) -> str:
     for iid, it in proj.printed.items():
         ps = part_print_settings(it.spec)
         L.append(f"| {iid} | {ps['material']} | {ps['infill_pct']} % | {ps['walls']} | {ps['print_rot']} |")
+    L += modifiers_md(proj)
     return "\n".join(L) + "\n"
+
+
+def modifiers_md(proj) -> list[str]:
+    """PRINT_SETTINGS.md section for project.yaml part `modifiers:` [{where, size, infill, walls, why}]: local slicer
+    settings (a 100 % infill block round an insert, a servo pocket) the part's strength depends on."""
+    mods = [(iid, m) for iid, it in proj.printed.items() for m in it.spec.get("modifiers") or []]
+    if not mods:
+        return []
+    L = ["", "## Modifiers (local settings the strength depends on)", "",
+         "Add a modifier volume in the slicer (Bambu Studio / OrcaSlicer: right-click the object, *Add modifier*, "
+         "size and place it as below) and give it these settings; without them the part is weaker than its checks "
+         "assume.", "", "| Part | Where | Size | Infill | Wall loops | Why |", "|---|---|---|---|---|---|"]
+    for iid, m in mods:
+        L.append(f"| {iid} | {m['where']} | {m.get('size', '')} | {round(float(m.get('infill', 1.0)) * 100)} % | "
+                 f"{m.get('walls', '')} | {m.get('why', '')} |")
+    return L
 
 
 def _write_part_settings(path, specs: dict):

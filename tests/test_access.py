@@ -296,3 +296,13 @@ assembly:
     centre = [r for r in res if r["group"] == "horn centre screw"]
     assert len(centre) == 1 and centre[0]["screw"] == "M2"
     assert (not any("horn centre screw" in p for p in problems)) == ok
+
+
+def test_key_handle_inside_a_closed_box_is_shut_in():
+    """A key whose long arm clears everything but ends inside a closed box can't be held: _enclosed catches it."""
+    from build123d import Align, Box
+    import numpy as np
+    shell = Box(100, 100, 100) - Box(90, 90, 90)
+    assert access._enclosed(np.array([0.0, 0, 0]), [("box", shell)], 300)
+    opened = shell - Box(40, 40, 60, align=(Align.CENTER, Align.CENTER, Align.MIN))   # a hatch in the top
+    assert not access._enclosed(np.array([0.0, 0, 0]), [("box", opened)], 300)

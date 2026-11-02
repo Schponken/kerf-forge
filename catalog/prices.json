@@ -270,6 +270,14 @@
     "source": "https://www.walmart.com/ip/3m-Double-Sided-Foam-Tape-5-yd-L-3-4-W-4466/373315909",
     "note": "Walmart '3M Double Sided Foam Tape, 5 yd L, 3/4 in W 4466' (62 mil), one roll, $18.32; out of stock on the check date."
   },
+  "drone.props.hq_7x4x3": {
+    "buy": "https://www.getfpv.com/propellers/mini-quad-propellers/hqprop-dp-7x4x3-propeller-set-of-4-light-grey.html",
+    "pack_qty": 4,
+    "pack_usd": 3.99,
+    "checked": "2026-11-01",
+    "source": "https://www.getfpv.com/propellers/mini-quad-propellers/hqprop-dp-7x4x3-propeller-set-of-4-light-grey.html",
+    "note": "GetFPV 'HQProp DP 7X4X3 Propeller (Set of 4 - Light Grey)', 2 CW + 2 CCW, $3.99: the wing uses one of the pusher-direction pair, the rest are spares."
+  },
   "dowel:3x16": {
     "buy": "https://www.zoro.com/i/G3411725/",
     "pack_qty": 10,

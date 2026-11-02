@@ -194,6 +194,8 @@ def write(proj, rep: dict, plates: list, outdir: Path, use_slicer: bool = True) 
         brim = f"{st['brim_mm']} mm outer brim (tall and narrow on the bed)" if st["brim"] == "outer_only" else "auto"
         L.append(f"| {iid} | {ps['material']} | {orientation_words(ps['print_rot'])} | {st['layer_mm']} mm | {sup} | {brim} | "
                  f"{ps['infill_pct']} % | {ps['walls']} |")
+    from .export import modifiers_md
+    L += modifiers_md(proj)
     L += ["", "The mass estimate and the strength checks assume these infill and wall settings: keep them."]
     (outdir / "PRINT_SETTINGS.md").write_text("\n".join(L) + "\n", encoding="utf-8")
     return {"plates": [{k: r[k] for k in ("file", "parts", "grams", "min_seconds", "materials", "sliced")} for r in rows],

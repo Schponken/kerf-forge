@@ -142,3 +142,16 @@ def test_sf_floor_from_engineering_s3(tmp_path, extra, sf, ok):
     r = requirements.run_all(proj, A.plan(proj))[0]
     assert r["ok"] is ok, r["detail"]
     assert ("below the ENGINEERING.md section 3 minimum" in r["detail"]) is (not ok)
+
+
+def test_fea_part_with_thin_walls_fails():
+    """ENGINEERING.md s5: FEA treats a part as solid, so a part with a strength check must print with >= 4 walls."""
+    from types import SimpleNamespace as S
+    from build123d import Box
+    from kerf import requirements as R
+    for walls, ok in ((2, False), (4, True)):
+        it = S(id="bar", role="printed", spec={"material": "PLA", "walls": walls}, shape=Box(60, 10, 10))
+        proj = S(items={"bar": it}, params={})
+        r = R.fea_static(proj, None, "bar", fixed={"box": [[-31, -6, -6], [-29.9, 6, 6]]},
+                         loads=[{"box": [[29.9, -6, -6], [31, 6, 6]], "force_n": [0, 0, -5]}], sf=2.0)
+        assert r["ok"] is ok and (("wall loops" in r["detail"]) is (not ok))

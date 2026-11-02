@@ -129,6 +129,23 @@ def static_torque(proj, asm, joint, actuator=None, stall_kgcm=None, max_fraction
             "detail": f"worst gravity torque on {joint} (kg*cm) at {worst_pose}; stall {stall_kgcm} kg*cm x {max_fraction}"}
 
 
+def _motor_thrust_g(proj, mid, e, used):
+    """Full-throttle thrust of one motor WITH THE PROP FITTED TO IT: the prop is the catalog prop of the prop-disc
+    keep-out owned by this motor; the motor's `thrust_by_prop` table gives its tested thrust on that prop. A table
+    without that prop is an error (thrust depends on the prop more than the motor); no table at all falls back to
+    thrust_g_max (the maker's single headline figure)."""
+    prop = next((it.spec.get("catalog") for it in proj.items.values()
+                 if it.role == "keepout" and it.spec.get("proxy") == "prop_disc" and it.spec.get("owner") == mid), None)
+    table = e.get("thrust_by_prop") or {}
+    if table:
+        if prop not in table:
+            raise ValueError(f"thrust_to_weight: {mid}'s catalog thrust_by_prop has no figure for its prop {prop} "
+                             f"(has {sorted(table)}): use a tested prop or add its sourced thrust")
+        used.append(prop)
+        return float(table[prop])
+    return float(e["thrust_g_max"])
+
+
 @check("thrust_to_weight")
 def thrust_to_weight(proj, asm, min_ratio, thrust_g_total=None, test_v=None, pack_v=None, motors=None, factor=1.0,
                      output_limit=1.0):
@@ -144,9 +161,10 @@ def thrust_to_weight(proj, asm, min_ratio, thrust_g_total=None, test_v=None, pac
             raise ValueError("thrust_to_weight: give thrust_g_total or motors, not both")
         tvs = set()
         thrust_g_total = 0.0
+        props_used = []
         for mid in motors:
             e = catalog.get(proj.items[mid].spec["catalog"])
-            thrust_g_total += float(e["thrust_g_max"]) * float(factor) * float(output_limit) ** 2
+            thrust_g_total += _motor_thrust_g(proj, mid, e, props_used) * float(factor) * float(output_limit) ** 2
             tvs.add(float(e.get("thrust_test_v") or 0) or None)
         if len(tvs) != 1 or None in tvs:
             raise ValueError("thrust_to_weight: every motor needs a catalog thrust_test_v (and the same one)")
@@ -167,6 +185,8 @@ def thrust_to_weight(proj, asm, min_ratio, thrust_g_total=None, test_v=None, pac
     m = sum(item_mass_g(it) for it in proj.items.values() if it.role != "keepout") + wiring_mass_g(proj)
     r = t / m if m else 0.0
     volt = f" ({thrust_g_total} g at {test_v} V x ({pack_v}/{test_v})^2 = {t:.0f} g at {pack_v} V)" if test_v else ""
+    if motors and props_used:
+        volt += f"; thrust tested on the fitted prop{'s' if len(set(props_used)) > 1 else ''} {', '.join(sorted(set(props_used)))}"
     return {"ok": r >= min_ratio, "value": round(r, 2), "limit": min_ratio,
             "detail": f"{t:.0f} g thrust / {m:.0f} g all-up mass{volt}"}
 
@@ -366,9 +386,14 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
     strength = xy - (xy - z) * nz2
     allow = strength / sf
     sf_ok = sf >= need - 1e-9
-    ok = sf_ok and res["max_vm_mpa"] <= allow and (max_disp_mm is None or res["max_disp_mm"] <= max_disp_mm)
+    walls = int(it.spec.get("walls", 4))
+    walls_ok = walls >= 4
+    ok = sf_ok and walls_ok and res["max_vm_mpa"] <= allow and (max_disp_mm is None or res["max_disp_mm"] <= max_disp_mm)
     sf_msg = "" if sf_ok else (f"SF {sf} is below the ENGINEERING.md section 3 minimum {need} for this case "
                                f"({case}, {nz2 * 100:.0f} % across layers): raise sf; ")
+    if not walls_ok:
+        sf_msg += (f"{part} prints with {walls} wall loops but this FEA treats it as solid: ENGINEERING.md section 5 "
+                   f"needs >= 4 loops (and 100 % infill modifiers where the stress is) on a part with a strength check; ")
     return {"ok": ok, "value": round(res["max_vm_mpa"], 2), "limit": round(allow, 2), "sf_min": need,
             "applied_force_n": res["applied_force_n"], "applied_moment_nmm": res["applied_moment_nmm"],
             "max_disp_mm": round(res["max_disp_mm"], 3), "max_disp_at": res.get("max_disp_at"),
@@ -669,6 +694,30 @@ def prop_clearance(proj, asm, min_mm, min_between_mm=None, props=None, ignore=No
                       f"({len(props)} discs, {len(all_pose)} poses)"}
 
 
+@check("prop_ground")
+def prop_ground(proj, asm, min_mm, props=None, up=(0, 0, 1)):
+    """Ground clearance of every prop disc with the craft resting level on its lowest point (a belly landing for a
+    wing, the landing gear for a drone): (lowest point of the disc) - (lowest point of every real item, keep-outs
+    excluded), measured along `up` at the home pose. A stopped prop can rest at any angle, so the whole disc counts."""
+    items = proj.items
+    props = props or [i for i, it in items.items() if it.role == "keepout" and it.spec.get("proxy") == "prop_disc"]
+    if not props:
+        raise ValueError("no prop discs (keepouts with proxy: prop_disc) in the project")
+    u = np.asarray(up, float)
+    u = u / np.linalg.norm(u)
+
+    def low(shape):
+        lo, hi = geom.bbox(shape)
+        corners = np.array([[x, y, z] for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])])
+        return float((corners @ u).min())
+    A.solve(asm)
+    ground = min(low(it.shape) for it in items.values() if it.role != "keepout" and it.shape is not None)
+    worst = min(((low(items[p].shape) - ground), p) for p in props)
+    return {"ok": worst[0] >= min_mm - 1e-9, "value": round(worst[0], 2), "limit": min_mm,
+            "detail": f"{worst[1]}: lowest point of the disc {worst[0]:.1f} mm above the craft's lowest point "
+                      f"(resting level; negative = the prop hits the ground)"}
+
+
 SLOW = {"fea_static"}
 
 
@@ -677,7 +726,7 @@ UNITS = {
     "mass_max": ("g", "max"), "size_max": ("mm", "max"), "distance": ("mm", "range"), "clearance_min": ("mm", "min"),
     "static_torque": ("kg·cm", "max"), "thrust_to_weight": (":1", "min"), "fea_static": ("MPa", "max"),
     "cantilever_stress": ("MPa", "max"), "tip_over": ("°", "min"), "channel_clear": ("mm", "min"),
-    "prop_clearance": ("mm", "min"), "hard_stop": ("mm³ overlap", "min"), "gear_bending": ("MPa", "max"),
+    "prop_clearance": ("mm", "min"), "prop_ground": ("mm", "min"), "hard_stop": ("mm³ overlap", "min"), "gear_bending": ("MPa", "max"),
     "power_budget": ("× rating", "max"), "flight_time": ("min", "min"), "run_time": ("min", "min"),
     "cg": ("mm", "max"), "connector_access": ("", "clear"),
 }

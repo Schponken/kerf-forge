@@ -942,6 +942,7 @@
     "overall_h": 36.8,
     "weight_g": 54.3,
     "thrust_g_max": 2319,
+    "thrust_by_prop": {"drone.props.hq_7x4x3": 2319, "drone.props.7in": 2058},
     "thrust_test_v": 23.42,
     "note": "Max thrust 2319 g with HQ 7x4x3 at 23.42 V, 100% throttle, 42.33 A; with HQ 8x4x3: 2510 g; with Gemfan 7040: 2058 g (iFlight test report). Holes at 45 deg on O19 per drawing. Weight includes 265 mm 18AWG leads. Bearings 11x5x5.",
     "source": "https://shop.iflight.com/xing-x2806-5-fpv-nextgen-motor-pro1001",
@@ -985,6 +986,19 @@
     "note": "Gemfan spec reproduced on retailer page; 5 mm hole is PoPo (quick-swap) compatible.",
     "source": "https://www.thingbits.in/products/gemfan-flash-7040-3-7-inch-tri-blade-propellers",
     "confidence": "datasheet"
+   },
+   "hq_7x4x3": {
+    "model": "HQProp DP 7x4x3 tri-blade (durable PC)",
+    "diameter_mm": 177.8,
+    "pitch_in": 4,
+    "blades": 3,
+    "hub_thickness": 7.0,
+    "hub_d": 13.5,
+    "mount": "5mm shaft",
+    "weight_g": 9.27,
+    "note": "GetFPV 'HQProp DP 7X4X3 Propeller (Set of 4)': 7 in, pitch 4 in, 9.27 g per prop, hub thickness 7 mm, hub ID 5 mm, PC, 2 CW + 2 CCW (opened 2026-11-01). Pyrodrone lists the same prop at 9.1 g, hub 7.5 mm thick, hub OD 13.5 mm (https://pyrodrone.com/products/hq-7x4x3-2cw-2ccw); the heavier weight and the larger hub thickness are used. This is the prop the iFlight XING 2806.5 test report lists (2319 g at 23.42 V).",
+    "source": "https://www.getfpv.com/propellers/mini-quad-propellers/hqprop-dp-7x4x3-propeller-set-of-4-light-grey.html",
+    "confidence": "multiple-vendors"
    }
   },
   "stacks": {
