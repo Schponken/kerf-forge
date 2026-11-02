@@ -61,6 +61,11 @@ def build(ctx):
         pocket = Pos(p.servo_x, (yy[0] + yy[1]) / 2, p.servo_z - 40) * Box(sd["span"] + 1.0, yy[1] - yy[0], 40 + sd["W"] / 2 + 0.4,
                                                                      align=(Align.CENTER, Align.CENTER, Align.MIN))
         body = body - ctx.cut(pocket, why="elevon servo pocket, open to the bottom skin (servo in from below, arm out)", kind="pocket")
+        # why: the pushrod leaves the arm aft and down to the elevon horn; at full throw its line runs through the
+        # pocket's aft wall, so a 5 mm slot open to the bottom skin carries it out; it stops below the servo axis and
+        # 4 mm short of the rear spar channel (x ~226 here), which the rod passes under
+        slot = Pos(p.servo_x + sd["span"] / 2, s * p.horn_y, p.servo_z - 40) * Box(7.0, 5.0, 40.0, align=(Align.MIN, Align.CENTER, Align.MIN))
+        body = body - ctx.cut(slot, why="pushrod exit slot aft of the servo pocket, open to the bottom skin", kind="pocket")
         a, b = L.lead_line(p, s)
         body = body - ctx.cut(aero.cylinder_between(a, b, 8.0, extend=1.0), why="servo lead (and its plug) to the pod", kind="wire channel")
         ctx.rigid("servo", L.servo_location(p, s))

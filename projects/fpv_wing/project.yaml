@@ -59,7 +59,7 @@ parts:
              [{where: "the splice insert", size: "12 mm cylinder, 10 mm up from the bottom skin", infill: 1.0, why: "splice-plate insert"}]}
   wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: *outer_mods}
   elevon_l: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: &elevon_mods
-              [{where: "round the horn slot and the joiner-rod bore", size: "4 mm all round", infill: 1.0, why: "glued horn tab and carbon joiner"}]}
+              [{where: "round the horn slot and the two joiner-rod bores", size: "4 mm all round", infill: 1.0, why: "glued horn tab and carbon joiner"}]}
   elevon_lo: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
   elevon_r: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
   elevon_ro: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
@@ -76,16 +76,18 @@ purchased:
   battery: {catalog: drone.batteries.6S_1800, proxy: box, color: "#c8a400",
             held_by: "the 20 mm strap through the two floor tabs, over the pack"}
   xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, lying on the bay floor in front of the pack"}
-  esc: {catalog: drone.escs.skywalker_60a_v2, proxy: box, color: "#2050a0", held_by: "double-sided foam tape on the shelf plus one cable tie round the shelf"}
+  esc: {catalog: drone.escs.skywalker_60a_v2, proxy: box, color: "#2050a0", held_by: "double-sided foam tape under the shelf's front edge; it goes in through the hatch tilted ~30 deg (73 mm long, 61 mm between the spar sleeves), then slides forward under the sleeves onto the tape"}
   fc: {catalog: drone.fcs.f405_wmo, proxy: box, color: "#204080", held_by: "double-sided foam tape (soft-mounts the gyro) on the shelf, arrow forward"}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "double-sided tape on the shelf beside the FC; T antenna along the pod side wall"}
   gps: {catalog: drone.gps.m9n_5883, proxy: box, color: "#303030", held_by: "double-sided foam tape on the front of the shelf, flat, arrow forward, under plain PLA (no carbon above it)"}
   vtx: {catalog: drone.vtx.tx800, proxy: box, size: [28, 28, 8], color: "#1a1a1a", held_by: "double-sided foam tape on the rear of the shelf, heatsink up"}
   vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 95], color: "#20a0a0",
             held_by: "screwed onto the VTX's MMCX; its 95 mm tube up through the hole in the pod top behind the hatch, head on top"}
-  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 69, 1.8], color: "#404040", held_by: "through the two floor tabs and over the pack (Velcro)"}
-  joiner_l: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied into the inner elevon half, a slip fit in the outer half"}
-  joiner_r: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied into the inner elevon half, a slip fit in the outer half"}
+  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 69, 1.8], color: "#404040", held_by: "through the two floor tabs, closed into a loop before the nose goes on (Velcro); the pack slides into the loop from the front with the nose off"}
+  joiner_l: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied (5-min) into the inner elevon half; a reamed 3.0 mm push fit in the outer half, so the outer half has no free play and still slides off"}
+  joiner_r: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied (5-min) into the inner elevon half; a reamed 3.0 mm push fit in the outer half, so the outer half has no free play and still slides off"}
+  joiner2_l: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied (5-min) into the inner elevon half; a reamed 3.0 mm push fit in the outer half, so the outer half has no free play and still slides off"}
+  joiner2_r: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied (5-min) into the inner elevon half; a reamed 3.0 mm push fit in the outer half, so the outer half has no free play and still slides off"}
   camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], held_by: "2 x M2 x 6 through the nose cheeks into its side holes"}
   servo_l: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
             held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
@@ -112,6 +114,8 @@ assembly:
     - {parent: elevon_r.horn, child: horn_r.base}
     - {parent: elevon_l.joiner, child: joiner_l.end_a}
     - {parent: elevon_r.joiner, child: joiner_r.end_a}
+    - {parent: elevon_l.joiner2, child: joiner2_l.end_a}
+    - {parent: elevon_r.joiner2, child: joiner2_r.end_a}
     - {parent: wing_l1.splice, child: splice_l.base}
     - {parent: wing_r1.splice, child: splice_r.base}
     - {parent: pod.hatch, child: hatch.base}
@@ -138,7 +142,7 @@ assembly:
     - {parent: pod.vtx_ant, child: vtx_ant.bottom}
     - {parent: nose.camera, child: camera.bottom}
   order: [pod, [main_l, main_r, rear_l, rear_r], [wing_l1, wing_r1], [servo_l, servo_r], [wing_l2, wing_r2], [splice_l, splice_r],
-          [horn_l, horn_r], [elevon_l, elevon_r], [joiner_l, joiner_r], [elevon_lo, elevon_ro], [fin_l, fin_r], motor_mount, motor,
+          [horn_l, horn_r], [elevon_l, elevon_r], [joiner_l, joiner_r, joiner2_l, joiner2_r], [elevon_lo, elevon_ro], [fin_l, fin_r], motor_mount, motor,
           gps, fc, receiver, esc, vtx, vtx_ant, xt60, battery, strap, hatch, camera, nose]
   key_access:
     - {group: motor, before: [pod], why: "the motor is screwed to the mount on the bench (heads sunk in the mount's front face) before the mount goes on the pod"}
@@ -194,9 +198,9 @@ wiring:
 bom_extra:
   - {type: hardware, item: M3 flat washer, qty: 4, group: nose, price_key: "washer:M3", spec: "under the nose screw heads: the lugs are TPU, so tighten them snug only"}
   - {type: hardware, item: 1.2 mm music wire pushrod with Z-bend, qty: 2, price_key: "wire:music_1.2", spec: "about 60 mm: servo arm to elevon horn; Z-bend at the horn, a Z-bend or EZ connector at the servo arm"}
-  - {type: hardware, item: hinge tape (Blenderm / 3M polyester), qty: 1, price_key: "tape:hinge_blenderm_1in", spec: "one 25 mm strip along each elevon's bottom hinge line, plus a top strip with the elevon fully up"}
-  - {type: hardware, item: 5-minute epoxy, qty: 1, price_key: "glue:epoxy_5min", spec: "spar tubes into the wing segments, inner to outer segment joint, fins into their slots"}
-  - {type: hardware, item: 2.5 mm cable tie, qty: 4, price_key: "tie:2.5mm", spec: "ESC to shelf, phase leads, servo leads"}
+  - {type: hardware, item: hinge tape (Blenderm / 3M polyester), qty: 1, price_key: "tape:hinge_blenderm_1in", spec: "one 25 mm strip along each elevon's bottom hinge line, plus a top strip with the elevon fully up, and a band round each elevon split (both skins) to lock the outer half on its joiner rods"}
+  - {type: hardware, item: 5-minute epoxy, qty: 1, price_key: "glue:epoxy_5min", spec: "spar tubes into the wing segments, inner to outer segment joint, fins into their slots, the 4 elevon joiner rods into the inner elevon halves"}
+  - {type: hardware, item: 2.5 mm cable tie, qty: 4, price_key: "tie:2.5mm", spec: "phase leads, servo leads"}
   - {type: hardware, item: "double-sided foam tape (3M, 1.6 mm)", qty: 1, price_key: "tape:foam_3m_4466", spec: "FC, ESC, GPS, VTX and receiver on the shelf"}
   - {type: hardware, item: M2 x 6 mm socket head screw, qty: 2, price_key: "screw:M2x6:socket", spec: "camera side screws through the nose cheeks"}
 requirements:
@@ -220,7 +224,7 @@ requirements:
     check: fea_static
     part: motor_mount
     case: crash
-    why: "the pylon carries the raised motor: twice its full thrust (2 x 2319 g = 45.5 N) along the axis at the motor screws, 24 mm above the upper pod bolts, the plate held only at its four pod bolts (a nose-in crash throws motor + prop aft with less: 64 g x 50 g = 31 N)"
+    why: "the plate carries the motor on the pod's tail: twice its full thrust (2 x 2319 g = 45.5 N) along the axis at the motor screws, the plate held only at its four pod bolts (a nose-in crash throws motor + prop aft with less: 64 g x 50 g = 31 N)"
     direction: xy            # the plate prints flat: its bending stress lies in the layers
     sf: 3.0
     max_disp_mm: 0.5
