@@ -448,3 +448,6 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   the whole device (fpv_wing 3 mm elevon rods, horns, GPS now readable).
 - Bench steps keep the build they join on screen, faint, instead of the bench parts floating alone.
 - tests/test_viewer_build_it.py (browser): label clear of its part, close-up, bench context.
+- (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
+  check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
+  skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
