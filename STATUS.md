@@ -1394,3 +1394,6 @@ pushed for it and what I know:
   hub_r/l, pinion_r/l, parts/layout.py fuselage/pivot functions, their requirements); **the 08:26 session keeps the
   wings + tail** (wing.py, aileron.py, tail_mount, hstab, elevator, fin, rudder). Both are PLAN sub-items under the
   drone. project.yaml: add your own requirement entries only; don't rewrite others' blocks.
+- 09:05 update: the session that holds the drone was already designing ALL groups (front, pivot, wings, tail; its WIP
+  commits 08:4x), so the split would only duplicate it. e3d8373e stopped its two designers, kept the other session's
+  files, removed the split sub-items from PLAN and released its half. The drone stays with its owner.
