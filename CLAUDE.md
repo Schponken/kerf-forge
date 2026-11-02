@@ -128,9 +128,13 @@ Other Claude sessions may be working in this repo at the same time. To never bre
   started without the user's explicit choice.
 - Budget: Spencer caps Claude usage at **60 % of the weekly limit**. Sessions cannot read the meter, so keep each
   session's work tight (no repeated full builds when a quick check or one requirement shows the answer), push
-  often, and stop starting new items when Spencer says the cap is near (he may write `.claude/state/BUDGET_STOP`;
-  when it exists, finish and push the current item, then stop; the Stop hook does not honour it yet - that hook edit
-  needs Spencer's go-ahead, see STATUS.md).
+  often, and stop starting new items when Spencer says the cap is near. The switch is `tools/budget.py stop "<why>"
+  [--until "YYYY-MM-DD HH:MM"]` (UTC, shared via git; `resume` clears it; a local `.claude/state/BUDGET_STOP` works
+  too). While it is on, `claims.py next/take` refuse and the full batch run waits: finish and push the current item,
+  release, then stop (the Stop hook does not honour it yet - that hook edit needs Spencer's go-ahead).
+- Don't start what a limit would cut off: before a long step (a full build, a design-reviewer round, a batch run)
+  check `tools/budget.py status`; commit + push before it so nothing is lost. `kerf verify` resumes a cut-off run
+  on the same commit from its checkpoint, and the batch run waits until other sessions are done (Spencer, 2026-11-02).
 
 ## Escape hatch (rare)
 

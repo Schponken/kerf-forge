@@ -312,3 +312,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Fixed: auto-fix / Fix no longer start on a project another session holds (they wasted a Claude run that then stopped); Save / Restore / materials / Change something ask before changing such a project (409 `claimed`, `override: true`); switching projects asks before dropping unsaved Tune values; a second Build/Check click opens the running job instead of an error; typed names are cleaned (`studio.slug`: "Hawk Drone" -> hawk_drone) and auto names avoid existing projects; Tune Reset clears material picks too; "1,5" reads as 1.5; a wrong printer access code now says so (was "serial right?"); spaces in a pasted code are ignored. tests/test_user_bugs.py; test_studio's bad-name case now uses "9 Bad!" (a name that can't be cleaned).
 - Seen, not mine: running test_studio.py together with the other Studio browser test files in ONE pytest process died with exit 141 after ~44 tests (each file alone passes); worth a look if the batch shows it. test_progress_events_are_off_by_default_and_ordered_when_on still fails on main (noted earlier).
 - (Claude, 2026-11-02 later) Mac updates no longer stall on local changes: tools/mac/update_repo.sh (used by start.sh and "Update Kerf Studio") sets aside local edits that don't touch the incoming files, fast-forwards, puts them back; overlapping files block the update with their names instead of silently staying on old code. Test in tests/test_mac_launcher.py.
+
+## 2026-11-02 22:00 UTC - Kerf manager: usage-limit awareness (Spencer: "pause before starting something that will be cut off")
+- tools/budget.py: shared budget switch (`stop "<why>" [--until UTC time]`, `resume`, `status`; claims/budget.json,
+  pushed; local .claude/state/BUDGET_STOP still works). While on: `claims.py next/take` refuse, the batch run waits.
+- Batch run waits until other sessions are done (Spencer): `batch_verify.py status` prints HELD instead of DUE while
+  any other session holds a fresh claim; the last one to finish runs it.
+- `kerf verify` checkpoints each finished step (pytest, each project) for the commit, so a run cut off by a limit or
+  a kill resumes instead of redoing ~1 h of work.
+- NOT done, needs Spencer's go-ahead: the Stop hook letting a session stop while the budget switch is on (hook edits
+  were refused as self-modification). Until then a budget stop still makes sessions want a free item.
+- Tests: tests/test_budget.py (4), test_claims.py (copies budget.py), test_batch_verify.py, test_verify_isolated.py pass.
