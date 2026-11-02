@@ -173,3 +173,28 @@ def test_review_needs_design_intent_scores_for_every_printed_part():
     assert "for ['b']" in intent_scores({"scores": {"a": good}}, ["a", "b"])
     assert "a.load_path=2" in intent_scores({"scores": {"a": {**good, "load_path": 2}}}, ["a"])
     assert intent_scores({"scores": {"a": good}}, ["a"]) is None
+
+
+def test_root_part_stays_where_it_was_modelled(tmp_path):
+    """A root part built as Pos(...) * Box(...) carries a non-identity location. The solver must keep it there, not
+    reset it to the origin: params-frame checks (aero strips, layout points) and its joints must agree. Seen on
+    drone_foldable_wings, where the reset moved the sweep pivot by (-60, +52, +74) mm."""
+    yaml_text = HINGE_YAML
+    base = """
+from build123d import *
+def build(ctx):
+    s = Pos(100, 50, 0) * Box(20, 20, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    ctx.revolute("pivot", Axis((100, 50, 10), (0, 1, 0)), range=(-90, 90))
+    return ctx.finish(s)
+"""
+    d = _write_project(tmp_path / "rootloc", yaml_text, {"base": base, "arm": HINGE_ARM})
+    proj = P.build(P.load(str(d)))
+    asm = A.plan(proj)
+    A.solve(asm)
+    lo, hi = geom.bbox(proj.items["base"].shape)
+    assert lo == pytest.approx([90, 40, 0], abs=1e-6) and hi == pytest.approx([110, 60, 10], abs=1e-6)
+    pivot = geom.world_point(proj.items["base"].shape.joints["pivot"].location, (0, 0, 0))
+    assert pivot == pytest.approx([100, 50, 10], abs=1e-6)
+    A.solve(asm, {"swing": 45})
+    hub = geom.world_point(proj.items["arm"].shape.joints["hub"].location, (0, 0, 0))
+    assert hub == pytest.approx([100, 50, 10], abs=1e-6)       # the arm still turns about the modelled pivot

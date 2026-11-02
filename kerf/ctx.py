@@ -163,6 +163,9 @@ class Ctx:
         if shape is None:
             raise PartError(f"{self.id}: build() produced nothing")
         shape.label = self.id
+        # where the part was modelled (Pos(...) * Box(...) leaves a non-identity location): the assembly root is put
+        # back here, not at the origin, so params-frame checks (aero strips, layout points) agree with the geometry
+        shape.kerf_home_loc = Location(shape.location.wrapped)
         if color is not None:
             shape.color = Color(color) if not isinstance(color, Color) else color
         labels = [j.label for j in self.joints]

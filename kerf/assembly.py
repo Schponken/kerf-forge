@@ -133,7 +133,8 @@ def solve(asm: Assembly, values: dict | None = None):
     """Move every item into place. values: {joint_name: angle_deg_or_mm}."""
     values = values or {}
     items = asm.proj.items
-    items[asm.root].shape.location = Location()
+    root = items[asm.root].shape
+    root.location = Location(getattr(root, "kerf_home_loc", Location()).wrapped)   # as modelled (ctx.finish)
     for e in asm.edges:
         pj = items[e.parent].shape.joints[e.pjoint]
         cj = items[e.child].shape.joints[e.cjoint]
