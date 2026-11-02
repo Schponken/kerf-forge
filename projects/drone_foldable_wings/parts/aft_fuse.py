@@ -96,13 +96,13 @@ def opening(p):
 
 
 def _prism_xy(pts, z0, z1):
-    return Pos(0, 0, z0) * extrude(Polygon(*pts, align=None), z1 - z0)
+    return Pos(0, 0, z0) * extrude(Polygon(*pts, align=None), z1 - z0, dir=(0, 0, 1))
 
 
 def _prism_xz(pts, y0, y1):
     """Polygon in the XZ plane (points (x, z)) extruded from y0 to y1."""
     pl = Plane(origin=(0, y1, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0))   # local (u, v) = world (x, z), extruded -Y
-    return extrude(pl * Polygon(*pts, align=None), y1 - y0)
+    return extrude(pl * Polygon(*pts, align=None), y1 - y0, dir=(0, -1, 0))
 
 
 def _wedge(c, a0, a1, r, z0, z1):
@@ -138,11 +138,11 @@ def build(ctx):
     cz0 = cover_z0(p)
     hull = outer(p)
     body = hull - ctx.cut(cavity(p), why="hollow rounded-box fuselage, 2 mm skin; bulkhead at the front", kind="cavity")
-    body -= ctx.cut(Pos(0, 0, cz0) * extrude(opening(p), 40), why="top opening closed by the spine cover", kind="opening")
+    body -= ctx.cut(Pos(0, 0, cz0) * extrude(opening(p), 40, dir=(0, 0, 1)), why="top opening closed by the spine cover", kind="opening")
 
     # ---- top rim: ledges the spine cover rests on (3 mm in from the opening edge, merged into the skin)
     frame = offset(opening(p), 8.0) - offset(opening(p), -LEDGE_W)
-    ledge = (Pos(0, 0, cz0 - LEDGE_T) * extrude(frame, LEDGE_T)) & hull
+    ledge = (Pos(0, 0, cz0 - LEDGE_T) * extrude(frame, LEDGE_T, dir=(0, 0, 1))) & hull
     ledge &= Pos(OPEN_X[0] + 3, -100, -100) * Box(300, 200, 200, align=(Align.MIN, Align.MIN, Align.MIN))
     body += ctx.add(ledge, why="rim ledge the spine cover sits on", kind="ledge")
 

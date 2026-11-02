@@ -34,7 +34,7 @@ def build(ctx):
     z0, z1 = A.cover_z0(p), p.fuse_top
     ztop = p.spine_arm_z0 + L.PLATE_T
     x0, x1 = A.OPEN_X[0] + A.GAP_COVER, A.OPEN_X[1] - A.GAP_COVER
-    cover = Pos(0, 0, z0) * extrude(offset(A.opening(p), -A.GAP_COVER), A.COVER_T)
+    cover = Pos(0, 0, z0) * extrude(offset(A.opening(p), -A.GAP_COVER), A.COVER_T, dir=(0, 0, 1))
     body = ctx.add(cover, why="lid over the aft fuselage opening, flush with its top", kind="plate")
     ridge = Pos(x0, -RIDGE_HW, z0) * Box(x1 - x0, 2 * RIDGE_HW, ztop - z0, align=(Align.MIN, Align.MIN, Align.MIN))
     ridge = chamfer(ridge.edges().filter_by(Axis.Y).group_by(Axis.X)[0].sort_by(Axis.Z)[-1], 12.0)   # front: 45 deg nose
@@ -42,11 +42,11 @@ def build(ctx):
     for s in (1, -1):
         c = (p.pivot_x, s * p.pivot_y)
         sk = make_hull((Pos(*c) * Circle(ARM_R)).edges() + (Pos(c[0], s * RIDGE_HW / 2) * Rectangle(2 * ARM_R + 8, RIDGE_HW)).edges())
-        arm = Pos(0, 0, p.spine_arm_z0) * extrude(make_face(sk), L.PLATE_T)
+        arm = Pos(0, 0, p.spine_arm_z0) * extrude(make_face(sk), L.PLATE_T, dir=(0, 0, 1))
         body += ctx.add(arm, why="upper pivot plate: holds the top of the steel pin", kind="arm")
         # hub boss (r 10 + 1) with room for the aileron lead (r 12, swings 0..fold_max ahead of the pin)
         hole = Pos(*c) * Circle(p.boss_r + 1.0) + (Pos(*c) * Circle(16.0) & Pos(c[0], s * 22.0 + (s - 1) * 15) * Rectangle(60, 30, align=(Align.CENTER, Align.MIN)))
-        body -= ctx.cut(Pos(0, 0, z0 - 1) * extrude(hole, A.COVER_T + 2), why="hub boss and aileron lead pass the cover", kind="hole")
+        body -= ctx.cut(Pos(0, 0, z0 - 1) * extrude(hole, A.COVER_T + 2, dir=(0, 0, 1)), why="hub boss and aileron lead pass the cover", kind="hole")
         pc = (p.pinion_x, s * p.pivot_y)
         body -= ctx.cut(Pos(pc[0], pc[1], z0 - 1) * Cylinder(10.5, A.COVER_T + 2, align=(Align.CENTER, Align.CENTER, Align.MIN)),
                         why="pinion screw heads turn here; key access to the horn + pinion screws", kind="hole")

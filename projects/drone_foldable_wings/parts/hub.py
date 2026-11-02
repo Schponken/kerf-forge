@@ -26,7 +26,7 @@ SECTOR_MARGIN = 22.5    # deg of teeth past the meshing tooth at each end of the
 KEEL_Z = -9.4           # lowest point of the root block: 0.6 above the fuselage top / spine cover (z -10)
 KEEL_Y = (26.3, 45.7)   # V keel span (right side), 45 deg sides to its edge at KEEL_Z
 KEEL_X = (130.0, 205.0)
-LEAD_D = 3.5            # aileron lead (3 x 28 AWG) + slip; the plug is crimped on after threading
+LEAD_D = 4.0            # aileron lead channel: same 4 mm as the wing segments' channel (wing.py)
 LEAD_R = 12.0           # lead drop beside the boss (layout lead_exit: 12 mm ahead of the pin)
 
 
@@ -40,7 +40,7 @@ def _wedge(c, a0, a1, r, z0, z1):
     n = max(3, int(abs(a1 - a0) / 10) + 2)
     pts = [(c[0], c[1])] + [(c[0] + r * math.cos(math.radians(a0 + (a1 - a0) * k / (n - 1))),
                              c[1] + r * math.sin(math.radians(a0 + (a1 - a0) * k / (n - 1)))) for k in range(n)]
-    return Pos(0, 0, z0) * extrude(Polygon(*pts, align=None), z1 - z0)
+    return Pos(0, 0, z0) * extrude(Polygon(*pts, align=None), z1 - z0, dir=(0, 0, 1))
 
 
 def _cyl(c, r, z0, z1):
@@ -57,10 +57,10 @@ def right_body(ctx):
     ym = sum(KEEL_Y) / 2
     v = Plane(origin=(KEEL_X[0], 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0)) * Polygon(
         (KEEL_Y[0], 0.3), (KEEL_Y[1], 0.3), (ym, KEEL_Z), align=None)
-    keel = extrude(v, KEEL_X[1] - KEEL_X[0])
+    keel = extrude(v, KEEL_X[1] - KEEL_X[0], dir=(1, 0, 0))
     front = Plane(origin=(0, 60, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0)) * Polygon(
         (KEEL_X[0], 0.5), (KEEL_X[1] + 1, 0.5), (KEEL_X[1] + 1, KEEL_Z - 1), (KEEL_X[0] + 0.5 - KEEL_Z + 1, KEEL_Z - 1), align=None)
-    keel &= extrude(front, 40)
+    keel &= extrude(front, 40, dir=(0, -1, 0))
     body += ctx.add(keel, why="V keel: section depth for the root moment between rear spar and boss", kind="keel")
     # double cone round the boss (45 deg both ways), only where it never swings over the spine ridge
     h = -KEEL_Z
