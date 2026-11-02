@@ -511,3 +511,5 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   could double count. No geometry, thresholds, project build/review, FEA, stress simulation or full batch run.
   Only the precise inventory PLAN item is complete; whole-system integration and fpv_wing finish items remain open.
 - Final independent parent review approved this reporting-only slice after both output fixes; no remaining finding.
+- Integrated main through 0f8236f; the same focused selection passed again: **70 passed in 2.32 s**. Published PR #21
+  (https://github.com/Schponken/kerf-forge/pull/21); main claim release uses the approved shared claim helper.
