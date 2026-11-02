@@ -143,10 +143,16 @@ def cmd_list():
         print(f"[{who}] {it[:110]}")
 
 
+def workable_items() -> list[str]:
+    """Open items a session may start: items Spencer paused (text contains "PAUSED:") wait until the marker is
+    removed. `take` can still claim one explicitly."""
+    return [it for it in open_items() if "PAUSED:" not in it]
+
+
 def cmd_next():
     sync()
     claims = load()
-    for it in open_items():
+    for it in workable_items():
         c = claims.get(slug(it))
         if c and fresh(c):
             continue
@@ -196,7 +202,7 @@ def cmd_release():
 
 
 def others_cover() -> bool:
-    items = open_items()
+    items = workable_items()
     claims = load()
     return bool(items) and all((c := claims.get(slug(it))) and fresh(c) and c.get("session") != session_id() for it in items)
 

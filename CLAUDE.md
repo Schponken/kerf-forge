@@ -140,6 +140,13 @@ Other Claude sessions may be working in this repo at the same time. To never bre
   check `tools/budget.py status`; commit + push before it so nothing is lost. `kerf verify` resumes a cut-off run
   on the same commit from its checkpoint, and the batch run waits until other sessions are done (Spencer, 2026-11-02).
 
+## Paused work
+
+- **Stress simulations are paused** (Spencer, 2026-11-02, "we will work on that later"): `PAUSED.json` at the repo
+  root turns off every FEA-backed check (fea_static, impact_fea, stop_impact, natural_freq, drop_impact, weak_link);
+  they report PAUSED / NOT RUN and the report warns that strength is unproven. Don't run them (`KERF_STRESS=1`), don't
+  claim `PAUSED:` PLAN items, and don't call a part strong because a paused check shows no failure. Delete the key to resume.
+
 ## Escape hatch (rare)
 
 Only if progress needs something outside this repo that you cannot get (credentials, a paid service, a website that is

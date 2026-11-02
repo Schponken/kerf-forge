@@ -399,6 +399,39 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   STATUS.md conflicts resolved by keeping both entries). #3, #4 need a rebase on main; #8 must move its CLAUDE.md note.
 - Blocker for the batch: tests/test_catalog.py::test_board_proxy_keeps_mounting_holes_clear already fails on main.
 
+
+## 2026-11-02 — Scenario comparison in Studio (Codex, scenario-intake)
+- Added a scoped problem-first route to the existing New design/quote flow: success criteria, priorities and hands-on
+  effort; researched buy/adapt/build alternatives with fit, risks, source findings, next steps and recommendation reasons.
+  Unknown costs/print times stay null and visibly unknown. Existing architecture quotes remain readable.
+- The server resolves the saved selected option, rejects changed requests and unanswered blocking questions, and never
+  starts a design for a buy-only option. Buy options provide links/next steps; no purchase or printer action. A duplicate
+  quote cannot erase active output: original-request capture and output reset use start_job's existing preparation lock.
+- 33 targeted tests passed (scenario validator/API/browser, legacy quote/intake/readiness and package-map coverage).
+  Desktop 1440 and phone 390, both themes: no browser errors, no horizontal overflow, research links retain keyboard focus.
+  The new browser coverage found/fixed long example buttons overflowing on phones. Read-only doctor: ALL OK; optional
+  Arduino/simavr tools remain unavailable. Reused the existing environment instead of reinstalling into the shared venv.
+- PLAN's Studio subitem is complete; full E8 and scenario requirement checks remain open. The plant-care comparison
+  fixture and screenshots are explicitly illustrative, not vendor research, engineering acceptance or a working project.
+  No paid Claude generation, physical hardware, full suite, project geometry or review.json was used/changed. Full batch
+  remains on the manager's hold. Independent review requested before delivery.
+
+- Scenario PR #11 review: independent parent code and final desktop/phone dark/light screenshot review found no actionable issues in the scoped change. All 33 targeted tests pass again after current-main integration. Full E8 remains pending.
+
+## 2026-11-02 22:05 UTC - Kerf manager
+- Merged PR #11 (scenario options; tests/test_scenario.py pass). test_studio's progress-order
+  test already fails on main; PR #4 fixes it once rebased.
+
+## 2026-11-02 22:30 UTC - Stress simulations paused (Spencer: "pause all the stress simulations, we will work on that later")
+- PAUSED.json at the repo root switches off every FEA-backed check (fea_static, impact_fea, stop_impact,
+  natural_freq, drop_impact, weak_link: kerf/requirements.py STRESS_SIMS). They show "PAUSED (stress simulations
+  off)", value NOT RUN, and the report warns "strength unproven" - never a pass value. KERF_STRESS=1 runs them once;
+  delete the key to resume. Analytic strength checks (cantilever_stress, spar/gear bending) still run.
+- PLAN: the 4 FEA items (arm_resonance, impact_fea/stop_impact, arm_breaks_first, creep/flex_strain) are marked
+  "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
+- Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
+  tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.
+
 ## 2026-11-02 — Fresh-eyes usability pass, ChatGPT: setup and handoff
 - Fixed setup recovery in one round: missing Node/npm is actionable before Python installs; the locked Playwright installer repairs old/interrupted Chromium/headless-shell caches and is a no-op when cached; both Mac dependency stamps include package-lock.json. Dirty/offline startup preserves files, explains why updates were skipped, and still opens Studio. Existing single-window behavior is retained.
 - Fixed generated handoff: shopping-list context and incomplete-budget notice appear before the table; pipes/newlines/HTML characters and URL punctuation cannot corrupt Markdown, while CSV values and price totals stay unchanged. Assembly directs test-fitting before bulk printing and links its guides; purchased-only builds no longer get an invented printing step. Wiring explains units and existing cut-length/slack and links the diagram/assembly guide. PRINT_SETTINGS.md next-step guidance was already fixed in PR #1.
