@@ -451,3 +451,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
   check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
   skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
+- (01S68R6R, wrap-up of the speed round) Warm drone_foldable_wings quick check ~75 s: build 5, concept reqs 6, print
+  0 (cached), fit 21 (interference 11.6, hex_key_reach 9.0: spread over tessellation -> build123d Vector conversion,
+  no single hotspot), fold-tail clearances 15, prop 7 + load. Tried and reverted: reporting a mesh-refined prop gap
+  (20.06 vs exact 20.00 broke test_swinging_prop_is_swept's +-0.01 hand calc; reported gaps stay exact). Left, each a
+  few s: tessellation straight to numpy in geom.mesh (skip build123d Vectors), a warm check server (~7 s startup per
+  command), cold part rebuilds after engine edits (~180 s, fillets in part code).
