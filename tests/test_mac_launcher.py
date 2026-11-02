@@ -97,6 +97,13 @@ def test_update_keeps_local_changes_and_names_the_ones_that_block_it(tmp_path):
     assert out.startswith("UPDATED") and "kept" in out
     assert (work / "a.txt").read_text() == "a2\n" and (work / "b.txt").read_text() == "b-local\n"
     (other / "b.txt").write_text("b3\n"); _git("commit", "-qam", "three", cwd=other); _git("push", "-q", "origin", "main", cwd=other)
-    out = run()                                                    # now the update changes the same file: refuse, say why
+    out = run()                                                    # the same LINE changed on both sides: refuse, say why
     assert out.startswith("NOT-UPDATED") and "b.txt" in out and (work / "b.txt").read_text() == "b-local\n"
     assert run().startswith("NOT-UPDATED")
+    _git("checkout", "--", "b.txt", cwd=work); _git("merge", "-q", "--ff-only", "origin/main", cwd=work)
+    (other / "c.txt").write_text("1\n2\n3\n4\n5\n6\n"); _git("add", "c.txt", cwd=other); _git("commit", "-qm", "c", cwd=other)
+    _git("push", "-q", "origin", "main", cwd=other); run()
+    (other / "c.txt").write_text("1\n2\n3\n4\n5\nsix\n"); _git("commit", "-qam", "c2", cwd=other); _git("push", "-q", "origin", "main", cwd=other)
+    (work / "c.txt").write_text("one\n2\n3\n4\n5\n6\n")         # same file, different lines: merges cleanly
+    out = run()
+    assert out.startswith("UPDATED") and (work / "c.txt").read_text() == "one\n2\n3\n4\n5\nsix\n", out
