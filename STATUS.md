@@ -409,3 +409,5 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   remains on the manager's hold. Independent review requested before delivery.
 
 - Scenario PR #11 review: independent parent code and final desktop/phone dark/light screenshot review found no actionable issues in the scoped change. All 33 targeted tests pass again after current-main integration. Full E8 remains pending.
+
+- Scenario latest-main follow-up: manager merged the Work page while #11 was being published. New design now clears the Work navigation flag, so an in-flight Work response cannot replace the request being typed. A deferred-response browser regression proves it. All 35 targeted scenario/legacy/docs/Work-page browser tests pass on the integrated branch.
