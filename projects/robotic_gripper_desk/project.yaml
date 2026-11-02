@@ -30,10 +30,13 @@ params:
   stand_h: {value: 70, unit: "mm", min: 55, max: 110, step: 1, label: Bench stand - wrist axis height above the bench}
 layout: parts/layout.py
 parts:
-  gripper: {file: parts/gripper.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X}
+  gripper: {file: parts/gripper.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.4, load_axis: X,
+            assembly_note: "before it goes on the arm, on the bench stand: find the pulse where the pads just touch (grip 0 deg) and make it the software floor in your arm code (there is no mechanical stop at the closed end; past it the servo stalls on the pads); hold test: hang 300 g (150 g x slip factor 2) from a 25 mm block in the jaws and raise the squeeze one degree past contact at a time until it holds, then use that overdrive for every hold (never a stall); if it slips even at full squeeze, re-oil the rods; weigh it: at most 194 g with rods and screws"}
   pinion: {file: parts/pinion.py, material: PETG, print_rot: [180, 0, 0], infill: 0.6, load_axis: X}   # teeth are all perimeter (4 loops = 1.7 mm > half the 2.4 mm tooth); the web idles at 7 %
-  jaw_r: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: 1}}
-  jaw_l: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: -1}}
+  jaw_r: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: 1},
+          assembly_note: "oil both guide rods where this carriage runs (dry PTFE spray or a drop of light machine oil): NOT optional, dry the carriage cocks on its 14 mm bores and their friction eats most of the grip force (DESIGN.md Grip force); it must slide freely on the oiled rods while you press the pad; re-oil when the jaws feel rough"}
+  jaw_l: {file: parts/jaw.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: X, params: {side: -1},
+          assembly_note: "oil both guide rods where this carriage runs (dry PTFE spray or a drop of light machine oil): NOT optional, dry the carriage cocks on its 14 mm bores and their friction eats most of the grip force (DESIGN.md Grip force); it must slide freely on the oiled rods while you press the pad; re-oil when the jaws feel rough"}
   rod_keeper: {file: parts/rod_keeper.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4}
   stand: {file: parts/stand.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: Z}
 purchased:

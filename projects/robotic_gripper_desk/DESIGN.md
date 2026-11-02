@@ -10,7 +10,7 @@ servos past half their stall torque.
 |---|---|---|
 | Fits the arm's wrist unchanged | wrist fork 35 mm wide (robot_arm `grip_w`), plate A on the wrist's aluminium 25T horn (4 × M3), plate B on the M3 pivot screw in a heat-set insert, coaxial | the bench stand reproduces the forearm's wrist end from the same catalog math; fastener + pin checks |
 | Clears the arm over the wrist range | wrist −75…+75° | wrist sweep against the stand (= forearm end) and the wrist servo |
-| Payload | hold 150 g (the arm's payload) by friction, slip factor ≥ 2 | grip-force math below |
+| Payload | hold 150 g (the arm's payload) by friction, slip factor ≥ 2 | grip-force math below (needs oiled rods); proven by the bench hold test, assembly step 9 |
 | Opening | ≥ 40 mm (robot_arm brief), target ~54 mm; jaws stay parallel, object stays centred on the tool point | `grip_open`, `grip_closed` |
 | Arm torque budget | no arm servo past half stall: gripper + grip servo + horn ≤ 166 g (≤ 194 g incl. rods and screws), wrist gravity torque with 150 g at the tool point ≤ 2.35 kg·cm (25 % of the wrist MG996R) | `gripper_mass`, `torque_wrist`; the shoulder hand check below |
 | Strength | FEA on every structural part at the grip servo's stall, SF per ENGINEERING.md §3; teeth by Lewis at stall | `*_fea`, `pinion_teeth`, `rack_teeth` |
@@ -78,18 +78,32 @@ With both jaws on the object the torque splits over two meshes: F = T / (2 r) = 
 15.4 N at half stall. Holding the 150 g payload by friction with both jaws: 2 μ N ≥ S · m g. With μ = 0.24 (bare
 PETG, the low end of Stoimenov 2024's printed-polymer-on-steel values; REFERENCES.md decision 6) and a slip factor
 S = 2 (covers ~1 g of arm acceleration): N ≥ 2 × 1.47 / (2 × 0.24) = 6.1 N per jaw.
-*Guide friction (the carriage cocks on its rods).* The rack pushes each jaw at x ≈ −6.6 mm (jaw frame) and the object
-pushes back at the pad centre, x ≈ 30; the rod bores (centre x = 5) are only 14 mm long. The two forces, 11.6 and 25 mm
-either side of the bores, make a couple the bores take as two edge loads 14 mm apart, and their friction eats drive
-force. Force balance along the rods with bore friction μ: D = P + μ·2·(11.6 D + 25 P)/14, so
-**P = D (1 − 1.66 μ) / (1 + 3.57 μ)**. Dry PETG on steel (μ 0.24, the same Stoimenov value): P = 0.32 D, so the pad
-force is **9.9 N per jaw at stall** (1.6× the 6.1 N that S = 2 needs; S = 3.3 at stall) but only 5.0 N at half
-stall (S = 1.6). So the requirement holds dry only when the servo squeezes with ≥ 62 % of stall. (A carriage long
-enough for half stall dry, 18 mm, makes the rods longer than the stocked 100 mm, so it was not taken.) Two things
-follow and are in the assembly steps: the rods are lubricated where the carriages run (dry PTFE spray or a drop of
-light machine oil; it lowers μ below the dry value, which only raises P — no margin above is claimed from it), and
-the hold command is found on the bench, not assumed: step 9 hangs 300 g (150 g × S 2) in the closed jaws and raises
-the squeeze until it does not slip. The ridged pad face does not raise μ on hard smooth objects, it
+*Guide friction (the carriage cocks on its rods; corrected in review round 3).* Three things load the 14 mm bores
+while the rack drives the jaw with force D and the object pushes back with P at the pad:
+(1) in the plane of the finger, the rack line (x ≈ −6.6, jaw frame) and the pad centre (x ≈ 30) sit 11.6 and 25 mm
+either side of the bores (x = 5): a couple 11.6 D + 25 P that each bore takes as two edge loads 14 mm apart;
+(2) across it, jaw_r's rack pitch line is at y = +15 (jaw.py) while the pad and the rod pair's centre are at y = 0:
+a second couple 15 D, the servo's own reaction, which the free object cannot take;
+(3) the tooth separating force, D tan 20° = 0.36 D, pressing the carriage sideways on its rods.
+Each adds bore friction μ × normal load. Adding them arithmetically, with (2) carried as opposite side loads on the
+two rods 42 mm apart, gives D = P + μ (2 (11.6 D + 25 P) / 14 + 2 × 15 D / 42 + 0.36 D), so
+**P = D (1 − 2.74 μ) / (1 + 3.57 μ)** (conservative); the reviewer's vector sum of the edge loads gives a little more.
+Over the two models:
+
+| Rods | μ in the bores | P / D | pad force per jaw at stall (D = 30.7 N) | at half stall (D = 15.4 N) | slip factor at half stall (6.1 N needed) |
+|---|---|---|---|---|---|
+| dry | 0.24 (Stoimenov 2024, printed PETG on steel) | 0.19–0.27 | 5.7–8.3 N | 2.9–4.2 N | 0.5–0.7 |
+| dry | 0.29 (upper value) | 0.10–0.2 | 3–6 N | under 3 N | under 0.5 |
+| oiled | 0.10–0.15 (assumed for lubricated plastic on steel; not measured here: the hold test checks the result) | 0.38–0.57 | 11.8–17.5 N | 5.9–8.8 N | 1.9–2.9 |
+
+So dry rods do not meet the payload requirement even at full stall at the upper μ, and the carriage self-locks near
+μ 0.37 (dry margin 1.3–1.5×): **lubricated rods are what make the gripper work**, not an extra. Oiled, it holds 150 g
+at slip factor 2 with the servo squeezing at about half stall or a little more; the bench hold test (step 9) finds
+that squeeze, and it is the payload requirement's proof. A longer carriage does not fix the dry case: 18 mm reaches
+only about 0.33 D dry (half stall needs 0.40), and it would need the 150 mm rods (also stocked), so the 14 mm
+carriage stays. All of this is printed in the generated ASSEMBLY.md (assembly notes on the jaws, the gripper and
+the horn).
+The ridged pad face does not raise μ on hard smooth objects, it
 bites into soft ones (card, wood, foam); a separately printed TPU 95A pad (2–3.5 mm, μ ≈ 0.5 class) is the documented
 upgrade for slippery objects (REFERENCES.md decision 7), not needed for the requirement.
 Hold by position, not by stalling (every reference gripper limits force in software; a stalled MG996R draws ~2.5 A
