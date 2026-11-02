@@ -148,14 +148,25 @@ def test_fresh_claim_activity_beats_newer_saved_metadata_but_not_live_activity()
     claims = [{"thread_id": "t1", "item": "Work overview", "updated_at": 950,
                "activity": "Integrating Codex session visibility"}]
     session = {"id": "t1", "provider": "Codex", "state": "idle", "live": False,
-               "updated_at": 990, "activity": "Last turn was interrupted"}
+               "updated_at": 990, "activity": "Last turn was interrupted", "action": "Last activity: ran a command"}
     saved, = work.overview({"cards": claims}, sessions=[session], now=1000)["items"]
     assert saved["state"] == "claimed" and saved["activity"] == claims[0]["activity"]
     assert saved["updated_at"] == 950  # The text's own timestamp, not the newer saved-chat metadata.
-    session.update(state="working", live=True, updated_at=940, activity="Running the regression tests")
+    assert saved["action"] == ""
+    session.update(state="working", live=True, updated_at=940, activity="Running the regression tests", action="Running a command")
     live, = work.overview({"cards": claims}, sessions=[session], now=1000)["items"]
     assert live["state"] == "running" and live["activity"] == "Running the regression tests"
     assert live["updated_at"] == 940
+    assert live["action"] == "Running a command"
+    session["live"] = None  # Legacy session observations use the other claim-overlay branch.
+    replaced, = work.overview({"cards": claims}, sessions=[session], now=1000)["items"]
+    assert replaced["activity"] == claims[0]["activity"] and replaced["action"] == ""
+
+
+def test_claims_and_stale_sessions_cannot_supply_current_actions():
+    items = work.overview({"cards": [{"item": "A claim", "action": "Running a command"}]},
+                          sessions=[{"id": "old", "state": "stale", "action": "Running a command"}], now=1000)["items"]
+    assert all(item["action"] == "" for item in items)
 
 
 def test_single_linked_claim_does_not_hide_the_observed_chats_checklist():

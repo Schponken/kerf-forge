@@ -324,6 +324,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .work-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}.work-state.running,.work-state.working{background:var(--info-bg);color:var(--info)}
 .work-state.waiting,.work-state.blocked,.work-state.stale{background:var(--warn-bg);color:var(--work-warn)}.work-state.failed{background:var(--bad-bg);color:var(--bad)}.work-state.done{background:var(--ok-bg);color:var(--work-ok)}
 .work-activity{font-size:14px;line-height:1.55;margin:15px 0 10px;max-width:72ch}.work-activity.empty{color:var(--muted)}
+.work-action{font-size:12px;line-height:1.5;color:var(--muted);margin:-3px 0 12px;overflow-wrap:anywhere}
 .work-attention{margin:10px 0 12px;color:var(--work-warn);font-size:13px;line-height:1.5}.work-attention strong{font-weight:600}
 .work-measures{display:flex;align-items:start;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.work-measures b{display:block;color:var(--ink);font-weight:550;margin-bottom:4px}
 .work-progress{flex:1;min-width:160px;max-width:300px}.work-progress progress,.work-plan progress{display:block;appearance:none;border:0;border-radius:3px;width:100%;height:5px;background:var(--soft);overflow:hidden}
@@ -1712,6 +1713,7 @@ function workTask(item,index) {
       <div class="work-owner"><b>${esc(item.provider || "Session")}</b>${item.session ? `<span title="${esc(item.session)}">Session ${esc(String(item.session).slice(0,8))}</span>` : ""}<span>${esc(projects.map(p=>p.title || p.name).join(" · ") || "Kerf Studio")}</span></div></div>
       <span class="work-state ${state}">${esc(item.status_label || WORK_STATES[state])}</span></div>
     <p class="work-activity ${item.activity ? "" : "empty"}">${esc(item.activity || "No activity update has been reported for this task yet.")}</p>
+    ${item.action && item.action !== item.activity ? `<p class="work-action">${esc(item.action)}</p>` : ""}
     ${item.attention ? `<p class="work-attention"><strong>Needs attention:</strong> ${esc(item.attention)}</p>` : ""}
     <div class="work-measures">
       <div class="work-progress">${known ? `<b>${progress.done} of ${progress.total} ${esc(chatSteps ? "chat steps complete" : progress.label || "steps complete")}</b><progress max="${progress.total}" value="${progress.done}" aria-label="${esc(chatSteps ? "Reported chat progress" : progress.label || "Reported task progress")}"></progress>` : `<b>${completed ? "Run ended" : claims.length>1 ? "No combined progress" : "Progress not reported"}</b><span>${completed ? "See the latest result above" : claims.length>1 ? "Some claimed tasks have no checklist" : "An active session is not a completion percentage"}</span>`}</div>
@@ -1744,7 +1746,7 @@ function renderWork() {
   const filtered = items.filter(i=>{
     const records = [i,...workClaims(i)];
     return workMatchesGroup(i,group) && (provider==="all" || records.some(c=>(c.provider || "Session")===provider)) &&
-      (!query || records.flatMap(c=>[c.title,c.description,c.activity,c.provider,c.session,c.attention,...(c.remaining || []),
+      (!query || records.flatMap(c=>[c.title,c.description,c.activity,c.action,c.provider,c.session,c.attention,...(c.remaining || []),
         ...(c.projects || []).map(p=>`${p.name} ${p.title}`)]).join(" ").toLowerCase().includes(query));
   })
     .sort((a,b)=>({attention:0,active:1,recent:2}[workGroup(a)] - {attention:0,active:1,recent:2}[workGroup(b)] || (b.updated_at || 0)-(a.updated_at || 0)));

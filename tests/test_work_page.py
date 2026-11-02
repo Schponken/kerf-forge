@@ -12,7 +12,7 @@ def test_work_page_filters_progress_and_refresh_recovery(tmp_path):
     capture = Path(os.environ.get("KERF_WORK_SCREENSHOTS", str(tmp_path)))
     capture.mkdir(parents=True, exist_ok=True)
     script.write_text(r'''
-import { chromium } from "PLAYWRIGHT";
+import { browser as openBrowser } from "BROWSER_HELPER";
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const html = await fs.readFile(HTML, 'utf8'), now = Date.now()/1000;
@@ -25,7 +25,7 @@ const fixture = {
  items:[
   {id:'codex-work',provider:'Codex',session:'session-codex-1',title:'Make the Work page easier to follow',
    description:'Bring Codex and Claude work into one clear view, with useful next steps and honest estimates.',
-   state:'running',status_label:'Working',activity:'Connecting local Codex sessions and checking how updates reach the page.',
+   state:'running',status_label:'Working',activity:'Connecting local Codex sessions and checking how updates reach the page.',action:'Running a command',
    projects:[],updated_at:now-20,started_at:now-1200,source_label:'Local session',url:'codex://threads/example',
    progress:{done:2,total:4,label:'steps complete'},remaining:['Check the responsive layout','Run focused tests'],eta:null},
   {id:'wing',provider:'Claude Code',session:'session-claude-2',title:'Reinforce the folding wing pivot',
@@ -45,7 +45,7 @@ const fixture = {
    source_label:'Local session',remaining:[],eta:null,url:'javascript:window.__unsafe=1'}
  ]
 };
-const browser = await chromium.launch();
+const browser = await openBrowser();
 try {
  for (const [theme,width,height] of [['dark',1440,1000],['light',1440,1000],['dark',390,844],['light',390,844]]) {
   const p = await browser.newPage({viewport:{width,height}}), errors=[];
@@ -70,6 +70,8 @@ try {
   assert.match(await p.locator('[data-work-item="wing"]').innerText(),/No time estimate yet/);
   assert.equal(await p.locator('.work-page a[href^="javascript:"]').count(),0);
   assert.equal(await p.locator('.work-page a[href^="codex:"]').count(),1);
+  assert.equal(await p.locator('[data-work-item="codex-work"] .work-activity').innerText(),fixture.items[0].activity);
+  assert.equal(await p.locator('[data-work-item="codex-work"] .work-action').innerText(),'Running a command');
   await p.locator('[data-work-item="codex-work"] summary').click();
   assert.equal(await p.locator('[data-work-item="codex-work"] details').getAttribute('open'),'');
   await p.evaluate(()=>renderWork());
@@ -79,6 +81,9 @@ try {
    await p.evaluate(()=>renderWork());
    assert.equal(await p.evaluate(()=>document.activeElement.id),id);
   }
+  await p.locator('#work-search').fill('Running a command');
+  assert.equal(await p.locator('.work-item').count(),1);
+  assert.equal(await p.locator('[data-work-item="codex-work"]').count(),1);
   await p.locator('#work-search').fill('pivot');
   assert.equal(await p.locator('.work-item').count(),1);
   assert.equal(await p.locator('#work-search').evaluate(el=>document.activeElement===el),true);
@@ -111,28 +116,36 @@ try {
   if (theme==='light') {
    const ratios=await p.evaluate(()=>{
     const luminance=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>v/255).map(v=>v<=.04045 ? v/12.92 : ((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
-    return ['.work-completed','.work-state.done'].map(selector=>{
+    return ['.work-completed','.work-state.done','.work-action'].map(selector=>{
      const el=document.querySelector(selector),fg=luminance(getComputedStyle(el).color);
-     const bg=luminance(getComputedStyle(selector==='.work-completed' ? document.querySelector('.work-page') : el).backgroundColor);
+     const bgElement=selector==='.work-state.done' ? el : document.querySelector('.work-page');
+     const bg=luminance(getComputedStyle(bgElement).backgroundColor);
      return (Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05);
     });
    });
    assert.ok(ratios.every(r=>r>=4.5),JSON.stringify(ratios));
   }
   await p.screenshot({path:CAPTURE+`/work-${theme}-${width}.png`,fullPage:true});
+  await p.locator('[data-work-item="codex-work"] .work-activity').scrollIntoViewIfNeeded();
+  await p.screenshot({path:CAPTURE+`/work-action-${theme}-${width}.png`,fullPage:true});
   work={...fixture,items:[],feed:[],sources:[{name:'Codex',state:'unavailable',detail:'Codex is not installed on this computer.'}]};
   await p.evaluate(()=>loadWork());
   assert.match(await p.locator('.work-empty').innerText(),/No work is being reported/);
   assert.match(await p.locator('.work-rail').innerText(),/not installed/);
-  work={...fixture,items:[{...fixture.items[0],title:'<img src=x onerror="window.__unsafe=1">',activity:'<script>unsafe()</script>'}]};
+  work={...fixture,items:[{...fixture.items[0],title:'<img src=x onerror="window.__unsafe=1">',activity:'<script>unsafe()</script>',action:'<img src=x onerror="window.__unsafe=1">'}]};
   await p.evaluate(()=>loadWork());
   assert.equal(await p.locator('.work-item img').count(),0);
   assert.equal(await p.evaluate(()=>window.__unsafe),undefined);
+  assert.match(await p.locator('.work-action').innerText(),/<img/);
+  work={...fixture,items:[{...fixture.items[0],activity:'Running a command',action:'Running a command'}]};
+  await p.evaluate(()=>loadWork());
+  assert.equal(await p.locator('.work-action').count(),0);
+  assert.equal(await p.locator('.work-activity').innerText(),'Running a command');
   assert.deepEqual(errors,[],errors.join('\n'));
   await p.close();
  }
 } finally { await browser.close(); }
-'''.replace('"PLAYWRIGHT"', json.dumps(str(root / 'tools/render/node_modules/playwright/index.mjs')))
+'''.replace('"BROWSER_HELPER"', json.dumps(str(root / 'tests/browser.mjs')))
        .replace('HTML', json.dumps(str(root / 'kerf/assets/studio.html')))
        .replace('CAPTURE', json.dumps(str(capture))), encoding='utf-8')
     result = subprocess.run(['node', str(script)], capture_output=True, text=True, timeout=90)
@@ -170,11 +183,11 @@ def test_linked_claim_owners_are_visible_searchable_and_preserved_on_refresh(tmp
     capture.mkdir(parents=True, exist_ok=True)
     script = tmp_path / "work-owners.mjs"
     script.write_text(r'''
-import { chromium } from "PLAYWRIGHT";
+import { browser as openBrowser } from "BROWSER_HELPER";
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const html=await fs.readFile(HTML,'utf8'), fixture=FIXTURE, single=SINGLE_DATA, known=KNOWN_DATA;
-const browser=await chromium.launch();
+const browser=await openBrowser();
 try {
  for(const [theme,width,height] of [['dark',1440,1200],['light',1440,1200],['dark',390,844],['light',390,844]]) {
   const p=await browser.newPage({viewport:{width,height}}), errors=[];
@@ -285,7 +298,7 @@ try {
   await p.close();
  }
 } finally { await browser.close(); }
-'''.replace('"PLAYWRIGHT"', json.dumps(str(root / 'tools/render/node_modules/playwright/index.mjs')))
+'''.replace('"BROWSER_HELPER"', json.dumps(str(root / 'tests/browser.mjs')))
        .replace('HTML', json.dumps(str(root / 'kerf/assets/studio.html')))
        .replace('FIXTURE', json.dumps(fixture)).replace('LONG_OWNER', json.dumps(long_owner))
        .replace('SINGLE_DATA', json.dumps(single)).replace('KNOWN_DATA', json.dumps(known))

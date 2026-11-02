@@ -114,31 +114,33 @@ def _record(thread: dict, turn: dict, live: bool) -> dict:
                         "systemError": ("blocked", "Session error")}.get(kind, ("idle", "Not loaded"))
         if kind == "active" and flags:
             state, label = "waiting", "Needs approval" if "waitingOnApproval" in flags else "Needs your answer"
-    activity, steps = "", []
+    activity, action, steps = "", "", []
     labels = {"commandExecution": "Running a command", "fileChange": "Editing project files",
               "webSearch": "Researching", "mcpToolCall": "Using a connected tool"}
     past = {"commandExecution": "Last activity: ran a command", "fileChange": "Last activity: edited project files",
             "webSearch": "Last activity: researched information", "mcpToolCall": "Last activity: used a connected tool"}
     for item in turn.get("items") or []:
         item_type = item.get("type")
-        if item_type == "agentMessage" and item.get("text"):
-            activity = _text(item["text"])
+        if item_type == "agentMessage":
+            summary = _text(item.get("text"))
+            if summary:
+                activity, action = summary, ""
         elif item_type in labels:
             active = live and kind == "active" and not flags and item.get("status") == "inProgress"
-            activity = labels[item_type] if active else past[item_type]
+            action = labels[item_type] if active else past[item_type]
         elif item_type == "plan":
             steps = [{"title": _text(text, 220), "status": "completed" if mark.lower() == "x" else "pending"}
                      for mark, text in re.findall(r"^\s*[-*] \[([ xX])\] (.+)$", item.get("text", ""), re.M)]
     turn_status = turn.get("status")
     if not activity:
-        activity = {"completed": "Last turn completed", "interrupted": "Last turn was interrupted",
+        activity = action or {"completed": "Last turn completed", "interrupted": "Last turn was interrupted",
                     "failed": "Last turn failed", "inProgress": "Last saved turn is in progress"}.get(turn_status, "No activity summary yet")
     if live and kind == "idle" and turn_status == "failed":
         state, label = "blocked", "Last turn failed"
     return {"id": thread["id"], "thread_id": thread["id"], "provider": "Codex",
             "title": thread.get("name") or _text(thread.get("preview"), 120) or "Codex session",
             "description": _text(thread.get("preview")), "state": state, "status_label": label,
-            "activity": activity, "started_at": turn.get("startedAt") or thread.get("createdAt"),
+            "activity": activity, "action": action, "started_at": turn.get("startedAt") or thread.get("createdAt"),
             "updated_at": thread.get("updatedAt"), "branch": (thread.get("gitInfo") or {}).get("branch"),
             "steps": steps, "live": live, "source": "Codex live session" if live else "Codex saved history"}
 
@@ -212,7 +214,14 @@ def snapshot(root: Path, max_age: float = REFRESH_SECONDS) -> dict:
             value = _collect(root)
         except (OSError, RuntimeError, TimeoutError, ValueError, subprocess.SubprocessError):
             previous = (cached or {}).get("value", {})
-            value = {"sessions": [{**s, "state": "stale", "status_label": "Last known state"} for s in previous.get("sessions", [])],
+            stale = []
+            for session in previous.get("sessions", []):
+                item = {**session, "state": "stale", "status_label": "Last known state", "action": "",
+                        "live": None, "source": "Codex last known session"}
+                if session.get("action") and session.get("activity") == session["action"]:
+                    item["activity"] = "No fresh activity summary is available."
+                stale.append(item)
+            value = {"sessions": stale,
                      "source": {"name": "Codex", "state": "unavailable", "detail": "Could not refresh Codex sessions. Showing the last known snapshot, if available.",
                                 "updated_at": previous.get("source", {}).get("updated_at")}}
         _CACHE[key] = {"at": now, "value": value}
