@@ -147,17 +147,18 @@ def test_claim_identity_and_activity_are_explicit(tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDECODE", "1")  # A Claude child can inherit its launcher's Codex environment.
     assert claims.session_source() == {"provider": "Claude Code"}
     monkeypatch.delenv("CLAUDECODE")
-    monkeypatch.setattr(claims, "DIR", tmp_path)
     monkeypatch.setattr(claims, "session_id", lambda: "owner")
-    monkeypatch.setattr(claims, "git", lambda *args: subprocess.CompletedProcess(args, 0))
-    path = tmp_path / "work.json"
-    path.write_text(json.dumps({"session": "owner", "item": "Work page"}), encoding="utf-8")
+    current = {"work": {"session": "owner", "item": "Work page"}}
+    def publish(msg, change):
+        current.update(change(current))
+        return True
+    monkeypatch.setattr(claims, "publish", publish)
     claims.cmd_beat("Checking   source freshness")
-    saved = json.loads(path.read_text())
+    saved = current["work"]
     assert saved["activity"] == "Checking source freshness" and saved["thread_id"] == "thread-1"
     claims.cmd_beat()
-    assert json.loads(path.read_text())["activity"] == saved["activity"]
+    assert current["work"]["activity"] == saved["activity"]
     monkeypatch.setenv("CLAUDECODE", "1")
     claims.cmd_beat()
-    assert json.loads(path.read_text())["provider"] == "Claude Code"
-    assert "thread_id" not in json.loads(path.read_text())
+    assert current["work"]["provider"] == "Claude Code"
+    assert "thread_id" not in current["work"]
