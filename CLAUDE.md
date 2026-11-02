@@ -68,6 +68,10 @@ Other Claude sessions may be working in this repo at the same time. To never bre
   get small, targeted edits — never rewrites — so concurrent changes merge cleanly. New engine features go in new
   functions or new modules where possible. STATUS.md: append your own dated entry; don't edit others' entries.
 - **Heartbeat:** run `tools/claims.py beat` before each commit (it stages the claim file, so run it before `git commit`, not after) so your claim stays fresh.
+  Add a short activity sentence, for example `tools/claims.py beat "Checking wing clearances; wiring checks next"`,
+  so Studio's Work page can explain current work. Codex's thread id and Claude's explicit runtime identity are
+  recorded automatically when present. Keep remaining work as real PLAN checkboxes; never invent completion
+  percentages or time estimates for a claim.
 - **Finishing an item:** check it off in PLAN.md, `tools/claims.py release`, push, then `tools/claims.py next`.
   When every open item is claimed by other active sessions and your work is pushed, the Stop hook lets you stop.
 

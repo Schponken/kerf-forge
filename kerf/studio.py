@@ -16,7 +16,7 @@ Everything goes through the same engine and CLI as the terminal; the studio only
   - thumbnails: the viewer's own picture of the model, kept per geometry fingerprint
   - notifications: a desktop notification (macOS / notify-send) when a long job ends; the page also chimes
   - follow live: a project's 3D view updates part by part while cloud sessions push to it (kerf/live.py)
-  - work: what the Claude Code sessions are doing (PLAN progress, fresh claims, latest commits), read from git
+  - work: shared claims, Codex sessions and Studio jobs, with activity, progress and source freshness
 Stdlib only (http.server + subprocess). Binds to 127.0.0.1: nothing is reachable from other machines.
 """
 from __future__ import annotations
@@ -1364,15 +1364,42 @@ def _work_picture(name: str) -> str | None:
 
 
 def work() -> dict:
-    """The Work tab's data, recomputed after each fetch (and each minute, for the ages), from the fetched origin branch."""
-    from . import live
+    """Cache shared git work separately from live jobs and bounded Codex session observations."""
+    from . import codex_work, live, work as work_overview
     LIVE["work_until"] = time.time() + 90              # the tab is open: keep the shared fetch going
     _live_thread()
-    key = (live.upstream(ROOT) or _git("rev-parse", "HEAD"), int(time.time() // 60))
-    if LIVE["work"] is None or LIVE["work_key"] != key:
-        LIVE["work"] = live.work_data(ROOT, "@{u}", picture=_work_picture)
+    # Claims are shared on main even when Studio itself runs from a feature branch.
+    ref = _git("symbolic-ref", "--quiet", "refs/remotes/origin/HEAD") or "origin/main"
+    revision = _git("rev-parse", "--verify", "-q", ref)
+    if not revision:
+        ref, revision = "@{u}", live.upstream(ROOT) or _git("rev-parse", "HEAD")
+    key = (revision, int(time.time() // 60))
+    git_work = LIVE["work"]
+    if git_work is None or LIVE["work_key"] != key:
+        git_work = live.work_data(ROOT, ref, picture=_work_picture)
+        LIVE["work"] = git_work
         LIVE["work_key"] = key
-    return {**LIVE["work"], "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "every": live.FETCH_EVERY}
+    codex = codex_work.snapshot(ROOT)
+    now = time.time()
+    timings = _times()
+    jobs = []
+    with JOB_LOCK:
+        for j in list(JOBS.values()):
+            if j.state != "running" and now - (j.ended or j.started) >= 86400:
+                continue
+            kind = f"mode_{j.mode}" if j.mode else j.kind
+            runs = timings.get(j.project, {})
+            comparable = runs.get(kind) or runs.get({"mode_kit": "build", "mode_check": "check"}.get(kind, ""))
+            # A last report may be a quick check, so only recorded comparable runs support a countdown.
+            jobs.append({"id": j.id, "kind": j.kind, "project": j.project, "label": j.label,
+                         "state": j.state, "started": j.started, "mode": j.mode, "events": list(j.events),
+                         "estimate_seconds": estimate(j.project, kind) if comparable else None})
+    sources = [{"name": "Shared claims", "state": "partial" if LIVE["fetch_error"] or not LIVE["last_fetch"] else "ok",
+                "detail": "Last fetched repository state; claim updates show ownership, not live execution.",
+                "updated_at": LIVE["last_fetch"] or None}, codex["source"],
+               {"name": "Studio jobs", "state": "ok", "detail": "Jobs running on this computer and results from the last 24 hours.", "updated_at": now}]
+    return {**work_overview.overview(git_work, sessions=codex["sessions"], jobs=jobs, sources=sources, now=now),
+            "fetched": LIVE["last_fetch"], "fetch_error": LIVE["fetch_error"], "every": live.FETCH_EVERY}
 
 
 # ---------------------------------------------------------------- http

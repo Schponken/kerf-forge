@@ -8,7 +8,7 @@ than STALE_MIN); a stale claim may be taken over.
   .venv/bin/python tools/claims.py list            open PLAN items, who holds each, which are free
   .venv/bin/python tools/claims.py next            claim the first free open item (prints it), commit + push
   .venv/bin/python tools/claims.py take "<text>"   claim a specific open item (prefix of its text), commit + push
-  .venv/bin/python tools/claims.py beat            refresh this session's claims (run before each push)
+  .venv/bin/python tools/claims.py beat [activity] refresh claims, optionally say what is happening now
   .venv/bin/python tools/claims.py release         drop this session's claims (when the item is checked off), commit + push
   .venv/bin/python tools/claims.py mine            this session's claims
   .venv/bin/python tools/claims.py others-cover    exit 0 when every open item is freshly claimed by OTHER sessions
@@ -41,6 +41,15 @@ def session_id() -> str:
     if not p.exists():
         p.write_text(os.environ.get("KERF_SESSION_ID") or uuid.uuid4().hex[:10])
     return p.read_text(encoding="utf-8").strip()
+
+
+def session_source() -> dict:
+    """Only explicit runtime identity labels a claim; old/unknown sessions stay unlabelled."""
+    if os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDECODE") == "1":
+        return {"provider": "Claude Code"}
+    if thread := os.environ.get("CODEX_THREAD_ID"):
+        return {"provider": "Codex", "thread_id": thread}
+    return {}
 
 
 def open_items() -> list[str]:
@@ -116,7 +125,7 @@ def _claim(item: str) -> bool:
         return False
     DIR.mkdir(exist_ok=True)
     now = time.time()
-    (DIR / f"{s}.json").write_text(json.dumps({"item": item, "session": session_id(), "since": now, "heartbeat": now,
+    (DIR / f"{s}.json").write_text(json.dumps({"item": item, "session": session_id(), "since": now, "heartbeat": now, **session_source(),
                                                 "since_utc": time.strftime("%Y-%m-%d %H:%M", time.gmtime(now))}, indent=1) + "\n")
     if not push(f"claim: {item[:70]}"):
         return False
@@ -162,11 +171,17 @@ def mine() -> list[str]:
     return [k for k, c in load().items() if c.get("session") == session_id()]
 
 
-def cmd_beat():
+def cmd_beat(activity: str = ""):
     now = time.time()
     for k in mine():
         p = DIR / f"{k}.json"
         c = json.loads(p.read_text(encoding="utf-8")); c["heartbeat"] = now
+        source = session_source()
+        if source.get("provider") == "Claude Code":
+            c.pop("thread_id", None)
+        c.update(source)
+        if activity.strip():
+            c["activity"] = " ".join(activity.split())[:500]
         p.write_text(json.dumps(c, indent=1) + "\n")
         git("add", f"claims/{k}.json")  # staged, so the next commit carries it and `git pull --rebase` isn't blocked
     return 0
@@ -195,7 +210,7 @@ def main(argv):
     if cmd == "take":
         return cmd_take(" ".join(argv[1:]))
     if cmd == "beat":
-        return cmd_beat()
+        return cmd_beat(" ".join(argv[1:]))
     if cmd == "release":
         return cmd_release()
     if cmd == "mine":

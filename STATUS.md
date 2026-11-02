@@ -307,3 +307,21 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - (01S68R6R, later) FEA memory halved: kerf/fea.py builds the intorder-4 stress basis per chunk after the solve and
   sums the stiffness per chunk with int32 indices. drone_foldable_wings mount_fea (70k tets) OOM-killed a 7 GB machine
   (so its full check could never finish there); now 2.7 GB peak, same stresses. MAX_TETS comment corrected.
+
+## 2026-11-02 — Codex-aware Work overview (Codex, delegated design + data work)
+- Work now combines main-branch shared claims, repository-scoped Codex session summaries and Studio jobs. Task rows
+  show owner, activity, source freshness, attention state, real checklist/stage progress, remaining steps and time
+  estimates only when comparable Studio run history exists. Search, assistant/state filters, project navigation,
+  expandable scope, recent changes, keyboard focus retention and phone/light/dark layouts make it easier to scan.
+- Codex discovery uses read-only app-server list/turn APIs with bounded reads and a 30-second cache; it never starts
+  or resumes a chat. Live proxy preferred; this Mac has no live control socket, so saved history is clearly marked
+  and never treated as running. Cloud work is represented by shared claims. Old claims without runtime metadata
+  remain Session; future claims/heartbeats record explicit Codex/Claude identity and may include a short activity.
+- Explicit thread links deduplicate ownership and retain multiple claimed tasks without inflating running counts.
+  Missing progress/estimates stay unknown; failed refreshes retain stale data. Main-branch claims stay visible from
+  feature branches. Cache invalidation during a slow session read cannot break the response.
+- Verification: 28 targeted tests passed (including browser scenarios at 1440/390 px, dark/light, filters, recovery,
+  keyboard focus and contrast). Real app-server/history and Studio API/browser smoke succeeded; this Codex task
+  appears with its shared claim and current activity. Independent review issues fixed and covered. Screenshots in
+  .cache/work-ui use sample tasks, except work-live-1440.png which captures local data. No full-suite/hardware run;
+  full batch verification remains with the manager (now on hold). No catalog, geometry, check threshold or review edits.
