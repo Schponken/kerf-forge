@@ -49,7 +49,7 @@ parts:
   pod: {file: parts/pod.py, material: PLA, print_rot: [0, 90, 0], infill: 0.15, walls: 4, load_axis: Y, supports: needed,
         modifiers: [{where: "both spar sleeves, wall to wall", size: "the sleeves (a box round each V)", infill: 1.0, why: "the sleeves carry the wing's root moment across: FEA assumes them solid"},
                     {where: "the 12 insert bosses (nose, motor mount, hatch)", size: "12 mm cylinder round each", infill: 1.0, why: "heat-set inserts need solid plastic to grip"}]}
-  hatch: {file: parts/hatch.py, material: PLA, print_rot: [180, 0, 0], infill: 0.15, walls: 2}
+  hatch: {file: parts/hatch.py, material: PLA, print_rot: [180, 0, 0], infill: 0.15, walls: 2, supports: needed}
   wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, modifiers: &inner_mods
              [{where: "the two root inserts", size: "12 mm cylinder round each, 10 mm deep", infill: 1.0, walls: 3, why: "the root bolts' inserts need solid plastic (3 % infill gives them nothing)"},
               {where: "round the servo pocket", size: "the pocket + 4 mm all round", infill: 1.0, why: "the servo is glued to these walls"},

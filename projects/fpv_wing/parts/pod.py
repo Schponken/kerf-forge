@@ -61,6 +61,7 @@ def hatch_box(p):
     return Pos(HATCH_X[0], 0, HATCH_CUT_Z) * Box(HATCH_X[1] - HATCH_X[0], 2 * HATCH_HW, 60, align=(Align.MIN, Align.CENTER, Align.MIN))
 
 
+HATCH_BOSS_D = 12.0        # hatch insert bosses: 4.0 mm insert hole + 4 mm wall each side
 HATCH_MID_X = 130.0        # mid-length hatch screws: between the main sleeve (ends ~x 95 at |y| 30) and the rear sleeve
                            # (starts ~x 150), 15 mm behind the rear wing-root bolt (x 112) so its driver still reaches
 
@@ -137,14 +138,17 @@ def build(ctx):
         - Pos(HATCH_X[0] - 3, 0, 0) * Box(HATCH_X[1] - HATCH_X[0] + 6, 2 * (HATCH_HW - 4), 80, align=(Align.MIN, Align.CENTER, Align.CENTER))
     body = body + ctx.add((ledge & outer(p)) - hatch_solid(p), why="ledges the hatch rests on", kind="ledge")
     for (x, y) in hatch_bolts(p):          # ledge blocks deep enough for the hatch screws' inserts
-        blk = Pos(x, y, HATCH_CUT_Z - 9) * Box(14, 14, p.pod_top - SKIN - (HATCH_CUT_Z - 9), align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # why: round (12 mm: insert hole + 4 mm wall), so it meets the ledge in curved edges: no square corner to crack
+        h = p.pod_top - SKIN - (HATCH_CUT_Z - 9)
+        blk = Pos(x, y, HATCH_CUT_Z - 9) * Cylinder(HATCH_BOSS_D / 2, h, align=(Align.CENTER, Align.CENTER, Align.MIN))
         body = body + ctx.add((blk & outer(p)) - hatch_solid(p), why="hatch insert block", kind="boss")
     top = Location(Plane(origin=(0, 0, p.pod_top - SKIN), x_dir=(1, 0, 0), z_dir=(0, 0, 1)))
     body = body - iface.bolt_pattern(ctx, "hatch", "M3", hatch_bolts(p), top, kind="heatset", depth=8, teardrop="auto")
     # battery strap: two tabs on the floor beside the pack, a 20 mm strap over its top (6 mm under the shelf)
     floor_z = p.pod_bottom + SKIN
     for s in (-1, 1):
-        tab = Pos(p.bat_x, s * 33.0, floor_z - 1) * Box(30, 3, 11, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        # why: round ends in plan, so the tab's foot on the floor has no square end corners (fillets run round it)
+        tab = Pos(p.bat_x, s * 33.0, floor_z - 1) * extrude(SlotOverall(30, 3), 11)
         tab -= Pos(p.bat_x, s * 33.0, floor_z + 3) * Box(22, 5, 3.5, align=(Align.CENTER, Align.CENTER, Align.MIN))
         body = body + ctx.add(tab & outer(p), why="battery strap tab (22 x 3.5 slot)", kind="strap tab")
     # cooling: air in through the nose vents, along the bay, out through belly slots behind the shelf
@@ -194,7 +198,20 @@ def build(ctx):
         a, b = L.lead_line(p, s)
         body = body - ctx.cut(aero.cylinder_between(a, b, 8.0, extend=1.0), why="elevon servo lead into the bay", kind="wire hole")
         ctx.rigid(f"wing_{'l' if s < 0 else 'r'}", Location())
-    body, failed = fillet_inside(ctx, body, r=2.0)
+    def keep(at):
+        x, y, z = at
+        if abs(x - (HATCH_X[1] - 2.8)) < 1.5 and abs(abs(y) - HATCH_HW) < 1.0 and abs(z - HATCH_CUT_Z) < 1.0:
+            return "the hatch skin's square rear corner sits in this corner of the opening"
+        if abs(x - (p.pod_x0 + 40)) < 0.5 and abs(z - (p.bay_top + SHELF_T / 2)) < 1.5:
+            return ("shelf edge at the fuselage loft's crease (nose taper meets the full section): the coves on either "
+                    "side meet at an angle there; the shelf only carries the electronics' weight")
+        if any(np.hypot(x - bx, y - by) < 2.5 for bx, by in hatch_bolts(p)) and z < p.pod_top - SKIN:
+            return "floor of a hatch heat-set insert hole (teardrop tip): the brass insert sits in it"
+        if abs(x - p.bat_x) < 17 and abs(abs(y) - 33.0) < 3.5 and abs(z - (p.pod_bottom + SKIN)) < 1.5:
+            return ("1 mm stub where the floor cove along the strap tab meets its round end; the tab only takes the "
+                    "strap's tension (a few N)")
+        return None
+    body, failed = fillet_inside(ctx, body, r=2.0, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     # spar tubes: rod proxy frame = origin at one end, +Z along the tube
     for s in (1, -1):
