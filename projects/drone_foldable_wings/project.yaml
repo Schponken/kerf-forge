@@ -8,7 +8,7 @@ printer: Bambu Lab A2L
 layout: parts/layout.py
 style: {radii: [1.0, 2.0, 3.0], edge_break: 0.6}
 use_story:
-  who: 'Spencer, a hobby pilot, flying it himself as a GPS UAV: hand launch, loiter / cruise, dives, belly landing on grass'
+  who: 'Spencer, a hobby pilot, flying it himself as a GPS UAV: bungee launch, loiter / cruise, dives, belly landing on grass'
   where:
   - outdoor
   - field
@@ -22,7 +22,7 @@ use_story:
     survive: false
     consequence: 'a nose-in at pull-out speed: the prop, the motor mount and the nose of fwd_fuse take it; reprint those (the wings, pivots and gears sit aft of the bay and are not in the load path)'
   - hazard: other
-    what: hand launch with the wings spread and belly landing on grass
+    what: bungee launch with the wings spread and belly landing on grass
     covered_by:
     - stall_speed
     - twr
@@ -127,8 +127,8 @@ purchased:
   fc: {catalog: drone.fcs.f405_wmo, proxy: box, color: "#204080", held_by: "double-sided foam tape (soft-mounts the gyro) on the shelf, arrow forward"}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "double-sided tape on the shelf beside the FC; antenna out along the fuselage side"}
   gps: {catalog: drone.gps.m9n_5883, proxy: box, color: "#303030", held_by: "double-sided foam tape on the spine's flat top, arrow forward (clear sky view, away from the ESC)"}
-  sweep_servo_r: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_r}, tab_screws_from: bottom, insert: {direction: [0, 0, 1], distance: 52}}
-  sweep_servo_l: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_l}, tab_screws_from: bottom, insert: {direction: [0, 0, 1], distance: 52}}
+  sweep_servo_r: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_r}, tab_screws_from: bottom, range: [0, 113.1], insert: {direction: [0, 0, 1], distance: 52}}
+  sweep_servo_l: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_l}, tab_screws_from: bottom, range: [-113.1, 0], insert: {direction: [0, 0, 1], distance: 52}}
   sweep_horn_r: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_r}}
   sweep_horn_l: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_l}}
   ail_servo_r: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
@@ -425,13 +425,13 @@ requirements:
   why: "one side folded, the other spread (asymmetric roll / yaw input in cruise): stable in pitch (>= 5 % MAC); upper bound = the most margin full up elevator can trim (DESIGN.md): eta_t 0.9 x V_h (from this check) x a_t 3.28 /rad x tau 0.55 x 22 deg / CL 0.37 (1 g at 70 km/h) = 0.86 MAC at V_h 0.51"
 - id: wing_loading
   check: wing_loading
-  max_g_dm2: 65
-  why: trainer / UAV class, hand-launchable (DESIGN.md)
+  max_g_dm2: 95
+  why: "Spencer's decision 2026-11-02: keep the 4S 1.1 m version with ~13 min flights and a bungee launch (the folding mechanism made it ~1.6 kg against the 1.15 kg first plan); the stall_speed check sets the landing speed; this caps the loading at the class of flown sweep-wing models (XFly F-14: 115 g/dm2, REFERENCES.md)"
 - id: stall_speed
   check: stall_speed
-  max_kmh: 40
+  max_kmh: 45
   re: 200000
-  why: 'hand launch: stall at or below 40 km/h with the wings spread; MH 45 at Re 200 000'
+  why: "Spencer's decision 2026-11-02: keep the 4S 1.1 m version with ~13 min flights and a bungee launch (the folding mechanism made it ~1.6 kg against the 1.15 kg first plan); with a bungee launch this is the belly-landing speed on grass: <= 45 km/h (fpv_wing's limit; Darkwing-1 50 km/h); MH 45 at Re 200 000"
 - id: spar_bending
   check: spar_bending
   tubes:
@@ -548,12 +548,12 @@ requirements:
   check: thrust_to_weight
   motors:
   - motor
-  min_ratio: 0.7
-  why: 'hand launch + climb: >= 0.7 (catalog thrust at 23.42 V scaled to the 14.8 V 4S nominal)'
+  min_ratio: 0.45
+  why: "Spencer's decision 2026-11-02: keep the 4S 1.1 m version with ~13 min flights and a bungee launch (the folding mechanism made it ~1.6 kg against the 1.15 kg first plan); after a bungee launch the motor only has to climb: T/W >= 1/(L/D) 0.125 + climb gradient 0.2 (3 m/s at 15 m/s) = 0.33, x ~1.35 for a 7 in FPV prop's static-to-flight thrust drop = 0.45 (catalog thrust at 23.42 V scaled to the 14.8 V 4S nominal)"
 - id: flight_time
   check: flight_time
-  min_min: 25
-  why: 'long, stable UAV flight: >= 25 min level cruise at 50 km/h on 80 % of the 1500 mAh pack'
+  min_min: 12
+  why: "Spencer's decision 2026-11-02: keep the 4S 1.1 m version with ~13 min flights and a bungee launch (the folding mechanism made it ~1.6 kg against the 1.15 kg first plan): >= 12 min level cruise at 50 km/h on 80 % of the 1500 mAh pack"
 - id: power
   check: power_budget
   why: pack C rating, FC current sensor, ESC, both BECs, XT60 and every wire inside their ratings in cruise and at full throttle
@@ -566,8 +566,8 @@ requirements:
   why: the 7 in prop clears every part by 5 mm at every sweep angle
 - id: auw
   check: mass_max
-  max_g: 1150
-  why: 'all-up mass <= 1150 g (DESIGN.md: hand-launched 1.1 m class)'
+  max_g: 1650
+  why: "Spencer's decision 2026-11-02: keep the 4S 1.1 m version with ~13 min flights and a bungee launch (the folding mechanism made it ~1.6 kg against the 1.15 kg first plan): all-up mass <= 1650 g (as designed ~1.6 kg; keeps T/W and the landing speed inside their limits)"
 - id: xt60_plug
   check: connector_access
   item: xt60
