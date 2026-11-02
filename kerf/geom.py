@@ -51,6 +51,39 @@ def bbox(shape):
     return np.array([b.min.X, b.min.Y, b.min.Z]), np.array([b.max.X, b.max.Y, b.max.Z])
 
 
+class _Memo:
+    """Per-shape cache slot (geometry-derived data keyed by the shape's TopoDS). Copies and pickles come out empty, so a
+    copied shape recomputes instead of carrying objects that cannot be copied (manifold3d meshes)."""
+    __slots__ = ("key", "value")
+
+    def __init__(self, key=None, value=None):
+        self.key, self.value = key, value
+
+    def get(self, shape):
+        return self.value if self.key is not None and self.key.IsPartner(shape.wrapped) else None
+
+    def __copy__(self):
+        return _Memo()
+
+    def __deepcopy__(self, memo):
+        return _Memo()
+
+    def __reduce__(self):
+        return (_Memo, ())
+
+
+def _memo_get(shape, attr):
+    m = getattr(shape, attr, None)
+    return m.get(shape) if isinstance(m, _Memo) else None
+
+
+def _memo_set(shape, attr, value):
+    try:
+        setattr(shape, attr, _Memo(shape.wrapped, value))
+    except Exception:  # noqa: BLE001 - shapes that refuse attributes just aren't cached
+        pass
+
+
 def _fast_box(shape):
     """World axis-aligned box that CONTAINS the shape (may be a little larger when rotated): the shape's own-frame box,
     computed once and cached on the shape, with its 8 corners moved by the current location. bbox() re-derives an
@@ -60,15 +93,15 @@ def _fast_box(shape):
     if km is not None:
         return bbox(shape)
     try:
-        cached = getattr(shape, "_kerf_box", None)
+        cached = _memo_get(shape, "_kerf_box")
         M = _loc_matrix(shape.location)
-        if cached is None or not cached[0].IsPartner(shape.wrapped):
+        if cached is None:
             lo, hi = bbox(shape)
             corners = np.array([[x, y, z] for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])])
             local = (corners - M[:, 3]) @ M[:, :3]                       # world -> own frame
-            cached = (shape.wrapped, local.min(axis=0), local.max(axis=0))
-            shape._kerf_box = cached
-        _, llo, lhi = cached
+            cached = (local.min(axis=0), local.max(axis=0))
+            _memo_set(shape, "_kerf_box", cached)
+        llo, lhi = cached
         corners = np.array([[x, y, z] for x in (llo[0], lhi[0]) for y in (llo[1], lhi[1]) for z in (llo[2], lhi[2])])
         w = corners @ M[:, :3].T + M[:, 3]
         return w.min(axis=0), w.max(axis=0)
@@ -100,9 +133,9 @@ def _loc_matrix(loc) -> np.ndarray:
 
 def _local_manifold(shape):
     """Closed manifold of the shape in its own frame (cached on the shape), or None when it cannot be made."""
-    cached = getattr(shape, "_kerf_prefilter", None)
-    if cached is not None and cached[0].IsPartner(shape.wrapped):
-        return cached[1]
+    m = _memo_get(shape, "_kerf_prefilter")
+    if m is not None:
+        return None if m is False else m                 # False = tried, no closed mesh
     m = None
     try:
         import trimesh
@@ -116,10 +149,7 @@ def _local_manifold(shape):
             m = cand
     except Exception:  # noqa: BLE001 - no prefilter for this shape; the exact path still runs
         m = None
-    try:
-        shape._kerf_prefilter = (shape.wrapped, m)
-    except Exception:  # noqa: BLE001 - shapes that refuse attributes just aren't cached
-        pass
+    _memo_set(shape, "_kerf_prefilter", m if m is not None else False)
     return m
 
 

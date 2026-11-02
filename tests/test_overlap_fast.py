@@ -61,3 +61,18 @@ def test_exact_switch_and_cache_follow_a_replaced_geometry():
     assert geom.overlap(a, b) == pytest.approx(500, rel=1e-6)
     a.wrapped = (Box(4, 4, 4)).wrapped                     # same object, different solid: caches must notice
     assert geom.overlap(a, b) == pytest.approx(_exact(a, b), abs=1e-6)
+
+
+def test_cached_shapes_can_still_be_copied_and_pickled():
+    """The motion sweep deep-copies parts; the per-shape caches must not make that fail, and a copy must recompute."""
+    import copy
+    import pickle
+    from build123d import Box, Pos
+    a, b = Box(10, 10, 10), Pos(5, 0, 0) * Box(10, 10, 10)
+    assert geom.overlap(a, b) > 0                        # fills both caches
+    c = copy.deepcopy(a)
+    d = copy.copy(a)
+    pickle.loads(pickle.dumps(a._kerf_prefilter))
+    c.location = Pos(30, 0, 0) * c.location
+    assert geom.overlap(c, b) == 0.0
+    assert geom.overlap(d, b) > 0
