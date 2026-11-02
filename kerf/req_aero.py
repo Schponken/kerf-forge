@@ -14,7 +14,7 @@ import numpy as np
 
 from . import aero, catalog
 from .req_balance import assembly_cg
-from .requirements import check, item_mass_g
+from .requirements import UNITS, check, item_mass_g
 
 
 def _pf(proj, wing: str = "wing_") -> aero.Planform:
@@ -190,6 +190,8 @@ def static_margin_tail(proj, asm, min=0.05, max=0.25, wing="wing_", tail="htail_
     K_fus W_f^2 L_f / (c S_w) per deg; `fuselage: {length_mm, width_mm, k_fus}`, K_fus from Raymer fig. 16.14).
     CG = the assembled CG of every item and wire at the pose."""
     from . import assembly as A
+    from .requirements import _ev
+    root_y = _ev(root_y, proj.params or {})            # a number or an expression over params / layout ("pivot_y")
     w = wing_at_pose(proj, asm, wing, halves, root_y, pose, strips)
     cg, M = assembly_cg(proj)
     if halves:
@@ -239,7 +241,8 @@ def fold_hinge_moment(proj, asm, joint, item, side, speed_kmh, cd, cl=0.0, actua
     the joint range, against the actuator's stall torque (catalog, or `stall_kgcm`) x `ratio` (gear reduction from the
     actuator to the joint) x `max_fraction`."""
     from . import assembly as A
-    from .requirements import _axis_world
+    from .requirements import _axis_world, _ev
+    root_y = _ev(root_y, proj.params or {})
     e = next((e for e in asm.edges if e.name == joint), None)
     if e is None or e.kind != "revolute":
         raise ValueError(f"fold_hinge_moment: '{joint}' is not a revolute joint")
@@ -268,3 +271,8 @@ def fold_hinge_moment(proj, asm, joint, item, side, speed_kmh, cd, cl=0.0, actua
             "detail": f"{speed_kmh:g} km/h (q {q * 1e6:.0f} Pa), cd {cd:g}, cl {cl:g} on the {pf.semi - root_y:.0f} mm half: "
                       f"{kgcm:.2f} kg·cm about {joint} at {at:g}°, {kgcm / float(ratio):.2f} kg·cm at the actuator vs stall "
                       f"{float(stall_kgcm):g} x ratio {float(ratio):g} x {max_fraction:g}"}
+
+
+UNITS.update({"static_margin": ("x MAC", "range"), "wing_loading": ("g/dm²", "max"), "stall_speed": ("km/h", "max"),
+              "spar_bending": ("x allowable", "max"), "static_margin_tail": ("x MAC", "range"),
+              "fold_hinge_moment": ("kg·cm", "max")})
