@@ -1411,3 +1411,11 @@ pushed for it and what I know:
   already running; the fix prompt stops if another session holds the project. "🔧 Fix these" on the Checks banner
   starts one by hand; More -> "Auto-fix failed builds: on / off" (setting `autofix`, on by default). Test in
   tests/test_studio.py.
+
+## 2026-11-02 11:55 UTC-5 — Bambu A2L connection (Spencer sent the printer's LAN Only screen)
+- `kerf printer setup --host <ip> --code <access code>` / `kerf printer status` (kerf/bambu.py setup_printer, status,
+  ssdp_serial, mqtt_serial): finds the serial from the printer's SSDP announce (UDP 2021) or its MQTT report topic,
+  proves the login with a status read, saves ~/.kerf/bambu.json owner-only. Studio: 🖨 button in Activity -> IP +
+  access code -> Connect (the code is never sent back to the page). Tests: tests/test_printer_setup.py, test_studio.
+- The cloud container and the linked VM cannot reach the printer's LAN (10.11.16.171:8883/990 closed from there), and
+  the access code is a credential Claude does not type, so Spencer connects it once on his Mac (git pull, restart Studio).

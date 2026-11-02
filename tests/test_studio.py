@@ -512,3 +512,17 @@ def test_failed_build_starts_a_fix_job_once_per_design_state(monkeypatch):
     reports["bad"]["fingerprint"] = "f4"
     studio.auto_fix(job("bad"))
     assert started == ["bad", "bad"]                           # switched off: the Fix button only
+
+
+def test_printer_setup_validates_and_never_returns_the_code(monkeypatch, tmp_path):
+    from kerf import bambu
+    cfg = tmp_path / "b.json"
+    monkeypatch.setenv("KERF_BAMBU_CONFIG", str(cfg))
+    with pytest.raises(ValueError, match="printer IP"):
+        studio.printer_setup("printer.local", "abc")
+    monkeypatch.setattr(bambu, "setup_printer", lambda h, c, s, say=None: bambu.save_config(
+        {"printer": {"host": h, "serial": "SER9", "access_code": c}}) and {"serial": "SER9", "status": {"gcode_state": "IDLE"}})
+    r = studio.printer_setup("10.11.16.171", "abcd1234")
+    assert r["serial"] == "SER9" and "abcd1234" not in str(r)
+    info = studio.printer_info()
+    assert info == {"configured": True, "host": "10.11.16.171", "serial": "SER9"} and "abcd1234" not in str(info)

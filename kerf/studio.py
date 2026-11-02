@@ -264,6 +264,35 @@ def auto_fix(job) -> Job | None:
     return fix_job(job.project)
 
 
+def printer_info(live: bool = False) -> dict:
+    """The Bambu printer Kerf sends plates to (~/.kerf/bambu.json; the access code is never sent to the page)."""
+    from . import bambu
+    p = (bambu.load_config() or {}).get("printer") or {}
+    out = {"configured": bool(p.get("host") and p.get("serial") and p.get("access_code")), "host": p.get("host"),
+           "serial": p.get("serial")}
+    if live and out["configured"]:
+        try:
+            out["status"] = bambu.status()
+        except Exception as e:  # noqa: BLE001
+            out["error"] = str(e)
+    return out
+
+
+def printer_setup(host: str, code: str, serial=None) -> dict:
+    """Connect to the printer on this Mac's network (LAN Only + Developer Mode), prove the login, save the config."""
+    from . import bambu
+    import ipaddress
+    host, code = host.strip(), code.strip()
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        raise ValueError("printer IP: four numbers like 192.168.1.50 (printer screen: Settings > LAN Only)")
+    if not code:
+        raise ValueError("the access code from the printer's LAN Only screen")
+    r = bambu.setup_printer(host, code, (str(serial).strip() or None) if serial else None, say=lambda s: None)
+    return {"configured": True, "host": host, "serial": r["serial"], "status": r["status"]}
+
+
 def restore(name: str, stamp: str) -> list[str]:
     """One-click revert of a version's parameter values (project.yaml params only; part code is never touched)."""
     f = HISTORY / name / stamp / "version.json"
@@ -1188,6 +1217,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(read_quote(parts[2]))
             if parts == ["api", "settings"]:
                 return self._json(settings())
+            if parts == ["api", "printer"]:
+                return self._json(printer_info(live=q.get("live", ["0"])[0] == "1"))
             if parts == ["api", "compare"]:
                 nm = q.get("project", [""])[0]
                 if nm not in project_names():
@@ -1275,6 +1306,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(claude_setup())
             if u.path == "/api/settings":
                 return self._json(save_settings(body))
+            if u.path == "/api/printer":
+                try:
+                    return self._json(printer_setup(str(body.get("host", "")), str(body.get("code", "")), body.get("serial")))
+                except Exception as e:  # noqa: BLE001 - say what failed (wrong code, printer off, other network)
+                    return self._err(str(e))
             if u.path == "/api/notify-test":
                 return self._json({"shown": notify("Notifications are on", "You'll get one like this when a long job finishes.")})
             if u.path == "/api/build-all":

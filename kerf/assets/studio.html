@@ -318,7 +318,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   <input id="search" placeholder="Search projects" oninput="renderList()" style="display:none">
   <div id="plist"></div>
   <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
-  <div id="jobs"><h4>Activity <button class="bell" id="bellbtn" onclick="toggleBell()" title="Notify me when a long job finishes">🔔</button></h4><div id="joblist" class="note">Nothing running.</div></div>
+  <div id="jobs"><h4>Activity <button class="bell" id="printerbtn" onclick="showPrinter()" title="Connect your Bambu printer (LAN)">🖨</button> <button class="bell" id="bellbtn" onclick="toggleBell()" title="Notify me when a long job finishes">🔔</button></h4><div id="joblist" class="note">Nothing running.</div></div>
 </aside>
 <main id="main"><div class="body"><div class="sk" style="height:34px;width:40%;margin-bottom:12px"></div><div class="sk" style="height:16px;width:70%;margin-bottom:24px"></div><div class="sk" style="height:420px"></div></div></main>
 
@@ -888,6 +888,25 @@ async function finished(j) {
 }
 async function followFix() {   // the server starts a fix job by itself after a failed build: show it
   try { const d = await api("/api/jobs"); const f = d.jobs.find(x => x.kind === "fix" && x.state === "running" && x.project === S.sel); if (f) watch(f.id); } catch (e) {}
+}
+async function showPrinter() {   // connect the Bambu printer: IP + LAN access code, typed by the person, checked live
+  let info = {}; try { info = await api("/api/printer?live=1"); } catch (e) {}
+  const el = document.createElement("div"); el.className = "modal"; el.id = "printerask";
+  const st = info.status ? `Connected: ${esc(info.status.gcode_state || "idle")}${info.status.mc_percent != null ? ` (${info.status.mc_percent} %)` : ""}` : info.error ? esc(info.error) : "Not connected yet.";
+  el.innerHTML = `<div class="card"><h3>🖨 Printer</h3>
+    <p class="note">${info.configured ? `Printer ${esc(info.serial)} at ${esc(info.host)}. ${st}` : st} On the printer: Settings → LAN Only, turn on LAN Only Mode and Developer Mode; it shows the IP and access code.</p>
+    <div class="igrid"><label>Printer IP<input id="pr_host" value="${esc(info.host || "")}" placeholder="10.11.16.171"></label>
+    <label>Access code<input id="pr_code" type="password" autocomplete="off" placeholder="8 characters"></label>
+    <label>Serial (optional)<input id="pr_serial" value="${esc(info.serial || "")}" placeholder="found automatically"></label></div>
+    <div class="row"><button class="primary" id="pr_go">Connect</button><button id="pr_no">Close</button></div><p class="note" id="pr_msg"></p></div>`;
+  document.body.appendChild(el);
+  $("#pr_no").onclick = () => el.remove();
+  $("#pr_go").onclick = async () => {
+    $("#pr_msg").textContent = "Connecting…";
+    try { const r = await api("/api/printer", {host: $("#pr_host").value, code: $("#pr_code").value, serial: $("#pr_serial").value});
+      $("#pr_msg").textContent = `Connected to ${r.serial}: ${(r.status || {}).gcode_state || "idle"}. Ship it and kerf print now send plates to it.`; toast("Printer connected", r.serial, "ok"); }
+    catch (e) { $("#pr_msg").textContent = "Couldn't connect: " + e.message; }
+  };
 }
 async function toggleAutofix() {
   try { S.settings = await api("/api/settings", {autofix: !S.settings.autofix}); } catch (e) { return toast("Couldn't change it", e.message, "bad"); }
