@@ -479,3 +479,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   would be false). Suggested hook change, needs your go-ahead: let a Studio job end once its own work is committed,
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
 - (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.
+
+## 2026-11-02 — Work claim ownership details (Codex)
+- A shared chat keeps each linked claim's reported owner/provider, activity, update time, scope, attention and
+  checklist. Existing scope details show these as compact task rows; full owner names and activities are searchable,
+  and provider filtering also matches the linked owners. One chat remains one card and one observed live session.
+- Stale ownership updates flag the card for attention without implying that its live chat or another owner stopped.
+  In-progress/recent status filters can overlap attention, each counting a card once. Unknown checklists/times stay
+  unknown; combined progress still requires every claim's checklist. A sole claim cannot hide the chat's own next
+  steps, and identical claim/chat steps are shown once. No subagent execution or ETA is inferred from ownership.
+- 31 focused tests passed in 6.26 s (Work overview/browser, Codex Work, docs); after the independent review's
+  overlapping-filter correction, both browser scenarios passed in 5.14 s. Tests include mixed/stale owners, unknown
+  and complete checklists, live-state retention, owner/activity search, provider matching, refresh focus/open state,
+  escaping and long owners at desktop/phone sizes in both themes. Work's light warning text now clears 4.5:1.
+- Viewed the illustrative captures in .cache/work-owners (work-owners-sample-{dark,light}-{1440,390}-{top,details}.png).
+  No horizontal overflow or browser errors. Impeccable's one mechanical scan found only 13 existing patterns outside
+  the edited Work selectors; no redesign or new design artifacts. The existing tall phone app shell is a separate
+  accepted limitation. Doctor ALL OK using shared dependencies; optional firmware tools remain unavailable.
+- Parent code/screenshot review findings are fixed and covered. No full batch, stress solve, physical hardware,
+  project geometry, catalog, engineering threshold or review.json changed; full verification remains on hold.
