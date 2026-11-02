@@ -2,6 +2,6 @@
  "item": "Part cache keyed on the engine modules a part actually uses (not every kerf/*.py), so an unrelated engine edit stops rebuilding every part of every project (drone_foldable_wings: 163 s cold vs 0.9 s cached); tests",
  "session": "12d9384eb7",
  "since": 1793646348.3232055,
- "heartbeat": 1793646348.3232055,
+ "heartbeat": 1793646756.7208455,
  "since_utc": "2026-11-02 19:05"
 }

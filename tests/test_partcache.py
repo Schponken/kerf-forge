@@ -1,5 +1,6 @@
 """Per-part build cache (kerf/partcache.py): an unchanged part is a hit with identical geometry and metadata; a param
-the part reads, its source, a helper it imports, a catalog entry it read, or the engine changing is a miss."""
+the part reads, its source, a helper it imports, a catalog entry it read, or an engine file it used changing is a
+miss; an engine file it never used changing is not."""
 import json
 
 import pytest
@@ -92,8 +93,11 @@ def test_misses(proj_dir, monkeypatch):
     src.write_text(src.read_text().replace("Box(30, 30, 4", "Box(30, 30, 5"))
     q = _build(proj_dir)
     assert q.items["block"].cached and not q.items["plate"].cached
-    monkeypatch.setattr(partcache, "_ENGINE", "different-engine")     # engine change
-    assert not any(it.cached for it in _build(proj_dir).printed.values())
+    real = partcache._file_hash
+    monkeypatch.setattr(partcache, "_file_hash", lambda n: "edited" if n == "aero.py" else real(n))
+    assert all(it.cached for it in _build(proj_dir).printed.values())  # an engine file no part uses: still hits
+    monkeypatch.setattr(partcache, "_file_hash", lambda n: "edited" if n == "iface.py" else real(n))
+    assert not any(it.cached for it in _build(proj_dir).printed.values())   # an engine file both parts run
     monkeypatch.setenv("KERF_NO_CACHE", "1")                          # kerf verify
     assert not any(it.cached for it in _build(proj_dir).printed.values())
 
@@ -153,3 +157,18 @@ def test_attribution_traces_fresh_build_even_when_cached(proj_dir):
     _build(proj_dir)                                    # warm
     a = attribution.compute(_build(proj_dir))["block"]
     assert a["faces"] and all(f["line"] for f in a["faces"])
+
+
+def test_engine_deps_follow_what_the_build_ran(proj_dir):
+    """Recorded engine files: the modules whose code ran, what they import, and top-level import closure."""
+    import pickle
+    p = _build(proj_dir)
+    rec = pickle.loads((partcache.DIR / f"{p.items['block'].cache_key}.pkl").read_bytes())
+    code = {d[5:] for d in rec["deps"] if d.startswith("kerf:")}
+    assert {"iface.py", "ctx.py"} <= code                 # ran during build(ctx)
+    assert "aero.py" not in code and "studio.py" not in code
+    with partcache.recording() as outer:                  # nested recordings both collect
+        with partcache.recording() as inner:
+            from kerf import aero
+            aero.naca4("2412")
+    assert "kerf:aero.py" in inner and "kerf:aero.py" in outer

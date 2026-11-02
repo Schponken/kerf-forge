@@ -6,7 +6,12 @@ everything its `build(ctx)` can see:
     (shared helpers such as fingerlib.py or layout.py, which part modules import) or that its source names by file;
   - the part's resolved params (project params + layout values + the item's own params) and its project.yaml spec;
   - the printer's measured-fit profile and the material (iface reads them);
-  - the engine version: every kerf/*.py source and the build123d version;
+  - the build123d version and this file;
+  - the engine files the part used: every kerf/*.py whose code ran while the part was built (recorded per part with
+    sys.monitoring, each function reported once per build, so it costs nothing measurable), plus the kerf modules
+    those files and the part's own source import (constants are read, not run) and, transitively, the modules imported
+    at their top level. Hashed on lookup like the catalog entries, so editing an engine file the part never touches
+    keeps it a hit (before 2026-11-02 any kerf/*.py edit rebuilt every part of every project);
   - the catalog entries the part read on its last real build (recorded per part; hashed on lookup, so editing one
     of them is a miss and an edit anywhere else in the catalog is not).
 The value is the built shape (OpenCascade binary BREP, exact) plus everything `ctx.finish` attached to it (fastener and
@@ -22,6 +27,7 @@ import io
 import json
 import os
 import pickle
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,6 +52,135 @@ def engine_version() -> str:
     return _ENGINE
 
 
+# ---- engine files a build used (see the module docstring) ----
+
+KERF = ROOT / "kerf"
+_PREFIX = str(KERF) + os.sep
+_TOOL = 4                       # sys.monitoring tool id (0-2 and 5 are reserved for debuggers/coverage/profilers)
+_ACTIVE: list = []              # code-file sets of the recordings in progress (nested and concurrent ones all collect)
+_MON: bool | None = None
+_ALL = "kerf:*"                 # dependency on the whole engine (monitoring unavailable): hashed as engine_version()
+
+
+def _on_start(code, offset):
+    fn = code.co_filename
+    if fn.startswith(_PREFIX):
+        for s in _ACTIVE:
+            s.add(fn)
+    return sys.monitoring.DISABLE                    # once per code object until the next recording restarts events
+
+
+def _monitor() -> bool:
+    global _MON
+    if _MON is None:
+        try:
+            m = sys.monitoring
+            m.use_tool_id(_TOOL, "kerf-partcache")
+            m.register_callback(_TOOL, m.events.PY_START, _on_start)
+            _MON = True
+        except Exception:  # noqa: BLE001 - no monitoring (id taken, old Python): depend on the whole engine
+            _MON = False
+    return _MON
+
+
+_GRAPH: dict | None = None
+
+
+def _kerf_imports(src: str, pkg_relative: bool) -> tuple[set, set]:
+    """(all, top-level) names of kerf modules a source imports. pkg_relative: `from . import x` means kerf.x."""
+    import ast
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return set(), set()
+    mods = {f.stem for f in KERF.glob("*.py")}
+    top_nodes = set(map(id, tree.body))
+
+    def names(node):
+        out = set()
+        if isinstance(node, ast.Import):
+            for a in node.names:
+                parts = a.name.split(".")
+                if parts[0] == "kerf" and len(parts) > 1:
+                    out.add(parts[1])
+                elif parts[0] == "kerf":
+                    out.add("__init__")
+        elif isinstance(node, ast.ImportFrom):
+            m = node.module or ""
+            if (node.level == 1 and pkg_relative) or m == "kerf" or m.startswith("kerf."):
+                base = m.split(".")[1] if m.startswith("kerf.") else (m.split(".")[0] if node.level else "")
+                if base:
+                    out.add(base)
+                else:                                    # from . import a, b  /  from kerf import a, b
+                    out |= {a.name for a in node.names}
+                    out.add("__init__")
+        return {n for n in out if n in mods}
+
+    every, top = set(), set()
+    for node in ast.walk(tree):
+        n = names(node)
+        every |= n
+        if id(node) in top_nodes:
+            top |= n
+    return every, top
+
+
+def _graph() -> dict:
+    """kerf module -> (every kerf module it imports, the ones it imports at top level)."""
+    global _GRAPH
+    if _GRAPH is None:
+        _GRAPH = {f.stem: _kerf_imports(f.read_text(encoding="utf-8", errors="replace"), True)
+                  for f in KERF.glob("*.py")}
+    return _GRAPH
+
+
+def engine_deps(used_modules, direct_imports=()) -> set:
+    """Engine files whose change can change a build that ran `used_modules` (and whose own source imports
+    `direct_imports`): those, everything they import, and the top-level import closure of all of it."""
+    g = _graph()
+    out = set(used_modules) | set(direct_imports)
+    for m in list(out):
+        out |= g.get(m, (set(), set()))[0]
+    todo = list(out)
+    while todo:
+        for n in g.get(todo.pop(), (set(), set()))[1]:
+            if n not in out:
+                out.add(n)
+                todo.append(n)
+    return {f"kerf:{m}.py" for m in out}
+
+
+_FHASH: dict = {}
+
+
+def _file_hash(name: str) -> str:
+    f = KERF / name
+    try:
+        st = f.stat()
+    except OSError:
+        return "<missing>"
+    k = (name, st.st_mtime_ns, st.st_size)
+    if k not in _FHASH:
+        _FHASH[k] = hashlib.sha256(f.read_bytes()).hexdigest()
+    return _FHASH[k]
+
+
+def deps_hash(deps) -> str:
+    """Hash of the catalog entries and engine files ("kerf:<file>") a build read."""
+    from . import catalog
+    deps = sorted(deps)
+    h = hashlib.sha256(catalog.deps_hash([d for d in deps if not d.startswith("kerf:")]).encode())
+    for d in deps:
+        if d.startswith("kerf:"):
+            h.update(d.encode())
+            h.update((engine_version() if d == _ALL else _file_hash(d[5:])).encode())
+    return h.hexdigest()
+
+
+def _catalog_deps(deps):
+    return [d for d in deps if not d.startswith("kerf:")]
+
+
 def key(proj, pid: str, spec: dict, params: dict, printer: str) -> str:
     """Cache key of everything except the catalog (catalog deps are only known after a build; see lookup)."""
     from . import calibrate
@@ -54,14 +189,20 @@ def key(proj, pid: str, spec: dict, params: dict, printer: str) -> str:
     part_files = {(proj.dir / ((s or {}).get("file") or f"parts/{q}.py")).resolve()
                   for q, s in (proj.data.get("parts") or {}).items()}
     src = own.read_text(encoding="utf-8", errors="replace") if own.exists() else ""
-    h = hashlib.sha256()
-    h.update(engine_version().encode())
+    import build123d
+    h = hashlib.sha256(getattr(build123d, "__version__", "?").encode())
+    h.update(Path(__file__).read_bytes())               # this file: the cache format
     # helpers in parts/ (anything not a part module), plus any other part module this one names ("yoke_l.py")
     for f in [own, *sorted(p for p in parts_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts
                            and p.resolve() != own.resolve()
                            and (p.resolve() not in part_files or p.name in src))]:
         h.update(str(f.relative_to(proj.dir)).encode())
-        h.update(f.read_bytes() if f.exists() else b"<missing>")
+        b = f.read_bytes() if f.exists() else b"<missing>"
+        h.update(b)
+        if f.suffix == ".py":                            # engine modules the part's own code imports
+            for d in sorted(engine_deps((), _kerf_imports(b.decode("utf-8", "replace"), False)[0])):
+                h.update(d.encode())
+                h.update(_file_hash(d[5:]).encode())
     h.update(json.dumps(params, sort_keys=True, default=repr).encode())
     h.update(json.dumps(spec, sort_keys=True, default=repr).encode())
     h.update(printer.encode())
@@ -144,7 +285,7 @@ def lookup(k: str):
         return None
     try:
         rec = pickle.loads(f.read_bytes())
-        if catalog.deps_hash(rec["deps"]) != rec["deps_hash"]:
+        if deps_hash(rec["deps"]) != rec["deps_hash"]:
             return None
         shape = rec["shape"]
         meta = rec["meta"]
@@ -156,7 +297,7 @@ def lookup(k: str):
         _attach_joints(shape, meta.get("kerf_joints", []))
     except Exception:  # noqa: BLE001 — a corrupt or incompatible entry is just a miss
         return None
-    for p in rec["deps"]:
+    for p in _catalog_deps(rec["deps"]):
         with contextlib.suppress(Exception):
             catalog.get(p)
     with contextlib.suppress(OSError):
@@ -165,13 +306,12 @@ def lookup(k: str):
 
 
 def store(k: str, shape, deps: set) -> None:
-    from . import catalog
     if not enabled():
         return
     try:
         blob = _dump(shape, sorted(deps))
         rec = pickle.loads(blob)                       # round-trip now: never store what can't be read back
-        rec["deps_hash"] = catalog.deps_hash(rec["deps"])
+        rec["deps_hash"] = deps_hash(rec["deps"])
         out = io.BytesIO()
         _Pickler(out, protocol=pickle.HIGHEST_PROTOCOL).dump(rec)
         DIR.mkdir(parents=True, exist_ok=True)
@@ -204,24 +344,23 @@ def lookup_extra(k: str | None, name: str):
     from . import catalog
     try:
         rec = pickle.loads(f.read_bytes())
-        if catalog.deps_hash(rec["deps"]) != rec["deps_hash"]:
+        if deps_hash(rec["deps"]) != rec["deps_hash"]:
             return None
     except Exception:  # noqa: BLE001
         return None
-    for p in rec["deps"]:
+    for p in _catalog_deps(rec["deps"]):
         with contextlib.suppress(Exception):
             catalog.get(p)
     return rec["value"]
 
 
 def store_extra(k: str | None, name: str, value, deps: set) -> None:
-    from . import catalog
     if not k or not enabled():
         return
     try:
         out = io.BytesIO()
         _Pickler(out, protocol=pickle.HIGHEST_PROTOCOL).dump(
-            {"value": value, "deps": sorted(deps), "deps_hash": catalog.deps_hash(sorted(deps))})
+            {"value": value, "deps": sorted(deps), "deps_hash": deps_hash(deps)})
         pickle.loads(out.getvalue())
         DIR.mkdir(parents=True, exist_ok=True)
         tmp = DIR / f"{k}.{name}.tmp{os.getpid()}"
@@ -233,7 +372,23 @@ def store_extra(k: str | None, name: str, value, deps: set) -> None:
 
 @contextlib.contextmanager
 def recording():
-    """Collect the catalog paths read inside the block (one part's build)."""
+    """Collect what the block (one part's build, or a result computed from one part) depends on: the catalog paths it
+    read and, as "kerf:<file>", the engine files it ran (with their imports, see engine_deps)."""
     from . import catalog
-    with catalog.recording() as s:
-        yield s
+    code: set = set()
+    mon = _monitor()
+    if mon:
+        _ACTIVE.append(code)
+        sys.monitoring.set_events(_TOOL, sys.monitoring.events.PY_START)
+        sys.monitoring.restart_events()              # report every function again for this build
+    try:
+        with catalog.recording() as s:
+            yield s
+    finally:
+        if mon:
+            del _ACTIVE[next(i for i, r in enumerate(_ACTIVE) if r is code)]
+            if not _ACTIVE:
+                sys.monitoring.set_events(_TOOL, 0)
+            s |= engine_deps({Path(f).stem for f in code})
+        else:
+            s.add(_ALL)

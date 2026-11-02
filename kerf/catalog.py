@@ -54,7 +54,7 @@ def recording():
     try:
         yield s
     finally:
-        _RECORDERS.remove(s)
+        del _RECORDERS[next(i for i, r in enumerate(_RECORDERS) if r is s)]   # by identity: nested sets can be equal
 
 
 def deps_hash(paths) -> str:
