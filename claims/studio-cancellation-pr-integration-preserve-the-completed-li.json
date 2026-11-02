@@ -1,9 +1,0 @@
-{
- "item": "Studio cancellation PR integration: preserve the completed lifecycle fix and both dated STATUS entries when refreshing PR 8 against current main.",
- "session": "codex-cancellation-refresh",
- "since": 1793658132.209134,
- "heartbeat": 1793658132.209134,
- "provider": "Codex",
- "thread_id": "01a19e15-de6d-78b1-b4d9-942e1fc9ce46",
- "since_utc": "2026-11-02 22:22"
-}
