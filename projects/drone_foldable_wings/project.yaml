@@ -7,6 +7,49 @@ description: >-
 printer: Bambu Lab A2L
 layout: parts/layout.py
 style: {radii: [1.0, 2.0, 3.0], edge_break: 0.6}
+use_story:
+  who: 'Spencer, a hobby pilot, flying it himself as a GPS UAV: hand launch, loiter / cruise, dives, belly landing on grass'
+  where:
+  - outdoor
+  - field
+  how_often: weekend sessions, 3-5 flights of ~25 min
+  goes_wrong:
+  - hazard: heat
+    max_c: 45
+    why: 'summer sun at the field and a car ride there (not left on a dashboard: PLA softens above ~55 C)'
+  - hazard: crash
+    speed_m_s: 14
+    survive: false
+    consequence: 'a nose-in at pull-out speed: the prop, the motor mount and the nose of fwd_fuse take it; reprint those (the wings, pivots and gears sit aft of the bay and are not in the load path)'
+  - hazard: other
+    what: hand launch with the wings spread and belly landing on grass
+    covered_by:
+    - stall_speed
+    - twr
+    - wing_loading
+  - hazard: other
+    what: wings swept back in a fast dive must still open under air load, and stay where the servos put them in a pull-out
+    covered_by:
+    - fold_pull_r
+    - fold_pull_l
+    - fold_dive_r
+    - fold_dive_l
+    - sweep_gears
+  carry_by: the fuselage under the wing roots, wings folded back
+electrical:
+  battery: battery
+  burst_s: 10
+  cruise:
+    speed_kmh: 50
+    l_over_d: 8
+    eta: 0.45
+    why: 'loiter / long-range cruise at 50 km/h, wings spread; L/D 8 (clean 1.1 m A 6.7 wing ~12 alone, fuselage, boom and tail taken as a third more drag) and eta 0.45 (a 7 in 3-blade FPV prop is inefficient
+      at 50 km/h): DESIGN.md'
+  draw:
+    fc:
+      avg_a: 0.25
+      peak_a: 0.3
+      why: Matek publishes no own draw for the F405-WMO; an F405 + gyro board draws ~0.15-0.25 A at 5 V (same bound as fpv_wing, UNVERIFIED)
 params:
   wing_span: {value: 1100, unit: mm, min: 1000, max: 1200, step: 10, label: Wing span spread (tip to tip)}
   wing_root_chord: {value: 210, unit: mm, min: 190, max: 230, step: 5, label: Root chord (at the centreline)}
@@ -43,7 +86,7 @@ params:
   rud_hinge_frac: {value: 0.64, unit: "", min: 0.55, max: 0.72, step: 0.01, label: Rudder hinge line (fraction of fin chord)}
   rud_throw: {value: 25, unit: "°", min: 15, max: 30, step: 1, label: Rudder throw each way}
   boom_x0: {value: 225, unit: mm, min: 210, max: 240, step: 1, label: Tail boom front end (in the aft fuselage socket)}
-  boom_x1: {value: 705, unit: mm, min: 660, max: 740, step: 5, label: Tail boom rear end (in the tail mount)}
+  boom_x1: {value: 685, unit: mm, min: 660, max: 740, step: 5, label: Tail boom rear end (in the tail mount)}
   boom_z: {value: -40, unit: mm, min: -46, max: -34, step: 1, label: Tail boom axis height}
   fuse_x0: {value: -195, unit: mm, min: -220, max: -170, step: 5, label: Fuselage nose face (motor mount seat)}
   fuse_joint_x: {value: 60, unit: mm, min: 40, max: 80, step: 5, label: Forward / aft fuselage joint}
@@ -53,39 +96,39 @@ params:
   fuse_hw: {value: 31, unit: mm, min: 28, max: 36, step: 1, label: Forward fuselage half width}
   fuse_hw_wing: {value: 52, unit: mm, min: 48, max: 58, step: 1, label: Aft fuselage half width at the pivots}
   motor_z: {value: -40, unit: mm, min: -48, max: -30, step: 1, label: Motor (thrust line) height}
-  bat_x: {value: -150, unit: mm, min: -160, max: -60, step: 1, label: Battery centre x (sets the CG)}
+  bat_x: {value: -147, unit: mm, min: -147, max: -60, step: 1, label: Battery centre x (sets the CG)}
 parts:
   fwd_fuse: {file: parts/fwd_fuse.py, material: PLA, print_rot: [0, -90, 0], infill: 0.15, walls: 4, load_axis: X}
-  aft_fuse: {file: parts/aft_fuse.py, material: PETG, print_rot: [0, 90, 0], infill: 0.25, walls: 4, load_axis: [X, Z]}
-  spine: {file: parts/spine.py, material: PETG, print_rot: [180, 0, 0], infill: 0.3, walls: 4, load_axis: [X, Y]}
+  aft_fuse: {file: parts/aft_fuse.py, material: PETG, print_rot: [0, -90, 0], infill: 0.25, walls: 4, load_axis: [X, Z]}
+  spine: {file: parts/spine.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, walls: 4, load_axis: [X, Y], supports: needed}
   hatch: {file: parts/hatch.py, material: PLA, print_rot: [180, 0, 0], infill: 0.15, walls: 2}
   motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: [Y, Z]}
-  hub_r: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y]}
-  hub_l: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y]}
+  hub_r: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
+  hub_l: {file: parts/hub.py, material: CF-PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
   pinion_r: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
   pinion_l: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
   wing_r1: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
   wing_l1: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
-  wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
-  wing_l2: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
-  ail_r: {file: parts/aileron.py, material: PLA, print_rot: [90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45}
-  ail_l: {file: parts/aileron.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45}
+  wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: [{where: "round the aileron servo pocket", size: "the pocket + 4 mm all round", infill: 1.0, why: "the servo is glued to these walls"}]}
+  wing_l2: {file: parts/wing.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: [{where: "round the aileron servo pocket", size: "the pocket + 4 mm all round", infill: 1.0, why: "the servo is glued to these walls"}]}
+  ail_r: {file: parts/aileron.py, material: PLA, print_rot: [90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45, modifiers: [{where: "the horn plate and 3 mm of aileron above it", infill: 1.0, walls: 3, why: "the horn carries the pushrod load; 5 % infill gives it nothing"}]}
+  ail_l: {file: parts/aileron.py, material: PLA, print_rot: [-90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45, modifiers: [{where: "the horn plate and 3 mm of aileron above it", infill: 1.0, walls: 3, why: "the horn carries the pushrod load; 5 % infill gives it nothing"}]}
   tail_mount: {file: parts/tail_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.3, walls: 4, load_axis: [X, Z]}
-  hstab: {file: parts/hstab.py, material: PLA, print_rot: [0, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
-  elevator: {file: parts/elevator.py, material: PLA, print_rot: [0, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
-  fin: {file: parts/fin.py, material: PLA, print_rot: [90, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
-  rudder: {file: parts/rudder.py, material: PLA, print_rot: [90, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+  hstab: {file: parts/hstab.py, material: PLA, print_rot: [0, 120, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+  elevator: {file: parts/elevator.py, material: PLA, print_rot: [0, -90, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+  fin: {file: parts/fin.py, material: PLA, print_rot: [0, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+  rudder: {file: parts/rudder.py, material: PLA, print_rot: [0, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
 purchased:
   motor: {catalog: drone.motors.2806_5_1300kv_7in, proxy: motor, groups: {mount: motor}}
   battery: {catalog: drone.batteries.4S_1500, proxy: box, color: "#c8a400",
             held_by: "a 20 mm strap through the bay floor slots over the pack, on a strip of anti-slip pad"}
-  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, lying on the bay floor in front of the pack"}
+  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, lying on the battery tray just aft of the shelf (the pack lead leaves the pack's rear face)"}
   esc: {catalog: drone.escs.skywalker_40a_v2, proxy: box, color: "#2050a0", held_by: "double-sided foam tape on the shelf plus one cable tie round the shelf"}
   fc: {catalog: drone.fcs.f405_wmo, proxy: box, color: "#204080", held_by: "double-sided foam tape (soft-mounts the gyro) on the shelf, arrow forward"}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "double-sided tape on the shelf beside the FC; antenna out along the fuselage side"}
   gps: {catalog: drone.gps.m9n_5883, proxy: box, color: "#303030", held_by: "double-sided foam tape on the spine's flat top, arrow forward (clear sky view, away from the ESC)"}
-  sweep_servo_r: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_r}, tab_screws_from: bottom}
-  sweep_servo_l: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_l}, tab_screws_from: bottom}
+  sweep_servo_r: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_r}, tab_screws_from: bottom, insert: {direction: [0, 0, 1], distance: 52}}
+  sweep_servo_l: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_l}, tab_screws_from: bottom, insert: {direction: [0, 0, 1], distance: 52}}
   sweep_horn_r: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_r}}
   sweep_horn_l: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_l}}
   ail_servo_r: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
@@ -150,6 +193,8 @@ assembly:
           [pinion_r, pinion_l], [main_r, main_l, rear_r, rear_l], [hub_r, hub_l], [wing_r1, wing_l1],
           [ail_servo_r, ail_servo_l], [wing_r2, wing_l2], [ail_r, ail_l], spine, gps, boom, tail_mount,
           [elev_servo, rud_servo], hstab, elevator, fin, rudder, esc, fc, receiver, xt60, battery, hatch]
+  key_access:
+    - {group: motor, before: [fwd_fuse], why: "the motor is screwed to its mount on the bench before the mount goes on the nose"}
   sweeps:
     - {joint: fold_r, samples: 15}
     - {joint: fold_l, samples: 15}
@@ -159,4 +204,653 @@ assembly:
     - {joint: ail_l, samples: 7}
     - {joint: elevator, samples: 7}
     - {joint: rudder, samples: 7}
-requirements: []
+wiring:
+- id: bat_lead
+  from: battery
+  to: xt60
+  v: 16.8
+  gauge: 12
+  color: red/black
+  length_mm: 100
+  supplied: battery
+  note: the pack's own lead
+- id: main
+  from: xt60
+  to: fc
+  v: 16.8
+  gauge: 12
+  color: red/black
+  length_mm: 140
+  note: XT60 pigtail up the bay side to the FC's BAT pads; the FC's current sensor sees everything
+- id: esc_pwr
+  from: fc.esc
+  to: esc
+  v: 16.8
+  gauge: 12
+  color: red/black
+  length_mm: 90
+  note: FC ESC pads to the ESC input leads (cut to length, no connector)
+- id: phases
+  from: esc.esc
+  to: motor
+  v: 16.8
+  gauge: 14
+  conductors: 3
+  color: black
+  length_mm: 130
+  note: ESC output leads forward through the nose bulkhead's wire hole to the motor; swap two if it spins the wrong way (tractor, prop pulls forward)
+- id: sweep_r_pwr
+  from: esc.5v
+  to: sweep_servo_r
+  v: 5.0
+  gauge: 22
+  color: red/brown
+  length_mm: 260
+  note: the ESC's 5 V 5 A BEC feeds only the two sweep servos; MG996R lead (300 mm) aft through the bulkhead pass-through
+- id: sweep_l_pwr
+  from: esc.5v
+  to: sweep_servo_l
+  v: 5.0
+  gauge: 22
+  color: red/brown
+  length_mm: 260
+  note: as sweep_r_pwr
+- id: ail_r_pwr
+  from: fc.vx
+  to: ail_servo_r
+  v: 6.0
+  gauge: 26
+  color: red/brown
+  length_mm: 620
+  note: 'servo lead + extension: up through the spine cover''s boss hole, through the hub channel and the wing segments'' channel to the pocket; bridge the FC''s Vx=6V pads (Matek manual)'
+- id: ail_l_pwr
+  from: fc.vx
+  to: ail_servo_l
+  v: 6.0
+  gauge: 26
+  color: red/brown
+  length_mm: 620
+  note: as ail_r_pwr
+- id: elev_pwr
+  from: fc.vx
+  to: elev_servo
+  v: 6.0
+  gauge: 26
+  color: red/brown
+  length_mm: 800
+  note: extension out of the aft fuselage and along the boom under heat-shrink to the tail mount
+- id: rud_pwr
+  from: fc.vx
+  to: rud_servo
+  v: 6.0
+  gauge: 26
+  color: red/brown
+  length_mm: 800
+  note: as elev_pwr
+- id: gps_5v
+  from: fc.4v5
+  to: gps
+  v: 5.0
+  gauge: 28
+  color: red/black
+  length_mm: 260
+  note: aft through the bulkhead and up through the spine to the GPS on its top
+- id: rx_5v
+  from: fc.4v5
+  to: receiver
+  v: 5.0
+  gauge: 28
+  color: red/black
+  length_mm: 60
+- id: esc_sig
+  from: fc
+  to: esc
+  kind: signal
+  gauge: 28
+  color: white
+  length_mm: 90
+  pin: S1
+  note: INAV Airplane motor 1; leave the ESC's BEC red wire OFF this plug (the BEC feeds the sweep servos only)
+- id: ail_l_sig
+  from: fc
+  to: ail_servo_l
+  kind: signal
+  gauge: 28
+  color: orange
+  length_mm: 620
+  pin: S2
+- id: ail_r_sig
+  from: fc
+  to: ail_servo_r
+  kind: signal
+  gauge: 28
+  color: orange
+  length_mm: 620
+  pin: S3
+- id: elev_sig
+  from: fc
+  to: elev_servo
+  kind: signal
+  gauge: 28
+  color: orange
+  length_mm: 800
+  pin: S4
+- id: rud_sig
+  from: fc
+  to: rud_servo
+  kind: signal
+  gauge: 28
+  color: orange
+  length_mm: 800
+  pin: S5
+- id: sweep_l_sig
+  from: fc
+  to: sweep_servo_l
+  kind: signal
+  gauge: 28
+  color: orange
+  length_mm: 260
+  pin: S6
+  note: 'INAV servo mixer: sweep from an RC switch / slider channel, + elevator trim k x sweep (DESIGN.md)'
+- id: sweep_r_sig
+  from: fc
+  to: sweep_servo_r
+  kind: signal
+  gauge: 28
+  color: orange
+  length_mm: 260
+  pin: S7
+  note: mirrored servo (reverse in the mixer); asymmetric sweep from the roll mix
+- id: gps_uart
+  from: fc
+  to: gps
+  kind: signal
+  gauge: 28
+  color: white/green
+  length_mm: 260
+  note: GNSS TX/RX to UART, compass SDA/SCL to I2C
+- id: crsf
+  from: fc
+  to: receiver
+  kind: signal
+  gauge: 28
+  color: white/green
+  length_mm: 60
+  note: CRSF to UART2
+requirements:
+- id: sm_spread
+  check: static_margin_tail
+  min: 0.08
+  max: 0.2
+  halves:
+    right: hub_r
+    left: hub_l
+  root_y: 26
+  why: 'wings spread: stable but not nose-heavy, 8-20 % MAC between the CG and the wing + tail neutral point (DESIGN.md)'
+- id: sm_half
+  check: static_margin_tail
+  min: 0.05
+  max: 0.6
+  halves:
+    right: hub_r
+    left: hub_l
+  root_y: 26
+  pose:
+    fold_r: 35
+    fold_l: 35
+  why: 'half sweep (fast cruise / pull-out): still stable'
+- id: sm_folded
+  check: static_margin_tail
+  min: 0.05
+  max: 0.8
+  halves:
+    right: hub_r
+    left: hub_l
+  root_y: 26
+  pose:
+    fold_r: 70
+    fold_l: 70
+  why: 'folded for the dive: stable (the upper bound is the elevator-trim limit, DESIGN.md)'
+- id: sm_asym
+  check: static_margin_tail
+  min: 0.05
+  max: 0.6
+  halves:
+    right: hub_r
+    left: hub_l
+  root_y: 26
+  pose:
+    fold_r: 70
+    fold_l: 0
+  why: 'one side folded, the other spread (the worst asymmetric control input): still stable in pitch'
+- id: wing_loading
+  check: wing_loading
+  max_g_dm2: 65
+  why: trainer / UAV class, hand-launchable (DESIGN.md)
+- id: stall_speed
+  check: stall_speed
+  max_kmh: 40
+  re: 200000
+  why: 'hand launch: stall at or below 40 km/h with the wings spread; MH 45 at Re 200 000'
+- id: spar_bending
+  check: spar_bending
+  tubes:
+  - rods.cf_tube_8x6
+  - rods.cf_tube_6x4
+  y_root: 90
+  load_factor: 6
+  sf: 1.5
+  why: 6 g pull-out on an elliptical lift distribution where the tubes leave the hub (y 90 = hub_y1); SF 1.5 on the low strength figure
+- id: fold_pull_r
+  check: fold_hinge_moment
+  joint: fold_r
+  item: hub_r
+  side: right
+  speed_kmh: 83
+  cd: -0.07
+  actuator: sweep_servo_r
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: 26
+  extra_nmm: 120
+  why: '4 g pull at the manoeuvring speed 83 km/h: net chordwise force cd cos a - cl sin a = 0.053 x 0.986 - 0.74 x 0.165 = -0.070 (forward); pivot friction 110 N per plate x 2 x mu 0.27 x 2 mm = 120 N
+    mm (DESIGN.md); MG996R stall x 21/13 x 50 %'
+- id: fold_pull_l
+  check: fold_hinge_moment
+  joint: fold_l
+  item: hub_l
+  side: left
+  speed_kmh: 83
+  cd: -0.07
+  actuator: sweep_servo_l
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: 26
+  extra_nmm: 120
+  why: mirror of fold_pull_r
+- id: fold_dive_r
+  check: fold_hinge_moment
+  joint: fold_r
+  item: hub_r
+  side: right
+  speed_kmh: 140
+  cd: 0.015
+  cl: 0.05
+  actuator: sweep_servo_r
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: 26
+  extra_nmm: 30
+  why: 'opening the folded wing in a 140 km/h dive: CL 0.05, cd 0.015 (aft, resists opening) + 30 N mm pivot friction (DESIGN.md)'
+- id: fold_dive_l
+  check: fold_hinge_moment
+  joint: fold_l
+  item: hub_l
+  side: left
+  speed_kmh: 140
+  cd: 0.015
+  cl: 0.05
+  actuator: sweep_servo_l
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: 26
+  extra_nmm: 30
+  why: mirror of fold_dive_r
+- id: sweep_gears
+  check: gear_bending
+  module: 2
+  z_driver: 13
+  z_driven: 21
+  width: 10
+  torque_nmm: 921.8
+  material: PETG
+  sf: 3.0
+  why: Lewis bending at the MG996R's stall (9.4 kg cm = 921.8 N mm) on the PETG pinion's 10 mm engaged width, SF 3 (a stalled servo drives the teeth repeatedly)
+- id: stop_spread_r
+  check: hard_stop
+  joint: fold_r
+  beyond: -3
+  why: 'the spread end is a real stop: 3 deg past 0 the hub''s sector hits the aft fuselage''s stop post'
+- id: stop_spread_l
+  check: hard_stop
+  joint: fold_l
+  beyond: -3
+  why: mirror of stop_spread_r
+- id: stop_fold_r
+  check: hard_stop
+  joint: fold_r
+  beyond: 73
+  why: 'the folded end is a real stop: 3 deg past 70'
+- id: stop_fold_l
+  check: hard_stop
+  joint: fold_l
+  beyond: 73
+  why: mirror of stop_fold_r
+- id: fold_tail_clear_r
+  check: clearance_min
+  a: wing_r2
+  b: hstab
+  min_mm: 15
+  joints:
+  - fold_r
+  samples: 15
+  why: the folded right wing passes the tail with >= 15 mm (flex, gusts)
+- id: fold_tail_clear_l
+  check: clearance_min
+  a: wing_l2
+  b: hstab
+  min_mm: 15
+  joints:
+  - fold_l
+  samples: 15
+  why: mirror
+- id: twr
+  check: thrust_to_weight
+  motors:
+  - motor
+  min_ratio: 0.7
+  why: 'hand launch + climb: >= 0.7 (catalog thrust at 23.42 V scaled to the 14.8 V 4S nominal)'
+- id: flight_time
+  check: flight_time
+  min_min: 25
+  why: 'long, stable UAV flight: >= 25 min level cruise at 50 km/h on 80 % of the 1500 mAh pack'
+- id: power
+  check: power_budget
+  why: pack C rating, FC current sensor, ESC, both BECs, XT60 and every wire inside their ratings in cruise and at full throttle
+- id: prop_clear
+  check: prop_clearance
+  min_mm: 5
+  joints:
+  - fold_r
+  - fold_l
+  why: the 7 in prop clears every part by 5 mm at every sweep angle
+- id: auw
+  check: mass_max
+  max_g: 1150
+  why: 'all-up mass <= 1150 g (DESIGN.md: hand-launched 1.1 m class)'
+- id: xt60_plug
+  check: connector_access
+  item: xt60
+  direction:
+  - 1
+  - 0
+  - 0
+  length_mm: 25
+  why: with the hatch off, the pack's XT60 plugs in along the tray (x+) behind the shelf, open from above
+- id: deck_fea
+  check: fea_static
+  part: aft_fuse
+  why: '6 g pull-out, both wings: each half''s root moment (32 N lift x 207 mm from the pivot to the elliptical centre of lift = 6.7 N m) reaches the pivot pin as a couple between the deck and the spine
+    arm, 44 mm apart: 152 N on each deck pin, outboard; the aft fuselage held at its four joint screws (the forward fuselage + battery react it)'
+  direction: auto
+  sf: 3.0
+  max_disp_mm: 0.5
+  fixed:
+    sites: fuse_joint
+    radius: 5.0
+  loads:
+  - cylinder:
+      at:
+      - pivot_x
+      - pivot_y
+      - -27.5
+      dir:
+      - 0
+      - 0
+      - 1
+      r: 2.025
+      tol: 0.4
+      span:
+      - -3.5
+      - 3.5
+    bearing_n:
+    - 0
+    - 152
+    - 0
+  - cylinder:
+      at:
+      - pivot_x
+      - -pivot_y
+      - -27.5
+      dir:
+      - 0
+      - 0
+      - 1
+      r: 2.025
+      tol: 0.4
+      span:
+      - -3.5
+      - 3.5
+    bearing_n:
+    - 0
+    - -152
+    - 0
+- id: spine_fea
+  check: fea_static
+  part: spine
+  why: '6 g pull-out: the other half of each pin couple (152 N inboard on each arm pin) plus each boss''s 32 N lift pressing up under its arm; the spine held at its four M3 screws'
+  direction: auto
+  sf: 3.0
+  max_disp_mm: 0.5
+  fixed:
+    sites: spine
+    radius: 5.0
+  loads:
+  - cylinder:
+      at:
+      - pivot_x
+      - pivot_y
+      - 16.5
+      dir:
+      - 0
+      - 0
+      - 1
+      r: 2.025
+      tol: 0.4
+      span:
+      - -3.5
+      - 3.5
+    bearing_n:
+    - 0
+    - -152
+    - 0
+  - cylinder:
+      at:
+      - pivot_x
+      - -pivot_y
+      - 16.5
+      dir:
+      - 0
+      - 0
+      - 1
+      r: 2.025
+      tol: 0.4
+      span:
+      - -3.5
+      - 3.5
+    bearing_n:
+    - 0
+    - 152
+    - 0
+  - box:
+    - - pivot_x - 9
+      - pivot_y - 9
+      - 13.2
+    - - pivot_x + 9
+      - pivot_y + 9
+      - 13.8
+    force_n:
+    - 0
+    - 0
+    - 32
+  - box:
+    - - pivot_x - 9
+      - -pivot_y - 9
+      - 13.2
+    - - pivot_x + 9
+      - -pivot_y + 9
+      - 13.8
+    force_n:
+    - 0
+    - 0
+    - 32
+- id: hub_fea
+  check: fea_static
+  part: hub_r
+  why: '6 g pull-out on the right half: 32 N lift shared by the tubes by E I (8x6: 73 %, 23.4 N; 6x4: 27 %, 8.6 N) at their sockets, plus the moment of that lift about the hub face (32 N x (233 - 90) mm
+    = 4.6 N m about X); held at the boss''s pin bore'
+  direction: auto
+  sf: 2.0
+  max_disp_mm: 1.0
+  fixed:
+    cylinder:
+      at:
+      - pivot_x
+      - pivot_y
+      - 0
+      dir:
+      - 0
+      - 0
+      - 1
+      r: 2.175
+      tol: 0.4
+  loads:
+  - cylinder:
+      at: main
+      dir:
+      - 0
+      - 1
+      - 0
+      r: 4.1
+      tol: 0.4
+    bearing_n:
+    - 0
+    - 0
+    - 23.4
+  - cylinder:
+      at: rear
+      dir:
+      - 0
+      - 1
+      - 0
+      r: 3.1
+      tol: 0.4
+    bearing_n:
+    - 0
+    - 0
+    - 8.6
+  - any:
+    - cylinder:
+        at: main
+        dir:
+        - 0
+        - 1
+        - 0
+        r: 4.1
+        tol: 0.4
+    - cylinder:
+        at: rear
+        dir:
+        - 0
+        - 1
+        - 0
+        r: 3.1
+        tol: 0.4
+    torque_nmm: 4600
+    axis:
+      at:
+      - 90
+      - 90
+      - 0
+      dir:
+      - 1
+      - 0
+      - 0
+- id: mount_fea
+  check: fea_static
+  part: motor_mount
+  case: crash
+  why: twice the motor's full static thrust on 4S (2319 g at 23.42 V x (14.8 / 23.42)^2 = 926 g; x 2 = 18.2 N) pulling the mount forward at the motor screws; the plate held at its four nose screws
+  direction: auto
+  sf: 3.0
+  max_disp_mm: 0.5
+  fixed:
+    sites: motor_mount
+    radius: 5.0
+  loads:
+  - sites: motor
+    radius: 3.5
+    force_n:
+    - -18.2
+    - 0
+    - 0
+- id: fuse_fea
+  check: fea_static
+  part: fwd_fuse
+  why: 2 x full thrust (18.2 N) forward at the nose inserts plus the 164 g battery at 6 g (9.7 N) on the tray; the forward fuselage held at its four joint screws (the aft fuselage + wings react it); it
+    prints nose-down so the X load runs across layers
+  direction: auto
+  sf: 3.0
+  max_disp_mm: 0.5
+  fixed:
+    sites: fuse_joint
+    radius: 5.0
+  loads:
+  - sites: motor_mount
+    radius: 5.0
+    force_n:
+    - -18.2
+    - 0
+    - 0
+  - box:
+    - - bat_x - 40
+      - -19
+      - -59.3
+    - - bat_x + 40
+      - 19
+      - -58.7
+    force_n:
+    - 0
+    - 0
+    - -9.7
+- id: tail_fea
+  check: fea_static
+  part: tail_mount
+  why: the stabiliser pulled at CL 0.8 at the 140 km/h dive (q 926 Pa x 0.030 m2 = 22 N) at its two insert screws, and the fin side load (926 Pa x 0.0108 m2 x 0.8 = 8 N) on its blade; held by the epoxied
+    boom socket
+  direction: auto
+  sf: 3.0
+  max_disp_mm: 0.5
+  fixed:
+    cylinder:
+      at:
+      - boom_x1
+      - 0
+      - boom_z
+      dir:
+      - -1
+      - 0
+      - 0
+      r: 4.1
+      tol: 0.4
+      span:
+      - 0
+      - 110
+  loads:
+  - sites: hstab
+    radius: 5.0
+    force_n:
+    - 0
+    - 0
+    - 22
+  - box:
+    - - boom_x1 - 85
+      - -2
+      - -24.5
+    - - boom_x1 - 45
+      - 2
+      - -14
+    force_n:
+    - 0
+    - 8
+    - 0
