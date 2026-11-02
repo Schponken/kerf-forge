@@ -281,3 +281,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   A first attempt (prune + 1 mm subdivision) gave no speedup (163 vs 162 s) and the profile had misattributed the
   cost; the direct profile showed long thin wing triangles subdivided into ~1e5 pieces each.
 - Open on drone_foldable_wings (found by `kerf req`): spine_fea 53.6 MPa vs 16 MPa allowed - spine needs redesign.
+
+## 2026-11-02 (Claude, realistic limits 2)
+- Done: near-miss scale on failed requirements (`requirements.miss_scale`: near miss <= 5 %, close <= 20 %, far off); kerf/infill.py (stress deeper than the walls vs the infill lattice, 0.3 x infill^1.5, Ashby 2006; warning; modifiers may carry a `box`); impact_fea `bumper:` (Gent & Lindley pad stiffness, no credit past 20 % squash, Gallagher 95A).
+- Reviewed, unchanged: natural_freq already checks the hover rotor and blade-pass rates against a cited 20 % separation; use-story checks only run for listed hazards; thrust already scales test voltage to the pack.
+- servo_link's arm now warns on infill strength (3 % of its volume over the lattice limit near [6.7, -8.1, 4.3]): a boxed 100 % infill modifier or more walls; left for the project's owner.
