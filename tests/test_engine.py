@@ -198,3 +198,16 @@ def build(ctx):
     A.solve(asm, {"swing": 45})
     hub = geom.world_point(proj.items["arm"].shape.joints["hub"].location, (0, 0, 0))
     assert hub == pytest.approx([100, 50, 10], abs=1e-6)       # the arm still turns about the modelled pivot
+
+
+def test_summary_line_with_numpy_value_and_range_limit():
+    """A range check returning a numpy float failed against [min, max] crashed `kerf check`'s summary (numpy compared
+    the float to the list element-wise). Seen on drone_foldable_wings' static_margin_tail."""
+    import numpy as np
+    r = {"id": "sm", "check": "static_margin_tail", "ok": False, "value": np.float64(0.81), "limit": [0.05, 0.6],
+         "bound": "range", "detail": "margin"}
+    from kerf import pipeline
+    line = pipeline.req_line(r)
+    assert line.startswith("BAD") and "misses the limit" not in line
+    r2 = {"id": "m", "check": "mass_max", "ok": False, "value": np.float64(1150.0), "limit": 1150, "bound": "max", "detail": "g"}
+    assert "misses the limit" in pipeline.req_line(r2)

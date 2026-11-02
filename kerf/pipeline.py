@@ -19,7 +19,10 @@ def req_line(r):
     if not r['ok'] and r['value'] is None:     # the check could not be evaluated at all (e.g. a bad wiring run)
         return "BAD not evaluated - the reason is in the PROBLEM lines below"
     t = f"{'ok ' if r['ok'] else 'BAD'} {requirements.describe(r)}"
-    if not r['ok'] and r['value'] == r['limit']:
+    # a range limit ([min, max]) never "equals" a value; plain floats so a numpy value can't broadcast against a list
+    lim = r['limit']
+    if not r['ok'] and not isinstance(lim, (list, tuple)) and isinstance(r['value'], (int, float)) \
+            and float(r['value']) == lim:
         t += ' - misses the limit by less than the shown rounding; add margin'
     return t
 
