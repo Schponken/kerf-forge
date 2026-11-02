@@ -2,6 +2,6 @@
  "item": "Realistic limits 2 (Spencer, 2026-11-02: \"continue\"): near-miss scale on failed requirements (how far short, in %), infill-aware strength (printed walls + infill instead of solid plastic, sourced), crash energy budget with bumper credit (sourced), vibration rule that real quads can meet (sourced); each with tests; nothing loosened without a cited source",
  "session": "0f43a4e722",
  "since": 1793653247.3206675,
- "heartbeat": 1793653247.3206675,
+ "heartbeat": 1793653287.4748414,
  "since_utc": "2026-11-02 21:00"
 }

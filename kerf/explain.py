@@ -183,6 +183,10 @@ def explain_requirement(r: dict) -> dict:
     else:
         target = {"max": "at most ", "min": "at least "}.get(bound, "") + num(lim) + unit
     what = f"It is {num(val)}{unit}; it needs to be {target}." if val is not None and lim is not None else (r.get("detail") or "")
+    from kerf.requirements import miss_scale
+    sc = miss_scale(r)
+    if sc:
+        what += f" ({sc[0].upper()}{sc[1:]}.)"
     return {"title": f"{name}: target missed", "part": None, "why": " ".join(x for x in (what, r.get("why") or "") if x),
             "fix": "Change the design or its parts until it meets the target.", "kind": "engineering",
             "kind_label": KIND_LABEL["engineering"], "detail": f"requirement '{r.get('id')}' ({r.get('check')}): {r.get('detail') or ''}".strip()}

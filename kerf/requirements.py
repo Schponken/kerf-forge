@@ -774,6 +774,31 @@ def describe(r: dict) -> str:
     return f"{r.get('value')}{u} ({bound} {lim})"
 
 
+def shortfall(r: dict) -> float | None:
+    """How far a failed numeric requirement misses, as a fraction of its limit (0.03 = 3 % over a max / under a min /
+    outside a range bound); None when it passes or isn't a plain number against a number."""
+    v, lim, bound = r.get("value"), r.get("limit"), r.get("bound")
+    if r.get("ok") or not isinstance(v, (int, float)) or isinstance(v, bool):
+        return None
+    if bound == "range" and isinstance(lim, (list, tuple)) and len(lim) == 2:
+        lo, hi = lim
+        ref = lo if isinstance(lo, (int, float)) and v < lo else hi if isinstance(hi, (int, float)) and v > hi else None
+    elif bound in ("max", "min") and isinstance(lim, (int, float)) and not isinstance(lim, bool):
+        ref = lim
+    else:
+        return None
+    return None if not ref else abs(v - ref) / abs(ref)
+
+
+def miss_scale(r: dict) -> str:
+    """'near miss: 3 % short' (<= 5 %), 'close: 12 % short' (<= 20 %), 'far off: 60 % short', or ''."""
+    f = shortfall(r)
+    if f is None:
+        return ""
+    word = "near miss" if f <= 0.05 else "close" if f <= 0.20 else "far off"
+    return f"{word}: {f * 100:.0f} % {'over' if r.get('bound') == 'max' else 'short'}" if f >= 0.005 else f"{word}: under 1 % off"
+
+
 # What a failed check costs to fix (Spencer, 2026-11-02: "look in the places that would require the most work to
 # redesign first"). 0: the concept - weight, power, flight, balance, size, actuator sizing; a fail changes motors,
 # battery, servos or the layout, and with them every part. 1: a structural part's strength or stiffness; a fail

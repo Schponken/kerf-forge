@@ -49,3 +49,16 @@ def test_squashable_items_take_a_press_up_to_their_depth():
     rigid = NS(spec={"compress_mm": 2}, shape=foam.shape)                       # no reason given: stays rigid
     assert not assembly.squashed(rigid, block(1.0))
     assert abs(assembly.press_depth(foam, block(1.5)) - 1.5) < 0.05
+
+
+def test_misses_say_how_far_off():
+    near = {"ok": False, "value": 186.0, "limit": 195.0, "bound": "min"}
+    assert requirements.miss_scale(near) == "near miss: 5 % short"
+    assert requirements.miss_scale({"ok": False, "value": 300, "limit": 250, "bound": "max"}) == "close: 20 % over"
+    assert requirements.miss_scale({"ok": False, "value": 0.30, "limit": [0.05, 0.15], "bound": "range"}).startswith("far off: 100 %")
+    assert requirements.miss_scale({"ok": True, "value": 1, "limit": 2, "bound": "max"}) == ""
+    assert requirements.miss_scale({"ok": False, "value": [1, 2], "limit": [3, 3], "bound": "max"}) == ""
+    probs, _ = pipeline.req_misses([{**near, "id": "f", "detail": "first mode", "unit": "Hz"}])
+    assert probs[0].endswith("[near miss: 5 % short]")
+    from kerf import explain
+    assert "(Near miss: 5 % short.)" in explain.explain_requirement({**near, "id": "f", "check": "natural_freq", "unit": "Hz"})["why"]

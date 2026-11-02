@@ -198,7 +198,8 @@ def req_misses(rows) -> tuple[list, list]:
     for r in rows:
         if r.get("ok"):
             continue
-        line = f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}"
+        sc = requirements.miss_scale(r)
+        line = f"requirement '{r['id']}' failed: {r['detail']} = {requirements.describe(r)}" + (f" [{sc}]" if sc else "")
         if r.get("advisory"):
             warns.append(f"advisory {line} (not blocking: {r['advisory']})")
         else:
