@@ -31,7 +31,11 @@ def test_servo_rows_come_from_signal_wires_and_horn_joints():
     proj, asm = _proj()
     (r,) = firmware.servos(proj, asm)
     assert (r["kind"], r["pin"], r["joint"], r["lo"], r["hi"]) == ("nano", "D9", "tilt", -35, 65)
-    assert firmware._band(r) == 35 and firmware._lim(r) == 65      # sweep only where either direction is safe
+    # the horn goes on with the servo centred at the middle of the travel, so the servo turns 50 deg either way
+    assert r["centre"] == 15 and firmware._band(r) == 50 and firmware._lim(r) == 50
+    asm.edges[0].centre = 0.0                                     # a joint can name where its horn goes on
+    (r,) = firmware.servos(proj, asm)
+    assert r["centre"] == 0 and firmware._band(r) == 35 and firmware._lim(r) == 65   # sweep only where both ways are safe
     with pytest.raises(ValueError, match="needs `pin:`"):
         firmware.servos(*_proj(pin=None))
 
@@ -58,13 +62,13 @@ def test_sketch_is_valid_cpp(tmp_path):
         "#pragma once\n#include <stdint.h>\nstruct Adafruit_PWMServoDriver { bool begin(uint8_t p=0){return true;} "
         "void setOscillatorFrequency(uint32_t){} void setPWMFreq(float){} uint8_t setPWM(uint8_t, uint16_t, uint16_t){return 0;} "
         "void writeMicroseconds(uint8_t, uint16_t){} };\n")
-    rows = [{"joint": "a", "servo": "s1", "model": "SG90", "pin": p, "lo": -30, "hi": 60, "us_per_deg": 5.556, "us_why": "x"}
+    rows = [{"joint": "a", "servo": "s1", "model": "SG90", "pin": p, "lo": -30, "hi": 60, "centre": 15, "us_per_deg": 5.556, "us_why": "x"}
             for p in ("ch0", "ch1")]
     for pca in (True, False):
         r = [dict(x, pin=x["pin"].replace("ch", "D")) for x in rows] if not pca else rows
         src = tmp_path / "t.cpp"
         src.write_text("#include <Arduino.h>\n" + firmware.sketch("t", r, pca))
-        assert "60.0f" in src.read_text()                       # a C++ float literal, never "60f"
+        assert "45.0f" in src.read_text()                       # a C++ float literal, never "45f"
         res = subprocess.run(["g++", "-std=c++11", "-fsyntax-only", f"-I{stub}", str(src)], capture_output=True, text=True)
         assert res.returncode == 0, res.stderr
 
@@ -73,8 +77,8 @@ def test_pi_script_drives_sysfs_pwm(tmp_path, monkeypatch):
     for ch in (0, 1):
         (tmp_path / "pwmchip0" / f"pwm{ch}").mkdir(parents=True)
     (tmp_path / "pwmchip0" / "export").write_text("")
-    rows = [{"joint": "pan", "servo": "p", "model": "SG90", "pin": "GPIO18", "lo": -2, "hi": 2, "us_per_deg": 5.556, "us_why": "x"},
-            {"joint": "tilt", "servo": "t", "model": "SG90", "pin": "GPIO19", "lo": -2, "hi": 3, "us_per_deg": 5.556, "us_why": "x"}]
+    rows = [{"joint": "pan", "servo": "p", "model": "SG90", "pin": "GPIO18", "lo": -2, "hi": 2, "centre": 0, "us_per_deg": 5.556, "us_why": "x"},
+            {"joint": "tilt", "servo": "t", "model": "SG90", "pin": "GPIO19", "lo": -2, "hi": 3, "centre": 0.5, "us_per_deg": 5.556, "us_why": "x"}]
     f = tmp_path / "bringup.py"
     f.write_text(firmware.pi_script("t", rows))
     monkeypatch.setenv("KERF_PWM_ROOT", str(tmp_path))
@@ -85,7 +89,7 @@ def test_pi_script_drives_sysfs_pwm(tmp_path, monkeypatch):
     m.main(["c"])
     assert duty(0) == duty(1) == 1_500_000                                   # centre = 1500 us
     m.main(["j1", "++"])
-    assert duty(1) == round(1500 + 3 * 5.556) * 1000                         # clamped at the 3 deg limit
+    assert duty(1) == round(1500 + 2.5 * 5.556) * 1000                       # clamped 2.5 deg from the 0.5 deg centre
     m.main(["s", "x"])
     assert (tmp_path / "pwmchip0" / "pwm0" / "enable").read_text() == "0"    # stop = no pulses
     with pytest.raises(ValueError, match="GPIO18 / GPIO19"):

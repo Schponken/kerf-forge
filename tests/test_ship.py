@@ -282,3 +282,17 @@ def test_kerf_price_cli_for_quotes(capsys):
     keys = {r["key"]: r["qty"] for r in out["items"]}
     assert keys == {"servos.MG996R": 2, "dowel:3": 1} and out["filament"]["grams"] == 100 and out["missing"] == []
     assert cli.main(["price", "nope.part", "--json"]) == 1
+
+
+def test_horn_goes_on_at_the_joint_centre_the_bring_up_program_counts_from(tmp_path):
+    """pan_tilt's tilt joint runs -35..65 deg: the horn goes on with the servo centred at 15 deg (mid-travel), the
+    step says so (the picture shows home, 0 deg), and the bring-up program uses the same centre."""
+    from kerf import assembly as A, firmware, project as P
+    proj = P.build(P.load("pan_tilt"))
+    asm = A.plan(proj)
+    A.solve(asm)
+    ship.write_assembly(proj, asm, {"assembly": {"fasteners": [], "pins": []}, "parts": {}, "bom": []}, tmp_path)
+    md = (tmp_path / "ASSEMBLY.md").read_text()
+    assert "joint `tilt` at 15 deg (the middle of its -35 to 65 deg travel), not the pose in the picture (that shows 0 deg)" in md
+    tilt = next(r for r in firmware.servos(proj, asm) if r["joint"] == "tilt")
+    assert tilt["centre"] == 15 and firmware._band(tilt) == 50

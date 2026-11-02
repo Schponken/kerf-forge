@@ -34,6 +34,7 @@ class Edge:
     kind: str = "rigid"
     range: tuple = (0.0, 0.0)
     home: float = 0.0
+    centre: float | None = None    # joint angle with its servo at the centre pulse (where the horn goes on)
 
 
 @dataclass
@@ -78,7 +79,8 @@ def plan(proj: Project) -> Assembly:
             if item not in proj.items:
                 raise ProjectError(f"joint {j} refers to unknown item '{item}'")
         edges.append(Edge(name=j.get("name", c), parent=p, pjoint=pj, child=c, cjoint=cj,
-                          range=tuple(j["range"]) if "range" in j else (0.0, 0.0), home=float(j.get("home", 0.0))))
+                          range=tuple(j["range"]) if "range" in j else (0.0, 0.0), home=float(j.get("home", 0.0)),
+                          centre=float(j["centre"]) if "centre" in j else None))
     asm = Assembly(proj, root, edges)
     for e in edges:
         if e.child in asm.by_child:
@@ -110,6 +112,8 @@ def plan(proj: Project) -> Assembly:
                 e.range = tuple(pj.linear_range)
         if e.kind != "rigid" and not (e.range[0] <= e.home <= e.range[1]):
             raise ProjectError(f"joint {e.name}: home {e.home} outside range {e.range}")
+        if e.centre is not None and not (e.range[0] <= e.centre <= e.range[1]):
+            raise ProjectError(f"joint {e.name}: centre {e.centre} outside range {e.range}")
     order = _topo(asm)
     asm.edges = order
     return asm

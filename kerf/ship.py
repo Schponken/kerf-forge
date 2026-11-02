@@ -556,9 +556,18 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
         return out + screw_notes(proj, rep, groups)
 
     def horn_note(child, parent):
-        return ([f"  - The servo is centred (Step 0b): press **{child}** onto the spline so the parts sit as in the "
-                 "picture (the middle of the joint's travel), then fit the horn's centre screw."]
-                if _is_horn_on_servo(proj, child, parent) else [])
+        if not _is_horn_on_servo(proj, child, parent):
+            return []
+        e = asm.by_child.get(child)
+        if e is None or e.kind != "revolute" or e.parent != parent:
+            return [f"  - The servo is centred (Step 0b): press **{child}** onto the spline, then fit the horn's centre screw."]
+        lo, hi = e.range
+        c = firmware.centre_of(e, lo, hi)
+        pose = ("as in the picture" if abs(c - e.home) < 0.5 else
+                f"not the pose in the picture (that shows {e.home:g} deg): set the driven parts to {c:g} deg, then fit it")
+        return [f"  - The servo is centred (Step 0b): press **{child}** onto the spline with joint `{e.name}` at "
+                f"{c:g} deg ({'the middle of its' if e.centre is None else 'in its'} {lo:g} to {hi:g} deg travel), {pose}; "
+                "then fit the horn's centre screw. The bring-up program counts degrees from this position."]
 
     for s in st:
         title = ", ".join(s["items"])
