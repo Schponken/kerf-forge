@@ -417,7 +417,7 @@ def detail(name: str) -> dict:
             if f.suffix in (".ino", ".py", ".md"):
                 files.append(str(f.relative_to(d)))
     docs = [f for f in ("DESIGN.md", "REFERENCES.md", "out/ASSEMBLY.md", "out/WIRING.md", "out/firmware/BRINGUP.md", "out/bom.md",
-                        "out/plates/PRINT_SETTINGS.md") if (d / f).exists()]
+                        "out/plates/PRINT_SETTINGS.md", "out/OPTIMISE.md") if (d / f).exists()]
     renders = sorted(str(p.relative_to(d)) for p in (out / "renders").glob("*.png")) if (out / "renders").exists() else []
     trial = TRIALS / name
     trial_rep = _report(trial) if (trial / "out" / "viewer.html").exists() else None
@@ -429,6 +429,7 @@ def detail(name: str) -> dict:
             "modes": mode_menu(name, rep), "last_mode": (rep.get("mode") or ("kit" if rep.get("files") else None)) if rep else None,
             "summary_numbers": _numbers(rep),
             "use_story": (rep or {}).get("use_story"),
+            "can_optimise": bool((_yaml(d) or {}).get("optimise")),
             "materials": materials(), "part_materials": part_materials(name),
             "trial": {"params": trial_rep.get("params") if trial_rep else None, "ok": trial_rep.get("ok") if trial_rep else None,
                       "materials": {k: v.get("material") for k, v in (trial_rep.get("parts") or {}).items()} if trial_rep else None,
@@ -455,6 +456,13 @@ def _numbers(rep: dict) -> dict | None:
 # ---------------------------------------------------------------- params
 def _fmt_num(v: float) -> str:
     return str(int(v)) if float(v).is_integer() else repr(round(float(v), 6))
+
+
+def _yaml(d: Path) -> dict | None:
+    try:
+        return yaml.safe_load((d / "project.yaml").read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def write_params(path: Path, values: dict) -> list[str]:
@@ -1242,6 +1250,8 @@ class Handler(BaseHTTPRequestHandler):
                                   kerf_cmd("run", name, "--mode", m, *(["--ship"] if m == "ship" else [])),
                                   f"{MODE_LABEL[m]}: {name}", env=PROGRESS_ENV)
                     j.mode = m
+                elif action == "optimise":
+                    j = start_job("check", name, kerf_cmd("optimise", name), f"Optimise {name}", env=PROGRESS_ENV)
                 elif action == "trial":
                     vals = {k: float(v) for k, v in (body.get("values") or {}).items()}
                     trial_copy(name, vals, {str(k): str(v) for k, v in (body.get("materials") or {}).items()})

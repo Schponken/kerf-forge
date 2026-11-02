@@ -480,3 +480,10 @@ await p.click('#shipno'); out.closed = await p.$('#shipask') === null;""", tmp_p
     assert out["errs"] == [], out
     assert out["modes"] == ["Sketch", "Print it", "Check it", "Simulate it", "Build kit", "📦 Ship it…"], out
     assert "Ship it" in out["ask"] and out["closed"], out
+
+
+def test_optimise_is_offered_where_the_project_declares_it():
+    assert studio._yaml(studio.PROJECTS / "fpv_5in").get("optimise")
+    assert not (studio._yaml(studio.PROJECTS / "servo_link") or {}).get("optimise")
+    page = (studio.ASSETS / "studio.html").read_text() if hasattr(studio, "ASSETS") else ""
+    assert not page or "run('optimise')" in page

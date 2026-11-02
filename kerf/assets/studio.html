@@ -454,6 +454,7 @@ function renderProject() {
       ${facts.length ? `<div class="facts">${facts.join("<span>·</span>")}</div>` : ""}
       <div class="actions">
         <button class="primary" onclick="runMode('kit')" title="Every check, then print plates, shopping list, assembly guide and the 3D viewer">⚙ Build kit${modeEst(d, "kit")}</button>
+        ${d.can_optimise ? `<button onclick="run('optimise')" title="Search the params project.yaml lists under optimise: for a lighter design that still passes every check; writes OPTIMISE.md (runs on this computer, no Claude usage)">⚖ Optimise</button>` : ""}
         ${d.last_mode && !["kit", "ship"].includes(d.last_mode) ? `<button class="upgrade" onclick="runMode('kit')" title="Runs only what the ${esc(modeLabel(d, d.last_mode))} run did not: built parts and solved load cases are reused">⬆ Upgrade to Build kit</button>` : ""}
         <span class="more"><button onclick="toggleMenu(event)" aria-haspopup="true" title="Run only as deep as you need">Depth ▾</button>
           <div class="menu modes" id="modemenu">
