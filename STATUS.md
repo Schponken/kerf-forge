@@ -175,3 +175,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Pre-existing failures on main seen while testing (not from this change, owners please look):
   test_board_proxy_keeps_mounting_holes_clear, test_servo_dims_are_the_catalog[servos.KST_X08_Plus],
   test_every_requirement_check_listed, test_no_text_io_without_encoding (circuit.py:502, fwcheck.py:172).
+
+### 2026-11-02 — Engine speed: part cache follows the engine files a part uses; `kerf req` (session 01S68R6R)
+- kerf/partcache.py no longer hashes every kerf/*.py into each key: each build records (sys.monitoring) the engine
+  files whose code ran, widened by their imports and the top-level import closure, and lookup re-hashes just those.
+  drone_foldable_wings: cold 180 s, warm 1.3 s, after a fea.py edit 2.2 s (was a full ~180 s rebuild), after
+  req_aero.py 51 s (3 wing parts reach it through requirements.py's imports: conservative), after iface.py 156 s.
+  Also fixed catalog.recording() removing the wrong set when two nested recordings were both empty.
+- New `kerf req <p> [id ...]`: only the named requirements (ids or check names) on the assembled project; servo_link
+  all 8 in 6.9 s. `kerf check` still decides PASS. Listed in CLAUDE.md's command table.

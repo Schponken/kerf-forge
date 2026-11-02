@@ -223,7 +223,8 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 ## Engine speed (Spencer, 2026-11-02: "optimize the core system so it does this faster")
 - [x] Faster collision checks: cache each shape's own-frame box (OCC re-derived an optimal box on every call, >90 % of interference time) and reject non-touching pairs with a mesh prefilter (manifold3d, tessellated once to 0.02 mm) before the exact boolean; hits and volumes stay exact (A/B on drone_foldable_wings: identical hits over 6 poses, interference 48 s -> 13 s, each sweep step 3.6-4.2 s -> 0.03-0.06 s); tests/test_overlap_fast.py
-- [ ] Part cache keyed on the engine modules a part actually uses (not every kerf/*.py), so an unrelated engine edit stops rebuilding every part of every project (drone_foldable_wings: 163 s cold vs 0.9 s cached); tests
+- [x] Part cache keyed on the engine modules a part actually uses (not every kerf/*.py), so an unrelated engine edit stops rebuilding every part of every project (drone_foldable_wings: 163 s cold vs 0.9 s cached); tests. Done: sys.monitoring records the engine files each build ran (+ their imports); measured on drone_foldable_wings: cold 180 s, warm 1.3 s, after an fea.py edit 2.2 s (20/20 cached; before: full rebuild), after req_aero.py 51 s (17/20), after iface.py (used by every part) 156 s (0/20, correct)
+- [x] `kerf req <p> [id ...]`: just the named requirements on the assembled project (cached parts, no interference / sweeps / print checks), so checking one number after an edit takes seconds; tests/test_req_cmd.py
 
 ## Phase 5 — final audit
 - [ ] Fast tests (Spencer, 2026-11-02, efficiency): the suite runs in parallel (pytest-xdist, pinned) with slow / browser / all-project tests marked so `pytest -m "not slow"` is the per-change default; shared expensive fixtures (built projects, browsers) cached per session; report the before/after wall time in STATUS.md; no test removed or loosened
