@@ -422,7 +422,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Merged PR #11 (scenario options; tests/test_scenario.py pass). test_studio's progress-order
   test already fails on main; PR #4 fixes it once rebased.
 
-## 2026-11-02 22:00 UTC — Mixed manufacturing handoff (Codex, PR pending)
+## 2026-11-02 22:00 UTC — Mixed manufacturing handoff (Codex, PR #13)
 - Custom stock parts use the existing parts/build/import contract with manufacturing metadata. Exact local-frame
   STEP and proven constant-section DXF (including holes, millimetres) accompany printed plates; stock parts appear
   in mass/CG/URDF, assembly, drawings, BOM, viewer and Studio supplier files/ZIP. Printer offsets, filament controls
