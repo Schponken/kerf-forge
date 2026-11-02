@@ -188,6 +188,6 @@ def build(ctx):
         if not inner and abs(at[0] - sv["sx"]) < sv["half"] + 2 and sv["tip_y"] - 6 < abs(at[1]) < sv["tab_y"] + 30:
             return "the servo's square case and tabs sit in the pocket's corners"
         return None
-    body, failed = fillet_inside(ctx, body, r=1.0, keep=keep)
+    body, failed = fillet_inside(ctx, body, r=1.0, keep=keep, occ=True)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     return ctx.finish(body)
