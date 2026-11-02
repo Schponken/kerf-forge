@@ -1,7 +1,7 @@
 """Ailerons ail_r / ail_l: cut with kerf.aero.elevon_split from the outer wing segment's own surface (wing.outer_solid,
 same planform and rounded tip), so slot and surface match: bottom hinge line at ail_hinge_frac (clear tape along the
-bottom), a V gap of ail_gap_deg on top (> 2 x ail_throw... up-throw ail_throw clears it), 0.6 mm at the hinge, ends
-1 mm from the slot ends. Adapted from projects/fpv_wing/parts/elevon.py.
+bottom), a V gap of ail_gap_deg on top (more than the up-throw ail_throw, so the surface swings clear; down-throw opens
+the gap), 0.6 mm at the hinge, ends 1 mm from the slot ends. Adapted from projects/fpv_wing/parts/elevon.py.
 
 Prints standing on its inner end (print_rot [+-90, 0, 0]): the inner end is trimmed square to Y (the hinge is swept
 ~2.4 deg, so the slot's end plane is not; the aileron loses a sliver at its trailing edge and the end gap grows from

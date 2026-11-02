@@ -34,6 +34,7 @@ BLOCK_HW = 13.0       # insert block half width
 BLOCK_TOP = -37.0     # insert block top (insert depth 6.7 + 0.8 floor above the stab top)
 BLADE_T, BLADE_H = 3.0, 10.0   # fin blade: thickness, height above the top
 SLOT_CLEAR = 0.15     # fin slot over the blade, per side (glued)
+FRONT = 2.5           # mount front ahead of the fin's leading edge (the fin root clears the front chamfer)
 SEAT_GAP = 3.0        # seat stops this far ahead of the elevator hinge line (>= 0.5 mm to the elevator at full up)
 
 
@@ -50,7 +51,7 @@ def dims(p):
     half = p.htail_span / 2
     hinge_x = aero.hinge_axis(pf, -half, half, p.elev_hinge_frac)[0][0]
     return {"sd": sd, "r_bore": r_bore, "z_servo": z_servo, "top": top, "bot": p.boom_z - r_bore - WALL,
-            "boom_top": boom_top, "x0": x_fin_le, "x1": p.boom_x1 + CAP, "hinge_x": float(hinge_x),
+            "boom_top": boom_top, "x0": x_fin_le - FRONT, "x1": p.boom_x1 + CAP, "hinge_x": float(hinge_x),
             "seat_x1": float(hinge_x) - SEAT_GAP,
             # each servo's arm plane (|y|): 1.75 mm inside the spline tip
             "arm_y": HALF_W + sd["top"] + sd["shaft_h"] - 1.75}
@@ -91,8 +92,9 @@ def blade(p, grow=0.0):
     d = dims(p)
     top = d["top"]
     c = p.fin_root - (top - d["boom_top"]) / p.fin_h * (p.fin_root - p.fin_tip)
-    xa = d["x0"] + 0.18 * c - grow
-    xb = d["x0"] + (p.rud_hinge_frac - 0.12) * c + grow
+    xle = d["x0"] + FRONT
+    xa = xle + 0.18 * c - grow
+    xb = xle + (p.rud_hinge_frac - 0.12) * c + grow
     h = BLADE_H + grow
     t = BLADE_T / 2 + grow
     side = Plane.XZ * Polygon((xa, top - 1), (xb + 1, top - 1), (xb, top), (xb - h, top + h), (xa, top + h), align=None)
@@ -119,7 +121,9 @@ def build(ctx):
     xi, zt, _ = ins_points(p)
     blk = Plane.XZ * Polygon((xi - 10, p.htail_z0), (xi + 10 + (BLOCK_TOP - p.htail_z0), p.htail_z0), (xi + 10, BLOCK_TOP),
                              (xi - 10, BLOCK_TOP), align=None)
-    body += ctx.add(extrude(blk, amount=BLOCK_HW, both=True), why="block for the two stab-screw heat-set inserts (aft end 45 deg: prints standing)", kind="boss")
+    blk = extrude(blk, amount=BLOCK_HW, both=True)
+    blk = fillet(blk.edges().filter_by(Axis.X).group_by(Axis.Z)[-1], 1.0)     # why: outside edges broken (handling)
+    body += ctx.add(blk, why="block for the two stab-screw heat-set inserts (aft end 45 deg: prints standing)", kind="boss")
     stab = aero.wing_solid(pf, -BLOCK_HW - 5, BLOCK_HW + 5, stations=3)
     body -= ctx.cut(stab, why="the stabiliser sits here: the seat is its own upper surface", kind="seat")
     # boom socket: blind bore to the boom's rear end

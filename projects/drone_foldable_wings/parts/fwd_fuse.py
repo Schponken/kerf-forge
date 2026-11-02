@@ -42,7 +42,7 @@ NOSE_T = 3.4          # nose plate between the bosses
 BOSS_L = 7.5          # M3 heat-set: 6.7 mm hole + 0.8 mm floor (iface.hole)
 BOSS_R = 5.0          # 4.0 mm insert hole + 3 mm wall (ENGINEERING s5 >= 2.4, s7 1.5 d)
 MOUNT_BOLT = 15.0     # motor-mount M3 at (+-15, +-15) from the motor axis: r 21.2, head clear of the 35 mm bell
-LEAD_UP = 17.0        # motor lead hole centre above the motor axis (half under the bell's base edge)
+LEAD_UP = 17.5        # motor lead hole centre above the motor axis (half under the bell's base edge)
 LEAD_D = 8.0
 BULK_T = 4.0          # aft bulkhead plate = grip of the fuselage-joint M3
 FUNNEL = 12.0         # bulkhead frame width at the aft face
@@ -173,6 +173,7 @@ def build(ctx):
     body = body - ctx.cut(funnel(p), why="aft bulkhead frame: 40 deg funnel (prints without a ceiling), wire pass-through",
                           kind="bulkhead")
     hs = hatch_solid(p)
+    shell = out - cav
     body = body - ctx.cut(hatch_box(p), why="hatch opening: battery, XT60 and the shelf electronics from above", kind="hatch")
 
     # nose: insert bosses for the motor mount (outside the bell, so a key reaches the mount screws past the motor)
@@ -198,7 +199,8 @@ def build(ctx):
 
     # hatch ledges (skipped over the FC, which stands tall there) and the screw beam at the opening's aft end
     fx0, fx1, _ = b["fc"]
-    for xa, xb in ((HATCH_X[0], fx0 - 3.0), (fx1 + 3.0, -20.0)):
+    # why: the front segment starts 3 mm under the nose skin, so it merges into it (no edge-to-edge seam)
+    for xa, xb in ((HATCH_X[0] - 3.0, fx0 - 3.0), (fx1 + 3.0, -20.0)):
         for s in (-1, 1):
             led = Pos(xa, s * 19.0, HATCH_CUT_Z + 0.3) * Box(xb - xa, 20, 20, align=(Align.MIN, Align.MIN if s > 0 else Align.MAX, Align.MIN))
             body = body + ctx.add((led & out) - hs, why="ledge the hatch edge rests on", kind="ledge")
@@ -219,16 +221,17 @@ def build(ctx):
         body = body - ctx.cut(spot, why="spot face: fuselage-joint screw head seats on the bulkhead", kind="spot face")
 
     # motor phase leads in through the nose plate
-    body = body - ctx.cut(Pos(p.fuse_x0, 0, zc + LEAD_UP) * Rot(0, 90, 0) * Cylinder(LEAD_D / 2, 2 * NOSE_T + 2),
+    body = body - ctx.cut(Pos(p.fuse_x0 + NOSE_T / 2, 0, zc + LEAD_UP) * Rot(0, 90, 0) * Cylinder(LEAD_D / 2, NOSE_T + 2),
                           why="motor phase leads into the bay", kind="wire hole")
     # cooling: inlets in the nose taper's sides just above the shelf, outlets behind the ESC
-    z0 = b["shelf"] + 1.0
+    z0 = b["shelf"] + 2.5          # clear of the shelf-to-wall fillet
     ex1 = b["esc"][1]
     for s in (-1, 1):
         for xa, what in ((p.fuse_x0 + 11.0, "air inlet (taper faces the prop wash); receiver antenna out"),
                          (ex1 - 4.0, "air outlet behind the ESC")):
-            v = Pos(xa, s * 20.0, z0) * Box(VENT_L, 20, VENT_H, align=(Align.MIN, Align.MIN if s > 0 else Align.MAX, Align.MIN))
-            body = body - ctx.cut(v, why=what, kind="vent")
+            # round-ended slot (no sharp inner corners; the upper end prints as an arch), through the skin only
+            v = Pos(xa + VENT_L / 2, s * 20.0, z0 + VENT_H / 2) * extrude(Plane.XZ * SlotOverall(VENT_L, VENT_H), 20, both=True)
+            body = body - ctx.cut(v & shell, why=what, kind="vent")
 
     # fasteners: motor mount inserts in the nose face, fuselage-joint clearance holes, hatch inserts in the beam
     nose = Location(Plane(origin=(p.fuse_x0, 0, zc), x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))
@@ -238,9 +241,18 @@ def build(ctx):
     body = body - iface.bolt_pattern(ctx, "fuse_joint", "M3", [(y, -z) for (y, z) in L.JOINT_BOLTS], bulk,
                                      kind="clearance", depth=BULK_T)
     top = Location(Plane(origin=(0, 0, zi), x_dir=(1, 0, 0), z_dir=(0, 0, 1)))
-    body = body - iface.bolt_pattern(ctx, "hatch", "M3", hatch_bolts(p), top, kind="heatset", depth=zi - BEAM_Z)
+    body = body - iface.bolt_pattern(ctx, "hatch", "M3", hatch_bolts(p), top, kind="heatset", depth=zi - BEAM_Z,
+                                     teardrop="auto")
 
-    body, failed = fillet_inside(ctx, body, r=1.5)
+    def keep(at):
+        if abs(at[0] - (p.fuse_x0 + BOSS_L)) < 0.3:
+            return "boss end face: the pack's front sits 0.5 mm from it (a cove would reach into the pack); not a load path"
+        if abs(at[0] - b["tray_x1"]) < 0.3:
+            return "free aft end of the battery tray (1.7 mm edge); the tray's load goes into the side walls along its length"
+        if abs(at[0] - (p.fuse_x0 + NOSE_T)) < 0.3 and abs(at[1]) < LEAD_D and abs(at[2] - b["shelf"]) < 0.3:
+            return "shelf top at the nose plate, 0.5 mm under the motor lead hole: a cove would narrow the hole; shelf carries < 0.1 kg"
+        return None
+    body, failed = fillet_inside(ctx, body, r=1.5, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
 
     for k in ("aft", "hatch", "motor_mount"):

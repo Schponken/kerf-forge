@@ -178,15 +178,13 @@ def build(ctx):
         ctx.bom_item("1.2 mm music wire pushrod with Z-bends", qty=1, price_key="wire:music_1.2",
                      spec=f"{rod:.0f} mm between bends: servo arm hole {ARM_R:.0f} mm from the axis to the aileron horn hole",
                      note="runs under the bottom skin; Z-bend into the horn first, then into the arm")
-        ctx.notes += [f"aileron servo pocket: {sv['gap_main']:.1f} mm to the main bore, {sv['gap_rear']:.1f} mm to the "
-                      f"rear bore; pushrod {rod:.1f} mm; use the arm hole {ARM_R:.0f} mm from the axis (servo +-25 deg "
-                      f"for +-{p.ail_throw:.0f} deg aileron)",
-                      f"lead channel {LEAD_D:.0f} mm: thread the bare lead (pins lifted out of the plug housing, or a "
-                      f"pull string) from the pocket outboard, round the bend and out at the root face"]
+        ctx.notes += [f"aileron linkage: servo arm hole {ARM_R:.0f} mm from the axis, horn hole {HORN_R:.0f} mm under the "
+                      f"hinge (servo about +-25 deg for +-{p.ail_throw:.0f} deg); the lead goes through a {LEAD_D:.0f} mm "
+                      f"channel: pull it with a string from the pocket to the root face, plug pins lifted out of the housing"]
 
     def keep(at):
         if not inner and abs(at[0] - sv["sx"]) < sv["half"] + 2 and sv["tip_y"] - 6 < abs(at[1]) < sv["tab_y"] + 30:
-            return "the servo's square case and tabs sit in the pocket's corners"
+            return "the servo's square case, tabs and lead exit sit in the pocket's corners"
         return None
     body, failed = fillet_inside(ctx, body, r=1.0, keep=keep, occ=True)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]

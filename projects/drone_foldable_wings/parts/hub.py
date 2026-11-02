@@ -59,7 +59,7 @@ def right_body(ctx):
         (KEEL_Y[0], 0.3), (KEEL_Y[1], 0.3), (ym, KEEL_Z), align=None)
     keel = extrude(v, KEEL_X[1] - KEEL_X[0])
     front = Plane(origin=(0, 60, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0)) * Polygon(
-        (KEEL_X[0], 0.5), (KEEL_X[1] + 1, 0.5), (KEEL_X[1] + 1, KEEL_Z - 1), (KEEL_X[0] + 0.5 - KEEL_Z, KEEL_Z - 1), align=None)
+        (KEEL_X[0], 0.5), (KEEL_X[1] + 1, 0.5), (KEEL_X[1] + 1, KEEL_Z - 1), (KEEL_X[0] + 0.5 - KEEL_Z + 1, KEEL_Z - 1), align=None)
     keel &= extrude(front, 40)
     body += ctx.add(keel, why="V keel: section depth for the root moment between rear spar and boss", kind="keel")
     # double cone round the boss (45 deg both ways), only where it never swings over the spine ridge

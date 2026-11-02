@@ -6,6 +6,7 @@ upside down (the flat outer face on the bed).
 """
 from build123d import *
 from kerf import iface
+from kerf.features import fillet_inside
 
 import importlib.util, pathlib
 _fspec = importlib.util.spec_from_file_location("dfw_fwd_fuse", pathlib.Path(__file__).with_name("fwd_fuse.py"))
@@ -21,17 +22,19 @@ def build(ctx):
     x0, x1 = F.HATCH_X
     hw = F.HATCH_HW - GAP
     skin = F.hatch_solid(p) & Pos(x0 + GAP, 0, -100) * Box(x1 - x0 - 2 * GAP, 2 * hw, 200, align=(Align.MIN, Align.CENTER, Align.MIN))
-    # front tongue: the top TONGUE_T mm of the bay just under the nose skin, 0.2 mm below it, plus a root inside the
-    # opening that joins it to the hatch skin
-    cav = F.cavity(p)
+    # front tongue: a flat plate under the nose skin, which slopes down ahead of the opening: GAP below it at the
+    # tongue's tip, more toward the root; a root block inside the opening joins it to the hatch skin
     th = 14.0
-    slab = Pos(x0 - TONGUE_L, 0, F.HATCH_CUT_Z - 8) * Box(TONGUE_L + 3.0, 2 * th, 12, align=(Align.MIN, Align.CENTER, Align.MIN))
-    band = (slab & cav) - Pos(0, 0, -TONGUE_T) * cav
-    skin = skin + ctx.add(Pos(0, 0, -GAP) * band, why="tongue under the nose skin: holds the hatch's front down", kind="tongue")
-    root = Pos(x0 + GAP, 0, F.HATCH_CUT_Z - 8) * Box(3.0, 2 * th, 12, align=(Align.MIN, Align.CENTER, Align.MIN))
-    skin = skin + ctx.add((root & cav) - Pos(0, 0, -(TONGUE_T + GAP)) * cav, why="tongue root", kind="tongue")
+    z1 = F.inner(p, x0 - TONGUE_L)[2] - GAP
+    tongue = Pos(x0 - TONGUE_L, 0, z1 - TONGUE_T) * Box(TONGUE_L + 3.0, 2 * th, TONGUE_T, align=(Align.MIN, Align.CENTER, Align.MIN))
+    skin = skin + ctx.add(tongue, why="tongue under the nose skin: holds the hatch's front down", kind="tongue")
+    zi = p.fuse_top - F.SKIN
+    root = Pos(x0 + GAP, 0, z1 - TONGUE_T) * Box(3.0 - GAP, 2 * th, zi - z1 + TONGUE_T + 0.5, align=(Align.MIN, Align.CENTER, Align.MIN))
+    skin = skin + ctx.add(root, why="tongue root (0.5 mm into the skin, so they fuse)", kind="tongue")
     # aft: two M3 down through the skin into the beam's inserts
     top = Location(Plane(origin=(0, 0, p.fuse_top), x_dir=(1, 0, 0), z_dir=(0, 0, 1)))
     skin = skin - iface.bolt_pattern(ctx, "hatch", "M3", F.hatch_bolts(p), top, kind="clearance", depth=F.SKIN + 0.01)
+    skin, failed = fillet_inside(ctx, skin, r=1.0)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     ctx.rigid("base", Location())
     return ctx.finish(skin)

@@ -26,7 +26,7 @@ L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 _hspec = importlib.util.spec_from_file_location("dfw_hub", pathlib.Path(__file__).with_name("hub.py"))
 H = importlib.util.module_from_spec(_hspec); _hspec.loader.exec_module(H)     # sector angles (hub.py owns them)
 
-SKIN = 2.0              # 4 x 0.42 perimeters + gap fill: solid skin (ENGINEERING s5 structural >= 1.6)
+SKIN = 1.7              # 4 x 0.42 mm perimeters = solid skin (ENGINEERING s5 structural >= 1.6)
 BULK_T = 3.0            # front bulkhead
 SHOULDER_R = 3.0        # top-corner radius at the pivots (fuse_stations use 12): sector sweep clearance
 COVER_T = 2.5           # spine cover thickness; its top is flush with fuse_top (spine.py reads this)
@@ -153,34 +153,31 @@ def build(ctx):
     plate_t = sp["insert_depth"] + 0.8                       # heat-set hole + 0.8 mm floor (catalog fdm_holes)
     tab_top = L.sweep_servo_loc(p, 1).position.Z + d["tab_t"]
     vx = 95.0
-    plate = _prism_xy([(vx, -60), (vx, -50), (vx + 50, 0), (vx, 50), (vx, 60), (186, 60), (186, -60)],
-                      tab_top, tab_top + plate_t) & hull
-    body += ctx.add(plate, why="sweep servo plate: both MG996R hang from it by their tabs", kind="plate")
-
+    # the internal structure is built as one block of flat plates (fast to fillet), then clipped to the skin
+    mech = _prism_xy([(vx, -60), (vx, -50), (vx + 50, 0), (vx, 50), (vx, 60), (186, 60), (186, -60)],
+                     tab_top, tab_top + plate_t)
+    mech = ctx.add(mech, why="sweep servo plate: both MG996R hang from it by their tabs", kind="plate")
     # ---- pivot deck: lower pin plate, wall to wall, 45 deg chamfer up from the servo plate at its front
-    deck = _prism_xz([(178, p.deck_z0), (222, p.deck_z0), (222, p.deck_z1), (178 + p.deck_z1 - p.deck_z0, p.deck_z1)], -60, 60) & hull
-    body += ctx.add(deck, why="pivot deck: lower pin plate, carries the pin bearing couple to the walls", kind="plate")
-
+    mech += ctx.add(_prism_xz([(178, p.deck_z0), (222, p.deck_z0), (222, p.deck_z1), (178 + p.deck_z1 - p.deck_z0, p.deck_z1)], -60, 60),
+                    why="pivot deck: lower pin plate, carries the pin bearing couple to the walls", kind="plate")
     # ---- keel rib on the centreline: floor to servo plate and deck, front edge rising 45 deg off the floor
     zf = p.fuse_bottom + SKIN
-    rib = _prism_xz([(116, zf - 1), (222, zf - 1), (222, p.deck_z0), (186, p.deck_z0), (186, tab_top),
-                     (116 + tab_top - (zf - 1), tab_top)], -1.5, 1.5) & hull
-    body += ctx.add(rib, why="keel rib: ties servo plate and deck to the floor", kind="rib")
-
-    # ---- spine lugs: front under the top skin (45 deg underside), rear on the deck (V front in plan)
-    flug = _prism_xz([(88, p.fuse_top - SKIN), (114, p.fuse_top - SKIN), (114, FRONT_LUG_Z), (88 + p.fuse_top - SKIN - FRONT_LUG_Z, FRONT_LUG_Z)], -12, 12)
-    body += ctx.add(flug & hull, why="front spine lug: 2 M3 heat-set inserts", kind="lug")
-    rlug = _prism_xy([(202, 0), (214, -12), (226, -12), (226, 12), (214, 12)], p.deck_z1 - 0.01, cz0) & hull
-    body += ctx.add(rlug, why="rear spine lug on the deck: 2 M3 heat-set inserts; carries the rear top skin edge", kind="lug")
+    mech += ctx.add(_prism_xz([(116, zf - 1), (222, zf - 1), (222, p.deck_z0), (186, p.deck_z0), (186, tab_top),
+                               (116 + tab_top - (zf - 1), tab_top)], -1.5, 1.5),
+                    why="keel rib: ties servo plate and deck to the floor", kind="rib")
+    # ---- rear spine lug on the deck (V front in plan) and webs behind the pins: they also carry the rear top
+    # skin's edge on the printer (bridges < 15 mm)
+    mech += ctx.add(_prism_xy([(202, 0), (214, -12), (226, -12), (226, 12), (214, 12)], p.deck_z1 - 0.01, cz0),
+                    why="rear spine lug on the deck: 2 M3 heat-set inserts", kind="lug")
     for s in (1, -1):
-        web = _prism_xy([(211, s * 26), (212.5, s * 24.5), (226, s * 24.5), (226, s * 27.5), (212.5, s * 27.5)],
-                        p.deck_z1 - 0.01, cz0 - 0.1) & hull
-        body += ctx.add(web, why="web behind the pin: supports the rear top skin edge (bridge < 15 mm)", kind="web")
+        mech += ctx.add(_prism_xy([(211, s * 26), (212.5, s * 24.5), (226, s * 24.5), (226, s * 27.5), (212.5, s * 27.5)],
+                                  p.deck_z1 - 0.01, cz0 - 0.1), why="web behind the pin: carries the rear top skin edge", kind="web")
+    flug = _prism_xz([(88, p.fuse_top - SKIN), (114, p.fuse_top - SKIN), (114, FRONT_LUG_Z), (88 + p.fuse_top - SKIN - FRONT_LUG_Z, FRONT_LUG_Z)], -12, 12)
+    body += ctx.add(flug & hull, why="front spine lug under the top skin (45 deg underside): 2 M3 heat-set inserts", kind="lug")
 
-    # ---- per side: sector sweep clearance, stops, pin, lead slot, pinion clearance, servo mount
+    # ---- per side: sector sweep clearance in the skin, stop posts on the deck
     a0, a1 = H.sector_deg(p)
     for s in (1, -1):
-        n = "r" if s > 0 else "l"
         c = (p.pivot_x, s * p.pivot_y)
         # the sector only sweeps the half in front of the pin (angles a0 - fold_max .. a1): r 23 + 0.5
         sweep = Pos(c[0], c[1], p.deck_z1) * Cylinder(p.sector_ro + CLEAR, p.sector_z1 + CLEAR - p.deck_z1,
@@ -192,13 +189,19 @@ def build(ctx):
         pc = (p.pinion_x, s * p.pivot_y)
         body -= ctx.cut(Pos(pc[0], pc[1], p.deck_z1) * Cylinder(p.pinion_ro + CLEAR, cz0 - p.deck_z1, align=(Align.CENTER, Align.CENTER, Align.MIN)),
                         why="pinion + horn", kind="clearance")
-        # stop posts on the deck, mirrored for the left: spread stop just past face B at fold 0, fold stop past
-        # face A at fold_max (kerf hard_stop: aft_fuse vs hub beyond each end)
+        # stop posts, mirrored for the left: spread stop just past face B at fold 0, fold stop just past face A at
+        # fold_max (kerf hard_stop: aft_fuse vs hub beyond each end); the fold post runs out into the side wall
         posts = stop_post((c[0], p.pivot_y), a1, +1, p.boss_r + 1.5, p.sector_ro - 0.5, 35, p.deck_z1 - 0.01, cz0 - 0.5)
-        posts += stop_post((c[0], p.pivot_y), a0 - p.fold_max, -1, p.boss_r + 1.5, 30, 35, p.deck_z1 - 0.01, cz0 - 0.5) & hull
+        posts += stop_post((c[0], p.pivot_y), a0 - p.fold_max, -1, p.boss_r + 1.5, 32, 35, p.deck_z1 - 0.01, cz0 - 0.5)
         if s < 0:
             posts = mirror(posts, Plane.XZ)
-        body += ctx.add(posts, why="mechanical stops: sector end faces meet them at 0 and fold_max", kind="stop")
+        mech += ctx.add(posts, why="mechanical stops: the sector's end faces meet them at 0 and fold_max", kind="stop")
+    mech, failed = fillet_inside(ctx, mech, r=1.5)
+    body += mech & hull
+
+    for s in (1, -1):
+        n = "r" if s > 0 else "l"
+        c = (p.pivot_x, s * p.pivot_y)
         # aileron lead: through the hub's sector web at r 12 (hub angle 180), down through this arc slot
         ang = (180 - p.fold_max - 10, 190)
         slot = _wedge(c, *(ang if s > 0 else (-ang[1], -ang[0])), 14.5, p.deck_z0 - 1, p.deck_z1 + 1) \
@@ -248,7 +251,6 @@ def build(ctx):
                     why="boom bore, OD + 0.2 slip for epoxy", kind="bore")
     body -= ctx.cut(_td_hole(ctx, (238.0, 12.0, -52.0), 6.0, 14.0), why="tail servo leads enter from under the boom", kind="wire hole")
 
-    body, failed = fillet_inside(ctx, body, r=1.0)
     ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     for k in ("fwd", "spine", "tail"):
         ctx.rigid(k, Location())
