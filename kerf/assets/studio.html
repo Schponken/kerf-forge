@@ -182,6 +182,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .job.sess .lab small{color:var(--muted)}.dot.claimed{background:#5aa9ff;box-shadow:0 0 0 3px rgba(90,169,255,.18)}
 .wrecent ul{margin:6px 0 0;padding-left:18px}.wrecent li{margin:2px 0}
 .misstag{font-size:11px;margin-top:4px;white-space:nowrap}.misstag.nearmiss{color:#e0a030}.misstag.close{color:#e07a30}.misstag.faroff{color:var(--bad)}
+.fixalt{margin:-4px 0 6px;padding-left:20px}.fixalt li{margin:3px 0;color:var(--muted)}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{width:min(1100px,94vw);height:min(760px,88vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
@@ -734,7 +735,7 @@ function issueCards(iss, raw) {
   return `<div style="margin-bottom:14px"><h3 style="margin:4px 0 10px">What's wrong (${cards.length})</h3>${cards.map((c, i) => `
     <div class="issue reqrow" style="animation-delay:${i * 40}ms"><div class="ihead">${c.kind_label ? `<span class="chip">${esc(c.kind_label)}</span>` : ""}<b>${esc(c.title)}</b>${c.part ? `<span class="ipart">${esc(c.part)}</span>` : ""}
       <span style="flex:1"></span><span class="chip ${on ? "info" : "warn"}">${on ? (w.state === "fixing" ? "being fixed" : w.state === "checking" ? "re-checking" : "being worked on") : "nobody on it"}</span></div>
-      ${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.fix ? `<p class="fixl"><b>Usual fix:</b> ${esc(c.fix)}</p>` : ""}
+      ${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.fix ? `<p class="fixl"><b>What to do:</b> ${esc(c.fix)}</p>` : ""}${(c.fixes || []).length ? `<ul class="fixalt">${c.fixes.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
       ${c.detail && c.detail !== c.title ? `<details><summary>Details for whoever fixes it</summary><code>${esc(c.detail)}</code></details>` : ""}</div>`).join("")}</div>`;
 }
 function renderResults(el, rep) {

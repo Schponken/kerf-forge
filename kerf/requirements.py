@@ -893,6 +893,11 @@ def _run_one(proj, asm, req, quick):
         else:
             r = {**r, "advisory": str(adv).strip()}
     out.append({"id": rid, "check": name, "why": req.get("why", ""), "unit": unit, "bound": bound, **r})
+    if not out[-1].get("ok"):                       # what to change, by how much, worked out from this check's numbers
+        from . import advice
+        tips = advice.advise(out[-1], req, proj)
+        if tips:
+            out[-1]["advice"] = tips
     from . import progress
     progress.emit("req", id=rid, check=name, unit=unit, bound=bound, ok=bool(r.get("ok")), value=r.get("value"), limit=r.get("limit"),
                   skipped=bool(r.get("skipped")))
