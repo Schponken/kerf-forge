@@ -1,0 +1,9 @@
+{
+ "item": "Codex executable discovery: prefer PATH and fall back to the verified local macOS app bundle so Work can read sessions under the native launcher PATH; no installation or startup mutation.",
+ "session": "codex-codex-discovery",
+ "since": 1793661400.754549,
+ "heartbeat": 1793661400.754549,
+ "provider": "Codex",
+ "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
+ "since_utc": "2026-11-02 23:16"
+}
