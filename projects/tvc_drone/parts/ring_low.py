@@ -97,7 +97,7 @@ def build(ctx):
     # why: every remaining sharp inside corner rounded (r 1, 0.5 where 1 does not fit; ENGINEERING.md s5); interface
     # features exempt, corners under a ceiling as printed stay square (a fillet there would overhang)
     stuck = [(7.9, 10.3, 88.0), (86.9, 14.3, 75.0)]   # see DESIGN.md "Detail": OCC cannot round these two
-    body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
+    body, left = features.fillet_inside(ctx, body, 1.0, occ=True, keep=lambda at: (
         "OCC cannot round this corner (fillet and the added-material fallback both fail); low stress in yoke_fea / lug_fea "
         "(DESIGN.md Detail)") if any(max(abs(a - b) for a, b in zip(at, q)) < 0.3 for q in stuck) else None)
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]

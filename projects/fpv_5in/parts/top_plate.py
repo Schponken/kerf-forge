@@ -111,6 +111,6 @@ def build(ctx):
         if STRAP_X0 - 0.5 <= at[0] <= STRAP_X1 + 0.5:
             return "battery strap notch: the 20 mm strap lies flat in it, its edges against the notch ends"
         return None
-    s, left = F.fillet_inside(ctx, s, 1.0, keep=keep)
+    s, left = F.fillet_inside(ctx, s, 1.0, occ=True, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     return ctx.finish(s, color="#2a2d31")

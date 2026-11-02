@@ -117,7 +117,7 @@ def build(ctx):
             return ("cheek back end / gusset toe on the plate top, where three blends meet: OCC cannot fillet it; the cheek "
                     "carries only the camera (4 g) and its sides have fillets")
         return None
-    body, left = F.fillet_inside(ctx, body, 1.0, keep=keep)
+    body, left = F.fillet_inside(ctx, body, 1.0, occ=True, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     ctx.rigid("stack", Location((0, 0, t)))
     ctx.rigid("top", Location((0, 0, t)))

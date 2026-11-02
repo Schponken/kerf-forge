@@ -98,7 +98,7 @@ def build(ctx):
             return ("rail end: an open 135-degree corner where the 45-degree end ramp meets the arm top beside the 60-degree "
                     "flank; OCC cannot fillet the junction (the mirror one takes it); outer arm, compression side")
         return None
-    body, left = F.fillet_inside(ctx, body, 0.5, keep=keep)
+    body, left = F.fillet_inside(ctx, body, 0.5, occ=True, keep=keep)
     ctx.notes += [f"inside corner left sharp at {c}" for c in left]
     ctx.rigid("root", Location((0, 0, 0)))
     ctx.rigid("motor", Location((p.motor_r, 0, 0)))
