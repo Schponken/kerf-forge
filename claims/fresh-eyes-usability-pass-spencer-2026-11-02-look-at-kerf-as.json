@@ -1,7 +1,0 @@
-{
- "item": "Fresh-eyes usability pass (Spencer, 2026-11-02): look at Kerf as a first-time user (README, setup, Kerf Studio every screen at desktop + phone width, viewer, CLI help and error messages, output files) for what is confusing, overwhelming or unintuitive and for likely user mistakes / failure paths (port in use, Claude not signed in, job running, dirty repo, missing build, bad input); fix each with a test, leaving the Checks tab wording, Follow live and Work tab to their claimed items (findings for those go in their sessions' STATUS notes)",
- "session": "2c0e7041a2",
- "since": 1793637948.7736442,
- "heartbeat": 1793637948.7736442,
- "since_utc": "2026-11-02 16:45"
-}
