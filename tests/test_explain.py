@@ -58,6 +58,9 @@ def test_work_status():
     assert w["state"] == "claimed" and w["task"] == "E7 `fpv_wing`" and "2 min ago" in w["text"]
     assert explain.work_status("robot_arm", [], claims, now)["state"] == "idle"          # stale claim: nobody on it
     assert explain.work_status("fpv", [], claims, now)["state"] == "idle"                # whole names only
+    for provider, owner in (("Codex", "Codex"), ("Claude Code", "Claude Code"), (None, "Another session"), ([], "Another session")):
+        w = explain.work_status("fpv_wing", [], [{**claims[0], "provider": provider}], now)
+        assert w["text"].startswith(f"{owner} has claimed") and "working" not in w["text"]
 
 
 def test_studio_detail_and_page_use_it(tmp_path, monkeypatch):

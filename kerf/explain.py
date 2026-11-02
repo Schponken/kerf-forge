@@ -10,7 +10,6 @@ fresh claim (tools/claims.py) whose PLAN item names the project.
 """
 from __future__ import annotations
 
-import json
 import re
 import time
 from pathlib import Path
@@ -242,13 +241,8 @@ def cards(rep: dict, parts=()) -> list[dict]:
 
 # ---------------------------------------------------------------- who is on it
 def claims(root: Path = ROOT) -> list[dict]:
-    out = []
-    for f in sorted((root / "claims").glob("*.json")):
-        try:
-            out.append(json.loads(f.read_text(encoding="utf-8")))
-        except Exception:  # noqa: BLE001 - a broken claim file is no claim
-            pass
-    return out
+    from .live import claim_records
+    return list(claim_records(root).values())
 
 
 def work_status(project: str, jobs: list[dict], claim_list: list[dict], now: float | None = None) -> dict:
@@ -268,6 +262,7 @@ def work_status(project: str, jobs: list[dict], claim_list: list[dict], now: flo
         if now - float(c.get("heartbeat", 0)) < STALE_MIN * 60 and pat.search(c.get("item", "")):
             item = re.sub(r"\s+", " ", c.get("item", ""))
             task = re.split(r":\s|\s\u2014\s|\s-\s|;\s", item, 1)[0].strip()      # its first clause: "E7 `fpv_wing`"
-            return {"state": "claimed", "text": f"A Claude session is working on this project (last active {ago(c.get('heartbeat', now))}).",
+            owner = c.get("provider") if c.get("provider") in ("Codex", "Claude Code") else "Another session"
+            return {"state": "claimed", "text": f"{owner} has claimed this project (last update {ago(c.get('heartbeat', now))}).",
                     "task": task[:120], "item": item}
     return {"state": "idle", "text": "Nobody is working on this yet. \"Fix these\" hands it to Claude Code."}
