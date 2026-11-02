@@ -204,3 +204,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Setup: ./setup.sh finished ALL OK; servo_link complete build PASS; installation/startup instructions saved in the environment draft. Initial full test run: 707 passed, 12 failed, 5 skipped; UTF-8 resolved locale failures. Targeted suites passed (77 Studio/CLI/docs checks, 39 mode/print/skill checks, 67 guard/Studio checks, 32 CLI compatibility checks). Final full suite: 754 passed, 2 pre-existing failures (listed above), 5 optional firmware checks skipped. PR #1 rebased on current main: 150 affected tests passed, 5 optional firmware tests skipped. Marked ready under Spencer’s review instruction; do not merge without his or a Claude session’s review.
 
 - PR #1 review follow-up: reduced screenshot history to one 152 KB Studio contact sheet; full capture linked in the PR discussion. Rebased again over main’s thought-web and Mac-launcher work, retaining both STATUS entries. The stream regression test now asserts the unchanged visible lines and the complete new upstream note/tool metadata; no geometry or safety assertions changed.
+
+## 2026-11-02 19:45 UTC - Codex PRs #1 + #2 merged; manager live (planning chat)
+- Reviewed and merged Codex PR #1 (first-use Studio layout, recovery, CLI guidance) and PR #2 (honest viewer previews,
+  supplier/plate links, device mass split): nothing loosened (range checks got stricter: one-sided limits + finite
+  only; one stream test rewritten to assert more fields), 520 KB of contact sheets only. 92 affected tests pass.
+- Kerf manager (scheduled, every 3 h at :51, auto-approved) is live; its first run wrote docs/status/BOARD.md. Its
+  prompt now finds unmerged PRs by "head not on main" (GitHub listing showed none while two were open).
+- Blocker for Spencer: the ChatGPT Codex environment "kerf-forge" will not publish ("Couldn't publish environment",
+  no reason shown; settings saved, full internet on). Until it publishes, Codex runs one thread: usability rounds,
+  then docs/status/CODEX_TASKS.md items in order.
