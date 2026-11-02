@@ -146,7 +146,7 @@ def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None 
         })
         if iid in stress:
             out_items[-1]["stress"] = _stress_on(v, stress[iid])
-    keep = ("project", "dir", "fingerprint", "printer", "params", "parts", "purchased", "requirements", "problems",
+    keep = ("project", "dir", "fingerprint", "printer", "params", "parts", "manufactured", "purchased", "requirements", "problems",
             "warnings", "bom", "files", "seconds", "mass")
     rp = {k: rep.get(k) for k in keep}
     from . import explain
@@ -269,6 +269,9 @@ def _stress_on(verts: np.ndarray, cases: list[dict]) -> dict:
 
 
 def _label(it) -> str:
+    if it.role == "manufactured":
+        from .manufacturing import label
+        return label(it)
     if it.role == "printed":
         return f"printed, {it.spec.get('material', 'PETG')}"
     if it.role == "keepout":

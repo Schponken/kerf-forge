@@ -172,10 +172,16 @@ def _sheet(proj, pid, it, size, scale, calls, hidden=True):
              f"{int(spec.get('walls', 2))} WALLS, {round(float(spec.get('infill', 0.25)) * 100)} % INFILL.",
              f"PRINT ORIENTATION: PART {_print_up(spec)} FACES UP.",
              "HOLE SIZES AS MODELLED FOR FDM (MEASURED FITS INCLUDED); DO NOT DRILL OUT."]
+    if it.role == "manufactured":
+        from .manufacturing import label
+        mat = it.spec["manufacturing"]["stock"]
+        notes = [label(it).upper(), "PART FRAME, MILLIMETRES; FINISHED GEOMETRY IN STEP.",
+                 "CONFIRM TOLERANCES, TOOLING AND STOCK STRENGTH WITH SUPPLIER; SEE MANUFACTURING/ORDER.MD."]
     if not hidden:
         notes.append("HIDDEN LINES OMITTED; SEE THE ISOMETRIC AND THE 3D MODEL (STEP / VIEWER).")
     sh = Sheet(size, scale=scale, title=pid.upper().replace("_", " "), part_number=f"{proj.dir.name}/{pid}",
-               material=mat, author="KERF FORGE", notes=notes, general_tolerance="ISO 2768-m")
+               material=mat, author="KERF FORGE", notes=notes,
+               general_tolerance="AGREE WITH SUPPLIER" if it.role == "manufactured" else "ISO 2768-m")
     top, front, right, _iso = sh.three_views(it.shape, iso=True, hidden=hidden)
     front.overall()                                 # width (X) and height (Z)
     right.overall()                                 # depth (Y) and height
@@ -236,7 +242,7 @@ def part_drawing(proj, pid, it, path: Path) -> dict:
     sh = it.shape.located(Location())
     for a in ("kerf_sites", "kerf_pins"):
         setattr(sh, a, getattr(it.shape, a, []))
-    it = SimpleNamespace(id=it.id, spec=it.spec, shape=sh)
+    it = SimpleNamespace(id=it.id, role=it.role, spec=it.spec, shape=sh)
     with _no_point_edges():
         return _part_drawing(proj, pid, it, path)
 
@@ -282,7 +288,7 @@ def write_all(proj, outdir: Path) -> dict:
     """out/drawings/<part>.pdf for every printed part, and index.json listing them. Returns {part: summary|error}."""
     outdir.mkdir(parents=True, exist_ok=True)
     res = {}
-    for pid, it in proj.printed.items():
+    for pid, it in proj.fabricated.items():
         if it.shape is None:
             continue
         pdf = outdir / f"{pid}.pdf"

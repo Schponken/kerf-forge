@@ -127,6 +127,13 @@ def write(proj, rep: dict, outdir: Path) -> Path:
         L.append(f"| {pid} | {p.get('material')} | {p.get('print_rot')} | {p.get('size_mm')} | {p.get('mass_est_g')} | "
                  f"{p.get('overhang_pct')} | {p.get('wall_p02_mm')} | {st.get('utilisation', '-')} | "
                  f"{st.get('cold_volume_pct', '-')} | {len(p.get('sharp_inside') or [])} / {len(p.get('sharp_kept') or [])} |")
+    if rep.get("manufactured"):
+        L += ["", "## Manufactured stock parts", "",
+              "Stock strength and supplier tooling limits are not proved by these exports. Review the separate evidence before ordering.", ""]
+        for pid, p in rep["manufactured"].items():
+            m = p["manufacturing"]
+            L.append(f"- {pid}: {m['process']}, {m['stock']}, {p['size_mm']} mm; {p['mass_est_g']:.2f} g estimated "
+                     f"from {m['density_g_cm3']} g/cm³ ({m['density_source']}).")
     hot = [(pid, z) for pid, p in rep.get("parts", {}).items() for z in ((p.get("stress") or {}).get("hot_zones") or [])]
     if hot:
         L += ["", "Hot zones (top 3 per part, utilisation of the allowable): "

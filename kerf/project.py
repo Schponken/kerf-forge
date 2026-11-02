@@ -26,7 +26,7 @@ class ProjectError(ValueError):
 @dataclass
 class Item:
     id: str
-    role: str                 # printed | purchased | keepout
+    role: str                 # printed | manufactured | purchased | keepout
     spec: dict
     shape: object = None
     build_ms: int = 0
@@ -48,6 +48,14 @@ class Project:
     @property
     def printed(self):
         return {k: v for k, v in self.items.items() if v.role == "printed"}
+
+    @property
+    def manufactured(self):
+        return {k: v for k, v in self.items.items() if v.role == "manufactured"}
+
+    @property
+    def fabricated(self):
+        return {k: v for k, v in self.items.items() if v.role in ("printed", "manufactured")}
 
     def out(self, *p) -> Path:
         d = self.dir / "out"
@@ -121,6 +129,11 @@ def load(name_or_path: str, overrides: dict | None = None) -> Project:
     stressed_files = {(data.get("parts") or {}).get(q, {}).get("file") for q in stressed}
     for pid, spec in (data.get("parts") or {}).items():
         spec = dict(spec or {})
+        if "manufacturing" in spec:
+            from .manufacturing import validate
+            validate(pid, spec)
+            proj.items[pid] = Item(pid, "manufactured", spec)
+            continue
         if "walls" not in spec:     # ENG-6: strength-checked parts (or copies of their file) print with 4 perimeters
             spec["walls"] = STRESSED_WALLS if (pid in stressed or spec.get("file") in stressed_files) else DEFAULT_WALLS
         proj.items[pid] = Item(pid, "printed", spec)
@@ -180,10 +193,10 @@ def build(proj: Project, only: list[str] | None = None, cache: bool = True) -> P
             params = {**proj.params, **{k: (v["value"] if isinstance(v, dict) else v) for k, v in (it.spec.get("params") or {}).items()}}
             printer = proj.data.get("printer", calibrate.DEFAULT_PRINTER)
             ctx = Ctx(pid, params, {"project": proj.name, "spec": it.spec, "printer": printer})
-            if it.role == "printed" and it.spec.get("import"):    # the user's own model (kerf/imported.py)
+            if it.role in ("printed", "manufactured") and it.spec.get("import"):
                 from . import imported
                 it.shape = imported.build(ctx, it.spec, proj.dir)
-            elif it.role == "printed":
+            elif it.role in ("printed", "manufactured"):
                 f = proj.dir / it.spec.get("file", f"parts/{pid}.py")
                 if not f.exists():
                     raise ProjectError(f"part file {f.relative_to(proj.dir)} not found")
@@ -195,7 +208,7 @@ def build(proj: Project, only: list[str] | None = None, cache: bool = True) -> P
                     mod = _load_module(f)
                     if not hasattr(mod, "build"):
                         raise ProjectError(f"{f.name} has no build(ctx) function")
-                    with calibrate.active(printer, it.spec.get("material")), partcache.recording() as deps:
+                    with calibrate.active(printer, it.spec.get("material"), enabled=it.role == "printed"), partcache.recording() as deps:
                         it.shape = mod.build(ctx)          # this printer's measured fits
                     if it.shape is not None and not getattr(it.shape, "kerf_stub", None) and \
                             (mod.__doc__ or "").lstrip().upper().startswith("STUB"):

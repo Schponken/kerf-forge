@@ -17,8 +17,18 @@ REGISTRY = {}
 
 def check(name):
     def deco(fn):
-        REGISTRY[name] = fn
-        return fn
+        from functools import wraps
+        from inspect import signature
+        sig = signature(fn)
+        @wraps(fn)
+        def checked(proj, asm, *args, **kwargs):
+            if name in STRENGTH_CHECKS and any(it.role == "manufactured" for it in getattr(proj, "items", {}).values()):
+                from .manufacturing import guard_stock_models
+                bound = sig.bind(proj, asm, *args, **kwargs).arguments
+                guard_stock_models(proj, {k: v for k, v in bound.items() if k not in ("proj", "asm")})
+            return fn(proj, asm, *args, **kwargs)
+        REGISTRY[name] = checked
+        return checked
     return deco
 
 
@@ -299,7 +309,6 @@ def _strength(material, direction):
     return xy
 
 
-@check("fea_static")
 def _across_share(item) -> float:
     """Largest cos^2 (share across layers) of the part's declared load_axis in its print orientation; 0 without one."""
     from build123d import Rot

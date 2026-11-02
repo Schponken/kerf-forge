@@ -140,7 +140,7 @@ def compute(proj, only: list[str] | None = None) -> dict:
     """{part_id: {"file", "faces": [{"line", "moves": [param...], "resizes": [param...]}], "whole": [param...],
     "lines": {line: code}}} for the printed parts of an already-built project. Rebuilds the parts (traced, then once
     per param), so call it after checks; it does not change proj's shapes."""
-    pids = [p for p in proj.printed if (only is None or p in only) and proj.items[p].shape is not None]
+    pids = [p for p in proj.fabricated if (only is None or p in only) and proj.items[p].shape is not None]
     base = {p: _face_table(proj.items[p].shape) for p in pids}
     out = {}
     for pid in pids:

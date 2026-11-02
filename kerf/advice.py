@@ -141,7 +141,7 @@ def _mass(row, req, proj) -> list[str]:
         from .checks import item_mass_g
         inc = set(req.get("include") or [])          # the requirement weighs only these items when it lists them
         rows = sorted(((item_mass_g(it), i, it.role) for i, it in proj.items.items()
-                       if it.role in ("printed", "purchased") and (not inc or i in inc)), reverse=True)[:4]
+                       if it.role in ("printed", "manufactured", "purchased") and (not inc or i in inc)), reverse=True)[:4]
         tips.append("Heaviest items: " + ", ".join(f"{i} {m:.0f} g" for m, i, _ in rows) + ".")
         printed = [(m, i) for m, i, r in rows if r == "printed"]
         if printed:

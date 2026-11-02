@@ -895,6 +895,7 @@ function renderFiles(el) {
     "Single parts": "One part per file, for reprinting a broken part or printing in another slicer.",
     "Engineering drawings (PDF)": "Flat drawings with measurements, handy for checking a print with calipers.",
     "CAD + shopping list": "The shopping list of parts to buy, and the full 3D model for other CAD programs.",
+    "Parts to have made": "STEP models and through-cut DXF profiles for your supplier. Read the stock and quote notes before ordering.",
     "Simulation (URDF + meshes, for PyBullet / MuJoCo / Gazebo)": "For trying the design in a physics simulator (optional)."};
   const group = (title, pred, icon) => { const g = f.filter(pred); return g.length ? `<h3>${title}</h3>${FILE_SAY[title] ? `<p class="note fsay">${FILE_SAY[title]}</p>` : ""}${g.map(x => `<a class="f" href="${fileUrl(d.name, x)}" download>${icon} ${esc(x.split("/").pop())}</a>`).join("")}` : ""; };
   const DOCN = {"DESIGN.md": "Design notes", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring",
@@ -905,6 +906,7 @@ function renderFiles(el) {
     ${group("Single parts", x => x.startsWith("out/parts/"), "◧")}
     ${group("Engineering drawings (PDF)", x => x.startsWith("out/drawings/") && x.endsWith(".pdf"), "📐")}
     ${group("CAD + shopping list", x => /assembly\.step|bom\.(csv|md)$/.test(x), "▤")}
+    ${group("Parts to have made", x => x.startsWith("out/manufacturing/"), "▧")}
     ${group("Simulation (URDF + meshes, for PyBullet / MuJoCo / Gazebo)", x => x.endsWith("_urdf.zip"), "⚙")}
     ${group("Guides", x => /(ASSEMBLY|WIRING|PRINT_SETTINGS)\.md$/.test(x), "☰")}
     ${group("Bring-up program (upload before fitting servo horns)", x => x.startsWith("out/firmware/"), "⌁")}

@@ -204,6 +204,8 @@ Work these in order unless one is blocked; each item is done only with tests and
   - [ ] worm wheel geometry (throated / helical wheel meshed to drives.worm, interference-checked)
   - [ ] a project uses a planetary or worm set
 - [ ] Mixed manufacturing: laser-cut / CNC / carbon-plate parts as DXF / STEP for order services alongside printed parts, priced
+  - [x] Custom stock handoff: exact STEP, constant-section DXF, sourced density mass, quantity/geometry-bound quotes, assembly/BOM/Studio ZIP integration; stock kept out of slicer plates and FDM material models; tests
+  - [ ] Stock-specific strength/thermal models and supplier feature/tooling limits, then a sourced mixed-manufacturing project through build and independent design review
 - [ ] Watertight + thermal: seal / gasket design rules and checks, wall thickness for water, component heat (ESC / motor / regulator) vs enclosure; used by one project
 - [ ] Ship it printer loop (opt-in only): print fit coupons on the A2L through the Bambu integration, read the measurements (entered or camera), apply them (`kerf calibrate`), send the final plates; dry-run tested
 - [ ] Self-growing catalog: research a missing part, validate against the vendor's STEP (bbox + holes), add it with sources automatically; tested on one new part

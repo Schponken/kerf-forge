@@ -197,11 +197,13 @@ $('title').textContent = R.project || 'Assembly';
 $('status').textContent = R.preview ? 'checks running…' : R.ok ? 'PASS' : `FAIL · ${(R.problems || []).length} problem${(R.problems || []).length === 1 ? '' : 's'}`;
 $('status').className = 'pill ' + (R.preview ? '' : R.ok ? 'ok' : 'bad');
 const printed = D.items.filter(i => i.role === 'printed'), bought = D.items.filter(i => i.role === 'purchased');
+const manufactured = D.items.filter(i => i.role === 'manufactured');
 const massP = printed.reduce((s, i) => s + ((R.parts || {})[i.id]?.mass_est_g || 0), 0);
 const massB = Object.values(R.purchased || {}).reduce((s, p) => s + (p.mass_g || 0) * (p.qty || 1), 0);
 // headline mass = the device (printed + bought parts on it); bench items marked off_board are listed apart
 const M = R.mass || {device_g: massP + massB, off_board_g: 0};
 $('meta').textContent = `${printed.length} printed · ${bought.length} purchased · `
+  + (manufactured.length ? `${manufactured.length} made to order · ` : '')
   + (R.preview && !R.mass ? 'weight not calculated yet' : `~${fmt(M.device_g, 0)} g`)
   + (M.off_board_g ? ` (+${fmt(M.off_board_g, 0)} g off the device)` : '') + ` · ${R.printer || ''}`;
 let theme = null;
@@ -414,7 +416,9 @@ function inspect(id, tri) {
   $('tabInsp').hidden = false; $('tabInsp').click();
   const it = groups.get(id).userData.it, A = it.attr, proj = D.project_dir || 'the project';
   let h = `<div class="hd"><span class="sw" style="background:${esc(it.color)}"></span><b>${esc(id)}</b><span class="tag">${esc(it.role)}</span><span class="sp"></span><button class="x" id="ix" title="Close">&times;</button></div>`;
-  if (it.role !== 'printed') {
+  if (it.role === 'manufactured') {
+    h += `<p>${esc(it.label)}. Order files and the stock specification are in <code>manufacturing/ORDER.md</code>.</p><p class="pd">Stock strength and supplier tooling limits need separate confirmation. This part is not included in the print plates.</p>`;
+  } else if (it.role !== 'printed') {
     const cs = it.catalog_source;
     h += `<p>Bought part, modelled from the catalog entry <code>${esc(it.catalog || '')}</code>${cs && cs.confidence ? ` (${esc(cs.confidence)})` : ''}.</p>`;
     if (cs && cs.source) h += `<p>Dimensions from: <a href="${esc(cs.source)}" target="_blank" rel="noopener">${esc(cs.source)}</a></p>`;
