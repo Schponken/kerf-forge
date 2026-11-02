@@ -60,9 +60,13 @@ parts:
   wing_r2: {file: parts/wing.py, material: PLA, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed, modifiers: *outer_mods}
   elevon_l: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: &elevon_mods
               [{where: "round the horn slot and the two joiner-rod bores", size: "4 mm all round", infill: 1.0, why: "glued horn tab and carbon joiner"}]}
-  elevon_lo: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
+  elevon_lo: {file: parts/elevon.py, material: PLA, print_rot: [-89.5, 0, -18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods,
+              assembly_note: "Ream its two joiner bores with a 3.0 mm drill by hand first (they print at 3.0 mm, slightly under): a snug push fit on the rods glued in the inner half, no wobble; it still slides off for repair.",
+              tools: ["3.0 mm drill bit (by hand: reams the outer elevon joiner bores)"]}
   elevon_r: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
-  elevon_ro: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods}
+  elevon_ro: {file: parts/elevon.py, material: PLA, print_rot: [89.5, 0, 18.5], infill: 0.05, walls: 1, airfoil: mh45, modifiers: *elevon_mods,
+              assembly_note: "Ream its two joiner bores with a 3.0 mm drill by hand first (they print at 3.0 mm, slightly under): a snug push fit on the rods glued in the inner half, no wobble; it still slides off for repair.",
+              tools: ["3.0 mm drill bit (by hand: reams the outer elevon joiner bores)"]}
   horn_l: {file: parts/horn.py, material: PETG, print_rot: [90, 0, 0], infill: 1.0, walls: 4}
   horn_r: {file: parts/horn.py, material: PETG, print_rot: [90, 0, 0], infill: 1.0, walls: 4}
   splice_l: {file: parts/splice.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4}
@@ -89,9 +93,9 @@ purchased:
   joiner2_l: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied (5-min) into the inner elevon half; a reamed 3.0 mm push fit in the outer half, so the outer half has no free play and still slides off"}
   joiner2_r: {catalog: rods.cf_rod_3, proxy: rod, length: 50, held_by: "epoxied (5-min) into the inner elevon half; a reamed 3.0 mm push fit in the outer half, so the outer half has no free play and still slides off"}
   camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], held_by: "2 x M2 x 6 through the nose cheeks into its side holes"}
-  servo_l: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+  servo_l: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60], assembly_note: "Pushrod: measure the stock KST arm and use the hole 8-11 mm from the spline centre (11 mm = 50 % of the servo torque, DESIGN.md); 1.2 mm music wire Z-bend through it, out through the slot aft of the pocket to the horn hole 12 mm under the hinge.", 
             held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
-  servo_r: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+  servo_r: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60], assembly_note: "Pushrod: measure the stock KST arm and use the hole 8-11 mm from the spline centre (11 mm = 50 % of the servo torque, DESIGN.md); 1.2 mm music wire Z-bend through it, out through the slot aft of the pocket to the horn hole 12 mm under the hinge.", 
             held_by: "glued by its aluminium case into the wing pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
   main_l: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}
   main_r: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the wing segments' bores; slides into the pod sleeve, captured by the bolted wing root"}

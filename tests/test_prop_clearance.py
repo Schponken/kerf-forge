@@ -80,3 +80,29 @@ def test_swinging_prop_is_swept(tmp_path):
     # prop_2's centre swings on a 40 mm arm about (20, 0): at +/-20 deg it is at (20 + 40 cos20, 40 sin20)
     gap = math.hypot(20 + 40 * math.cos(math.radians(20)) + 60, 40 * math.sin(math.radians(20))) - 100
     assert swept["value"] == pytest.approx(gap, abs=0.01) and "gimbal" in swept["detail"]   # 18.38
+
+
+def test_pruned_sampling_equals_full_subdivision():
+    """requirements._min_dist_sampled subdivides only triangles that can hold the minimum: same value as the old
+    whole-surface subdivision, at random placements of real shapes against a prop-disc cylinder."""
+    import numpy as np
+    import trimesh
+    from build123d import Box, Cylinder, Pos, Rot, Sphere
+    from kerf import geom, requirements as rq
+    rng = np.random.default_rng(3)
+    R, h = 60.0, 8.0
+    for shape in (Box(200, 30, 6), Rot(20, 10, 0) * Cylinder(10, 120), Sphere(25), Box(40, 40, 40) - Sphere(24)):
+        v, f = geom.mesh(shape, tol=0.05, ang=0.2)
+        memo = {}
+        for _ in range(6):
+            M = Rot(*rng.uniform(-180, 180, 3)) * Pos(*rng.uniform(-90, 90, 3))
+            t = M.wrapped.Transformation()
+            A = np.array([[t.Value(i, j) for j in (1, 2, 3)] for i in (1, 2, 3)])
+            b = np.array([t.Value(i, 4) for i in (1, 2, 3)])
+            q = v @ A.T + b
+            full, _ = trimesh.remesh.subdivide_to_size(q, f, max_edge=rq.SAMPLE_MM, max_iter=20)
+            want = float(rq._cyl_dist(full, R, h).min())
+            got = rq._min_dist_sampled(q, f, lambda p: rq._cyl_dist(p, R, h))
+            assert got == pytest.approx(want, abs=1e-9)
+            got = rq._min_dist_sampled(v, f, lambda p: rq._cyl_dist(p, R, h), move=lambda p: p @ A.T + b, memo=memo)
+            assert got == pytest.approx(want, abs=1e-9)                 # own frame + memo shared across placements

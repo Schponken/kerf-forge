@@ -97,7 +97,7 @@ Plates are one material each (PLA / PETG / TPU need different temperatures).
 | hatch | PLA, 2 walls | flat on its outer face (smooth top on the bed, ribs up) | rests on the pod's ledges; rear tongue under the skin (notched round the antenna lead), 2 x M3 at the front + 2 x M3 at mid-length (x 130); two 2 x 3 mm ribs along its underside at y +-18 |
 | wing_l1 / r1 | PLA, 1 wall, 3 % (+ modifiers) | standing on the root face | servo pocket, lead channel, root and splice inserts |
 | wing_l2 / r2 | PLA, 1 wall, 3 % (+ modifier) | standing on the joint face, supports up the elevon slot under the TE stub | fin slot, splice insert |
-| elevon_l / r, elevon_lo / ro | PLA, 1 wall, 5 % | standing on the outboard end (120 / 180 mm tall), brim | joined by two 3 mm carbon rods (4 and 10 mm aft of the hinge); the inner half has the horn slot |
+| elevon_l / r, elevon_lo / ro | PLA, 1 wall, 5 % | standing on the outboard end (120 / 180 mm tall), brim | joined by two 3 mm carbon rods (4 and 8.5 mm aft of the hinge); the inner half has the horn slot |
 | horn_l / r | PETG, solid | flat | glued into the elevon slot; holes 9 / 12 / 15 mm under the hinge |
 | splice_l / r | PETG, 4 walls | flat | 2 x M3 up into the two segments |
 | fin_l / r | PETG, 2 walls | flat | stiffer than TPU at speed; glued into the tip slots |
@@ -150,7 +150,7 @@ splice (rigid), elevon_l / elevon_r (revolute about the hinge line, +-25 deg) ->
 
 The CG is the assembled CG of every item and wire (kerf/req_balance.py). The battery is the only heavy thing that
 moves: `bat_x` sets it. Each 10 mm of battery moves the CG 2.2 mm (302 / 1356 g), i.e. about 1.2 % MAC. Balance point
-for the first flight: CG at the value `static_margin` reports (cg_x_mm), 10-13 % MAC ahead of the neutral point;
+for the first flight: CG at the value `static_margin` reports (cg_x_mm), 5-15 % MAC ahead of the neutral point (`static_margin`; this build reports 9.2 %, mid-range for a first flight);
 mark it under the wing.
 
 ## Assembly order
@@ -164,11 +164,11 @@ shelf electronics (GPS, FC, RX, ESC, VTX), antenna -> battery, strap, XT60 -> ha
 
 The outer elevon half (60 % of the surface) is driven only through the joiner rods, and free play on a control surface
 is the classic cause of flutter/buzz at 150-180 km/h. So: **two** 3 mm carbon rods (rods.cf_rod_3, 50 mm), one 4 mm and
-one 10 mm aft of the hinge in plan (the aft one as far back as the section allows a 3.1 mm bore with ~0.9 mm wall;
+one 8.5 mm aft of the hinge in plan (at 10 mm the review measured only 0.80-0.85 mm of wall round the bore; at 8.5 mm the section is ~5.25 mm deep, ~1.05 mm wall, and 1.4 mm of web between the two bores;
 at 16 mm the section is only 4 mm thick). Both are **epoxied into the inner half** (5-min epoxy, bores +0.1 mm). In the
 **outer half** the bores print at 3.0 mm nominal (FDM holes come out ~0.1 mm small) and are **reamed with a 3.0 mm
 drill** to a push fit on the rods (catalog: rods are -0.03/-0.1 mm undersize), so the outer half slides off for crash
 repair but has no clearance to rattle in. With a single slip-fit rod at 5.3 mm the play was +-1.35 deg; any residual
-reaming clearance (<= 0.05 mm radial) at the 10.5 mm aft rod is < 0.3 deg, and a 25 mm hinge-tape band wrapped across
+reaming clearance (<= 0.05 mm radial) at the 8.5 mm aft rod is < 0.3 deg, and a 25 mm hinge-tape band wrapped across
 the split on both skins preloads it to zero. Crash repair: cut the band, slide the outer half (with its outer wing
 segment) off the rods, re-tape after.

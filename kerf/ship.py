@@ -190,6 +190,14 @@ def write_bom(rows: list[dict], summary: dict, outdir: Path):
 
 # ---------------------------------------------------------------- assembly steps
 
+def item_notes(proj, iid: str) -> list[str]:
+    """How the item is held (project.yaml `held_by`: tape, strap, glue, a loop to close): it used to only silence
+    the "nothing holds it" check and never reached the builder (design review). `assembly_note` is in fit_notes."""
+    it = proj.items.get(iid)
+    hb = (it.spec.get("held_by") if it is not None else None) or ""
+    return [f"  - Held by: {hb.rstrip('.')}."] if hb else []
+
+
 def steps(asm) -> list[list[str]]:
     """Ordered build steps, each a list of item ids fitted together (keep-outs excluded)."""
     proj = asm.proj
@@ -514,7 +522,8 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
     tools = (sorted(keys) + (["soldering iron with a heat-set insert tip", "a flat plate to press inserts flush"] if any_insert else [])
              + (["a vise or small hammer to press dowel pins"] if any(not p.get('screw_pivot') and not p.get('shoulder') for p in all_pins) else [])
              + (["a screwdriver that fits the shoulder screws' heads"] if any(p.get('shoulder') for p in all_pins) else [])
-             + wiring_tools(rep.get("electrical")))
+             + wiring_tools(rep.get("electrical"))
+             + sorted({t for it in proj.items.values() for t in (it.spec.get("tools") or [])}))
     L += ["- Tools:" + ("" if tools else " none")] + [f"  - {t}" for t in tools]
     L += ["- Shopping list with links and prices: `bom.md`."]
     if firmware_info:
@@ -608,6 +617,7 @@ def write_assembly(proj, asm, rep: dict, outdir: Path, render=None, firmware_inf
                 L.append(f"- Fit **{f['item']}**{qty} ({f['what']}) onto **{o['parent']}** (joint `{o['joint']}`){moves}.")
                 L += horn_note(f["item"], o["parent"])
             L += fit_notes(proj, rep, f["item"])
+            L += item_notes(proj, f["item"])
         L += pin_lines(s["pins"])
         L += screw_lines(s["screws"], s["groups"])
         for a in s["attach"]:

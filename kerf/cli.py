@@ -92,9 +92,9 @@ def doctor() -> int:
     return 0 if not bad else 1
 
 
-def check(name, full=False, quick=False) -> int:
+def check(name, full=False, quick=False, everything=False) -> int:
     from .pipeline import run, summary
-    rep = run(name, sweeps=not quick, do_export=full, do_render=full)
+    rep = run(name, sweeps=not quick, do_export=full, do_render=full, everything=everything)
     _p(summary(rep))
     if rep.get("traces"):
         for k, t in rep["traces"].items():
@@ -202,6 +202,20 @@ def _out_stale(proj, fp) -> str:
     return "" if ofp == fp else f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
 
 
+def _run_isolated(name, check_only=False, fast=False) -> dict:
+    """Build one project in a child process so its OCC/mesh memory is returned to the OS before the next one
+    (all projects in one process grew past 6 GB and was OOM-killed on a 7 GB machine, 2026-11-02)."""
+    code = ("import json,sys; from kerf.pipeline import run; n,c,f=sys.argv[1],sys.argv[2]=='1',sys.argv[3]=='1'; "
+            "r=run(n,mode='check') if c else run(n,sweeps=True,do_export=not f,do_render=not f); "
+            "print('KERF_RESULT '+json.dumps({'ok':bool(r['ok']),'problems':[str(p) for p in r['problems']]}))")
+    r = subprocess.run([sys.executable, "-c", code, name, "1" if check_only else "0", "1" if fast else "0"], cwd=ROOT,
+                       capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
+    for line in reversed(r.stdout.splitlines()):
+        if line.startswith("KERF_RESULT "):
+            return json.loads(line[len("KERF_RESULT "):])
+    return {"ok": False, "problems": [f"build process exited {r.returncode}: {(r.stderr or r.stdout)[-300:]}"]}
+
+
 def verify(fast=False, all_failures=False) -> int:
     """The definition of done. Exit 0 only when everything passes."""
     t0 = time.time()
@@ -214,11 +228,10 @@ def verify(fast=False, all_failures=False) -> int:
     results["tests"] = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:]
     if r.returncode != 0:
         fails.append(f"unit tests: {results['tests']}")
-    from .pipeline import run
     from . import project as P
     for name in projects():
         check_only = bool(P.load(name).data.get("check_only"))   # a user's own design, checked, not designed by Kerf
-        rep = run(name, mode="check") if check_only else run(name, sweeps=True, do_export=not fast, do_render=not fast)
+        rep = _run_isolated(name, check_only, fast)
         results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6]}
         if not rep["ok"]:
             fails.append(f"project {name}: {rep['problems'][:3]}")
@@ -293,7 +306,10 @@ def main(argv=None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("doctor", help='Check dependencies and headless rendering.', description='Check dependencies and headless rendering.')
     c = sub.add_parser("check", help='Check geometry, fit, motion and strength without making print files.', description='Check geometry, fit, motion and strength without making print files.'); c.add_argument("project"); c.add_argument("--quick", action="store_true")
+    c.add_argument("--all", action="store_true", dest="everything",
+                   help="run every check even when a redesign-level requirement fails (normally the run stops there)")
     b = sub.add_parser("build", help='Check a project and create print plates, guides and a 3D viewer.', description='Check a project and create print plates, guides and a 3D viewer.'); b.add_argument("project")
+    b.add_argument("--all", action="store_true", dest="everything", help="as for check")
     rq = sub.add_parser("req", help="evaluate just these requirements (ids or check names; none = all) on the assembled "
                                     "project: seconds instead of a full check")
     rq.add_argument("project"); rq.add_argument("ids", nargs="*")
@@ -360,9 +376,9 @@ def main(argv=None) -> int:
     if a.cmd == "doctor":
         return doctor()
     if a.cmd == "check":
-        return check(a.project, quick=a.quick)
+        return check(a.project, quick=a.quick, everything=a.everything)
     if a.cmd == "build":
-        return check(a.project, full=True)
+        return check(a.project, full=True, everything=a.everything)
     if a.cmd == "req":
         return req(a.project, a.ids)
     if a.cmd == "verify":

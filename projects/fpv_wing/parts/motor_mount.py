@@ -27,6 +27,8 @@ def build(ctx):
     w = 2 * p.tail_hw
     zlo, zhi = p.tail_z - p.tail_h / 2, max(p.tail_z + p.tail_h / 2, p.motor_z + 21.0)
     plate = Pos(x0 + PLATE_T / 2, 0, (zlo + zhi) / 2) * Rot(0, 90, 0) * extrude(RectangleRounded(zhi - zlo, w, 10), PLATE_T / 2, both=True)
+    # why: break the aft face's outer edge (handling, and the edge that meets grass in a belly landing)
+    plate = chamfer(plate.faces().sort_by(Axis.X)[-1].outer_wire().edges(), 0.8)
     # four M3 into the pod's tail inserts, heads on the aft face
     aft = Location(Plane(origin=(x0 + PLATE_T, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0)))      # local (u, v) = world (y, z)
     plate = plate - iface.bolt_pattern(ctx, "motor_mount", "M3", POD.mount_bolts(p), aft, kind="clearance", depth=PLATE_T)

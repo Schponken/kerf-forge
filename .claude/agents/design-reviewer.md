@@ -23,6 +23,11 @@ Inputs (keep the review's token use low: the pack first, the full files only whe
 - `docs/ENGINEERING.md` (the rules) and `out/review/catalog.json` (the catalog entries this project uses; grep
   `catalog/hardware.json` only for an entry that is not there)
 
+Judge in order of redesign cost (Spencer, 2026-11-02): first the concept numbers (mass, thrust/weight, endurance,
+balance, actuator torque), then the strength and stiffness of the most connected structural parts, then everything
+else. When a concept or core-structure finding forces a redesign, say so first and keep findings on parts it will
+change brief; detailed findings there would be redone after the redesign anyway.
+
 Judge, with specifics:
 1. Does it do what the brief asks? Every requested feature present, in a sensible place, at the right size?
 2. Would it work? Load paths, stiffness, the weakest section, screw access (can a hex key reach every screw?),
