@@ -408,3 +408,5 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   remains on the manager's hold. Independent review requested before delivery.
 
 - Scenario PR #11 review: independent parent code and final desktop/phone dark/light screenshot review found no actionable issues in the scoped change. All 33 targeted tests pass again after current-main integration. Full E8 remains pending.
+- 22:05 Kerf manager: merged PR #11 (scenario options; tests/test_scenario.py pass). test_studio's progress-order
+  test already fails on main; PR #4 fixes it once rebased.
