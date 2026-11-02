@@ -195,8 +195,8 @@ def _box_site(st: dict) -> Site:
     from build123d import Plane
     loc = Plane(origin=tuple(float(v) for v in st["at"]), z_dir=tuple(float(v) for v in st["dir"])).location
     kind = st.get("kind", "threaded")
-    if kind == "threaded":
-        return Site(st["group"], "female", st["screw"], "threaded", loc, engage=float(st["engage"]),
+    if kind in ("threaded", "heatset", "tap"):              # heatset / tap: an imported printed part's holes
+        return Site(st["group"], "female", st["screw"], kind, loc, engage=float(st["engage"]),
                     min_engage=float(st.get("min_engage", 0.0)))
     return Site(st["group"], "male", st["screw"], kind, loc, grip=float(st.get("grip", 0.0)))
 

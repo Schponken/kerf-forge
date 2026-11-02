@@ -1,0 +1,31 @@
+name: Shelf bracket (imported, check only)
+description: >
+  Check it on your own design: a shelf bracket modelled outside Kerf (imports/shelf_bracket.step, 5 mm wall plate and
+  shelf arm, a 4 mm gusset, two 5.2 mm wall-screw holes). Kerf did not design it; it only checks it: printability,
+  mass and whether it holds a 3 kg shelf load at the arm tip, fixed at its two wall screws. Run with
+  `kerf run check_shelf_bracket --mode check`.
+printer: Bambu Lab A2L
+supports: allowed
+check_only: true                     # Kerf checks this design, it does not design it: verify runs it in Check it mode, no review
+params: {}
+parts:
+  bracket:
+    import: imports/shelf_bracket.step
+    material: PETG
+    print_rot: [90, 0, 0]            # on its side: the L profile on the bed, so bending runs along the layers
+    infill: 0.4
+    load_axis: x
+assembly:
+  root: bracket
+  joints: []
+requirements:
+  - id: shelf_load
+    check: fea_static
+    part: bracket
+    why: "a 3 kg shelf load (29.4 N) on the last 20 mm of the arm, the plate held at its two wall screws"
+    direction: auto
+    sf: 3.0
+    max_disp_mm: 1.0
+    fixed: {box: [[-0.1, -6, 14], [0.1, 6, 54]]}               # the wall face round the two screws
+    loads: [{box: [[60, -20, 4.9], [80, 20, 5.1]], force_n: [0, 0, -29.4]}]
+  - {id: mass, check: mass_max, max_g: 60, why: "a printed shelf bracket under 60 g"}

@@ -66,6 +66,7 @@ class Project:
         files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")),
                  *([] if deps.exists() else [catalog.CATALOG]),
                  *sorted(p for p in (self.dir / "meshes").glob("*") if p.is_file()),     # Meshy shells
+                 *sorted(p for p in (self.dir / "imports").glob("*") if p.is_file()),    # the user's own models
                  calibrate.profile_path(self.data.get("printer", calibrate.DEFAULT_PRINTER))]  # measured fits
         for f in files:
             if f.exists():
@@ -179,7 +180,10 @@ def build(proj: Project, only: list[str] | None = None, cache: bool = True) -> P
             params = {**proj.params, **{k: (v["value"] if isinstance(v, dict) else v) for k, v in (it.spec.get("params") or {}).items()}}
             printer = proj.data.get("printer", calibrate.DEFAULT_PRINTER)
             ctx = Ctx(pid, params, {"project": proj.name, "spec": it.spec, "printer": printer})
-            if it.role == "printed":
+            if it.role == "printed" and it.spec.get("import"):    # the user's own model (kerf/imported.py)
+                from . import imported
+                it.shape = imported.build(ctx, it.spec, proj.dir)
+            elif it.role == "printed":
                 f = proj.dir / it.spec.get("file", f"parts/{pid}.py")
                 if not f.exists():
                     raise ProjectError(f"part file {f.relative_to(proj.dir)} not found")

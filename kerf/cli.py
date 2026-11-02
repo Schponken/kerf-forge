@@ -179,11 +179,15 @@ def verify(fast=False) -> int:
     if r.returncode != 0:
         fails.append(f"unit tests: {results['tests']}")
     from .pipeline import run
+    from . import project as P
     for name in projects():
-        rep = run(name, sweeps=True, do_export=not fast, do_render=not fast)
+        check_only = bool(P.load(name).data.get("check_only"))   # a user's own design, checked, not designed by Kerf
+        rep = run(name, mode="check") if check_only else run(name, sweeps=True, do_export=not fast, do_render=not fast)
         results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6]}
         if not rep["ok"]:
             fails.append(f"project {name}: {rep['problems'][:3]}")
+        if check_only:
+            continue                     # the check report is the product: there is no Kerf design to review
         rs = review_status(name)
         results[name]["review"] = rs
         if not rs["ok"]:

@@ -23,7 +23,7 @@ def run_one(eval_dir: Path) -> dict:
     if rep.get("fingerprint") != fp:
         res["failures"].append(f"report.json is stale (report {rep.get('fingerprint')}, geometry {fp}); run kerf build {eid}")
         return res
-    if not rep.get("files"):
+    if not rep.get("files") and not P.load(eid).data.get("check_only"):   # a check-only project makes no files
         res["failures"].append("report.json has no exported files; run kerf build (not check)")
     spec = importlib.util.spec_from_file_location(f"accept_{eid}", eval_dir / "acceptance.py")
     mod = importlib.util.module_from_spec(spec)
