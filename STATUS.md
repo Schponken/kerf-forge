@@ -287,6 +287,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Reviewed, unchanged: natural_freq already checks the hover rotor and blade-pass rates against a cited 20 % separation; use-story checks only run for listed hazards; thrust already scales test voltage to the pack.
 - servo_link's arm now warns on infill strength (3 % of its volume over the lattice limit near [6.7, -8.1, 4.3]): a boxed 100 % infill modifier or more walls; left for the project's owner.
 
+## 2026-11-02 — Studio cancellation keeps its project locked (Codex)
+- A Stop request, or an authentication/trust hint, used to publish a terminal job state before the child process
+  exited. Builds, trials, parameter/material saves and restores could then overlap that process's remaining writes;
+  Studio's busy/quit/watchdog guards also treated it as finished.
+- Job now records the requested outcome privately, keeps the existing running state while draining output and
+  waiting for exit, then publishes stopped/failed. Manual Stop logs that it is waiting; repeated stops preserve the
+  original outcome. No new UI state or dependency.
+- `tests/test_studio_lifecycle.py`: real children acknowledge SIGTERM but wait for a release file. Both manual and
+  auth-failure cases reproduced the bug before the fix; afterward, conflicting jobs/trial preparation stay blocked,
+  another project remains available, cleanup output is retained, and a graceful exit preserves stopped/failed.
+- Verification: 68 targeted Studio/usability/lifecycle tests passed; the existing progress-order test is excluded
+  because PR #4 already fixes that separate main-branch regression. `kerf doctor`: ALL OK (optional Arduino/simavr
+  tools remain unavailable). Independent code review found no actionable issues. No full suite or hardware run.
+- Resource review saved and reread in CLAUDE.md: keep the current subprocess/progress design; revisit only for
+  jobs that must survive Studio restarts or run across machines. The broad fresh-eyes PLAN item remains open.
+
 ## 2026-11-02 16:20 UTC-5 — Firmware proven + Electronics as a real circuit checked off (Claude, Spencer's session)
 - Code was pushed 2026-11-01 (44df72e firmware, b846908 circuit); this pass verified it on the current tree (batched
   testing: targeted tests only). `pytest tests/test_fwcheck.py tests/test_firmware.py tests/test_circuit.py

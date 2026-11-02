@@ -137,3 +137,11 @@ Other Claude sessions may be working in this repo at the same time. To never bre
 Only if progress needs something outside this repo that you cannot get (credentials, a paid service, a website that is
 blocked), write `.claude/state/BLOCKED` with the exact blocker and what you tried, commit, push, and work on every other
 item first. The Stop hook only lets you stop on BLOCKED after everything else in PLAN.md is done.
+
+## Resource review
+
+- 2026-11-02, reviewed: **keep** Studio's existing subprocess runner and progress stream. The concrete gap was
+  releasing a project before cancellation finished; recording the requested outcome until process exit fixes it
+  within the current design. A separate job framework adds migration and maintenance without a demonstrated gain.
+  Revisit if jobs must persist across Studio restarts or run on multiple machines. No CAD/simulation replacement
+  identified for this usability task.

@@ -54,6 +54,7 @@ class Job:
         self.lines: list[str] = []
         self.events: list[dict] = []
         self.state = "running"
+        self._stop_state: str | None = None
         self.started, self.ended = time.time(), None
         self.result: dict | None = None
         self.mode: str | None = None            # kerf run --mode (kerf/modes.py) when the job is a mode run
@@ -70,8 +71,8 @@ class Job:
                     try:
                         ev = json.loads(ln[2:])
                         self.events.append(ev)
-                        if ev.get("k") == "hint" and self.state == "running":   # can't succeed: stop now, say why
-                            self.state = "failed"
+                        if ev.get("k") == "hint" and self._stop_state is None:   # can't succeed: stop now, say why
+                            self._stop_state = "failed"
                             try:
                                 os.killpg(self.proc.pid, 15)
                             except Exception:  # noqa: BLE001
@@ -82,18 +83,19 @@ class Job:
                 self.lines.append(ln)
         rc = self.proc.wait()
         self.ended = time.time()
-        if rc and self.state == "running":
+        if rc and self._stop_state is None:
             self.lines.append(f"(stopped by signal {-rc}: out of memory or killed)" if rc < 0 else f"(exit code {rc})")
-        if self.state == "running":
-            self.state = "done" if rc == 0 else "failed"
+        self.state = self._stop_state or ("done" if rc == 0 else "failed")
         try:
             on_finished(self)
         except Exception:  # noqa: BLE001 - bookkeeping never breaks a job
             pass
 
     def stop(self):
-        if self.state == "running":
-            self.state = "stopped"
+        if self.state == "running" and self._stop_state is None:
+            # Keep project guards and UI polling active until the process has finished writing.
+            self._stop_state = "stopped"
+            self.lines.append("Stopping; waiting for the process to exit.")
             try:
                 os.killpg(self.proc.pid, 15)
             except Exception:  # noqa: BLE001
