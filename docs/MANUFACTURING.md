@@ -42,6 +42,7 @@ This is a manufacturing handoff, not stock engineering certification. Geometry, 
 be checked now. Stock-specific strength, laminate properties and thermal models, supplier minimum feature sizes,
 tool access, surface finish and tolerances require separate evidence. `structural: true`, strength requirements
 targeting stock (including derived strength cases), and heat requirements covering stock fail explicitly as
-unverified. Kerf never runs them with a default FDM polymer. A fixture test proves the software route; it is not a
+unverified. A globally paused stress check remains PAUSED / NOT RUN; that is not stock strength proof. Kerf never
+runs stock checks with a default FDM polymer. A fixture test proves the software route; it is not a
 production design or a supplier qualification. The broader PLAN item remains open for those models and a fully
 engineered mixed-manufacturing project.

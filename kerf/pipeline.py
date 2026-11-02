@@ -494,6 +494,9 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
                     rep["warnings"].append(f"failure table: {type(e).__name__}: {e}")
             _layer_proofs(proj, rep)
             rep["warnings"] += _fea_hygiene(proj)
+            if paused := [r["id"] for r in rq if r.get("paused")]:
+                rep["warnings"].append(f"stress simulations PAUSED ({requirements.stress_paused()}): {len(paused)} "
+                                       f"strength check(s) not run, strength unproven: {', '.join(paused)}")
             bp, bw = export.bom_extra_check(proj, rep.get("assembly", {}).get("fasteners"))
             rep["problems"] += bp
             rep["warnings"] += bw
@@ -721,7 +724,7 @@ def summary(rep: dict) -> str:
     for s in a.get("sweeps", []):
         L.append(f"  sweep {s['joint']:14s} {'clear' if s['clear'] else 'COLLIDES'} over {s.get('range', '')} ({s['samples']} samples)")
     for r in rep.get("requirements", []):
-        L.append(f"  req {r['id']:20s} " + ("skipped (--quick)" if r.get("skipped") else req_line(r)))
+        L.append(f"  req {r['id']:20s} " + ("PAUSED (stress simulations off)" if r.get("paused") else "skipped (--quick)" if r.get("skipped") else req_line(r)))
         for t in r.get("advice") or []:                 # what to change, worked out from this check (kerf/advice.py)
             L.append(f"      -> {t}")
     for p in rep["problems"]:

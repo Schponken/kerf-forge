@@ -439,3 +439,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   One fixture-compatibility failure was corrected and its suite rerun (21 passes). A broad ship test selection was
   interrupted when it reached an all-project geometry test, then replaced with bounded selectors; no full batch run.
   Final current-main verification and independent review follow before the PR is marked ready.
+
+## 2026-11-02 22:30 UTC - Stress simulations paused (Spencer: "pause all the stress simulations, we will work on that later")
+- PAUSED.json at the repo root switches off every FEA-backed check (fea_static, impact_fea, stop_impact,
+  natural_freq, drop_impact, weak_link: kerf/requirements.py STRESS_SIMS). They show "PAUSED (stress simulations
+  off)", value NOT RUN, and the report warns "strength unproven" - never a pass value. KERF_STRESS=1 runs them once;
+  delete the key to resume. Analytic strength checks (cantilever_stress, spar/gear bending) still run.
+- PLAN: the 4 FEA items (arm_resonance, impact_fea/stop_impact, arm_breaks_first, creep/flex_strain) are marked
+  "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
+- Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
+  tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.

@@ -124,7 +124,9 @@ def test_mass_changes_with_geometry_and_quotes_expire(rig):
     assert "out of date" in price()[0]["note"]
 
 
-def test_unsupported_stock_strength_fails_in_direct_and_derived_checks(rig):
+def test_unsupported_stock_strength_fails_in_direct_and_derived_checks(rig, monkeypatch):
+    from kerf import fea
+    monkeypatch.setattr(fea, "static", lambda *a, **kw: pytest.fail("unsupported stock must never reach a solver"))
     p = project.build(project.load(str(rig)))
     req = {"id": "panel_load", "check": "fea_static", "part": "panel", "fixed": {}, "loads": []}
     p.data["requirements"].append(req)
@@ -133,8 +135,13 @@ def test_unsupported_stock_strength_fails_in_direct_and_derived_checks(rig):
     for check in [req, {"check": "creep_limit", "case": "panel_load"},
                   {"check": "weak_link", "cheap": "panel_load", "expensive": "panel_load"},
                   {"check": "flex_strain", "part": "panel", "kind": "snap", "t_mm": 1, "L_mm": 30, "deflection_mm": 1}]:
+        with pytest.raises(ValueError, match="stock-specific"):
+            requirements.REGISTRY[check["check"]](p, None, **{k: v for k, v in check.items() if k not in ("check", "id")})
         result = requirements._run_one(p, None, check, False)
-        assert not result["ok"] and "stock-specific" in result["detail"]
+        if check["check"] in requirements.STRESS_SIMS and requirements.stress_paused():
+            assert result["paused"] and result["skipped"] and result["value"] is None
+        else:
+            assert not result["ok"] and "stock-specific" in result["detail"]
     p.items["panel"].spec["structural"] = True
     assert not M.part_check(p.items["panel"])["ok"]
     from kerf.usestory import heat_limit
