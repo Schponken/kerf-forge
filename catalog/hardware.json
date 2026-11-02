@@ -863,6 +863,7 @@
   "motors": {
    "2207_1855kv_6s": {
     "model": "iFlight XING2 2207 1855KV (6S)",
+   "kv": 1855,
     "mount_pattern": {
      "x": 16,
      "y": 16
@@ -996,6 +997,7 @@
    },
    "5_1in": {
     "model": "Gemfan Hurricane 51466 V2 (MCK) tri-blade",
+   "blades": 3,
     "diameter_mm": 131.8,
     "hub_thickness": 6.8,
     "mount": "5mm shaft",

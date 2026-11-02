@@ -1287,3 +1287,16 @@ pushed for it and what I know:
 - robot_arm and fpv_5in have use stories. **fpv_5in now uses the 6S 1100 pack** (197.5 g): with the props weighed, the
   1300 gave 5.87:1 thrust/weight (min 6); now 6.03:1, flight time 9.7 min ideal hover. Pad and strap keep-outs follow
   the smaller pack. Quick checks PASS for both. fpv_wing's story waits for its E7 owner (PLAN sub-item).
+
+## 2026-11-01 21:50 UTC-5 — Simulate it moving (engine), session e3d8373e
+- kerf/req_dynamic.py: `impact_fea` (drop / crash into a part: impact force from the part's own FEA stiffness,
+  half-sine contact time), `stop_impact` (a joint driven into its hard stop: inertia beyond the joint from each solid,
+  stop stiffness at its lever, plus stall torque), `natural_freq` (Rayleigh first mode with a carried mass vs rotor and
+  blade-pass rates from catalog KV / hover thrust, or a stated Hz; pass by min_ratio or separation). fea.static now
+  returns the external work f.u, so one solve gives stiffness; **this edit changes fea.py's hash, so every FEA cache
+  entry is recomputed once** (compute only). fea_static accepts `case: drop` (SF 3). Catalog: XING2 2207 `kv`, Gemfan
+  51466 `blades`. tests/test_dynamic.py checks each against hand formulas.
+- **Real finding, fpv_5in now FAILS `arm_resonance`**: the arm's first bending mode (motor + prop on the tip, held at its
+  two bolts) is 186 Hz, 7 % below the ~200 Hz hover rotor rate (needs 20 %). DESIGN.md already flagged "arm mode in the
+  gyro noise band"; now it is a check. Fix options for the fpv arm item (mine): a deeper section with web lightening
+  (teardrop holes) to stay inside the T/W mass budget, or a stiffer material if the A2L can print it. Not loosened.

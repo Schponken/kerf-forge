@@ -116,6 +116,11 @@ These are textbook starting points. Spencer's real printer + material wins: `ker
   max screw depth if listed).
 - Stack mounted on soft-mount grommets when the catalog lists them; electronics boxed away from the prop wash debris.
 - Arms: check root bending stress under max thrust x 2 (crash/aggressive) with SF from section 3.
+- Arms (vibration): first bending mode with the motor + prop on the tip at least 20 % away from the hover rotor
+  rate and the blade-pass rate (`natural_freq`, kerf/req_dynamic.py; 15-20 % separation from excitation sources:
+  KnightHawk Engineering, https://modernpumpingtoday.com/modal-testing-of-pump-bearing-housings/).
+- Moving parts: drops and crashes the use story says the part survives are checked with `impact_fea` (impact force
+  from the part's own stiffness), joints that can be driven into a hard stop with `stop_impact`; both SF 3.
 - Battery: strap slots for a 20 mm strap, non-slip pad area, CG within 5 mm of the thrust center (X/Y) (`cg` check,
   `max_lateral_mm: 5` about the vertical line through the frame centre).
 

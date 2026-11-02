@@ -311,6 +311,12 @@ def impact_case(proj, asm, hazard, index):
     m = float(h.get("mass_kg", _mass_kg(proj)))
     r = impact(h, m)
     p = {**(proj.params or {}), **numbers(proj)}
+    dyn = [q.get("id", "impact_fea") for q in proj.data.get("requirements") or [] if q.get("check") == "impact_fea"
+           and (q.get("hazard") == hazard or {"drop": "height_m", "crash": "speed_m_s"}[hazard] in q)]
+    if dyn:                                        # the stiffness-based impact (kerf/req_dynamic.py) answers it
+        return {"ok": True, "value": r["force_n"], "limit": r["force_n"],
+                "detail": f"{hazard}: {r['v_m_s']} m/s, {r['energy_j']} J; simulated by {', '.join(dyn)} (impact force from "
+                          f"the part's own stiffness; its row shows whether the part holds)"}
     cases = [q for q in proj.data.get("requirements") or []
              if q.get("check") == "fea_static" and hazard in (str(q.get("case", "")), str(q.get("load_case", "")))]
     if not cases:

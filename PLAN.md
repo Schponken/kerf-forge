@@ -178,6 +178,9 @@ Work these in order unless one is blocked; each item is done only with tests and
   - [x] kerf/usestory.py + checks heat_limit / rain_cover / access_opening / impact_case / story_covered, Studio intake + detail, ASSEMBLY.md accepted failures, tests/test_usestory.py; robot_arm and fpv_5in have stories
   - [ ] fpv_wing gets its use story (after its E7 owner finishes, so its review is not made stale mid-way)
 - [ ] Simulate it moving: dynamic load cases from the use story (drop / crash impulse with contact time, hard stops from joint speed and inertia, vibration: first natural frequency vs motor / prop excitation) as requirement checks with hand-calculated tests
+  - [x] kerf/req_dynamic.py: impact_fea, stop_impact, natural_freq from one FEA solve's stiffness (fea.static reports f.u); story impact_case accepts impact_fea; tests/test_dynamic.py hand checks (3EI/L^3, impact formulas, end-axis inertia, KV rotor rates)
+  - [ ] fpv_5in arm_resonance PASSES (now FAILS on a real finding: arm f_n 186 Hz is 7 % from the 200 Hz hover rotor rate; needs >= 20 %)
+  - [ ] a project uses impact_fea and stop_impact (a surviving drop / a driven hard stop)
 - [ ] Failure modes: per-part failure table in the report (how it fails, what it takes with it, repair time); `weak_link` requirement proving the cheap part fails before the expensive one under the crash case
 - [ ] Design for life: fatigue check for flexing parts (living hinges, snap fits), creep limit for plastic under constant load, vibration rule for screws (threadlocker / nyloc / inserts), heat limit by material Tg vs the use story
 - [ ] Optimise then explain: `kerf optimise <p>` searches declared params (mass / cost / a requirement margin) within every check, writes the trade-off table; tested on a small project

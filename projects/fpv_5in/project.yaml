@@ -171,6 +171,15 @@ requirements:
     max_disp_mm: 0.87         # ENGINEERING.md: arm tip deflection < 1 % of the 87 mm arm (audit F8)
     fixed: {sites: arm_1, radius: 3.5}
     loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, 33.06]}]
+  - id: arm_resonance
+    check: natural_freq
+    part: arm_1
+    why: "the arm's first up-down bending mode (motor + prop on its tip) must sit >= 20 % away from the hover rotor rate and the blade-pass rate (15-20 % separation from excitation: KnightHawk Engineering, modernpumpingtoday.com/modal-testing-of-pump-bearing-housings); spool-up sweeps through it briefly, which Betaflight's gyro notch filters handle"
+    fixed: {sites: arm_1, radius: 3.5}
+    loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, 1]}]
+    carried: [motor_1]
+    excitation: {motor: motor_1, throttle: hover, prop: prop_1}
+    separation: 0.2
   - id: body_strength
     check: fea_static
     part: body

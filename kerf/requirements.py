@@ -348,7 +348,7 @@ def _pin_lever_load(proj, asm, item, spec):
     return None
 
 
-SF_MIN = {"static": 2.0, "across_layers": 3.0, "crash": 3.0, "landing": 3.0}   # docs/ENGINEERING.md section 3
+SF_MIN = {"static": 2.0, "across_layers": 3.0, "crash": 3.0, "landing": 3.0, "drop": 3.0}   # docs/ENGINEERING.md section 3
 
 
 @check("fea_static")
@@ -356,14 +356,14 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
     """Finite-element check of one printed part under named load cases (part frame, N).
     Passes when 99.9th-percentile von Mises <= strength(direction) / sf and deflection <= max_disp_mm.
     direction: xy | z | auto (auto blends xy and z strength by the part's load_axis share across layers, cos^2 rule).
-    case: static | crash | landing. sf must meet ENGINEERING.md section 3: 2.0 static along the layers, 3.0 across
+    case: static | crash | drop | landing. sf must meet ENGINEERING.md section 3: 2.0 static along the layers, 3.0 across
     the layers (direction z, or auto with > 25 % across) and 3.0 for crash / landing cases; a lower sf fails."""
     from . import fea
     from .checks import LAYER_WARN_NZ2
     it = proj.items[part]
     mat = it.spec.get("material", "PETG")
-    if case not in ("static", "crash", "landing"):
-        raise ValueError(f"fea_static case '{case}': use static, crash or landing")
+    if case not in SF_MIN or case == "across_layers":
+        raise ValueError(f"fea_static case '{case}': use static, crash, drop or landing")
     if direction not in ("xy", "z", "auto"):
         raise ValueError(f"fea_static direction '{direction}': use xy, z or auto")
     nz2 = 1.0 if direction == "z" else (_across_share(it) if direction == "auto" else 0.0)
@@ -396,7 +396,7 @@ def fea_static(proj, asm, part, fixed, loads, sf=2.0, direction="xy", max_disp_m
                    f"needs >= 4 loops (and 100 % infill modifiers where the stress is) on a part with a strength check; ")
     return {"ok": ok, "value": round(res["max_vm_mpa"], 2), "limit": round(allow, 2), "sf_min": need,
             "applied_force_n": res["applied_force_n"], "applied_moment_nmm": res["applied_moment_nmm"],
-            "max_disp_mm": round(res["max_disp_mm"], 3), "max_disp_at": res.get("max_disp_at"),
+            "max_disp_mm": round(res["max_disp_mm"], 3), "max_disp_at": res.get("max_disp_at"), "work_nmm": res.get("work_nmm"),
             "_field": {"field": res.get("_field"), "allow": allow, "part": part,
                        "disp_use": (res["max_disp_mm"] / max_disp_mm) if max_disp_mm else None},
             "_viz": {**res["_viz"], "allow": allow, "title": f"{part}: von Mises (MPa), limit {allow:.1f}",
@@ -791,3 +791,4 @@ from . import req_stops  # noqa: E402,F401  (hard_stop)
 from . import req_gears  # noqa: E402,F401  (gear_bending)
 from . import req_aero  # noqa: E402,F401  (static_margin, wing_loading, stall_speed, spar_bending)
 from . import usestory  # noqa: E402,F401  (heat_limit, rain_cover, access_opening, impact_case, story_covered)
+from . import req_dynamic  # noqa: E402,F401  (impact_fea, stop_impact, natural_freq)

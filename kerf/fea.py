@@ -245,7 +245,10 @@ def static(shape, E_mpa: float, nu: float, fixed, loads, size: float | None = No
             "max_disp_mm": float(np.linalg.norm(disp, axis=1).max()),
             "max_disp_at": mesh.p[:, int(np.argmax(np.linalg.norm(disp, axis=1)))].round(1).tolist(),
             "max_vm_peak_at": mesh.p[:, mesh.t[:, int(np.argmax(vm.max(axis=1)))]].mean(axis=1).round(1).tolist(),
-            "nodes": int(mesh.p.shape[1]), "elements": int(mesh.t.shape[1])}
+            "nodes": int(mesh.p.shape[1]), "elements": int(mesh.t.shape[1]),
+            # external work f.u (N*mm) = twice the strain energy: the load set's compliance is work / |F|^2, so dynamic
+            # checks (kerf/req_dynamic.py) get the part's stiffness for impacts and natural frequencies from one solve
+            "work_nmm": float(f @ u)}
     if cfile:
         import pickle
         tmp = cfile + f".{os.getpid()}.tmp"
