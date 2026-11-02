@@ -1,7 +1,0 @@
-{
- "item": "fpv_wing follow-ups from review round 5 (PASS with minors): assembly order (strap before battery; spar-tube epoxy as a bench step with the wings, dry in the pod sleeve); kerf/ship.py splits an assembly_note at its colons (one bullet per note, or nested) + assembly_note on wing_l2/r2 and fins for their epoxy; front elevon joiner 4 -> ~4.6 mm aft (0.81 mm wall); plate packing keeps tall slender parts apart; hatch tongue support / flush heads / side lip; TPU belly skid; consumables in the mass model; splice-plate landing ramp; re-build + re-review",
- "session": "4c4e3822c9",
- "since": 1793653334.593364,
- "heartbeat": 1793654929.5319905,
- "since_utc": "2026-11-02 21:02"
-}

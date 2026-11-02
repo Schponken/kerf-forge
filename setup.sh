@@ -47,6 +47,10 @@ fw_tools() {
     *) echo "firmware check: no arduino-cli $VER build for $(uname -sm)"; return 1 ;;
   esac
   export ARDUINO_DIRECTORIES_DATA="$AR/data" ARDUINO_DIRECTORIES_DOWNLOADS="$AR/staging" ARDUINO_DIRECTORIES_USER="$AR/user"
+  # arduino-cli uses its own proxy setting; it does not inherit the usual HTTP(S)_PROXY variables.
+  if [ -z "${ARDUINO_NETWORK_PROXY+x}" ]; then
+    export ARDUINO_NETWORK_PROXY="${HTTPS_PROXY:-${https_proxy:-${HTTP_PROXY:-${http_proxy:-}}}}"
+  fi
   if ! "$AR/bin/arduino-cli" version 2>/dev/null | grep -q "Version: $VER "; then
     local t; t=$(mktemp -d)
     curl -fsSL -o "$t/cli.tgz" "https://downloads.arduino.cc/arduino-cli/arduino-cli_${VER}_${PKG}.tar.gz" || { rm -rf "$t"; return 1; }

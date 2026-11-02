@@ -359,6 +359,7 @@ def work_data(root, ref: str = "@{u}", now: float | None = None, picture=None) -
     """Everything the Work tab shows, read from `ref` (the fetched origin branch): PLAN done/total, fresh claims as
     cards (item, project, minutes since that session's last commit, stale flag), items checked off today, and the
     last FEED_N commit subjects. picture(project) -> image URL or None (Studio passes its out/ snapshot lookup)."""
+    from .work import number, plan_steps
     now = time.time() if now is None else now
     cl = _claims_mod()
     rev = _out(root, "rev-parse", "--verify", "-q", ref) or _out(root, "rev-parse", "HEAD")
@@ -374,8 +375,11 @@ def work_data(root, ref: str = "@{u}", now: float | None = None, picture=None) -
             c = json.loads(git(root, "show", f"{rev}:{f}").stdout)
         except Exception:  # noqa: BLE001 - a broken claim file is no claim (same as tools/claims.py)
             continue
-        last = max(float(c.get("heartbeat") or 0), float(_out(root, "log", "-1", "--format=%ct", rev, "--", f) or 0))
-        age_min = (now - last) / 60
+        if not isinstance(c, dict):
+            continue
+        heartbeat = number(c.get("heartbeat"), 0)
+        last = max(heartbeat, number(_out(root, "log", "-1", "--format=%ct", rev, "--", f), 0))
+        age_min = max(0, now - last) / 60
         if age_min >= cl.STALE_MIN * 2:                 # long gone: not "working" and not worth a card
             continue
         item = str(c.get("item", ""))
@@ -383,7 +387,11 @@ def work_data(root, ref: str = "@{u}", now: float | None = None, picture=None) -
         cards.append({"item": item if len(item) <= 110 else item[:107].rstrip() + "…", "full": item,
                       "session": c.get("session"), "since_commit_min": round(age_min, 1),
                       "stale": age_min >= cl.STALE_MIN, "project": proj,
-                      "picture": picture(proj) if (proj and picture) else None})
+                      "picture": picture(proj) if (proj and picture) else None,
+                      "claim_id": Path(f).stem, "provider": c.get("provider"), "thread_id": c.get("thread_id"),
+                      "started_at": number(c.get("since")), "updated_at": last,
+                      "heartbeat_at": heartbeat or None, "steps": plan_steps(plan, item),
+                      "activity": c.get("activity"), "title": c.get("title")})
         if age_min < cl.STALE_MIN:
             sessions.add(c.get("session"))
     cards.sort(key=lambda x: (x["stale"], x["since_commit_min"]))
