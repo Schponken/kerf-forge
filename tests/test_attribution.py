@@ -79,7 +79,8 @@ def test_lines_and_params(proj):
     assert a["whole"] == []
 
 
-def test_viewer_face_ranges_match_attribution(proj):
+def test_viewer_face_ranges_match_attribution(proj, monkeypatch):
+    monkeypatch.delenv("KERF_NO_ATTRIBUTION", raising=False)        # this test is about the viewer's click-to-edit
     asm = A.plan(proj)
     d = viewer.data(proj, asm, {"project": "t", "problems": []})
     it = next(i for i in d["items"] if i["id"] == "plate")
@@ -87,3 +88,24 @@ def test_viewer_face_ranges_match_attribution(proj):
     assert it["attr"] and len(fs) == len(it["attr"]["faces"]) == len(_faces(proj))
     assert np.all(np.diff(fs.astype(int)) >= 0) and fs[0] == 0 and fs[-1] < it["nt"]
     assert set(d["params"]) == {"plate_l", "hole_d", "boss_h"} and d["params"]["hole_d"]["max"] == 8
+
+
+def test_verify_and_tests_skip_viewer_click_to_edit(tmp_path, monkeypatch):
+    """KERF_NO_ATTRIBUTION (kerf verify, tests/conftest.py): the viewer skips click-to-edit (it cannot change a result)
+    and says why; without it the viewer computes it."""
+    import sys
+    sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent))
+    from test_engine import _write_project
+    from test_req_cmd import BLOCK, PLATE, YAML
+    from kerf import assembly as A, attribution, partcache, project as P, viewer
+    monkeypatch.setattr(partcache, "DIR", tmp_path / "cache")
+    p = P.build(P.load(str(_write_project(tmp_path / "v", YAML, {"block": BLOCK, "plate": PLATE}))))
+    asm = A.plan(p)
+    calls = []
+    monkeypatch.setattr(attribution, "compute", lambda proj: calls.append(1) or {})
+    monkeypatch.setenv("KERF_NO_ATTRIBUTION", "1")
+    d = viewer.data(p, asm, {"problems": []})
+    assert not calls and "kerf verify" in d["attr_error"]
+    monkeypatch.delenv("KERF_NO_ATTRIBUTION")
+    d = viewer.data(p, asm, {"problems": []})
+    assert calls and d["attr_error"] is None

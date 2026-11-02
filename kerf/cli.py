@@ -252,6 +252,7 @@ def verify(fast=False, all_failures=False) -> int:
     t0 = time.time()
     results, fails = {}, []
     os.environ["KERF_NO_CACHE"] = "1"      # the definition of done builds every part from scratch (kerf/partcache.py)
+    os.environ["KERF_NO_ATTRIBUTION"] = "1"   # viewer click-to-edit cannot change a verdict; minutes per project
     # tests read/write UTF-8 text without naming it; a C/POSIX locale (hooks, cron, nohup) would make that ASCII
     ck = _Checkpoint(fast, all_failures)
     if "tests" not in ck.done:
