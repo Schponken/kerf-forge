@@ -1,0 +1,9 @@
+{
+ "item": "Mass input validation: reject invalid infill, wall counts and explicit item masses before they produce physical mass estimates; preserve valid defaults and unknown-mass behavior.",
+ "session": "codex-mass-input-validation",
+ "since": 1793660473.264318,
+ "heartbeat": 1793660473.264318,
+ "provider": "Codex",
+ "thread_id": "01a19e34-d43d-7b72-b3a6-f3a4df1d39db",
+ "since_utc": "2026-11-02 23:01"
+}
