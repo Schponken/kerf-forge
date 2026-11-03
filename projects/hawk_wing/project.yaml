@@ -121,7 +121,10 @@ parts:
   motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: X}
   hatch: {file: parts/hatch.py, material: PETG, print_rot: [180, 0, 0], infill: 0.15, walls: 2}
   boom_clamp: {file: parts/boom_clamp.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4}
-  glove: {file: parts/glove.py, material: PETG, print_rot: [0, -90, 0], infill: 0.1, walls: 3, load_axis: [Y, Z], supports: needed}
+  glove: {file: parts/glove.py, material: PETG, print_rot: [0, -90, 0], infill: 0.1, walls: 3, load_axis: [Y, Z], supports: needed,
+          modifiers: [{where: "each pod pad: x 156..260, |y| 112..149.5, skin to skin", size: "the pad footprint", infill: 1.0, why: "the pod screws, cap screws and the pin couple (196 N each way at 6 g) enter the glove here: a solid block instead of the ribs the CAD does not model"},
+                      {where: "round each of the 4 glove screws (x 30 |y| 24, x 200 |y| 18), skin to skin", size: "a 16 mm square column", infill: 1.0, why: "the fuselage hangs on these screws; the counterbore floor must not crush into sparse infill"},
+                      {where: "a 20 mm wide spanwise band at x 95..115 (the thickest point), y -149.5..149.5", size: "20 x 299 mm, skin to skin", infill: 0.4, why: "a printed spar web: carries the two panels' moments across the centreline (DESIGN Load -> section)"}]}
   pod_r: {file: parts/pod.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
   pod_l: {file: parts/pod.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
   cap_r: {file: parts/cap.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, walls: 4, load_axis: [X, Y]}
