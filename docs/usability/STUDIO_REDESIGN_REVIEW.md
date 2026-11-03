@@ -32,6 +32,7 @@ All changes remain pull requests for an independent manager; this task does not 
 | [60](https://github.com/Schponken/kerf-forge/pull/60) | Object stage and compatible saved viewers |
 | [61](https://github.com/Schponken/kerf-forge/pull/61) | Correct-worktree test imports and focused receipts |
 | [62](https://github.com/Schponken/kerf-forge/pull/62) | Offline direct viewer definitions |
+| [63](https://github.com/Schponken/kerf-forge/pull/63) | Accurate Activity assignment label |
 
 The immutable `codex/studio-redesign-base` at `59f305e` holds prior reviewed dependencies for focused feature diffs. The integration branch is a reproducible combination, not permission to merge the feature queue without review. Preserve all owners' intent when merging: native shell controls plus draft guards; Work reset and polling state; Files/History tour targets and refresh focus; the original standalone print-summary style. Do not copy unrelated surface CSS into that print document. Exact duplicate PLAN entries created by additive merges were removed so scope counts remain meaningful. Activity's accessible label says claimed assignments, not that every claim is running.
 
