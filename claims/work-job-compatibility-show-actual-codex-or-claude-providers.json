@@ -2,9 +2,9 @@
  "item": "Work job compatibility: show actual Codex or Claude providers, usage pauses and observed continuation jobs with honest reset/retry information, preserving existing Work navigation and session ownership.",
  "session": "codex-work-job-states",
  "since": 1793670360.670503,
- "heartbeat": 1793670533.601113,
+ "heartbeat": 1793670746.18866,
  "provider": "Codex",
  "thread_id": "01a19e34-d43d-7b72-b3a6-f3a4df1d39db",
  "since_utc": "2026-11-03 01:46",
- "activity": "Provider and paused-job metadata implemented; checking actual Studio snapshots and Work filters"
+ "activity": "81 targeted tests pass; desktop/phone pause and continuation screenshots reviewed; preparing PR"
 }
