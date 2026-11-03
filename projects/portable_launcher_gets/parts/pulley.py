@@ -40,7 +40,7 @@ def build(ctx):
         body -= ctx.cut(_rev([(R_FLANGE + 2, z - G_W / 2), (r_floor + G_CH, z - G_W / 2), (r_floor, z - G_W / 2 + G_CH),
                               (r_floor, z + G_W / 2 - G_CH), (r_floor + G_CH, z + G_W / 2), (R_FLANGE + 2, z + G_W / 2)]),
                         why=f"groove for the strand at z={z:+.2f}: vertical walls, 45 deg floor chamfers (prints without ceilings)", kind="groove")
-    body += ctx.add(Cylinder(HUB_R, W) - Cylinder(HUB_R - 1, W + 2) + Cylinder(HUB_R, W), why="hub tube round the two 608 seats", kind="hub")
+    body += ctx.add(Cylinder(HUB_R, W), why="hub tube round the two 608 seats", kind="hub")
     for k in range(N_SPOKE):   # why: spokes take the 948 N from the rim to the bearings (full width, so the load stays in-layer)
         a = 360.0 * k / N_SPOKE
         body += ctx.add(Rot(0, 0, a) * Pos((HUB_R + R_IN) / 2, 0, 0) * Box(R_IN - HUB_R + 2, SPOKE_T, W),
