@@ -1,0 +1,9 @@
+{
+ "item": "Mobile Work navigation: use existing All projects navigation instead of the redundant sidebar catalog while Work is rendered on narrow screens; retain Activity and utility controls, and restore catalog on other pages or wider screens.",
+ "session": "codex-work-mobile-navigation",
+ "since": 1793671552.595176,
+ "heartbeat": 1793671552.595176,
+ "provider": "Codex",
+ "thread_id": "01a19e34-d43d-7b72-b3a6-f3a4df1d39db",
+ "since_utc": "2026-11-03 02:05"
+}
