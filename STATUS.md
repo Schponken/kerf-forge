@@ -579,3 +579,21 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+## 2026-11-03 01:35 UTC — finite parameter contract (Codex, codex-finite-parameters)
+- Reproduced nonfinite base/override values and derived `1e309` / `1e309 - 1e309` reaching the parameter dictionary.
+  `project.param_values` now rejects actual nonfinite real scalar numbers at each boundary with the parameter name
+  (and expression for derived values); overflowing base integer-to-float conversion gets contextual `ProjectError`.
+- Preserved existing Boolean conversion, override types, enum/string/list values, finite large integers/fractions
+  in overrides, declaration-order derived evaluation and UI/optimiser bounds policy. No recursive container
+  validation, global min/max enforcement or physical formulas/defaults/thresholds changed. New synthetic YAML
+  tests prove errors occur before the geometry builder. PR24's merged print/mass load validation is unchanged;
+  the separately owned fingerprint method is untouched.
+- Validation: `python -m pytest -q tests/test_parameters.py tests/test_mass_inputs.py
+  tests/test_print_settings.py::test_stressed_parts_default_to_four_walls tests/test_optimise.py tests/test_docs.py`
+  **134 passed in 2.37 s**. Initial same selection: 132 passed / 2 failed because current main omitted `agent.py`
+  and CLI `agent` from the architecture map; added those two verified documentation entries, preserving all test
+  assertions and agent behavior. `kerf doctor`: **ALL OK**, with the existing optional firmware-tool warning.
+- Batch status/duplicate-process check preceded targeted runs. No stress/FEA, real project build/review or full
+  batch run; compatibility tests use only synthetic boxes/beam. Architecture docs and the precise PLAN item
+  describe the scalar-only contract. Delivered for independent review; no PR self-merge.
