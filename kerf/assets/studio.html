@@ -675,7 +675,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <div id="buildall" style="display:none"><button onclick="buildAll()"></button></div>
     </section>
   </details>
-  <nav class="sidenav" aria-label="Workspace"><button id="nav_grid" onclick="showGrid()">All projects</button><button id="nav_parts" onclick="showParts()" title="Parts you already have">My parts</button><button id="nav_work" onclick="showWork()" title="Tasks, progress and next steps">Work</button></nav>
+  <nav class="sidenav" aria-label="Workspace"><button id="nav_grid" onclick="showGrid()">All projects</button><button id="nav_parts" onclick="showParts()" title="Parts you already have">My parts</button><button id="nav_learning" onclick="showLearning()">Learning</button><button id="nav_work" onclick="showWork()" title="Tasks, progress and next steps">Work</button></nav>
   <div class="shell-actions"><button id="newbtn" onclick="showNew()">+ New design</button>
     <details class="shell-disclosure" id="activitytray"><summary id="activitybtn" title="Running and recent activity">Activity <span id="activitycount"></span></summary>
       <section class="shell-panel" aria-label="Activity"><div class="shell-panel-head"><h2>Activity</h2><button class="shell-close" onclick="closeShell()" aria-label="Close activity"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
@@ -752,7 +752,7 @@ document.querySelectorAll(".shell-disclosure").forEach(d => {
   d.addEventListener("toggle", () => {
     if (!d.open) return;
     document.querySelectorAll(".shell-disclosure[open]").forEach(other => { if (other !== d) other.open = false; });
-    if (d.id === "projecttray") $("#search").focus();
+    if (d.id === "projecttray" && (!d.contains(document.activeElement) || document.activeElement === d.querySelector("summary"))) $("#search").focus();
   });
 });
 addEventListener("keydown", e => { if (e.key === "Escape" && document.querySelector(".shell-disclosure[open]")) { closeShell(); e.preventDefault(); } });
@@ -814,7 +814,7 @@ function renderList() {
   const focused = document.activeElement.closest("#plist .pitem")?.dataset.project, scrollTop = $("#plist").scrollTop;
   const unbuilt = S.projects.filter(p => !p.built).length;
 
-  document.querySelectorAll(".sidenav button").forEach(b => { const active = (b.id === "nav_grid" && S.grid) || (b.id === "nav_parts" && S.parts) || (b.id === "nav_work" && S.work); b.classList.toggle("on", active); if (active) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  document.querySelectorAll(".sidenav button").forEach(b => { const active = (b.id === "nav_grid" && S.grid) || (b.id === "nav_parts" && S.parts) || (b.id === "nav_work" && S.work) || (b.id === "nav_learning" && S.learningTicket != null && S.learningTicket === S.ticket); b.classList.toggle("on", active); if (active) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const est = S.projects.filter(p => !p.built).reduce((a, p) => a + (p.build_s || 0), 0);
   $("#buildall button").textContent = `⚙ Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}${est ? " (" + about(est) + ")" : ""}`;
   const q = ($("#search").value || "").toLowerCase(), first = !S.listed; S.listed = true;
@@ -1087,6 +1087,28 @@ function showGlossary() {   // native dialog owns focus, Escape and the backgrou
   };
   q.oninput = filter; el.querySelector("[data-clear]").onclick=()=>{q.value="";filter();q.focus();};
   filter(); el.showModal(); q.focus();
+}
+
+/* ---------- Lesson scorecards: measured applications, never inferred savings. */
+async function showLearning() {
+  if (!canLeaveProject()) return;
+  closeShell(false);
+  S.newOpen = true; S.sel = null; S.grid = false; S.parts = false; S.work = false;
+  S.ticket = (S.ticket || 0) + 1; S.learningTicket = S.ticket; renderList();
+  const ticket = S.ticket;
+  $("#main").innerHTML = `<div class="body"><p role="status">Loading lesson scorecards…</p></div>`;
+  try {
+    const d = await api("/api/scorecards");
+    if (ticket !== S.ticket) return;
+    $("#main").innerHTML = `<div class="head"><h1>Learning</h1><p class="desc">Recorded observations of what lessons have helped. Historical problems alone do not count as applications or work saved. Promotions are proposals for approval.</p></div><div class="body">${d.lessons.map(learningCard).join("") || '<div class="card"><p>No lessons recorded yet. Run a look-back after a project diary is available.</p></div>'}</div>`;
+  } catch (e) {
+    if (ticket === S.ticket) $("#main").innerHTML = `<div class="body"><div class="banner bad" role="alert">Couldn’t load scorecards: ${esc(e.message)}</div><button onclick="showLearning()">Try again</button></div>`;
+  }
+}
+function learningCard(row) {
+  const c = row.scorecard, events = row.applications || [];
+  const flag = {blocking:"Review: blocked good work", dead:"Review: no catches in recorded applications", unmeasured:"No applications recorded", observed:"Applications recorded"}[c.flag];
+  return `<section class="card"><h2>${esc(row.lesson)}</h2><p class="note">${esc(row.id)} · ${esc(row.level || row.kind || "Lesson")}${row.historical_only ? " · From earlier diaries" : ""}</p><p>${esc(flag)}${c.promotion ? " · Proposed promotion: needs approval" : ""}</p><p>Applied ${c.times_applied} times · Caught ${c.times_caught} issues · Blocked good work ${c.blocked_good_work} times</p><p>Work saved: ${c.saved_min === null ? "unknown" : `${c.saved_min} reported minutes`}${c.savings_unknown && c.known_saved_min ? ` (${c.known_saved_min} reported minutes; ${c.savings_unknown} catches have unknown savings)` : ""}</p>${events.length ? `<details><summary>Application evidence</summary><ul>${events.map(e => `<li>${esc(e.project || "Project not recorded")} · ${esc(e.outcome.replaceAll("_", " "))}: ${esc(e.evidence)}${e.savings_source ? ` · Savings source: ${esc(e.savings_source)}` : ""}</li>`).join("")}</ul></details>` : ""}</section>`;
 }
 
 /* ---------- My parts (catalog/inventory.json) */

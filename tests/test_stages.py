@@ -96,3 +96,15 @@ def test_pipeline_collects_rough_checks_but_blocks_export(tmp_path, monkeypatch)
     assert not built["ok"]
     assert any("stage gate strength-sizing" in x for x in built["problems"])
     assert not (p.dir / "out" / "assembly.step").exists()
+
+
+@pytest.mark.parametrize("field,value", [("reviewer", []), ("reviewer", 123), ("summary", {}), ("summary", True)])
+def test_malformed_review_cannot_unlock_details(tmp_path, field, value):
+    p = project(tmp_path, structural=True)
+    stages.initialize(tmp_path)
+    report = evidence(p)
+    path = tmp_path / "rough_review.json"
+    review = json.loads(path.read_text())
+    review[field] = value
+    path.write_text(json.dumps(review))
+    assert not stages.status(p, report)["detail_unlocked"]

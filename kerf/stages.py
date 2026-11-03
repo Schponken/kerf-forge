@@ -90,9 +90,9 @@ def status(proj, report=None) -> dict:
     rough = _read(proj.dir / "rough_review.json")
     add("rough-review", structural or moving or wiring or powered,
         rough.get("stage_fingerprint") == current and rough.get("stage") == "rough" and
-        rough.get("independent") is True and bool(str(rough.get("reviewer", "")).strip()) and
+        rough.get("independent") is True and isinstance(rough.get("reviewer"), str) and bool(rough["reviewer"].strip()) and
         rough.get("reviewer") != config.get("designer") and rough.get("findings") == [] and
-        bool(str(rough.get("summary", "")).strip()))
+        isinstance(rough.get("summary"), str) and bool(rough["summary"].strip()))
     problems = [f"stage gate {g['id']}: current evidence required before detail/export" for g in gates
                 if g["applicable"] and not g["passed"]]
     if config.get("version") != 1:
