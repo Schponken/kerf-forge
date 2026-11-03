@@ -484,6 +484,12 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
             rep["problems"] += mp
             rep["warnings"] += mw
             A.solve(asm)
+            from . import stages
+            rep["stage_fingerprint"] = stages.fingerprint(proj)
+            rep["stage_gates"] = stages.status(proj, rep)
+            if stg & {"files", "docs", "viewer", "renders"} and not rep["stage_gates"]["detail_unlocked"]:
+                rep["problems"] += rep["stage_gates"]["problems"]
+                return _finish(proj, rep, stg, t0, overrides)
             if stg & {"files", "docs", "viewer", "renders"}:
                 progress.stage("export")
                 out = proj.out()
@@ -600,6 +606,9 @@ def _finish(proj, rep, stg, t0, overrides):
     if not overrides:           # record what this build read from the catalog, then the fingerprint that depends on it
         P.record_deps(proj)
         rep["fingerprint"] = proj.fingerprint()
+    from . import stages
+    rep["stage_fingerprint"] = stages.fingerprint(proj)
+    rep["stage_gates"] = stages.status(proj, rep)
     rep["maker_notes"] = maker_notes(rep["warnings"])
     _fold_stubs(proj, rep)
     rep["ok"] = not rep["problems"]
