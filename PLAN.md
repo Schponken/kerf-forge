@@ -327,3 +327,6 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Viewer direct definitions: selected technical terms reveal existing glossary meanings on hover, focus or one tap in offline saved viewers.
 
 - [ ] Assembly guide integration: verify exact placement and tool demonstrations together, install tested guide in Studio, and preserve saved geometry.
+- [x] Build it site metadata: include catalog-backed screw-pivot heat-set insert locations once per physical site, with stable identities and exact part transforms; focused producer regressions.
+
+- [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.

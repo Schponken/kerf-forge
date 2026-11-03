@@ -357,13 +357,89 @@ def _pt(a) -> list:
     return [round(float(x), 3) for x in a]
 
 
+def _insert_sites(iid, item) -> list[dict]:
+    """One marker per registered hole, including the threaded end of a screw pivot."""
+    from .catalog import CatalogError
+    from .iface import pin_dims, screw_spec
+
+    sites = [("site", n, site, site.screw)
+             for n, site in enumerate(getattr(item.shape, "kerf_sites", []) or [])
+             if site.role == "female" and site.kind == "heatset"]
+    sites += [("pin", n, site, pin_dims(site.pin).get("thread", site.pin))
+              for n, site in enumerate(getattr(item.shape, "kerf_pins", []) or []) if site.fit == "heatset"]
+    out = []
+    for source, n, site, screw in sites:
+        w = item.shape.location * site.loc
+        try:
+            sp = screw_spec(screw)
+        except CatalogError:
+            sp = {}
+        row = {"id": f"{iid}:insert:{source}:{n}", "item": iid, "group": site.group,
+               "at": _pt(geom.world_point(w, (0, 0, 0))),
+               "dir": _pt(-np.asarray(geom.world_dir(w, (0, 0, 1)))), "screw": screw,
+               "od": round(float(sp["insert_hole"]), 2) if sp.get("insert_hole") else None,
+               "len": round(float(sp["insert_len"]), 2) if sp.get("insert_len") else None}
+        if row["od"] is None or row["len"] is None:
+            row["warning"] = "Insert dimensions unknown in the hardware catalog."
+        out.append(row)
+    return out
+
+
+def _pin_sites(asm, joints, phase) -> list[dict]:
+    """Locate a headed pivot from its actual threaded seat; unrecorded pin seats stay unknown."""
+    from .catalog import CatalogError
+    from .iface import pin_dims, screw_spec
+    from .pins import ANG_TOL_DEG, OFF_TOL, SHOULDER_PLAY, _collect
+
+    groups = _collect(asm)
+    out = []
+    for j in joints:
+        sites = [site for site in groups.get(j["group"], []) if site[1].pin == j["pin"]]
+        items = list(dict.fromkeys(j.get("fixed_in", []) + j.get("free_in", [])))
+        row = {"id": f"pin:{j['group']}", "group": j["group"], "pin": j["pin"], "items": items,
+               "item": items[0] if items else None, "at": None, "dir": None, "len": j.get("length_mm"),
+               "od": j.get("d_mm"), "kind": "lock" if j.get("lock") else "dowel", "phase": phase}
+        try:
+            pd = pin_dims(j["pin"])
+        except CatalogError:
+            pd = {}
+        if pd.get("screw"):
+            row["kind"] = "shoulder" if pd.get("shoulder") else "screw"
+            row["od"] = pd["d"]
+            fixed = [(iid, site, o, z) for iid, site, o, z in sites if site.fit in ("heatset", "tap")]
+            free = [(iid, site, o, z) for iid, site, o, z in sites if site.fit == "free"]
+            length = j.get("length_mm")
+            if len(fixed) == 1 and free and length in pd.get("lengths", []) and length > 0:
+                _, _, seat, axis = fixed[0]
+                ends = [(float(np.dot(o - seat, axis)), float(np.dot(o - seat, axis) - site.depth * np.dot(z, axis)), iid)
+                        for iid, site, o, z in free]
+                head = max((max(a, b), iid) for a, b, iid in ends)
+                aligned = all(abs(float(np.dot(z, axis))) >= np.cos(np.radians(ANG_TOL_DEG))
+                              and np.linalg.norm((o - seat) - np.dot(o - seat, axis) * axis) <= OFF_TOL
+                              for _, _, o, z in free)
+                shoulder_fits = not pd.get("shoulder") or 0 <= float(length) - head[0] <= SHOULDER_PLAY + 1e-3
+                if aligned and head[0] > 0 and shoulder_fits:
+                    distance = float(length) if pd.get("shoulder") else head[0]
+                    row.update(item=head[1], at=_pt(seat + axis * distance), dir=_pt(-axis))
+                    thread = pd.get("thread", j["pin"])
+                    sp = screw_spec(thread)
+                    row.update(screw=thread, head_d=pd.get("head_d") or sp.get("head_d"),
+                               head_h=pd.get("head_h") or sp.get("head_h"))
+                    if pd.get("shoulder"):
+                        row.update(shoulder_len=float(length), thread_len=pd["thread_len"], thread_d=sp["d"],
+                                   len=float(length) + pd["thread_len"])
+        if row["at"] is None:
+            row["warning"] = "Exact axial seat and insertion direction are not recorded for this pin."
+        out.append(row)
+    return out
+
+
 def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
     """The ASSEMBLY.md build order as data for the viewer's step-by-step mode: per step the parts already on, the
     part(s) going on with the direction they come from (same rule as the step pictures: kerf/ship.py), the heat-set
     inserts pressed first, the screws (seat point + axis, from the fastener check) and the joints that must then move
     freely, plus the step's own ASSEMBLY.md text. Intro / outro sections (tools, test fit, wiring) come along as text."""
     from . import ship
-    from .iface import screw_spec
     a = rep.get("assembly") or {}
     A.solve(asm)
     st = ship.plan(asm, a.get("fasteners") or [], a.get("pins") or [])
@@ -393,22 +469,8 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
                    "head": j.get("head"), "group": j["group"], "male": j["male"], "female": j["female"],
                    "phase": 2 if (j["male"] in late or j["female"] in late) else 1}
                   for j in s["fastener_joints"] if j.get("at") is not None and j.get("dir") is not None]
-        inserts = []
-        for x in s["inserts"]:
-            it = proj.items[x["item"]]
-            for site in getattr(it.shape, "kerf_sites", []) or []:
-                if site.role != "female" or site.kind != "heatset":
-                    continue
-                w = it.shape.location * site.loc
-                try:
-                    sp = screw_spec(site.screw)
-                except Exception:  # noqa: BLE001 - a size the catalog doesn't know gets a proportional glyph
-                    sp = {"d": float(site.screw.lstrip("M") or 3)}
-                d = float(sp.get("d") or 3)
-                inserts.append({"item": x["item"], "at": _pt(geom.world_point(w, (0, 0, 0))),
-                                "dir": _pt(-np.asarray(geom.world_dir(w, (0, 0, 1)))), "screw": site.screw,
-                                "od": round(float(sp.get("insert_hole") or 1.4 * d), 2),
-                                "len": round(float(sp.get("insert_len") or 1.5 * d), 2)})
+        inserts = [site for iid in dict.fromkeys(x["item"] for x in s["inserts"])
+                   for site in _insert_sites(iid, proj.items[iid])]
         demos = []
         for f in s["fits"]:
             o = f.get("onto")
@@ -418,6 +480,7 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
         sec = by_step.get(k)
         out.append({"n": k, "title": sec["title"].split(" — ", 1)[1] if sec and " — " in sec["title"] else ", ".join(s["items"]),
                     "items": list(s["items"]), "present": present, "groups": groups, "screws": screws, "inserts": inserts,
+                    "pins": _pin_sites(asm, s["pins"], 1) + _pin_sites(asm, s["pins_after"], 2),
                     "demos": list(dict.fromkeys(demos)), "bench_for": s["bench_for"],
                     "lines": sec["lines"] if sec else []})
     return {"steps": out, "intro": intro, "outro": outro}
