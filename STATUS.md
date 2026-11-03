@@ -1519,3 +1519,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   proof and not proof of 50% infill. Full regions/results/limits saved in validation/hub_baseline.json.
   Do not thin this hub: no demonstrated stiffness margin. Removed the unbuilt cavity candidate; geometry
   remains the packaging taper fix only. Weight target and normal-flight structural proof remain unresolved.
+- Follow-up exact-load diagnostic: 33.0472 N vertical total, pure forces on bonded socket bands (no added torque),
+  resultant pivot moment within 0.7% of the integrated 6 g target. At 6.0 / 5.6 mm mesh sizes: 10.269 / 10.225 mm
+  displacement, 20.65 / 20.14 MPa p99.9 stress; no coarsening/fallback notes. Saved hub_normal_flight.json.
+- Per root/flight-coordinator authorization, ONE experimental deeper hub/cap candidate is now being evaluated:
+  26 mm-deep closed box, 1.7 mm explicit cavity walls, retained 2.4 mm spar-socket walls and bearing/gear interfaces,
+  raised cap fairing with unchanged pin/bearing stack. Built hub/cap are valid single solids, 103.32 / 21.31 g.
+  This is not a meaningful aircraft weight reduction; exact-load stiffness and sweep clearance remain pending.
+  Taller fairing increases frontal projected area; no aerodynamic improvement is claimed. Do not install yet.

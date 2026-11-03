@@ -1,0 +1,183 @@
+{
+  "source_snapshot": "5a98dc7",
+  "fingerprint": "adf3ad47a8d22d2d",
+  "basis": "1.8kg,6g elliptical lift; bonded spar sockets loaded through two force bands; local hub lift applied to upper skin; no extra torque",
+  "case": {
+    "settings": {
+      "part": "hub_r",
+      "fixed": {
+        "any": [
+          {
+            "cylinder": {
+              "at": "bear_top",
+              "r": 8,
+              "tol": 0.4,
+              "span": [
+                0,
+                5
+              ]
+            }
+          },
+          {
+            "cylinder": {
+              "at": "bear_bot",
+              "r": 8,
+              "tol": 0.4,
+              "span": [
+                0,
+                5
+              ]
+            }
+          }
+        ]
+      },
+      "loads": [
+        {
+          "cylinder": {
+            "at": "main",
+            "r": 4.1,
+            "tol": 0.4,
+            "span": [
+              3,
+              9
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            -95.07648364406623
+          ]
+        },
+        {
+          "cylinder": {
+            "at": "main",
+            "r": 4.1,
+            "tol": 0.4,
+            "span": [
+              31,
+              37
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            115.04343410386124
+          ]
+        },
+        {
+          "cylinder": {
+            "at": "rear",
+            "r": 3.1,
+            "tol": 0.4,
+            "span": [
+              3,
+              9
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            -34.7204226561352
+          ]
+        },
+        {
+          "cylinder": {
+            "at": "rear",
+            "r": 3.1,
+            "tol": 0.4,
+            "span": [
+              31,
+              37
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            42.105459127566235
+          ]
+        },
+        {
+          "box": [
+            [
+              55,
+              157.0,
+              8
+            ],
+            [
+              175,
+              195.0,
+              40
+            ]
+          ],
+          "force_n": [
+            0,
+            0,
+            5.695189522886512
+          ]
+        }
+      ],
+      "sf": 2,
+      "direction": "auto",
+      "max_disp_mm": 1
+    },
+    "target_force_n": 33.04717645411256,
+    "target_moment_about_pivot_nmm": 4801.438305228455
+  },
+  "meshes": [
+    {
+      "mesh_size": 6.0,
+      "ok": false,
+      "value": 20.65,
+      "limit": 24.0,
+      "sf_min": 2.0,
+      "applied_force_n": [
+        0.0,
+        0.0,
+        33.0472
+      ],
+      "applied_moment_nmm": [
+        9786.159,
+        -4576.341,
+        0.0
+      ],
+      "max_disp_mm": 10.269,
+      "max_disp_at": [
+        46.8,
+        195.0,
+        -1.0
+      ],
+      "work_nmm": 402.13211399126715,
+      "detail": "FEA hub_r: von Mises p99.9 (MPa) vs PETG auto strength / SF 2; peak 58.81 MPa at [222.6, 150.9, 4.7], deflection 10.269 mm (limit 1) at [46.8, 195.0, -1.0], 20299 elements"
+    },
+    {
+      "mesh_size": 5.6,
+      "ok": false,
+      "value": 20.14,
+      "limit": 24.0,
+      "sf_min": 2.0,
+      "applied_force_n": [
+        0.0,
+        0.0,
+        33.0472
+      ],
+      "applied_moment_nmm": [
+        9789.06,
+        -4594.057,
+        0.0
+      ],
+      "max_disp_mm": 10.225,
+      "max_disp_at": [
+        46.8,
+        195.0,
+        -1.0
+      ],
+      "work_nmm": 401.27098922439217,
+      "detail": "FEA hub_r: von Mises p99.9 (MPa) vs PETG auto strength / SF 2; peak 58.83 MPa at [222.6, 150.9, 4.7], deflection 10.225 mm (limit 1) at [46.8, 195.0, -1.0], 22606 elements"
+    }
+  ],
+  "limitations": [
+    "Fixed bearing seats and solid material idealization; does not prove 50% infill",
+    "Mesh sensitivity supports global displacement comparison, not local peak-stress convergence",
+    "1mm is a diagnostic stiffness target, not an existing project requirement"
+  ]
+}

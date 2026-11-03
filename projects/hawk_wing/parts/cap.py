@@ -1,4 +1,6 @@
-"""Pivot cap (cap_r / cap_l): holds the pin's top and closes the stack; 2 M3 from its top, through the glove, into the pod.
+"""EXPERIMENTAL raised fairing candidate for the deep hub; pending integration and flight checks.
+
+Pivot cap (cap_r / cap_l): holds the pin's top and closes the stack; 2 M3 from its top, through the glove, into the pod.
 
 Load path (DESIGN.md "Load -> section"): the 5.5 N m root moment is a 196 N couple on the pin; the top end goes into this
 cap's boss (r 7.5, blind slip bore 8 deep) and out through two 9 mm wide, 12 mm deep spines (underside following the
@@ -18,7 +20,8 @@ from kerf import aero, iface, features
 _spec = importlib.util.spec_from_file_location("hw_layout", pathlib.Path(__file__).with_name("layout.py"))
 L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 
-TOP_Z = 16.5             # pin top 14.5 + 2 mm roof; also the print bed face (printed upside down)
+TOP_Z = 34.5             # pin top 14.5 + 2 mm roof; also the print bed face (printed upside down)
+FAIR_UNDER_Z = 24.5      # deep hub torque box top + 0.5 mm running clearance
 UNDER_Z = L.CAP_Z0       # underside over the hub (6.5)
 WALL = 2.0
 PAD_R = 6.0              # M3 head counterbore + 2.4 mm wall
@@ -61,8 +64,8 @@ def build(ctx):
     # underside: over the hub (inside the glove's notch) stay 0.5 mm above the hub top; elsewhere follow the glove's top skin
     glove = aero.wing_solid(L.planform(p), -p.pivot_y + 0.5, p.pivot_y - 0.5, stations=3) - Pos(c[0], c[1], -20) * Cylinder(L.NOTCH_R, 80, align=(Align.CENTER, Align.CENTER, Align.MIN))
     body -= ctx.cut(glove, why="underside follows the glove's top skin where the cap sits on it", kind="seat")
-    body -= ctx.cut(Pos(c[0], c[1], z0 - 20) * Cylinder(L.NOTCH_R, UNDER_Z - z0 + 20, align=(Align.CENTER, Align.CENTER, Align.MIN)),
-                    why="over the hub the underside is z 6.5: 0.5 mm above the hub top and the top bearing", kind="clearance")
+    body -= ctx.cut(Pos(c[0], c[1], z0 - 20) * Cylinder(L.NOTCH_R, FAIR_UNDER_Z - z0 + 20, align=(Align.CENTER, Align.CENTER, Align.MIN)),
+                    why="over the deep torque box the fairing is 0.5 mm clear; the pin boss stays at the original bearing stack", kind="clearance")
     body += ctx.add(Pos(c[0], c[1], UNDER_Z - L.GAP) * (Cylinder(RING_R[1], L.GAP, align=(Align.CENTER, Align.CENTER, Align.MIN))
                                                        - Cylinder(RING_R[0], L.GAP, align=(Align.CENTER, Align.CENTER, Align.MIN))), why="0.5 mm ring (r 3.1..4.2) touching only the top bearing's inner race: the cap's weight never rubs the hub", kind="thrust ring")
     body += ctx.add(Pos(c[0], c[1], UNDER_Z) * Cylinder(BOSS_R, TOP_Z - UNDER_Z, align=(Align.CENTER, Align.CENTER, Align.MIN)),

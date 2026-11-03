@@ -1,4 +1,6 @@
-"""Panel root hub (hub_r / hub_l): the swing-wing panel's root fitting, turning on the pivot pin in two 625 bearings.
+"""EXPERIMENTAL deep closed-box candidate; pending integration and flight checks.
+
+Panel root hub (hub_r / hub_l): the swing-wing panel's root fitting, turning on the pivot pin in two 625 bearings.
 
 Load path (DESIGN.md "Load -> section"): the two CF spar tubes (epoxied in teardrop sockets from y 156) bring the 5.5 N m
 root moment into the airfoil block; aft of the rear spar the airfoil is only 3-6 mm deep, so a raised closed box (top z 6,
@@ -20,13 +22,16 @@ _spec = importlib.util.spec_from_file_location("hw_layout", pathlib.Path(__file_
 L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 
 BOX_X0 = 180.0           # raised box starts here: 1.5 mm aft of the rear spar socket's wall (tube x 171..175 + r 3.1)
-BOX_TOP = 6.0            # = boss top: the cap sits at 6.5
+BOX_TOP = 24.0            # deep torque box; raised cap fairing clears its top by 0.5 mm
 DISC_TOP_IN = 2.5        # inboard half of the disc, inside the glove notch: just under the glove's top skin there (3.6..4.6)
 BOX_TAPER_FROM_ROOT = 32.0      # the box's top and underside close in from here to a point at y 194, inside the airfoil
 BITE_CLR = 0.5           # the hub keeps this far off the glove's trailing edge at the end of the sweep
 RELIEF_DEG = 2.3         # > stop over-travel (2.2 deg) + the 0.5 mm glove gap; the main socket mouth (x 100) is then at y 155.5, tube end 156
 LEAD_D = 4.0
 LEAD_Z = 2.6             # lead channel height in the box (underside -2, top 6: 4.6 mm / 1.4 mm of wall above its roof)
+HUB_SKIN = 1.7           # explicit closed-section wall: four 0.42 mm perimeters
+SOCKET_WALL = 2.4
+BEARING_ACCESS_R = 8.5   # existing cap pin boss r7.5 has 1 mm radial running clearance
 EAR = 4.0                # deg of tooth-less sector past the teeth at each end: the stop faces
 
 
@@ -138,6 +143,27 @@ def right_body(ctx):
                     why="top bearing seat (press) + pin bore through the boss", kind="bearing seat")
     body -= ctx.cut(iface.bearing_seat(ctx, L.BEARING, Location((c[0], c[1], L.BOSS_Z0), (180, 0, 0)), fit="press", depth=dep),
                     why="bottom bearing seat (press): 28 mm from the top one", kind="bearing seat")
+    # A deeper closed box carries the socket-to-bearing torque; hollow its middle
+    # while retaining its end webs, bearing support and wire-channel sleeve.
+    cavity = Pos(HUB_SKIN, 0, 0) * extrude(offset(prof, amount=-HUB_SKIN, kind=Kind.INTERSECTION),
+                c[0] + p.pivot_back - BOX_X0 - 2 * HUB_SKIN, dir=(1, 0, 0))
+    cavity -= _cyl(c, L.BOSS_R + HUB_SKIN, -40, BOX_TOP + 1)
+    cavity -= teardrop_channel(_lead_pts(p), LEAD_D + 2 * HUB_SKIN)
+    body -= ctx.cut(cavity, why="closed 1.7 mm torque box: material stays in the separated skins and end webs; "
+                    "bearing support and lead sleeve remain", kind="cavity")
+    # The root face is tilted for stop overtravel, so retain a 12 mm inner land.
+    front = loft([offset(aero._section_face(pf.section(y)), amount=-HUB_SKIN, kind=Kind.INTERSECTION)
+                  for y in (p.pivot_y + 12.0, (p.pivot_y + p.hub_y1) / 2, p.hub_y1 - 3.0)], ruled=True)
+    front &= Pos(BOX_X0 - 300, p.pivot_y - 1, -50) * Box(300, 100, 100, align=(Align.MIN, Align.MIN, Align.MIN))
+    for which, od in (("main", p.main_od), ("rear", p.rear_od)):
+        a, b = L.tube_line(p, which, 1)
+        front -= aero.cylinder_between(a, b, od + 0.2 + 2 * SOCKET_WALL, extend=4.0)
+    front -= teardrop_channel(_lead_pts(p), LEAD_D + 2 * HUB_SKIN)
+    front -= Pos(130, p.pivot_y + 27.0, 0) * Box(300, 2.0, 100)
+    body -= ctx.cut(front, why="hollow forward airfoil with 1.7 mm skins, end and middle ribs and continuous "
+                    "2.4 mm spar-socket walls", kind="cavity")
+    body -= ctx.cut(_cyl(c, BEARING_ACCESS_R, L.BOSS_Z1, BOX_TOP + 1),
+                    why="bearing installation access and 1 mm running clearance around the cap's unchanged pin boss", kind="access")
     return body
 
 
