@@ -1501,3 +1501,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Read-only current-template saved bionic_finger desktop/light and phone/dark captures inspected: no JavaScript errors
   or document overflow. /tmp/kerf-viewer-perf-{desktop,phone}.png. Detector reports only the incumbent global type
   hierarchy warning. No project source/output, catalog/check/review changes, full suite, stress job or installation.
+
+## 2026-11-02 — Deterministic contact observation in the viewer regression (Codex)
+- The combined run at acac132 passed 102 cases but missed the performance fixture's first tool-contact observation.
+  The unchanged source passed in isolation. That fixture's 4x speed left only a 360 ms contact window, observed
+  after a separate browser/Node roundtrip. The fixture now runs this action at normal speed and installs an in-page
+  contact watcher before replay; it clicks the actual Pause action on contact and then stops watching.
+- All phase/contact, paused tool-position, zero scheduled frames and successful UI-resume assertions remain.
+  One injected 2 s Node delay after replay setup (longer than the entire old 4x demonstration) passed with the
+  contact latched/paused. Normal focused run: tests/test_viewer_performance.py, 1 PASS in 11.71 s; stationary and
+  paused callbacks remain 0, hover burst raycasts 1, and comparison disposal 4/4 for all three cycles.
+- Test-only change; no production pause fix was justified by the evidence. No CAD build, broad suite or installation.
