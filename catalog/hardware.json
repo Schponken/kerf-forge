@@ -2095,6 +2095,17 @@
     "confidence": "datasheet",
     "note": "Pololu page (opened 2026-10-31): 0.1 in (2.54 mm) pitch, takes Pololu female crimp pins #1930 (or male #1931); wires snap in ('getting the wires out is possible but not as easy'); no keying/latch on the 1x3. The page's dimension table gives two unlabelled columns for 1x3: A 5.08, B 7.62 (= 2 and 3 x pitch; length 7.62 taken as the housing length). Housing width/height are not printed in text (drawing images only), so they are not given. Use: a servo lead's own 3-pin female plug already pushes onto the PCA9685's 3x4 male headers (signal/V+/GND per column); this housing + #1930 pins is how to make a new plug when a lead is cut to length or extended (single signal wire: fit one pin in a 1x1 housing, or a pre-crimped F-F jumper, Pololu category 72, 26 AWG)."
    },
+   "crimp_pin_male_pololu1931": {
+    "model": "Pololu #1931 male crimp pins for 0.1 in housings (100-pack)",
+    "wire_awg_min": 28,
+    "wire_awg_max": 22,
+    "pitch": 2.54,
+    "terminal": "plug",
+    "pack_qty": 100,
+    "source": "https://www.pololu.com/product/1931",
+    "confidence": "datasheet",
+    "note": "Pololu page opened 2026-11-02: male pins for 22-28 AWG wires, 100 per pack; compatible with standard 0.1-inch housings and female headers. Fits housing #1902 (its existing catalog note explicitly permits #1931). No current rating or mass published: none invented. Used for detachable extensions mating to the retained factory servo female plug; not a verified connector-current rating."
+   },
    "crimp_pin_female_pololu1930": {
     "model": "Pololu #1930 female crimp pins for 0.1 in housings (100-pack)",
     "wire_awg_min": 28,

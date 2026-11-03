@@ -1534,3 +1534,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 — Hawk print envelope and dive guidance limitations (Codex)
 - Cached CAD transform at fuselage print_rot[0,-40,40] measures287.48 x297.52 x253.99 mm, fitting the printer; supports are required. Sliced supports, access for their removal and actual print stability are unverified. The tail cable hole follows the chosen print-up direction.
 - Marked original operating speeds and controller settings as unvalidated design targets, withdrew the draft pilot-speed advice, and deferred safe deployment/pull-out claims to explicit dynamic-pressure and structural checks.
+## 2026-11-02 — Hawk stock electrical graph checkpoint (Codex, WIP)
+- Added the missing 25-run power/signal contract using existing battery, motor, ESC, FC and servos; separate ESC
+  5 V sweep and FC 6 V surface rails, four 5 V peripheral feeds, unique PWM signals and shared grounds.
+- New pure coordinate helper follows glove/hub/wing channels, attaches panel points to moving items, and uses the
+  flight lead's external tail service exit to avoid the boom clamp cross-screw. Route clearances are not yet verified.
+- Added sourced Pololu #1931 male extension pins plus exact six-extension BOM quantities; existing ratings unchanged.
+  Manufacturer supplies no connector current rating or mass; neither is invented. Source page opened.
+- Electrical-only analysis at a simulated 1800 g: 18.15 min vs unchanged 20 min target. Stock 18 AWG phase path gives
+  227.054 K rise over unchanged 10 s burst vs 60 K allowed. These are actual remaining failures, not readiness.
+  YAML/catalog syntax and route parameter evaluation pass. Targeted tests and integration check pending; no CAD/FEA run.

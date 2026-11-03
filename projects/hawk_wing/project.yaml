@@ -265,6 +265,187 @@ assembly:
     - {joint: ail_l, samples: 7}
     - {joint: elevator, samples: 7}
     - {joint: rudder, samples: 7}
+wiring:
+  - {id: bat_lead, from: battery, to: xt60, kind: power, v: 25.2, gauge: 12, color: red/black, length_mm: 160,
+      supplied: battery, note: Pack supplied 12 AWG lead; retained in battery mass. Measure actual lead before
+        assembly.}
+  - {id: main, from: xt60, to: fc, kind: power, v: 25.2, gauge: 12, color: red/black, length_mm: 220, note: XT60
+        pigtail to BAT pads; every load passes through the current sensor.,
+     route: [[wire_main_0_x, wire_main_0_y, wire_main_0_z], [wire_main_1_x, wire_main_1_y, wire_main_1_z]]}
+  - {id: esc_pwr, from: fc.esc, to: esc, kind: power, v: 25.2, gauge: 12, color: red/black, length_mm: 150, supplied: esc,
+      note: FC ESC pads to supplied ESC input leads.,
+     route: [[wire_esc_0_x, wire_esc_0_y, wire_esc_0_z], [wire_esc_1_x, wire_esc_1_y, wire_esc_1_z]]}
+  - {id: phases, from: esc.esc, to: motor, kind: power, v: 25.2, gauge: 18, color: black, length_mm: 365, conductors: 3,
+      supplied: esc and motor, note: 'Stock ESC output: 100 mm 14 AWG, then stock motor: 265 mm 18 AWG. The whole
+        path is conservatively checked at its thinnest stock gauge; no lead upgrade is assumed. This fails the
+        unchanged 10 s burst-heating rule at full motor peak.',
+     route: [[wire_phases_0_x, wire_phases_0_y, wire_phases_0_z], [wire_phases_1_x, wire_phases_1_y, wire_phases_1_z],
+         [wire_phases_2_x, wire_phases_2_y, wire_phases_2_z]]}
+  - {id: gps_5v, from: fc.4v5, to: gps, kind: power, v: 5, gauge: 28, color: red/black, length_mm: 350, note: FC
+        4V5/5V rail; never connect TX800 or receiver to Vbat.,
+     route: [[wire_gps_0_x, wire_gps_0_y, wire_gps_0_z], [wire_gps_1_x, wire_gps_1_y, wire_gps_1_z]]}
+  - {id: rx_5v, from: fc.4v5, to: receiver, kind: power, v: 5, gauge: 28, color: red/black, length_mm: 150, note: FC
+        4V5/5V rail; never connect TX800 or receiver to Vbat.,
+     route: [[wire_rx_0_x, wire_rx_0_y, wire_rx_0_z], [wire_rx_1_x, wire_rx_1_y, wire_rx_1_z]]}
+  - {id: vtx_5v, from: fc.4v5, to: vtx, kind: power, v: 5, gauge: 28, color: red/black, length_mm: 500, note: FC
+        4V5/5V rail; never connect TX800 or receiver to Vbat.,
+     route: [[wire_vtx_0_x, wire_vtx_0_y, wire_vtx_0_z], [wire_vtx_1_x, wire_vtx_1_y, wire_vtx_1_z], [wire_vtx_2_x, wire_vtx_2_y,
+           wire_vtx_2_z]]}
+  - {id: camera_5v, from: fc.4v5, to: camera, kind: power, v: 5, gauge: 28, color: red/black, length_mm: 300,
+      note: FC 4V5/5V rail; never connect TX800 or receiver to Vbat.,
+     route: [[wire_camera_0_x, wire_camera_0_y, wire_camera_0_z], [wire_camera_1_x, wire_camera_1_y, wire_camera_1_z],
+         [wire_camera_2_x, wire_camera_2_y, wire_camera_2_z], [wire_camera_3_x, wire_camera_3_y, wire_camera_3_z]]}
+  - {id: esc_sig, from: fc, to: esc, kind: signal, gauge: 28, color: white, length_mm: 150, pin: S1, conductors: 2,
+      supplied: esc, note: S1 PWM + common ground. Isolate ESC BEC red wire from the FC; red feeds only the separate
+        sweep rail.,
+     route: [[wire_esc_0_x, wire_esc_0_y, wire_esc_0_z], [wire_esc_1_x, wire_esc_1_y, wire_esc_1_z]]}
+  - {id: sweep_r_pwr, from: esc.5v, to: sweep_servo_r, kind: power, v: 5, gauge: 24, color: red/black, length_mm: 650,
+      ends: {from: solder, to: plug}, note: Separate ESC 5 V BEC rail only. Retain stock servo plug; solder extension
+        to ESC 5V/GND and fit male connector at servo end. Do not join positive rail to FC Vx.,
+     route: [[wire_sweep_r_0_x, wire_sweep_r_0_y, wire_sweep_r_0_z], [wire_sweep_r_1_x, wire_sweep_r_1_y, wire_sweep_r_1_z],
+         [wire_sweep_r_2_x, wire_sweep_r_2_y, wire_sweep_r_2_z], [wire_sweep_r_3_x, wire_sweep_r_3_y, wire_sweep_r_3_z],
+         [wire_sweep_r_4_x, wire_sweep_r_4_y, wire_sweep_r_4_z], [wire_sweep_r_5_x, wire_sweep_r_5_y, wire_sweep_r_5_z],
+         [wire_sweep_r_6_x, wire_sweep_r_6_y, wire_sweep_r_6_z], [wire_sweep_r_7_x, wire_sweep_r_7_y, wire_sweep_r_7_z],
+         [wire_sweep_r_8_x, wire_sweep_r_8_y, wire_sweep_r_8_z], [wire_sweep_r_9_x, wire_sweep_r_9_y, wire_sweep_r_9_z]]}
+  - {id: sweep_r_sig, from: fc, to: sweep_servo_r, kind: signal, gauge: 24, color: orange, length_mm: 650, pin: S3,
+      ends: {from: solder, to: plug}, note: Signal shares the power lead route and the same 3-pin connector; common
+        ground is provided by the ESC/FC ground.,
+     route: [[wire_sweep_r_0_x, wire_sweep_r_0_y, wire_sweep_r_0_z], [wire_sweep_r_1_x, wire_sweep_r_1_y, wire_sweep_r_1_z],
+         [wire_sweep_r_2_x, wire_sweep_r_2_y, wire_sweep_r_2_z], [wire_sweep_r_3_x, wire_sweep_r_3_y, wire_sweep_r_3_z],
+         [wire_sweep_r_4_x, wire_sweep_r_4_y, wire_sweep_r_4_z], [wire_sweep_r_5_x, wire_sweep_r_5_y, wire_sweep_r_5_z],
+         [wire_sweep_r_6_x, wire_sweep_r_6_y, wire_sweep_r_6_z], [wire_sweep_r_7_x, wire_sweep_r_7_y, wire_sweep_r_7_z],
+         [wire_sweep_r_8_x, wire_sweep_r_8_y, wire_sweep_r_8_z], [wire_sweep_r_9_x, wire_sweep_r_9_y, wire_sweep_r_9_z]]}
+  - {id: ail_r_pwr, from: fc.vx, to: ail_servo_r, kind: power, v: 6, gauge: 28, color: red/black, length_mm: 1000,
+      ends: {from: solder, to: plug}, note: Bridge FC Vx=6V pads. Extension plug under pivot cap; moving waypoints
+        follow the hub and panel. Thread bare connector pins through 4 mm wing channel before housing assembly.,
+     route: [[wire_ail_fixed_r_0_x, wire_ail_fixed_r_0_y, wire_ail_fixed_r_0_z], [wire_ail_fixed_r_1_x, wire_ail_fixed_r_1_y,
+           wire_ail_fixed_r_1_z], [wire_ail_fixed_r_2_x, wire_ail_fixed_r_2_y, wire_ail_fixed_r_2_z], [wire_ail_fixed_r_3_x,
+           wire_ail_fixed_r_3_y, wire_ail_fixed_r_3_z], [wire_ail_fixed_r_4_x, wire_ail_fixed_r_4_y, wire_ail_fixed_r_4_z],
+         [wire_ail_fixed_r_5_x, wire_ail_fixed_r_5_y, wire_ail_fixed_r_5_z], [wire_ail_fixed_r_6_x, wire_ail_fixed_r_6_y,
+           wire_ail_fixed_r_6_z], [wire_ail_fixed_r_7_x, wire_ail_fixed_r_7_y, wire_ail_fixed_r_7_z], {item: hub_r,
+           at: [wire_ail_hub_r_0_x, wire_ail_hub_r_0_y, wire_ail_hub_r_0_z]}, {item: hub_r, at: [wire_ail_hub_r_1_x,
+             wire_ail_hub_r_1_y, wire_ail_hub_r_1_z]}, {item: hub_r, at: [wire_ail_hub_r_2_x, wire_ail_hub_r_2_y,
+             wire_ail_hub_r_2_z]}, {item: hub_r, at: [wire_ail_hub_r_3_x, wire_ail_hub_r_3_y, wire_ail_hub_r_3_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_0_x, wire_ail_wing_r_0_y, wire_ail_wing_r_0_z]}, {item: wing_r2, at: [
+             wire_ail_wing_r_1_x, wire_ail_wing_r_1_y, wire_ail_wing_r_1_z]}, {item: wing_r2, at: [wire_ail_wing_r_2_x,
+             wire_ail_wing_r_2_y, wire_ail_wing_r_2_z]}, {item: wing_r2, at: [wire_ail_wing_r_3_x, wire_ail_wing_r_3_y,
+             wire_ail_wing_r_3_z]}]}
+  - {id: ail_r_sig, from: fc, to: ail_servo_r, kind: signal, gauge: 28, color: orange, length_mm: 1000, pin: S5,
+      ends: {from: solder, to: plug}, note: Same 3-pin extension and route as power; secure strain relief without
+        restricting 65-degree sweep.,
+     route: [[wire_ail_fixed_r_0_x, wire_ail_fixed_r_0_y, wire_ail_fixed_r_0_z], [wire_ail_fixed_r_1_x, wire_ail_fixed_r_1_y,
+           wire_ail_fixed_r_1_z], [wire_ail_fixed_r_2_x, wire_ail_fixed_r_2_y, wire_ail_fixed_r_2_z], [wire_ail_fixed_r_3_x,
+           wire_ail_fixed_r_3_y, wire_ail_fixed_r_3_z], [wire_ail_fixed_r_4_x, wire_ail_fixed_r_4_y, wire_ail_fixed_r_4_z],
+         [wire_ail_fixed_r_5_x, wire_ail_fixed_r_5_y, wire_ail_fixed_r_5_z], [wire_ail_fixed_r_6_x, wire_ail_fixed_r_6_y,
+           wire_ail_fixed_r_6_z], [wire_ail_fixed_r_7_x, wire_ail_fixed_r_7_y, wire_ail_fixed_r_7_z], {item: hub_r,
+           at: [wire_ail_hub_r_0_x, wire_ail_hub_r_0_y, wire_ail_hub_r_0_z]}, {item: hub_r, at: [wire_ail_hub_r_1_x,
+             wire_ail_hub_r_1_y, wire_ail_hub_r_1_z]}, {item: hub_r, at: [wire_ail_hub_r_2_x, wire_ail_hub_r_2_y,
+             wire_ail_hub_r_2_z]}, {item: hub_r, at: [wire_ail_hub_r_3_x, wire_ail_hub_r_3_y, wire_ail_hub_r_3_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_0_x, wire_ail_wing_r_0_y, wire_ail_wing_r_0_z]}, {item: wing_r2, at: [
+             wire_ail_wing_r_1_x, wire_ail_wing_r_1_y, wire_ail_wing_r_1_z]}, {item: wing_r2, at: [wire_ail_wing_r_2_x,
+             wire_ail_wing_r_2_y, wire_ail_wing_r_2_z]}, {item: wing_r2, at: [wire_ail_wing_r_3_x, wire_ail_wing_r_3_y,
+             wire_ail_wing_r_3_z]}]}
+  - {id: sweep_l_pwr, from: esc.5v, to: sweep_servo_l, kind: power, v: 5, gauge: 24, color: red/black, length_mm: 650,
+      ends: {from: solder, to: plug}, note: Separate ESC 5 V BEC rail only. Retain stock servo plug; solder extension
+        to ESC 5V/GND and fit male connector at servo end. Do not join positive rail to FC Vx.,
+     route: [[wire_sweep_l_0_x, wire_sweep_l_0_y, wire_sweep_l_0_z], [wire_sweep_l_1_x, wire_sweep_l_1_y, wire_sweep_l_1_z],
+         [wire_sweep_l_2_x, wire_sweep_l_2_y, wire_sweep_l_2_z], [wire_sweep_l_3_x, wire_sweep_l_3_y, wire_sweep_l_3_z],
+         [wire_sweep_l_4_x, wire_sweep_l_4_y, wire_sweep_l_4_z], [wire_sweep_l_5_x, wire_sweep_l_5_y, wire_sweep_l_5_z],
+         [wire_sweep_l_6_x, wire_sweep_l_6_y, wire_sweep_l_6_z], [wire_sweep_l_7_x, wire_sweep_l_7_y, wire_sweep_l_7_z],
+         [wire_sweep_l_8_x, wire_sweep_l_8_y, wire_sweep_l_8_z], [wire_sweep_l_9_x, wire_sweep_l_9_y, wire_sweep_l_9_z]]}
+  - {id: sweep_l_sig, from: fc, to: sweep_servo_l, kind: signal, gauge: 24, color: orange, length_mm: 650, pin: S4,
+      ends: {from: solder, to: plug}, note: Signal shares the power lead route and the same 3-pin connector; common
+        ground is provided by the ESC/FC ground.,
+     route: [[wire_sweep_l_0_x, wire_sweep_l_0_y, wire_sweep_l_0_z], [wire_sweep_l_1_x, wire_sweep_l_1_y, wire_sweep_l_1_z],
+         [wire_sweep_l_2_x, wire_sweep_l_2_y, wire_sweep_l_2_z], [wire_sweep_l_3_x, wire_sweep_l_3_y, wire_sweep_l_3_z],
+         [wire_sweep_l_4_x, wire_sweep_l_4_y, wire_sweep_l_4_z], [wire_sweep_l_5_x, wire_sweep_l_5_y, wire_sweep_l_5_z],
+         [wire_sweep_l_6_x, wire_sweep_l_6_y, wire_sweep_l_6_z], [wire_sweep_l_7_x, wire_sweep_l_7_y, wire_sweep_l_7_z],
+         [wire_sweep_l_8_x, wire_sweep_l_8_y, wire_sweep_l_8_z], [wire_sweep_l_9_x, wire_sweep_l_9_y, wire_sweep_l_9_z]]}
+  - {id: ail_l_pwr, from: fc.vx, to: ail_servo_l, kind: power, v: 6, gauge: 28, color: red/black, length_mm: 1000,
+      ends: {from: solder, to: plug}, note: Bridge FC Vx=6V pads. Extension plug under pivot cap; moving waypoints
+        follow the hub and panel. Thread bare connector pins through 4 mm wing channel before housing assembly.,
+     route: [[wire_ail_fixed_l_0_x, wire_ail_fixed_l_0_y, wire_ail_fixed_l_0_z], [wire_ail_fixed_l_1_x, wire_ail_fixed_l_1_y,
+           wire_ail_fixed_l_1_z], [wire_ail_fixed_l_2_x, wire_ail_fixed_l_2_y, wire_ail_fixed_l_2_z], [wire_ail_fixed_l_3_x,
+           wire_ail_fixed_l_3_y, wire_ail_fixed_l_3_z], [wire_ail_fixed_l_4_x, wire_ail_fixed_l_4_y, wire_ail_fixed_l_4_z],
+         [wire_ail_fixed_l_5_x, wire_ail_fixed_l_5_y, wire_ail_fixed_l_5_z], [wire_ail_fixed_l_6_x, wire_ail_fixed_l_6_y,
+           wire_ail_fixed_l_6_z], [wire_ail_fixed_l_7_x, wire_ail_fixed_l_7_y, wire_ail_fixed_l_7_z], {item: hub_l,
+           at: [wire_ail_hub_l_0_x, wire_ail_hub_l_0_y, wire_ail_hub_l_0_z]}, {item: hub_l, at: [wire_ail_hub_l_1_x,
+             wire_ail_hub_l_1_y, wire_ail_hub_l_1_z]}, {item: hub_l, at: [wire_ail_hub_l_2_x, wire_ail_hub_l_2_y,
+             wire_ail_hub_l_2_z]}, {item: hub_l, at: [wire_ail_hub_l_3_x, wire_ail_hub_l_3_y, wire_ail_hub_l_3_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_0_x, wire_ail_wing_l_0_y, wire_ail_wing_l_0_z]}, {item: wing_l2, at: [
+             wire_ail_wing_l_1_x, wire_ail_wing_l_1_y, wire_ail_wing_l_1_z]}, {item: wing_l2, at: [wire_ail_wing_l_2_x,
+             wire_ail_wing_l_2_y, wire_ail_wing_l_2_z]}, {item: wing_l2, at: [wire_ail_wing_l_3_x, wire_ail_wing_l_3_y,
+             wire_ail_wing_l_3_z]}]}
+  - {id: ail_l_sig, from: fc, to: ail_servo_l, kind: signal, gauge: 28, color: orange, length_mm: 1000, pin: S6,
+      ends: {from: solder, to: plug}, note: Same 3-pin extension and route as power; secure strain relief without
+        restricting 65-degree sweep.,
+     route: [[wire_ail_fixed_l_0_x, wire_ail_fixed_l_0_y, wire_ail_fixed_l_0_z], [wire_ail_fixed_l_1_x, wire_ail_fixed_l_1_y,
+           wire_ail_fixed_l_1_z], [wire_ail_fixed_l_2_x, wire_ail_fixed_l_2_y, wire_ail_fixed_l_2_z], [wire_ail_fixed_l_3_x,
+           wire_ail_fixed_l_3_y, wire_ail_fixed_l_3_z], [wire_ail_fixed_l_4_x, wire_ail_fixed_l_4_y, wire_ail_fixed_l_4_z],
+         [wire_ail_fixed_l_5_x, wire_ail_fixed_l_5_y, wire_ail_fixed_l_5_z], [wire_ail_fixed_l_6_x, wire_ail_fixed_l_6_y,
+           wire_ail_fixed_l_6_z], [wire_ail_fixed_l_7_x, wire_ail_fixed_l_7_y, wire_ail_fixed_l_7_z], {item: hub_l,
+           at: [wire_ail_hub_l_0_x, wire_ail_hub_l_0_y, wire_ail_hub_l_0_z]}, {item: hub_l, at: [wire_ail_hub_l_1_x,
+             wire_ail_hub_l_1_y, wire_ail_hub_l_1_z]}, {item: hub_l, at: [wire_ail_hub_l_2_x, wire_ail_hub_l_2_y,
+             wire_ail_hub_l_2_z]}, {item: hub_l, at: [wire_ail_hub_l_3_x, wire_ail_hub_l_3_y, wire_ail_hub_l_3_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_0_x, wire_ail_wing_l_0_y, wire_ail_wing_l_0_z]}, {item: wing_l2, at: [
+             wire_ail_wing_l_1_x, wire_ail_wing_l_1_y, wire_ail_wing_l_1_z]}, {item: wing_l2, at: [wire_ail_wing_l_2_x,
+             wire_ail_wing_l_2_y, wire_ail_wing_l_2_z]}, {item: wing_l2, at: [wire_ail_wing_l_3_x, wire_ail_wing_l_3_y,
+             wire_ail_wing_l_3_z]}]}
+  - {id: elev_pwr, from: fc.vx, to: elev_servo, kind: power, v: 6, gauge: 28, color: red/black, length_mm: 1200,
+      ends: {from: solder, to: plug}, note: '6 V surface rail, through side opening then EXTERNALLY along boom
+        underside; no lead passes through the boom clamp cross-screw. Separate removable 3-pin tail plug.',
+     route: [[wire_elev_0_x, wire_elev_0_y, wire_elev_0_z], [wire_elev_1_x, wire_elev_1_y, wire_elev_1_z], [wire_elev_2_x,
+           wire_elev_2_y, wire_elev_2_z], [wire_elev_3_x, wire_elev_3_y, wire_elev_3_z], [wire_elev_4_x, wire_elev_4_y,
+           wire_elev_4_z], [wire_elev_5_x, wire_elev_5_y, wire_elev_5_z], [wire_elev_6_x, wire_elev_6_y, wire_elev_6_z],
+         [wire_elev_7_x, wire_elev_7_y, wire_elev_7_z], [wire_elev_8_x, wire_elev_8_y, wire_elev_8_z], [wire_elev_9_x,
+           wire_elev_9_y, wire_elev_9_z]]}
+  - {id: elev_sig, from: fc, to: elev_servo, kind: signal, gauge: 28, color: orange, length_mm: 1200, pin: S7,
+      ends: {from: solder, to: plug}, note: Same external three-conductor lead as power.,
+     route: [[wire_elev_0_x, wire_elev_0_y, wire_elev_0_z], [wire_elev_1_x, wire_elev_1_y, wire_elev_1_z], [wire_elev_2_x,
+           wire_elev_2_y, wire_elev_2_z], [wire_elev_3_x, wire_elev_3_y, wire_elev_3_z], [wire_elev_4_x, wire_elev_4_y,
+           wire_elev_4_z], [wire_elev_5_x, wire_elev_5_y, wire_elev_5_z], [wire_elev_6_x, wire_elev_6_y, wire_elev_6_z],
+         [wire_elev_7_x, wire_elev_7_y, wire_elev_7_z], [wire_elev_8_x, wire_elev_8_y, wire_elev_8_z], [wire_elev_9_x,
+           wire_elev_9_y, wire_elev_9_z]]}
+  - {id: rud_pwr, from: fc.vx, to: rud_servo, kind: power, v: 6, gauge: 28, color: red/black, length_mm: 1200,
+      ends: {from: solder, to: plug}, note: '6 V surface rail, through side opening then EXTERNALLY along boom
+        underside; no lead passes through the boom clamp cross-screw. Separate removable 3-pin tail plug.',
+     route: [[wire_rud_0_x, wire_rud_0_y, wire_rud_0_z], [wire_rud_1_x, wire_rud_1_y, wire_rud_1_z], [wire_rud_2_x, wire_rud_2_y,
+           wire_rud_2_z], [wire_rud_3_x, wire_rud_3_y, wire_rud_3_z], [wire_rud_4_x, wire_rud_4_y, wire_rud_4_z],
+         [wire_rud_5_x, wire_rud_5_y, wire_rud_5_z], [wire_rud_6_x, wire_rud_6_y, wire_rud_6_z], [wire_rud_7_x, wire_rud_7_y,
+           wire_rud_7_z], [wire_rud_8_x, wire_rud_8_y, wire_rud_8_z], [wire_rud_9_x, wire_rud_9_y, wire_rud_9_z]]}
+  - {id: rud_sig, from: fc, to: rud_servo, kind: signal, gauge: 28, color: orange, length_mm: 1200, pin: S8, ends: {
+        from: solder, to: plug}, note: Same external three-conductor lead as power.,
+     route: [[wire_rud_0_x, wire_rud_0_y, wire_rud_0_z], [wire_rud_1_x, wire_rud_1_y, wire_rud_1_z], [wire_rud_2_x, wire_rud_2_y,
+           wire_rud_2_z], [wire_rud_3_x, wire_rud_3_y, wire_rud_3_z], [wire_rud_4_x, wire_rud_4_y, wire_rud_4_z],
+         [wire_rud_5_x, wire_rud_5_y, wire_rud_5_z], [wire_rud_6_x, wire_rud_6_y, wire_rud_6_z], [wire_rud_7_x, wire_rud_7_y,
+           wire_rud_7_z], [wire_rud_8_x, wire_rud_8_y, wire_rud_8_z], [wire_rud_9_x, wire_rud_9_y, wire_rud_9_z]]}
+  - {id: gps_uart, from: fc, to: gps, kind: signal, gauge: 28, color: white/green/blue/yellow, length_mm: 350,
+      conductors: 4, note: 'GPS TX->FC RX4, GPS RX->FC TX4; compass SDA/SCL->FC SDA/SCL. Shared ground is in gps_5v.',
+     route: [[wire_gps_0_x, wire_gps_0_y, wire_gps_0_z], [wire_gps_1_x, wire_gps_1_y, wire_gps_1_z]]}
+  - {id: crsf, from: fc, to: receiver, kind: signal, gauge: 28, color: white/green, length_mm: 150, conductors: 2,
+      note: 'Receiver TX->RX2, receiver RX->TX2 (CRSF). Ground is in rx_5v.',
+     route: [[wire_rx_0_x, wire_rx_0_y, wire_rx_0_z], [wire_rx_1_x, wire_rx_1_y, wire_rx_1_z]]}
+  - {id: camera_video, from: camera, to: fc, kind: signal, gauge: 28, color: yellow, length_mm: 300, note: Camera
+        video->Cam pad; ground is in camera_5v.,
+     route: [[wire_camera_3_x, wire_camera_3_y, wire_camera_3_z], [wire_camera_2_x, wire_camera_2_y, wire_camera_2_z],
+         [wire_camera_1_x, wire_camera_1_y, wire_camera_1_z], [wire_camera_0_x, wire_camera_0_y, wire_camera_0_z]]}
+  - {id: vtx_video, from: fc, to: vtx, kind: signal, gauge: 28, color: yellow/white, length_mm: 500, conductors: 2,
+      note: FC VTx video-out->TX800 video-in; TX3->TX800 SmartAudio control. Ground is in vtx_5v.,
+     route: [[wire_vtx_0_x, wire_vtx_0_y, wire_vtx_0_z], [wire_vtx_1_x, wire_vtx_1_y, wire_vtx_1_z], [wire_vtx_2_x, wire_vtx_2_y,
+           wire_vtx_2_z]]}
+bom_extra:
+- type: hardware
+  item: 'Pololu #1931 male 0.1 in crimp pin'
+  qty: 18
+  price_key: electronics.connectors.crimp_pin_male_pololu1931
+  spec: Three male pins at each of six servo-extension ends; retain factory servo female plugs. 22-28 AWG supported.
+    Current rating unpublished.
+- type: hardware
+  item: 'Pololu #1902 1x3 0.1 in crimp housing'
+  qty: 6
+  price_key: electronics.connectors.servo_housing_1x3_pololu1902
+  spec: One housing for the three male pins at each servo-extension end; mark signal/red+/ground and secure against
+    unplugging.
 requirements:
 - id: sm_spread
   check: static_margin_tail

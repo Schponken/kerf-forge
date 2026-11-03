@@ -702,6 +702,14 @@
     "source": "https://www.pololu.com/product/1902",
     "note": "Pololu #1902 1x3 crimp housing 25-pack, $2.54 at qty 1 (Pololu prices the pack as the item). UNIT = housings."
   },
+  "electronics.connectors.crimp_pin_male_pololu1931": {
+    "buy": "https://www.pololu.com/product/1931",
+    "pack_qty": 100,
+    "pack_usd": 17.95,
+    "checked": "2026-11-02",
+    "source": "https://www.pololu.com/product/1931",
+    "note": "Pololu #1931 male crimp pins, 100-pack; opened price $17.95 at quantity 1. Unit is one pin."
+  },
   "electronics.connectors.crimp_pin_female_pololu1930": {
     "buy": "https://www.pololu.com/product/1930",
     "pack_qty": 100,
