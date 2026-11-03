@@ -161,6 +161,8 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 
 ## Studio + viewer features (Spencer's picks, 2026-11-01)
 
+- [ ] Tune experience: a deliberate parameter workbench with reversible draft changes, accessible value errors, clear units and ranges, and truthful recorded-trial context; mocked desktop/mobile checks only.
+
 - [x] Project workspace redesign: readable keyboard-accessible descriptions, contained keyboard tabs, a responsive model workspace, and truthful build/check context with clear next steps; preserve existing project actions and verify desktop/mobile fixtures.
 - [x] Viewer cut-away: a slider slices the model on X / Y / Z (flip side), cut faces drawn solid so walls, channels and inserts read as a section; works with explode, joints and every other mode
 - [x] Viewer stress colours: each FEA-checked part coloured on the 3D model by how much of its allowed stress it uses (worst load case), legend, value under the pointer; parts without FEA say so

@@ -974,3 +974,19 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+## 2026-11-02 — Tune experience (Codex, in review)
+- Replaced Tune's nested cards with an unboxed measurements/materials workbench and a saved-to-edited draft ledger.
+  Each parameter and material has Undo; discard resets the draft. Typing/keyboard sliders update actions immediately
+  without losing focus. Blank, nonfinite, nondecimal and declared out-of-range values stay editable with an associated
+  error and block Try/Save; the last valid edit remains intact. Units, assumptions and range provenance stay visible.
+- Trials now identify their recorded values and distinguish them from later edits. Copy promises enabled checks only;
+  paused stress checks do not prove strength. Material density is no longer called weight; catalog strength is distinct
+  from part strength. Existing requirement effects and better/worse comparison logic are retained.
+- Save and Try snapshot the original project and inputs and suppress duplicate dispatch. Successful parameter saves
+  clear only acknowledged parameter edits; if the material save fails, those edits remain for retry. Responses from
+  another project cannot clear the newly selected project's draft. Backend parameter/material writer fixes are separate.
+- Mocked `tests/test_tune_experience.py`: 1 passed in 6.60 s across desktop/phone and both themes, including partial save
+  failure and navigation during save. Initial mock run used an empty glossary and failed before Tune assertions; fixed
+  the fixture to supply a normal glossary term. Existing assertions were not changed. Final shared-shell visual
+  confirmation is pending; no geometry, build, full suite, native app or live provider job was run. Batch remains HELD.
