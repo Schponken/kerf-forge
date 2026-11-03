@@ -52,3 +52,5 @@ STATUS.md entry listing what Codex merged (`git log --merges --since=2026-11-02`
 ## Resource review
 
 - Assembly demonstrations (2026-11-02): reviewed; keep the existing viewer and catalog-backed interface coordinates. Procedural tool illustrations preserve exact alignment and replay without adding an asset pipeline. Revisit only if the guide needs tool shapes or hand motions that the current viewer cannot explain clearly. No external resource lookup or installation was needed.
+
+- Strength runtime (2026-11-02): reviewed; improve the existing pause/report freshness path and keep gmsh + scikit-fem. The current solver already has analytical validation and bounded-memory safeguards; the concrete gap is saved paused evidence surviving activation. No migration or additional tool is justified. Revisit only for a reproduced solver accuracy or capacity failure after this activation fix.

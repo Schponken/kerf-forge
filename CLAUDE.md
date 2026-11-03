@@ -148,10 +148,12 @@ Other Claude sessions may be working in this repo at the same time. To never bre
 
 ## Paused work
 
-- **Stress simulations are paused** (Spencer, 2026-11-02, "we will work on that later"): `PAUSED.json` at the repo
-  root turns off every FEA-backed check (fea_static, impact_fea, stop_impact, natural_freq, drop_impact, weak_link);
-  they report PAUSED / NOT RUN and the report warns that strength is unproven. Don't run them (`KERF_STRESS=1`), don't
-  claim `PAUSED:` PLAN items, and don't call a part strong because a paused check shows no failure. Delete the key to resume.
+- **Strength simulations resumed** (Spencer, 2026-11-02, "you can resume the strength simulations too"):
+  the `stress_sims` pause key is removed from `PAUSED.json`; FEA-backed checks run normally. Existing saved reports
+  with paused/skipped strength checks remain unproven until rebuilt. Unrelated pause flags and the full-suite batch
+  hold stay in force. Strength improvement work prioritizes normal flight and operating loads; existing crash/impact
+  checks remain intact, but crash optimization is not the current objective. Future strength pauses still use the
+  `stress_sims` key; `KERF_STRESS=1` overrides it for one run.
 
 ## Escape hatch (rare)
 

@@ -23,7 +23,7 @@ Updated 2026-11-02 22:05 UTC. Sessions are named by their task (claim id in brac
   vs. mounting holes; predates today's merges). Needs a sourced catalog fix, not a loosened test. Free for a session.
 
 ## Paused
-- Stress simulations (all FEA-backed checks) PAUSED by Spencer: PAUSED.json; 4 PLAN items marked PAUSED:.
+- Strength simulations resumed by Spencer (2026-11-02). `PAUSED.json` no longer disables FEA-backed checks; the four previously paused follow-ups are open. Saved paused checks remain unproven until rebuilt.
 
 ## Batch verify
 - ON HOLD (Spencer) until the other sessions finish; `tools/batch_verify.py status` shows HELD. No batch recorded yet.

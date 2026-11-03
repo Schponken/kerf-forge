@@ -29,8 +29,8 @@ EXISTING, NEW, PLAN = "existing check run earlier", "new check", "planning step"
 # headline (first 140 characters) counts double. Below MIN_SCORE a problem is "unclassified".
 RULES = [
     ("strength-size-from-loads", "strength", "Size load-carrying parts from their loads (section, material, safety factor) before detail drawing.",
-     "rough", EXISTING, "the *_fea / fea_static / cantilever_stress requirements run on the rough parts (stress checks are paused in this repo, "
-     "see PAUSED.json: until resumed, a hand check of the section in DESIGN.md)",
+     "rough", EXISTING, "the *_fea / fea_static / cantilever_stress requirements run on the rough parts "
+     "(if PAUSED.json disables stress checks, strength remains unproven until they run)",
      [r"!_fea\b", r"!\bfea\b", r"!von mises", r"!\bmpa\b", r"!safety factor", r"!\bsnap", r"!fatigue", r"!times over", r"!load path", r"!\bstress",
       r"!too thin", r"!bending", r"!deflect", r"yield", r"strength", r"section"]),
     ("strength-infill-and-walls", "strength", "Set infill, walls and minimum wall thickness for each part from its load when the part is first drawn, not at review.",
