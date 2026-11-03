@@ -159,7 +159,7 @@ def render_md(data: dict) -> str:
          f"Projects read: {', '.join(data['projects'])}.", ""]
     heads = {"proposed gate": "Proposed gates (need Spencer's approval)", "instruction": "Instructions (seen in 2+ projects)", "note": "Notes (seen once)"}
     for lv in LEVELS:
-        rows = [r for r in data["lessons"] if r["level"] == lv and r["id"] != OTHER_ID]
+        rows = [r for r in data["lessons"] if r["level"] == lv and r["id"] != OTHER_ID and not r.get("historical_only")]
         if not rows:
             continue
         L += [f"## {heads[lv]}", ""]
@@ -178,11 +178,15 @@ def run(project: str | None = None, repo: Path | str | None = None) -> dict:
     if project:
         diary.write(repo, project)
     ds = [json.loads(f.read_text(encoding="utf-8")) for f in sorted((repo / "learning" / "diary").glob("*.json")) if not f.name.endswith(".sessions.json")]
-    data = group(ds)
-    (repo / "learning" / "lessons.json").write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
-    (repo / "learning" / "LESSONS.md").write_text(render_md(data), encoding="utf-8")
+    from . import scorecards
+    with scorecards.locked(repo):
+        data = scorecards.preserve(group(ds), scorecards.read(repo))
+        scorecards.write(data, repo)
+        (repo / "learning" / "LESSONS.md").write_text(render_md(data), encoding="utf-8")
     lines = []
     for r in data["lessons"]:
+        if r.get("historical_only"):
+            continue
         mine = [e for e in r["evidence"] if not project or e["project"] == project]
         if mine:
             late = f"found at {mine[0]['stage']}, catchable at {r['earliest_stage']}" if r["earliest_stage"] else "unclassified"
