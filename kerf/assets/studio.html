@@ -1423,7 +1423,7 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
-  S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
+  S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.work = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
       <div id="ready"></div>

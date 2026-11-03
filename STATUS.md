@@ -851,3 +851,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - 14 combined focused tests PASS in 13.50 s: index lifecycle, dirty-feature preservation, mid-rebase refusal,
   shared readers/refresh, Codex publisher metadata, Activity browser and API guards. Earlier 41 publisher and
   29 reader results remain separate historical selections, not an accumulated unique count. No full batch or FEA.
+
+## 2026-11-02 — Keep New design open after leaving Work (Codex, handoff-refresh)
+- Leaving Work for New design now clears the Work navigation flag, so an in-flight Work response or later poll cannot replace the request being typed. One state reset; no layout change. This follow-up carries the fix that was pushed after the manager captured PR #11 for merging.
+- Three focused browser tests pass: delayed Work response, scenario option flow and existing Work-page filters/progress/recovery. Parent independently reviewed the one-line fix and deferred-response regression. No full suite, hardware or paid model run.
