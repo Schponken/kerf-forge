@@ -333,3 +333,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
 
 - [ ] Round two integration: combine ten autonomous Studio/engineering improvements, verify shared behavior, and install tested application updates with preserved project edits.
+- [x] Build cache write efficiency: serialize exact part geometry once while preserving read-back validation, atomic writes, dependency provenance and cache failure fallback; focused regression tests.
