@@ -70,8 +70,8 @@ parts:
   anchor: {file: parts/anchor.py, material: PETG, print_rot: [0, 0, 0], infill: 0.6, load_axis: x}
   bipod_l: {file: parts/bipod_mount.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: z, params: {side: 1}}
   bipod_r: {file: parts/bipod_mount.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: z, params: {side: -1}}
-  foot_l: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z}
-  foot_r: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z}
+  foot_l: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z, params: {side: 1}}
+  foot_r: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z, params: {side: -1}}
   nose_block: {file: parts/nose_block.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, z]}
   pulley: {file: parts/pulley.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, z]}
   brake_l: {file: parts/brake_post.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, y], params: {side: 1}}
@@ -165,7 +165,10 @@ purchased:
   wheel_3: {catalog: motion.vwheel_delrin_solid, proxy: bearing, mass_g: 15, held_by: "M5 axle screw from the sled top through an eccentric spacer (sets the wheel preload), the wheel and an M5 nyloc"}
   wheel_4: {catalog: motion.vwheel_delrin_solid, proxy: bearing, mass_g: 15, held_by: "M5 axle screw from the sled top through an eccentric spacer (sets the wheel preload), the wheel and an M5 nyloc"}
   tail_pin: {catalog: rods.ss_rod_5, proxy: rod, length: 50, held_by: "pressed through the sled's tail lugs; the trigger hook and the cocking line bear on the roller"}
-  tail_roller: {catalog: bearings.625, proxy: bearing, held_by: "on the tail pin between the sled's tail lugs"}
+  tail_roller_1: {catalog: bearings.625, proxy: bearing, held_by: "on the tail pin between the sled's tail lugs (the trigger hook bears on the pair)"}
+  tail_roller_2: {catalog: bearings.625, proxy: bearing, held_by: "on the tail pin between the sled's tail lugs (the trigger hook bears on the pair)"}
+  post_l: {catalog: motion.rod_8mm_smooth, proxy: rod, length: 40, held_by: "pressed into the left brake post top and bottom; the brake cords turn round it"}
+  post_r: {catalog: motion.rod_8mm_smooth, proxy: rod, length: 40, held_by: "pressed into the right brake post top and bottom; the brake cords turn round it"}
   axle: {catalog: motion.rod_8mm_smooth, proxy: rod, length: 100, held_by: "pressed through the nose block's two cheeks"}
   pulley_brg_1: {catalog: bearings.608, proxy: bearing, held_by: "pressed into the pulley hub"}
   pulley_brg_2: {catalog: bearings.608, proxy: bearing, held_by: "pressed into the pulley hub"}
@@ -220,7 +223,10 @@ assembly:
     - {parent: sled.wheel_3, child: wheel_3.face}
     - {parent: sled.wheel_4, child: wheel_4.face}
     - {parent: sled.tail_pin, child: tail_pin.mid}
-    - {parent: sled.tail_roller, child: tail_roller.face}
+    - {parent: sled.tail_roller_1, child: tail_roller_1.face}
+    - {parent: sled.tail_roller_2, child: tail_roller_2.face}
+    - {parent: brake_l.post, child: post_l.end_a}
+    - {parent: brake_r.post, child: post_r.end_a}
     - {parent: sled.strands, child: strands_top.tail}
     - {parent: sled.cradle, child: cradle.base}
     - {parent: cradle.fly_off, child: drone.bottom, name: fly_off, range: [0, 700], home: 0}
@@ -246,7 +252,8 @@ assembly:
     - {pair: [wheel_4, sec3], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
     - {pair: [wheel_4, sec4], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
     - {pair: [strands_top, pulley], max_mm3: 200000, why: "at the end of the stroke the latex wraps the pulley; the box only stands for the straight top leg ahead of the sled"}
-    - {pair: [trigger, tail_roller], max_mm3: 3000, why: "the trigger hook holds the sled's tail roller when cocked and is pulled clear before the sled moves (the sled sweep runs with the trigger at home); hook_seat proves the cocked fit"}
+    - {pair: [trigger, tail_roller_1], max_mm3: 3000, why: "the trigger hook holds the sled's tail roller when cocked and is pulled clear before the sled moves (the sled sweep runs with the trigger at home); hook_seat proves the cocked fit"}
+    - {pair: [trigger, tail_roller_2], max_mm3: 3000, why: "the trigger hook holds the sled's tail rollers when cocked and is pulled clear before the sled moves; hook_seat proves the cocked fit"}
   sweeps:
     - {joint: sled_travel, samples: 113}
     - {joint: fold_a, samples: 13}
@@ -280,7 +287,7 @@ requirements:
     start_mm: "START_LEN[0]"
     end_mm: "END_LEN[0]"
     payload_g: drone_g
-    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller_1, tail_roller_2, cradle]
     angle_deg: rail_deg
     rolling_mu: 0.05
     min_speed_m_s: "1.2 * drone_stall"
@@ -298,7 +305,7 @@ requirements:
     start_mm: "START_LEN[0]"
     end_mm: "END_LEN[0]"
     payload_g: 2000
-    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller_1, tail_roller_2, cradle]
     angle_deg: rail_deg
     rolling_mu: 0.05
     min_speed_m_s: 14.4
@@ -317,7 +324,7 @@ requirements:
     start_mm: "START_LEN[0]"
     end_mm: "END_LEN[0]"
     payload_g: 300
-    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller_1, tail_roller_2, cradle]
     angle_deg: rail_deg
     rolling_mu: 0.05
     min_speed_m_s: 6.9
@@ -336,7 +343,7 @@ requirements:
     start_mm: "START_LEN[0]"
     end_mm: "END_LEN[0]"
     payload_g: 2000
-    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller_1, tail_roller_2, cradle]
     angle_deg: rail_deg
     rolling_mu: 0.05
     brake: {elastic: motion.latex_tubing, curve: force_curve_premium, strands: 6, half_gap_mm: brake_w, free_mm: 600, rest_mm: 300, max_stop_mm: brake_stop_max}
@@ -362,7 +369,7 @@ requirements:
     check: clearance_min
     why: "cocked: the trigger hook sits in front of the sled's tail roller without cutting into it (0.3 mm gap that closes under the strand pull)"
     a: trigger
-    b: tail_roller
+    b: tail_roller_1
     min_mm: 0.1
   - {id: fold_a_stop, check: hard_stop, joint: fold_a, beyond: 3, why: "joint A cannot fold past straight: the blocks' end faces butt"}
   - {id: fold_b_stop, check: hard_stop, joint: fold_b, beyond: -3, why: "joint B cannot fold past straight"}
@@ -377,4 +384,4 @@ requirements:
     why: "the launcher (no drone, stakes and pins outside the model) stays under 6 kg to carry with one hand"
     advisory: "a carry target, not a safety or function limit"
     max_g: 6000
-    include: [rear_foot, rear_block, trigger, hinge_aft_a, hinge_aft_b, hinge_aft_c, hinge_fwd_a, hinge_fwd_b, hinge_fwd_c, anchor_rack_a, anchor_rack_b, anchor, bipod_l, bipod_r, foot_l, foot_r, nose_block, pulley, brake_l, brake_r, sled, cradle, pedal_base, pedal, sec1, sec2, sec3, sec4, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, axle, pulley_brg_1, pulley_brg_2, leg_l, leg_r, strands_top]
+    include: [rear_foot, rear_block, trigger, hinge_aft_a, hinge_aft_b, hinge_aft_c, hinge_fwd_a, hinge_fwd_b, hinge_fwd_c, anchor_rack_a, anchor_rack_b, anchor, bipod_l, bipod_r, foot_l, foot_r, nose_block, pulley, brake_l, brake_r, sled, cradle, pedal_base, pedal, sec1, sec2, sec3, sec4, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller_1, tail_roller_2, post_l, post_r, axle, pulley_brg_1, pulley_brg_2, leg_l, leg_r, strands_top]

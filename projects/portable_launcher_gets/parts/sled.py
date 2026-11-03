@@ -33,7 +33,8 @@ def build(ctx):
     for i, (x, y) in enumerate([(50, p.WHEEL_Y), (-50, p.WHEEL_Y), (50, -p.WHEEL_Y), (-50, -p.WHEEL_Y)], 1):
         ctx.rigid(f"wheel_{i}", Location((x, y, wz)))
     ctx.rigid("tail_pin", Location((-hl + 6, 0, 10), (-90, 0, 0)))
-    ctx.rigid("tail_roller", Location((-hl + 6, -2.5, 10), (-90, 0, 0)))
+    ctx.rigid("tail_roller_1", Location((-hl + 6, -5, 10), (-90, 0, 0)))
+    ctx.rigid("tail_roller_2", Location((-hl + 6, 0, 10), (-90, 0, 0)))
     ctx.rigid("strands", Location((p.TOW_DX, 0, p.Z_TOP - p.H)))
     ctx.rigid("cradle", Location((0, 0, 12)))
     return ctx.finish(s)

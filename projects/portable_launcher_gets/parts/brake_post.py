@@ -29,7 +29,7 @@ def build(ctx):
     sd = int(p.side)
     s = _box(-265, 10, min(sd * 10, sd * 18), max(sd * 10, sd * 18), -12, 18)
     s += _box(-8, 8, min(sd * 18, sd * (p.brake_w + 6)), max(sd * 18, sd * (p.brake_w + 6)), 0, 12)
-    s += Pos(0, sd * p.brake_w, 0) * Cylinder(6, 55, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    s += Pos(0, sd * p.brake_w, 0) * Cylinder(8, 20, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(0, sd * p.brake_w, 0) * Cylinder(4, 50, align=(Align.CENTER, Align.CENTER, Align.MIN))
     cut = None
     for x in (-250, -125, -20):
         loc = Location((x, sd * 18, 10), (-90 * sd, 0, 0))
@@ -37,4 +37,5 @@ def build(ctx):
         cut = c if cut is None else cut + c
     s -= cut
     ctx.rigid("section", Location((0, 0, 0)))
+    ctx.rigid("post", Location((0, sd * p.brake_w, 20)))
     return ctx.finish(s)

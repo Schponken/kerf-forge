@@ -131,3 +131,107 @@ carry the joint blocks, the bipod and the brake posts.
 | cradle | per-drone seat from the template (example: drone_foldable_wings) | PETG | upright | x |
 | pedal_base | staked base of the release pedal | PETG | flat | x |
 | pedal | treadle on a pin, pulls the release line | PETG | flat | x |
+
+## Load cases (worst = stiff latex at 6 x 10, `launch_peak`; FEA is paused, so `cantilever_stress` hand checks carry the proof)
+| Load | Value | Where it goes |
+|---|---|---|
+| Strand pull, cocked | P = 474 N (6 x 79 N at 300 %; commodity 229 N) | sled tow hooks (79 N each) -> sled -> tail rollers -> trigger hook -> trigger pin -> rear block -> rail end face; anchor hooks -> anchor -> QR notch pin -> rack -> rack_a's front end butts hinge_aft_b (T-nut friction is the backup) |
+| Nose pulley | 2P = 948 N rearward on the 8 mm axle | axle -> two axle cheeks in compression -> nose block cap -> rail end face |
+| Brake peak on the sled | 860 N (commodity 406 N) | bumper face -> sled body; cradle pins carry the cradle's own inertia (~0.15 kg x 210 g = 310 N) |
+| Brake cord on each post | 340 N resultant at rest (pre-stretch, stiff latex), 430 N along the rail on the rear anchor at the end of a stop | steel post (8 mm rod, both ends held) -> post block -> 3 T-nuts; rear cord anchor -> post block |
+| Launch recoil on the ground | up to P along the rail, then the brake pushes it forward | rail -> rear block pivot (centre line, no bending) -> 5 mm pin -> rear foot -> 4 stakes |
+| Fold joint bending | +-20 N m static (sled + drone over a joint, the 0.7 m nose overhang), x2 dynamic = 40 N m | butt of the rail ends on one face, 2 QR pins at the other (40 mm lever) -> 500 N per pin side through the lugs |
+| Bipod | ~30 N per leg static, A-frame takes side loads axially | tube -> socket -> 2 T-nuts |
+
+## Part contracts (frames and names from parts/layout.py; every value below is a layout or param name, not a copy)
+Common: PETG, M5 tee-nut screws (catalog motion.tnut_m5_vslot) through **6 mm** of printed wall (TNUT_GRIP, counterbore deeper walls) so the
+fastener check picks a 12 mm screw; T-nut screw rows on the lower side slots at z = 10 (|y| = 10 faces) and the bottom slot (y = 0, z = 0),
+`iface.bolt_pattern(..., "clearance", 6)` with the same group as the section's sites (project.yaml `sec*` sites). Nothing printed may enter
+the sled's swept envelope: |y| <= 36 for z >= 41 (plate, bumper, cradle), |y| <= 33 for 23.5 <= z <= 36.5 (wheels). Strands run over the
+rail at z = Z_TOP (68) and under it at z = Z_BOT (-28) for |y| <= 31 (STRAND_Y +- 4.5): keep that clear from the pulley to the anchor.
+
+- **rear_foot** (root, world: ground z = 0, X forward): plate >= 8 mm, ~170 x 130, flat boot pad; 4 stake holes dia 7 at 45 deg (heads
+  leaning toward the nose so a backward pull drives them in); two knuckles either side of the rear block holding a rods.ss_rod_5 pin
+  (press here, free in the rear block, pin group `rail_pivot`, span = a stocked length 50) on the axis (0, y, pivot_h) along Y; revolute
+  `rail_pivot` Axis((0, 0, pivot_h), (0, -1, 0)) range (8, 14); rigid `pedal_spot` (-350, 160, 0). Clear the rear block over 8-14 deg.
+- **rear_block** (rail frame, section 1 rear end face at x = 0): cap over the end face (x < 0), cheeks + bottom with group `s1_rear`
+  (side screws x = 15, 45; bottom x = 30); knuckle on the pivot axis (pivot_x, 0, pivot_z) = the rail's centre line, rigid `pivot`
+  Location((pivot_x, 0, pivot_z), (90, 0, -90)); rigid `section` (0, 0, 0); linear `sled_travel` Axis((X_S0, 0, H), (1, 0, 0)) range
+  (0, TRAVEL_MAX). A tower behind/over the rail end (x <= 18, the cocked sled's rear is at x = 20) carries the trigger pivot: revolute
+  `trigger` Axis((x_tr, 0, z_tr), (0, 1, 0)) range (-25, 0) with a rods.ss_rod_5 pivot pin (press in the tower, free in the trigger,
+  group `trigger_pin`), z_tr 3-4 mm BELOW the strand pull line through the tail-roller centre (rail z 50) so the pull closes the hook;
+  a hard stop for the latched angle; the safety pin: motion.qr_pin_6mm, fit "lock", group `safety`, through both tower cheeks and the
+  trigger (grip 25 or 30), locking `trigger`; an eye for the cocking line on the tower top; a guide hole that turns the pedal line from
+  the trigger's lower arm down to ground level. Load: P through the trigger pin; cocking line ~P/2.
+- **trigger** (frame: pivot at origin, Y = pivot axis; rigid `pivot` Location((0, 0, 0), (-90, 0, -90))): hook 9 mm wide (fits
+  between the sled's tail lugs) closing in front of the two tail rollers (rail centre (26, 50), OD 16) with 0.3 mm gap at home
+  (`hook_seat`); release = rotate to -25 deg (hook front goes up, clears the rollers); lower arm with a line hole for the pedal line
+  (~60 mm from the pivot); hole for the safety pin; P = 474 N on the hook; infill 100 %.
+- **hinge_aft** (on a section's FRONT end, block frame body x < 0, items hinge_aft_a/b/c, params jt, sec) and **hinge_fwd** (on the next
+  section's REAR end, body x > 0, items hinge_fwd_a/b/c): cheeks |y| 10-16 on the lower side faces z -9..20 and a bottom plate z -9..0,
+  T-nut groups `s{sec}_front` (aft: x = -15, -45 sides, -30 bottom) / `s{sec}_rear` (fwd: 15, 45, 30); outboard webs at |y| >= 34 up to
+  the top lugs; lugs r 8 round the pin axes (0, +-pin_off): hinge_aft at z LUGS_AFT, hinge_fwd at LUGS_FWD (stack -9..41 = the 50 mm QR
+  grip); every lug `iface.pin_hole(ctx, "motion.qr_pin_6mm", Location((0, +-pin_off, z_top_of_lug)), f"fold{jt}_pos"/"_neg", LUG_T,
+  fit="lock")`; 0.5 mm radial clearance round the other block's lugs through 180 deg of fold; end faces flush with the rail end (x = 0)
+  so the joint cannot over-fold (`fold_*_stop`). hinge_aft: rigid `section` (0, 0, 0), revolutes `fold_neg` Axis((0, -pin_off, 0),
+  (0, 0, 1)) range (-180, 0) and `fold_pos` Axis((0, pin_off, 0), (0, 0, 1)) range (0, 180). hinge_fwd: rigid `section` (0, 0, 0),
+  `pin_neg` (0, -pin_off, 0), `pin_pos` (0, pin_off, 0). Folded, the sections stack 2 pin_off = 88 mm apart side by side.
+- **anchor_rack** (x2, under section 2's bottom face, frame = its first notch on the rail bottom centre line, z = 0 = rail bottom;
+  param first_notch 1 / 6): bar z -10..0, 5 vertical dia-6 QR holes (fit "lock") at x = 0, -notch_pitch, ... -4 notch_pitch, numbers
+  embossed on both sides; T-nuts in the bottom slot, heads counterbored flush (the anchor slides under): rack_a x = -175, -25 group
+  `s2_rack_a`, rack_b x = -200, -50 group `s2_rack_b`; rack_a's front end reaches rail x = 1440 (butts hinge_aft_b), rack_b butts
+  rack_a. Only the rack holding `notch` registers its hole as group `anchor_notch` (lock). rack_a has linear `slide`
+  Axis((0, 0, 0), (-1, 0, 0)) range (0, 9 notch_pitch); rigid `section` (0, 0, 0) on both.
+- **anchor** (frame: on its QR pin axis at the rail bottom centre line; rigid `rack` (0, 0, 0)): slides along the rack, QR pin
+  (lock, group `anchor_notch`) through it and the rack; 6 open hooks at x = +30, y = STRAND_Y, z = Z_BOT (strand loops drop on from
+  above, pull +X, 79 N each); rigid `hook_mid` (30, STRAND_Y[3], Z_BOT), `hook_out` (30, STRAND_Y[5], Z_BOT); stays within the S2
+  bottom between x 880 and 1440 over its travel.
+- **bipod_mount** (bipod_l side +1, bipod_r side -1; frame: rail bottom centre at bipod_x on section 3): cheek on the lower side face,
+  group `s3_bipod` at x = +-15; blind socket for the 20 mm tube (bore 20.4) whose closed end is the joint `leg`
+  Location((0, side SOCK_Y, sock_z), (180 + side leg_splay, 0, 0)) and whose open end is 60 mm down the leg axis; split clamp with an M5
+  screw + nut trap (the leg slides +-25 mm for levelling); rigid `section` (0, 0, 0). Keep |y| >= 31.5 below z = -20 (outer strand).
+- **leg_foot** (foot_l side +1, foot_r side -1; frame: tube end centre, +Z along the leg toward the ground; rigid `leg` (0, 0, 0)):
+  sleeve over the tube end (bore 20.4, 30 deep) and a pad whose ground face is level at home: plane through (0, 0, foot_t) with outward
+  normal (-sin rail_deg, side cos rail_deg sin leg_splay, cos rail_deg cos leg_splay) (= world down in the foot frame); pad ~60 x 45,
+  a 15 mm spike in the middle for grass.
+- **nose_block** (block frame on section 4's FRONT end, body x < 0, pulley ahead): cheeks + bottom, group `s4_front` (x = -15, -45
+  sides, -30 bottom); cap over the rail end face (x 0..8) taking 948 N in compression; two axle cheeks |y| 35.5-50 reaching forward to
+  hold motion.rod_8mm_smooth (100 mm, press) on the axis (pulley_dx, y, Z_MID) along Y — the cheeks are struts in line with the 948 N;
+  rigid `section` (0, 0, 0), `axle` and `pulley` Location((pulley_dx, 0, Z_MID), (-90, 0, 0)), `strand_exit`
+  (pulley_dx - 35, STRAND_Y[3], Z_BOT), `strand_exit_out` (pulley_dx - 35, STRAND_Y[5], Z_BOT) in clear space; top <= z 80 so a
+  tractor prop clears it.
+- **pulley** (frame: centre, +Z = axle axis; rigid `hub` (0, 0, 0), `brg_1`, `brg_2` = the two 608 faces, each bearing 7 mm along +Z):
+  width <= 69 (|z| <= 34.5), 6 grooves at z = STRAND_Y for the 7.94 mm tubing (strand centre at r = R_P = 48), flanges r <= 54; two 608
+  seats (press) at both ends, a shoulder between; 948 N radial.
+- **brake_post** (brake_l side +1, brake_r side -1; frame: rail bottom centre at brake_x on section 4): bar on the lower side face
+  x -265..10, group `s4_brake` at x = -250, -125, -20 (6 mm grip); the post: rod post_l / post_r (motion.rod_8mm_smooth, 40 long,
+  `post` rigid joint = its lower end, axis +Z) pressed into a lower boss and a top cap with the cord gap between at rail z 41-53 around
+  z = 47, axis at (0, side brake_w); a cord anchor at x ~ -258 at z 47 (cleat or tie slot) for the 6 brake cords' tied ends; 430 N on
+  the anchor along +X, 340 N on the post. Everything |y| >= 37 above z = 41.
+- **sled** (frame: rail top centre line under the sled's middle, rail z = 40 -> sled z = 0): |x| <= SLED_HALF (85), plate z >= 2
+  (spacer seats at z 1.115 over each wheel), wheels at (+-50, +-WHEEL_Y) wheel bottom face z = WHEEL_Z - WHEEL_W/2 - H (rigid
+  `wheel_1` (50, 20), `wheel_2` (-50, 20), `wheel_3` (50, -20), `wheel_4` (-50, -20), identity), M5 axle holes from the top (wheels 3, 4:
+  eccentric spacer seat dia 7.12); tow bar with 6 open hooks at x = TOW_DX, y = STRAND_Y, z = Z_TOP - H (79 N each), rigid `strands`
+  (TOW_DX, 0, Z_TOP - H); bumper face at x = +85, |y| <= 36, z 2..16 (860 N; meets the brake cord at sled z 7); tail lugs at |y| >= 6
+  holding rods.ss_rod_5 (50 long, press) at (-79, 0, 10): rigid `tail_pin` Location((-79, 0, 10), (-90, 0, 0)), `tail_roller_1`
+  Location((-79, -5, 10), (-90, 0, 0)), `tail_roller_2` Location((-79, 0, 10), (-90, 0, 0)); cradle seat on the top (z = 12): rigid
+  `cradle` (0, 0, 12), two rods.ss_rod_4 holes (free, group `cradle_pins`) at (+-60, 0) 10 deep, a 2 mm catch lip for the cradle's
+  snap hook; rigid `carriage` (0, 0, 0). Mass <= 170 g (the launch speed depends on it).
+- **cradle** (TEMPLATE, frame: sled top at the sled middle; rigid `base` (0, 0, 0)): base plate with the 2 rods.ss_rod_4 pins pressed
+  (group `cradle_pins`, 25 mm pins: 15 here + 10 in the sled), a snap hook on the sled's lip (`flex_strain`), saddle pads for a
+  cr_fuse_w x cr_fuse_h fuselage, rear push face (notch cr_boom_d for a tail boom), open front. Seat height from the template:
+  tractor (cr_tractor = 1): prop axis (fuselage mid-height) >= Z_TOP + 4 + 10 + cr_prop_r (rail z); pusher: the prop disc behind the
+  push face clears the sled, the rail and the strands by 10 mm. Linear `fly_off` Axis((x_d, 0, seat), (1, 0, 0)) range (0, 700), x_d
+  so the drone box (frame = its bottom-face centre) touches the push face. Label "S{strands} N{notch}" + drone name embossed. Mass
+  <= 150 g. Loads: drone 1.6 kg x 8 g = 125 N on the push face; its own inertia at the brake (310 N) into the pins.
+- **pedal_base / pedal**: base staked (one dia-7 hole at 45 deg), hinge with a rods.ss_rod_4 pin (press base, free pedal, group
+  `pedal_pin`), revolute `treadle` on the base about +Y range (0, 15); pedal rigid `pivot` Location((0, 0, 0), (-90, 0, -90)); a line
+  guide low at the base front; stepping 15 deg pulls ~25 mm of line; the pedal bottoms on the base (someone standing on it).
+
+## Joint tree
+rear_foot -(rail_angle 8..14, home 11)- rear_block - sec1 - hinge_aft_a -(fold_a -180..0)- hinge_fwd_a - sec2 - hinge_aft_b
+-(fold_b 0..180)- hinge_fwd_b - sec3 - hinge_aft_c -(fold_c -180..0)- hinge_fwd_c - sec4 - nose_block (axle, pulley + 2 x 608),
+brake_l/r (+ posts). sec3 - bipod_l/r - leg_l/r - foot_l/r. sec2 - anchor_rack_a/b; rack_a -(notch_slide 0..495, home 220 = notch 5)-
+anchor. rear_block -(trigger -25..0)- trigger; rear_block -(sled_travel 0..2800)- sled (4 wheels, tail pin + 2 rollers, strands_top)
+- cradle -(fly_off 0..700)- drone (+ wing, prop keep-out). rear_foot - pedal_base -(pedal 0..15)- pedal.
+Coupled poses: `folded` (fold_a -180, fold_b 180, fold_c -180 and halfway), `drone_leaves` (sled in the brake, drone 0..600 mm out).
