@@ -197,7 +197,7 @@ F9 nuts sunk 0.5 mm; F10 VTX routes.
 ## Normal-flight structural screen (2026-11-02)
 The objective here is normal flying, including sustained configured-output thrust and rotor excitation, rather than
 crash survival. `arm_flight_load` now checks the existing arm under the configured 74 % motor-output steady thrust:
-1.685 kg × 9.81 × 0.74² = **9.051 N** per motor. This uses the existing sourced motor thrust and the existing
+1.685 kg × 9.81 × 0.74² = **9.0517 N** per motor. This uses the existing sourced motor thrust and the existing
 propeller-law output estimate; it is not a measured transient envelope. Supports and motor-screw load seats are
 unchanged. SF 2 follows ENGINEERING.md section 3 for a static load along printed layers; the 0.87 mm limit is the
 existing 1 % arm-length rule. The separate existing crash checks and all their limits remain unchanged.

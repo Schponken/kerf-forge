@@ -28,7 +28,7 @@
     {
       "id": "arm_flight_load",
       "check": "fea_static",
-      "why": "normal flight: steady thrust at the configured 74% motor output, catalog 1685 g x 0.74^2 x 9.81 / 1000 = 9.051 N; a static strength/deflection screen, not a transient envelope or fatigue-life proof",
+      "why": "normal flight: steady thrust at the configured 74% motor output, catalog 1685 g x 0.74^2 x 9.81 / 1000 = 9.0517 N; a static strength/deflection screen, not a transient envelope or fatigue-life proof",
       "unit": "MPa",
       "bound": "max",
       "ok": true,
