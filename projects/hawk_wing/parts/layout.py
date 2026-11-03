@@ -92,6 +92,11 @@ def layout(p, cat):
     tg = tail_planform(p).geometry()
     out["htail_x_ac"] = tg["x_np_mm"]
     out["htail_area_dm2"] = tg["area_dm2"]
+    import importlib.util, pathlib
+    from types import SimpleNamespace
+    spec = importlib.util.spec_from_file_location("hawk_wiring", pathlib.Path(__file__).with_name("wiring.py"))
+    wiring = importlib.util.module_from_spec(spec); spec.loader.exec_module(wiring)
+    out.update(wiring.route_params(SimpleNamespace(**{**vars(p), **out})))
     return out
 
 
