@@ -7,7 +7,8 @@ from test_studio import _browser, server  # noqa: F401  (fixture)
 
 
 def _claim(monkeypatch):
-    fake = [{"item": "`servo_link` — fix the bracket", "heartbeat": time.time() - 120}]
+    monkeypatch.setattr(studio, "_live_thread", lambda: None)
+    fake = [{"item": "`servo_link` — fix the bracket", "provider": "Codex", "heartbeat": time.time() - 120}]
     monkeypatch.setattr(explain, "claims", lambda root=None: fake)
     studio.SESSIONS["at"] = 0.0
 
@@ -30,7 +31,9 @@ await p.waitForFunction(() => typeof pollJobs === 'function' && S.projects);
 await p.evaluate(() => pollJobs());
 await p.waitForSelector('#joblist .job.sess', {timeout: 10000});
 out.row = await p.textContent('#joblist .job.sess');
+out.tip = await p.getAttribute('#joblist .job.sess', 'title');
 await p.click('#joblist .job.sess');
 await p.waitForFunction(() => S.detail && S.detail.name === 'servo_link' && S.tab === 'results');""", tmp_path)
     assert out["errs"] == [], out
     assert "☁" in out["row"] and "min ago" in out["row"], out["row"]
+    assert "Codex has claimed" in out["tip"] and "working" not in out["tip"], out["tip"]

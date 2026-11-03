@@ -67,20 +67,24 @@ def due(rec: dict, feats: list, done_now: int, now: float | None = None) -> tupl
     return False, f"{len(feats)} feature commits / {new_items} items waiting (batch at {BATCH_ITEMS} items or {MAX_AGE_H} h)"
 
 
+def shared_claims() -> dict:
+    sys.path.insert(0, str(ROOT / "tools"))
+    import claims
+    return claims.load()
+
+
 def running_now() -> str | None:
     """'session S, started/heartbeat N min ago' while a fresh lock says a full run is going (any machine), else None."""
-    try:
-        c = json.loads(LOCK.read_text(encoding="utf-8"))
-    except Exception:
+    c = shared_claims().get(LOCK.stem)
+    if not c:
         return None
     age = (time.time() - float(c.get("heartbeat", 0))) / 60
     return f"session {c.get('session')}, last heartbeat {age:.0f} min ago" if age < LOCK_STALE_MIN else None
 
 
 def lock_held_by_other(sid: str) -> bool:
-    try:
-        c = json.loads(LOCK.read_text(encoding="utf-8"))
-    except Exception:
+    c = shared_claims().get(LOCK.stem)
+    if not c:
         return False
     return c.get("session") != sid and time.time() - float(c.get("heartbeat", 0)) < LOCK_STALE_MIN * 60
 
@@ -108,7 +112,7 @@ def others_working(sid: str | None = None) -> list[str]:
     sys.path.insert(0, str(ROOT / "tools"))
     import claims
     sid = sid or claims.session_id()
-    return sorted({c.get("session") for k, c in claims.load().items()
+    return sorted({c.get("session") for k, c in shared_claims().items()
                    if k not in (LOCK.stem, "budget") and c.get("session") != sid and claims.fresh(c)})
 
 

@@ -1,7 +1,7 @@
 """Follow live: Kerf Studio shows a project's 3D model updating while cloud sessions design it (and the Work tab).
 
 Everything here is local and git-only: Studio runs `git fetch` at most once a minute while someone is following a project
-(or looking at the Work tab), and when new commits on origin touch projects/<p>/ it fast-forwards the working copy
+(or Activity is polled on any Studio page), and when new commits on origin touch projects/<p>/ it fast-forwards the working copy
 (same rule as tools/mac/start.sh: only a clean tree, only a fast-forward) and rebuilds ONLY the parts that changed:
 geometry and viewer meshes, no checks, FEA, review or tests. The rebuild runs in a child process (`python -m kerf.live`)
 through the normal part build and its cache (kerf/partcache.py), so the Studio server stays small and responsive.
@@ -325,6 +325,40 @@ def blank_data(name: str, project_dir: str) -> dict:
 
 
 # ---------------------------------------------------------------- the Work tab (all from git)
+def shared_revision(root) -> str:
+    """Last fetched shared main, with the existing local-repository fallback; never fetch or change files here."""
+    refs = ["refs/remotes/origin/main", _out(root, "symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"), "@{u}", "HEAD"]
+    for ref in refs:
+        if ref and (rev := _out(root, "rev-parse", "--verify", "-q", f"{ref}^{{commit}}")):
+            return rev
+    return ""
+
+
+def claim_records(root, revision: str | None = None) -> dict[str, dict]:
+    """Task claims from one immutable revision; only non-Git copies fall back to local files."""
+    from .work import number
+    root = Path(root)
+    revision = shared_revision(root) if revision is None else revision
+    paths = (_out(root, "ls-tree", "--name-only", revision, "claims/").splitlines() if revision else
+             [f.relative_to(root).as_posix() for f in sorted((root / "claims").glob("*.json"))])
+    out = {}
+    for name in paths:
+        path = Path(name)
+        if path.parent != Path("claims") or path.suffix != ".json" or path.stem in ("budget", "batch-verify"):
+            continue
+        try:
+            c = json.loads(git(root, "show", f"{revision}:{name}").stdout if revision else (root / path).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(c, dict) or any(not isinstance(c.get(k), str) or not c[k].strip() for k in ("item", "session")):
+            continue
+        timestamps = ("heartbeat", "since") if "since" in c else ("heartbeat",)
+        if any(isinstance(c.get(k), bool) or number(c.get(k)) is None for k in timestamps):
+            continue
+        out[name] = c
+    return out
+
+
 def _claims_mod():
     spec = importlib.util.spec_from_file_location("kerf_claims_tool", ROOT / "tools" / "claims.py")
     mod = importlib.util.module_from_spec(spec)
@@ -355,31 +389,22 @@ def project_of(text: str, names: list[str]) -> str | None:
     return None
 
 
-def work_data(root, ref: str = "@{u}", now: float | None = None, picture=None) -> dict:
+def work_data(root, ref: str | None = None, now: float | None = None, picture=None) -> dict:
     """Everything the Work tab shows, read from `ref` (the fetched origin branch): PLAN done/total, fresh claims as
-    cards (item, project, minutes since that session's last commit, stale flag), items checked off today, and the
+    cards (item, project, heartbeat age, stale flag), items checked off today, and the
     last FEED_N commit subjects. picture(project) -> image URL or None (Studio passes its out/ snapshot lookup)."""
     from .work import number, plan_steps
     now = time.time() if now is None else now
     cl = _claims_mod()
-    rev = _out(root, "rev-parse", "--verify", "-q", ref) or _out(root, "rev-parse", "HEAD")
+    rev = (_out(root, "rev-parse", "--verify", "-q", ref) if ref else shared_revision(root)) or _out(root, "rev-parse", "HEAD")
     plan = git(root, "show", f"{rev}:PLAN.md").stdout
     done = len(re.findall(r"^\s*- \[[xX]\] ", plan, re.M))
     total = done + len(re.findall(r"^\s*- \[ \] ", plan, re.M))
     names = [Path(p).name for p in _out(root, "ls-tree", "--name-only", rev, "projects/").splitlines()]
     cards, sessions = [], set()
-    for f in _out(root, "ls-tree", "--name-only", rev, "claims/").splitlines():
-        if not f.endswith(".json"):
-            continue
-        try:
-            c = json.loads(git(root, "show", f"{rev}:{f}").stdout)
-        except Exception:  # noqa: BLE001 - a broken claim file is no claim (same as tools/claims.py)
-            continue
-        if not isinstance(c, dict):
-            continue
+    for f, c in claim_records(root, rev).items():
         heartbeat = number(c.get("heartbeat"), 0)
-        last = max(heartbeat, number(_out(root, "log", "-1", "--format=%ct", rev, "--", f), 0))
-        age_min = max(0, now - last) / 60
+        age_min = max(0, now - heartbeat) / 60
         if age_min >= cl.STALE_MIN * 2:                 # long gone: not "working" and not worth a card
             continue
         item = str(c.get("item", ""))
@@ -389,7 +414,7 @@ def work_data(root, ref: str = "@{u}", now: float | None = None, picture=None) -
                       "stale": age_min >= cl.STALE_MIN, "project": proj,
                       "picture": picture(proj) if (proj and picture) else None,
                       "claim_id": Path(f).stem, "provider": c.get("provider"), "thread_id": c.get("thread_id"),
-                      "started_at": number(c.get("since")), "updated_at": last,
+                      "started_at": number(c.get("since")), "updated_at": heartbeat,
                       "heartbeat_at": heartbeat or None, "steps": plan_steps(plan, item),
                       "activity": c.get("activity"), "title": c.get("title")})
         if age_min < cl.STALE_MIN:

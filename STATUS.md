@@ -471,6 +471,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   the whole device (fpv_wing 3 mm elevon rods, horns, GPS now readable).
 - Bench steps keep the build they join on screen, faint, instead of the bench parts floating alone.
 - tests/test_viewer_build_it.py (browser): label clear of its part, close-up, bench context.
+
 - (01S68R6R, later) drone_foldable_wings quick check end to end (--all; FEA paused by Spencer, as this morning's quick
   check had no FEA either): 17 min this morning -> 109 s warm, 224 s right after an engine edit. clearance_min now
   skips the exact distance when the mesh gap clears the limit by > GAP_SCREEN_MM (fold-tail pair 72 s -> 18 s).
@@ -501,6 +502,24 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Job panel: a one-line strip (stage, current question, counts, latest finding) appears by itself when research starts and stays visible when the panel is folded; it opens the full trail.
 - Steering (kerf/steer.py, .claude/hooks/steer.py): Focus / Skip on each question while it is still researching, plus a "Tell Kerf" note. Delivered as extra context on the job's next tool result via a PostToolUse hook that only starts for a Studio job with a steering file: no extra turn, no pause, nothing at all when unused. The trail shows "Kerf has it ✓" once delivered; steering resets with each new job and is refused once the job has finished.
 - Tests: tests/test_thoughtweb.py (8 pass: layout still between polls, no label overlap or clipping, strip auto-opens, steer API + hook end to end, reset per job, options link to research). Pre-existing failures NOT from this change (they fail on main without it too): test_studio.py::test_progress_events_are_off_by_default_and_ordered_when_on (requirement order changed by the "check in order of redesign cost" commit) and test_studio_features.py::test_duplicate_copies_design_files_only_and_renames.
+
+
+## 2026-11-02 — Shared claims from PR branches (Codex)
+- Claim take/heartbeat/release now publish only the current session's claim changes to freshly fetched main,
+  using a private Git index and normal fast-forward pushes. Concurrent pushes retry from current ownership and
+  budget state. Caller branch/HEAD, staged bytes and dirty/untracked files stay unchanged; no pull, stash, reset,
+  feature-code publication or local claim mirror. Explicit session identity overrides an old worktree identity.
+- Budget stop/resume use the same isolated path; status, claim readers and batch lock readers see shared main.
+  Current shared/local budget stops block new work while allowing heartbeat/release. Reserved control names,
+  unfinished Git operations and unreadable/unreachable shared state refuse safely. Detached worktrees work;
+  origin/main is required. PLAN selection remains local so explicitly scoped PR-only tasks can be claimed.
+- 41 focused tests passed in 37.04 s (claims, budget, batch status and Codex Work metadata). Real bare-remote
+  tests cover byte-for-byte caller preservation, detached linked worktrees, concurrent unrelated/same-owner
+  claim races, budget changes during retry, expired/local stops, stale takeover, corrupt records, missing remote
+  and rejected pushes. Doctor ALL OK with the existing environment; optional firmware tools remain unavailable.
+- Boundary: batch lock/result publication still uses its older caller-index/upstream implementation. Only its
+  read side is fixed here; a separate repair is needed before using a PR checkout to publish a batch. No batch,
+  stress solve, physical hardware, project geometry, catalog, engineering threshold or review.json changed.
 
 ## 2026-11-02 17:45 UTC-5 — for Spencer: Studio single-change jobs vs the Stop gate
 - A Studio change request says "do exactly this change ... do not start other PLAN work", but .claude/hooks/stop_gate.py
@@ -809,3 +828,26 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Stacked on PR #8's cancellation lock. No new timer registry, settings synchronization, or automatic
   rescheduling of an already-skipped callback; after such a skip the existing manual Resume remains.
   Full suite, project builds and stress solves remain unrun under the existing holds.
+
+
+## 2026-11-02 — Studio readers follow shared ownership (Codex)
+- Activity, Checks, edit/auto-fix guards and Work now read the same fetched main snapshot. Released claims never
+  return from stale feature files; non-Git copies retain valid local claims. Control files and malformed/nonfinite
+  records cannot become work cards. Claim freshness/update time comes only from heartbeat, not a newer file commit.
+- Claim text identifies Codex/Claude when explicit, otherwise another session, and says claimed rather than running.
+  Activity polling on any Studio page keeps the existing one-minute fetch loop active and refreshes its cached list;
+  no second fetch service or per-card network calls. Offline Work retains its partial-source indication.
+- Five focused regressions failed before their respective fixes. Final selection: 29 tests PASS in 9.09 s, including
+  real temporary Git snapshots, release/staleness/control handling, normal-page refresh, API guards and a real Activity
+  browser. The browser caught/fixed the age parser after wording changed to last update. No full batch, project build,
+  solver, paid model call or layout redesign. Architecture map updated; git diff --check passes.
+
+## 2026-11-02 — Shared claim publisher/Studio integration (Codex)
+- Folded the reviewed Studio reader compatibility into PR #17 so shared publication and its consumers ship
+  together; preserved both STATUS histories and publisher/immutable-ref tests. No local claim mirroring.
+- A new real-Git regression reproduced index-byte changes when only an unchanged tracked file's mtime moved.
+  Disabled optional Git locks and replaced the conflict check's worktree-refreshing git diff with ls-files --unmerged;
+  private GIT_INDEX_FILE remains intact. Take, heartbeat and release now preserve the exact original index bytes.
+- 14 combined focused tests PASS in 13.50 s: index lifecycle, dirty-feature preservation, mid-rebase refusal,
+  shared readers/refresh, Codex publisher metadata, Activity browser and API guards. Earlier 41 publisher and
+  29 reader results remain separate historical selections, not an accumulated unique count. No full batch or FEA.

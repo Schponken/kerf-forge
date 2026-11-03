@@ -14,14 +14,10 @@ def _load(name):
 
 def test_budget_switch_shared_local_and_expiry(tmp_path, monkeypatch):
     b = _load("budget")
-    monkeypatch.setattr(b, "SHARED", tmp_path / "claims/budget.json")
     monkeypatch.setattr(b, "LOCAL", tmp_path / "BUDGET_STOP")
-    assert b.stopped() == ""
-    b.SHARED.parent.mkdir()
-    b.SHARED.write_text(json.dumps({"reason": "cap near", "until": None}))
-    assert "cap near" in b.stopped()
-    b.SHARED.write_text(json.dumps({"reason": "cap near", "until": time.time() - 1}))
-    assert b.stopped() == ""                      # expired at the reset time
+    assert b.stopped(shared={}) == ""
+    assert "cap near" in b.stopped(shared={"reason": "cap near", "until": None})
+    assert b.stopped(shared={"reason": "cap near", "until": time.time() - 1}) == ""  # expired at the reset time
     b.LOCAL.write_text("weekly cap")
     assert "weekly cap" in b.stopped()
 
