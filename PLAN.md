@@ -350,3 +350,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Viewer smoothness round 2: stop idle frame polling, coalesce hover picking, and release comparison GPU resources; targeted lifecycle regressions
 
 - [ ] Hawk wing electrical wiring: complete sourced power tree, separated BEC rails and routed physical leads without weakening endurance limits
+  - [x] Source contract and focused fixture validation handed to the flight lead (b23e67c).
+  - [ ] Integrated routing, actual mass, stock-lead thermal and endurance closure; not flight-ready.

@@ -1525,3 +1525,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   and 20-minute target, finite/dynamic route points, transport parameter changes and sourced connector quantities.
   Initial tuning fixture reused derived parameters and correctly tripped layout's collision guard; reloaded the
   project contract as the real tuning flow does. CAD route clearance remains the flight lead's integrated gate.
+
+## 2026-11-02 — Hawk electrical lane frozen for integration (Codex)
+- Frozen source b23e67c78750d017134e903caa4d70f123db68e0 sent to the flight lead; six focused fixtures pass at
+  that clean head. Receipt: .cache/hawk-wiring/; contract, exact command, sources and limitations:
+  projects/hawk_wing/ELECTRICAL.md. No further source changes after the freeze.
+- Stock phase burst remains FAIL (227.054 K vs 60 K at 48.33 A / 10 s). At a simulated 1800 g, endurance remains
+  FAIL (18.15 vs 20 min); all other fixture rating rows hold. The 109.72 g wire estimate conservatively includes
+  full servo run lengths; not a measured harness mass. Connector current rating/mass are unpublished.
+- Source declaration is handed off; integrated all-pose route clearance, actual mass and engineering closure
+  remain under the flight lead. No full build, FEA, installed-source edits, review.json or full suite here.
