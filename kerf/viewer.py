@@ -357,13 +357,40 @@ def _pt(a) -> list:
     return [round(float(x), 3) for x in a]
 
 
+def _insert_sites(iid, item) -> list[dict]:
+    """One marker per registered hole, including the threaded end of a screw pivot."""
+    from .catalog import CatalogError
+    from .iface import pin_dims, screw_spec
+
+    sites = [("site", n, site, site.screw)
+             for n, site in enumerate(getattr(item.shape, "kerf_sites", []) or [])
+             if site.role == "female" and site.kind == "heatset"]
+    sites += [("pin", n, site, pin_dims(site.pin).get("thread", site.pin))
+              for n, site in enumerate(getattr(item.shape, "kerf_pins", []) or []) if site.fit == "heatset"]
+    out = []
+    for source, n, site, screw in sites:
+        w = item.shape.location * site.loc
+        try:
+            sp = screw_spec(screw)
+        except CatalogError:
+            sp = {}
+        row = {"id": f"{iid}:insert:{source}:{n}", "item": iid, "group": site.group,
+               "at": _pt(geom.world_point(w, (0, 0, 0))),
+               "dir": _pt(-np.asarray(geom.world_dir(w, (0, 0, 1)))), "screw": screw,
+               "od": round(float(sp["insert_hole"]), 2) if sp.get("insert_hole") else None,
+               "len": round(float(sp["insert_len"]), 2) if sp.get("insert_len") else None}
+        if row["od"] is None or row["len"] is None:
+            row["warning"] = "Insert dimensions unknown in the hardware catalog."
+        out.append(row)
+    return out
+
+
 def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
     """The ASSEMBLY.md build order as data for the viewer's step-by-step mode: per step the parts already on, the
     part(s) going on with the direction they come from (same rule as the step pictures: kerf/ship.py), the heat-set
     inserts pressed first, the screws (seat point + axis, from the fastener check) and the joints that must then move
     freely, plus the step's own ASSEMBLY.md text. Intro / outro sections (tools, test fit, wiring) come along as text."""
     from . import ship
-    from .iface import screw_spec
     a = rep.get("assembly") or {}
     A.solve(asm)
     st = ship.plan(asm, a.get("fasteners") or [], a.get("pins") or [])
@@ -393,22 +420,8 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
                    "head": j.get("head"), "group": j["group"], "male": j["male"], "female": j["female"],
                    "phase": 2 if (j["male"] in late or j["female"] in late) else 1}
                   for j in s["fastener_joints"] if j.get("at") is not None and j.get("dir") is not None]
-        inserts = []
-        for x in s["inserts"]:
-            it = proj.items[x["item"]]
-            for site in getattr(it.shape, "kerf_sites", []) or []:
-                if site.role != "female" or site.kind != "heatset":
-                    continue
-                w = it.shape.location * site.loc
-                try:
-                    sp = screw_spec(site.screw)
-                except Exception:  # noqa: BLE001 - a size the catalog doesn't know gets a proportional glyph
-                    sp = {"d": float(site.screw.lstrip("M") or 3)}
-                d = float(sp.get("d") or 3)
-                inserts.append({"item": x["item"], "at": _pt(geom.world_point(w, (0, 0, 0))),
-                                "dir": _pt(-np.asarray(geom.world_dir(w, (0, 0, 1)))), "screw": site.screw,
-                                "od": round(float(sp.get("insert_hole") or 1.4 * d), 2),
-                                "len": round(float(sp.get("insert_len") or 1.5 * d), 2)})
+        inserts = [site for iid in dict.fromkeys(x["item"] for x in s["inserts"])
+                   for site in _insert_sites(iid, proj.items[iid])]
         demos = []
         for f in s["fits"]:
             o = f.get("onto")

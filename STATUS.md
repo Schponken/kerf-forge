@@ -1329,3 +1329,15 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Independent source pass and bounded desktop/phone visual review found no new blocker. Final composed capture shows a direct PLA definition beside the real saved FPV model; APIs are mocked and no project rebuilt. Evidence/provenance and feature queue are in docs/usability/STUDIO_REDESIGN_REVIEW.md.
 - Resolved overlapping changes by preserving both behaviors, removed inert duplicated print-summary CSS and exact duplicate PLAN lines, and kept Activity assignments distinct from observed running jobs. Original source changes stay in focused PRs.
 - The owner redeemed the single reset manually, requested conservation and High-effort workers, and deferred the next ten-worker optimization/motion/debug round until the design settles. No further reset or background round was started.
+
+## 2026-11-02 — Build it heat-set insert site metadata (Codex, assembly-sites)
+- The assembly guide already counts screw-pivot inserts, but the viewer read only bolt-pattern sites. It now reads
+  both heat-set site types, resolves shoulder-screw thread sizes through the catalog, and visits each part once
+  despite grouped size rows. Every insert carries a stable site ID and its interface group, owning part, exact
+  assembled entry point and inward axis. Missing catalog dimensions remain explicit unknowns; no proportional sizes.
+- Focused verification: `PYTHONPATH="$PWD" .venv/bin/python -m pytest -q tests/test_viewer_insert_sites.py
+  tests/test_viewer.py::test_stress_steps_and_sections_data tests/test_ship.py::test_plan_screws_go_in_with_the_later_part`
+  — 5 passed. Includes mixed sizes, pivot thread selection, rotated parent placement, repeatability and unknown metadata.
+- Actual saved bionic_finger report fingerprint matches current design inputs. A cache-only metadata recovery refused
+  a missing valid cache entry without rebuilding or writing project outputs. Parent integration task owns a bounded
+  source-matching CAD-only refresh and saved viewer verification. No full batch, FEA, review.json or hardware changes.
