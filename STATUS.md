@@ -1114,3 +1114,26 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   native disclosure transition, reduced-motion disabled. Shared shell integration owns final combined visuals.
   Budget off; full batch HELD and stress paused. No real build/app/provider/printer, full suite or batch run.
   Scope and decisions are saved in docs/usability/MAKING_HANDOFF.md.
+
+## 2026-11-03 — New-design briefing and researched choices (Codex)
+- Replaced the long intake card with a spacious brief and optional Use & constraints / Build preferences
+  disclosures. Every field, default, example, manual name, inventory link and direct-design path is retained;
+  scenario mode still requires comparison. Removed the fixed 1–4 hour estimate and universal strength-proof copy.
+- Results now foreground route, cost/print unknowns and fit. Effort, risks, next steps, research and assumptions
+  remain in native disclosures; buy-only options retain research links without a design/purchase button.
+  Unresolved questions have an answer field that appends to existing notes before requesting a fresh comparison.
+  Stale answers and unresolved questions still disable design actions; server validation is unchanged.
+- Saved-option replies cannot overwrite a replacement New screen. A cancelled New navigation stops a saved-quote
+  load before its request, for the shared navigation guard being integrated by the journey-quality lane.
+- Targeted validation: scenario API/evidence cases **27 passed, 2 browser cases deselected in 2.13 s**;
+  `test_design_briefing.py`, Studio intake/inventory browser node, scenario comparison browser node
+  **3 passed in 10.51 s**. Existing assertions remain; selectors now open optional disclosures and use option
+  headings. One pre-existing unregistered browser-marker warning on this base. The final cancellation guard
+  additionally passed a direct Node assertion without a browser rerun; its browser assertion is included.
+- Inspected desktop 1440 and phone 390 in dark/light with synthetic routes and a temporary three-way compose of
+  this HTML and the shared shell (59f305e base); no live provider job. Captures: `.cache/design-briefing/round1/`
+  (`briefing`, `options`, `clarify` × themes/widths). No clipping or horizontal overflow; comparison becomes one
+  column on phones. Scenario setup requires normal scrolling. Onboarding owns the readiness banner.
+- Detector ran once: 12 existing findings outside this lane, none in briefing code. Doctor ALL OK; existing optional
+  firmware tools unavailable. No installs, project build/check, geometry, stress simulation, real print, actual
+  provider run, full suite or app launch. Full batch remains HELD. Root reviews/integrates the focused PR.

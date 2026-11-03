@@ -455,10 +455,12 @@ def test_new_design_page_has_intake_quote_options_and_my_parts(server, tmp_path,
     (qd / "grip.json").write_text(json.dumps({"options": [good, good | {"title": "Linkage claw"}], "recommended": 1,
                                               "assumptions": ["USB power"]}))
     out = _browser(server + "/", """
-await p.waitForSelector('.pitem'); await p.click('#newbtn'); await p.waitForSelector('#i_budget', { timeout: 90000 });
+await p.waitForSelector('.pitem'); await p.click('#newbtn');
+await p.locator('.briefing-details summary').filter({hasText:'Use & constraints'}).click();
+await p.waitForSelector('#i_budget', { timeout: 90000 });
 out.intake = await p.$$eval('.igrid label', e => e.length);
 await p.evaluate(() => showQuote('grip')); await p.waitForSelector('.qopt');
-out.opts = await p.$$eval('.qopt b', e => e.map(x => x.textContent)); out.rec = await p.$eval('.qopt.rec b', e => e.textContent);
+out.opts = await p.$$eval('.qopt h3', e => e.map(x => x.textContent)); out.rec = await p.$eval('.qopt.rec h3', e => e.textContent);
 await p.click('#nav_parts'); await p.waitForSelector('#invadd');
 await p.fill('#invadd', 'servos.SG90'); await p.fill('#invqty', '2'); await p.click('text=Add');
 await p.click('button.primary:has-text("Save")'); await p.waitForTimeout(500);""", tmp_path)

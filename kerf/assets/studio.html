@@ -283,6 +283,36 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .howit div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12.5px;color:var(--muted);animation:fadeUp .4s both}
 .howit b{display:block;color:var(--ink);margin-bottom:3px;font-size:13px}
 .howit i{font-style:normal;font-size:18px;display:block;margin-bottom:6px}
+/* New design: a brief with optional constraints, followed by an evidence-led choice. */
+.briefing-head,.body.briefing{max-width:1320px;margin:0 auto;width:100%}
+.briefing-head h1{font-size:28px;line-height:1.2;margin-bottom:10px}
+.briefing-workspace{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(280px,1fr);gap:32px;align-items:start}
+.briefing-main,.briefing-aside{min-width:0}
+.briefing-main{padding-top:6px}.briefing-main #description-label{display:block;font-size:18px;font-weight:600;margin:28px 0 12px;line-height:1.4}
+.briefing .request-kind{display:flex;align-items:center;gap:12px;font-size:13px;margin:0}.briefing .request-kind select{width:auto;max-width:100%}
+.briefing #ndesc{min-height:220px;font-size:20px;line-height:1.55;padding:20px;background:var(--panel);border-radius:12px}
+.briefing p{max-width:72ch}.briefing #briefing-hint{margin:10px 0 20px}
+.briefing summary{cursor:pointer;line-height:1.5}.briefing :is(button,summary,a,select):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.briefing-examples{font-size:13px;color:var(--muted)}.briefing .examples{margin-bottom:0}
+.briefing-aside{padding:22px 24px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.briefing h2{font-size:18px;line-height:1.4;margin:0 0 4px}.briefing-aside>p{margin:0 0 22px}
+.briefing-details{border-top:1px solid var(--line);padding:15px 0;margin:0}.briefing-details>summary{font-weight:600;font-size:14px}.briefing-details>summary>span{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin:3px 0 0 18px}
+.briefing .igrid{grid-template-columns:minmax(0,1fr);gap:14px;margin:20px 0}.briefing-details>label{font-size:12.5px;color:var(--muted)}.briefing-details #i_notes{min-height:100px}
+.briefing-actions{border-top:1px solid var(--line);padding-top:22px;margin-top:2px}.briefing-actions button{width:100%;white-space:normal}.briefing-actions #nquote{padding:11px 14px}.briefing-actions p{font-size:12.5px;margin:10px 0 18px}.briefing-actions #nstart{background:none;font-size:12.5px;border-color:transparent;padding:4px 0;text-decoration:underline;text-underline-offset:4px;color:var(--muted)}
+.briefing .scenario-fields{gap:18px;margin:26px 0 0;padding-top:24px;border-top:1px solid var(--line)}.briefing .scenario-fields label{font-size:14px;gap:7px}.briefing .scenario-fields p{margin:0}
+.briefing-comparison{grid-column:1/-1;min-width:0;scroll-margin-top:24px}.briefing-comparison:empty{display:none}.briefing-comparison-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding-top:30px;border-top:1px solid var(--line);margin-bottom:24px}.briefing-comparison-head p{margin:6px 0 0}
+.briefing-recommendation{margin:0 0 24px;line-height:1.6}.briefing-recommendation>b,.briefing-option-fit>b,.briefing-tradeoffs p>b{display:block;margin-bottom:4px}
+.briefing .qopts{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}.briefing .qopt{padding:20px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column}.briefing .qopt.rec{border-color:var(--accent)}
+.briefing-option-label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:12px}.briefing-recommended{color:var(--ink);font-weight:600}
+.briefing .qopt h3{font-size:19px;line-height:1.35;margin:0 0 10px}.briefing-option-summary{margin:0 0 18px;line-height:1.6}
+.briefing .qopt .briefing-option-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.briefing .briefing-option-facts dt{font-size:12px;color:var(--muted);font-weight:400;margin:0}.briefing .briefing-option-facts dd{color:var(--ink);font-size:14px;margin:4px 0 0}.briefing-option-facts small{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.briefing .qopt>.note{margin:10px 0 0;font-size:12px}.briefing-option-fit{font-size:13px;line-height:1.6;margin:20px 0}
+.briefing .qopt details{margin:0;padding:12px 0;border-top:1px solid var(--line);font-size:13px}.briefing-sources summary>span{color:var(--muted);margin-left:6px}.briefing .qopt details ul{margin-bottom:4px}.briefing .qopt .source-note{font-size:12px}
+.briefing-option-action{margin-top:auto;padding-top:20px}.briefing-option-action button{width:100%;white-space:normal}.briefing-option-action p{font-size:12px;margin:0}.briefing-assumptions{font-size:13px;color:var(--muted);margin-top:26px}.briefing-assumptions li{margin:6px 0}
+.briefing-questions{padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:0 0 28px;max-width:760px}.briefing-questions ul{padding-left:20px;margin:0 0 20px}.briefing-questions li+li{margin-top:10px}.briefing-questions label{display:block;font-weight:600;margin-bottom:8px}.briefing-questions textarea{min-height:110px;margin-bottom:12px}.briefing-questions button{white-space:normal}.briefing-questions p{margin-bottom:0}
+@media(max-width:1100px){.briefing-workspace{grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr);gap:24px}.briefing-aside{padding:20px}}
+@media(max-width:700px){.briefing-workspace{grid-template-columns:minmax(0,1fr);gap:28px}.briefing-head h1{font-size:25px}.briefing #ndesc{min-height:190px;font-size:18px;padding:16px}.briefing .qopts{grid-template-columns:minmax(0,1fr)}.briefing .qopt{padding-top:24px}.briefing .request-kind{flex-wrap:wrap;gap:7px}.briefing-comparison-head{align-items:flex-start;flex-wrap:wrap}.briefing-questions{padding:18px}.briefing-aside{padding:20px}.briefing .qopt+.qopt{margin-top:12px}}
+
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;place-items:center;z-index:11;cursor:zoom-out}
 .lightbox img{max-width:92vw;max-height:92vh;background:#fff;border-radius:12px}
 
@@ -1732,50 +1762,52 @@ const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "
 function showNew() {
   closeShell(false);
   S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.work = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
-  $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
-    <div class="body new">
+  $("#main").innerHTML = `<div class="head briefing-head"><h1>What would you like to make?</h1><p class="desc">Start with an object you have in mind, or a problem you want to solve.</p></div>
+    <div class="body new briefing">
       <div id="ready"></div>
       <div id="quotesready"></div>
-      <div class="card" id="new-request">
-        <label class="request-kind">Where are you starting?<select id="i_request_kind" onchange="setRequestKind()"><option value="">I know what I want to make</option><option value="scenario">I have a problem to solve</option></select></label>
-        <label class="note" id="description-label" for="ndesc">What should it be?</label>
-        <textarea id="ndesc" placeholder="e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm" oninput="autoname()"></textarea>
-        <div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote()">${esc(x)}</button>`).join("")}</div>
-        <label class="note" for="nname">Project folder name</label>
-        <input id="nname" placeholder="desk_arm" oninput="this.dataset.touched=1">
-        <div class="scenario-fields" id="scenario-fields" hidden>
-          <label>What would a successful solution do?<input id="i_success" placeholder="e.g. keep six plants watered while I am away for 10 days"></label>
-          <label>What matters most?<select id="i_priority"><option value="">Help me weigh the trade-offs</option><option>Reliability and low maintenance</option><option>Lowest total cost</option><option>Ready as soon as possible</option><option>Learning and customization</option></select></label>
-          <label>How much time and effort can you give it?<input id="i_effort" placeholder="e.g. one evening to set up; no soldering"></label>
-          <p class="note">Compare buying, adapting an existing design and building. Unknown costs stay unknown. Nothing is purchased or printed here.</p>
+      <div id="new-request" class="briefing-workspace">
+        <div class="briefing-main">
+          <label class="request-kind">I'm starting with<select id="i_request_kind" onchange="setRequestKind()"><option value="">An idea for an object</option><option value="scenario">A problem to solve</option></select></label>
+          <label id="description-label" for="ndesc">Describe what you have in mind.</label>
+          <textarea id="ndesc" placeholder="A compact desk arm that holds my camera above the workbench…" oninput="autoname()" aria-describedby="briefing-hint"></textarea>
+          <p class="note" id="briefing-hint">What should it do? Include sizes or parts you already own if they matter.</p>
+          <details class="briefing-examples"><summary>Need a starting point?</summary><div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote();$('#ndesc').focus()">${esc(x)}</button>`).join("")}</div></details>
+          <div class="scenario-fields" id="scenario-fields" hidden>
+            <label>What would success look like?<input id="i_success" placeholder="Keep six plants watered while I am away for 10 days"></label>
+            <label>What matters most?<select id="i_priority"><option value="">Help me weigh the trade-offs</option><option>Reliability and low maintenance</option><option>Lowest total cost</option><option>Ready as soon as possible</option><option>Learning and customization</option></select></label>
+            <label>How much time and effort can you give it?<input id="i_effort" placeholder="One evening to set up; no soldering"></label>
+            <p class="note">Compare buying, adapting an existing design and building. Nothing is purchased or printed here.</p>
+          </div>
         </div>
-        <details class="intake" open><summary><b>A few questions</b> <span class="note">(optional; they steer the design)</span></summary>
-          <div class="igrid">
-            <label>Budget, USD<input id="i_budget" placeholder="e.g. 60"></label>
-            <label>Power<select id="i_power"><option value="">not sure</option><option>USB</option><option>Mains adapter</option><option>Battery (LiPo)</option><option>Battery (AA / 18650)</option><option>None (passive)</option></select></label>
-            <label>Mounting<input id="i_mounting" placeholder="desk, wall, tripod, on the robot arm…"></label>
-            <label>Environment<select id="i_environment"><option value="">indoors</option><option>Outdoors</option><option>Hot (car, near a heater)</option><option>Wet / splashes</option></select></label>
-            <label>Printer<input id="i_printer" value="Bambu Lab A2L"></label>
-            <label>Material<select id="i_material"><option>PETG</option><option>PLA</option><option>CF-PETG</option><option>TPU (flexible parts)</option></select></label>
-          </div>
-          <div class="igrid">
-            <label>Who uses it<input id="i_who" placeholder="me at my desk, my kid, a pilot at the field…"></label>
-            <label>How often<input id="i_how_often" placeholder="an hour most evenings, 3 sessions a week…"></label>
-            <label>What goes wrong<input id="i_goes_wrong" placeholder="dropped off the desk, crashes, rain, gloves…"></label>
-          </div>
-          <label class="note">Anything else (sizes, parts you own, must-haves)<input id="i_notes"></label>
-          <p class="note">Parts in <a href="#" onclick="showParts();return false">My parts</a> are preferred and not counted in the cost.</p>
-        </details>
-        <div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="primary" id="nquote" onclick="startQuote()" disabled>✦ Show me 2–3 options first</button>
-          <button id="nstart" onclick="startNew()" disabled>Start designing now</button>
-          <span class="note">Options take a few minutes; the full design roughly 1–4 hours. It keeps going while Kerf Studio stays open.</span></div>
-        <div id="quote"></div>
-      </div>
-      <div class="howit">
-        <div style="animation-delay:60ms"><i>🔎</i><b>Research</b>Finds proven open designs and datasheets, then picks real parts with the sizing math.</div>
-        <div style="animation-delay:120ms"><i>◧</i><b>Model</b>Writes every printed part in CAD with matching screw holes, inserts and mounts.</div>
-        <div style="animation-delay:180ms"><i>✓</i><b>Prove</b>Fit, motion through every angle, screw access, strength simulation, print checks.</div>
-        <div style="animation-delay:240ms"><i>◎</i><b>Review</b>An independent reviewer inspects it; findings are fixed before it's called done.</div>
+        <aside class="briefing-aside" aria-label="Refine your brief">
+          <h2>Make it yours</h2><p class="note">Add what you know. Leave the rest open.</p>
+          <details class="intake briefing-details"><summary>Use & constraints<span>People, surroundings, budget</span></summary>
+            <div class="igrid">
+              <label>Who uses it<input id="i_who" placeholder="Me at my desk, my kid, a pilot at the field…"></label>
+              <label>How often<input id="i_how_often" placeholder="An hour most evenings, 3 sessions a week…"></label>
+              <label>Where will it be used?<select id="i_environment"><option value="">Indoors</option><option>Outdoors</option><option>Hot (car, near a heater)</option><option>Wet / splashes</option></select></label>
+              <label>What could go wrong?<input id="i_goes_wrong" placeholder="Drops, crashes, rain, gloves…"></label>
+              <label>Budget, USD<input id="i_budget" placeholder="e.g. 60"></label>
+              <label>Mounting<input id="i_mounting" placeholder="Desk, wall, tripod, on the robot arm…"></label>
+              <label>Power<select id="i_power"><option value="">Not sure</option><option>USB</option><option>Mains adapter</option><option>Battery (LiPo)</option><option>Battery (AA / 18650)</option><option>None (passive)</option></select></label>
+            </div>
+            <label>Anything else<textarea id="i_notes" placeholder="Sizes, parts you own, must-haves…"></textarea></label>
+            <p class="note">Parts in <a href="#" onclick="showParts();return false">My parts</a> are preferred and not counted in the cost.</p>
+          </details>
+          <details class="intake briefing-details"><summary>Build preferences<span>Printer, material, project name</span></summary>
+            <div class="igrid">
+              <label>Printer<input id="i_printer" value="Bambu Lab A2L"></label>
+              <label>Material<select id="i_material"><option>PETG</option><option>PLA</option><option>CF-PETG</option><option>TPU (flexible parts)</option></select></label>
+            </div>
+            <label>Project name<input id="nname" placeholder="desk_arm" oninput="this.dataset.touched=1" aria-describedby="briefing-name-help"></label>
+            <p class="note" id="briefing-name-help">Used for the project folder. Suggested from your description; you can change it.</p>
+          </details>
+          <div class="briefing-actions"><button class="primary" id="nquote" onclick="startQuote()" disabled>Compare design options</button>
+            <p class="note" id="briefing-next">Research first. Choose a direction before the design starts.</p>
+            <button id="nstart" onclick="startNew()" disabled>Skip comparison & start designing</button></div>
+        </aside>
+        <section id="quote" class="briefing-comparison" aria-label="Design options" aria-live="polite"></section>
       </div>
     </div>`;
   for (const event of ["input", "change"]) $("#new-request").addEventListener(event, e => { if (!e.target.closest("#quote")) invalidateQuote(); });
@@ -1797,7 +1829,10 @@ async function listQuotes() {
 }
 async function openQuote(name) {
   if (!S.newOpen || !$("#ndesc")) showNew();
+  if (!S.newOpen || !$("#ndesc")) return;   // leaving a project may be cancelled
+  const request = $("#new-request");
   let q; try { q = await api(`/api/quote/${name}`); } catch (e) { return toast("No options yet", e.message, "bad"); }
+  if (!S.newOpen || request !== $("#new-request")) return;
   $("#nname").value = name; $("#nname").dataset.touched = 1;
   if (q.context) {
     $("#ndesc").value = q.context.description || "";
@@ -1805,6 +1840,7 @@ async function openQuote(name) {
     setRequestKind();
   } else if (q.request) $("#ndesc").value = q.request;   // an older run kept no copy of the request: start from its summary
   await showQuote(name);
+  if (!S.newOpen || request !== $("#new-request")) return;
   if (!q.context) { const el = $("#quote"); if (el) el.insertAdjacentHTML("afterbegin", `<div class="banner warn">This options run is from before Studio kept a copy of your exact request, so its summary is filled in above. Check it says what you want, then choose.</div>`); }
   const el = $("#quote"); if (el) el.scrollIntoView({behavior: "smooth", block: "start"});
 }
@@ -1815,11 +1851,12 @@ function setRequestKind() {
   const scenario = $("#i_request_kind").value === "scenario";
   $("#scenario-fields").hidden = !scenario;
   $("#nstart").hidden = scenario;
-  $("#description-label").textContent = scenario ? "What is happening, and what needs to change?" : "What should it be?";
-  $("#ndesc").placeholder = scenario ? "e.g. my plants die when I travel" : "e.g. a 4-axis desk robot arm that lifts 150 g at 25 cm";
-  $("#nquote").textContent = scenario ? "Compare ways to solve it" : "Show me 2–3 options first";
+  $("#description-label").textContent = scenario ? "What's happening, and what needs to change?" : "Describe what you have in mind.";
+  $("#ndesc").placeholder = scenario ? "My plants dry out whenever I travel…" : "A compact desk arm that holds my camera above the workbench…";
+  $("#briefing-hint").textContent = scenario ? "Describe the situation. You don't need to know the solution yet." : "What should it do? Include sizes or parts you already own if they matter.";
+  $("#nquote").textContent = scenario ? "Compare ways to solve it" : "Compare design options";
   const examples = scenario ? ["my plants die when I travel", "I need steady aerial shots of my trail runs", "my desk cables keep falling behind the table"] : EXAMPLES;
-  $(".new .examples").innerHTML = examples.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote()">${esc(x)}</button>`).join("");
+  $(".new .examples").innerHTML = examples.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote();$('#ndesc').focus()">${esc(x)}</button>`).join("");
 }
 function autoname() {
   const n = $("#nname"); if (n.dataset.touched) return;
@@ -1841,7 +1878,9 @@ async function startQuote() {
 async function showQuote(name) {
   const el = $("#quote"); if (!el) return;
   try {
-    const q = await api(`/api/quote/${name}`); S.quote = q; S.quoteName = name;
+    const q = await api(`/api/quote/${name}`);
+    if (!S.newOpen || el !== $("#quote")) return;
+    S.quote = q; S.quoteName = name;
     if (q.context && !$("#ndesc").value.trim()) {
       $("#ndesc").value = q.context.description;
       for (const input of document.querySelectorAll('#new-request [id^="i_"]')) input.value = q.context.intake[input.id.slice(2)] || "";
@@ -1849,22 +1888,29 @@ async function showQuote(name) {
     }
     const matches = quoteMatches(q, name);
     const questions = q.questions || [];
-    el.innerHTML = `<h3>Options</h3>
+    el.innerHTML = `<div class="briefing-comparison-head"><div><h2>${questions.length ? "A little more to go on" : "Choose a direction"}</h2><p class="note">${questions.length ? "Answer these questions to refine the comparison." : "Compare the fit and trade-offs. The choice is yours."}</p></div><button onclick="$('#ndesc').focus();$('#ndesc').scrollIntoView({block:'center'})">Edit brief</button></div>
       ${!matches ? `<p class="banner warn">These options use earlier answers. Your edits are kept above; compare options again before designing.</p>` : ""}
-      ${questions.length ? `<div class="banner warn"><b>Before choosing</b><ul>${questions.map(x => `<li>${esc(x)}</li>`).join("")}</ul>Add the answers above, then compare again.</div>` : ""}
-      ${q.recommendation_reason ? `<p>${esc(q.recommendation_reason)}</p>` : ""}
-      <div class="qopts">${q.options.map((o, i) => `<div class="card qopt ${i === q.recommended ? "rec" : ""}">
-      <b>${esc(o.title)}</b>${i === q.recommended ? ` <span class="chip ok">recommended</span>` : ""}<p>${esc(o.summary)}</p>
-      ${o.route ? `<p class="route">${esc({buy:"Buy a ready-made solution",adapt:"Adapt an existing design",build:"Build a custom solution"}[o.route] || o.route)}</p>` : ""}
-      <div class="chips"><span class="chip">${o.cost_usd == null ? "Cost not yet known" : "$" + fmt(o.cost_usd) + (q.request_kind === "scenario" ? " estimated" : "")}</span><span class="chip">${o.print_hours == null ? "Print time not yet known" : fmt(o.print_hours) + " h printing"}</span><span class="chip">${fmt(o.parts_printed)} printed parts</span></div>
+      ${questions.length ? `<div class="briefing-questions"><ul>${questions.map(x => `<li>${esc(x)}</li>`).join("")}</ul><label for="quote-answers">Your answers</label><textarea id="quote-answers" placeholder="Answer what you can. Include anything else that changes the brief." oninput="$('#quote-refine').disabled=!this.value.trim()"></textarea><button id="quote-refine" class="primary" onclick="refineQuote()" disabled>Add answers & compare again</button><p class="note">Your answers are added to the brief. A new comparison must resolve the questions before a design can start.</p></div>` : ""}
+      ${q.recommendation_reason ? `<p class="briefing-recommendation"><b>Why this direction</b>${esc(q.recommendation_reason)}</p>` : ""}
+      <div class="qopts">${q.options.map((o, i) => `<article class="qopt ${i === q.recommended ? "rec" : ""}" aria-labelledby="quote-option-${i}">
+      <div class="briefing-option-label">${o.route ? `<span>${esc({buy:"Buy ready-made",adapt:"Adapt a design",build:"Build custom"}[o.route] || o.route)}</span>` : `<span>Option ${i + 1}</span>`}${i === q.recommended ? `<span class="briefing-recommended">Recommended</span>` : ""}</div>
+      <h3 id="quote-option-${i}">${esc(o.title)}</h3><p class="briefing-option-summary">${esc(o.summary)}</p>
+      <dl class="briefing-option-facts"><div><dt>Cost</dt><dd>${o.cost_usd == null ? "Cost not yet known" : "$" + fmt(o.cost_usd) + (q.request_kind === "scenario" ? " estimated" : "")}</dd></div><div><dt>Printing</dt><dd>${o.print_hours == null ? "Print time not yet known" : fmt(o.print_hours) + " h printing"}<small>${fmt(o.parts_printed)} printed parts</small></dd></div></dl>
       ${o.cost_note || o.print_note ? `<p class="note">${esc([o.cost_note, o.print_note].filter(Boolean).join(" · "))}</p>` : ""}
-      ${o.fit || o.effort ? `<dl>${o.fit ? `<dt>Fit to your goal</dt><dd>${esc(o.fit)}</dd>` : ""}${o.effort ? `<dt>Your time and effort</dt><dd>${esc(o.effort)}</dd>` : ""}</dl>` : ""}
-      ${(o.risks || []).length ? `<p class="note">Risks: ${o.risks.map(esc).join("; ")}</p>` : ""}
-      ${(o.sources || []).length ? `<details ${o.route === "buy" ? "open" : ""}><summary>Research sources</summary><ul>${o.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><span class="source-note">${esc(s.finding)}</span></li>`).join("")}</ul></details>` : ""}
-      ${(o.next_steps || []).length ? `<h4>Next steps</h4><ul>${o.next_steps.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
-      ${o.route === "buy" ? `<p class="note">Use the research links to check availability and decide. Kerf does not place an order.</p>` : `<button class="primary" onclick="startNew(${i})" ${!matches || questions.length ? "disabled" : ""}>${o.route === "adapt" ? "Adapt this option" : "Design this one"}</button>`}</div>`).join("")}</div>
-      ${(q.assumptions || []).length ? `<p class="note">Assumed: ${q.assumptions.map(esc).join("; ")}</p>` : ""}`;
-  } catch (e) { el.innerHTML = `<div class="banner bad">No options yet: ${esc(e.message)}</div>`; }
+      ${o.fit ? `<p class="briefing-option-fit"><b>Fit to your goal</b>${esc(o.fit)}</p>` : ""}
+      ${o.effort || (o.risks || []).length || (o.next_steps || []).length ? `<details class="briefing-tradeoffs"><summary>Effort, risks & next steps</summary>${o.effort ? `<p><b>Your time and effort</b>${esc(o.effort)}</p>` : ""}${(o.risks || []).length ? `<h4>Risks</h4><ul>${o.risks.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}${(o.next_steps || []).length ? `<h4>Next steps</h4><ul>${o.next_steps.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}</details>` : ""}
+      ${(o.sources || []).length ? `<details class="briefing-sources" ${o.route === "buy" ? "open" : ""}><summary>Research sources <span>${o.sources.length}</span></summary><ul>${o.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><span class="source-note">${esc(s.finding)}</span></li>`).join("")}</ul></details>` : ""}
+      <div class="briefing-option-action">${o.route === "buy" ? `<p class="note">Check the research links for availability. Kerf does not place an order.</p>` : `<button ${i === q.recommended ? 'class="primary"' : ""} onclick="startNew(${i})" ${!matches || questions.length ? "disabled" : ""}>${o.route === "adapt" ? "Adapt this option" : "Design this one"}</button>`}</div></article>`).join("")}</div>
+      ${(q.assumptions || []).length ? `<details class="briefing-assumptions"><summary>Assumptions behind this comparison</summary><ul>${q.assumptions.map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>` : ""}`;
+  } catch (e) { if (el === $("#quote")) el.innerHTML = `<div class="banner bad">No options yet: ${esc(e.message)}</div>`; }
+}
+function refineQuote() {
+  const answers = $("#quote-answers").value.trim();
+  if (!answers || !S.quote) return;
+  const notes = $("#i_notes"), questions = (S.quote.questions || []).join("\n");
+  notes.value = [notes.value.trim(), `Clarification:\n${questions}\n${answers}`].filter(Boolean).join("\n\n");
+  invalidateQuote();
+  startQuote();
 }
 async function startNew(opt) {
   const option = typeof opt === "number" && S.quote ? S.quote.options[opt] : null;
