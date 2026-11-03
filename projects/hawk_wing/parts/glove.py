@@ -9,16 +9,17 @@ from kerf import aero, iface, features
 _spec = importlib.util.spec_from_file_location("hw_layout", pathlib.Path(__file__).with_name("layout.py"))
 L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 
-PAD_X0, PAD_X1, PAD_Y0 = 156.0, 262.0, 112.0   # pod footprint (DESIGN.md); x1 past the trailing edge so the hull clips it
+PAD_X0, PAD_X1, PAD_INSET = 156.0, 262.0, 38.0   # pod footprint x bounds and inward offset from pivot; hull clips x1
 INSERT_DEPTH = 8.0            # M3 heat-set (5.7 long, hole 6.7 deep + 0.8 floor = 7.5)
 SERVO_LEAD_D, AIL_LEAD_D, VTX_HOLE_D = 9.0, 5.0, 16.0   # 16: the 11 x 11 antenna proxy (diagonal 15.6; contract said 14); 9: a 3-pin servo plug (8 x 2.5) passes; 5: the aileron lead
-SERVO_LEAD_XY = (170.0, 120.0)    # (x, |y|) in the pad: the contract's (165, 125) is 5.8 mm from the pod_screw at (162, 130)
+SERVO_LEAD_XY = (170.0, 30.0)    # x and inward offset from pivot: stays clear of the pod screw as the glove span changes
 AIL_EXIT_XY = (190.0, 24.0)       # aileron lead leaves the underside here (clear of the glove screw (200, 18))
 
 
 def build(ctx):
     p = ctx.p
     pf = L.planform(p)
+    pad_y0 = p.pivot_y - PAD_INSET
     body = aero.wing_solid(pf, -p.pivot_y + 0.5, p.pivot_y - 0.5, stations=3)
     env = body                                     # untouched airfoil: probes + pad hull
     cache = {}
@@ -37,7 +38,7 @@ def build(ctx):
     # ---- pod pads: flat underside at POD_PAD_Z (the pod bolts flat to it)
     zp = L.POD_PAD_Z
     for s in (1, -1):
-        y0, y1 = sorted((s * PAD_Y0, s * p.pivot_y))
+        y0, y1 = sorted((s * pad_y0, s * p.pivot_y))
         region = Pos((PAD_X0 + PAD_X1) / 2, (y0 + y1) / 2, 0) * Box(PAD_X1 - PAD_X0, y1 - y0, 60)
         low = Pos((PAD_X0 + PAD_X1) / 2, (y0 + y1) / 2, zp - 20) * Box(PAD_X1 - PAD_X0, y1 - y0, 40)  # z -43..-3
         # why: aft the airfoil's lower skin is above z -3: fill down to the flat (union of the airfoil shifted down
@@ -68,7 +69,7 @@ def build(ctx):
                             kind="screw hole")
 
         # servo lead: from the pod pad up into the glove, inboard to the fuselage (plug passes: 9 mm)
-        lx, ly = SERVO_LEAD_XY[0], s * SERVO_LEAD_XY[1]
+        lx, ly = SERVO_LEAD_XY[0], s * (p.pivot_y - SERVO_LEAD_XY[1])
         ex, ey = 165.0, s * 26.0
         pts3 = [(lx, ly, zp - 4), (lx, ly, zp + 1), (lx - 2, s * 100.0, mid(lx - 2, s * 100.0)),
                 (ex + 2, s * 60.0, mid(ex + 2, s * 60.0)), (ex, ey, mid(ex, ey)), (ex, ey, zr(ex, ey)[0] - 4)]
@@ -114,7 +115,7 @@ def build(ctx):
     pk = pocket.bounding_box()
     body, left = features.fillet_inside(ctx, body, 1.0, keep=lambda at: (
         "GPS board's square edges sit in the pocket" if pk.min.X - 1 <= at[0] <= pk.max.X + 1 and abs(at[1]) <= pk.max.Y + 1 and at[2] > -14
-        else "pad step tapers to nothing (<= 1.7 mm): the pod's flat flange covers it" if abs(at[2] - zp) < 0.1 and abs(abs(at[1]) - PAD_Y0) < 0.1
+        else "pad step tapers to nothing (<= 1.7 mm): the pod's flat flange covers it" if abs(at[2] - zp) < 0.1 and abs(abs(at[1]) - pad_y0) < 0.1
         else "the pod flange's square front edge sits against the step" if abs(at[2] - zp) < 0.1 and abs(at[0] - PAD_X0) < 0.1
         else None))
     for k in ("base", "pod_r", "pod_l", "cap_r", "cap_l"):

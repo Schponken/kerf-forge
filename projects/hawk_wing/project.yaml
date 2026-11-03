@@ -75,12 +75,12 @@ params:
   wing_tip_chord: {value: 140, unit: mm, min: 110, max: 160, step: 5, label: Tip chord}
   wing_sweep_le_deg: {value: 13.5, unit: "°", min: 0, max: 20, step: 0.1, label: Leading-edge sweep (spread; 13.5 = straight trailing edge)}
   wing_twist_tip_deg: {value: -2.5, unit: "°", min: -4, max: 0, step: 0.5, label: Washout at the tip (nose down)}
-  pivot_y: {value: 150, unit: mm, min: 120, max: 180, step: 5, label: Sweep pivot / glove end off the centreline}
+  pivot_y: {value: 135, unit: mm, min: 120, max: 180, step: 5, label: Sweep pivot / glove end off the centreline}
   pivot_back: {value: 24, unit: mm, min: 20, max: 40, step: 1, label: Sweep pivot ahead of the trailing edge}
   fold_max: {value: 65, unit: "°", min: 50, max: 70, step: 1, label: Full fold (sweep back)}
-  hub_y1: {value: 195, unit: mm, min: 180, max: 220, step: 5, label: Root hub outer face (inner skin segment starts here)}
+  hub_y1: {value: 180, unit: mm, min: 180, max: 220, step: 5, label: Root hub outer face (inner skin segment starts here)}
   seg_split_y: {value: 345, unit: mm, min: 320, max: 370, step: 5, label: Inner / outer skin segment joint}
-  spar_y0: {value: 156, unit: mm, min: 152, max: 170, step: 1, label: Spar tubes' inner ends (in the hub's sockets)}
+  spar_y0: {value: 141, unit: mm, min: 136, max: 170, step: 1, label: Spar tubes' inner ends (in the hub's sockets)}
   spar_main_frac: {value: 0.28, unit: "", min: 0.22, max: 0.33, step: 0.01, label: Main spar position (fraction of chord)}
   spar_main_y1: {value: 470, unit: mm, min: 420, max: 480, step: 5, label: Main spar outer end}
   spar_rear_frac: {value: 0.6, unit: "", min: 0.5, max: 0.65, step: 0.01, label: Rear spar position (fraction of chord)}
@@ -107,9 +107,9 @@ params:
   boom_x0: {value: 215, unit: mm, min: 200, max: 240, step: 1, label: Tail boom front end (in the fuselage socket)}
   boom_x1: {value: 790, unit: mm, min: 740, max: 820, step: 5, label: Tail boom rear end (in the tail mount)}
   boom_z: {value: -25, unit: mm, min: -35, max: -15, step: 1, label: Tail boom axis height}
-  nose_x0: {value: -175, unit: mm, min: -190, max: -160, step: 1, label: Nose face (motor mount plate's aft face)}
+  nose_x0: {value: -160, unit: mm, min: -190, max: -160, step: 1, label: Nose face (motor mount plate's aft face)}
   nose_x1: {value: -120, unit: mm, min: -130, max: -100, step: 1, label: Nose cap / fuselage joint (front bulkhead)}
-  fuse_x1: {value: 300, unit: mm, min: 280, max: 320, step: 2, label: Fuselage tail end (boom socket)}
+  fuse_x1: {value: 294, unit: mm, min: 280, max: 320, step: 2, label: Fuselage tail end (boom socket)}
   fuse_top: {value: 14, unit: mm, min: 8, max: 20, step: 1, label: Fuselage top (hatch) ahead of the glove}
   fuse_bottom: {value: -70, unit: mm, min: -76, max: -64, step: 1, label: Fuselage bottom}
   fuse_hw: {value: 34, unit: mm, min: 33, max: 40, step: 1, label: Fuselage half width (battery bay)}
