@@ -1,0 +1,165 @@
+{
+  "date": "2026-11-02",
+  "base_commit": "06cbf88",
+  "method": "KERF_STRESS=1; existing linear solid FEA, unchanged material, supports, mesh settings and acceptance limits; one rejected geometry candidate. No fatigue life measured.",
+  "retained_design": [
+    {
+      "id": "twr",
+      "check": "thrust_to_weight",
+      "why": "freestyle needs >= 6:1; catalog XING2 2207 max thrust 1685 g at full output, x 0.74^2 for the 74 % Betaflight motor_output_limit that keeps the XT60 in rating = 922.7 g x 4 motors = 3691 g",
+      "unit": ":1",
+      "bound": "min",
+      "ok": true,
+      "value": 6.03,
+      "limit": 6,
+      "detail": "3691 g thrust / 612 g all-up mass"
+    },
+    {
+      "id": "frame_mass",
+      "check": "mass_max",
+      "why": "printed frame no heavier than 250 g",
+      "unit": "g",
+      "bound": "max",
+      "ok": true,
+      "value": 160.7,
+      "limit": 250,
+      "detail": "estimated assembled mass (g)"
+    },
+    {
+      "id": "arm_flight_load",
+      "check": "fea_static",
+      "why": "normal flight: steady thrust at the configured 74% motor output, catalog 1685 g x 0.74^2 x 9.81 / 1000 = 9.051 N; a static strength/deflection screen, not a transient envelope or fatigue-life proof",
+      "unit": "MPa",
+      "bound": "max",
+      "ok": true,
+      "value": 2.46,
+      "limit": 17.5,
+      "sf_min": 2.0,
+      "applied_force_n": [
+        0.0,
+        0.0,
+        9.0517
+      ],
+      "applied_moment_nmm": [
+        -0.041,
+        -1022.949,
+        0.0
+      ],
+      "max_disp_mm": 0.23,
+      "max_disp_at": [
+        128.9,
+        -1.5,
+        0.0
+      ],
+      "work_nmm": 1.4976953338187717,
+      "detail": "FEA arm_1: von Mises p99.9 (MPa) vs CF-PETG xy strength / SF 2.0; peak 5.35 MPa at [55.9, -0.0, -8.0], deflection 0.230 mm (limit 0.87) at [128.9, -1.5, 0.0], 33920 elements"
+    },
+    {
+      "id": "arm_resonance",
+      "check": "natural_freq",
+      "why": "the arm's first up-down bending mode (motor + prop on its tip) must sit >= 20 % away from the hover rotor rate and the blade-pass rate (15-20 % separation from excitation: KnightHawk Engineering, modernpumpingtoday.com/modal-testing-of-pump-bearing-housings); a static-compliance estimate at hover, not a full operating-speed modal or fatigue-life proof; gyro filtering does not establish mechanical endurance during spool-up",
+      "unit": "Hz",
+      "bound": "vs excitation",
+      "ok": false,
+      "value": 185.1,
+      "limit": [
+        200.2,
+        600.5
+      ],
+      "stiffness_n_mm": 54.70678933312206,
+      "mass_kg": 0.040446174888663755,
+      "detail": "arm_1: stiffness 54.7 N/mm where the mass sits, 35.8 g carried + 33/140 of its own 19.7 g -> f_n 185 Hz; excitation 200 Hz, 601 Hz; nearest excitation 8 % away (min 20 %)"
+    }
+  ],
+  "rejected_candidate": {
+    "decision": "reject: worse hover frequency separation and failed thrust-to-weight; original geometry restored",
+    "geometry": {
+      "wire_x0_mm": 62,
+      "wire_x1_mm": 95,
+      "rail_width_mm": 1.6,
+      "rail_height_mm": 16,
+      "rail_flare_mm": 0.9,
+      "rail_end_ramp_mm": 4,
+      "closed_core_center_mm": [
+        78.5,
+        0,
+        -5.5
+      ],
+      "closed_core_box_mm": [
+        27,
+        7,
+        5
+      ],
+      "closed_core_fillet_mm": 1
+    },
+    "results": [
+      {
+        "id": "twr",
+        "check": "thrust_to_weight",
+        "why": "freestyle needs >= 6:1; catalog XING2 2207 max thrust 1685 g at full output, x 0.74^2 for the 74 % Betaflight motor_output_limit that keeps the XT60 in rating = 922.7 g x 4 motors = 3691 g",
+        "unit": ":1",
+        "bound": "min",
+        "ok": false,
+        "value": 5.92,
+        "limit": 6,
+        "detail": "3691 g thrust / 623 g all-up mass"
+      },
+      {
+        "id": "frame_mass",
+        "check": "mass_max",
+        "why": "printed frame no heavier than 250 g",
+        "unit": "g",
+        "bound": "max",
+        "ok": true,
+        "value": 171.7,
+        "limit": 250,
+        "detail": "estimated assembled mass (g)"
+      },
+      {
+        "id": "arm_strength",
+        "check": "fea_static",
+        "why": "crash / aggressive case: 2 x one motor's max thrust (2 x 1685 g = 33.1 N) pulling the motor screws up, arm held at its two frame bolts",
+        "unit": "MPa",
+        "bound": "max",
+        "ok": false,
+        "value": 12.23,
+        "limit": 11.67,
+        "sf_min": 2.0,
+        "applied_force_n": [
+          0.0,
+          0.0,
+          33.06
+        ],
+        "applied_moment_nmm": [
+          -0.336,
+          -3736.397,
+          0.0
+        ],
+        "max_disp_mm": 0.687,
+        "max_disp_at": [
+          128.9,
+          2.0,
+          0.0
+        ],
+        "work_nmm": 16.529250744849946,
+        "detail": "FEA arm_1: von Mises p99.9 (MPa) vs CF-PETG xy strength / SF 3.0; peak 29.02 MPa at [61.8, 3.6, -0.1], deflection 0.687 mm (limit 0.87) at [128.9, 2.0, 0.0], 10708 elements"
+      },
+      {
+        "id": "arm_resonance",
+        "check": "natural_freq",
+        "why": "the arm's first up-down bending mode (motor + prop on its tip) must sit >= 20 % away from the hover rotor rate and the blade-pass rate (15-20 % separation from excitation: KnightHawk Engineering, modernpumpingtoday.com/modal-testing-of-pump-bearing-housings); spool-up sweeps through it briefly, which Betaflight's gyro notch filters handle",
+        "unit": "Hz",
+        "bound": "vs excitation",
+        "ok": false,
+        "value": 201.9,
+        "limit": [
+          202.1,
+          606.2
+        ],
+        "stiffness_n_mm": 66.12299715634023,
+        "mass_kg": 0.04109164999704501,
+        "detail": "arm_1: stiffness 66.1 N/mm where the mass sits, 35.8 g carried + 33/140 of its own 22.4 g -> f_n 202 Hz; excitation 202 Hz, 606 Hz; nearest excitation 0 % away (min 20 %)"
+      }
+    ]
+  }
+}

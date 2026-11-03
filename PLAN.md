@@ -121,6 +121,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
   gussets, filleted rib roots). Re-run every FEA case; design-review PASS with scores >= 4 on these parts
 - [ ] Showcase rework, fpv_5in arm: fillet the key-ridge roots, move the wire path out of the mid-depth shear zone into
   a covered groove, skid under the motor pad; keep the deflection limit; review PASS
+  - [x] Normal-flight static load + hover-frequency screen (2026-11-02): actual 9.051 N operating-thrust FEA, quantified resonance/mass limits, one deeper-arm candidate measured and rejected; original geometry retained. Fatigue life and resonance redesign remain unproven.
 - [ ] Every project: DESIGN.md "Load → section" table and `style` radii; each part's "overbuilt" and "sharp inside
   corner" warnings fixed or justified in DESIGN.md; pan_tilt bracket camera M2 tap holes (22 % edge ring: bosses or
   through-bolts with nuts); re-review all six with the intent scores (all >= 3). Then make a
