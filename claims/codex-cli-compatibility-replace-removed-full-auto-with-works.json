@@ -1,0 +1,9 @@
+{
+ "item": "Codex CLI compatibility: replace removed --full-auto with workspace-write sandbox arguments for Studio exec/resume; preserve network and explicit overrides, verify generated argv without starting a model.",
+ "session": "codex-agent-cli-flags",
+ "since": 1793670602.589321,
+ "heartbeat": 1793670602.589321,
+ "provider": "Codex",
+ "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
+ "since_utc": "2026-11-03 01:50"
+}
