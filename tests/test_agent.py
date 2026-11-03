@@ -6,7 +6,13 @@ import stat
 
 import pytest
 
-from kerf import agent
+from kerf import agent, codex_work
+
+
+@pytest.fixture(autouse=True)
+def no_host_bundle(tmp_path, monkeypatch):
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", tmp_path / "missing-bundle-codex")
+    monkeypatch.setattr(codex_work, "_Reader", lambda *a: pytest.fail("agent discovery must not open app-server"))
 
 
 @pytest.fixture
@@ -49,6 +55,33 @@ def test_forced_modes(bins, monkeypatch):
 def test_nothing_installed(bins):
     bins()
     assert agent.pick() is None
+
+
+@pytest.mark.parametrize("resume", [None, "fixture-thread"])
+@pytest.mark.parametrize("on_path", [False, True])
+def test_actual_discovery_reaches_agent_command(bins, tmp_path, monkeypatch, resume, on_path):
+    bins(*(["codex"] if on_path else []))
+    bundle = tmp_path / "ChatGPT fixture.app/Contents/MacOS/codex"
+    bundle.parent.mkdir(parents=True)
+    bundle.write_text("#!/bin/sh\nexit 99\n", encoding="utf-8")
+    bundle.chmod(0o755)
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", bundle)
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    expected = str(tmp_path / "codex" if on_path else bundle)
+    assert codex_work._executable() == agent.codex_bin() == expected
+    assert agent.pick() == "codex"
+    cmd = agent.command("codex", "Fixture only; do not execute", resume=resume)
+    assert cmd[0] == expected and cmd[1:3] == ["exec", "--json"]
+    assert cmd[3:-1] == [*agent.CODEX_FLAGS, *(["resume", resume] if resume else [])]
+    assert cmd[-1].startswith("Fixture only; do not execute")
+
+
+def test_agent_discovery_retains_path_fallback_on_helper_error(bins, tmp_path, monkeypatch):
+    bins("codex")
+    def unavailable():
+        raise OSError("fixture discovery failure")
+    monkeypatch.setattr(codex_work, "_executable", unavailable)
+    assert agent.codex_bin() == str(tmp_path / "codex")
 
 
 def test_codex_command_rewrites_the_skill_and_keeps_prompt_last(bins):

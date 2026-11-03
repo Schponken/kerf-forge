@@ -612,3 +612,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Doctor ALL OK using existing dependencies (optional Arduino/simavr unavailable). No actual agent,
   auth/config mutation, model call, project build, full batch or stress run. Live job execution was
   deliberately not exercised; the queued automatic-resume setting race is a separate task.
+
+## 2026-11-03 — Studio agent commands use the same bundled Codex discovery as Work (Codex)
+- Integration audit found `agent.codex_bin` importing a nonexistent `codex_work.codex_bin`; the caught
+  import error silently fell back to PATH. A read-only probe using PR #26's actual helper and a fake
+  executable reproduced Work finding the bundle while the agent returned None. The import now names
+  the existing `_executable` helper. PATH preference and the exception/PATH fallback remain unchanged.
+- **36 targeted tests pass in 1.33 s** (`test_agent`, `test_codex_work`). Five new cases prove the actual
+  helper reaches agent selection and new/resume argv for bundle-only and preferred PATH installs,
+  including a path with spaces, and preserve fallback after helper failure. Agent fixtures now isolate
+  the host app bundle and prohibit app-server discovery; existing fake-binary lifecycle tests remain.
+  No real Codex process, app-server, prompt, chat or paid model launched by these tests.
+- Dependencies: PR #26's discovery helper plus PR #36's supported CLI flags/current-main agent code.
+  Normal dependency merge `046389c` kept both PLAN/STATUS histories and inherited files unchanged;
+  the actual one-line fix and regression tests are a separate commit. Doctor ALL OK with existing
+  dependencies; optional firmware tools unavailable. No full suite, project build or stress solve.

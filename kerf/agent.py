@@ -49,7 +49,7 @@ def claude_bin() -> str | None:
 
 def codex_bin() -> str | None:
     try:
-        from .codex_work import codex_bin as find   # same discovery Studio's Work page uses
+        from .codex_work import _executable as find   # same discovery Studio's Work page uses
         return find()
     except Exception:  # noqa: BLE001
         return shutil.which("codex")
