@@ -111,9 +111,11 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 #abar .t{font-size:13px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
 #abar .t b{font-variant-numeric:tabular-nums}
 #asm .tl{display:flex;gap:3px;margin:2px 0 12px}
-#asm .tl button{flex:1;height:8px;padding:0;border-radius:4px;border:0;background:var(--soft);min-width:8px}
-#asm .tl button.done{background:color-mix(in srgb,var(--good) 55%,var(--soft))}
-#asm .tl button.cur{background:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+#asm .tl button{position:relative;flex:1;height:28px;padding:0;border:0;background:transparent;min-width:8px}
+#asm .tl button::after{content:"";display:block;height:8px;border-radius:4px;background:var(--soft)}
+#asm .tl button.done::after{background:color-mix(in srgb,var(--good) 55%,var(--soft))}
+#asm .tl button.cur::after{background:var(--accent)}
+#asm button:focus-visible,#asm select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 #asm .ah{display:flex;align-items:baseline;gap:8px}#asm .ah .n{color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
 #asm h3{margin:2px 0 8px;font-size:17px;letter-spacing:-.01em}
 #asm .ctrls{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px;align-items:center}
@@ -127,7 +129,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 #asm .txt code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);padding:0 4px;border-radius:4px}
 #asm .txt h4{margin:12px 0 4px;font-size:13px}
 #asm .opt{display:flex;gap:6px;align-items:center;color:var(--mute);font-size:12px;margin:4px 0}
-#asm .donebox{display:flex;gap:8px;align-items:center;margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--soft);cursor:pointer}
+#asm .donebox{display:flex;gap:8px;align-items:center;width:100%;min-height:44px;margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--soft);cursor:pointer;text-align:left}
 #asm .donebox.on{background:var(--goodbg);color:var(--good)}
 #asm .sites{margin:14px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 #asm .sites h4{margin:0 0 8px;font-size:14px}#asm .sites select{width:100%;padding:8px;white-space:normal}#asm .sites .ctrls{margin:8px 0}#asm .site-detail{margin:8px 0;font-size:13px;overflow-wrap:anywhere}
@@ -1114,7 +1116,7 @@ function setSets(vis, future, ctx) { AS.vis = new Set(vis); AS.future = new Set(
 async function demoJoint(name, tok) {
   const j = J.get(name); if (!j) return;
   const u = j.kind === 'revolute' ? '°' : ' mm', c = groups.get(j.child) ? centreOf(j.child) : null;
-  const L = label(`<b>${esc(name)}</b> <span>moves freely ${fmt(j.range[0])} to ${fmt(j.range[1])}${u}</span>`, 'move', c || (() => ctl.target.clone()));
+  const L = label(`<b>${esc(name)}</b> <span>recorded motion ${fmt(j.range[0])} to ${fmt(j.range[1])}${u}</span>`, 'move', c || (() => ctl.target.clone()));
   const a = j.home, lo_ = j.range[0], hi_ = j.range[1];
   await tween(3200, k => { if (tok !== AS.tok) return; const s = Math.sin(k * Math.PI * 2); setJ(name, s >= 0 ? a + (hi_ - a) * s : a + (a - lo_) * s); }, lin);
   if (tok !== AS.tok) return; setJ(name, a);
@@ -1262,14 +1264,17 @@ function incomingGuide(s) {
 function replayInstallation() {
   const c = AS.cards[AS.i];
   if (c.kind !== 'step' || !installationSites(c.s).length) return showCard(AS.i);
-  AS.playing = false; showCard(AS.i, false, AS.site).then(async () => {
-    if (AS.i !== AS.cards.indexOf(c)) return;
-    const tok = AS.tok, x = installationSites(c.s)[AS.site], g = AS.glyphs.find(o => o.userData.siteIndex === AS.site);
+  AS.playing = false;
+  const ready = showCard(AS.i, false, AS.site), tok = AS.tok;
+  return ready.then(async () => {
+    if (tok !== AS.tok) return;
+    const x = installationSites(c.s)[AS.site], g = AS.glyphs.find(o => o.userData.siteIndex === AS.site);
     if (!g || reduced) return;
     return hardwareDemo(x, g, tok);
   });
 }
-async function showCard(i, animate = true, site = null) {
+function replayStep() { AS.playing = false; return showCard(AS.i, true, null, true); }
+async function showCard(i, animate = true, site = null, replay = false) {
   const tok = ++AS.tok; cancelTweens(); clearGlyphs();
   for (const id of solidIds) setGlow(id, 0);
   AS.site = site ?? (i === AS.i ? AS.site : 0);
@@ -1302,7 +1307,7 @@ async function showCard(i, animate = true, site = null) {
   for (const t of SD.steps) if (t.n < s.n) for (const x of (t.pins || [])) if (s.present.includes(x.item) && installationSites({...t, inserts: [], screws: [], pins: [x]}).length && sizedSite({...x, kind: 'pin'})) placeInsert(addGlyph(x.item, pinGlyph(x)), 0);
   const offs = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)])));
   const box = focusBox(s, offs);
-  if (!animate || (installationSites(s).length && !AS.playing)) {
+  if (!animate || (installationSites(s).length && !AS.playing && !replay)) {
     setSets(s.present, future, benchCtx);
     const sites = installationSites(s);
     for (const [k, x] of sites.entries()) {
@@ -1371,54 +1376,62 @@ function siteControls(s) {
   const warning = unknown.length ? `<p class="note warn" role="status">${unknown.map(x => `${esc(x.pin)} (${esc((x.items || [x.item]).join(', '))}): ${esc(x.warning || 'Exact installation location unavailable.')}`).join('<br>')}</p>` : '';
   if (!sites.length) return /insert|screw|shoulder.?pin/i.test([s.title, ...s.lines].join(' ')) ? warning || '<p class="note warn" role="status">Exact installation locations are unavailable in this saved guide. Follow the written part references; rebuild the guide to add verified location markers.</p>' : warning;
   const x = sites[AS.site] || sites[0], it = groups.get(x.item).userData.it;
+  const meaning = x.kind === 'insert' ? 'A heat-set insert is a threaded metal sleeve pressed into plastic with a heated tool.'
+    : x.kind === 'pin' && x.pinKind === 'shoulder' ? 'A shoulder screw has a smooth section for the moving part to pivot on and a threaded end that holds it in place.' : '';
   return `${warning}<div class="sites"><h4>Where to install it</h4><label for="a_site" class="pd">Installation site</label>
     <select id="a_site">${sites.map((x, k) => `<option value="${k}" ${k === AS.site ? 'selected' : ''}>${k + 1} of ${sites.length} · ${esc(siteName(x))}</option>`).join('')}</select>
     <p class="site-detail" role="status"><b>Into ${esc(x.item)}</b>${it.label ? ` · ${esc(it.label)}` : ''}<br>${esc(hardwareName(x))}. ${sizedSite(x) ? '' : 'Hardware dimensions unavailable; location marker only. '}${esc(x.warning || '')} The ring marks the opening; the arrow points into it.</p>
+    ${meaning ? `<p class="pd">${meaning}</p>` : ''}
     <div class="ctrls"><button id="a_site_prev" ${AS.site === 0 ? 'disabled' : ''}>Previous site</button><button id="a_site_next" ${AS.site >= sites.length - 1 ? 'disabled' : ''}>Next site</button><button id="a_locate">Show location</button><button id="a_install_re">Replay installation</button><button id="a_overview">Assembly overview</button><button id="a_pause" disabled>Pause action</button></div>
-    <p class="pd">Drag to look around. Show location returns to this opening.</p></div>`;
+    <p class="pd">${reduced ? 'Reduced motion is on: hardware stays in its installed position.' : 'Replay installation shows this site only, with a schematic tool.'} Follow the written instructions for the assembly order.</p></div>`;
 }
 function renderBar() {
   const c = AS.cards[AS.i], n = SD.steps.length;
-  $('ab_t').innerHTML = c.kind === 'intro' ? '<b>Before you start</b>' : c.kind === 'finish' ? '<b>Finished</b>' : `<b>Step ${c.s.n}/${n}</b> · ${esc(c.s.title)}`;
-  $('ab_play').textContent = AS.playing ? '❚❚ Pause' : '▶ Play';
+  $('ab_t').innerHTML = c.kind === 'intro' ? '<b>Before you start</b>' : c.kind === 'finish' ? '<b>End of guide</b>' : `<b>Step ${c.s.n}/${n}</b> · ${esc(c.s.title)}`;
+  $('ab_play').textContent = AS.playing ? 'Stop walkthrough' : 'Play all';
+  $('ab_re').textContent = 'Replay step';
   $('ab_prev').disabled = AS.i === 0; $('ab_next').disabled = AS.i === AS.cards.length - 1;
 }
 function renderAsm() {
   if (!AS.cards.length) return;
+  const active = document.activeElement;
+  const focused = $('asm').contains(active) ? active.id ? `#${active.id}`
+    : active.dataset.go != null ? `[data-go="${active.dataset.go}"]`
+    : active.dataset.demo != null ? `[data-demo="${CSS.escape(active.dataset.demo)}"]` : null : null;
   const c = AS.cards[AS.i], n = SD.steps.length;
-  let h = `<div class="tl">${AS.cards.map((x, k) => `<button data-go="${k}" class="${k === AS.i ? 'cur' : ''} ${x.kind === 'step' && AS.done.has(x.s.n) ? 'done' : ''}" title="${x.kind === 'step' ? `Step ${x.s.n}: ${esc(x.s.title)}` : x.kind === 'intro' ? 'Before you start' : 'Finished'}"></button>`).join('')}</div>`;
+  let h = `<nav class="tl" aria-label="Assembly steps">${AS.cards.map((x, k) => `<button data-go="${k}" class="${k === AS.i ? 'cur' : ''} ${x.kind === 'step' && AS.done.has(x.s.n) ? 'done' : ''}" ${k === AS.i ? 'aria-current="step"' : ''} aria-label="${x.kind === 'step' ? `Step ${x.s.n}: ${esc(x.s.title)}${AS.done.has(x.s.n) ? ', marked done' : ''}` : x.kind === 'intro' ? 'Before you start' : 'End of guide'}"></button>`).join('')}</nav>`;
   if (c.kind === 'intro') {
     h += `<div class="ah"><h3>Build it, step by step</h3></div>
       <p class="pd" style="margin-top:0">${printed.length} printed part${printed.length === 1 ? '' : 's'}, ${bought.length} bought part${bought.length === 1 ? '' : 's'}, ${n} step${n === 1 ? '' : 's'}. Choose an installation site to see its receiving part, exact opening and insertion direction. Look around at your own pace; Replay shows how it goes in.</p>`;
     h += `<div class="txt">${SD.intro.map(x => `<h4>${esc(x.title)}</h4>${mdLite(x.lines)}`).join('')}</div>`;
   } else if (c.kind === 'finish') {
     const k = SD.steps.filter(x => AS.done.has(x.n)).length;
-    h += `<div class="ah"><h3>Finished</h3><span class="n">${k} of ${n} steps ticked off</span></div>
-      <p class="fin">${k === n ? '✓ Every step done: it\'s built.' : 'That\'s the whole build.'}</p>
-      <div class="txt">${SD.outro.map(x => `<h4>${esc(x.title)}</h4>${mdLite(x.lines)}`).join('') || '<p class="pd">Every joint is shown moving through its range.</p>'}</div>`;
+    h += `<div class="ah"><h3>End of guide</h3><span class="n">${k} of ${n} steps marked done</span></div>
+      <p>${k === n ? 'Every step is marked done. Review the final checks below.' : 'Review your assembly and mark each completed step done.'} The demonstration does not confirm your physical assembly.</p>
+      <div class="txt">${SD.outro.map(x => `<h4>${esc(x.title)}</h4>${mdLite(x.lines)}`).join('') || '<p class="pd">Check that each moving joint moves freely on your assembly. The animation uses recorded joint limits.</p>'}</div>`;
   } else {
     const s = c.s;
     h += `<div class="ah"><span class="n">Step ${s.n} of ${n}</span>${s.bench_for ? `<span class="tag">on the bench · joins in step ${s.bench_for}</span>` : ''}</div><h3>${esc(s.title)}</h3>
-      <div class="chips">${chipsFor(s)}</div>${siteControls(s)}<div class="txt">${mdLite(s.lines)}</div>
+      <div class="chips">${chipsFor(s)}</div><div class="txt"><h4>Assembly order</h4>${mdLite(s.lines)}</div>${siteControls(s)}
       <p class="pd">Compare the installed parts with the written instructions before marking this step done.</p>${s.demos.map(name => `<button data-demo="${esc(name)}">Check ${esc(name)} movement</button>`).join(' ')}
-      <div class="donebox ${AS.done.has(s.n) ? 'on' : ''}" id="dbx">${AS.done.has(s.n) ? '✓ Done' : '☐ Mark this step done'}</div>`;
+      <button class="donebox ${AS.done.has(s.n) ? 'on' : ''}" id="dbx" aria-pressed="${AS.done.has(s.n)}">${AS.done.has(s.n) ? 'Step marked done' : 'Mark this step done'}</button>`;
   }
-  h += `<div class="ctrls"><button id="a_prev" ${AS.i === 0 ? 'disabled' : ''}>◀ Back</button><button id="a_re">↻ Replay</button>
+  h += `<div class="ctrls"><button id="a_prev" ${AS.i === 0 ? 'disabled' : ''}>Back</button><button id="a_re">Replay step</button>
       <button id="a_next" class="on" ${AS.i === AS.cards.length - 1 ? 'disabled' : ''}>Next ▶</button><span class="sp"></span>
-      <button id="a_play">${AS.playing ? '❚❚ Pause' : '▶ Play all'}</button></div>
+      <button id="a_play">${AS.playing ? 'Stop walkthrough' : 'Play all'}</button></div>
     <div class="opt"><label><input type="checkbox" id="a_ghost" ${AS.ghostOn ? 'checked' : ''}> show incoming positions and parts still to come (faint)</label></div>
-    <div class="opt">Speed <select id="a_speed">${[0.5, 1, 2].map(v => `<option value="${v}" ${v === speed ? 'selected' : ''}>${v}×</option>`).join('')}</select>
-      <span class="pd">· keys: ← → space R</span></div>`;
+    <div class="opt"><label for="a_speed">Speed</label> <select id="a_speed">${[0.5, 1, 2].map(v => `<option value="${v}" ${v === speed ? 'selected' : ''}>${v}×</option>`).join('')}</select>
+      <span class="pd">· outside controls: ← → steps, Space play/stop, R replay step</span></div>`;
   const el = $('asm'); el.innerHTML = h;
   el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { AS.playing = false; showCard(+b.dataset.go); });
-  $('a_prev').onclick = () => go(-1); $('a_next').onclick = () => go(1); $('a_re').onclick = replayInstallation;
+  $('a_prev').onclick = () => go(-1); $('a_next').onclick = () => go(1); $('a_re').onclick = replayStep;
   if ($('a_site')) {
     const choose = k => { AS.playing = false; showCard(AS.i, false, k); };
     $('a_site').onchange = e => choose(+e.target.value);
     $('a_site_prev').onclick = () => choose(AS.site - 1); $('a_site_next').onclick = () => choose(AS.site + 1);
     $('a_locate').onclick = () => choose(AS.site); $('a_install_re').onclick = replayInstallation;
     $('a_overview').onclick = () => { if (AS.demo) { AS.demo.paused = true; syncActionControl(); } const s = c.s, off = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)]))); frameBox(boxOf(s.present).union(boxOf(s.groups.flatMap(g => g.items), off)), new T.Vector3(...VIEWS.iso), 0); };
-    $('a_pause').onclick = () => { if (AS.demo) { AS.demo.paused = !AS.demo.paused; syncActionControl(); } };
+    $('a_pause').onclick = () => { if (AS.demo) { AS.demo.paused = !AS.demo.paused; syncActionControl(); redraw(); } };
   }
   $('a_play').onclick = togglePlay;
   $('a_ghost').onchange = e => { AS.ghostOn = e.target.checked; for (const id of solidIds) itemLook(id); for (const g of AS.glyphs) if (g.userData.before) g.visible = AS.ghostOn; applyVis(); redraw(); };
@@ -1427,9 +1440,10 @@ function renderAsm() {
   if ($('dbx')) $('dbx').onclick = () => { const k = c.s.n; AS.done.has(k) ? AS.done.delete(k) : AS.done.add(k); saveDone(); renderAsm(); };
   el.querySelectorAll('[data-hl]').forEach(x => { x.onmouseenter = () => setGlow(x.dataset.hl, 1); x.onmouseleave = () => setGlow(x.dataset.hl, 0); });
   syncActionControl(); renderBar();
+  if (focused) { const next = el.querySelector(focused); (next && !next.disabled ? next : $('a_site') || el.querySelector('[aria-current]')).focus({preventScroll: true}); }
 }
 function go(d) { AS.playing = false; if (AS.i + d >= 0 && AS.i + d < AS.cards.length) showCard(AS.i + d); }
-function togglePlay() { AS.playing = !AS.playing; if (AS.playing) showCard(AS.i === AS.cards.length - 1 || AS.cards[AS.i].kind === 'intro' ? 1 : AS.i); else renderAsm(); }
+function togglePlay() { AS.playing = !AS.playing; if (AS.playing) showCard(AS.i === AS.cards.length - 1 || AS.cards[AS.i].kind === 'intro' ? 1 : AS.i); else showCard(AS.i, false, AS.site); }
 function asmEnter() {
   if (AS.on || !AS.cards.length) return;
   AS.on = true; colorMode = 'normal'; paint(); $('abar').hidden = false; $('hint').style.display = 'none';
@@ -1442,12 +1456,12 @@ function asmExit() {
   resetPose(); applyVis(); $('abar').hidden = true; $('hint').style.display = '';
   renderMotion(); paint();
 }
-$('ab_prev').onclick = () => go(-1); $('ab_next').onclick = () => go(1); $('ab_re').onclick = replayInstallation; $('ab_play').onclick = togglePlay;
+$('ab_prev').onclick = () => go(-1); $('ab_next').onclick = () => go(1); $('ab_re').onclick = replayStep; $('ab_play').onclick = togglePlay;
 ctl.addEventListener('start', () => { AS.userCam = true; });
 document.addEventListener('keydown', e => {
-  if (!AS.on || /input|textarea|select/i.test(e.target.tagName)) return;
+  if (!AS.on || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.target.closest('button,input,textarea,select,a,summary,[contenteditable]')) return;
   if (e.key === 'ArrowRight') { go(1); e.preventDefault(); } else if (e.key === 'ArrowLeft') { go(-1); e.preventDefault(); }
-  else if (e.key === ' ') { togglePlay(); e.preventDefault(); } else if (e.key === 'r' || e.key === 'R') replayInstallation();
+  else if (e.key === ' ') { togglePlay(); e.preventDefault(); } else if (e.key === 'r' || e.key === 'R') { replayStep(); e.preventDefault(); }
 });
 
 // ---------- go ----------
