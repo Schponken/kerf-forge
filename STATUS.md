@@ -757,3 +757,30 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - The user rejected the conventional permanent sidebar composition after review. Next: replace it with an object-first
   full-width stage and on-demand project/activity trays, preserving the verified access and color improvements.
   The current desktop/mobile captures are baseline evidence, not acceptance of the final direction.
+
+
+## 2026-11-03 03:15 UTC — full-width Studio shell and object-led project collection (Codex)
+- Replaced the permanent sidebar with a 72px top navigation strip, or two 108px rows on phones. Projects,
+  Activity and utilities open in labelled native disclosures with close/Escape, outside-click and focus behavior.
+  Empty or busy project/job lists no longer consume the workspace. Phone search and New design have distinct
+  grid areas. Closed panels explicitly leave layout, preventing invisible fixed trays from retaining hit geometry.
+- The project collection displays saved model images at larger scale without decorative tiles. Projects without
+  previews use compact rows; all projects remain selectable, and observed build/check/review/stale evidence stays
+  explicit. Search explains a no-match result. Polling preserves the focused project and scroll position; All
+  projects invalidates pending project requests so a slower response cannot replace that destination.
+- Shared PRODUCT.md, DESIGN.md and surface brief record the neutral/graphite palette, restrained steel blue,
+  system typography, scoped ownership and disclosure contract. Contract sent to all active surface owners and
+  reread after saving. No new dependency or font. Other surfaces' content/behavior remains their owners' work.
+- Validation: **3 passed in 18.78s** (`tests/test_studio_shell.py`, `tests/test_mobile_shell.py`,
+  `tests/test_work_mobile_navigation.py`), with three existing unregistered browser-marker warnings. Coverage
+  includes OS theme/default persistence, measured text/control contrast, keyboard navigation/focus, project and
+  activity scrolling, saved options, full-width resize behavior, no overlapping header controls or horizontal
+  overflow, empty/30-item lists, and 320/390/844/1440px viewports. Prior correction run: 2 pass / 1 fail in 14.80s;
+  explicit closed-tray display fixed the original strict overlap assertion, with no loosened threshold.
+- Viewed the final light/dark desktop/phone collection captures in `.cache/studio-shell/final`; they use three
+  read-only saved model renders in a labelled illustrative workspace. One detector pass reported 12 incumbent
+  findings in other surfaces (tabs, job progress/toasts and lightbox); passed to integration instead of changing
+  another owner's selectors. Sibling/integration critique remains the parent task's responsibility.
+- `kerf doctor`: **ALL OK**, with existing optional firmware-tool warnings. Batch remains HELD; duplicate-process
+  checks and the shared two-suite browser coordinator preceded runs. No real jobs, geometry/project builds,
+  stress solve, full suite, new review.json or native app run. This shell is a scoped PR, not a finished whole-UI claim.

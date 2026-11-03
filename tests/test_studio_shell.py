@@ -28,6 +28,7 @@ try {
   await p.route('**/*',r=>{const path=new URL(r.request().url()).pathname;
    if(path==='/')return r.fulfill({contentType:'text/html',body:html});
    if(previewDir && path.startsWith('/preview/'))return fs.readFile(previewDir+'/'+path.split('/').pop()).then(body=>r.fulfill({contentType:'image/png',body}));
+   if(path==='/fixture-preview.svg')return r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"><path d="M80 270V90H150V200H390V270Z" fill="#305f86"/></svg>'});
    if(path==='/api/projects')return r.fulfill({json:{projects,claude:false}});
    if(path==='/api/jobs')return r.fulfill({json:{jobs,sessions:[]}});
    if(path==='/api/quotes')return r.fulfill({json:{quotes:[]}});
@@ -39,15 +40,23 @@ try {
   await p.goto('http://kerf.test/');
   assert.equal(await p.locator('html').getAttribute('data-theme'),theme); // OS preference is the initial default.
   projects=Array.from({length:12},(_,i)=>({name:'fixture_'+i,title:['Workshop shelf bracket','Desk cable guide','Camera pan mount'][i%3]+` ${i+1}`,description:'Illustrative fixture',built:false}));
+  projects[0].picture='/fixture-preview.svg';
   previews.forEach((row,i)=>{projects[i]={...projects[i],...row};});
   jobs=[{id:'fixture-check',kind:'check',project:'fixture_0',label:'Check mounting clearances',state:'running',seconds:35,tail:[]}];
   await p.evaluate(async()=>{S.grid=true;await loadProjects();await pollJobs();showGrid();});
   assert.equal(await p.locator('#nav_grid').getAttribute('aria-current'),'page');
   assert.equal(await p.locator('#search').getAttribute('aria-label'),'Search projects');
   assert.equal(await p.locator('#plist button.pitem').count(),12);
+  assert.equal(await p.locator('.pcard').count(),12);
+  assert.equal(await p.locator('.pgrid .pcard').count(),previews.length||1);
+  assert.equal(await p.locator('.project-index .pcard').count(),12-(previews.length||1));
+  assert.equal(await p.locator('.project-index .pic').count(),0); // Missing pictures never reserve empty model tiles.
+  assert.equal(await p.locator('.pgrid .pic').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');
   assert.equal(await p.locator('#joblist button.job').count(),1);
   const nav=await p.locator('.sidenav').evaluate(e=>getComputedStyle(e).flexDirection);
-  assert.equal(nav,width===1440?'column':'row');
+  assert.equal(nav,'row');
+  assert.equal((await p.locator('#main').boundingBox()).x,0);
+  assert.equal(await p.locator('#plist').isVisible(),false);
   assert.equal(await p.locator('#main').evaluate(e=>getComputedStyle(e).backgroundImage),'none');
   assert.equal(await p.locator('#newbtn').evaluate(e=>getComputedStyle(e).backgroundImage),'none');
   assert.equal(await p.locator('.logo').evaluate(e=>getComputedStyle(e).animationName),'none');
@@ -61,7 +70,7 @@ try {
    if(ratio('--accent','--accent-ink')<4.5 || ratio('--control-line','--panel')<3)throw Error('Control contrast');
   });
   await p.waitForFunction(()=>[...document.querySelectorAll('#main .head,#main .body,#main .pcard')].every(e=>getComputedStyle(e).opacity==='1'));
-  await p.evaluate(saved=>{const note=document.createElement('p');note.className='note';note.textContent=saved?'Saved models in an illustrative workspace. Status comes from saved reports; no new checks ran.':'Illustrative workspace: synthetic project data for UI testing.';document.querySelector('#main .head').append(note);},!!previewDir);
+  await p.evaluate(saved=>{const note=document.createElement('p');note.className='note';note.textContent=saved?'Saved models in an illustrative workspace. Status comes from saved reports; no new checks ran.':'Illustrative workspace: synthetic project data for UI testing.';document.querySelector('#main .body').prepend(note);},!!previewDir);
   await p.waitForFunction(()=>[...document.querySelectorAll('.pcard img')].every(i=>i.complete&&i.naturalWidth>0));
   await p.screenshot({path:CAPTURE_PATH+`/shell-projects-${theme}-${width}.png`,fullPage:true});
   // The sidebar destinations and project rows are real keyboard controls.
@@ -71,12 +80,19 @@ try {
   if(width===390)assert.equal(await p.locator('#plist').isVisible(),false);
   await p.screenshot({path:CAPTURE_PATH+`/shell-work-${theme}-${width}.png`,fullPage:true});
   await p.locator('#nav_grid').click();
-  await p.locator('#plist button').last().focus();await p.keyboard.press('Enter');
+  await p.locator('#projecttray>summary').click();await p.locator('#search').waitFor();
+  await p.locator('#search').fill('no-such-project');assert.equal(await p.locator('#plist').innerText(),'No matching projects. Try another name.');
+  await p.locator('#search').fill('');
+  await p.locator('#plist button').last().focus();
+  await p.evaluate(()=>renderList());assert.equal(await p.evaluate(()=>document.activeElement.dataset.project),'fixture_11');
+  await p.keyboard.press('Enter');
   await p.waitForFunction(()=>S.detail?.name==='fixture_11');
   assert.equal(await p.locator('#plist button').last().getAttribute('aria-current'),'page');
   await p.evaluate(()=>{window.openJob=id=>window.__selectedJob=id;});
+  await p.locator('#activitytray>summary').click();
   await p.locator('#joblist button.job').focus();await p.keyboard.press('Space');
   assert.equal(await p.evaluate(()=>window.__selectedJob),'fixture-check');
+  await p.locator('#toolstray>summary').click();
   await p.locator('#bellbtn').click();await p.waitForFunction(()=>document.querySelector('#bellbtn').getAttribute('aria-label')==='Turn notifications on');
   assert.equal(await p.locator('#bellbtn .muted-line').isVisible(),true);
   await p.locator('#themebtn').click();

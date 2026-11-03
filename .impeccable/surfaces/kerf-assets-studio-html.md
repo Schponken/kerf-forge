@@ -5,12 +5,19 @@ primary_target: "kerf/assets/studio.html"
 related_targets: []
 ---
 
-# Studio shell redesign
+# Studio shell
 
-Scope: global Studio identity, navigation rail and shared controls. Mode: Operate. The first-time noncoder lens is a design assumption, not audience research. Preserve all current workflows and evidence limits. Project workspace and Work content have separate owners.
+Scope: shared identity/tokens, navigation, project switcher and collection. Mode: Operate. Project workspaces and
+Work/New design/History/Tune/Files/job stories have separate owners. The audience lens is a first-time noncoder;
+all current workflows, uncertainty and evidence limits remain.
 
-Chosen direction: destination wayfinding translated into a practical local workbench. Three stable destinations, a visible current location, searchable projects, and Activity as a supporting region. The application should feel organized before a user reads a report. No literal transport signs, decorative grid, ambient glow or marketing hierarchy.
+Direction: the model presentation table. A full-width neutral object stage replaces the conventional side rail
+that the user explicitly rejected. A compact top strip carries destinations and New design; project search,
+Activity and utilities reveal as focused trays. The collection emphasizes actual saved models in generous
+unboxed space, with compact rows for projects without a preview. Its memorable moment is seeing the object
+without competing permanent tool panels.
 
-The seven grounded directions considered were native project navigation, technical-manual indexing, instrument-panel grouping, IDE navigation, workshop dispatch board, collection catalog and destination wayfinding. Seed75c5271f assigned the seventh. Challenger comparison used audience identification and product clarity: split-flap rows suit status but their fixed cells and motion obscure ordinary editing; airport bands make navigation obvious but oversized saturated signs displace project content; consumer cards feel familiar but add containers and bottom-navigation machinery to an existing desktop workflow. The assigned restrained wayfinding grammar wins both axes within the user's explicit brief.
-
-User-delegated decisions replace a design questionnaire/approval page. This pass makes no new capability claims. Review in one desktop/mobile, light/dark batch; obtain sibling critique, make one correction batch and confirm. Open: broader audience needs remain unresearched; no live native app or hardware run is authorized by this visual task.
+The user delegated routine design decisions. Preserve the shared contract in DESIGN.md. No ambient glows,
+generic gradients, empty preview tiles or decorative CAD styling. Keyboard and mobile behavior are mandatory.
+One desktop/mobile light/dark inspection, one correction batch and confirmation; sibling QA owns fresh critique.
+Open limit: broader audience research and running the native app are outside this visual task.
