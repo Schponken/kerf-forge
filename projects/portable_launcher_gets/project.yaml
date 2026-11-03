@@ -234,6 +234,10 @@ assembly:
     - {parent: drone.prop, child: prop.hub}
     - {parent: rear_foot.pedal_spot, child: pedal_base.base}
     - {parent: pedal_base.treadle, child: pedal.pivot, name: pedal, range: [0, 15], home: 0}
+  order: [rear_foot, sec1, rear_block, trigger, [wheel_1, wheel_2, wheel_3, wheel_4], tail_pin, [tail_roller_1, tail_roller_2], sled,
+          hinge_aft_a, hinge_fwd_a, sec2, [anchor_rack_a, anchor_rack_b], anchor, hinge_aft_b, hinge_fwd_b, sec3, [bipod_l, bipod_r],
+          [leg_l, leg_r], [foot_l, foot_r], hinge_aft_c, hinge_fwd_c, sec4, [post_l, post_r], [brake_l, brake_r],
+          [pulley_brg_1, pulley_brg_2], pulley, nose_block, axle, cradle, strands_top, drone, drone_wing, pedal_base, pedal]
   allow_overlap:
     - {pair: [wheel_1, sec1], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
     - {pair: [wheel_1, sec2], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
