@@ -1,9 +1,0 @@
-{
- "item": "Work chat navigation: link observed Codex sessions to the documented existing-chat route and show their full chat IDs; reject unsafe routes and verify keyboard/phone behavior without opening production chats.",
- "session": "codex-work-chat-links",
- "since": 1793662242.7332082,
- "heartbeat": 1793662242.7332082,
- "provider": "Codex",
- "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
- "since_utc": "2026-11-02 23:30"
-}

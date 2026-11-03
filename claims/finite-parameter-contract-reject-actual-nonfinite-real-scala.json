@@ -1,0 +1,10 @@
+{
+ "item": "Finite parameter contract: reject actual nonfinite real scalar base, override and derived parameter results before geometry with field context; preserve valid enums/strings/lists, Boolean semantics and existing bounds policy.",
+ "session": "codex-finite-parameters",
+ "since": 1793669378.999003,
+ "heartbeat": 1793669718.241896,
+ "provider": "Codex",
+ "thread_id": "01a19e34-d43d-7b72-b3a6-f3a4df1d39db",
+ "since_utc": "2026-11-03 01:29",
+ "activity": "134 targeted tests passed; documenting and publishing finite numeric parameter contract"
+}
