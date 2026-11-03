@@ -350,8 +350,9 @@ wiring:
   KiCad has and has not.
 
 ## Item keys
-- Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model),
-  `walls` (perimeter loops; default 4 on strength-checked parts, else 2; written into the plate 3MF),
+- Printed parts: `file`, `material`, `qty`, `print_rot` [deg about X, Y, Z onto the bed], `infill` (mass model; finite
+  fraction 0 through 1 inclusive, default 0.25), `walls` (finite whole perimeter-loop count, zero or greater;
+  default 4 on strength-checked parts, else 2; written into the plate 3MF),
   `load_axis` (x / -y / [x, y, z] / list: main stress direction in the part frame; warned if > 30 deg across layers),
   `supports` (per-part override: `avoid`, `allowed`, or `needed` = slicer supports on in the plate file), `params` (per-part param overrides), `note` (shown in the BOM).
 - Creative mode (kerf/meshy.py): a printed part with `source: meshy`, `prompt` (what to ask Meshy text-to-3D for),
@@ -359,8 +360,9 @@ wiring:
   model is scaled to fill it) and `fit` (`stretch` default, or `uniform`) is fused with its exact features into one
   body. Its part file builds the features as usual and calls `ctx.mesh_cut(solid)` for every hole, key-access bore
   or pocket that must also go through the shell. Files in `meshes/` are part of the fingerprint.
-- Purchased items: `catalog`, `proxy`, `groups` (proxy site key -> fastener group), `qty`, `mass_g` (overrides the
-  catalog mass), `note`, `color`, `tab_screws_from: bottom` (servo screws from behind the tabs, with
+- Purchased items: `catalog`, `proxy`, `groups` (proxy site key -> fastener group), `qty`, `mass_g` (finite nonnegative
+  override of the catalog mass; zero retains the existing unknown-mass warning, not proof of a massless item),
+  `note`, `color`, `tab_screws_from: bottom` (servo screws from behind the tabs, with
   `servo_mount(top_through=True)`), `tab_washers: true` (a flat washer under each tab screw head: catalog
   `washer_h` added to the grip), proxy-specific sizes (`length` rod, `size` box, `h` prop-disc thickness,
   `diameter` prop disc, `hole_start_deg` / `use_holes` horn holes, `component_height` board, `model`/`model_rot`/`model_pos`/
@@ -445,3 +447,12 @@ pytest passes; every project builds with `ok: true`; every project has a design-
 PASS for the current fingerprint; every eval's `acceptance.py` passes on a fresh report; PLAN.md has no unchecked box.
 
 Per-part `modifiers` describe local print-setting volumes: `where`, `size`, `infill`, `walls` and `why` (and optionally `box`, part-frame corners in mm, so the infill strength check counts the modifier's infill there). Add these manually in the slicer; `kerf/export.py` lists the required settings in PRINT_SETTINGS.md.
+`modifiers` must be a list of mappings; any supplied `infill`/`walls` obey the same scalar rules as the part settings.
+These validations do not add modifier volumes to the existing whole-part mass model or change the strength model.
+
+Project loading rejects invalid print inputs and purchased `mass_g` before building geometry, with the item/field
+path in the error. Direct mass, shell-volume and print-output helpers share these scalar checks too, including cached
+mass lookups. NaN, infinity and YAML booleans are rejected; nothing is silently clamped or truncated. Finite numeric
+strings are accepted consistently (`walls: "2.0"` means two loops, just like numeric `2.0`); loaded part specs normalize
+them before downstream consumers. Valid zero/one infill, zero walls, catalog fallback for absent mass, and the existing
+2/4-wall defaults are unchanged. A syntactically valid input still needs the engineering fit/strength/print checks.
