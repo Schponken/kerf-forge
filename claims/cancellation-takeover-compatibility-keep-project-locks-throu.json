@@ -2,8 +2,9 @@
  "item": "Cancellation takeover compatibility: keep project locks through child exit and preserve explicit stop/auth outcomes alongside usage pause and Codex handoff.",
  "session": "codex-cancellation-compat",
  "since": 1793669783.496651,
- "heartbeat": 1793669783.496651,
+ "heartbeat": 1793670482.327462,
  "provider": "Codex",
  "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
- "since_utc": "2026-11-03 01:36"
+ "since_utc": "2026-11-03 01:36",
+ "activity": "Validated 21 cancellation, queued-resume and fake-agent handoff tests after main integration; publishing PR8 refresh"
 }
