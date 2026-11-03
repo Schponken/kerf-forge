@@ -579,3 +579,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+## 2026-11-02 — Focused test workflow (Codex)
+- Pytest now puts the active config root first using built-in `pythonpath = ["."]`. Shared editable virtualenvs
+  no longer silently select another checkout for pytest imports; no dependency, xdist, selection or marker changes.
+- Added read-only `tools/test_context.py`: checkout, full HEAD, dirty paths and local pytest PIDs with literal test
+  paths/node IDs. Arbitrary options/expressions are omitted; Git status disables optional index locks. It never
+  fetches or interprets batch state. `docs/status/FOCUSED_TESTING.md` explains matching helper revisions, exact-head
+  receipts and frozen dependency-stack validation; AGENTS.md links it.
+- Receipt: process-optimization worktree at HEAD `6b52b7c189fc97a0803a34ae7211d455d0852cb4` before/after;
+  dirty AGENTS.md, PLAN.md, pyproject.toml and new helper/test/guide. `.venv/bin/python -m pytest -q
+  tests/test_test_context.py`: 2 PASS in 0.47 s. Tests cover sanitized/read-only calls, macOS Python names and
+  both console/module pytest against two fake checkouts with the wrong tree on PYTHONPATH. These tested code
+  bytes are committed with this entry; PLAN completion and this receipt were added after testing. No dependency
+  PRs included. Doctor ALL OK; diff check clean. Matching reviewed batch helper reports HELD; full suite,
+  geometry/FEA, real jobs and standalone kerf entrypoint imports were not exercised.

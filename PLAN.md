@@ -279,3 +279,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Audit fixes: engine majors ENG-1..ENG-6 (each with a test), re-check every project
   - [x] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)
 - [x] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project
+
+- [x] Focused test workflow: bind pytest imports to the active worktree and provide a read-only checkout/test preflight plus exact-head review receipts; preserve all existing test selection and coordination rules.
