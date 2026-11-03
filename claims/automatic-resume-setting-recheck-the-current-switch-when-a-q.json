@@ -2,8 +2,9 @@
  "item": "Automatic resume setting: recheck the current switch when a queued usage retry dispatches; preserve manual Resume and re-enabled queued retries, with mocked timer tests only.",
  "session": "codex-autoresume-setting",
  "since": 1793670781.967194,
- "heartbeat": 1793670781.967194,
+ "heartbeat": 1793670970.742164,
  "provider": "Codex",
  "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
- "since_utc": "2026-11-03 01:53"
+ "since_utc": "2026-11-03 01:53",
+ "activity": "Verified queued retry switch, manual resume and callback race; 25 focused tests pass"
 }
