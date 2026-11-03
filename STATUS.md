@@ -560,3 +560,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   "CLAUDE OFFLINE MODE": a Codex manager task merges other Codex PRs (22 open, none merged since #11); Codex never
   writes review.json (design-reviewer sub-line left for Claude). Snapshot, priorities and ready-to-paste task prompts:
   docs/status/CODEX_TAKEOVER.md. First Claude session back: end the mode as AGENTS.md says.
+
+## 2026-11-02 20:40 UTC-5 — portable_launcher_gets IN PROGRESS (Claude, Studio job, still running)
+- This Claude session is still working on it (claim heartbeats fresh); Codex: don't take it over unless the claim goes
+  stale. State in git: research + catalog (V-slot 2040, V-wheel, tee nut, 6 mm QR pin, alu tube, latex force curves,
+  shock cord, braid, stake), DESIGN.md (sizing, load cases, per-part contracts, joint tree), project.yaml contract,
+  layout.py, stub parts; five part designers are replacing the stubs now.
+- Engine (all tested): `fit="lock"` pins (removable QR / clevis pins that lock a fold or slide joint at home);
+  `bungee_launch` requirement (kerf/req_launch.py: exit speed / peak g / setting table from a sourced elastic force
+  curve, named curves, V-cord brake stop with pre-stretch); box proxy joints with a rotation; rod proxy reads `d`.
+- Design decisions: 6 strands of the catalogued 3/16 in latex (commodity curve) instead of the quote's 1-4 (documented
+  latex is weaker than the quote guessed); brake = pre-stretched latex V-cord (shock cord has no published force
+  curve); fold joints = two QR pins per joint 44 mm out (outside the sled wheels) with lugs top and bottom so each joint
+  holds bending both ways; rear-foot pivot on the rail centre line (launch recoil bends nothing).
+- Next: integrate parts, strength hand checks (FEA paused), build, renders, design-reviewer.
