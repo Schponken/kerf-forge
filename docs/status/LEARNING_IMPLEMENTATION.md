@@ -21,3 +21,7 @@ The eventual runner is off by default, overnight1–7am America/New_York only, y
 ## Validation
 
 Focused implementation tests and combined receipts will be recorded below. No full-suite or CAD build is implied by passing these software fixtures.
+
+Combined integration at e484fd3:52 focused tests passed in10.52s (CLI, creation, early gates, scorecards, lookback, Studio shell and phone/desktop fixture). Two existing unregistered browser-marker warnings remain. Broader worker Studio selection ended with exit141 and is not claimed passing. Mobile scorecard screenshot inspected; no overflow.
+
+Installed only the four tested scorecard application files, with hash gates against the existing source and backup at /Users/spencergross/Library/Application Support/KerfStudio/backups/20261103-001317-learning-scorecards. They activate on the next app restart; current user session was not interrupted. CLI/stage-gate changes remain source-only, pending remaining phase1 workflow integration and full-batch prerequisite. No actual project sources or generated geometry changed.

@@ -268,7 +268,6 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 - [ ] Learning Mode phase 1, stage gates (Codex OK): risky-parts-first gates (strength sizing for load-carrying parts, a moving-parts test with blocks, wire paths in the layout, rough review) must pass before detail work unlocks; only where they matter (a cable clip skips strength sizing); only projects started after the gate lands; tests (a test project is blocked until gates pass, a simple part is not)
   - [x] Backend marker, current measured evidence, attributed rough review, and export lock; Studio enrollment, detail-job integration, and the full-batch prerequisite remain pending; CLI enrollment is owned by integration.
-- [ ] Learning Mode phase 4, scorecards (Codex OK): each lesson / gate / strategy in learning/lessons.json tracks times applied, what it caught, work saved, times it blocked good work; strong ones promoted, dead or blocking ones flagged; Studio panel; tests
 - [x] Learning Mode phase 4, scorecards (Codex OK): each lesson / gate / strategy in learning/lessons.json tracks times applied, what it caught, work saved, times it blocked good work; strong ones promoted, dead or blocking ones flagged; Studio panel; tests
 - [ ] Learning Mode phase 5, practice engine (Codex OK): `kerf learn pick` draws from learning/ideas.json (ideas from Printables / MakerWorld / Thingiverse categories, FIRST / VEX rules, catalog categories, Studio requests; ideas only, never files; no weapons), a coverage map whose categories grow, 1 in 5 random wildcard, a "too similar" alarm, mix new / revisit / drill a third each with a 15 % floor; practice projects live in practice/ (skipped by tests, PLAN and batch verify); revisits saved as new versions Spencer accepts in Studio; tests
 - [ ] Learning Mode phase 6, surprise exam (Codex OK for the grader code; the exam set lives in private repo kerf-exam that Spencer creates; until then `kerf learn exam` says so): scheduled exam runs, scores tracked over time; tests with a fake exam set
@@ -360,4 +359,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 - [x] Check evidence clarity: distinguish explicitly unproven engineering results from measured target failures.
 
-- [ ] Learning Mode integration: expose stage evidence and scorecards through the CLI, verify combined behavior, and preserve remaining phase boundaries.
+- [x] Learning Mode integration: expose stage evidence and scorecards through the CLI, verify combined behavior, and preserve remaining phase boundaries.
