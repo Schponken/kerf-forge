@@ -354,6 +354,8 @@ def new(name, title, module=None) -> int:
         except (OSError, ValueError) as e:
             _p(f"Could not create module instance: {e}")
             return 1
+        from . import stages
+        stages.initialize(d)
         _p(f"Created projects/{name} from {module}, with its source contract and checks. "
            f"Read MODULE.md; this new project is not checked or reviewed. Run `kerf check {name}` next.")
         return 0
@@ -364,6 +366,8 @@ def new(name, title, module=None) -> int:
             "  joints: []\nrequirements: []\nuse_story:              # who, where, how often, what goes wrong (kerf/usestory.py)\n"
             "  who: TODO\n  where: [indoor]\n  how_often: TODO\n  goes_wrong: []\n")
     (d / "project.yaml").write_text(text, encoding="utf-8")
+    from . import stages
+    stages.initialize(d)
     _p(f"Created starter files in projects/{name}. Add parts and an assembly before building; for an AI-generated design, use New design in Kerf Studio.")
     return 0
 
@@ -431,6 +435,11 @@ def main(argv=None) -> int:
     dy.add_argument("--log-session", nargs="?", const="auto", metavar="FILE", help="add a Claude Code session log's token usage to the project's diary (default: newest log)"); dy.add_argument("--label", default="")
     lb = sub.add_parser("lookback", help="Learning Mode look-back: lessons from the diaries, grouped across projects (learning/LESSONS.md)")
     lb.add_argument("project", nargs="?")
+    learn = sub.add_parser("learn", help="Inspect Learning Mode evidence and lesson scorecards")
+    learn_sub = learn.add_subparsers(dest="learn_cmd", required=True)
+    learn_sub.add_parser("scorecards", help="Read recorded lesson evidence; does not start practice")
+    gate = learn_sub.add_parser("stages", help="Show which early design checks still need evidence")
+    gate.add_argument("project")
     fw = sub.add_parser("firmware-check", help="compile + simulate the project's servo bring-up program (kerf/fwcheck.py)")
     fw.add_argument("project")
     for parser in sub.choices.values():
@@ -474,6 +483,19 @@ def main(argv=None) -> int:
         print(f"agent mode: {AG.mode()}  (Claude Code: {AG.claude_bin() or 'not installed'}; Codex: {AG.codex_bin() or 'not installed'}); "
               f"next job runs on: {AG.pick() or 'nothing installed'}")
         return 0
+    if a.cmd == "learn":
+        try:
+            if a.learn_cmd == "scorecards":
+                from . import scorecards
+                result = scorecards.read(ROOT)
+            else:
+                from . import project as P, stages
+                result = stages.status(P.load(a.project))
+            _p(json.dumps(result, indent=2, ensure_ascii=False))
+            return 0
+        except (OSError, ValueError) as exc:
+            _p(f"Could not read learning evidence: {exc}")
+            return 1
     if a.cmd == "diary":
         from . import diary
         names = diary.all_projects() if a.all else [a.project] if a.project else []

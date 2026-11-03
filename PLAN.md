@@ -357,3 +357,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Viewer paused-lifecycle regression: latch tool contact in-page at normal speed so combined runs retain exact pause/idle/resume coverage
 
 - [x] Check evidence clarity: distinguish explicitly unproven engineering results from measured target failures.
+
+- [ ] Learning Mode integration: expose stage evidence and scorecards through the CLI, verify combined behavior, and preserve remaining phase boundaries.
