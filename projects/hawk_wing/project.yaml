@@ -116,7 +116,7 @@ params:
   motor_z: {value: -20, unit: mm, min: -30, max: -5, step: 1, label: Motor (thrust line) height}
   bat_x: {value: -68, unit: mm, min: -70, max: 10, step: 1, label: Battery centre x (sets the CG)}
 parts:
-  fuselage: {file: parts/fuselage.py, material: PETG, print_rot: [0, -90, 0], infill: 0.15, walls: 3, load_axis: [X, Z]}
+  fuselage: {file: parts/fuselage.py, material: PETG, print_rot: [0, -40, 40], infill: 0.15, walls: 3, load_axis: [X, Z], supports: needed}
   nose: {file: parts/nose.py, material: PETG, print_rot: [0, -90, 0], infill: 0.1, walls: 2}
   motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: X}
   hatch: {file: parts/hatch.py, material: PETG, print_rot: [180, 0, 0], infill: 0.15, walls: 2}

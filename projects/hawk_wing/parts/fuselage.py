@@ -156,8 +156,8 @@ def build(ctx):
 
     # Tail leads leave beside the VTX, then run externally under the boom clear of its transverse clamp screw.
     lead_exit = Plane(origin=(190.0, 40.0, -38.0), x_dir=(1, 0, 0), z_dir=(0, 1, 0))
-    body -= ctx.cut(lead_exit * teardrop_hole(9.0, 24.0, up_deg=0.0),
-                    why="tail servo plugs exit to the boom exterior; 45-degree roof follows printed +X up", kind="wire hole")
+    body -= ctx.cut(lead_exit * teardrop_hole(9.0, 24.0, up_deg=iface.print_up_deg(ctx, Location(lead_exit)) or 0.0),
+                    why="tail servo plugs exit to the boom exterior; 45-degree roof follows the declared print orientation", kind="wire hole")
 
     # ---- joints
     for k in ("nose", "motor_mount", "glove", "hatch", "boom_clamp", "tail"):
