@@ -272,7 +272,8 @@ def _dump(shape, deps: list) -> bytes:
     meta = {a: getattr(shape, a) for a in ATTRS if hasattr(shape, a)}
     meta["color"] = shape.color
     bio = io.BytesIO()
-    _Pickler(bio, protocol=pickle.HIGHEST_PROTOCOL).dump({"shape": shape, "meta": meta, "deps": deps})
+    _Pickler(bio, protocol=pickle.HIGHEST_PROTOCOL).dump(
+        {"shape": shape, "meta": meta, "deps": deps, "deps_hash": deps_hash(deps)})
     return bio.getvalue()
 
 
@@ -320,13 +321,10 @@ def store(k: str, shape, deps: set) -> None:
         return
     try:
         blob = _dump(shape, sorted(deps))
-        rec = pickle.loads(blob)                       # round-trip now: never store what can't be read back
-        rec["deps_hash"] = deps_hash(rec["deps"])
-        out = io.BytesIO()
-        _Pickler(out, protocol=pickle.HIGHEST_PROTOCOL).dump(rec)
+        pickle.loads(blob)                            # validate the exact bytes that will be published
         DIR.mkdir(parents=True, exist_ok=True)
         tmp = DIR / f"{k}.tmp{os.getpid()}"
-        tmp.write_bytes(out.getvalue())
+        tmp.write_bytes(blob)
         tmp.replace(DIR / f"{k}.pkl")
         prune()
     except Exception:  # noqa: BLE001 — caching is an optimisation; a part that can't be stored is rebuilt next time

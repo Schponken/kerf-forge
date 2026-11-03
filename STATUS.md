@@ -1381,3 +1381,20 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Restarted Kerf Studio with no running jobs. Native UI verified insert location, Replay installation, step navigation and the second step's M3 shoulder-screw location. Installed source hashes and all 20 pre-existing modified project files still match after restart.
 - Desktop/phone captures reviewed in one correction pass plus confirmation: clearer local replay, reduced duplicate copy, moved label off tool contact and phone step controls away from target. These are schematic installation demonstrations, not physical assembly validation. Unknown unrecorded pin seats remain explicitly unavailable; older projects gain new missing metadata on future builds.
 - Backup: ~/Library/Application Support/KerfStudio/backups/20261102-230847-assembly-guide. Integration proof and recovery/install manifests: .cache/assembly-guide-integration/.
+
+## 2026-11-02 — Exact part cache writes without duplicate geometry encoding (Codex)
+- Cache writes now include the dependency digest in their initial record, deserialize it to validate read-back,
+  then atomically publish those same bytes. This removes a second exact BREP encode without changing cache
+  lookup, checks, geometry, metadata or dependency provenance. Serialization/read-back/publication failures
+  still leave an existing entry intact; disabled caching still bypasses serialization.
+- Focused verification: `PYTHONPATH="$PWD" .venv/bin/python -m pytest -q tests/test_partcache_write.py
+  tests/test_partcache.py` — 13 passed in 2.71 s, including exact BREP bytes, stored-byte validation, failure
+  injection, existing metadata/invalidation and cold/warm report equality. Initial new fixture used the
+  non-restorable Box builder class; corrected it to the Solid shape class used by finished parts. No old test changed.
+- Bounded synthetic evidence: 20 writes encode geometry 40 times before versus 20 after. Separate tiny-block
+  timing samples were inconclusive (0.398 vs 0.451 ms median). One paired 24-box compound sample (20 alternating
+  pairs) measured 2.780 vs 2.005 ms median with exact restored BREP equality. These are cache-write measurements,
+  not whole-build speedup claims. Receipts: `.cache/round2-build-efficiency/` in the isolated worktree.
+- Doctor ALL OK after reusing existing dependencies. No dependency installation, whole-project benchmark,
+  full suite, FEA, real job, catalog/threshold change or review.json write. Batch remains HELD. As with every
+  partcache.py edit, the existing source-based key invalidates prior entries for one normal rebuild.
