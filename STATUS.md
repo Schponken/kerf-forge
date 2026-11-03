@@ -1403,3 +1403,26 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 — Build it physical-motion consumer (Codex, integration checkpoint)
 - Merged frozen assembly UX c063ef8 locally. The consumer now accepts only sampled-clear exact-seat paths, stages one rigid group at a time, keeps previously prepared hardware hidden until its receiver is staged, and keeps automatic hardware static. Manual Show technique remains explicitly illustrative with unchecked tool clearance. Unknown/blocked paths hold a static reference.
 - A synthetic browser trajectory exposed negative first-frame tween progress; progress now clamps at zero. Dedicated deterministic clock and ordered synthetic box fixtures pass. Focused manual technique/UX fixtures passed before final exact-seat contract tightening; backend schema merge and final combined validation follow. No live jobs, installations or full suite.
+## 2026-11-02 — Build it sampled physical approach paths (Codex)
+- The viewer producer now checks each displayed part/group approach against parts already seated in the actual
+  guide sequence, including earlier groups in the same phase and the exact seated endpoint. It reuses the
+  insertion check's CAD overlap threshold, allowances and existing bounding-box broad phase. Exact transforms
+  are restored even if geometry fails. Declared paths retain their direction; heuristic candidates may try the
+  opposite direction only after the first collides. No shape, catalog, threshold or existing test changed.
+- Each group receives `motion`: sampled_clear / blocked / unverified, exact world offset, actual samples,
+  spacing, seat coverage, staged obstacles and candidate collision evidence. Consumer must use motion.offset_mm,
+  never infer permission from group.off. Work is capped at 10,000 sample/pair checks and 200 intervals per path;
+  excess/unsupported geometry/errors remain unverified. This is sampled rigid-part clearance, not continuous
+  collision, force/friction, heat, tool or loose-hardware proof. Hardware rows explicitly retain that distinction;
+  parent-approved manual schematic Show technique remains a separate consumer action.
+- Focused verification: 41 passed in 5.43 s (new test_assembly_paths, existing test_access and
+  test_viewer_insert_sites, viewer step payload and ship later-part fastener order nodes). Includes blocked/open
+  pockets, same-phase ordering, seat-only interference, allowed contact, opposite-candidate success, declared
+  direction preservation, budget/invalid inputs, grouped overlap, rotated exact offsets and exception restoration.
+- Two authorized CAD-only recoveries of temporary copies of the installed bionic_finger reproduced all four
+  saved vertex/triangle arrays exactly; fingerprint 69c05ed7665e2c58. Initial heuristic signs collided with prior
+  segments 14.89 / 14.98 / 15.08 mm before seating. Opposite same-axis candidates cleared: proximal +Y26.795 mm
+  (28 samples), middle -Y19.969 mm (21), distal +Y16.022 mm (18), all <=1 mm including seats; root stays anchored.
+  Final recovery 17.71 s. Final guarded-refresh payload: isolated worktree .cache/assembly-paths/finger-paths-final.json.
+  Root owns the saved-viewer refresh and consumer integration. No actual project/output/cache writes, FEA,
+  real job, full suite or installation here; batch remains HELD. The guide does not establish physical assembly certification.

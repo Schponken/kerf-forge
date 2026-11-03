@@ -181,10 +181,43 @@ def _horn_centre_screws(asm, items, all_shapes, step, results, problems, warning
         results.append(res)
 
 
+def translation_hits(asm, moving, obstacles, offset, intervals, *, include_seat=True, first_hit=False):
+    """Return (collisions, samples checked) along one translation; always restore exact home transforms.
+
+    geom.overlap supplies the cached bounding-box broad phase. Guide paths include the seat and may stop at the
+    first collision; declared insertion checks retain their original samples and complete collision reporting.
+    """
+    items, allow = asm.proj.items, A._allowed(asm)
+    offset = np.asarray(offset, float)
+    distance = float(np.linalg.norm(offset))
+    homes = {m: items[m].shape.location for m in moving}
+    hits = []
+    fractions = np.linspace(1, 0, intervals + 1) if include_seat else np.linspace(1, 0, intervals, endpoint=False)
+    try:
+        for sampled, fraction in enumerate(fractions, start=1):
+            off = Pos(*(offset * fraction))
+            for m in moving:
+                items[m].shape.location = off * homes[m]
+            for m in moving:
+                if items[m].role == "keepout":
+                    continue
+                for o in obstacles:
+                    lim = allow.get(frozenset((m, o)), (0.0, ""))[0]
+                    v = geom.overlap(items[m].shape, items[o].shape)
+                    if v > max(lim, geom.OVERLAP_TOL_MM3):
+                        hits.append({"a": m, "b": o, "volume_mm3": round(v, 3),
+                                     "mm_from_seat": round(distance * float(fraction), 2)})
+                        if first_hit:
+                            return hits, sampled
+    finally:
+        for m in moving:
+            items[m].shape.location = homes[m]
+    return hits, len(fractions)
+
+
 def insertion_paths(asm, step_mm: float = 1.0) -> tuple[list, list]:
     """Slide every item with an `insert:` spec into its seat; returns (results, problems)."""
     items = asm.proj.items
-    allow = A._allowed(asm)
     step = _install_steps(asm)
     results, problems = [], []
     for iid, it in items.items():
@@ -200,28 +233,11 @@ def insertion_paths(asm, step_mm: float = 1.0) -> tuple[list, list]:
         # so they stay put and are obstacles (a servo slid in last onto a horn + link that are already mounted)
         now = step.get(iid, 0)
         moving = sorted(m for m in asm.subtree(iid) if m == iid or step.get(m, 0) == now)
-        homes = {m: items[m].shape.location for m in moving}
         d = geom.world_dir(items[iid].shape.location, d_loc)
         others = [i for i, o in items.items() if o.shape is not None and o.role != "keepout" and i not in moving
                   and step.get(i, 0) <= now]
         n = max(8, math.ceil(dist / step_mm))
-        hits = []
-        try:
-            for back in np.linspace(dist, 0, n, endpoint=False):
-                off = Pos(*(-d * back))
-                for m in moving:
-                    items[m].shape.location = off * homes[m]
-                for m in moving:
-                    if items[m].role == "keepout":
-                        continue
-                    for o in others:
-                        lim = allow.get(frozenset((m, o)), (0.0, ""))[0]
-                        v = geom.overlap(items[m].shape, items[o].shape)
-                        if v > max(lim, geom.OVERLAP_TOL_MM3):
-                            hits.append({"a": m, "b": o, "volume_mm3": round(v, 3), "mm_from_seat": round(float(back), 2)})
-        finally:
-            for m in moving:
-                items[m].shape.location = homes[m]
+        hits, _ = translation_hits(asm, moving, others, -d * dist, n, include_seat=False)
         results.append({"item": iid, "direction": d.round(4).tolist(), "distance_mm": dist, "clear": not hits,
                         "collisions": hits[:12]})
         if hits:
