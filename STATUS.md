@@ -693,3 +693,26 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   escaped long content, search, keyboard activation, refresh focus/open details and wrapping all verified.
   The existing tall phone shell is owned by the separate mobile-layout lane. No real model/session launch,
   native chat opening, project build, stress solve or full suite; shared claims/budget checked, full batch HELD.
+
+## 2026-11-03 02:11 UTC — One active Studio run and its exact Codex chat (Codex)
+- Reproduced through actual `studio.work()` serialization: one running Studio Codex job and its observed chat
+  produced two running cards because the serializer omitted `Job.session`. It now carries that identity; overview
+  folds exactly one running Codex agent job into exactly one observed Codex thread with the same explicit nonempty
+  ID. No title/project/time matching. Multiple active matches and paused/continued/done/failed/stopped history stay
+  separate, preserving observed continuation links.
+- The combined card keeps stable `job:<id>`, Watch job and Open chat, the full chat ID/title, public description,
+  branch/projects and every claimed owner's scope/checklist/attention. Studio notes and bounded actions remain
+  authoritative; only its literal startup placeholder can use a fresh live chat summary. Saved/pre-start chat
+  activity/checklists do not become current progress, and finish ETA stays unknown. Live input waits must also be
+  at least as recent as the latest job update, with no setup attention or latest hint/done boundary; cleanup tool
+  events cannot resurrect an obsolete approval request. Claim-owner warnings remain independently visible.
+- Stacked on reviewed job-description PR #41 (`101003f`), itself based on #37; `_job` and frontend code are untouched.
+  Validation: **98 passed, 2 browser nodes deselected in 0.14 s** (new dedup cases plus job states/activity/overview);
+  dedicated discovery/refresh browser node **1 passed in 4.86 s**; two final note-precedence cases plus three docs
+  contract checks **5 passed in 2.16 s**. These selections do not overlap. Browser markers are explicit; this stack
+  retains the known marker-registration warning until pending fast-tests config lands.
+- Browser fixtures use actual serialized data without agents: job-only to joined refresh keeps keyboard focus and
+  open details, both controls, two owner scopes and full IDs at 1440/390 px in dark/light themes. Captures are in
+  `.cache/work-job-dedup/`; inspected dark desktop and light phone. Existing tall phone sidebar is addressed by the
+  separate mobile-shell PR #40. `kerf doctor`: **ALL OK**, existing optional firmware tools unavailable. No UI redesign,
+  real chat/process, timer, project build, stress solve or full suite.
