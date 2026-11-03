@@ -975,7 +975,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
 
-## 2026-11-03 03:26 UTC — Files & guides making handoff (Codex)
+## 2026-11-03 03:22 UTC — Files & guides making handoff (Codex)
 - Six scoped improvements turn the format list into a making handoff: essential assembly/shopping/print guides
   first, purchased-component guidance, task-based file groups, saved-build context, keyboard disclosures and
   inspectable provenance. Every API-listed file/document remains downloadable, including unknown future formats;
