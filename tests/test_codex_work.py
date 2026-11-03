@@ -7,6 +7,54 @@ import pytest
 from kerf import codex_work, studio
 
 
+@pytest.fixture(autouse=True)
+def bundle_executable(tmp_path, monkeypatch):
+    # Do not fall back to the host's real app bundle; tests isolate PATH separately.
+    cli = tmp_path / "ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
+    cli.parent.mkdir(parents=True)
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", cli)
+    return cli
+
+
+def test_executable_prefers_path_over_macos_bundle(tmp_path, monkeypatch, bundle_executable):
+    cli = tmp_path / "bin/codex"
+    cli.parent.mkdir()
+    cli.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    cli.chmod(0o755)
+    bundle_executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    bundle_executable.chmod(0o755)
+    monkeypatch.setenv("PATH", str(cli.parent))
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    assert codex_work._executable() == str(cli)
+
+
+@pytest.mark.parametrize("platform,found", [("Darwin", True), ("Linux", False), ("Windows", False)])
+def test_executable_bundle_is_macos_only(tmp_path, monkeypatch, bundle_executable, platform, found):
+    bundle_executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    bundle_executable.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    monkeypatch.setattr(codex_work.platform, "system", lambda: platform)
+    assert codex_work._executable() == (str(bundle_executable) if found else None)
+
+
+@pytest.mark.parametrize("kind", ["missing", "nonexecutable", "directory", "broken-symlink"])
+def test_unusable_bundle_reports_unavailable_without_launching(tmp_path, monkeypatch, bundle_executable, kind):
+    if kind == "nonexecutable":
+        bundle_executable.write_text("not executable", encoding="utf-8")
+        bundle_executable.chmod(0o644)
+    elif kind == "directory":
+        bundle_executable.mkdir()
+    elif kind == "broken-symlink":
+        bundle_executable.symlink_to(tmp_path / "missing")
+    monkeypatch.setenv("PATH", str(tmp_path))
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(codex_work, "_Reader", lambda *args: pytest.fail("unavailable executable must not launch"))
+    result = codex_work._collect(tmp_path)
+    assert result["sessions"] == []
+    assert result["source"]["state"] == "unavailable"
+    assert "PATH" in result["source"]["detail"] and "Shared Codex claims still appear" in result["source"]["detail"]
+
+
 def test_repository_matching_uses_origin_or_checkout_not_title(tmp_path, monkeypatch):
     root = tmp_path / "kerf"
     root.mkdir()
@@ -54,7 +102,8 @@ def test_summary_uses_public_activity_and_explicit_checkboxes():
     assert codex_work._record(thread, turn, live=False)["activity"] == "Last activity: ran a command"
 
 
-def test_protocol_falls_back_to_saved_history_and_only_reads(tmp_path, monkeypatch):
+@pytest.mark.parametrize("discovery", ["path", "macos-bundle"])
+def test_protocol_falls_back_to_saved_history_and_only_reads(tmp_path, monkeypatch, discovery):
     root = tmp_path / "repo"
     root.mkdir()
     calls = tmp_path / "calls.jsonl"
@@ -84,7 +133,9 @@ for line in sys.stdin:
     print(json.dumps({'id':request['id'],'result':result}),flush=True)
 """.replace("CALLS", repr(str(calls))).replace("ROOT", repr(str(root))), encoding="utf-8")
     cli.chmod(0o755)
-    monkeypatch.setattr(codex_work.shutil, "which", lambda name: str(cli))
+    monkeypatch.setattr(codex_work.shutil, "which", lambda name: str(cli) if discovery == "path" else None)
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", cli)
     result = codex_work._collect(root)
     assert [s["id"] for s in result["sessions"]] == ["ours"]
     assert result["sessions"][0]["activity"] == "Tests passed."

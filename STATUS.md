@@ -521,6 +521,24 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
   test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
 
+
+### 2026-11-02 — Codex executable discovery under the native launcher (Codex)
+- Reproduced the concrete app-only install gap without launching Kerf Studio: `codex` is absent from
+  `tools/mac/start.sh` prefixes plus the standard GUI PATH, while the installed ChatGPT nested bundle
+  declares `CFBundleExecutable=codex` and provides a regular executable file.
+- Work now prefers the PATH executable and, on macOS only, falls back to the verified
+  `/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex` layout.
+  Other installation locations must be on PATH. Missing/nonexecutable files, directories and broken
+  symlinks remain unavailable, with explicit source guidance; shared claims still appear.
+- Validation: **25 targeted tests pass in 2.09 s** (`tests/test_codex_work.py tests/test_docs.py`),
+  including PATH preference, platform restriction, unusable candidates and both discovery routes
+  through the existing harmless read-only protocol fixture. Tests substitute the app candidate,
+  so they cannot discover the real bundle. Initial Windows simulation exposed a test-only global
+  `sys.platform` side effect in `shutil.which`; the final platform-system gate/mock avoids it.
+- Doctor: ALL OK with reused dependencies; optional Arduino/simavr unavailable. Read-only real helper
+  resolution under the native launcher PATH succeeds; `--version` exits 0 (`codex-cli 0.166.0-alpha.5.1`).
+  No app-server/native app launch, updater, installer, PATH mutation, full batch or stress run.
+  The fallback intentionally covers only this verified bundle layout; custom installs use PATH.
 ## 2026-11-02 (Claude, Learning Mode phases 2 and 3)
 - `kerf diary <p>` / `--all` (kerf/diary.py) rebuilds each project's diary from git history into learning/diary/<p>.json + .md:
   review.json versions followed from round to round, check PASS/FAIL events and commit-noted problems ("crashed at 97 deg"),
@@ -594,3 +612,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Doctor ALL OK using existing dependencies (optional Arduino/simavr unavailable). No actual agent,
   auth/config mutation, model call, project build, full batch or stress run. Live job execution was
   deliberately not exercised; the queued automatic-resume setting race is a separate task.
+
+## 2026-11-03 — Studio agent commands use the same bundled Codex discovery as Work (Codex)
+- Integration audit found `agent.codex_bin` importing a nonexistent `codex_work.codex_bin`; the caught
+  import error silently fell back to PATH. A read-only probe using PR #26's actual helper and a fake
+  executable reproduced Work finding the bundle while the agent returned None. The import now names
+  the existing `_executable` helper. PATH preference and the exception/PATH fallback remain unchanged.
+- **36 targeted tests pass in 1.33 s** (`test_agent`, `test_codex_work`). Five new cases prove the actual
+  helper reaches agent selection and new/resume argv for bundle-only and preferred PATH installs,
+  including a path with spaces, and preserve fallback after helper failure. Agent fixtures now isolate
+  the host app bundle and prohibit app-server discovery; existing fake-binary lifecycle tests remain.
+  No real Codex process, app-server, prompt, chat or paid model launched by these tests.
+- Dependencies: PR #26's discovery helper plus PR #36's supported CLI flags/current-main agent code.
+  Normal dependency merge `046389c` kept both PLAN/STATUS histories and inherited files unchanged;
+  the actual one-line fix and regression tests are a separate commit. Doctor ALL OK with existing
+  dependencies; optional firmware tools unavailable. No full suite, project build or stress solve.
