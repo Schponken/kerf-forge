@@ -100,7 +100,7 @@ def _item(source, origin, now):
             "chat_id": source.get("thread_id") if origin == "session" and provider == "Codex" and isinstance(source.get("thread_id"), str) else None,
             "title": title, "description": full, "projects": _projects(source), "state": state,
             "status_label": LABELS[state] if origin == "claim" else plain(source.get("status_label"), 120) or LABELS[state],
-            "activity": activity, "action": plain(source.get("action"), 120) if origin == "session" and state != "stale" else "",
+            "activity": activity, "activity_source": origin, "action": plain(source.get("action"), 120) if origin == "session" and state != "stale" else "",
             "updated_at": updated,
             "started_at": number(source.get("started_at")), "source": origin,
             "source_label": plain(source.get("source_label") or source.get("source"), 160)
@@ -232,18 +232,22 @@ def overview(data: dict, sessions=(), jobs=(), sources=(), now=None) -> dict:
     for observed_session, item in zip(observed, items):
         if item["provider"] == "Codex" and isinstance(item["chat_id"], str) and item["chat_id"].strip():
             by_chat.setdefault(item["chat_id"], []).append((observed_session, item))
-    by_id = {i["id"].removeprefix("session:"): i for i in items}
+    claim_sessions = {}
+    for source, item in zip(observed, items):
+        identity = source.get("thread_id") or source.get("id")
+        if isinstance(identity, str) and identity.strip():
+            claim_sessions.setdefault(identity, []).append(item)
     linked_claims = {}
     for claim in data.get("cards", []):
         if not isinstance(claim, dict):
             continue
-        thread_id = str(claim.get("thread_id"))
-        if thread_id in by_id:
+        thread_id = claim.get("thread_id")
+        if isinstance(thread_id, str) and len(claim_sessions.get(thread_id, [])) == 1:
             linked_claims.setdefault(thread_id, []).append(claim)
         else:
             items.append(_item(claim, "claim", now))
     for thread_id, claims in linked_claims.items():
-        item = by_id[thread_id]
+        item = claim_sessions[thread_id][0]
         scopes = [_item(c, "claim", now) for c in claims]
         stale = all(c["state"] == "stale" for c in scopes)
         if item["state"] == "idle":
@@ -263,12 +267,14 @@ def overview(data: dict, sessions=(), jobs=(), sources=(), now=None) -> dict:
                              key=lambda c: number(c.get("updated_at"), 0), default=None)
         if item["live"] is False and fresh_activity:
             item["activity"] = plain(fresh_activity["activity"], 400)
+            item["activity_source"] = "claim"
             item["action"] = ""
             item["updated_at"] = number(fresh_activity.get("updated_at"))
         elif item["live"] is not True and number(newest.get("updated_at"), 0) > (item["updated_at"] or 0):
             item["updated_at"] = number(newest.get("updated_at"))
             if newest.get("activity"):
                 item["activity"] = plain(newest["activity"], 400)
+                item["activity_source"] = "claim"
                 item["action"] = ""
         item["projects"] = _projects({"projects": item["projects"] + [p for c in scopes for p in c["projects"]]})
         if len(scopes) == 1:

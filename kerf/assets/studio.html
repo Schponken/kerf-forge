@@ -2532,12 +2532,14 @@ function workTask(item,index) {
   const identity = !item.chat_id && !item.job_id && item.session ? readable(item.session) ? `Owner ${item.session}` : "Assigned session" : "";
   const inputLink = state==="waiting" && link, inputJob = state==="waiting" && !link && item.job_id;
   const genericWait = state==="waiting" && item.attention==="This session is waiting for your input.";
+  const ownerUpdate = item.activity_source === "claim" || item.source === "claim";
+  const age = workAge(item.updated_at);
   return `<article id="${focusId}-card" tabindex="-1" class="work-item" data-work-item="${esc(detailId)}">
     <div class="work-item-top"><div class="work-item-title"><h2>${esc(item.title || "Untitled work")}</h2>
       <div class="work-owner"><b>${esc(item.provider || "Session")}</b>${identity ? `<span>${esc(identity)}</span>` : ""}<span>${esc(projects.map(p=>p.title || p.name).join(" · ") || "Kerf Studio")}</span></div>
       ${owners.length ? `<p class="work-claim-owners">${owners.length} owner${owners.length===1 ? "" : "s"}${namedOwners.length ? `: <span>${namedOwners.slice(0,2).map(esc).join(" · ")}</span>` : ""}${owners.length>2 || namedOwners.length<owners.length ? " · full ownership in details" : ""}</p>` : ""}</div>
       ${inputLink || inputJob ? `<div class="work-input-controls">` : ""}<span class="work-state ${state}">${esc(state==="claimed" ? "Assigned" : item.status_label || WORK_STATES[state])}</span>${inputLink ? `<a id="${focusId}-chat" class="btn" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open chat</a>` : inputJob ? `<button id="${focusId}-job" onclick="workAction(${index},'job')">Watch job</button>` : ""}${inputLink || inputJob ? "</div>" : ""}</div>
-    <p class="work-activity ${item.activity ? "" : "empty"}">${esc(item.activity || "No activity update has been reported for this task yet.")}</p>
+    <p class="work-activity ${item.activity ? "" : "empty"}">${ownerUpdate ? "Owner update: " : ""}${esc(item.activity || "No activity update has been reported for this task yet.")}</p>
     ${item.action && item.action !== item.activity ? `<p class="work-action">${esc(item.action)}</p>` : ""}
     ${item.attention && !genericWait ? `<p class="work-attention"><strong>${state === "paused" ? "Pause details:" : "Needs attention:"}</strong> ${esc(item.attention)}</p>` : ""}
     ${item.pause ? `<p class="work-action">${esc(workReset(item.pause.reset_at))}</p>` : ""}
@@ -2553,7 +2555,7 @@ function workTask(item,index) {
       ${item.continuation?.observed ? `<button id="${focusId}-continue" onclick="workAction(${index},'continue')">Watch continuing job</button>` : ""}
       ${projects.map((p,j)=>`<button id="${focusId}-project-${j}" onclick="workAction(${index},'project',${j})">${projects.length>1 ? esc(p.title || p.name) : "View project"}</button>`).join("")}
       ${projects.length===1 && ["running","working","claimed"].includes(state) ? `<button id="${focusId}-live" onclick="workAction(${index},'live')">Follow 3D</button>` : ""}
-    </div><span class="work-stamp">Updated ${workAge(item.updated_at)}</span></div>
+    </div><span class="work-stamp">${age === "time unavailable" ? "Update time unavailable" : `${ownerUpdate ? "Owner update" : "Updated"} ${age}`}</span></div>
     <details class="work-detail" data-work-id="${esc(detailId)}" ${S.workOpen?.has(detailId) ? "open" : ""}><summary id="${focusId}-scope">Details${claims.length ? ` · ${claims.length} assigned task${claims.length===1 ? "" : "s"}` : ""}</summary>
       ${genericWait ? `<p>${esc(item.attention)}</p>` : state==="claimed" ? `<p>Ownership is recorded; current execution is not confirmed.</p>` : ""}
       ${!known || !timed ? `<p>${completed ? state === "continued" ? "Follow the continuing job for current progress." : "Completion applies to this run, not the whole project." : `${!known ? claims.length>1 ? "Some claimed tasks have no checklist, so combined progress is unknown. " : "No completion percentage is inferred from an active session. " : ""}${!timed ? "A finish estimate will appear only when this work reports a reliable basis." : ""}`}</p>` : ""}
