@@ -36,3 +36,4 @@ build-backend = "setuptools.build_meta"
 packages = ["kerf"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
