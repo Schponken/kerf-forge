@@ -14,6 +14,9 @@ def test_assembly_reading_replays_and_keyboard(proj, tmp_path):
                      "2. Align the carriage, then fasten it to base.",
                      "3. Check that the carriage can move freely."]
     step["demos"] = []
+    # Synthetic path proof exercises the consumer; producer clearance is tested separately.
+    for group in step["groups"]:
+        group["motion"] = dict(status="sampled_clear", offset_mm=[0, 0, 20], samples=21, max_step_mm=1, seat_checked=True)
     step["inserts"] = [dict(item="base", at=[x, 0, 10], dir=[0, 0, -1],
                             screw="M3", od=4.6, len=5) for x in [20, 80]]
     page = tmp_path / "viewer.html"
@@ -45,7 +48,7 @@ try {
   await p.locator('.tl [data-go="1"]').focus(); await p.keyboard.press('Space');
   assert.equal(await p.locator('.tl [data-go="1"]').evaluate(el=>el===document.activeElement),true);
   assert.equal(await p.textContent('#a_play'),'Play all');
-  // A local replay stays on the selected second opening; a step replay starts with the first insert.
+  // A local technique stays on its site; a whole-step replay moves checked parts and keeps hardware static.
   await p.click('#a_install_re'); await p.waitForFunction(()=>window.__kerf.asm.demo?.contact);
   assert.deepEqual(await p.evaluate(()=>window.__kerf.asm.target.at),[80,0,10]);
   await p.locator('#a_pause').focus(); await p.keyboard.press('Space');
@@ -55,10 +58,12 @@ try {
   await p.keyboard.press('Space');
   await p.waitForFunction(()=>window.__kerf.asm.demo?.phase==='withdraw');
   assert.equal(await p.evaluate(()=>document.activeElement.id),'a_pause');
-  await p.click('#a_re'); await p.waitForFunction(()=>window.__kerf.asm.demo?.contact && window.__kerf.asm.target.at[0]===20);
+  await p.click('#a_re'); await p.waitForFunction(()=>window.__kerf.groups.get('base').matrix.elements[14]>0);
+  assert.equal(await p.evaluate(()=>!!window.__kerf.asm.demo),false,'whole-step replay does not animate unverified tools');
+  await p.waitForFunction(()=>!window.__kerf.asm.busy);
   assert.equal(await p.textContent('#a_play'),'Play all');
   await p.click('#a_locate');
-  await p.click('#a_play'); await p.waitForFunction(()=>window.__kerf.asm.demo?.contact);
+  await p.click('#a_play'); await p.waitForFunction(()=>window.__kerf.groups.get('base').matrix.elements[14]>0);
   assert.equal(await p.textContent('#ab_play'),'Stop walkthrough');
   await p.click('#ab_play');
   const stopped=await p.evaluate(()=>({i:window.__kerf.asm.i,t:window.__kerf.asm.target.at}));

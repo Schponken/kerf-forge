@@ -1399,3 +1399,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   review.json, full suite, FEA, live jobs or installed-app changes. Saved offsets remain illustrative: this patch
   does not validate insertion-path collisions, assembly feasibility or tool access; the integration owner has
   the exact producer/animation limitations for the separately requested physical-path follow-up.
+
+## 2026-11-02 — Build it physical-motion consumer (Codex, integration checkpoint)
+- Merged frozen assembly UX c063ef8 locally. The consumer now accepts only sampled-clear exact-seat paths, stages one rigid group at a time, keeps previously prepared hardware hidden until its receiver is staged, and keeps automatic hardware static. Manual Show technique remains explicitly illustrative with unchecked tool clearance. Unknown/blocked paths hold a static reference.
+- A synthetic browser trajectory exposed negative first-frame tween progress; progress now clamps at zero. Dedicated deterministic clock and ordered synthetic box fixtures pass. Focused manual technique/UX fixtures passed before final exact-seat contract tightening; backend schema merge and final combined validation follow. No live jobs, installations or full suite.
