@@ -1501,6 +1501,10 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Read-only current-template saved bionic_finger desktop/light and phone/dark captures inspected: no JavaScript errors
   or document overflow. /tmp/kerf-viewer-perf-{desktop,phone}.png. Detector reports only the incumbent global type
   hierarchy warning. No project source/output, catalog/check/review changes, full suite, stress job or installation.
+
+## 2026-11-02 — Build it physical-motion consumer (Codex, integration checkpoint)
+- Merged frozen assembly UX c063ef8 locally. The consumer now accepts only sampled-clear exact-seat paths, stages one rigid group at a time, keeps previously prepared hardware hidden until its receiver is staged, and keeps automatic hardware static. Manual Show technique remains explicitly illustrative with unchecked tool clearance. Unknown/blocked paths hold a static reference.
+- A synthetic browser trajectory exposed negative first-frame tween progress; progress now clamps at zero. Dedicated deterministic clock and ordered synthetic box fixtures pass. Focused manual technique/UX fixtures passed before final exact-seat contract tightening; backend schema merge and final combined validation follow. No live jobs, installations or full suite.
 ## 2026-11-02 — Build it sampled physical approach paths (Codex)
 - The viewer producer now checks each displayed part/group approach against parts already seated in the actual
   guide sequence, including earlier groups in the same phase and the exact seated endpoint. It reuses the
@@ -1555,3 +1559,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   contact latched/paused. Normal focused run: tests/test_viewer_performance.py, 1 PASS in 11.71 s; stationary and
   paused callbacks remain 0, hover burst raycasts 1, and comparison disposal 4/4 for all three cycles.
 - Test-only change; no production pause fix was justified by the evidence. No CAD build, broad suite or installation.
+
+## 2026-11-02 — Build it physical-motion consumer complete (Codex)
+- Integrated producer 9dcf4d3 and assembly UX c063ef8. Automatic assembly uses only finite sampled-clear paths with exact-seat evidence, in saved phase/group order. Rigid groups keep their pose; incoming/prepared hardware is hidden until its receiving part is staged. Checked offsets can reverse the display explode direction. Unknown, blocked or malformed proof holds a static, labelled reference and stops walkthrough playback.
+- Automatic hardware stays static. Explicit Show technique retains local iron/driver replay and states that tool clearance is unchecked. Automatic joint demonstrations require a clear saved range sweep; manual recorded-motion illustrations remain available. Reduced motion stays static; cancellation prevents stale scene changes.
+- Fixed negative first-frame tween progress so a newly created tween cannot extend a checked path past its start. Synthetic rendered-frame fixtures check solid overlap, group order, rigid pose, insert staging, missing/blocked/malformed proof, explicit technique and reduced motion. Existing shortcut test now blurs controls before the documented page shortcut (canvas arrows retain orbit behavior).
+- Focused validation: 19 cases passed across producer, motion/clock, assembly flow, exact sites, bench close-up, engine kinematics and viewer/shortcut tests (18 together plus corrected shortcut alone); no tests removed or thresholds loosened. git diff --check passed. Detector reports only the pre-existing font-size hierarchy warning. No installed files, live jobs, project builds or full suite changed/run; real saved-finger preview uses unchanged embedded meshes plus producer proof.

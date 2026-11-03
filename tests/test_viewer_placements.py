@@ -9,6 +9,10 @@ from test_viewer import proj
 def test_installation_sites_tools_and_reduced_motion(proj, tmp_path):
     data = viewer.data(proj, A.plan(proj), {"project": "t", "problems": []})
     steps = data["steps"]["steps"]
+    # Legacy saved paths have no clearance proof; manual site technique still works.
+    for step in steps:
+        for group in step["groups"]:
+            group.pop("motion", None)
     s = steps[0]
     s["demos"] = ["slide"]
     s["inserts"] = [dict(item="base", at=[x, 0, 10], dir=[0, 0, -1], screw="M3", od=4.6, len=5) for x in [20, 80]]
@@ -67,7 +71,8 @@ try {
   await p.click('#a_locate'); assert.ok(await p.evaluate(()=>!window.__kerf.asm.demo));
   await p.evaluate(()=>window.__kerf.asm.show(2,false));
   assert.match(await p.textContent('#asm'),/Exact installation locations are unavailable/);
-  assert.ok(await p.evaluate(()=>window.__kerf.groups.get('base').parent.children.filter(o=>o.userData.before && o.visible).length>=2));
+  assert.match(await p.textContent('#asm'),/Static assembly reference; part motion is not shown/);
+  assert.ok(await p.evaluate(()=>window.__kerf.groups.get('base').parent.children.filter(o=>o.userData.before && o.visible).length===0),'unverified explode offsets must not suggest an insertion path');
   await p.uncheck('#a_ghost');
   assert.ok(await p.evaluate(()=>window.__kerf.groups.get('base').parent.children.filter(o=>o.userData.before).every(o=>!o.visible)));
   await p.evaluate(()=>window.__kerf.asm.show(3,false));

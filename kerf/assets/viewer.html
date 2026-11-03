@@ -753,7 +753,7 @@ function stepTweens(now) {
       if (t.pausedAt != null) { t.t0 += now - t.pausedAt; delete t.pausedAt; }
     }
     advanced = true;
-    const p = Math.min(1, (now - t.t0) / t.dur);
+    const p = Math.max(0, Math.min(1, (now - t.t0) / t.dur));
     try { t.fn(t.ease(p), p); } catch (e) { console.error(e); }
     if (p >= 1) { TW.splice(TW.indexOf(t), 1); t.res(); }
   }
@@ -976,6 +976,7 @@ function setGlow(id, k) {
 }
 function itemLook(id) {   // full / ghost (still to come) / hidden, by the step's sets
   const g = groups.get(id); if (!g) return;
+  for (const child of g.children) if (child.userData.hardware) child.visible = AS.vis.has(id);
   if (AS.vis.has(id)) look(g, 1);
   else if (AS.ctx.has(id)) { look(g, 0.2); g.userData.edges.material.opacity = 0.25; }   // the build a bench step joins
   else if (AS.future.has(id)) { look(g, 0.045); g.userData.edges.material.opacity = 0.09; }
@@ -1008,6 +1009,7 @@ function insertGlyph(x) {
 }
 function placeInsert(g, out) { g.position.copy(g.userData.at).addScaledVector(g.userData.dir, -out); }
 function addGlyph(parentId, obj) { (groups.get(parentId) || scene).add(obj); AS.glyphs.push(obj); return obj; }
+function addHardware(parentId, obj) { obj.userData.hardware = true; obj.visible = AS.vis.has(parentId); return addGlyph(parentId, obj); }
 function removeGlyph(o) {
   const k = AS.glyphs.indexOf(o); if (k < 0) return;
   AS.glyphs.splice(k, 1); if (o.parent) o.parent.remove(o);
@@ -1087,7 +1089,7 @@ function viewFor(s, box) {
   // Best view for a step: the new parts not hidden behind the parts already on (rays from each candidate camera to
   // points on the new parts, blocked = hidden), then the parts sliding across the screen rather than at the camera,
   // then the smallest camera swing.
-  const nu = s.groups.flatMap(g => g.items), offs = s.groups.map(g => new T.Vector3(...g.off).normalize());
+  const nu = s.groups.flatMap(g => g.items), offs = s.groups.map(motionOffset).filter(Boolean).map(v => v.normalize());
   const mesh = id => { const g = groups.get(id); if (!g) return null; g.updateMatrixWorld(true); return g.userData.mesh; };
   const before = s.present.filter(id => !nu.includes(id)).map(mesh).filter(Boolean), all = s.present.map(mesh).filter(Boolean);
   const pts = [];   // [point, blockers]: the new parts against the parts already on; screws and inserts against everything
@@ -1135,8 +1137,11 @@ function focusBox(s, offs) {
 }
 function resetPose() { asmOff.clear(); for (const j of D.joints) val.set(j.name, j.home); explode = 0; const ex = $('ex'); if (ex) { ex.value = 0; $('exv').textContent = '0 mm'; } pose(); }
 function setSets(vis, future, ctx) { AS.vis = new Set(vis); AS.future = new Set(future); AS.ctx = new Set((ctx || []).filter(i => !AS.vis.has(i))); for (const id of solidIds) itemLook(id); applyVis(); }
-async function demoJoint(name, tok) {
-  const j = J.get(name); if (!j) return;
+async function demoJoint(name, tok, illustrate = false) {
+  const j = J.get(name), sweep = (R.assembly?.sweeps || []).find(x => x.joint === name);
+  if (!j) return;
+  const checked = sweep?.clear === true && sweep.range && sweep.range[0] <= j.range[0] && sweep.range[1] >= j.range[1];
+  if (!checked && !illustrate) return;
   const u = j.kind === 'revolute' ? '°' : ' mm', c = groups.get(j.child) ? centreOf(j.child) : null;
   const L = label(`<b>${esc(name)}</b> <span>recorded motion ${fmt(j.range[0])} to ${fmt(j.range[1])}${u}</span>`, 'move', c || (() => ctl.target.clone()));
   const a = j.home, lo_ = j.range[0], hi_ = j.range[1];
@@ -1144,27 +1149,34 @@ async function demoJoint(name, tok) {
   if (tok !== AS.tok) return; setJ(name, a);
   setTimeout(() => L.kill(), 400);
 }
-async function flyIn(grp, tok, k) {   // parts appear back along the way they go on, then slide home together
-  const off = new T.Vector3(...grp.off), from = new Map();
-  for (const id of grp.items) { asmOff.set(id, off.clone()); from.set(id, off.clone()); AS.vis.add(id); AS.future.delete(id); look(groups.get(id), 0); }
+// Display explode offsets are not assembly paths. Only the producer's sampled-clear trajectory may move solids.
+function motionOffset(grp) {
+  const m = grp.motion;
+  return m?.status === 'sampled_clear' && m.seat_checked === true && Array.isArray(m.offset_mm) && m.offset_mm.length === 3 && m.offset_mm.every(Number.isFinite)
+    && Number.isInteger(m.samples) && m.samples >= 2 && Number.isFinite(m.max_step_mm) && m.max_step_mm >= 0 && (m.max_step_mm > 0 || m.offset_mm.every(v => v === 0)) ? new T.Vector3(...m.offset_mm) : null;
+}
+const motionOffsets = s => new Map(s.groups.flatMap(g => { const off = motionOffset(g); return off ? g.items.map(id => [id, off]) : []; }));
+const readyReceiver = id => AS.vis.has(id) && !asmOff.has(id);
+async function flyIn(grp, tok) {
+  const off = motionOffset(grp); if (!off || tok !== AS.tok) return null;
+  for (const id of grp.items) { asmOff.set(id, off.clone()); AS.vis.add(id); AS.future.delete(id); itemLook(id); setGlow(id, 1); }
   applyVis(); pose();
   for (const id of grp.items) label(`<b>${esc(id)}</b> <span>${esc(groups.get(id).userData.it.label || '')}</span>`, '', centreOf(id), boxIn(id)).id = id;
-  await tween(300, t => { for (const id of grp.items) { look(groups.get(id), t); setGlow(id, t); } }, lin);
   return async () => {
     if (tok !== AS.tok) return;
     const lines = grp.items.map(id => { const g = groups.get(id), c = g.userData.box.getCenter(new T.Vector3()); return pathLine(c.clone().add(off), c); });
     await tween(1400, t => { if (tok !== AS.tok) return; for (const id of grp.items) { const o = asmOff.get(id); if (o) o.copy(off).multiplyScalar(1 - t); } pose(); });
     if (tok !== AS.tok) return;
     for (const id of grp.items) asmOff.delete(id); pose();
-    tween(500, t => { for (const l of lines) l.material.opacity = 0.9 * (1 - t); }, lin);
+    for (const l of lines) removeGlyph(l);
   };
 }
 async function driveScrews(list, tok) {
   for (const sc of list) {
     if (tok !== AS.tok) return;
     const x = { ...sc, item: sc.female, kind: 'screw' };
-    if (!sizedSite(x) || !validLocation(x)) continue;
-    const g = addGlyph(x.item, screwGlyph(x)); placeScrew(g, 0, 0);
+    if (!sizedSite(x) || !validLocation(x) || !readyReceiver(sc.male) || !readyReceiver(sc.female)) continue;
+    const g = addHardware(x.item, screwGlyph(x)); placeScrew(g, 0, 0);
     const s = AS.cards[AS.i].s, k = installationSites(s).findIndex(y => y.kind === 'screw' && y.item === x.item && y.at.every((v, i) => v === x.at[i]));
     if (k >= 0) showInstallation(s, k);
     await hardwareDemo(x, g, tok);
@@ -1174,16 +1186,17 @@ async function seatPins(list, tok) {
   for (const row of list) {
     if (tok !== AS.tok) return;
     const x = { ...row, pinKind: row.kind, kind: 'pin' }, s = AS.cards[AS.i].s, sites = installationSites(s), k = sites.findIndex(y => y.kind === 'pin' && y.id === x.id);
-    if (k < 0 || !sizedSite(x)) continue;
-    const g = addGlyph(x.item, pinGlyph(x)); placeInsert(g, 0); showInstallation(s, k); await hardwareDemo(x, g, tok);
+    if (k < 0 || !sizedSite(x) || !(x.items || [x.item]).every(readyReceiver)) continue;
+    const g = addHardware(x.item, pinGlyph(x)); placeInsert(g, 0); showInstallation(s, k); await hardwareDemo(x, g, tok);
   }
 }
 async function pressInserts(list, tok) {
-  for (const [k, x] of list.entries()) {
+  for (const x of list) {
     if (tok !== AS.tok) return;
-    if (!sizedSite({ ...x, kind: 'insert' }) || !validLocation(x)) continue;
-    const g = addGlyph(x.item, insertGlyph(x)); placeInsert(g, 0);
-    showInstallation(AS.cards[AS.i].s, k);
+    if (!sizedSite({ ...x, kind: 'insert' }) || !validLocation(x) || !AS.vis.has(x.item)) continue;
+    const g = addHardware(x.item, insertGlyph(x)); placeInsert(g, 0);
+    const s = AS.cards[AS.i].s, site = installationSites(s).findIndex(y => y.kind === 'insert' && y.item === x.item && y.at.every((v, i) => v === x.at[i]));
+    if (site >= 0) showInstallation(s, site);
     await hardwareDemo({...x, kind: 'insert'}, g, tok);
   }
 }
@@ -1221,8 +1234,9 @@ function showInstallation(s, k) {
   renderAsm(); frameBox(box, eye, 0); setGlow(x.item, 0.6); redraw();
 }
 // Schematic tool and smoke explain the action; their display scale is not engineering or temperature data.
-async function hardwareDemo(x, hardware, tok) {
-  if (reduced || !sizedSite(x)) return;
+async function hardwareDemo(x, hardware, tok, illustrate = false) {
+  // A manual technique illustration is separate from the checked rigid-part assembly sequence.
+  if (!illustrate || reduced || !sizedSite(x)) return;
   const heated = x.kind === 'insert', rotating = x.kind === 'screw' || (x.kind === 'pin' && ['shoulder', 'screw'].includes(x.pinKind));
   const scale = Math.max(x.od || parseFloat(String(x.screw).replace(/[^\d.]/g, '')), 4) / 4, tool = new T.Group(), smoke = new T.Group();
   const metal = new T.MeshStandardMaterial({color: 0xa5acb3, metalness: 0.7, roughness: 0.35});
@@ -1275,8 +1289,9 @@ function pinGlyph(x) {
   g.quaternion.setFromUnitVectors(Y, g.userData.dir); return g;
 }
 function incomingGuide(s) {
+  if (s.groups.some(g => !motionOffset(g))) return;
   for (const grp of s.groups) for (const id of grp.items) {
-    const g = groups.get(id), off = new T.Vector3(...grp.off); if (!g || off.lengthSq() < 0.01) continue;
+    const g = groups.get(id), off = motionOffset(grp); if (!g || off.lengthSq() < 0.01) continue;
     const ghost = new T.Mesh(g.userData.mesh.geometry.clone(), g.userData.mesh.material.clone());
     ghost.material.transparent = true; ghost.material.opacity = 0.12; ghost.material.depthWrite = false;
     ghost.applyMatrix4(g.matrix); ghost.position.add(off); ghost.userData.before = true; ghost.visible = AS.ghostOn; scene.add(ghost); AS.glyphs.push(ghost);
@@ -1292,11 +1307,13 @@ function replayInstallation() {
     if (tok !== AS.tok) return;
     const x = installationSites(c.s)[AS.site], g = AS.glyphs.find(o => o.userData.siteIndex === AS.site);
     if (!g || reduced) return;
-    return hardwareDemo(x, g, tok);
+    return hardwareDemo(x, g, tok, true);
   });
 }
 function replayStep() { AS.playing = false; return showCard(AS.i, true, null, true); }
 async function showCard(i, animate = true, site = null, replay = false) {
+  animate = animate && !reduced;
+  if (reduced) AS.playing = false;
   const tok = ++AS.tok; cancelTweens(); clearGlyphs();
   for (const id of solidIds) setGlow(id, 0);
   AS.site = site ?? (i === AS.i ? AS.site : 0);
@@ -1323,37 +1340,42 @@ async function showCard(i, animate = true, site = null, replay = false) {
   // what earlier steps left in place: their screws driven home, their inserts pressed in (steel / brass, no glow)
   for (const t of SD.steps) {
     if (t.n >= s.n || (t.bench_for && t.bench_for > s.n && !s.bench_for)) continue;
-    for (const sc of t.screws) if (s.present.includes(sc.male) && s.present.includes(sc.female)) placeScrew(addGlyph(sc.female, screwGlyph(sc)), 0, 0);
-    for (const x of t.inserts) if (s.present.includes(x.item) && validLocation(x) && sizedSite({...x, kind: 'insert'})) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
+    for (const sc of t.screws) if (s.present.includes(sc.male) && s.present.includes(sc.female)) placeScrew(addHardware(sc.female, screwGlyph(sc)), 0, 0);
+    for (const x of t.inserts) if (s.present.includes(x.item) && validLocation(x) && sizedSite({...x, kind: 'insert'})) placeInsert(addHardware(x.item, insertGlyph(x)), 0);
   }
-  for (const t of SD.steps) if (t.n < s.n) for (const x of (t.pins || [])) if (s.present.includes(x.item) && installationSites({...t, inserts: [], screws: [], pins: [x]}).length && sizedSite({...x, kind: 'pin'})) placeInsert(addGlyph(x.item, pinGlyph(x)), 0);
-  const offs = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)])));
+  for (const t of SD.steps) if (t.n < s.n) for (const x of (t.pins || [])) if (s.present.includes(x.item) && installationSites({...t, inserts: [], screws: [], pins: [x]}).length && sizedSite({...x, kind: 'pin'})) placeInsert(addHardware(x.item, pinGlyph(x)), 0);
+  const pathsClear = s.groups.every(g => motionOffset(g));
+  if (!pathsClear && AS.playing) { AS.playing = false; renderAsm(); }
+  const offs = motionOffsets(s);
   const box = focusBox(s, offs);
-  if (!animate || (installationSites(s).length && !AS.playing && !replay)) {
+  if (!animate || !pathsClear || (installationSites(s).length && !AS.playing && !replay)) {
     setSets(s.present, future, benchCtx);
     const sites = installationSites(s);
     for (const [k, x] of sites.entries()) {
       if (!sizedSite(x) || !validLocation(x)) continue;
-      const g = addGlyph(x.item, x.kind === 'insert' ? insertGlyph(x) : x.kind === 'pin' ? pinGlyph(x) : screwGlyph(x)); g.userData.siteIndex = k;
+      const g = addHardware(x.item, x.kind === 'insert' ? insertGlyph(x) : x.kind === 'pin' ? pinGlyph(x) : screwGlyph(x)); g.userData.siteIndex = k;
       if (x.kind === 'screw') placeScrew(g, 0, 0); else placeInsert(g, 0);
     }
+    for (const id of nu) label(`<b>${esc(id)}</b> <span>${esc(groups.get(id).userData.it.label || '')}</span>`, '', centreOf(id), boxIn(id)).id = id;
     incomingGuide(s);
     if (sites.length) { showInstallation(s, AS.site); return; }
     return frameBox(box, viewFor(s, box), 0);
   }
   const cam_ = frameBox(box, viewFor(s, box), 900);
   await wait(250); if (tok !== AS.tok) return;
-  const p1 = s.groups.filter(g => g.phase === 1), p2 = s.groups.filter(g => g.phase === 2);
-  const slides1 = await Promise.all(p1.map(g => flyIn(g, tok)));
   await cam_; if (tok !== AS.tok) return;
-  await pressInserts(s.inserts, tok); if (tok !== AS.tok) return;
-  await Promise.all(slides1.map(f => f())); if (tok !== AS.tok) return;
-  await wait(300); if (tok !== AS.tok) return;
-  await driveScrews(s.screws.filter(x => x.phase === 1), tok); if (tok !== AS.tok) return;
-  await seatPins((s.pins || []).filter(x => x.phase === 1), tok); if (tok !== AS.tok) return;
-  for (const g of p2) { const f = await flyIn(g, tok); if (tok !== AS.tok) return; await f(); if (tok !== AS.tok) return; }
-  await driveScrews(s.screws.filter(x => x.phase === 2), tok); if (tok !== AS.tok) return;
-  await seatPins((s.pins || []).filter(x => x.phase === 2), tok); if (tok !== AS.tok) return;
+  // Prepare inserts only on an already staged receiver, then mate one rigid group before starting the next.
+  await pressInserts(s.inserts.filter(x => AS.vis.has(x.item)), tok); if (tok !== AS.tok) return;
+  for (const phase of [1, 2]) {
+    for (const g of s.groups.filter(g => g.phase === phase)) {
+      const slide = await flyIn(g, tok); if (!slide || tok !== AS.tok) return;
+      await pressInserts(s.inserts.filter(x => g.items.includes(x.item)), tok); if (tok !== AS.tok) return;
+      frameBox(box, viewFor(s, box), 0);
+      await slide(); if (tok !== AS.tok) return;
+    }
+    await driveScrews(s.screws.filter(x => x.phase === phase), tok); if (tok !== AS.tok) return;
+    await seatPins((s.pins || []).filter(x => x.phase === phase), tok); if (tok !== AS.tok) return;
+  }
   for (const n of s.demos) { await demoJoint(n, tok); if (tok !== AS.tok) return; }
   await tween(600, t => { for (const id of nu) setGlow(id, 1 - t); }, lin);
   if (tok !== AS.tok) return;
@@ -1392,6 +1414,11 @@ function chipsFor(s) {
   h += s.demos.map(n => `<span class="chip move"><span class="sw"></span>${esc(n)} must move freely</span>`).join('');
   return h;
 }
+function motionGuidance(s) {
+  const unknown = s.groups.filter(g => !motionOffset(g));
+  return unknown.length ? `<p class="note warn" role="status">Static assembly reference; part motion is not shown. ${unknown.map(g => `${esc(g.items.join(', '))}: ${esc(g.motion?.reason || 'No checked insertion path is saved.')}`).join(' ')}</p>`
+    : '<p class="pd">Parts follow paths checked at sampled positions, one group at a time. Contact forces and tool clearance are not simulated.</p>';
+}
 function siteControls(s) {
   const sites = installationSites(s);
   const unknown = (s.pins || []).filter(x => !installationSites({...s, inserts: [], screws: [], pins: [x]}).length);
@@ -1402,10 +1429,10 @@ function siteControls(s) {
     : x.kind === 'pin' && x.pinKind === 'shoulder' ? 'A shoulder screw has a smooth section for the moving part to pivot on and a threaded end that holds it in place.' : '';
   return `${warning}<div class="sites"><h4>Where to install it</h4><label for="a_site" class="pd">Installation site</label>
     <select id="a_site">${sites.map((x, k) => `<option value="${k}" ${k === AS.site ? 'selected' : ''}>${k + 1} of ${sites.length} · ${esc(siteName(x))}</option>`).join('')}</select>
-    <p class="site-detail" role="status"><b>Into ${esc(x.item)}</b>${it.label ? ` · ${esc(it.label)}` : ''}<br>${esc(hardwareName(x))}. ${sizedSite(x) ? '' : 'Hardware dimensions unavailable; location marker only. '}${esc(x.warning || '')} The ring marks the opening; the arrow points into it.</p>
+    <p class="site-detail" role="status"><b>Into ${esc(x.item)}</b>${it.label ? ` · ${esc(it.label)}` : ''}<br>${esc(hardwareName(x))}. ${sizedSite(x) ? '' : 'Hardware dimensions unavailable; location marker only. '}${esc(x.warning || '')} The ring marks the opening; the arrow points into it.${x.motion?.status === 'sampled_clear' ? '' : ` Static installation reference: ${esc(x.motion?.reason || 'Hardware and tool clearance have not been checked.')}`}</p>
     ${meaning ? `<p class="pd">${meaning}</p>` : ''}
-    <div class="ctrls"><button id="a_site_prev" ${AS.site === 0 ? 'disabled' : ''}>Previous site</button><button id="a_site_next" ${AS.site >= sites.length - 1 ? 'disabled' : ''}>Next site</button><button id="a_locate">Show location</button><button id="a_install_re">Replay installation</button><button id="a_overview">Assembly overview</button><button id="a_pause" disabled>Pause action</button></div>
-    <p class="pd">${reduced ? 'Reduced motion is on: hardware stays in its installed position.' : 'Replay installation shows this site only, with a schematic tool.'} Follow the written instructions for the assembly order.</p></div>`;
+    <div class="ctrls"><button id="a_site_prev" ${AS.site === 0 ? 'disabled' : ''}>Previous site</button><button id="a_site_next" ${AS.site >= sites.length - 1 ? 'disabled' : ''}>Next site</button><button id="a_locate">Show location</button><button id="a_install_re">Show technique</button><button id="a_overview">Assembly overview</button><button id="a_pause" disabled>Pause action</button></div>
+    <p class="pd">${reduced ? 'Reduced motion is on: hardware stays in its installed position.' : 'Technique illustration — tool clearance not checked. Shows this site only.'} Follow the written instructions for the assembly order.</p></div>`;
 }
 function renderBar() {
   const c = AS.cards[AS.i], n = SD.steps.length;
@@ -1424,7 +1451,7 @@ function renderAsm() {
   let h = `<nav class="tl" aria-label="Assembly steps">${AS.cards.map((x, k) => `<button data-go="${k}" class="${k === AS.i ? 'cur' : ''} ${x.kind === 'step' && AS.done.has(x.s.n) ? 'done' : ''}" ${k === AS.i ? 'aria-current="step"' : ''} aria-label="${x.kind === 'step' ? `Step ${x.s.n}: ${esc(x.s.title)}${AS.done.has(x.s.n) ? ', marked done' : ''}` : x.kind === 'intro' ? 'Before you start' : 'End of guide'}"></button>`).join('')}</nav>`;
   if (c.kind === 'intro') {
     h += `<div class="ah"><h3>Build it, step by step</h3></div>
-      <p class="pd" style="margin-top:0">${printed.length} printed part${printed.length === 1 ? '' : 's'}, ${bought.length} bought part${bought.length === 1 ? '' : 's'}, ${n} step${n === 1 ? '' : 's'}. Choose an installation site to see its receiving part, exact opening and insertion direction. Look around at your own pace; Replay shows how it goes in.</p>`;
+      <p class="pd" style="margin-top:0">${printed.length} printed part${printed.length === 1 ? '' : 's'}, ${bought.length} bought part${bought.length === 1 ? '' : 's'}, ${n} step${n === 1 ? '' : 's'}. Choose an installation site to see its receiving part, exact opening and insertion direction. Replay step follows checked part paths where available. Show technique illustrates the selected hardware installation.</p>`;
     h += `<div class="txt">${SD.intro.map(x => `<h4>${esc(x.title)}</h4>${mdLite(x.lines)}`).join('')}</div>`;
   } else if (c.kind === 'finish') {
     const k = SD.steps.filter(x => AS.done.has(x.n)).length;
@@ -1434,7 +1461,7 @@ function renderAsm() {
   } else {
     const s = c.s;
     h += `<div class="ah"><span class="n">Step ${s.n} of ${n}</span>${s.bench_for ? `<span class="tag">on the bench · joins in step ${s.bench_for}</span>` : ''}</div><h3>${esc(s.title)}</h3>
-      <div class="chips">${chipsFor(s)}</div><div class="txt"><h4>Assembly order</h4>${mdLite(s.lines)}</div>${siteControls(s)}
+      <div class="chips">${chipsFor(s)}</div>${motionGuidance(s)}<div class="txt"><h4>Assembly order</h4>${mdLite(s.lines)}</div>${siteControls(s)}
       <p class="pd">Compare the installed parts with the written instructions before marking this step done.</p>${s.demos.map(name => `<button data-demo="${esc(name)}">Check ${esc(name)} movement</button>`).join(' ')}
       <button class="donebox ${AS.done.has(s.n) ? 'on' : ''}" id="dbx" aria-pressed="${AS.done.has(s.n)}">${AS.done.has(s.n) ? 'Step marked done' : 'Mark this step done'}</button>`;
   }
@@ -1452,13 +1479,13 @@ function renderAsm() {
     $('a_site').onchange = e => choose(+e.target.value);
     $('a_site_prev').onclick = () => choose(AS.site - 1); $('a_site_next').onclick = () => choose(AS.site + 1);
     $('a_locate').onclick = () => choose(AS.site); $('a_install_re').onclick = replayInstallation;
-    $('a_overview').onclick = () => { if (AS.demo) { AS.demo.paused = true; syncActionControl(); } const s = c.s, off = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)]))); frameBox(boxOf(s.present).union(boxOf(s.groups.flatMap(g => g.items), off)), new T.Vector3(...VIEWS.iso), 0); };
+    $('a_overview').onclick = () => { if (AS.demo) { AS.demo.paused = true; syncActionControl(); } const s = c.s, off = motionOffsets(s); frameBox(boxOf(s.present).union(boxOf(s.groups.flatMap(g => g.items), off)), new T.Vector3(...VIEWS.iso), 0); };
     $('a_pause').onclick = () => { if (AS.demo) { AS.demo.paused = !AS.demo.paused; syncActionControl(); redraw(); } };
   }
   $('a_play').onclick = togglePlay;
   $('a_ghost').onchange = e => { AS.ghostOn = e.target.checked; for (const id of solidIds) itemLook(id); for (const g of AS.glyphs) if (g.userData.before) g.visible = AS.ghostOn; applyVis(); redraw(); };
   $('a_speed').onchange = e => { speed = +e.target.value; };
-  el.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => { AS.playing = false; const i = AS.i, site = AS.site; showCard(i, false, site).then(() => { if (AS.i === i && !reduced) demoJoint(b.dataset.demo, AS.tok); }); });
+  el.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => { AS.playing = false; const i = AS.i, site = AS.site; showCard(i, false, site).then(() => { if (AS.i === i && !reduced) demoJoint(b.dataset.demo, AS.tok, true); }); });
   if ($('dbx')) $('dbx').onclick = () => { const k = c.s.n; AS.done.has(k) ? AS.done.delete(k) : AS.done.add(k); saveDone(); renderAsm(); };
   el.querySelectorAll('[data-hl]').forEach(x => { x.onmouseenter = () => setGlow(x.dataset.hl, 1); x.onmouseleave = () => setGlow(x.dataset.hl, 0); });
   syncActionControl(); renderBar();

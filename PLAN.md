@@ -349,6 +349,7 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Maker download containment: refuse linked or special generated output files so a project ZIP contains only regular files within its own output tree; preserve valid nested maker outputs and explain invalid exports.
 - [x] New design intent safety: retain tab-session brief and clarification drafts; prevent late saved-options responses from replacing newer input; focused browser regression
 - [x] Viewer smoothness round 2: stop idle frame polling, coalesce hover picking, and release comparison GPU resources; targeted lifecycle regressions
+- [x] Build it physical motion: consume sampled-clear paths in order, stage receivers before hardware, and hold unknown or blocked paths as static references; synthetic sequence and collision fixtures.
 - [x] Build it physical path evidence: check staged part approach and seat trajectories against exact CAD obstacles; expose sampled-clear, blocked and unverified states with physical limits; focused fixtures.
 - [x] Normal-operation resonance guidance: recommend frequency bands that satisfy the actual separation or min_ratio gate, including every excitation, with focused mocked checks and no FEA rerun.
 
