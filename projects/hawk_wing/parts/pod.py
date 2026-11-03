@@ -71,7 +71,7 @@ def build(ctx):
     ring = extrude(_footprint(p, WALL), z_top - RING_Z0) - extrude(_footprint(p, 0.0), z_top - RING_Z0)
     body = ctx.add(Pos(0, 0, RING_Z0) * ring, why="closed 3 mm wall ring round the sector sweep, pinion and servo: the pin's reaction and the servo "
                    "torque reach the glove through its top rim", kind="wall")
-    body -= ctx.cut(Pos(sx, 149.5, RIM_OUT_Z) * Box(400, 300, 10, align=(Align.CENTER, Align.MIN, Align.MIN)),
+    body -= ctx.cut(Pos(sx, p.pivot_y - 0.5, RIM_OUT_Z) * Box(400, 300, 10, align=(Align.CENTER, Align.MIN, Align.MIN)),
                     why="rim steps down outboard of the glove (y > 149.5): clears the hub's lower surface, which dips to z -4.5 at x 157", kind="clearance")
 
     # floor disc under the boss, 4 ribs to the ring: the pin's bending reaction
@@ -115,7 +115,7 @@ def build(ctx):
     ps = L.pod_screw_xy(p, 1)
     cavity = Pos(0, 0, RING_Z0 - 1) * extrude(_footprint(p, 0.0), z_top - RING_Z0 + 2)      # lugs never reach into the swept volume
     cs = L.cap_screw_xy(p, 1)
-    for (x, y), tgt in zip(ps, ((165.0, 133.0), (ps[1][0], 133.0))):     # lug ends stay out of the swept cavity (y >= 139.5)
+    for (x, y), tgt in zip(ps, ((165.0, p.pivot_y - 17.0), (ps[1][0], p.pivot_y - 17.0))):     # lug ends stay out of the swept cavity (y >= 139.5)
         body += ctx.add(_lug((x, y), tgt, LUG_R, FLANGE_Z0, z_top) - cavity, why="inboard flange lug: M3 from below into the glove's insert", kind="lug")
     for (x, y) in cs:
         body += ctx.add(_lug((x, y), (x, y + 3.0), LUG_R, INSERT_Z0, z_top) - cavity, why="lug for the cap screw's heat-set insert, tied into the ring", kind="lug")

@@ -62,7 +62,7 @@ def build(ctx):
     p = ctx.p
     bz = p.boom_z
     pf = L.planform(p)
-    wing = aero.wing_solid(pf, -149.5, 149.5, stations=3)
+    wing = aero.wing_solid(pf, -p.pivot_y + 0.5, p.pivot_y - 0.5, stations=3)
     # 0.3 mm relief round the glove (offset() fails on the lofted solid): the solid shifted down, up and forward
     wing_off = Pos(0, 0, -0.3) * wing + Pos(0, 0, 0.3) * wing + Pos(-0.3, 0, 0) * wing
 
@@ -72,7 +72,7 @@ def build(ctx):
     outer += ctx.add(sq & Pos(0, -100, -30) * Box(215, 200, 120, align=(Align.MIN, Align.MIN, Align.MIN)),
                      why="squared top corners under the glove: the side walls reach its flat underside (a rounded corner would leave a gap)", kind="saddle")
     # why: socket funnel: aft of the cavity only a cone round the boom is kept (weight), 12 deg flank prints without support
-    cone = Pos(CAVITY_X1, 0, bz) * Rot(0, 90, 0) * Cone(26.0, 10.5, 300.0 - CAVITY_X1, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    cone = Pos(CAVITY_X1, 0, bz) * Rot(0, 90, 0) * Cone(26.0, 10.5, p.fuse_x1 - CAVITY_X1, align=(Align.CENTER, Align.CENTER, Align.MIN))
     keep = Pos(-130, -100, -100) * Box(CAVITY_X1 + 130, 200, 200, align=(Align.MIN, Align.MIN, Align.MIN))
     body = outer & (keep + cone)     # why: funnel the aft end to a socket around the boom
     body -= ctx.cut(wing_off, why="saddle: the glove sits in the fuselage top, 0.3 mm clear", kind="saddle")
@@ -143,7 +143,7 @@ def build(ctx):
 
     # ---- boom socket: bore, stop wall, lead hole, clamp seat, tongue pocket, positive-lock insert
     bl = L.boom_loc(p)
-    body -= ctx.cut(bl * Pos(0, 0, 0) * Cylinder((p.boom_od + 0.2) / 2, 300.0 - p.boom_x0 + 2, align=(Align.CENTER, Align.CENTER, Align.MIN)),
+    body -= ctx.cut(bl * Pos(0, 0, 0) * Cylinder((p.boom_od + 0.2) / 2, p.fuse_x1 - p.boom_x0 + 2, align=(Align.CENTER, Align.CENTER, Align.MIN)),
                     why="boom bore, OD + 0.2 dry slip fit; the 3 mm wall at x 212..215 is the end stop", kind="bore")
     body -= ctx.cut(Pos(CAVITY_X1 + 2.0, 0, bz) * Rot(0, 90, 0) * Cylinder(2.75, 8.0), why="tail servo leads run from the bay into the boom tube", kind="wire hole")
     body -= ctx.cut(Pos(SEAT_X[0], -40, SEAT_Z) * Box(SEAT_X[1] - SEAT_X[0], 80, 60, align=(Align.MIN, Align.MIN, Align.MIN)),

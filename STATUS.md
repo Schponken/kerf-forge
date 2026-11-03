@@ -1501,3 +1501,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Read-only current-template saved bionic_finger desktop/light and phone/dark captures inspected: no JavaScript errors
   or document overflow. /tmp/kerf-viewer-perf-{desktop,phone}.png. Detector reports only the incumbent global type
   hierarchy warning. No project source/output, catalog/check/review changes, full suite, stress job or installation.
+
+## 2026-11-02 — Hawk-wing preserved-source repair started (Codex)
+- Preserved the installed dirty project sources verbatim at 5a98dc7; installed and isolated source fingerprints both adf3ad47a8d22d2d. The installed project is untouched.
+- Packaging repair moves pivots inward 15 mm while retaining hub width and spar engagement, and shortens the motor stand-off 15 mm and boom socket tail 6 mm. Pod pads, lead entry and rim now follow the pivot position. Requirements and hardware catalog values are unchanged.
+- WIP: geometry and concept checks running; weight and wiring repairs proceed from the preserved baseline. No design-review approval or flight readiness claimed.
