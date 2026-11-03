@@ -333,5 +333,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
 
-- [ ] Build it physical motion: consume sampled-clear paths in order, stage receivers before hardware, and hold unknown or blocked paths as static references; synthetic sequence and collision fixtures.
+- [x] Build it physical motion: consume sampled-clear paths in order, stage receivers before hardware, and hold unknown or blocked paths as static references; synthetic sequence and collision fixtures.
 - [x] Build it physical path evidence: check staged part approach and seat trajectories against exact CAD obstacles; expose sampled-clear, blocked and unverified states with physical limits; focused fixtures.

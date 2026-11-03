@@ -1115,9 +1115,11 @@ function focusBox(s, offs) {
 }
 function resetPose() { asmOff.clear(); for (const j of D.joints) val.set(j.name, j.home); explode = 0; const ex = $('ex'); if (ex) { ex.value = 0; $('exv').textContent = '0 mm'; } pose(); }
 function setSets(vis, future, ctx) { AS.vis = new Set(vis); AS.future = new Set(future); AS.ctx = new Set((ctx || []).filter(i => !AS.vis.has(i))); for (const id of solidIds) itemLook(id); applyVis(); }
-async function demoJoint(name, tok) {
+async function demoJoint(name, tok, illustrate = false) {
   const j = J.get(name), sweep = (R.assembly?.sweeps || []).find(x => x.joint === name);
-  if (!j || sweep?.clear !== true || !sweep.range || sweep.range[0] > j.range[0] || sweep.range[1] < j.range[1]) return;
+  if (!j) return;
+  const checked = sweep?.clear === true && sweep.range && sweep.range[0] <= j.range[0] && sweep.range[1] >= j.range[1];
+  if (!checked && !illustrate) return;
   const u = j.kind === 'revolute' ? '°' : ' mm', c = groups.get(j.child) ? centreOf(j.child) : null;
   const L = label(`<b>${esc(name)}</b> <span>recorded motion ${fmt(j.range[0])} to ${fmt(j.range[1])}${u}</span>`, 'move', c || (() => ctl.target.clone()));
   const a = j.home, lo_ = j.range[0], hi_ = j.range[1];
@@ -1289,6 +1291,7 @@ function replayInstallation() {
 function replayStep() { AS.playing = false; return showCard(AS.i, true, null, true); }
 async function showCard(i, animate = true, site = null, replay = false) {
   animate = animate && !reduced;
+  if (reduced) AS.playing = false;
   const tok = ++AS.tok; cancelTweens(); clearGlyphs();
   for (const id of solidIds) setGlow(id, 0);
   AS.site = site ?? (i === AS.i ? AS.site : 0);
@@ -1320,7 +1323,7 @@ async function showCard(i, animate = true, site = null, replay = false) {
   }
   for (const t of SD.steps) if (t.n < s.n) for (const x of (t.pins || [])) if (s.present.includes(x.item) && installationSites({...t, inserts: [], screws: [], pins: [x]}).length && sizedSite({...x, kind: 'pin'})) placeInsert(addHardware(x.item, pinGlyph(x)), 0);
   const pathsClear = s.groups.every(g => motionOffset(g));
-  if (!pathsClear) { AS.playing = false; renderBar(); }
+  if (!pathsClear && AS.playing) { AS.playing = false; renderAsm(); }
   const offs = motionOffsets(s);
   const box = focusBox(s, offs);
   if (!animate || !pathsClear || (installationSites(s).length && !AS.playing && !replay)) {
@@ -1331,6 +1334,7 @@ async function showCard(i, animate = true, site = null, replay = false) {
       const g = addHardware(x.item, x.kind === 'insert' ? insertGlyph(x) : x.kind === 'pin' ? pinGlyph(x) : screwGlyph(x)); g.userData.siteIndex = k;
       if (x.kind === 'screw') placeScrew(g, 0, 0); else placeInsert(g, 0);
     }
+    for (const id of nu) label(`<b>${esc(id)}</b> <span>${esc(groups.get(id).userData.it.label || '')}</span>`, '', centreOf(id), boxIn(id)).id = id;
     incomingGuide(s);
     if (sites.length) { showInstallation(s, AS.site); return; }
     return frameBox(box, viewFor(s, box), 0);
@@ -1459,7 +1463,7 @@ function renderAsm() {
   $('a_play').onclick = togglePlay;
   $('a_ghost').onchange = e => { AS.ghostOn = e.target.checked; for (const id of solidIds) itemLook(id); for (const g of AS.glyphs) if (g.userData.before) g.visible = AS.ghostOn; applyVis(); redraw(); };
   $('a_speed').onchange = e => { speed = +e.target.value; };
-  el.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => { AS.playing = false; const i = AS.i, site = AS.site; showCard(i, false, site).then(() => { if (AS.i === i && !reduced) demoJoint(b.dataset.demo, AS.tok); }); });
+  el.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => { AS.playing = false; const i = AS.i, site = AS.site; showCard(i, false, site).then(() => { if (AS.i === i && !reduced) demoJoint(b.dataset.demo, AS.tok, true); }); });
   if ($('dbx')) $('dbx').onclick = () => { const k = c.s.n; AS.done.has(k) ? AS.done.delete(k) : AS.done.add(k); saveDone(); renderAsm(); };
   el.querySelectorAll('[data-hl]').forEach(x => { x.onmouseenter = () => setGlow(x.dataset.hl, 1); x.onmouseleave = () => setGlow(x.dataset.hl, 0); });
   syncActionControl(); renderBar();

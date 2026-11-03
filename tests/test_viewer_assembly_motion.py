@@ -87,6 +87,9 @@ try {
   assert.equal(await p.evaluate(()=>window.__kerf.asm.busy||!!window.__kerf.asm.demo),false);
   assert.equal(await p.evaluate(()=>window.__kerf.groups.get('base').parent.children.some(o=>o.userData.before)),false);
  }
+ await p.click('#a_play');
+ assert.equal(await p.textContent('#a_play'),'Play all');assert.equal(await p.textContent('#ab_play'),'Play all');
+ assert.equal(await p.evaluate(()=>window.__kerf.asm.busy),false);
  await p.screenshot({path:DESKTOP});
  assert.deepEqual(errors,[]);
  const phone=await b.newPage({viewport:{width:390,height:844},reducedMotion:'reduce',colorScheme:'dark'});
