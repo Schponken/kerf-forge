@@ -1398,3 +1398,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Doctor ALL OK after reusing existing dependencies. No dependency installation, whole-project benchmark,
   full suite, FEA, real job, catalog/threshold change or review.json write. Batch remains HELD. As with every
   partcache.py edit, the existing source-based key invalidates prior entries for one normal rebuild.
+## 2026-11-02 — Studio background-job recovery round 2 (Codex)
+- Explicit Stop no longer launches an automatic fix from an old failed report. Failed automatic fix launches keep the design retryable; the fingerprint is recorded only after a successor starts, with selection/start serialized by the existing job lock.
+- Output read/parser failures now record the cause, kill the process group (falling back to the child), wait for exit and close stdout before releasing the project guard. An existing Stop remains stopped; usage exhaustion cannot resume this failed output path. Normal completion, failure and usage pause still finish normally.
+- Regression evidence: the original seven mocked cases failed before the fixes. Final focused validation: 24 passed, 5 real-process lifecycle cases deliberately deselected; tests/test_studio_job_reliability.py plus existing mocked lifecycle, auto-fix and usage-resume/reset cases. git diff --check passed. No builds, real agents/jobs, full suite, FEA, catalog/check/review edits or installations.
