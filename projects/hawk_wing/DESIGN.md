@@ -326,6 +326,26 @@ pod_r/l -> pin, sweep servo -> horn -> pinion, **fold_r / fold_l** (0..65 deg) -
 wing_x2 -> aileron (+-20), aileron servo, skid. Couplings: sweep_srv_r = +1.6154 x fold_r, sweep_srv_l = -1.6154 x
 fold_l (21:13; 65 deg of sweep = 105 deg of the MG996R).
 
+## What breaks on these aircraft and what this design does about it
+
+From Spencer's note (REFERENCES.md "What breaks on these aircraft"; ranked there, sources per row). No flown 1 m
+swing-wing publishes a failure log, so several rows rest on one report (DTFB F-14) or own engineering, marked there.
+
+| Failure seen elsewhere | What hawk_wing does |
+|---|---|
+| Sweep servo too weak / slow to move the wing in flight (DTFB F-14) | MG996R through 21:13 sized against the real panel's air load at 84 and 150 km/h (`fold_*`: 43 % / 27 % of half its stall); 105 deg of its ~120 deg travel, so it never sits on its own end stop; bench test with the props off: time 0 -> 65 deg with a 1 kg weight hung at mid-panel (ASSEMBLY) |
+| Wing stuck swept after a failure | real spread stop (`stop_spread_*`) that the high-lift pull drives the panel onto; INAV `Is Failsafe` -> `Override RC Channel` to spread; RTH. A spring to spread was rejected (it adds its torque to the servo's hold load at 65 deg, and a dead MG996R's gear train does not back-drive, so it would not open a dead-servo wing) |
+| One sweep drive fails -> uneven sweep | pitch stays stable uneven (`sm_asym`); roll is countered by the ailerons + the other panel on the sweep switch; it is the plane's worst single failure (Risks) |
+| Gear backlash -> tip play, flutter | pinion on the clamped aluminium horn (not a plastic spline), 100 % infill, module 2; backlash 0.8 deg ~ 5 mm at the tip (measure; INAV sweep channel held still in flight) |
+| Pivot slop / wear | two 625 ball bearings 28 mm apart on a steel pin instead of plastic on a bolt; races clamped axially by rings on the inner races only |
+| Servo lead fatigue at the pivot | the lead crosses the pivot 14 mm from the pin (65 deg = 16 mm of arc), in a service loop under the cap; plug there |
+| Brown-outs from servo stall current | the sweep servos have the ESC's 7 A BEC to themselves (2 x 2.5 A stall); a 1000 uF capacitor on that rail (BOM) |
+| PETG glue joints let go (3DLabPrint: PETG "not recommended for parts that require to be glued") | the structural joints are bolted (pod, cap, glove, boom); the glued ones (tubes in the hub sockets and skins, skins to hub) are roughened + 2-part epoxy and proof-loaded: sandbag each panel to 1.5 x its 4 g load before the first flight (ASSEMBLY) |
+| Aileron flutter from linkage slop | horn holes 1.3 mm for the 1.2 mm wire, Z-bends, hinge taped both sides |
+| Tail boom slipping / rotating in a one-screw clamp | positive location: the clamp's one M3 passes through a cross hole in the boom (Archer's method) or a keyed collar; the tail comes back at the same incidence after a field swap |
+| Nose / prop / tips take the crash | nose cap, prop, wingtip skids and tail surfaces are the cheap break-first parts (use story); the pivots sit inside the wing aft of the nose |
+| Sun creep (dark PLA warped at ~60 C) | PETG everywhere (HDT ~70 C; `story_heat` 45 C); light filament colour recommended |
+
 ## Assembly order
 
 (filled from ASSEMBLY.md after the build)

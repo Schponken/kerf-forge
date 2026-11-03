@@ -21,5 +21,6 @@
  "screws.M3",
  "servo_horns.aluminum_25T",
  "servos.KST_X08_Plus",
- "servos.MG996R"
+ "servos.MG996R",
+ "tools.hex_key"
 ]
