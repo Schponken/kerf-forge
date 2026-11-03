@@ -461,6 +461,24 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   .menu.modes button {min-width:0;white-space:normal}
 }
 
+/* Tune: measurements and a reversible draft ledger share one work surface. */
+.tune-workbench{max-width:1280px;margin:0 auto;font-size:14px}
+.tune-workbench h2,.tune-workbench h3,.tune-workbench h4,.tune-workbench p{margin:0}
+.tune-intro{padding:4px 0 26px}.tune-intro h2{font-size:24px;font-weight:650;letter-spacing:-.02em}.tune-intro p{color:var(--muted);margin-top:6px;max-width:65ch}
+.tune-layout.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:40px;align-items:start}
+.tune-controls,.tune-draft,.tune-results{min-width:0}.tune-section-heading{padding-bottom:16px}.tune-section-heading h3,.tune-draft h3{font-size:17px;font-weight:650}.tune-section-heading .note{margin-top:4px;max-width:65ch}
+.tune-workbench .param{padding:20px 0;border-top:1px solid var(--line);border-bottom:0}.tune-workbench .param .top{align-items:center;gap:14px}.tune-workbench .param label{font-size:15px;font-weight:620}.tune-workbench .param .key{overflow-wrap:anywhere;text-align:right}.tune-workbench .param .rng{gap:22px;margin:14px 0 8px}
+.tune-number{display:flex;align-items:center;gap:8px;flex-shrink:0}.tune-number input{width:104px;min-height:44px;font:500 17px var(--mono);padding:8px 10px;text-align:right;border-radius:8px;border:1px solid var(--control-line,var(--muted));background:var(--panel);box-shadow:none}.tune-workbench .param .unit{min-width:22px;font-size:13px}
+.tune-workbench .param input[type=range]{min-height:40px;min-width:0}.tune-workbench :is(input,select,button,summary,a,[tabindex]):focus-visible{outline:2px solid var(--accent);outline-offset:3px;box-shadow:none}.tune-workbench .param.invalid input:not([type=range]){border-color:var(--bad)}
+.tune-workbench .tune-range{line-height:1.5}.tune-saved{display:flex;align-items:center;gap:12px;min-height:32px;font-size:12px;color:var(--muted);margin-top:3px}.tune-saved button{border:0;background:none;color:var(--accent);font-size:12px;padding:7px 4px;text-decoration:underline;text-underline-offset:3px}.tune-saved button[hidden]{display:none}
+.tune-workbench .affects{display:flex;gap:14px;font-size:12px;line-height:1.6;opacity:1;color:var(--muted);margin-top:8px}.tune-workbench .affects b{font-weight:600;color:var(--ink)}.tune-workbench .affects span{display:block}.tune-field-error:empty{display:none}.tune-workbench .tune-field-error{margin:7px 0}.tune-error{color:var(--bad);font-size:13px;line-height:1.5}
+.tune-draft{position:sticky;top:16px;border-top:2px solid var(--ink);padding-top:17px}.tune-draft-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}.tune-draft-head>span{font-size:12px;color:var(--muted)}.tune-ledger{list-style:none;padding:0;margin:0 0 20px}.tune-ledger li{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}.tune-ledger li>span{min-width:0;overflow-wrap:anywhere}.tune-ledger li>span:last-child{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;max-width:55%;font-family:var(--mono)}.tune-ledger s{color:var(--muted);font-size:12px;text-decoration-thickness:1px}.tune-ledger b{font-weight:600}
+.tune-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}.tune-actions button{white-space:normal;border-radius:8px;min-height:44px}.tune-workbench button.primary{background:var(--accent);color:var(--accent-ink);box-shadow:none}.tune-actions .tune-discard{grid-column:1/-1;background:none;border:0;padding:6px;min-height:32px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}.tune-workbench button:disabled{cursor:default;transform:none}.tune-workbench :is(summary,a){cursor:pointer}.tune-save-help{margin-top:15px;font-size:13px}.tune-workbench summary{line-height:1.6;padding:6px 0}.tune-action-guide{margin:10px 0 0;font-size:12px}.tune-action-guide>div{display:grid;grid-template-columns:36px 1fr;gap:8px;margin:10px 0}.tune-action-guide dt{font-weight:650}.tune-action-guide dd{margin:0;color:var(--muted)}.tune-workbench .tune-limit{margin-top:14px;font-size:12px}.tune-workbench .tune-notice{margin:14px 0;line-height:1.5}
+.tune-materials{margin-top:26px}.tune-material{border-top:1px solid var(--line);padding:18px 0}.tune-material-choice{display:flex;align-items:center;justify-content:space-between;gap:16px}.tune-material-choice label{font-size:15px;font-weight:600;overflow-wrap:anywhere}.tune-material-choice select{min-height:44px;border-radius:8px;max-width:55%}.tune-material.changed label{color:var(--accent)}.tune-material-data{display:flex;flex-wrap:wrap;gap:10px 28px;margin:10px 0 0}.tune-material-data dt{font-size:12px;color:var(--muted)}.tune-material-data dd{margin:3px 0 0;font:13px var(--mono)}.tune-material-catalog{border-top:1px solid var(--line);padding-top:8px;font-size:13px}.tune-material-catalog p{margin-top:12px;max-width:65ch}
+.tune-results{margin-top:42px;padding-top:24px;border-top:1px solid var(--line)}.tune-trial-context{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;font-size:13px}.tune-trial-context b{font-size:15px}.tune-trial-context span:last-child{color:var(--muted);font-size:12px}.tune-tried-values{font-size:13px;margin-bottom:16px}.tune-tried-values dl{max-width:640px;margin:6px 0 16px}.tune-tried-values dl>div{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding:7px 0}.tune-tried-values dd{margin:0;font-family:var(--mono)}.tune-compare-toggle{display:flex;gap:10px;align-items:flex-start;font-size:13px;margin:0 0 12px}.tune-compare-toggle input{width:auto;flex:none;margin-top:3px}.tune-results iframe.viewer{height:440px;border-radius:8px}.tune-comparison,.tune-problems{margin-top:24px}.tune-workbench h4{font-size:15px;margin-bottom:10px}.tune-table{max-width:100%;overflow:auto}.tune-table table{min-width:620px}.tune-requirements{margin-top:18px;font-size:14px}.tune-empty{padding:22px 0;max-width:65ch}.tune-empty p+p{margin-top:8px}
+@media(max-width:1050px){.tune-layout.grid2{gap:28px;grid-template-columns:minmax(0,1.25fr) minmax(260px,1fr)}}
+@media(max-width:700px){.tune-layout.grid2{grid-template-columns:minmax(0,1fr);gap:28px}.tune-draft{position:static;grid-row:1}.tune-intro{padding-bottom:22px}.tune-intro h2{font-size:22px}.tune-workbench .param .rng{gap:12px}.tune-number input{width:92px}.tune-workbench .param .top{align-items:flex-start}.tune-workbench .param .key{font-size:10px}.tune-results{margin-top:28px}.tune-results iframe.viewer{height:340px}.tune-workbench .affects{gap:10px}.tune-material-data{gap:10px 20px}}
+
 </style>
 </head>
 <body>
@@ -925,41 +943,62 @@ function renderResults(el, rep) {
   growBars(el);
 }
 
+function tuneState() {
+  if (!S.tune || S.tune.edits !== S.edits) S.tune = {edits:S.edits, invalid:{}, busy:"", notice:null};
+  return S.tune;
+}
+function tuneValue(v, unit) { return `${esc(v)}${unit ? " " + esc(unit) : ""}`; }
+function tuneTrialMatch() {
+  const d = S.detail, tr = d.trial;
+  return tr && !Object.keys(tuneState().invalid).length && d.params.every(p => Object.hasOwn(tr.params || {}, p.key) && tr.params[p.key] === (S.edits[p.key] ?? p.value)) &&
+    Object.entries(d.part_materials || {}).every(([id, v]) => (tr.materials || {})[id] === (S.medits[id] || v));
+}
+function tuneDraft() {
+  const d = S.detail, st = tuneState(), changed = Object.keys(S.edits).length + Object.keys(S.medits).length, invalid = Object.keys(st.invalid).length;
+  const rows = [...d.params.filter(p => p.key in S.edits).map(p => `<li><span>${esc(p.label)}</span><span><s>${tuneValue(p.value, p.unit)}</s><b>${tuneValue(S.edits[p.key], p.unit)}</b></span></li>`),
+    ...Object.entries(S.medits).map(([id, v]) => `<li><span>${esc(id.replace(/_/g, " "))}</span><span><s>${esc(d.part_materials[id])}</s><b>${esc(v)}</b></span></li>`)];
+  return `<div class="tune-draft-head"><h3>Your changes</h3><span role="status">${invalid ? `${invalid} value${invalid === 1 ? " needs" : "s need"} attention` : changed ? `${changed} unsaved` : "Saved values"}</span></div>
+    ${rows.length ? `<ul class="tune-ledger" aria-label="Unsaved changes">${rows.join("")}</ul>` : `<p class="note">Adjust a measurement or material. Your saved design stays as it is until you choose Save.</p>`}
+    ${invalid ? `<p class="tune-error">Resolve the highlighted values before trying or saving.</p>` : ""}
+    ${st.notice ? `<p class="tune-notice ${st.notice.bad ? "tune-error" : ""}" role="${st.notice.bad ? "alert" : "status"}">${esc(st.notice.text)}</p>` : ""}
+    <div class="tune-actions"><button class="primary" onclick="tryParams()" ${changed && !invalid && !st.busy ? "" : "disabled"}>${st.busy === "try" ? "Starting try…" : "Try these values"}</button>
+    <button onclick="saveParams()" ${changed && !invalid && !st.busy ? "" : "disabled"}>${st.busy === "save" ? "Saving…" : "Save to design"}</button>
+    <button class="tune-discard" onclick="resetTune()" ${(changed || invalid) && !st.busy ? "" : "disabled"}>Discard changes</button></div>
+    <details class="tune-save-help"><summary>What Try and Save do</summary><dl class="tune-action-guide"><div><dt>Try</dt><dd>Builds a separate copy and runs enabled checks. It takes time; it does not save these values.</dd></div>
+    <div><dt>Save</dt><dd>Writes the values to your design. Build again to update its model and files; a fresh design review is needed.</dd></div></dl></details>
+    <p class="note tune-limit">Paused checks are not run. A try does not prove strength while stress checks are paused.</p>`;
+}
 function renderTune(el) {
-  const d = S.detail;
-  if (!d.params.length && !Object.keys(d.part_materials || {}).length) { el.innerHTML = `<div class="card empty"><b>Nothing to tune</b>This project has no numeric params or printed parts in project.yaml.</div>`; return; }
-  const changed = Object.keys(S.edits).length + Object.keys(S.medits).length, tr = d.trial;
-  el.innerHTML = `<div class="grid2">
-    <div><div class="card">
-      <div class="row" style="justify-content:space-between;margin-bottom:6px"><b>Parameters</b><span class="note">${changed ? changed + " changed" : "file values"}</span></div>
-      ${d.params.some(p => p.unit_assumed) ? `<p class="note" style="margin-top:0">* unit assumed (mm for lengths, ° when the label says deg); project.yaml can state it with <code>unit:</code>.</p>` : ""}
-      ${d.params.map(p => {
-        const v = S.edits[p.key] ?? p.value, ch = p.key in S.edits;
-        const unit = p.unit ? `<span class="unit" title="${p.unit_assumed ? "unit assumed: add unit: to this param in project.yaml" : "unit from project.yaml"}">${esc(p.unit)}${p.unit_assumed ? "*" : ""}</span>` : "";
-        const fx = p.affects ? `<div class="note affects">Changes ${p.affects.layout ? "the shared measurements, so " : ""}${p.affects.parts.length ? esc(p.affects.parts.map(x => x.replace(/_/g, " ")).join(", ")) : "no part directly"}${p.affects.checks.length ? ` · can move: ${esc(plainChecks(p.affects.checks).join(", "))}` : ""}</div>` : "";
-        return `<div class="param ${ch ? "changed" : ""}"><div class="top"><label for="r_${p.key}">${esc(p.label)}</label><span class="key">${esc(p.key)}</span></div>
-          <div class="rng"><input type="range" id="r_${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" oninput="setParam('${p.key}', this.value, true)">
-          <input type="number" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" onchange="setParam('${p.key}', this.value)">${unit}</div>
-          <div class="note">${p.min} – ${p.max}${p.unit ? " " + esc(p.unit) : ""}${p.bounded ? "" : " (no range in project.yaml: ±50 %)"}${ch ? ` · file: ${p.value}` : ""}</div>${fx}</div>`;}).join("")}
-      <div class="row" style="margin-top:14px;flex-wrap:wrap">
-        <button class="primary" onclick="tryParams()" ${changed ? "" : "disabled"}>▶ Try these values</button>
-        <button onclick="saveParams()" ${changed ? "" : "disabled"}>Save to design</button>
-        <button onclick="S.edits={};S.medits={};renderTab()" ${changed ? "" : "disabled"}>Reset</button>
-      </div>
-      <p class="note">"Try" rebuilds a scratch copy with every check (fit, motion, strength) and you can watch it work live; your design files stay untouched.
-        "Save" writes the values into project.yaml, then Build; a saved change needs a fresh design review.</p>
-    </div>${matCard(d)}</div>
-    <div>${tr ? `
-      <div class="banner ${tr.ok ? "ok" : "bad"}">Last try: ${tr.ok ? "every check passes" : (tr.problems || []).length + " problem(s)"} with
-        ${[...Object.entries(tr.params || {}).filter(([k, v]) => d.params.some(p => p.key === k && p.value != v)).map(([k, v]) => `${esc(k)} = ${fmt(v)}`),
-           ...Object.entries(tr.materials || {}).filter(([k, v]) => v && (d.part_materials || {})[k] && d.part_materials[k] !== v).map(([k, v]) => `${esc(k)} in ${esc(v)}`)].join(", ") || "the file values"}</div>
-      <label class="note" style="display:flex;gap:6px;align-items:center;margin:-4px 0 8px"><input type="checkbox" id="trialcmp" style="width:auto" ${S.noTrialCmp ? "" : "checked"} onchange="S.noTrialCmp=!this.checked;renderTab()"> show the saved design as a ghost and colour what the try changed</label>
-      <iframe class="viewer" id="trialviewer" onload="trialLoaded(this)" style="height:520px" src="/trial/${d.name}/out/viewer.html?t=${Date.now()}"></iframe>
-      ${(tr.problems || []).length ? `<div class="card" style="margin-top:12px"><b>Problems</b><ul class="msgs">${tr.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
-      <div class="card" style="margin-top:12px"><b>Tried vs saved</b>${massRow(d, tr)}${compareTable(d.report && d.report.requirements, tr.requirements)}</div>
-      <div class="card" style="margin-top:12px"><b>Requirements with these values</b>${reqTable(tr.requirements)}</div>`
-      : `<div class="card empty"><b>Move a slider, then "Try these values"</b>The tried design shows here in 3D with every check re-run.</div>`}</div>
-  </div>`;
+  const d = S.detail, st = tuneState(), tr = d.trial;
+  if (!d.params.length && !Object.keys(d.part_materials || {}).length) { el.innerHTML = `<div class="tune-workbench"><section class="tune-empty"><h2>No adjustable values yet</h2><p>This design has no numeric parameters or printed-part materials to adjust.</p></section></div>`; return; }
+  el.innerHTML = `<div class="tune-workbench">
+    <header class="tune-intro"><h2>Adjust this design</h2><p>Make a change, understand what it touches, then try it before you commit.</p></header>
+    <div class="tune-layout grid2"><section class="tune-controls" aria-label="Design adjustments">
+      ${d.params.length ? `<div class="tune-section-heading"><h3>Measurements</h3><p class="note">Values are editable. Effects below describe connections, not a predicted result.</p></div>
+      ${d.params.map((p, i) => {
+        const v = S.edits[p.key] ?? p.value, ch = p.key in S.edits, bad = st.invalid[p.key], id = `tune-param-${i}`;
+        const fx = p.affects ? `${p.affects.layout ? "Shared layout · " : ""}${p.affects.parts.length ? esc(p.affects.parts.map(x => x.replace(/_/g, " ")).join(", ")) : "No directly referenced part"}${p.affects.checks.length ? `<span>Checks affected: ${esc(plainChecks(p.affects.checks).join(", "))}</span>` : ""}` : "Affected parts have not been recorded.";
+        return `<div class="param ${ch ? "changed" : ""} ${bad ? "invalid" : ""}" data-tune-key="${esc(p.key)}">
+          <div class="top"><label id="${id}-label" for="${id}">${esc(p.label)}</label><span class="key">${esc(p.key)}</span></div>
+          <div class="rng"><input type="range" aria-label="${esc(p.label)} slider" aria-describedby="${id}-range" min="${Math.min(p.min, v)}" max="${Math.max(p.max, v)}" step="${p.step}" value="${v}" oninput="setParam(this.closest('[data-tune-key]').dataset.tuneKey, this.value, true)" ${st.busy ? "disabled" : ""}>
+          <div class="tune-number"><input id="${id}" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="${esc(bad ? bad.raw : v)}" aria-describedby="${id}-range ${id}-error" aria-invalid="${bad ? "true" : "false"}" oninput="setParam(this.closest('[data-tune-key]').dataset.tuneKey, this.value)" ${st.busy ? "disabled" : ""}>${p.unit ? `<span class="unit">${esc(p.unit)}${p.unit_assumed ? "*" : ""}</span>` : ""}</div></div>
+          <p class="tune-range note" id="${id}-range">${p.bounded ? "Design range" : "Slider guide"}: ${tuneValue(p.min, p.unit)} to ${tuneValue(p.max, p.unit)}${p.bounded ? "" : " · a full range is not defined"}${p.unit_assumed ? ` · ${esc(p.unit)} is assumed` : ""}</p>
+          <p class="tune-field-error tune-error" id="${id}-error" role="status">${bad ? esc(bad.message) : ""}</p>
+          <div class="tune-saved"><span>Saved: ${tuneValue(p.value, p.unit)}</span><button type="button" aria-label="Undo ${esc(p.label)}" onclick="resetTune(this.closest('[data-tune-key]').dataset.tuneKey)" ${ch || bad ? "" : "hidden"} ${st.busy ? "disabled" : ""}>Undo</button></div>
+          <div class="affects"><b>Touches</b><div>${fx}</div></div></div>`;}).join("")}` : ""}
+      ${matCard(d)}</section>
+      <aside class="tune-draft" aria-label="Review your changes" id="tune-draft">${tuneDraft()}</aside>
+    </div>
+    <section class="tune-results" aria-label="Trial results"><div class="tune-section-heading"><h3>${tr ? "Last completed try" : "Try a version"}</h3><p class="note">${tr ? "Recorded results, not a live preview. Editing values does not update this model or its checks." : "A separate model and its check results will appear here after a try finishes."}</p></div>
+      ${tr ? `<div class="tune-trial-context"><b>${tr.ok ? "Recorded checks passed" : (tr.problems || []).length ? `${tr.problems.length} recorded problem${tr.problems.length === 1 ? "" : "s"}` : "No passing result recorded"}</b><span id="tune-trial-match">${tuneTrialMatch() ? "Same parameter and material values as entered above." : "Different or unrecorded values from the edits above."}</span><span>Enabled checks only. Paused checks provide no evidence of strength.</span></div>
+      <details class="tune-tried-values"><summary>Values used for this try</summary><dl>${Object.entries(tr.params || {}).map(([k,v]) => `<div><dt>${esc(d.params.find(p => p.key === k)?.label || k)}</dt><dd>${tuneValue(v,d.params.find(p => p.key === k)?.unit)}</dd></div>`).join("")}${Object.entries(tr.materials || {}).filter(([,v])=>v).map(([k,v])=>`<div><dt>${esc(k.replace(/_/g," "))}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></details>
+      <label class="tune-compare-toggle"><input type="checkbox" id="trialcmp" ${S.noTrialCmp ? "" : "checked"} onchange="S.noTrialCmp=!this.checked;renderTab()"> Show saved design as a ghost; colour the changes in this try</label>
+      <iframe class="viewer" title="Model from the last completed try" id="trialviewer" onload="trialLoaded(this)" src="/trial/${d.name}/out/viewer.html?t=${Date.now()}"></iframe>
+      ${(tr.problems || []).length ? `<div class="tune-problems"><h4>Problems in this try</h4><ul class="msgs">${tr.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
+      <div class="tune-comparison"><h4>Tried vs saved build</h4>${d.stale ? `<p class="note">The saved build is from an earlier design version.</p>` : ""}${massRow(d, tr)}<div class="tune-table" role="region" aria-label="Trial comparison" tabindex="0">${compareTable(d.report && d.report.requirements, tr.requirements)}</div></div>
+      <details class="tune-requirements"><summary>Full requirement results for this try</summary><div class="tune-table" role="region" aria-label="Trial requirements" tabindex="0">${reqTable(tr.requirements)}</div></details>`
+      : `<div class="tune-empty"><p>Start with one adjustment. Use <b>Try these values</b> to see what changed and which enabled checks pass.</p><p class="note">Your saved design is unchanged by a try. Engineering limits still apply.</p></div>`}
+    </section></div>`;
   growBars(el);
 }
 function plainChecks(ids) {   // requirement ids -> their plain check names (kerf/glossary.py), each once
@@ -986,47 +1025,88 @@ function compareTable(saved, tried) {   // the saved build's result next to the 
       <td class="num">${dlt == null || Math.abs(dlt) < 1e-9 ? "–" : `<span class="fxa ${g > 0 ? "up" : g < 0 ? "down" : ""}">${dlt > 0 ? "▲" : "▼"}</span> ${dlt > 0 ? "+" : ""}${fmt(dlt)}${u}`}</td>
       <td><span class="fxs ${say === "now fails" || say === "worse" ? "down" : say === "now passes" || say === "better" ? "up" : say.startsWith("worse") ? "meh" : ""}">${say}</span></td></tr>`; }).join("")}</table>`;
 }
-function setParam(k, v, live) {
-  const p = S.detail.params.find(x => x.key === k); v = Number(String(v).trim().replace(",", "."));   // "1,5" is 1.5, not 1
-  if (!Number.isFinite(v) || (p.bounded && (v < p.min || v > p.max))) {
-    toast("Value not changed", `${p.label}: enter a number${p.bounded ? ` from ${p.min} to ${p.max}` : ""}${p.unit ? " " + p.unit : ""}.`, "bad");
-    renderTab(); return;
-  }
-  if (Math.abs(v - p.value) < 1e-9) delete S.edits[k]; else S.edits[k] = v;
-  if (live) { const r = document.querySelector(`#r_${k}`); r.parentElement.querySelector("input[type=number]").value = v;
-    r.closest(".param").classList.toggle("changed", k in S.edits); return; }
-  renderTab();
+function updateTuneDraft() {
+  const panel = $("#tune-draft"); if (panel) panel.innerHTML = tuneDraft();
+  const match = $("#tune-trial-match"); if (match) match.textContent = tuneTrialMatch() ? "Same parameter and material values as entered above." : "Different or unrecorded values from the edits above.";
 }
-document.addEventListener("change", e => { if (e.target.type === "range") renderTab(); });
-async function tryParams() { try { const r = await api("/api/run", {project: S.sel, action: "trial", values: S.edits, materials: S.medits}); watch(r.job); } catch (e) { toast("Couldn't start", e.message, "bad"); } }
+function setParam(k, raw, live) {
+  const p = S.detail.params.find(x => x.key === k), st = tuneState(); if (!p || st.busy) return;
+  const text = String(raw).trim().replace(",", "."), v = Number(text);
+  st.notice = null;
+  if (!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(text) || !Number.isFinite(v) || (p.bounded && (v < p.min || v > p.max))) {
+    st.invalid[k] = {raw, message:`Enter a finite number${p.bounded ? ` from ${p.min} to ${p.max}` : ""}${p.unit ? " " + p.unit : ""}.`};
+  } else {
+    delete st.invalid[k];
+    if (Math.abs(v - p.value) < 1e-9) delete S.edits[k]; else S.edits[k] = v;
+  }
+  const row = [...document.querySelectorAll("[data-tune-key]")].find(e => e.dataset.tuneKey === k);
+  if (row) {
+    const bad = st.invalid[k], number = row.querySelector('.tune-number input'), slider = row.querySelector('[type=range]');
+    row.classList.toggle("changed", k in S.edits); row.classList.toggle("invalid", !!bad);
+    number.setAttribute("aria-invalid", bad ? "true" : "false");
+    row.querySelector('.tune-field-error').textContent = bad ? bad.message : "";
+    row.querySelector('.tune-saved button').hidden = !(k in S.edits || bad);
+    if (!bad) { if (live) number.value = v; slider.min = Math.min(p.min,v); slider.max = Math.max(p.max,v); slider.value = v; }
+  }
+  updateTuneDraft();
+}
+function resetTune(key) {
+  const st = tuneState(); if (st.busy) return;
+  if (key !== undefined) { delete S.edits[key]; delete st.invalid[key]; }
+  else { S.edits = {}; S.medits = {}; }
+  renderTab();
+  if (key !== undefined) [...document.querySelectorAll('[data-tune-key]')].find(e => e.dataset.tuneKey === key)?.querySelector('.tune-number input').focus();
+}
+async function tryParams() {
+  const st = tuneState(), project = S.sel;
+  if (st.busy || Object.keys(st.invalid).length || !(Object.keys(S.edits).length + Object.keys(S.medits).length)) return;
+  const values = {...S.edits}, materials = {...S.medits}; st.busy = "try"; st.notice = null; renderTab();
+  try { const r = await api("/api/run", {project, action:"trial", values, materials}); if (S.sel === project) watch(r.job); }
+  catch (e) { st.notice = {bad:true, text:`Try could not start. ${e.message} Your changes are still here.`}; }
+  finally { st.busy = ""; if (S.sel === project && S.tab === "tune") renderTab(); }
+}
 async function saveParams() {
-  if (!confirm("Write these values" + (Object.keys(S.medits).length ? " and materials" : "") + " into the design (project.yaml)? Build again afterwards; the design review will need to be redone.")) return;
+  const st = tuneState(), project = S.sel;
+  if (st.busy || Object.keys(st.invalid).length || !(Object.keys(S.edits).length + Object.keys(S.medits).length)) return;
+  if (!confirm("Save these values and materials to this design? Its model and files will need a new build, and its design review will need to be redone.")) return;
+  const values = {...S.edits}, materials = {...S.medits}, d = S.detail, edits = S.edits, medits = S.medits;
+  let saved = false; st.busy = "save"; st.notice = null; renderTab();
   try {
-    if (Object.keys(S.edits).length) await apiChange("/api/save", {project: S.sel, values: S.edits});
-    if (Object.keys(S.medits).length) await apiChange("/api/save-materials", {project: S.sel, materials: S.medits});
-    S.edits = {}; S.medits = {}; await refreshDetail(); setTab("tune"); toast("Saved", "Written to project.yaml. Build to update the files.", "ok"); }
-  catch (e) { toast("Not saved", e.message, "bad"); }
+    if (Object.keys(values).length) {
+      await apiChange("/api/save", {project, values}); saved = true;
+      for (const [k,v] of Object.entries(values)) { d.params.find(p => p.key === k).value = v; delete edits[k]; }
+    }
+    if (Object.keys(materials).length) {
+      await apiChange("/api/save-materials", {project, materials}); saved = true;
+      for (const [k,v] of Object.entries(materials)) { d.part_materials[k] = v; delete medits[k]; }
+    }
+    st.notice = {text:"Changes saved. Build again to update the model and files; a fresh design review is needed."};
+  } catch (e) { st.notice = {bad:true, text:`${saved ? "Some changes were saved. The remaining edits are still here; their save could not be confirmed." : "The save could not be confirmed. Your changes are still here."} ${e.message}`}; }
+  finally {
+    st.busy = "";
+    if (S.sel === project) { if (saved) await refreshDetail(); if (S.tab === "tune") renderTab(); }
+  }
 }
 /* ---------- materials per printed part: tried and saved like parameters */
 function matCard(d) {
-  const pm = d.part_materials || {}, M = d.materials || [], ids = Object.keys(pm);
+  const pm = d.part_materials || {}, M = d.materials || [], ids = Object.keys(pm), st = tuneState();
   if (!ids.length || !M.length) return "";
   const byKey = Object.fromEntries(M.map(m => [m.key, m]));
-  const opt = cur => M.map(m => `<option value="${esc(m.key)}" ${m.key === cur ? "selected" : ""}>${esc(m.key)}</option>`).join("");
-  const num = (v, d_ = 0) => v == null ? "–" : (+v).toFixed(d_);
-  return `<div class="card mats" style="margin-top:14px">
-    <div class="row" style="justify-content:space-between;margin-bottom:6px"><b>Materials</b><span class="note">${Object.keys(S.medits).length ? Object.keys(S.medits).length + " changed" : "file values"}</span></div>
-    <table><tr><th>Part</th><th>Material</th><th title="Tensile strength along the layers / across them">Strength XY / Z</th><th>Weight</th></tr>${ids.map(id => {
-      const cur = S.medits[id] || pm[id], m = byKey[cur] || {};
-      return `<tr class="${id in S.medits ? "changed" : ""}"><td>${esc(id)}</td><td><select onchange="setMat('${id}', this.value)">${opt(cur)}</select></td>
-        <td class="num">${num(m.xy_mpa)} / ${num(m.z_mpa)} MPa</td><td class="num">${num(m.density, 2)} g/cm³</td></tr>`; }).join("")}</table>
-    <details style="margin-top:8px"><summary class="note" style="cursor:pointer">What the numbers mean, all materials</summary>
-      <table style="margin-top:6px"><tr><th>Material</th><th>XY</th><th>Z</th><th>Stiffness</th><th>Density</th><th>Price</th></tr>${M.map(m => `<tr><td>${m.source ? `<a href="${esc(m.source)}" target="_blank" rel="noopener">${esc(m.key)}</a>` : esc(m.key)}</td>
-        <td class="num">${num(m.xy_mpa)}</td><td class="num">${num(m.z_mpa)}</td><td class="num">${m.modulus_mpa != null ? (m.modulus_mpa / 1000).toFixed(1) + " GPa" : "–"}</td><td class="num">${num(m.density, 2)}</td><td class="num">${m.usd_per_kg != null ? "$" + m.usd_per_kg + "/kg" : "–"}</td></tr>`).join("")}</table>
-      <p class="note">Strength in MPa from each material's data sheet (linked): XY along the printed layers, Z across them (layers are the weak direction). Stiffness = how much it bends under load. "Try" re-runs every strength check, the weight and the cost with the new materials.</p></details>
-  </div>`;
+  const num = (v, digits = 0) => v == null ? "–" : (+v).toFixed(digits);
+  return `<section class="tune-materials"><div class="tune-section-heading"><h3>Printed materials</h3><p class="note">Material data describes the material, not the strength of this part.</p></div>
+    ${ids.map((id,i) => { const cur = S.medits[id] || pm[id], m = byKey[cur] || {};
+      return `<div class="tune-material ${id in S.medits ? "changed" : ""}" data-material-id="${esc(id)}"><div class="tune-material-choice"><label for="tune-material-${i}">${esc(id.replace(/_/g," "))}</label><select id="tune-material-${i}" onchange="setMat(this.closest('[data-material-id]').dataset.materialId, this.value)" ${st.busy ? "disabled" : ""}>${M.map(m => `<option value="${esc(m.key)}" ${m.key === cur ? "selected" : ""}>${esc(m.key)}</option>`).join("")}</select></div>
+      <div class="tune-saved"><span>Saved: ${esc(pm[id])}</span>${id in S.medits ? `<button aria-label="Undo material for ${esc(id.replace(/_/g," "))}" onclick="setMat(this.closest('[data-material-id]').dataset.materialId)" ${st.busy ? "disabled" : ""}>Undo</button>` : ""}</div>
+      <dl class="tune-material-data"><div><dt>Strength along / across layers</dt><dd>${num(m.xy_mpa)} / ${num(m.z_mpa)} MPa</dd></div><div><dt>Density</dt><dd>${num(m.density, 2)} g/cm³</dd></div></dl></div>`; }).join("")}
+    <details class="tune-material-catalog"><summary>Compare material data and sources</summary><div class="tune-table" role="region" aria-label="Material data" tabindex="0"><table><tr><th>Material</th><th>XY (MPa)</th><th>Z (MPa)</th><th>Stiffness</th><th>Density (g/cm³)</th><th>Price</th></tr>${M.map(m => `<tr><td>${m.source ? `<a href="${esc(m.source)}" target="_blank" rel="noopener">${esc(m.key)}</a>` : esc(m.key)}</td><td class="num">${num(m.xy_mpa)}</td><td class="num">${num(m.z_mpa)}</td><td class="num">${m.modulus_mpa != null ? (m.modulus_mpa / 1000).toFixed(1) + " GPa" : "–"}</td><td class="num">${num(m.density, 2)}</td><td class="num">${m.usd_per_kg != null ? "$" + m.usd_per_kg + "/kg" : "–"}</td></tr>`).join("")}</table></div>
+      <p class="note">XY runs along the printed layers; Z runs across them. Stiffness describes resistance to bending. Density is mass per volume, not part weight. Try recalculates weight and cost and runs enabled checks; paused strength checks remain unproven.</p></details></section>`;
 }
-function setMat(id, v) { if (v === (S.detail.part_materials || {})[id]) delete S.medits[id]; else S.medits[id] = v; renderTab(); }
+function setMat(id, v) {
+  if (tuneState().busy) return;
+  if (v === undefined || v === (S.detail.part_materials || {})[id]) delete S.medits[id]; else S.medits[id] = v;
+  tuneState().notice = null; renderTab();
+  [...document.querySelectorAll('[data-material-id]')].find(e=>e.dataset.materialId === id)?.querySelector('select').focus();
+}
 function massRow(d, tr) {
   const a = (d.summary_numbers || {}).filament_g, b = tr.mass && tr.mass.printed_g;
   if (a == null || b == null) return "";
@@ -1239,7 +1319,7 @@ const TOUR = {
          ["#tabs", "Each tab shows one side of the design."]],
   model: [["#mainviewer", "The 3D model. Drag to spin it, scroll to zoom. Use the buttons on it to cut it open or colour the stress."]],
   tune: [[".param", "Move a slider to change a measurement. Under it: which parts and checks it changes."],
-         [".grid2 .primary", "Try these values: Kerf rebuilds a copy and re-checks it, and your design stays untouched until you Save."]],
+         [".tune-actions .primary", "Try these values: Kerf rebuilds a copy and re-checks it, and your design stays untouched until you Save."]],
   results: [[".summary", "The score: how many engineering checks pass and how many are close to their limit."], [".issue", "Something to fix, explained: what is wrong, why it matters, what usually fixes it."],
             [".cert", "This build’s recorded checks and review status. Read these before making the design."], ["table", "Each row is a number the design must meet. The bar shows how much room is left. Hover a name for what it means."]],
   files: [[".files h3", "Everything you need to make it. Print plates go straight to the printer."]],
