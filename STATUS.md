@@ -1381,3 +1381,21 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Restarted Kerf Studio with no running jobs. Native UI verified insert location, Replay installation, step navigation and the second step's M3 shoulder-screw location. Installed source hashes and all 20 pre-existing modified project files still match after restart.
 - Desktop/phone captures reviewed in one correction pass plus confirmation: clearer local replay, reduced duplicate copy, moved label off tool contact and phone step controls away from target. These are schematic installation demonstrations, not physical assembly validation. Unknown unrecorded pin seats remain explicitly unavailable; older projects gain new missing metadata on future builds.
 - Backup: ~/Library/Application Support/KerfStudio/backups/20261102-230847-assembly-guide. Integration proof and recovery/install manifests: .cache/assembly-guide-integration/.
+
+## 2026-11-02 — Build it reading, replay and keyboard flow (Codex, round2-assembly)
+- Written operation order now precedes location controls. Insert and shoulder-screw explanations remain visible
+  beside the selected hardware. The end of the guide distinguishes user-marked completion from physical proof.
+- Replay step runs the saved operation sequence; Replay installation demonstrates only the selected location.
+  Stop walkthrough cancels and disposes its active scene. Pending local replays cannot overtake a newer scene.
+  Native completion toggles, named/current step navigation, preserved focus and control-aware shortcuts make the
+  same flow work by keyboard. Action pause/resume requests redraw for the parallel viewer scheduler update.
+- Focused selection: new assembly-flow browser regression plus existing placements and Build it regressions,
+  **3 passed in 27.93s**. Final assembly-flow source (focus retention and pause/resume wakeup included):
+  **1 passed in 9.80s**. A first artifact-only rerun failed because its requested temporary parent did not exist;
+  creating the ignored cache directory resolved setup without changing checks. Desktop/light 1440x960 and
+  phone/dark/reduced-motion 390x844 captures reviewed once; no overflow or JavaScript errors. Final evidence:
+  `.cache/assembly-round2-tests/test_assembly_reading_replays_0/{desktop,phone}.png`.
+- Detector reports only the incumbent global type-size hierarchy warning. No project files, geometry, catalog,
+  review.json, full suite, FEA, live jobs or installed-app changes. Saved offsets remain illustrative: this patch
+  does not validate insertion-path collisions, assembly feasibility or tool access; the integration owner has
+  the exact producer/animation limitations for the separately requested physical-path follow-up.
