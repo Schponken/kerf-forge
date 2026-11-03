@@ -37,7 +37,6 @@ def build(ctx):
 
     for y in p.STRAND_Y:
         tab = _box(X_HOOK - TAB_D, X_HOOK, y - TAB_W / 2, y + TAB_W / 2, p.Z_BOT - 5.5, z_plate + 0.01)
-        tab = chamfer(tab.edges().filter_by(Axis.Y).group_by(Axis.Z)[0].group_by(Axis.X)[0], 1.0) if False else tab
         body += ctx.add(tab, why="open hook tab: a strand-end loop drops over it from below and bears on its front face at x=30", kind="hook")
 
     # why: QR pin through the anchor, same group as the rack hole of the current notch

@@ -2,8 +2,8 @@
  "item": "`hawk_wing` \u2014 ~1 m swing-wing FPV plane, outboard-pivot sweep on a fixed glove (F-14 style), conventional tail, wings spread on failsafe, field-swappable panels (Studio request 2026-11-02, picked option 0): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS",
  "session": "89febfe77c",
  "since": 1793664637.410202,
- "heartbeat": 1793668759.723694,
+ "heartbeat": 1793668838.080273,
  "provider": "Claude Code",
  "since_utc": "2026-11-03 00:10",
- "activity": "Anchor/rack and hinge blocks coming in (WIP)"
+ "activity": "Anchor, bipod, feet coming in (WIP)"
 }
