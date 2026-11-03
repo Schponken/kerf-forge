@@ -1221,3 +1221,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   and glossary suites were not repeated; their prior results are above. Browser-marker warning remains on base.
 - No new dependencies, live jobs, geometry, stress simulation or full batch. Full batch remains HELD. This changes
   the shared definition layer used by project text; controls and code retain their existing exclusion from wrapping.
+
+## 2026-11-02 — Active job and decision story (Codex)
+- Active jobs lead with the reported action, provider, state and measured elapsed time. Removed invented percent
+  progress and phase-completion inferences; remaining build stages come from the recorded start event, while
+  agent work explicitly says when its remaining work is unreported. Notes, actions, stages and logs expand on demand.
+- The decision trail keeps source links, findings, options and reasons in native disclosures. Paused, failed and
+  stopped jobs no longer appear finished; steering notes show queued/received acknowledgements. Polling preserves
+  drafts, disclosure state and keyboard focus; refresh errors retain the last evidence.
+- Job.info adds its existing agent identity; thoughtweb adds authoritative job state. No provider/process lifecycle
+  changes. Cancellation controls and error logs are preserved.
+- Verification: 11 selected pure job/thoughtweb tests passed; tests/test_job_story.py all 7 passed in 48.95 s, using
+  static fixtures only at 1440/390 px in light/dark themes. Captures visually reviewed in .cache/job-story/confirmation.
+  Shared venv requires PYTHONPATH=$PWD. The browser marker is unregistered on this base (warning only).
+- No live app, real agent job, geometry/build, full batch or stress simulation run. Parent integration owns the new
+  shell; these captures show this branch's inherited shell around the revised job surfaces.

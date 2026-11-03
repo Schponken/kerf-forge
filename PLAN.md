@@ -316,3 +316,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Studio making handoff: task-based Files & guides, build provenance and purchased-parts clarity, accessible file disclosures, truthful missing/unproven states; fixture browser coverage.
 
 - [x] Studio History redesign: readable saved-build story, honest comparisons and intentional parameter restore.
+
+- [x] Active job story redesign: concise current action and recorded stages, expandable research and decision evidence, accessible steering acknowledgements; fixture-only browser checks.
