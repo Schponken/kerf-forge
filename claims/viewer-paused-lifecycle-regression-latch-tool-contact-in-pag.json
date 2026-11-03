@@ -1,0 +1,9 @@
+{
+ "item": "Viewer paused-lifecycle regression: latch tool contact in-page at normal speed so combined runs retain exact pause/idle/resume coverage",
+ "session": "codex-round2-viewer-pause-test",
+ "since": 1793680175.539365,
+ "heartbeat": 1793680175.539365,
+ "provider": "Codex",
+ "thread_id": "01a19f9d-ffbf-7bf3-8d71-ca2d15a910bc",
+ "since_utc": "2026-11-03 04:29"
+}
