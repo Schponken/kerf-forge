@@ -329,6 +329,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .briefing-main{padding-top:6px}.briefing-main #description-label{display:block;font-size:18px;font-weight:600;margin:28px 0 12px;line-height:1.4}
 .briefing .request-kind{display:flex;align-items:center;gap:12px;font-size:13px;margin:0}.briefing .request-kind select{width:auto;max-width:100%}
 .briefing #ndesc{min-height:220px;font-size:20px;line-height:1.55;padding:20px;background:var(--panel);border-radius:12px}
+.briefing-draft-note{margin:0 0 20px}.briefing-draft-note button{padding:0;margin-left:8px;background:none;border:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font:inherit}
 .briefing p{max-width:72ch}.briefing #briefing-hint{margin:10px 0 20px}
 .briefing summary{cursor:pointer;line-height:1.5}.briefing :is(button,summary,a,select):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .briefing-examples{font-size:13px;color:var(--muted)}.briefing .examples{margin-bottom:0}
@@ -631,7 +632,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .tune-draft{position:sticky;top:16px;border-top:2px solid var(--ink);padding-top:17px}.tune-draft-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}.tune-draft-head>span{font-size:12px;color:var(--muted)}.tune-ledger{list-style:none;padding:0;margin:0 0 20px}.tune-ledger li{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}.tune-ledger li>span{min-width:0;overflow-wrap:anywhere}.tune-ledger li>span:last-child{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;max-width:55%;font-family:var(--mono)}.tune-ledger s{color:var(--muted);font-size:12px;text-decoration-thickness:1px}.tune-ledger b{font-weight:600}
 .tune-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}.tune-actions button{white-space:normal;border-radius:8px;min-height:44px}.tune-workbench button.primary{background:var(--accent);color:var(--accent-ink);box-shadow:none}.tune-actions .tune-discard{grid-column:1/-1;background:none;border:0;padding:6px;min-height:32px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}.tune-workbench button:disabled{cursor:default;transform:none}.tune-workbench :is(summary,a){cursor:pointer}.tune-save-help{margin-top:15px;font-size:13px}.tune-workbench summary{line-height:1.6;padding:6px 0}.tune-action-guide{margin:10px 0 0;font-size:12px}.tune-action-guide>div{display:grid;grid-template-columns:36px 1fr;gap:8px;margin:10px 0}.tune-action-guide dt{font-weight:650}.tune-action-guide dd{margin:0;color:var(--muted)}.tune-workbench .tune-limit{margin-top:14px;font-size:12px}.tune-workbench .tune-notice{margin:14px 0;line-height:1.5}
 .tune-materials{margin-top:26px}.tune-material{border-top:1px solid var(--line);padding:18px 0}.tune-material-choice{display:flex;align-items:center;justify-content:space-between;gap:16px}.tune-material-choice label{font-size:15px;font-weight:600;overflow-wrap:anywhere}.tune-material-choice select{min-height:44px;border-radius:8px;max-width:55%}.tune-material.changed label{color:var(--accent)}.tune-material-data{display:flex;flex-wrap:wrap;gap:10px 28px;margin:10px 0 0}.tune-material-data dt{font-size:12px;color:var(--muted)}.tune-material-data dd{margin:3px 0 0;font:13px var(--mono)}.tune-material-catalog{border-top:1px solid var(--line);padding-top:8px;font-size:13px}.tune-material-catalog p{margin-top:12px;max-width:65ch}
-.tune-results{margin-top:42px;padding-top:24px;border-top:1px solid var(--line)}.tune-trial-context{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;font-size:13px}.tune-trial-context b{font-size:15px}.tune-trial-context span:last-child{color:var(--muted);font-size:12px}.tune-tried-values{font-size:13px;margin-bottom:16px}.tune-tried-values dl{max-width:640px;margin:6px 0 16px}.tune-tried-values dl>div{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding:7px 0}.tune-tried-values dd{margin:0;font-family:var(--mono)}.tune-compare-toggle{display:flex;gap:10px;align-items:flex-start;font-size:13px;margin:0 0 12px}.tune-compare-toggle input{width:auto;flex:none;margin-top:3px}.tune-results iframe.viewer{height:440px;border-radius:8px}.tune-comparison,.tune-problems{margin-top:24px}.tune-workbench h4{font-size:15px;margin-bottom:10px}.tune-table{max-width:100%;overflow:auto}.tune-table table{min-width:620px}.tune-requirements{margin-top:18px;font-size:14px}.tune-empty{padding:22px 0;max-width:65ch}.tune-empty p+p{margin-top:8px}
+.tune-results{margin-top:42px;padding-top:24px;border-top:1px solid var(--line)}.tune-trial-context{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;font-size:13px}.tune-trial-context b{font-size:15px}.tune-trial-context span:last-child{color:var(--muted);font-size:12px}.tune-tried-values{font-size:13px;margin-bottom:16px}.tune-tried-values button{min-height:44px}.tune-tried-values dl{max-width:640px;margin:6px 0 16px}.tune-tried-values dl>div{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding:7px 0}.tune-tried-values dd{margin:0;font-family:var(--mono)}.tune-compare-toggle{display:flex;gap:10px;align-items:flex-start;font-size:13px;margin:0 0 12px}.tune-compare-toggle input{width:auto;flex:none;margin-top:3px}.tune-results iframe.viewer{height:440px;border-radius:8px}.tune-comparison,.tune-problems{margin-top:24px}.tune-workbench h4{font-size:15px;margin-bottom:10px}.tune-table{max-width:100%;overflow:auto}.tune-table table{min-width:620px}.tune-requirements{margin-top:18px;font-size:14px}.tune-empty{padding:22px 0;max-width:65ch}.tune-empty p+p{margin-top:8px}
 @media(max-width:1050px){.tune-layout.grid2{gap:28px;grid-template-columns:minmax(0,1.25fr) minmax(260px,1fr)}}
 @media(max-width:700px){.tune-layout.grid2{grid-template-columns:minmax(0,1fr);gap:28px}.tune-draft{position:static;grid-row:1}.tune-intro{padding-bottom:22px}.tune-intro h2{font-size:22px}.tune-workbench .param .rng{gap:12px}.tune-number input{width:92px}.tune-workbench .param .top{align-items:flex-start}.tune-workbench .param .key{font-size:10px}.tune-results{margin-top:28px}.tune-results iframe.viewer{height:340px}.tune-workbench .affects{gap:10px}.tune-material-data{gap:10px 20px}}
 
@@ -1357,8 +1358,8 @@ function renderTune(el) {
     </div>
     <section class="tune-results" aria-label="Trial results"><div class="tune-section-heading"><h3>${tr ? "Last completed try" : "Try a version"}</h3><p class="note">${tr ? "Recorded results, not a live preview. Editing values does not update this model or its checks." : "A separate model and its check results will appear here after a try finishes."}</p></div>
       ${tr ? `<div class="tune-trial-context"><b>${tr.ok ? "Recorded checks passed" : (tr.problems || []).length ? `${tr.problems.length} recorded problem${tr.problems.length === 1 ? "" : "s"}` : "No passing result recorded"}</b><span id="tune-trial-match">${tuneTrialMatch() ? "Same parameter and material values as entered above." : "Different or unrecorded values from the edits above."}</span><span>Enabled checks only. Paused checks provide no evidence of strength.</span></div>
-      <details class="tune-tried-values"><summary>Values used for this try</summary><dl>${Object.entries(tr.params || {}).map(([k,v]) => `<div><dt>${esc(d.params.find(p => p.key === k)?.label || k)}</dt><dd>${tuneValue(v,d.params.find(p => p.key === k)?.unit)}</dd></div>`).join("")}${Object.entries(tr.materials || {}).filter(([,v])=>v).map(([k,v])=>`<div><dt>${esc(k.replace(/_/g," "))}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></details>
-      <label class="tune-compare-toggle"><input type="checkbox" id="trialcmp" ${S.noTrialCmp ? "" : "checked"} onchange="S.noTrialCmp=!this.checked;renderTab()"> Show saved design as a ghost; colour the changes in this try</label>
+      <details class="tune-tried-values"><summary>Values used for this try</summary><dl>${Object.entries(tr.params || {}).map(([k,v]) => `<div><dt>${esc(d.params.find(p => p.key === k)?.label || k)}</dt><dd>${tuneValue(v,d.params.find(p => p.key === k)?.unit)}</dd></div>`).join("")}${Object.entries(tr.materials || {}).filter(([,v])=>v).map(([k,v])=>`<div><dt>${esc(k.replace(/_/g," "))}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl><button onclick="useTrialValues()" ${st.busy ? "disabled" : ""}>Use these values as a draft</button><p class="note">Loads recorded measurements and materials for review. It does not save or rerun this try.</p></details>
+      <label class="tune-compare-toggle"><input type="checkbox" id="trialcmp" ${S.noTrialCmp ? "" : "checked"} onchange="S.noTrialCmp=!this.checked;renderTab()"> Show saved build as a ghost; colour the changes in this try</label>
       <iframe class="viewer" title="Model from the last completed try" id="trialviewer" onload="trialLoaded(this)" src="/trial/${d.name}/out/viewer.html?t=${Date.now()}"></iframe>
       ${(tr.problems || []).length ? `<div class="tune-problems"><h4>Problems in this try</h4><ul class="msgs">${tr.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
       <div class="tune-comparison"><h4>Tried vs saved build</h4>${d.stale ? `<p class="note">The saved build is from an earlier design version.</p>` : ""}${massRow(d, tr)}<div class="tune-table" role="region" aria-label="Trial comparison" tabindex="0">${compareTable(d.report && d.report.requirements, tr.requirements)}</div></div>
@@ -1371,23 +1372,26 @@ function plainChecks(ids) {   // requirement ids -> their plain check names (ker
   const R = Object.fromEntries(((S.detail.report || {}).requirements || []).map(r => [r.id, r.check]));
   return [...new Set(ids.map(i => R[i] ? glossCheck(R[i]).name : i))];
 }
-function better(r, a, b) {   // did a requirement's value move the good way? (by its bound; a range: toward its middle)
+function better(r, a, b) {   // A range has no preferred point unless the design records one.
   if (a == null || b == null || Math.abs(b - a) < 1e-9) return 0;
   if (r.bound === "max") return b < a ? 1 : -1;
   if (r.bound === "min") return b > a ? 1 : -1;
-  if (r.bound === "range" && Array.isArray(r.limit) && r.limit.every(x => typeof x === "number")) {
-    const mid = (r.limit[0] + r.limit[1]) / 2; return Math.abs(b - mid) < Math.abs(a - mid) ? 1 : -1; }
   return 0;
 }
-function compareTable(saved, tried) {   // the saved build's result next to the tried one, per requirement
+function compareTable(saved, tried) {   // Compare only results for the same recorded requirement definition.
   if (!tried || !tried.length) return `<p class="note">No requirement results for the try.</p>`;
   const sv = Object.fromEntries((saved || []).map(r => [r.id, r]));
-  return `<table><tr><th>Requirement</th><th>Saved</th><th>Tried</th><th>Change</th><th>In plain words</th></tr>${tried.filter(r => !r.skipped).map(r => {
-    const s = sv[r.id], a = s && typeof s.value === "number" ? s.value : null, b = typeof r.value === "number" ? r.value : null;
-    const dlt = a != null && b != null ? b - a : null, u = r.unit ? " " + esc(r.unit) : "", g = better(r, a, b);
-    const say = !s || dlt == null || Math.abs(dlt) < 1e-9 ? "no change" : s.ok && !r.ok ? "now fails" : !s.ok && r.ok ? "now passes" : g > 0 ? "better" : g < 0 ? (r.ok ? "worse, still passes" : "worse") : "changed";
-    return `<tr><td><b title="${esc(glossCheck(r.check).means)}">${esc(glossCheck(r.check).name)}</b> <span class="why">${esc(r.id)}</span></td><td class="num">${s ? fmt(s.value) + u + (s.ok ? "" : " ✗") : "–"}</td>
-      <td class="num">${fmt(r.value)}${u}${r.ok ? "" : " ✗"}</td>
+  const result = r => !r ? "Not recorded" : r.skipped ? "Not run" : `${fmt(r.value)}${r.unit ? " " + esc(r.unit) : ""}${r.ok === false ? " ✗" : ""}`;
+  return `<table><tr><th>Requirement</th><th>Saved</th><th>Tried</th><th>Change</th><th>In plain words</th></tr>${tried.map(r => {
+    const s = sv[r.id], same = s && ["check", "unit", "bound", "limit"].every(k => JSON.stringify(s[k]) === JSON.stringify(r[k]));
+    const numeric = same && !s.skipped && !r.skipped && Number.isFinite(s.value) && Number.isFinite(r.value);
+    const dlt = numeric ? r.value - s.value : null, u = r.unit ? " " + esc(r.unit) : "", g = numeric ? better(r, s.value, r.value) : 0;
+    const say = r.skipped ? "try not run" : !s ? "no saved result" : s.skipped ? "saved check not run" : !same ? "requirement changed" :
+      s.ok === true && r.ok === false ? "now fails" : s.ok === false && r.ok === true ? "now passes" :
+      dlt == null ? (JSON.stringify(s.value) === JSON.stringify(r.value) ? "no change" : "no numeric comparison") :
+      Math.abs(dlt) < 1e-9 ? "no change" : g > 0 ? "better" : g < 0 ? (r.ok ? "worse, still passes" : "worse") : "changed";
+    return `<tr><td><b title="${esc(glossCheck(r.check).means)}">${esc(glossCheck(r.check).name)}</b> <span class="why">${esc(r.id)}</span></td><td class="num">${result(s)}</td>
+      <td class="num">${result(r)}</td>
       <td class="num">${dlt == null || Math.abs(dlt) < 1e-9 ? "–" : `<span class="fxa ${g > 0 ? "up" : g < 0 ? "down" : ""}">${dlt > 0 ? "▲" : "▼"}</span> ${dlt > 0 ? "+" : ""}${fmt(dlt)}${u}`}</td>
       <td><span class="fxs ${say === "now fails" || say === "worse" ? "down" : say === "now passes" || say === "better" ? "up" : say.startsWith("worse") ? "meh" : ""}">${say}</span></td></tr>`; }).join("")}</table>`;
 }
@@ -1422,6 +1426,25 @@ function resetTune(key) {
   else { S.edits = {}; S.medits = {}; }
   renderTab();
   if (key !== undefined) [...document.querySelectorAll('[data-tune-key]')].find(e => e.dataset.tuneKey === key)?.querySelector('.tune-number input').focus();
+}
+function useTrialValues() {
+  if (tuneState().busy || !S.detail.trial) return;
+  if (tuneDraftCount() && !confirm("Replace your unsaved Tune changes with the recorded try values? Your saved design will stay as it is.")) return;
+  const d = S.detail, tr = d.trial;
+  S.edits = {}; S.medits = {};
+  let unavailable = 0;
+  for (const [key, value] of Object.entries(tr.params || {})) {
+    if (!d.params.some(p => p.key === key) || !Number.isFinite(value)) { unavailable++; continue; }
+    setParam(key, value);
+  }
+  for (const [id, value] of Object.entries(tr.materials || {})) {
+    if (!Object.hasOwn(d.part_materials || {}, id) || !(d.materials || []).some(m => m.key === value)) { unavailable++; continue; }
+    if (value !== d.part_materials[id]) S.medits[id] = value;
+  }
+  tuneState().notice = {text:`Recorded try values loaded for review. They have not been saved.${unavailable ? ` ${unavailable} recorded value${unavailable === 1 ? " is" : "s are"} unavailable in this design and could not be loaded.` : ""}`};
+  renderTab();
+  const target = document.querySelector('.tune-number input[aria-invalid="true"]') || document.querySelector('.tune-draft h3');
+  if (target) { if (target.tagName === "H3") target.tabIndex = -1; target.focus(); }
 }
 async function tryParams() {
   const st = tuneState(), project = S.sel;
@@ -2084,12 +2107,31 @@ function burst() {
 /* ---------- new design */
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
+function briefValues() {
+  return Object.fromEntries([...document.querySelectorAll('#new-request input, #new-request select, #new-request textarea')].filter(el => el.id !== "quote-answers").map(el => [el.id, el.value]));
+}
+function saveBriefDraft() {
+  if (!$("#ndesc")) return;
+  S.briefRevision = (S.briefRevision || 0) + 1;
+  S.briefDraft = {fields: briefValues(), touched: !!$("#nname").dataset.touched, quoteName: S.quote ? S.quoteName : null, answers: $("#quote-answers")?.value || ""};
+  try { sessionStorage.setItem("kerf-brief-draft", JSON.stringify(S.briefDraft)); } catch (_) { /* Keep the in-memory draft when browser storage is unavailable. */ }
+}
+function clearBrief() {
+  if (!confirm("Clear this brief and its answers? Saved design options will still be available.")) return;
+  S.briefDraft = null;
+  try { sessionStorage.removeItem("kerf-brief-draft"); } catch (_) {}
+  showNew(); $("#ndesc").focus();
+}
 function showNew() {
   if (!canLeaveProject()) return;
   closeShell(false);
+  let draft = S.briefDraft;
+  if (!draft) { try { draft = JSON.parse(sessionStorage.getItem("kerf-brief-draft")); } catch (_) {} }
+  S.briefRevision = (S.briefRevision || 0) + 1;
   S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.work = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head briefing-head"><h1>What would you like to make?</h1><p class="desc">Start with an object you have in mind, or a problem you want to solve.</p></div>
     <div class="body new briefing">
+      <p class="note briefing-draft-note">Your brief is kept in this tab. <button onclick="clearBrief()">Clear brief</button></p>
       <div id="ready"></div>
       <div id="quotesready"></div>
       <div id="new-request" class="briefing-workspace">
@@ -2098,7 +2140,7 @@ function showNew() {
           <label id="description-label" for="ndesc">Describe what you have in mind.</label>
           <textarea id="ndesc" placeholder="A compact desk arm that holds my camera above the workbench…" oninput="autoname()" aria-describedby="briefing-hint"></textarea>
           <p class="note" id="briefing-hint">What should it do? Include sizes or parts you already own if they matter.</p>
-          <details class="briefing-examples"><summary>Need a starting point?</summary><div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote();$('#ndesc').focus()">${esc(x)}</button>`).join("")}</div></details>
+          <details class="briefing-examples"><summary>Need a starting point?</summary><div class="examples">${EXAMPLES.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote();saveBriefDraft();$('#ndesc').focus()">${esc(x)}</button>`).join("")}</div></details>
           <div class="scenario-fields" id="scenario-fields" hidden>
             <label>What would success look like?<input id="i_success" placeholder="Keep six plants watered while I am away for 10 days"></label>
             <label>What matters most?<select id="i_priority"><option value="">Help me weigh the trade-offs</option><option>Reliability and low maintenance</option><option>Lowest total cost</option><option>Ready as soon as possible</option><option>Learning and customization</option></select></label>
@@ -2136,7 +2178,14 @@ function showNew() {
         <section id="quote" class="briefing-comparison" aria-label="Design options" aria-live="polite"></section>
       </div>
     </div>`;
-  for (const event of ["input", "change"]) $("#new-request").addEventListener(event, e => { if (!e.target.closest("#quote")) invalidateQuote(); });
+  for (const [id, value] of Object.entries(draft?.fields || {})) { const el = document.getElementById(id); if (el?.closest("#new-request") && typeof value === "string") el.value = value; }
+  if (draft?.touched) $("#nname").dataset.touched = 1;
+  setRequestKind();
+  for (const event of ["input", "change"]) $("#new-request").addEventListener(event, e => {
+    if (!e.target.closest("#quote")) invalidateQuote();
+    saveBriefDraft();
+  });
+  if (draft?.quoteName) showQuote(draft.quoteName, null, draft.answers || "");
   checkReady();
   listQuotes();
 }
@@ -2156,16 +2205,20 @@ async function listQuotes() {
 async function openQuote(name) {
   if (!S.newOpen || !$("#ndesc")) showNew();
   if (!S.newOpen || !$("#ndesc")) return;   // leaving a project may be cancelled
-  const request = $("#new-request");
+  const request = $("#new-request"), revision = S.briefRevision;
+  const ticket = S.quoteTicket = (S.quoteTicket || 0) + 1;
   let q; try { q = await api(`/api/quote/${name}`); } catch (e) { return toast("No options yet", e.message, "bad"); }
-  if (!S.newOpen || request !== $("#new-request")) return;
+  if (!S.newOpen || request !== $("#new-request") || ticket !== S.quoteTicket) return;
+  if (revision !== S.briefRevision) { toast("Brief kept", "You edited the brief while those options loaded. Open them again when you are ready.", "warn"); return; }
+  const hasBrief = Object.entries(briefValues()).some(([id, value]) => value.trim() && value !== ({i_printer:"Bambu Lab A2L", i_material:"PETG"}[id] || ""));
+  if ((hasBrief || $("#quote-answers")?.value.trim()) && (!quoteMatches(q, name) || (!q.context && q.request !== $("#ndesc").value.trim()) || $("#quote-answers")?.value.trim()) && !confirm("Replace this brief and its answers with the saved request for these options?")) return;
   $("#nname").value = name; $("#nname").dataset.touched = 1;
   if (q.context) {
     $("#ndesc").value = q.context.description || "";
     for (const input of document.querySelectorAll('#new-request [id^="i_"]')) input.value = (q.context.intake || {})[input.id.slice(2)] || "";
     setRequestKind();
   } else if (q.request) $("#ndesc").value = q.request;   // an older run kept no copy of the request: start from its summary
-  await showQuote(name);
+  await showQuote(name, q);
   if (!S.newOpen || request !== $("#new-request")) return;
   if (!q.context) { const el = $("#quote"); if (el) el.insertAdjacentHTML("afterbegin", `<div class="banner warn">This options run is from before Studio kept a copy of your exact request, so its summary is filled in above. Check it says what you want, then choose.</div>`); }
   const el = $("#quote"); if (el) el.scrollIntoView({behavior: "smooth", block: "start"});
@@ -2182,7 +2235,7 @@ function setRequestKind() {
   $("#briefing-hint").textContent = scenario ? "Describe the situation. You don't need to know the solution yet." : "What should it do? Include sizes or parts you already own if they matter.";
   $("#nquote").textContent = scenario ? "Compare ways to solve it" : "Compare design options";
   const examples = scenario ? ["my plants die when I travel", "I need steady aerial shots of my trail runs", "my desk cables keep falling behind the table"] : EXAMPLES;
-  $(".new .examples").innerHTML = examples.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote();$('#ndesc').focus()">${esc(x)}</button>`).join("");
+  $(".new .examples").innerHTML = examples.map(x => `<button onclick="$('#ndesc').value=this.textContent;autoname();invalidateQuote();saveBriefDraft();$('#ndesc').focus()">${esc(x)}</button>`).join("");
 }
 function autoname() {
   const n = $("#nname"); if (n.dataset.touched) return;
@@ -2201,11 +2254,12 @@ async function startQuote() {
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
   toast("Couldn't start", j.error || r.statusText, "bad");
 }
-async function showQuote(name) {
+async function showQuote(name, loaded = null, answers = "") {
   const el = $("#quote"); if (!el) return;
+  const ticket = S.quoteTicket = (S.quoteTicket || 0) + 1, revision = S.briefRevision;
   try {
-    const q = await api(`/api/quote/${name}`);
-    if (!S.newOpen || el !== $("#quote")) return;
+    const q = loaded || await api(`/api/quote/${name}`);
+    if (!S.newOpen || el !== $("#quote") || ticket !== S.quoteTicket || revision !== S.briefRevision) return;
     S.quote = q; S.quoteName = name;
     if (q.context && !$("#ndesc").value.trim()) {
       $("#ndesc").value = q.context.description;
@@ -2228,7 +2282,9 @@ async function showQuote(name) {
       ${(o.sources || []).length ? `<details class="briefing-sources" ${o.route === "buy" ? "open" : ""}><summary>Research sources <span>${o.sources.length}</span></summary><ul>${o.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a><span class="source-note">${esc(s.finding)}</span></li>`).join("")}</ul></details>` : ""}
       <div class="briefing-option-action">${o.route === "buy" ? `<p class="note">Check the research links for availability. Kerf does not place an order.</p>` : `<button ${i === q.recommended ? 'class="primary"' : ""} onclick="startNew(${i})" ${!matches || questions.length ? "disabled" : ""}>${o.route === "adapt" ? "Adapt this option" : "Design this one"}</button>`}</div></article>`).join("")}</div>
       ${(q.assumptions || []).length ? `<details class="briefing-assumptions"><summary>Assumptions behind this comparison</summary><ul>${q.assumptions.map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>` : ""}`;
-  } catch (e) { if (el === $("#quote")) el.innerHTML = `<div class="banner bad">No options yet: ${esc(e.message)}</div>`; }
+    if ($("#quote-answers")) { $("#quote-answers").value = answers; $("#quote-refine").disabled = !answers.trim(); }
+    saveBriefDraft();
+  } catch (e) { if (el === $("#quote") && ticket === S.quoteTicket && revision === S.briefRevision) el.innerHTML = `<div class="banner bad">No options yet: ${esc(e.message)}</div>`; }
 }
 function refineQuote() {
   const answers = $("#quote-answers").value.trim();
@@ -2236,6 +2292,7 @@ function refineQuote() {
   const notes = $("#i_notes"), questions = (S.quote.questions || []).join("\n");
   notes.value = [notes.value.trim(), `Clarification:\n${questions}\n${answers}`].filter(Boolean).join("\n\n");
   invalidateQuote();
+  saveBriefDraft();
   startQuote();
 }
 async function startNew(opt) {
@@ -2532,12 +2589,14 @@ function workTask(item,index) {
   const identity = !item.chat_id && !item.job_id && item.session ? readable(item.session) ? `Owner ${item.session}` : "Assigned session" : "";
   const inputLink = state==="waiting" && link, inputJob = state==="waiting" && !link && item.job_id;
   const genericWait = state==="waiting" && item.attention==="This session is waiting for your input.";
+  const ownerUpdate = item.activity_source === "claim" || item.source === "claim";
+  const age = workAge(item.updated_at);
   return `<article id="${focusId}-card" tabindex="-1" class="work-item" data-work-item="${esc(detailId)}">
     <div class="work-item-top"><div class="work-item-title"><h2>${esc(item.title || "Untitled work")}</h2>
       <div class="work-owner"><b>${esc(item.provider || "Session")}</b>${identity ? `<span>${esc(identity)}</span>` : ""}<span>${esc(projects.map(p=>p.title || p.name).join(" · ") || "Kerf Studio")}</span></div>
       ${owners.length ? `<p class="work-claim-owners">${owners.length} owner${owners.length===1 ? "" : "s"}${namedOwners.length ? `: <span>${namedOwners.slice(0,2).map(esc).join(" · ")}</span>` : ""}${owners.length>2 || namedOwners.length<owners.length ? " · full ownership in details" : ""}</p>` : ""}</div>
       ${inputLink || inputJob ? `<div class="work-input-controls">` : ""}<span class="work-state ${state}">${esc(state==="claimed" ? "Assigned" : item.status_label || WORK_STATES[state])}</span>${inputLink ? `<a id="${focusId}-chat" class="btn" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open chat</a>` : inputJob ? `<button id="${focusId}-job" onclick="workAction(${index},'job')">Watch job</button>` : ""}${inputLink || inputJob ? "</div>" : ""}</div>
-    <p class="work-activity ${item.activity ? "" : "empty"}">${esc(item.activity || "No activity update has been reported for this task yet.")}</p>
+    <p class="work-activity ${item.activity ? "" : "empty"}">${ownerUpdate ? "Owner update: " : ""}${esc(item.activity || "No activity update has been reported for this task yet.")}</p>
     ${item.action && item.action !== item.activity ? `<p class="work-action">${esc(item.action)}</p>` : ""}
     ${item.attention && !genericWait ? `<p class="work-attention"><strong>${state === "paused" ? "Pause details:" : "Needs attention:"}</strong> ${esc(item.attention)}</p>` : ""}
     ${item.pause ? `<p class="work-action">${esc(workReset(item.pause.reset_at))}</p>` : ""}
@@ -2553,7 +2612,7 @@ function workTask(item,index) {
       ${item.continuation?.observed ? `<button id="${focusId}-continue" onclick="workAction(${index},'continue')">Watch continuing job</button>` : ""}
       ${projects.map((p,j)=>`<button id="${focusId}-project-${j}" onclick="workAction(${index},'project',${j})">${projects.length>1 ? esc(p.title || p.name) : "View project"}</button>`).join("")}
       ${projects.length===1 && ["running","working","claimed"].includes(state) ? `<button id="${focusId}-live" onclick="workAction(${index},'live')">Follow 3D</button>` : ""}
-    </div><span class="work-stamp">Updated ${workAge(item.updated_at)}</span></div>
+    </div><span class="work-stamp">${age === "time unavailable" ? "Update time unavailable" : `${ownerUpdate ? "Owner update" : "Updated"} ${age}`}</span></div>
     <details class="work-detail" data-work-id="${esc(detailId)}" ${S.workOpen?.has(detailId) ? "open" : ""}><summary id="${focusId}-scope">Details${claims.length ? ` · ${claims.length} assigned task${claims.length===1 ? "" : "s"}` : ""}</summary>
       ${genericWait ? `<p>${esc(item.attention)}</p>` : state==="claimed" ? `<p>Ownership is recorded; current execution is not confirmed.</p>` : ""}
       ${!known || !timed ? `<p>${completed ? state === "continued" ? "Follow the continuing job for current progress." : "Completion applies to this run, not the whole project." : `${!known ? claims.length>1 ? "Some claimed tasks have no checklist, so combined progress is unknown. " : "No completion percentage is inferred from an active session. " : ""}${!timed ? "A finish estimate will appear only when this work reports a reliable basis." : ""}`}</p>` : ""}

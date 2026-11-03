@@ -121,6 +121,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
   gussets, filleted rib roots). Re-run every FEA case; design-review PASS with scores >= 4 on these parts
 - [ ] Showcase rework, fpv_5in arm: fillet the key-ridge roots, move the wire path out of the mid-depth shear zone into
   a covered groove, skid under the motor pad; keep the deflection limit; review PASS
+  - [x] Normal-flight static load + hover-frequency screen (2026-11-02): actual 9.0517 N operating-thrust FEA, quantified resonance/mass limits, one deeper-arm candidate measured and rejected; original geometry retained. Fatigue life and resonance redesign remain unproven.
 - [ ] Every project: DESIGN.md "Load → section" table and `style` radii; each part's "overbuilt" and "sharp inside
   corner" warnings fixed or justified in DESIGN.md; pan_tilt bracket camera M2 tap holes (22 % edge ring: bosses or
   through-bolts with nuts); re-review all six with the intent scores (all >= 3). Then make a
@@ -192,14 +193,14 @@ Work these in order unless one is blocked; each item is done only with tests and
   - [ ] fpv_wing gets its use story (after its E7 owner finishes, so its review is not made stale mid-way)
 - [ ] Simulate it moving: dynamic load cases from the use story (drop / crash impulse with contact time, hard stops from joint speed and inertia, vibration: first natural frequency vs motor / prop excitation) as requirement checks with hand-calculated tests
   - [x] kerf/req_dynamic.py: impact_fea, stop_impact, natural_freq from one FEA solve's stiffness (fea.static reports f.u); story impact_case accepts impact_fea; tests/test_dynamic.py hand checks (3EI/L^3, impact formulas, end-axis inertia, KV rotor rates)
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - fpv_5in arm_resonance PASSES (now FAILS on a real finding: arm f_n 186 Hz is 7 % from the 200 Hz hover rotor rate; needs >= 20 %)
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - a project uses impact_fea and stop_impact (a surviving drop / a driven hard stop)
+  - [ ] fpv_5in arm_resonance PASSES (now FAILS on a real finding: arm f_n 186 Hz is 7 % from the 200 Hz hover rotor rate; needs >= 20 %)
+  - [ ] a project uses impact_fea and stop_impact (a surviving drop / a driven hard stop)
 - [ ] Failure modes: per-part failure table in the report (how it fails, what it takes with it, repair time); `weak_link` requirement proving the cheap part fails before the expensive one under the crash case
   - [x] kerf/failure.py: report.json `failure_modes` (governing case, use, how by print direction, bought parts it takes with it + price, screws to undo, reprint time lower bound + filament cost) in ASSEMBLY.md "If it breaks" and the review pack; `weak_link` (stress uses at the same applied force); tests/test_failure.py
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - fpv_5in `arm_breaks_first` PASSES (now FAILS on a real finding: under the arm crash event the body uses 94 % of its limit, the arm 76 %: the body would break first)
+  - [ ] fpv_5in `arm_breaks_first` PASSES (now FAILS on a real finding: under the arm crash event the body uses 94 % of its limit, the arm 76 %: the body would break first)
 - [ ] Design for life: fatigue check for flexing parts (living hinges, snap fits), creep limit for plastic under constant load, vibration rule for screws (threadlocker / nyloc / inserts), heat limit by material Tg vs the use story
   - [x] kerf/req_life.py: flex_strain (snap 1.5ty/L^2, hinge ta/2L vs 70 % yield / 50 % break strain, halved across layers, fatigue data required for cycles > 1), creep_limit (documented creep-rupture stress / SF 3; PLA point sourced), screw_locking (metal-thread groups on vibrating projects; ASSEMBLY.md lists the locking); heat limit is the use story's heat_limit (ISO 75 HDT); tests/test_life.py; fpv_5in screws_stay_put PASSES
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - creep_limit and flex_strain used by a project (needs sourced PETG creep data for a PETG constant-load part; no project has a snap fit or living hinge yet)
+  - [ ] creep_limit and flex_strain used by a project (needs sourced PETG creep data for a PETG constant-load part; no project has a snap fit or living hinge yet)
 - [x] Optimise then explain: `kerf optimise <p>` searches declared params (mass / cost / a requirement margin) within every check, writes the trade-off table; tested on a small project
 - [x] Human factors: reach / access checks from the use story (battery swap with gloves, tool access), carry and repair notes in ASSEMBLY.md
 - [x] Learn from results: `kerf feedback` takes logs / photos / notes, records what failed where, and turns repeated findings into ENGINEERING.md rules or catalog corrections (with the evidence)
@@ -293,6 +294,7 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Studio shell redesign: replace decorative visual chrome with a coherent neutral workbench identity, clear navigation and responsive control hierarchy; preserve all existing workflows and accessible controls.
 - [ ] Fresh-eyes usability pass (Spencer, 2026-11-02; IN PROGRESS in ChatGPT Codex, delivered as pull requests - Claude sessions: don't start it, review/merge its PRs instead): look at Kerf as a first-time user (README, setup, Kerf Studio every screen at desktop + phone width, viewer, CLI help and error messages, output files) for what is confusing, overwhelming or unintuitive and for likely user mistakes / failure paths (port in use, Claude not signed in, job running, dirty repo, missing build, bad input); fix each with a test, leaving the Checks tab wording, Follow live and Work tab to their claimed items (findings for those go in their sessions' STATUS notes)
   - [x] Build it placement guide: select each hardware installation site, name its receiving part, and retain exact-location and insertion-direction cues with local context; browser regression.
+  - [x] Build it reading and replay flow: prioritize written operation order, distinguish step and site replays, and preserve keyboard completion and focus across guide updates; focused browser regression.
   - [x] Studio redesign integration: combine reviewed shell, project workspace and Work clarity changes; verify user journeys, native layout and responsive states without live builds or remote merges.
   - [x] First-use studio guidance: contextual help, optional keyboard-accessible tour and glossary, evidence-aware welcome and compact readiness guidance; mocked desktop/mobile browser coverage
   - [x] Immediate word definitions: show beside every marked term on hover, focus or one tap without a menu or search
@@ -331,3 +333,25 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Build it site metadata: include catalog-backed screw-pivot heat-set insert locations once per physical site, with stable identities and exact part transforms; focused producer regressions.
 
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
+
+- [x] Round two integration: combine ten autonomous Studio/engineering improvements, verify shared behavior, and install tested application updates with preserved project edits.
+  - Hawk flight redesign remains a separate open project task in draft PR81; no failing project geometry or reports installed.
+- [x] Build cache write efficiency: serialize exact part geometry once while preserving read-back validation, atomic writes, dependency provenance and cache failure fallback; focused regression tests.
+- [x] Studio background-job recovery round 2: preserve Stop, retry failed auto-fix launches, and reap jobs after output processing fails; mocked regression tests.
+- [x] Work ownership evidence: correlate claims only with unambiguous chat identities and label owner updates separately from observed session activity; focused fixtures.
+- [x] Studio Tune round 2: honest requirement comparisons and recover recorded try values into a validated draft; fixture browser tests
+- [x] Resume strength simulations (Spencer, 2026-11-02): restore enabled policy, preserve unrelated holds, verify runtime and saved strength provenance with focused tests and one bounded real FEA solve.
+
+- [x] Work joined-activity provenance: preserve owner-update source exactly when a joined session fills a job’s missing activity; focused helper regression.
+- [x] Studio round 2 export handoff: integrate declared-source and contained-output fixes, close remaining download gaps with fixture coverage
+
+  - [x] Complete Studio source exports: preserve declared imported assets and nested design dependencies in downloaded project archives; reject missing or escaping sources without exporting caches or stale review approval.
+
+  - [x] Maker download containment: refuse linked or special generated output files so a project ZIP contains only regular files within its own output tree; preserve valid nested maker outputs and explain invalid exports.
+- [x] New design intent safety: retain tab-session brief and clarification drafts; prevent late saved-options responses from replacing newer input; focused browser regression
+- [x] Viewer smoothness round 2: stop idle frame polling, coalesce hover picking, and release comparison GPU resources; targeted lifecycle regressions
+- [x] Build it physical motion: consume sampled-clear paths in order, stage receivers before hardware, and hold unknown or blocked paths as static references; synthetic sequence and collision fixtures.
+- [x] Build it physical path evidence: check staged part approach and seat trajectories against exact CAD obstacles; expose sampled-clear, blocked and unverified states with physical limits; focused fixtures.
+- [x] Normal-operation resonance guidance: recommend frequency bands that satisfy the actual separation or min_ratio gate, including every excitation, with focused mocked checks and no FEA rerun.
+
+- [x] Viewer paused-lifecycle regression: latch tool contact in-page at normal speed so combined runs retain exact pause/idle/resume coverage

@@ -1381,3 +1381,193 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Restarted Kerf Studio with no running jobs. Native UI verified insert location, Replay installation, step navigation and the second step's M3 shoulder-screw location. Installed source hashes and all 20 pre-existing modified project files still match after restart.
 - Desktop/phone captures reviewed in one correction pass plus confirmation: clearer local replay, reduced duplicate copy, moved label off tool contact and phone step controls away from target. These are schematic installation demonstrations, not physical assembly validation. Unknown unrecorded pin seats remain explicitly unavailable; older projects gain new missing metadata on future builds.
 - Backup: ~/Library/Application Support/KerfStudio/backups/20261102-230847-assembly-guide. Integration proof and recovery/install manifests: .cache/assembly-guide-integration/.
+
+## 2026-11-02 — Exact part cache writes without duplicate geometry encoding (Codex)
+- Cache writes now include the dependency digest in their initial record, deserialize it to validate read-back,
+  then atomically publish those same bytes. This removes a second exact BREP encode without changing cache
+  lookup, checks, geometry, metadata or dependency provenance. Serialization/read-back/publication failures
+  still leave an existing entry intact; disabled caching still bypasses serialization.
+- Focused verification: `PYTHONPATH="$PWD" .venv/bin/python -m pytest -q tests/test_partcache_write.py
+  tests/test_partcache.py` — 13 passed in 2.71 s, including exact BREP bytes, stored-byte validation, failure
+  injection, existing metadata/invalidation and cold/warm report equality. Initial new fixture used the
+  non-restorable Box builder class; corrected it to the Solid shape class used by finished parts. No old test changed.
+- Bounded synthetic evidence: 20 writes encode geometry 40 times before versus 20 after. Separate tiny-block
+  timing samples were inconclusive (0.398 vs 0.451 ms median). One paired 24-box compound sample (20 alternating
+  pairs) measured 2.780 vs 2.005 ms median with exact restored BREP equality. These are cache-write measurements,
+  not whole-build speedup claims. Receipts: `.cache/round2-build-efficiency/` in the isolated worktree.
+- Doctor ALL OK after reusing existing dependencies. No dependency installation, whole-project benchmark,
+  full suite, FEA, real job, catalog/threshold change or review.json write. Batch remains HELD. As with every
+  partcache.py edit, the existing source-based key invalidates prior entries for one normal rebuild.
+## 2026-11-02 — Studio background-job recovery round 2 (Codex)
+- Explicit Stop no longer launches an automatic fix from an old failed report. Failed automatic fix launches keep the design retryable; the fingerprint is recorded only after a successor starts, with selection/start serialized by the existing job lock.
+- Output read/parser failures now record the cause, kill the process group (falling back to the child), wait for exit and close stdout before releasing the project guard. An existing Stop remains stopped; usage exhaustion cannot resume this failed output path. Normal completion, failure and usage pause still finish normally.
+- Regression evidence: the original seven mocked cases failed before the fixes. Final focused validation: 24 passed, 5 real-process lifecycle cases deliberately deselected; tests/test_studio_job_reliability.py plus existing mocked lifecycle, auto-fix and usage-resume/reset cases. git diff --check passed. No builds, real agents/jobs, full suite, FEA, catalog/check/review edits or installations.
+## 2026-11-02 — Work ownership evidence (Codex, round2-work)
+- Fixed claim/session correlation to use an explicit chat identity ahead of storage IDs and require one matching observation. Duplicate observations keep the claim separate instead of assigning it to an arbitrary last session. Missing or malformed claim identities no longer link through string coercion.
+- Activity now retains its actual provenance: a claim heartbeat overlaid on saved chat history says “Owner update” in the collapsed row and timestamp. Assigned ownership remains distinct from observed working state; missing update times read “Update time unavailable.” No completion percentage or finish estimate is inferred.
+- Focused tests: ownership + existing overview/clarity/job-dedup — 61 passed in 10.16 s. Fixture-label/timestamp correction rerun: 9 passed in 3.02 s. Desktop/phone, light/dark fixture inspection covered keyboard disclosure, poll focus retention, overflow and no JS errors; captures /tmp/kerf-round2-work/work-ownership-{dark,light}-{1440,390}.png. Existing unregistered browser-mark warnings remain.
+- Detector findings are incumbent global CSS and hidden-image warnings outside Work's changes. No full suite, geometry/check/FEA, actual sessions/jobs, catalog/review changes, installations or paid services.
+## 2026-11-02 — Tune comparison evidence and recorded-value recovery (Codex, round2-tune)
+- Requirement comparisons no longer call a missing baseline “no change”, hide skipped tries, reuse the tried unit on the saved value, or infer that the middle of a permitted range is better. Changed check/unit/bound/limit definitions suppress numeric deltas; pass/fail transitions remain visible even when the measured value is unchanged. The ghost label now names the saved build.
+- “Use these values as a draft” restores recorded measurements/materials without saving or starting a job. Replacing a draft asks first; current ranges validate restored values, unavailable entries are reported, invalid values block Try/Save, and ordinary Undo/Discard remain available. Keyboard focus lands on the invalid value or draft review; the new action has a 44 px touch target.
+- Final targeted fixture run: `PYTHONPATH="$PWD" KERF_TUNE_SCREENSHOTS=/tmp/kerf-round2-tune /Users/spencergross/Documents/ChatGPT/Kerf\ Studio/.venv/bin/python -m pytest -q tests/test_tune_experience.py --junitxml=.cache/round2-tune/results.xml` — 1 passed in 5.99 s, covering desktop/phone and light/dark, cancellation/acceptance, recovery validation, unavailable values, comparison edge cases, partial saves and project switching; zero page errors. Existing unregistered browser-marker warning remains. Receipts: `.cache/round2-tune/tests.log` and `results.xml`.
+- Inspected the four fixture layouts in one pass and confirmed a scoped touch-target correction. Detector findings are identical to the 12 pre-existing shell findings; no Tune finding added. No real builds, stress/FEA, full suite, installation, project/output changes, catalog/threshold changes, or review.json edits.
+## 2026-11-02 — Build it reading, replay and keyboard flow (Codex, round2-assembly)
+- Written operation order now precedes location controls. Insert and shoulder-screw explanations remain visible
+  beside the selected hardware. The end of the guide distinguishes user-marked completion from physical proof.
+- Replay step runs the saved operation sequence; Replay installation demonstrates only the selected location.
+  Stop walkthrough cancels and disposes its active scene. Pending local replays cannot overtake a newer scene.
+  Native completion toggles, named/current step navigation, preserved focus and control-aware shortcuts make the
+  same flow work by keyboard. Action pause/resume requests redraw for the parallel viewer scheduler update.
+- Focused selection: new assembly-flow browser regression plus existing placements and Build it regressions,
+  **3 passed in 27.93s**. Final assembly-flow source (focus retention and pause/resume wakeup included):
+  **1 passed in 9.80s**. A first artifact-only rerun failed because its requested temporary parent did not exist;
+  creating the ignored cache directory resolved setup without changing checks. Desktop/light 1440x960 and
+  phone/dark/reduced-motion 390x844 captures reviewed once; no overflow or JavaScript errors. Final evidence:
+  `.cache/assembly-round2-tests/test_assembly_reading_replays_0/{desktop,phone}.png`.
+- Detector reports only the incumbent global type-size hierarchy warning. No project files, geometry, catalog,
+  review.json, full suite, FEA, live jobs or installed-app changes. Saved offsets remain illustrative: this patch
+  does not validate insertion-path collisions, assembly feasibility or tool access; the integration owner has
+  the exact producer/animation limitations for the separately requested physical-path follow-up.
+## 2026-11-02 — Resume strength simulation runtime (Codex)
+- Spencer authorized strength simulations to resume. Removed only PAUSED.json's stress_sims flag, updated the current CLAUDE/board guidance and the learning lesson, and reopened the four existing strength follow-ups without claiming they pass. The full-suite batch hold remains in force.
+- Fixed saved-output provenance: matching geometry does not make old paused/skipped FEA results current after activation. CLI review-status flags those outputs stale with an explicit strength-unproven/rebuild reason; original report bytes and geometry/review fingerprints remain unchanged.
+- Focused activation/pause/freshness/lesson regressions: **24 passed in 1.85 s**. One actual enabled, cache-disabled axial PETG bar FEA: **PASS**, 420 tets, 0.266 s, bulk 1.00022 MPa vs 1 MPa theory, displacement 0.027 mm vs 0.027397 mm theory. Clamp-local p99.9 remains 1.10 MPa against 24 MPa allowed. Solver slot serialized with project-strength work.
+- Current strength improvement scope is normal flight and operating loads; existing crash/impact checks are preserved without making crash optimization the objective.
+- Receipt: docs/status/STRENGTH_RESUME.md. Resource review kept the existing gmsh/scikit-fem solver and improved evidence freshness; no external tool was justified. No project geometry, thresholds/catalog, review.json, installed app or full-suite run changed.
+
+## 2026-11-02 — Joined Work activity provenance bridge (Codex, round2-work)
+- The exact existing fallback that copies a session's activity into a job now copies activity_source with it. A real job note keeps its own provenance; no freshness or lifecycle policy changed.
+- New helper-boundary regression uses normalized claim-supplied activity with separately observed runtime evidence. The missing source transfer failed before the one-line fix; local-note preservation passed. Final focused ownership/job-dedup backend selection: 45 passed, 2 browser tests deselected in 0.06 s. Existing browser-mark warnings remain. No UI changes, extra visual pass, actual sessions/jobs, full suite, CAD/FEA or install.
+
+## 2026-11-02 — Complete declared source downloads (Codex)
+- Reproduced omitted nested Python/CSV helpers and declared STEP input in a synthetic Studio download. Source ZIPs
+  now retain recursive Python helpers, part/layout/import/Meshy inputs and explicit project.yaml source_files; data
+  reads are declared, not inferred by executing or scanning Python. Shared the existing module containment check;
+  module manifest policy and generated maker loops/constants remain unchanged for concurrent supplier/BOM work.
+- Selected inputs must exist and remain contained with no symlink components; hidden/cache/output/review/known
+  credential files are refused. Malformed YAML/UTF-8 and missing inputs return a useful 400 error before an archive
+  is sent. The original files stay unchanged; no review approval/build cache is copied into the design folder.
+- 39 exact archive/source/module tests PASS in 3.08 s. An extracted synthetic design rebuilds its nested helper,
+  declared CSV, layout and imported STEP after deleting the original (body 42 / lid 24 mm3). Parent review found the
+  malformed-contract case; its two HTTP regressions plus rebuild/package-map checks PASS (4 tests, 1.94 s).
+  Docs explain declared dependency limits; no actual project build, full batch, FEA or paid model call.
+- Separate saved follow-up: existing maker-output loops can follow output symlinks; their containment repair is
+  assigned separately. This change validates design inputs and intentionally leaves maker-output behavior intact.
+- Completion is the source-export child only; the broader Fresh-eyes usability task remains open.
+
+## 2026-11-02 — Contained maker downloads (Codex)
+- Reproduced an output-file symlink exporting bytes from a harmless temporary outside fixture. Maker selections
+  now validate the output root, selected folders/files and recursive entries before starting ZIP creation. Links,
+  special files, wrong types and unreadable traversal fail explicitly; no partial archive is returned.
+- Missing optional outputs remain okay. Valid nested bytes/paths and the regular .glb preview exclusion remain;
+  additive supplier and fastener-report lists are preserved and exercised by a fixture. No changes to those constants.
+- 21 targeted tests PASS in 2.99 s: output root/selected/nested/file/dangling links, FIFO/socket rejection without
+  reads, wrong types, traversal errors, useful HTTP400, regular outputs and source-export rebuild compatibility.
+  Independent parent review approved. Stacked on source-export PR22; no full batch, actual project build, FEA,
+  printer action or real private data access. The earlier saved maker-output containment follow-up is resolved.
+
+## 2026-11-02 — Studio round 2 complete and contained downloads (Codex)
+- Integrated absent prior source-export heads 3a9088f/47aba1b and maker-output safety b7e1ece into assembly-guide
+  base 06cbf88, preserving the existing source manifest, module helper and regular-output validation. No remote merge.
+- Fixed two remaining defects: Download everything omitted the saved URDF package; files/trial/history routes
+  validated only the tail, so a traversal or linked project segment escaped their intended root. Saved simulation
+  bytes now travel with the ZIP and all three routes validate the project segment through the shared helper.
+- New fixtures reproduced 8 failures plus 1 valid pass before the new fixes. Clean tested code
+  65964a655acec95d9e28332e35be50e0d3f2d7c8: 60 focused fixture cases PASS in 3.67 s, including extracted source
+  rebuild, source/output refusal and valid download byte preservation. Receipt: .cache/round2-export/; written
+  review and command: docs/usability/ROUND2_EXPORT_REVIEW.md. Doctor ALL OK using existing dependencies; no install.
+- Documentation/PLAN completion follows the tested code with no source changes. Batch HELD; no UI changes/captures,
+  actual project builds, jobs, FEA, full suite, app update, geometry/report/catalog edits or readiness claim.
+## 2026-11-02 — New design draft and saved-option intent safety (Codex)
+- New design now retains the brief, all optional/hidden constraints, manual project name and unsubmitted clarification answers across navigation and reload in the same tab. Session storage falls back to memory when unavailable. Clear brief has a discard confirmation and returns keyboard focus to the description; drafts end with the tab session.
+- Saved options ask before replacing a distinct brief. Loading uses one response and ignores superseded choices or responses overtaken by newer typing, examples or a replacement screen. Existing exact-context and unanswered-question design gates remain.
+- Targeted browser fixture: tests/test_design_briefing.py — 1 passed in 17.46 s (four desktop/phone light/dark journeys), including navigation/reload, manual-name preservation, clarification recovery, declined discard/replacement, delayed response, latest selection and storage denial. Browser mark warning is pre-existing in this checkout.
+- One batched visual review plus confirmation; captures in /tmp/kerf-round2-briefing are labelled synthetic. Capture animation settling corrected in the fixture. Detector findings are incumbent styles outside this change. No live research/design jobs, builds, FEA, full suite, new dependencies, catalog/threshold changes or app installation.
+## 2026-11-02 — Viewer idle work and comparison resources (Codex, round2-viewer-perf)
+- Replaced perpetual frame polling with wakeups for scene changes, OrbitControls damping, joint playback and shared
+  tweens. Paused installation-only tweens now sleep; the coordinated one-line action-resume wakeup preserves their
+  pause clock. Live mesh updates and delayed glow removal still wake the viewer.
+- Coalesced hover picking to the latest pointer once per frame; leaving/dragging cancels pending hover. Comparison
+  replacement/clear now releases both surface and edge geometry/materials instead of only the surface geometry.
+- Deterministic Chromium/SwiftShader fixture, before → after: stationary callbacks 15 → 0 over 300 ms; one synchronous
+  80-event pointer burst 80 → 1 raycast; comparison resources disposed 1/4 → 4/4 on three replacement/clear cycles;
+  settled damping callbacks 12 → 0 over 200 ms. Final fixture also observes 0 paused-action callbacks over 150 ms,
+  preserved tool position and successful resume. These count lifecycle work; they do not measure end-to-end speed.
+- Final new regression: tests/test_viewer_performance.py, 1 PASS in 10.45 s. Existing placement, combined pose sweep,
+  and cut/stress/Build it/compare/snapshot browser regressions: 3 PASS in 23.37 s. Existing stage keyboard/disclosure
+  browser case also passed. An intermediate placement page generated before the action-resume wakeup timed out;
+  final-source rerun passed. PYTHONPATH explicitly selected this checkout; reused existing dependencies, doctor ALL OK.
+- Read-only current-template saved bionic_finger desktop/light and phone/dark captures inspected: no JavaScript errors
+  or document overflow. /tmp/kerf-viewer-perf-{desktop,phone}.png. Detector reports only the incumbent global type
+  hierarchy warning. No project source/output, catalog/check/review changes, full suite, stress job or installation.
+
+## 2026-11-02 — Build it physical-motion consumer (Codex, integration checkpoint)
+- Merged frozen assembly UX c063ef8 locally. The consumer now accepts only sampled-clear exact-seat paths, stages one rigid group at a time, keeps previously prepared hardware hidden until its receiver is staged, and keeps automatic hardware static. Manual Show technique remains explicitly illustrative with unchecked tool clearance. Unknown/blocked paths hold a static reference.
+- A synthetic browser trajectory exposed negative first-frame tween progress; progress now clamps at zero. Dedicated deterministic clock and ordered synthetic box fixtures pass. Focused manual technique/UX fixtures passed before final exact-seat contract tightening; backend schema merge and final combined validation follow. No live jobs, installations or full suite.
+## 2026-11-02 — Build it sampled physical approach paths (Codex)
+- The viewer producer now checks each displayed part/group approach against parts already seated in the actual
+  guide sequence, including earlier groups in the same phase and the exact seated endpoint. It reuses the
+  insertion check's CAD overlap threshold, allowances and existing bounding-box broad phase. Exact transforms
+  are restored even if geometry fails. Declared paths retain their direction; heuristic candidates may try the
+  opposite direction only after the first collides. No shape, catalog, threshold or existing test changed.
+- Each group receives `motion`: sampled_clear / blocked / unverified, exact world offset, actual samples,
+  spacing, seat coverage, staged obstacles and candidate collision evidence. Consumer must use motion.offset_mm,
+  never infer permission from group.off. Work is capped at 10,000 sample/pair checks and 200 intervals per path;
+  excess/unsupported geometry/errors remain unverified. This is sampled rigid-part clearance, not continuous
+  collision, force/friction, heat, tool or loose-hardware proof. Hardware rows explicitly retain that distinction;
+  parent-approved manual schematic Show technique remains a separate consumer action.
+- Focused verification: 41 passed in 5.43 s (new test_assembly_paths, existing test_access and
+  test_viewer_insert_sites, viewer step payload and ship later-part fastener order nodes). Includes blocked/open
+  pockets, same-phase ordering, seat-only interference, allowed contact, opposite-candidate success, declared
+  direction preservation, budget/invalid inputs, grouped overlap, rotated exact offsets and exception restoration.
+- Two authorized CAD-only recoveries of temporary copies of the installed bionic_finger reproduced all four
+  saved vertex/triangle arrays exactly; fingerprint 69c05ed7665e2c58. Initial heuristic signs collided with prior
+  segments 14.89 / 14.98 / 15.08 mm before seating. Opposite same-axis candidates cleared: proximal +Y26.795 mm
+  (28 samples), middle -Y19.969 mm (21), distal +Y16.022 mm (18), all <=1 mm including seats; root stays anchored.
+  Final recovery 17.71 s. Final guarded-refresh payload: isolated worktree .cache/assembly-paths/finger-paths-final.json.
+  Root owns the saved-viewer refresh and consumer integration. No actual project/output/cache writes, FEA,
+  real job, full suite or installation here; batch remains HELD. The guide does not establish physical assembly certification.
+## 2026-11-02 — Correct normal-operation resonance sizing advice (Codex)
+- Fixed advice that suggested `e * (1 +/- separation)` even though the actual gate is `abs(e - fn) / fn >= separation`. Correct boundaries are `e / (1 + separation)` and `e / (1 - separation)`; whole-Hz targets round outward and clear every reported excitation band. For 200.2/600.5 Hz, 185 Hz and 20% separation, guidance now says at least 251 Hz or at most 166 Hz.
+- Advice follows the separate min_ratio branch and highest-excitation rule, including its precedence; zero separation stays zero, separation >= 1 has only a lower solution, and invalid values produce no bogus target. Engineering checks and thresholds are unchanged.
+- Focused tests/test_advice.py: **11 passed in 1.64 s**. New cases feed targets into the actual frequency check with mocked compliance/mass, covering both branches, overlapping bands, boundary equality/epsilon and edge inputs. Receipt: docs/status/RESONANCE_ADVICE.md.
+- No FEA/CAD, project/material/catalog edits, fatigue-life claim, installed-app change, benchmark or full-suite run. Strength resume PR remains separate.
+### 2026-11-02 — Codex normal-flight structural screen (round2-strength-design; validation pending)
+- Scoped the FPV frame work to normal flying per Spencer's correction. Added `arm_flight_load` at the existing configured-output steady thrust (9.051 N): real FEA gives 2.46 MPa / 17.5 MPa allowable and 0.230 mm / 0.87 mm deflection; thrust/weight 6.03, frame 160.7 g.
+- Measured and rejected one taller hollow arm candidate: its 201.9 Hz estimate nearly coincided with 202.1 Hz hover excitation, and mass dropped thrust/weight to 5.92. Restored all geometry. Saved exact results in projects/fpv_5in/NORMAL_FLIGHT_SCREEN.json and explained the decision in DESIGN.md.
+- The retained arm remains at 185.1 Hz vs 200.2 Hz hover (8 % separation, 20 % required). Corrected the gyro-filter endurance assertion; static results do not prove fatigue life or repeated-flight endurance. No thresholds/catalog values/review.json changed.
+- Next: required project check/build with stress enabled, report existing failures, then PR/release. Main project checkbox remains open.
+
+### 2026-11-02 — Codex normal-flight screen validation complete (round2-strength-design)
+- `KERF_STRESS=1 kerf check fpv_5in` (18.1 s) and `kerf build fpv_5in` (9.6 s) both honestly FAIL on the pre-existing arm_resonance result (185.1 Hz vs 200.2/600.5 Hz); both stop before detail checks. The added 9.0517 N normal-flight case passes at 2.46 MPa / 17.5 MPa and 0.230 mm / 0.87 mm; other core static, mass, thrust and power checks pass. Build also reports a preview `NoneType.NbNodes` warning on the unchanged base geometry. No successful exports or visual-review claim.
+- A targeted YAML/snapshot assertion passes: all pre-existing requirement inputs and numeric limits, CAD, catalog, tests, and review.json match base 06cbf88; only the normal-flight requirement and explanatory text/evidence were added. Candidate geometry was rejected, not shipped. No full suite/all-project run; independent design review remains outstanding with the main project checkbox open.
+- Result is a normal-flight verification improvement, not a stronger released frame or a fatigue-life result. Follow up on measured operating-speed vibration and relevant material cyclic/temperature evidence before further geometry work.
+
+## 2026-11-02 — Round two integration checkpoint (Codex; IN PROGRESS)
+- Combined source PRs66–77 locally; no remote merges or round-two installation yet. Current source heads, first combined test result102PASS/1contact-observer timeout and engineering limits are recorded in docs/status/ROUND2_INTEGRATION.md.
+- Latest user steering is retained: normal operating flight strength rather than crash optimization, physically coherent assembly movement, and fix the actual Hawk-wing eight-problem report using its exact dirty-source snapshot5a98dc7.
+- Remaining: consumer/performance confirmation, coordinated Hawk mass/packing/wiring corrections and required checks, guarded install/native verification. Full batch held; prior installed project edits preserved.
+
+## 2026-11-02 — Deterministic contact observation in the viewer regression (Codex)
+- The combined run at acac132 passed 102 cases but missed the performance fixture's first tool-contact observation.
+  The unchanged source passed in isolation. That fixture's 4x speed left only a 360 ms contact window, observed
+  after a separate browser/Node roundtrip. The fixture now runs this action at normal speed and installs an in-page
+  contact watcher before replay; it clicks the actual Pause action on contact and then stops watching.
+- All phase/contact, paused tool-position, zero scheduled frames and successful UI-resume assertions remain.
+  One injected 2 s Node delay after replay setup (longer than the entire old 4x demonstration) passed with the
+  contact latched/paused. Normal focused run: tests/test_viewer_performance.py, 1 PASS in 11.71 s; stationary and
+  paused callbacks remain 0, hover burst raycasts 1, and comparison disposal 4/4 for all three cycles.
+- Test-only change; no production pause fix was justified by the evidence. No CAD build, broad suite or installation.
+
+## 2026-11-02 — Build it physical-motion consumer complete (Codex)
+- Integrated producer 9dcf4d3 and assembly UX c063ef8. Automatic assembly uses only finite sampled-clear paths with exact-seat evidence, in saved phase/group order. Rigid groups keep their pose; incoming/prepared hardware is hidden until its receiving part is staged. Checked offsets can reverse the display explode direction. Unknown, blocked or malformed proof holds a static, labelled reference and stops walkthrough playback.
+- Automatic hardware stays static. Explicit Show technique retains local iron/driver replay and states that tool clearance is unchecked. Automatic joint demonstrations require a clear saved range sweep; manual recorded-motion illustrations remain available. Reduced motion stays static; cancellation prevents stale scene changes.
+- Fixed negative first-frame tween progress so a newly created tween cannot extend a checked path past its start. Synthetic rendered-frame fixtures check solid overlap, group order, rigid pose, insert staging, missing/blocked/malformed proof, explicit technique and reduced motion. Existing shortcut test now blurs controls before the documented page shortcut (canvas arrows retain orbit behavior).
+- Focused validation: 19 cases passed across producer, motion/clock, assembly flow, exact sites, bench close-up, engine kinematics and viewer/shortcut tests (18 together plus corrected shortcut alone); no tests removed or thresholds loosened. git diff --check passed. Detector reports only the pre-existing font-size hierarchy warning. No installed files, live jobs, project builds or full suite changed/run; real saved-finger preview uses unchanged embedded meshes plus producer proof.
+
+## 2026-11-02 — Round two application installed and verified (Codex)
+- Installed exact application source3964f7f with the physically checked finger guide. Final changed physical/performance/advice selection:30PASS in48.54s; initial broader selection102PASS plus the contact-observer timeout now addressed by deterministic PR78. No broad rerun or full batch.
+- Backup and manifests: Library/Application Support/KerfStudio/backups/20261102-234327-round2 and .cache/round2-integration/install-receipt.json. After native app launch, all16 installed file hashes and20 pre-existing modified project-source hashes verified. Finger geometry and all payload fields except steps remain identical. Native Build it displayed checked-path evidence, exact receiving part/site and working Replay step.
+- Application integration is complete. Hawk remains independently open in draftPR81 with a user-requested lower100km/h target, not validated flight capability. No Hawk/FPV geometry or reports installed. Rejected deeper hub/cap was excluded; remaining engineering failures are preserved. Details and current check state:docs/status/ROUND2_INTEGRATION.md.
+- Usage reached55% consumed during closeout; no new variants/work streams. Preserve the user's40% remaining reserve. Source PRs remain open for independent manager review; none remotely merged by this task.

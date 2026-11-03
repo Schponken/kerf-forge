@@ -69,33 +69,47 @@ class Job:
         threading.Thread(target=self._pump, daemon=True).start()
 
     def _pump(self):
-        for raw in self.proc.stdout:
-            for ln in (self.parse(raw) if self.parse else [raw.rstrip("\n")]):
-                if ln is None:
-                    continue
-                if ln.startswith("@@"):
-                    try:
-                        ev = json.loads(ln[2:])
-                        if ev.get("k") == "session":
-                            self.session = ev.get("id") or self.session
-                            continue
-                        if ev.get("k") == "usage":
-                            self.usage = ev
-                            USAGE.update(until=max(USAGE["until"], float(ev.get("until") or 0)), text=ev.get("text", ""))
-                        self.events.append(ev)
-                        if ev.get("k") == "hint":   # can't succeed: stop now, say why
-                            with JOB_LOCK:
-                                if self._stop_state is None:
-                                    self._stop_state = "failed"
-                                    try:
-                                        os.killpg(self.proc.pid, 15)
-                                    except Exception:  # noqa: BLE001
-                                        self.proc.terminate()
+        try:
+            for raw in self.proc.stdout:
+                for ln in (self.parse(raw) if self.parse else [raw.rstrip("\n")]):
+                    if ln is None:
                         continue
-                    except Exception:  # noqa: BLE001
-                        pass
-                self.lines.append(ln)
+                    if ln.startswith("@@"):
+                        try:
+                            ev = json.loads(ln[2:])
+                            if ev.get("k") == "session":
+                                self.session = ev.get("id") or self.session
+                                continue
+                            if ev.get("k") == "usage":
+                                self.usage = ev
+                                USAGE.update(until=max(USAGE["until"], float(ev.get("until") or 0)), text=ev.get("text", ""))
+                            self.events.append(ev)
+                            if ev.get("k") == "hint":   # can't succeed: stop now, say why
+                                with JOB_LOCK:
+                                    if self._stop_state is None:
+                                        self._stop_state = "failed"
+                                        try:
+                                            os.killpg(self.proc.pid, 15)
+                                        except Exception:  # noqa: BLE001
+                                            self.proc.terminate()
+                            continue
+                        except Exception:  # noqa: BLE001
+                            pass
+                    self.lines.append(ln)
+        except Exception as e:  # noqa: BLE001 - failed output processing must not orphan a running job
+            with JOB_LOCK:
+                self._stop_state = self._stop_state or "failed"
+                self.lines.append(f"(output processing failed: {e})")
+            # The pipe is no longer drained; kill the group so a full pipe cannot block cleanup.
+            try:
+                os.killpg(self.proc.pid, 9)
+            except OSError:
+                try:
+                    self.proc.kill()
+                except ProcessLookupError:
+                    pass
         rc = self.proc.wait()
+        self.proc.stdout.close()
         with JOB_LOCK:
             self.ended = time.time()
             if rc and self._stop_state is None:
@@ -302,19 +316,22 @@ def fix_job(name: str) -> Job:
 def auto_fix(job) -> Job | None:
     """A Studio build / check that ends with problems starts a fix job by itself (setting `autofix`, on by default),
     once per design state, so a failed Build goes straight to fixing instead of a list to read."""
-    if job.kind not in ("build", "check") or job.project in ("*", None) or not settings().get("autofix"):
+    if (job.state not in ("done", "failed") or job.kind not in ("build", "check")
+            or job.project in ("*", None) or not settings().get("autofix")):
         return None
     if budget_stop() or not pick_agent() or (pick_agent() == "claude" and usage_blocked()):
         return None                       # budget switch on, or no agent can run now (Claude out of usage, no Codex)
-    rep = _report(PROJECTS / job.project)
-    ok, _ = fixable(job.project)
-    if not ok:
-        return None
-    fp = (rep or {}).get("fingerprint")
-    if fp and AUTOFIXED.get(job.project) == fp:
-        return None                       # this exact design already had its automatic try: the button is still there
-    AUTOFIXED[job.project] = fp
-    return fix_job(job.project)
+    with JOB_LOCK:
+        rep = _report(PROJECTS / job.project)
+        ok, _ = fixable(job.project)
+        if not ok:
+            return None
+        fp = (rep or {}).get("fingerprint")
+        if fp and AUTOFIXED.get(job.project) == fp:
+            return None                       # this exact design already had its automatic try: the button is still there
+        successor = fix_job(job.project)
+        AUTOFIXED[job.project] = fp
+        return successor
 
 
 def printer_info(live: bool = False) -> dict:
@@ -361,24 +378,64 @@ EXPORT_DIRS = ("plates", "parts", "drawings", "firmware", "assembly_steps")
 EXPORT_FILES = ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "wiring.svg", "viewer.html")
 
 
+def _maker_files(project_dir: Path) -> dict[str, Path]:
+    """Validate selected generated files before archiving; never traverse links or read special files."""
+    import stat
+    from .sources import inside
+
+    out = inside(project_dir, "out")
+    if not out.exists():
+        return {}
+    if not stat.S_ISDIR(out.lstat().st_mode):
+        raise ValueError("Expected maker output directory: out")
+    selected = {}
+    def checked(path, directory=False):
+        relative = path.relative_to(project_dir).as_posix()
+        inside(project_dir, relative)
+        mode = path.lstat().st_mode
+        if not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)):
+            kind = "directory" if directory else "regular file"
+            raise ValueError(f"Expected maker output {kind}: {relative}")
+    def unreadable(error):
+        raise error
+    for relative in EXPORT_DIRS:
+        folder = inside(out, relative)
+        if not folder.exists():
+            continue
+        checked(folder, directory=True)
+        for directory, dirs, files in os.walk(folder, followlinks=False, onerror=unreadable):
+            for child in dirs:
+                checked(Path(directory) / child, directory=True)
+            for child in files:
+                path = Path(directory) / child
+                checked(path)
+                if path.suffix != ".glb":
+                    selected[path.relative_to(out).as_posix()] = path
+    for relative in (*EXPORT_FILES, f"{project_dir.name}_urdf.zip"):
+        path = inside(out, relative)
+        if path.exists():
+            checked(path)
+            selected[relative] = path
+    return dict(sorted(selected.items()))
+
+
 def export_zip(name: str) -> bytes:
     """Everything a maker needs in one zip: print plates and parts, STEP, BOM, guides, drawings, bring-up program,
     plus the design files (project.yaml, DESIGN.md, part sources)."""
     import io
     import zipfile
-    d = PROJECTS / name
+    from .sources import design_files, inside
+    if not NAME_RE.fullmatch(name):
+        raise ValueError("no such project")
+    d = inside(PROJECTS, name)
+    sources = design_files(d)  # Validate every declared input before starting an archive.
+    maker_files = _maker_files(d)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        for rel in EXPORT_DIRS:
-            for f in sorted((d / "out" / rel).rglob("*")) if (d / "out" / rel).exists() else []:
-                if f.is_file() and f.suffix != ".glb":
-                    z.write(f, f"{name}/{f.relative_to(d / 'out')}")
-        for rel in EXPORT_FILES:
-            if (d / "out" / rel).exists():
-                z.write(d / "out" / rel, f"{name}/{rel}")
-        for f in ["project.yaml", "DESIGN.md", "REFERENCES.md", *[str(x.relative_to(d)) for x in sorted((d / "parts").glob("*.py"))]]:
-            if (d / f).exists():
-                z.write(d / f, f"{name}/design/{f}")
+        for relative, f in maker_files.items():
+            z.write(f, f"{name}/{relative}")
+        for relative, f in sources.items():
+            z.write(f, f"{name}/design/{relative}")
     return buf.getvalue()
 
 
@@ -1737,6 +1794,17 @@ def _safe(base: Path, rel: str) -> Path | None:
     return p if p.is_file() and (p == base.resolve() or base.resolve() in p.parents) else None
 
 
+def _project_file(root: Path, name: str, relative: str) -> Path | None:
+    """Contain the project segment as well as the requested file."""
+    from .sources import inside
+    if not NAME_RE.fullmatch(name):
+        return None
+    try:
+        return _safe(inside(root, name), relative)
+    except ValueError:
+        return None
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "KerfStudio/1"
 
@@ -1846,7 +1914,10 @@ class Handler(BaseHTTPRequestHandler):
                 nm = parts[1][:-4]
                 if nm not in project_names():
                     return self._err("no such project", 404)
-                body = export_zip(nm)
+                try:
+                    body = export_zip(nm)
+                except (ValueError, OSError) as e:
+                    return self._err(f"Couldn't export project: {e}")
                 try:
                     self.send_response(200)
                     self.send_header("Content-Type", "application/zip")
@@ -1858,11 +1929,11 @@ class Handler(BaseHTTPRequestHandler):
                     pass
                 return
             if parts[0] == "history" and len(parts) == 4 and parts[3] == "thumb.png":
-                f = _safe(HISTORY / parts[1], f"{parts[2]}/thumb.png")
+                f = _project_file(HISTORY, parts[1], f"{parts[2]}/thumb.png")
                 return self._send(200, f.read_bytes(), "image/png") if f else self._err("not found", 404)
             if parts[0] in ("files", "trial") and len(parts) >= 3:
-                base = (PROJECTS if parts[0] == "files" else TRIALS) / parts[1]
-                f = _safe(base, "/".join(parts[2:]))
+                root = PROJECTS if parts[0] == "files" else TRIALS
+                f = _project_file(root, parts[1], "/".join(parts[2:]))
                 if f is None:
                     return self._err("not found", 404)
                 ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"

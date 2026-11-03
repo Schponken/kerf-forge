@@ -173,10 +173,19 @@ requirements:
     max_disp_mm: 0.87         # ENGINEERING.md: arm tip deflection < 1 % of the 87 mm arm (audit F8)
     fixed: {sites: arm_1, radius: 3.5}
     loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, 33.06]}]
+  - id: arm_flight_load
+    check: fea_static
+    part: arm_1
+    why: "normal flight: steady thrust at the configured 74% motor output, catalog 1685 g x 0.74^2 x 9.81 / 1000 = 9.0517 N; a static strength/deflection screen, not a transient envelope or fatigue-life proof"
+    direction: xy
+    sf: 2.0                  # ENGINEERING.md section 3: static load along printed layers
+    max_disp_mm: 0.87         # same 1% arm-length stiffness rule; existing crash case remains independent
+    fixed: {sites: arm_1, radius: 3.5}
+    loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, "1.685 * 9.81 * 0.74 * 0.74"]}]
   - id: arm_resonance
     check: natural_freq
     part: arm_1
-    why: "the arm's first up-down bending mode (motor + prop on its tip) must sit >= 20 % away from the hover rotor rate and the blade-pass rate (15-20 % separation from excitation: KnightHawk Engineering, modernpumpingtoday.com/modal-testing-of-pump-bearing-housings); spool-up sweeps through it briefly, which Betaflight's gyro notch filters handle"
+    why: "the arm's first up-down bending mode (motor + prop on its tip) must sit >= 20 % away from the hover rotor rate and the blade-pass rate (15-20 % separation from excitation: KnightHawk Engineering, modernpumpingtoday.com/modal-testing-of-pump-bearing-housings); a static-compliance estimate at hover, not a full operating-speed modal or fatigue-life proof; gyro filtering does not establish mechanical endurance during spool-up"
     fixed: {sites: arm_1, radius: 3.5}
     loads: [{sites: motor_1, radius: 3.5, force_n: [0, 0, 1]}]
     carried: [motor_1]

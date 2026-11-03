@@ -110,6 +110,8 @@ try {
   await p.screenshot({path:`${__CAPTURE_DIR__}/tune-${theme}-${width}-top.png`});
   await p.locator('.tune-controls').scrollIntoViewIfNeeded();
   await p.screenshot({path:`${__CAPTURE_DIR__}/tune-${theme}-${width}-controls.png`});
+  await p.getByText('Values used for this try',{exact:true}).click();
+  assert.ok((await p.getByRole('button',{name:'Use these values as a draft',exact:true}).boundingBox()).height>=44);
   await p.locator('.tune-trial-context').scrollIntoViewIfNeeded();
   await p.screenshot({path:`${__CAPTURE_DIR__}/tune-${theme}-${width}-trial.png`});
   await p.evaluate(()=>Promise.all([tryParams(),tryParams()]));
@@ -126,6 +128,53 @@ try {
   assert.equal(posts.filter(x=>x.path==='/api/save-materials').length,2);
   assert.deepEqual(await p.evaluate(()=>[S.edits,S.medits]),[{},{}]);assert.equal(await save.isDisabled(),true);
   assert.match(await p.locator('.tune-notice').innerText(),/Changes saved/);
+  // Recover the recorded try without a save/job, including a value outside today's bounds.
+  const beforeRecoveryPosts=posts.length;
+  await p.evaluate(()=>{S.detail.trial.params={"arm'length":110,depth:22,removed:4};S.detail.trial.materials={upper_arm:'PLA',removed:'PLA'};});
+  await p.getByText('Values used for this try',{exact:true}).click();
+  await p.getByRole('button',{name:'Use these values as a draft',exact:true}).click();
+  assert.deepEqual(await p.evaluate(()=>[S.edits,S.medits]),[{"arm'length":110,depth:22},{upper_arm:'PLA'}]);
+  assert.equal(await arm.inputValue(),'110');assert.equal(await depth.inputValue(),'22');
+  assert.match(await p.locator('.tune-notice').innerText(),/2 recorded values are unavailable/);
+  assert.equal(posts.length,beforeRecoveryPosts);assert.equal(await save.isDisabled(),false);
+  // Replacement remains reversible and uses current validation, never blindly trusts an old trial.
+  await p.getByRole('button',{name:'Discard changes',exact:true}).click();
+  await p.evaluate(()=>{S.detail.trial.params={"arm'length":150,depth:12};useTrialValues();});
+  assert.equal(await arm.inputValue(),'150');assert.equal(await arm.getAttribute('aria-invalid'),'true');
+  assert.equal(await save.isDisabled(),true);assert.equal(await run.isDisabled(),true);
+  assert.equal(await arm.evaluate(e=>e===document.activeElement),true);
+  await p.getByRole('button',{name:'Undo Arm length',exact:true}).click();
+  await p.getByRole('button',{name:'Discard changes',exact:true}).click();
+  assert.deepEqual(await p.evaluate(()=>[S.edits,S.medits]),[{},{}]);
+  await arm.fill('115');p.removeAllListeners('dialog');p.once('dialog',dialog=>dialog.dismiss());
+  await p.evaluate(()=>useTrialValues());assert.equal(await arm.inputValue(),'115');
+  assert.deepEqual(await p.evaluate(()=>S.edits),{"arm'length":115});
+  p.on('dialog',dialog=>dialog.accept());await p.evaluate(()=>useTrialValues());
+  assert.equal(await arm.inputValue(),'150');assert.equal(await arm.getAttribute('tabindex'),null);
+  await p.evaluate(()=>resetTune());
+  assert.equal(posts.length,beforeRecoveryPosts);
+  // Compare evidence, including skipped runs, absent baselines, changed definitions, and status-only changes.
+  const rows=await p.evaluate(()=>{
+   const base={id:'reach',check:'reach',value:100,unit:'mm',bound:'min',limit:80,ok:true};
+   const cases=[
+    [[],[base]],
+    [[{...base,skipped:true}],[base]],
+    [[base],[{...base,skipped:true}]],
+    [[base],[{...base,unit:'cm',value:10}]],
+    [[base],[{...base,limit:120,ok:false}]],
+    [[base],[{...base,ok:false}]],
+    [[{...base,ok:false}],[base]],
+    [[{...base,bound:'range',limit:[80,120],value:81}],[{...base,bound:'range',limit:[80,120],value:100}]],
+   ];
+   return cases.map(([saved,tried])=>{const el=document.createElement('div');el.innerHTML=compareTable(saved,tried);return [...el.querySelectorAll('tr:last-child td')].map(td=>td.textContent);});
+  });
+  assert.equal(rows[0][1],'Not recorded');assert.equal(rows[0][4],'no saved result');
+  assert.equal(rows[1][1],'Not run');assert.equal(rows[1][4],'saved check not run');
+  assert.equal(rows[2][2],'Not run');assert.equal(rows[2][4],'try not run');
+  assert.equal(rows[3][1],'100 mm');assert.equal(rows[3][2],'10 cm');assert.equal(rows[3][4],'requirement changed');
+  assert.equal(rows[4][4],'requirement changed');assert.equal(rows[5][4],'now fails');assert.equal(rows[6][4],'now passes');
+  for(const row of rows.slice(0,7))assert.equal(row[3],'–');
+  assert.equal(rows[7][4],'changed');assert.equal(await p.evaluate(()=>better({bound:'range',limit:[80,120]},81,100)),0);
   // A response for a previous project cannot clear or write the next project's draft.
   await arm.fill('120');slowSave=true;
   await p.evaluate(()=>{window.pendingSave=saveParams();});
