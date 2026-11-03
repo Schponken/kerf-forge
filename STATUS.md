@@ -974,3 +974,40 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+
+## 2026-11-02 — First-use studio guidance (Codex, first-use)
+- Replaced the interrupting first-run spotlight with an optional contextual page guide. The short tour keeps the
+  workspace usable, has Back/End/Escape and focus return, and retains the stable project-build target. Definitions
+  now open beside the term by mouse, touch, Enter or Space. The searchable glossary uses a named native dialog,
+  labelled search, result count, keyboard-scrollable definitions and explicit empty-search recovery.
+- Welcome now starts from the object the user wants to make, gives one direct design action and keeps incomplete
+  verification explicit. Successful assistant readiness is a compact disclosure with last-check time and recheck;
+  unavailable/auth/usage explanations and disabled design actions are preserved. No automatic tour or design job.
+- Mocked browser test tests/test_first_use.py: **1 passed in 8.48s**, covering 1440x960 and 390x844 in light/dark,
+  no page errors, GET-only requests, viewport bounds, reduced motion, focus return, tour navigation, glossary
+  filtering/recovery and readiness failure states. Two glossary contract tests: **2 passed in 1.63s**. A native
+  dialog reverse-Tab boundary was corrected; test waits for its asynchronous close event before asserting removal.
+  Browser marker is not registered on this base (existing marker-refresh work is separate).
+- Captures inspected in /tmp/kerf-first-use-review: welcome/help/tour/glossary, four contexts each. They include
+  the earlier shell. After this pass, scoped CSS removes the welcome's inherited entrance, enlarges close/ready
+  hit targets and wraps glossary keys; capture settling and the older start-tour test were made deterministic.
+  Per shared usage limit, final CSS confirmation belongs to the manager's single integrated shell review.
+- Doctor ALL OK; batch HELD and process checks preceded targeted tests. One Impeccable detector run found only
+  existing out-of-scope patterns. No installs, full suite, geometry builds, FEA, review.json, backend or live jobs.
+
+
+## 2026-11-02 — Definitions directly at the word (Codex, first-use follow-up)
+- User requested no typing or menu hunting for definitions. Every marked occurrence now opens its meaning beside
+  the word immediately on mouse hover or keyboard focus; touch needs one tap. Native title hints are replaced
+  by the same readable definition. The searchable glossary remains optional.
+- Hover/focus does not steal focus; pointer travel into the popup keeps it open. Escape and the close button
+  dismiss it without reopening during focus return. Definitions retain named dialog semantics and connect the
+  focused word to its explanation; viewport placement and reduced-motion behavior use the existing guide.
+- Focused mocked browser regression: **1 passed in 5.17s**, desktop 1440x960 and touch 390x844. Covers hover,
+  keyboard focus/Enter/Escape, single-tap access, repeated occurrences, pointer continuity, focus restoration,
+  bottom/right viewport edges, reduced motion, outside dismissal and GET-only requests with no page errors.
+  Initial fixture omitted /api/quotes; adding its empty response corrected the fixture. Existing broad first-use
+  and glossary suites were not repeated; their prior results are above. Browser-marker warning remains on base.
+- No new dependencies, live jobs, geometry, stress simulation or full batch. Full batch remains HELD. This changes
+  the shared definition layer used by project text; controls and code retain their existing exclusion from wrapping.
