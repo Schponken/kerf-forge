@@ -1329,3 +1329,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Independent source pass and bounded desktop/phone visual review found no new blocker. Final composed capture shows a direct PLA definition beside the real saved FPV model; APIs are mocked and no project rebuilt. Evidence/provenance and feature queue are in docs/usability/STUDIO_REDESIGN_REVIEW.md.
 - Resolved overlapping changes by preserving both behaviors, removed inert duplicated print-summary CSS and exact duplicate PLAN lines, and kept Activity assignments distinct from observed running jobs. Original source changes stay in focused PRs.
 - The owner redeemed the single reset manually, requested conservation and High-effort workers, and deferred the next ten-worker optimization/motion/debug round until the design settles. No further reset or background round was started.
+
+## 2026-11-02 — Build it exact placement and tool demonstrations (Codex)
+- Hardware sites are individually selectable with receiving-part names, a stable close-up, an exact seat ring,
+  insertion arrow and persistent projected leader. Selection stays still; local Replay installation explicitly
+  demonstrates that site. Assembly overview, location reset and action pause/resume support inspection.
+- Schematic soldering iron contacts and presses heat-set inserts; subtle smoke appears only during contact.
+  A schematic driver engages and advances screws/shoulder pivots. Shoulder/thread cylinders use their distinct
+  recorded catalog dimensions. Unknown seats/dimensions show explicit warnings without fabricated hardware.
+- Incoming-position ghosts/alignment paths use existing group offsets and the ghost toggle. Written-step
+  inspection cues and recorded joint-motion checks remain honest. Navigation, replay, exit and joint demos
+  cancel and dispose prior props/particles; reduced motion retains seated hardware and static location cues.
+- Added TorusGeometry/SphereGeometry/ArrowHelper to the existing offline Three bundle and regenerated it.
+  Kept the model tool dock/glossary and saved-viewer template refresh workflow. No project geometry, engineering
+  thresholds, catalog values, build/review files, installed app files or stress jobs changed.
+- Focused viewer slice: tests/test_viewer_placements.py, tests/test_viewer_build_it.py, tests/test_viewer.py —
+  7 passed in 26.86 s; final correction reran the new regression — 1 passed in 13.99 s. Real saved finger
+  desktop/phone/iron inspection and drone step 2 (10 sites) contact/navigation smoke test had no JS errors.
+  Screenshots: /tmp/kerf-placement-{desktop,phone,iron}.png. Detector reports only the incumbent global
+  font-size hierarchy warning. Full batch remains HELD; no full suite, geometry rebuild or FEA run.
