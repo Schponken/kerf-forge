@@ -59,10 +59,11 @@ def build(ctx):
                                            Location((0, 0, zp), (180, 0, 0)), kind="heatset", depth=INSERT_DEPTH, teardrop="auto"),
                         why="2 M3 heat-set inserts from below: the pod's front flange screws bolt up into them", kind="insert")
         # cap screws: clearance through the glove from the cap above down into the pod's inserts
+        # plain holes, no fastener site: the cap's counterbore carries the whole grip (cap + glove) to the pod's
+        # insert, and the fastener check pairs one clearance site with one receiver
         for x, y in L.cap_screw_xy(p, s):
             top = zr(x, y)[1]
-            body -= ctx.cut(iface.bolt_pattern(ctx, f"cap_{'r' if s > 0 else 'l'}", "M3", [(x, y)], Location((0, 0, top)),
-                                               kind="clearance", depth=top - zp, teardrop="auto"),
+            body -= ctx.cut(Pos(x, y, zp - 1.0) * Cylinder(1.7, top - zp + 2.0, align=(Align.CENTER, Align.CENTER, Align.MIN)),
                             why="cap screw passes through the glove into the pod roof insert (carries the pin's upper reaction)",
                             kind="screw hole")
 

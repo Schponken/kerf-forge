@@ -13,6 +13,7 @@
  "electronics.pads.battery_pad",
  "electronics.receivers.elrs_nano",
  "electronics.straps.strap_20x250",
+ "fdm_fits.pin",
  "fdm_holes.M3",
  "materials.PETG",
  "rods.cf_tube_6x4",

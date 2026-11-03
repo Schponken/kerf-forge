@@ -160,8 +160,8 @@ purchased:
   vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 95], color: "#20a0a0", held_by: "MMCX on the VTX, standing up through the glove's antenna hole"}
   gps: {catalog: drone.gps.m9n_5883, proxy: box, color: "#303030", held_by: "double-sided foam tape in the glove's GPS pocket under the top skin, arrow forward (plastic only above it)"}
   camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], held_by: "2 x M2 x 6 through the nose cap's cheeks into its side holes"}
-  sweep_servo_r: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_r}, range: [0, 105.0]}
-  sweep_servo_l: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_l}, range: [-105.0, 0]}
+  sweep_servo_r: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_r}, range: [0, 105.1]}
+  sweep_servo_l: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_l}, range: [-105.1, 0]}
   sweep_horn_r: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_r}}
   sweep_horn_l: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_l}}
   pin_r: {catalog: rods.ss_rod_5, proxy: rod, length: 50, held_by: "pressed into the pod's floor plate; slip fit in the pivot cap"}
@@ -208,8 +208,8 @@ assembly:
     - {parent: pod_l.pin, child: pin_l.end_a}
     - {parent: pod_r.servo, child: sweep_servo_r.tabs}
     - {parent: pod_l.servo, child: sweep_servo_l.tabs}
-    - {parent: sweep_servo_r.output, child: sweep_horn_r.spline, name: sweep_srv_r, range: [0, 105.0], home: 0}
-    - {parent: sweep_servo_l.output, child: sweep_horn_l.spline, name: sweep_srv_l, range: [-105.0, 0], home: 0}
+    - {parent: sweep_servo_r.output, child: sweep_horn_r.spline, name: sweep_srv_r, range: [0, 105.1], home: 0}
+    - {parent: sweep_servo_l.output, child: sweep_horn_l.spline, name: sweep_srv_l, range: [-105.1, 0], home: 0}
     - {parent: sweep_horn_r.face, child: pinion_r.horn}
     - {parent: sweep_horn_l.face, child: pinion_l.horn}
     - {parent: hub_r.bear_top, child: bear_rt.face}
