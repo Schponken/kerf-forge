@@ -211,13 +211,14 @@ def item_locs(p):
     from build123d import Location
     b = p.bat_x
     hw = p.fuse_hw
+    electronics_x = -45.0  # shelf electronics stay put when the pack is slid forward to balance the wing
     return {"pad": Location((b, 0, BAY_FLOOR_Z)),
             "battery": Location((b, 0, BAY_FLOOR_Z + 3.0)),
             "strap": Location((b, 0, BAY_FLOOR_Z + 3.0 + 34.0)),
-            "xt60": Location((b - 43.5 - 14.0, 0, BAY_FLOOR_Z)),
-            "esc": Location((b + 5.0, 15.0, SHELF_TOP)),
-            "fc": Location((b - 12.0, -16.0, SHELF_TOP)),
-            "rx": Location((b + 24.0, -16.0, SHELF_TOP)),
+            "xt60": Location((-100.0, 0, -28.0)),
+            "esc": Location((electronics_x - 5.0, 15.0, SHELF_TOP)),
+            "fc": Location((electronics_x - 12.0, -16.0, SHELF_TOP)),
+            "rx": Location((electronics_x + 24.0, -16.0, SHELF_TOP)),
             "vtx": Location((VTX_X, 0, p.fuse_bottom + 15.0)),
             "vtx_ant": Location((VTX_X, 0, p.fuse_bottom + 23.0))}
 

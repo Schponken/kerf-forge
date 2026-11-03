@@ -114,7 +114,7 @@ params:
   fuse_bottom: {value: -70, unit: mm, min: -76, max: -64, step: 1, label: Fuselage bottom}
   fuse_hw: {value: 34, unit: mm, min: 33, max: 40, step: 1, label: Fuselage half width (battery bay)}
   motor_z: {value: -20, unit: mm, min: -30, max: -5, step: 1, label: Motor (thrust line) height}
-  bat_x: {value: -45, unit: mm, min: -70, max: 10, step: 1, label: Battery centre x (sets the CG)}
+  bat_x: {value: -68, unit: mm, min: -70, max: 10, step: 1, label: Battery centre x (sets the CG)}
 parts:
   fuselage: {file: parts/fuselage.py, material: PETG, print_rot: [0, -90, 0], infill: 0.15, walls: 3, load_axis: [X, Z]}
   nose: {file: parts/nose.py, material: PETG, print_rot: [0, -90, 0], infill: 0.1, walls: 2}
@@ -152,7 +152,7 @@ purchased:
             held_by: "a 20 mm strap round the pack and the bay floor's strap slots, on the anti-slip pad"}
   pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [87, 50, 3], color: "#303030", held_by: "self-adhesive on the bay floor, cut to the pack's footprint"}
   strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 58, 1.8], color: "#404040", held_by: "through the two floor slots and over the pack (Velcro)"}
-  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, lying on the bay floor ahead of the pack, reached through the hatch"}
+  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, above the pack through the shelf window, reached through the hatch"}
   esc: {catalog: drone.escs.skywalker_60a_v2, proxy: box, color: "#2050a0", held_by: "double-sided foam tape on the shelf plus one cable tie round the shelf"}
   fc: {catalog: drone.fcs.f405_wmo, proxy: box, color: "#204080", held_by: "double-sided foam tape (soft-mounts the gyro) on the shelf, arrow forward"}
   receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "double-sided tape on the shelf beside the FC; T antenna out along the fuselage side"}
@@ -460,4 +460,4 @@ requirements:
   item: xt60
   direction: [0, 0, 1]
   length_mm: 25
-  why: with the hatch off, the pack's XT60 plugs in from above, ahead of the pack
+  why: with the hatch off, the pack's XT60 plugs in from above through the shelf window

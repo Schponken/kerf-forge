@@ -1519,3 +1519,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - First scoped concept run completed in139.2 s: case_fit PASS at496.8 x325.6 x98 mm against unchanged500 x330 x220. Mass2131.2 g and spread margin0.0653 remain FAIL; half/folded/asymmetric margins pass.
 - Corrected the spar hand-check load station to actual hub end180 mm (larger unsupported span), inherited the pivot-relative hub taper fix, and added the physical external tail-lead exit to avoid the boom clamp screw. The new exit still needs geometry/check validation.
 - Weight and wiring repairs continue; no full build, independent design-review or flight readiness claim.
+
+## 2026-11-02 — Hawk balance candidate before integrated checks (Codex)
+- The battery moves23 mm forward and the ESC10 mm forward; XT60 moves above the pack through the existing shelf window so the pack can move without colliding with a connector ahead of it. FC/receiver retain their shelf positions. Nominal pack-to-bulkhead clearance0.5 mm, connector-to-pack vertical clearance1 mm.
+- No added ballast or reduced acceptance threshold. Candidate awaits one integrated wiring, geometry and engineering check; current known structural and mass failures remain open.

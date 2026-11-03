@@ -18,9 +18,9 @@ named next to it. Frame: X aft from the glove's leading edge at the centreline, 
    this (REFERENCES.md: 2 m thermal models run 26-38 g/dm2; sink rate goes as the square root of loading, so this one
    sinks ~2x faster at best glide). "Spread" is sold as slow, stable cruise and soft landings, not thermalling.
 2. **Power: 6S 1800 + iFlight 2806.5 1300 KV + HQ 7x4x3** (the quote's set, catalog-sourced), Skywalker 60A V2.
-3. **Stress simulations are paused repo-wide** (PAUSED.json, Spencer 2026-11-02). Every `fea_static` here reports
-   PAUSED: the strength of the glove corner, pods, caps and hubs is designed by the load path and the hand checks
-   below but is UNPROVEN until FEA is resumed. Nothing here is called strong because a paused check shows no failure.
+3. **Normal-flight strength simulations resumed** by Spencer on 2026-11-02. The installed baseline had no actual
+   `fea_static` requirements despite the intended load paths below. The glove, pods, caps and hubs remain UNPROVEN
+   until explicit, correctly loaded checks pass; the first hub diagnostic failed. See WEIGHT_AUDIT.md.
 4. Flown in dry weather; no rain cover. Radio, goggles, charger not included.
 
 ## How it works (plain words)
@@ -363,3 +363,5 @@ swing-wing publishes a failure log, so several rows rest on one report (DTFB F-1
 The installed source baseline at 5a98dc7 had a 517.8 x 355.6 x 98 mm case envelope, 2155 g estimated mass, and 7.36 % spread static margin. The current repair keeps every requirement and purchased component unchanged. The pivots move from y=150 to 135 mm, with hub outer faces 195 to 180 and spar inner ends 156 to 141: hub width 45 mm and spar engagement 39 mm are preserved. Glove pad widths and pod attachment offsets follow the pivot. The motor stand-off shortens 15 mm (nose -175 to -160); fuselage tail shortens 6 mm (300 to 294), leaving 24 mm behind the boom clamp screw at 270. These are real geometry changes, not excluded items in the case check. The first requirement run measured 496.8 x 325.6 x 98 mm and PASS for case_fit. Mass remained 2131.2 g and spread static margin 0.0653 (FAIL); half 0.3735, folded 0.9038 and asymmetric 0.3626 passed. Final mass and balance remain pending weight and wiring integration.
 
 Tail servo leads exit through a 9 mm teardrop in the right fuselage side at x=190, z=-38, then run outside under the boom. This avoids the transverse clamp screw through the boom bore. The hole points toward printed +X for a 45-degree roof.
+
+The single balance candidate slides the battery from x=-45 to -68 (nominal front x=-111.5), moves the ESC10 mm forward to x=-50, and keeps FC/receiver on their existing shelf seats. The XT60 moves above the pack at (-100,0,-28), within the existing shelf window, with1 mm nominal vertical clearance above the pack. No ballast is added. Final routed-wire mass and collision checks decide whether this candidate is acceptable.
