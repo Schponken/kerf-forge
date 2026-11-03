@@ -34,6 +34,50 @@ def _read_deps(path: Path) -> set[str] | None:
     return set(paths)
 
 
+def _typed_override(value, active: set):
+    """Exact native input identity, including container order and numeric type/sign."""
+    kind = type(value)
+    if value is None:
+        return ["null"]
+    if kind in (bool, str):
+        return [kind.__name__, value]
+    if kind is int:
+        return ["int", str(value)]
+    if kind is float:
+        if not _m.isfinite(value):
+            raise ValueError("numeric override must be finite")
+        return ["float", value.hex()]
+    if kind not in (list, dict):
+        raise ValueError(f"unsupported override type: {kind.__name__}")
+    if id(value) in active:
+        raise ValueError("cyclic override container")
+    active.add(id(value))
+    try:
+        if kind is list:
+            return ["list", [_typed_override(v, active) for v in value]]
+        return ["dict", [[_typed_override(k, active), _typed_override(v, active)] for k, v in value.items()]]
+    finally:
+        active.remove(id(value))
+
+
+def _override_signature(data: dict, overrides: dict | None) -> bytes:
+    if not overrides:
+        return b""
+    if any(type(k) is not str for k in overrides):
+        raise ProjectError("override parameter names must be strings")
+    inputs = {"params": data.get("params")}
+    defaults, values = param_values(inputs), param_values(inputs, overrides)
+    changed = []
+    for name in sorted(overrides):
+        try:
+            identity = _typed_override(values[name], set())
+            if identity != _typed_override(defaults[name], set()):
+                changed.append([name, identity])
+        except (ValueError, RecursionError) as e:
+            raise ProjectError(f"override '{name}': {e}") from e
+    return json.dumps(["kerf-overrides-v1", changed], separators=(",", ":")).encode() if changed else b""
+
+
 @dataclass
 class Item:
     id: str
@@ -55,6 +99,7 @@ class Project:
     data: dict
     params: dict
     items: dict = field(default_factory=dict)
+    override_signature: bytes = field(default=b"", repr=False)
 
     @property
     def printed(self):
@@ -69,7 +114,8 @@ class Project:
         """Declared design inputs, used catalog entries and measured fits; no engine code or generated outputs.
 
         Keep the legacy hash stream for covered inputs so ordinary projects do not need a new review merely
-        because coverage improved. New inputs include their project-relative path to distinguish nested helpers.
+        because coverage improved. New inputs include their project-relative path to distinguish nested helpers;
+        typed override input signatures distinguish temporary variants without changing the saved contract.
         """
         from . import sources
         try:
@@ -103,6 +149,8 @@ class Project:
                     h.update(b"\0input\0" + relative.encode() + b"\0")
                     h.update(len(content).to_bytes(8, "big"))
                     h.update(content)
+            if self.override_signature:
+                h.update(b"\0overrides\0" + self.override_signature)
             return h.hexdigest()[:16]
         except (OSError, ValueError) as e:
             raise ProjectError(f"Cannot fingerprint design inputs: {e}") from e
@@ -149,7 +197,8 @@ def load(name_or_path: str, overrides: dict | None = None) -> Project:
     for key in ("name", "parts", "assembly"):
         if key not in data:
             raise ProjectError(f"{d.name}/project.yaml is missing '{key}'")
-    proj = Project(name=data["name"], dir=d, data=data, params=param_values(data, overrides))
+    signature = _override_signature(data, overrides)  # snapshot original inputs before derived/layout can shadow them
+    proj = Project(name=data["name"], dir=d, data=data, params=param_values(data, overrides), override_signature=signature)
     stressed = {r.get("part") for r in data.get("requirements") or [] if r.get("check") in ("fea_static", "cantilever_stress")}
     stressed_files = {(data.get("parts") or {}).get(q, {}).get("file") for q in stressed}
     for pid, spec in (data.get("parts") or {}).items():
