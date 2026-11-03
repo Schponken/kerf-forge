@@ -189,11 +189,49 @@ def _job(source, now):
     return item
 
 
+def _join_active_job(job, source, session, observed):
+    """One exact active run: Studio owns the lifecycle; fresh live chat context can fill missing detail."""
+    for key in ("chat_id", "url", "branch", "source_detail", "picture", "claimed_tasks"):
+        if session.get(key):
+            job[key] = session[key]
+    job["chat_title"] = session.get("chat_title") or session["title"]
+    job["description"] = plain(observed.get("description"), 3000) or session["description"] or job["description"]
+    job["projects"] = _projects({"projects": job["projects"] + session["projects"]})
+    job["source_label"] += " + " + session["source_label"]
+    updated, started = number(observed.get("updated_at")), job["started_at"]
+    # Codex reports whole seconds; ordering within the same second is unknowable.
+    fresh = observed.get("live") is True and updated is not None and started is not None and int(updated) >= int(started)
+    attention = [job["attention"]] if job["attention"] else []
+    boundary = next((e.get("k") for e in reversed(source.get("events") or []) if isinstance(e, dict)
+                     and (e.get("k") in ("hint", "done") or (e.get("k") == "note" and plain(e.get("text"))))), None)
+    runtime_fresh = fresh and int(updated) >= int(job["updated_at"] or 0) and not attention and boundary not in ("hint", "done")
+    if fresh:
+        job["updated_at"] = max(job["updated_at"] or 0, updated)
+        job["progress"], job["remaining"] = session["progress"], session["remaining"]
+        if job["activity"] == "Starting the job; waiting for its first update.":
+            job["activity"], job["action"] = session["activity"], session["action"]
+        if runtime_fresh and session["state"] == "waiting":
+            job["state"], job["status_label"] = "waiting", session["status_label"]
+            job["action"] = ""
+            if session["attention"]:
+                attention.append(session["attention"])
+    claims = session.get("claimed_tasks") or []
+    count = sum(bool(c["attention"]) for c in claims)
+    if count:
+        attention.append(f"{count} claimed task{'s need' if count != 1 else ' needs'} attention. "
+                         "Open scope to review each owner's update.")
+    job["attention"] = " ".join(dict.fromkeys(attention)) or None
+
+
 def overview(data: dict, sessions=(), jobs=(), sources=(), now=None) -> dict:
     """A fresh, read-only view; callers may cache git data independently of live session/job observations."""
     now = time.time() if now is None else now
     observed = [s for s in sessions if isinstance(s, dict)]
     items = [_item(s, "session", now) for s in observed]
+    by_chat = {}
+    for observed_session, item in zip(observed, items):
+        if item["provider"] == "Codex" and isinstance(item["chat_id"], str) and item["chat_id"].strip():
+            by_chat.setdefault(item["chat_id"], []).append((observed_session, item))
     by_id = {i["id"].removeprefix("session:"): i for i in items}
     linked_claims = {}
     for claim in data.get("cards", []):
@@ -243,7 +281,22 @@ def overview(data: dict, sessions=(), jobs=(), sources=(), now=None) -> dict:
                 item["progress"] = {"done": sum(c["progress"]["done"] for c in scopes),
                                     "total": sum(c["progress"]["total"] for c in scopes), "label": "claimed task steps"}
                 item["remaining"] = [f"{c['title']}: {step}" for c in scopes for step in c["remaining"]]
-    job_items = [_job(j, now) for j in jobs if isinstance(j, dict)]
+    raw_jobs = [j for j in jobs if isinstance(j, dict)]
+    job_items = [_job(j, now) for j in raw_jobs]
+    active_by_chat = {}
+    for source, item in zip(raw_jobs, job_items):
+        thread_id = source.get("session")
+        if item["provider"] == "Codex" and item["state"] == "running" and isinstance(thread_id, str) and thread_id.strip():
+            active_by_chat.setdefault(thread_id, []).append((source, item))
+    absorbed = set()
+    for thread_id, matching in active_by_chat.items():
+        observations = by_chat.get(thread_id, [])
+        if len(matching) == len(observations) == 1:
+            observed_session, session = observations[0]
+            source, item = matching[0]
+            _join_active_job(item, source, session, observed_session)
+            absorbed.add(id(session))
+    items = [i for i in items if id(i) not in absorbed]
     by_job = {i["job_id"]: i for i in job_items}
     for item in job_items:
         if target_id := item.get("continued_by"):

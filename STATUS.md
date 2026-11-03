@@ -908,3 +908,31 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   `kerf doctor`: **ALL OK**, existing optional firmware tooling unavailable. One Impeccable mechanical scan
   found 13 existing patterns outside the changed selector. Budget/batch/process checks preceded runs; no real
   project, agent, physical check, full suite or batch run. Stacked on PR #40; no self-merge.
+
+## 2026-11-03 02:11 UTC — One active Studio run and its exact Codex chat (Codex)
+- Reproduced through actual `studio.work()` serialization: one running Studio Codex job and its observed chat
+  produced two running cards because the serializer omitted `Job.session`. It now carries that identity; overview
+  folds exactly one running Codex agent job into exactly one observed Codex thread with the same explicit nonempty
+  ID. No title/project/time matching. Multiple active matches and paused/continued/done/failed/stopped history stay
+  separate, preserving observed continuation links.
+- The combined card keeps stable `job:<id>`, Watch job and Open chat, the full chat ID/title, public description,
+  branch/projects and every claimed owner's scope/checklist/attention. Studio notes and bounded actions remain
+  authoritative; only its literal startup placeholder can use a fresh live chat summary. Saved/pre-start chat
+  activity/checklists do not become current progress, and finish ETA stays unknown. Live input waits must also be
+  at least as recent as the latest job update, with no setup attention or latest hint/done boundary; cleanup tool
+  events cannot resurrect an obsolete approval request. Claim-owner warnings remain independently visible.
+- Stacked on reviewed job-description PR #41 (`101003f`), itself based on #37; `_job` and frontend code are untouched.
+  Validation: **98 passed, 2 browser nodes deselected in 0.14 s** (new dedup cases plus job states/activity/overview);
+  dedicated discovery/refresh browser node **1 passed in 4.86 s**; two final note-precedence cases plus three docs
+  contract checks **5 passed in 2.16 s**. These initial selections do not overlap. Browser markers are explicit; this
+  stack retains the known marker-registration warning until pending fast-tests config lands.
+- Final review caught timestamp precision: installed Codex app-server schema defines thread updatedAt as int64 Unix
+  seconds, while Studio start/events use fractional seconds. Same-second wait fixtures first produced **2 failed /
+  2 passed in 0.06 s**. Freshness now compares whole-second buckets; ordering within a second is explicitly unknown,
+  genuinely older seconds remain stale, and hint/done/attention still win. The affected dedup core file then had
+  **35 passed, 1 browser deselected in 0.05 s**, overlapping the earlier selection; not added as unique tests.
+- Browser fixtures use actual serialized data without agents: job-only to joined refresh keeps keyboard focus and
+  open details, both controls, two owner scopes and full IDs at 1440/390 px in dark/light themes. Captures are in
+  `.cache/work-job-dedup/`; inspected dark desktop and light phone. Existing tall phone sidebar is addressed by the
+  separate mobile-shell PR #40. `kerf doctor`: **ALL OK**, existing optional firmware tools unavailable. No UI redesign,
+  real chat/process, timer, project build, stress solve or full suite.
