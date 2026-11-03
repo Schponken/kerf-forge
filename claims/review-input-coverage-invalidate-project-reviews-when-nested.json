@@ -2,9 +2,9 @@
  "item": "Review input coverage: invalidate project reviews when nested helpers or declared part, layout, imported, Meshy and source_files inputs change or disappear; exclude generated outputs and unrelated catalog entries.",
  "session": "codex-review-inputs",
  "since": 1793661941.719689,
- "heartbeat": 1793668975.530786,
+ "heartbeat": 1793669426.5354729,
  "provider": "Codex",
  "thread_id": "01a19e35-36af-7000-955d-7cf26845e15b",
  "since_utc": "2026-11-02 23:25",
- "activity": "Resumed dependency coverage; checking cached tiny geometry fixture and fail-closed reports"
+ "activity": "All63 focused review-input/cache/archive checks pass; preparing scoped reviewed PR"
 }
