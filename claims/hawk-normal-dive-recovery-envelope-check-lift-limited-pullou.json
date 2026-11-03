@@ -2,8 +2,9 @@
  "item": "Hawk normal dive/recovery envelope: check lift-limited pullout against actual mass, distinguish equivalent/true airspeed and altitude, document deployment gates and unproven aerodynamic/structural limits.",
  "session": "codex-hawk-dive-recovery",
  "since": 1793680948.874078,
- "heartbeat": 1793680948.874078,
+ "heartbeat": 1793681175.705065,
  "provider": "Codex",
  "thread_id": "01a19f9f-9b5f-7f31-987c-720a8623d79b",
- "since_utc": "2026-11-03 04:42"
+ "since_utc": "2026-11-03 04:42",
+ "activity": "Lower-speed dive envelope screened; unknown structure remains blocking; publishing for integrated check"
 }
