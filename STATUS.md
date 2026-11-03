@@ -697,3 +697,31 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   13 existing patterns outside the edited sidebar rule. `kerf doctor`: **ALL OK**, existing optional firmware
   tools unavailable. Budget off, batch held, duplicate-process status checked; no real project/agent, full suite,
   stress or batch run. Stacked on PR #37 for independent review, never self-merged.
+
+## 2026-11-03 02:13 UTC — mobile Work puts tasks ahead of the project catalog (Codex)
+- One mobile-only CSS rule hides the sidebar project search/list while `#main` directly contains the rendered
+  Work page. Existing All projects navigation restores the searchable catalog; normal project pages, New design
+  and desktop retain it. Using the rendered page avoids adding route state and does not depend on the unrelated
+  pending asynchronous navigation fix. Browsers without `:has` retain the previous accessible sidebar layout.
+- Activity, saved Options ready, New design, All projects, My parts, Work, help, theme, quit, printer and mute
+  controls remain. The existing sidebar/list scroll behavior and 44vh ceiling remain; no JavaScript, backend,
+  navigation lifecycle or native-app behavior changed. The prior shell regression now exercises its original
+  strict catalog/scroll assertions through All projects instead of Work.
+- Same populated fixture (30 projects / 30 jobs), viewed before/after: at 390x844 the sidebar shrinks
+  371.36 -> 223px (148.36px recovered); at 390x1000 it shrinks 440 -> 223px (217px recovered). Task descriptions
+  and progress context now fit higher in the first viewport. Captures are in
+  `.cache/work-mobile-navigation/work-populated-{dark,light}-390-{844,1000}.png`; the before captures are PR #40's
+  `.cache/mobile-shell/after/work-populated-*.png` in the work-mobile-shell worktree. Short landscape screens
+  still use the height cap and scrolling; no claim that all jobs or task details fit simultaneously.
+- Validation: **6 focused browser tests passed in 37.16 s**: `tests/test_work_mobile_navigation.py`,
+  `tests/test_mobile_shell.py`, both `tests/test_work_page.py` cases, `tests/test_work_job_page.py`, and
+  `tests/test_usability.py::test_phone_tune_and_connection_recovery`. New coverage includes four phone dimensions,
+  both themes, 30 projects/jobs, keyboard/scroll access, saved options, actual project navigation, New design,
+  viewport resizing, nested class isolation and no horizontal overflow. Desktop remains 292px wide. Three
+  expected browser-marker warnings remain until the pending fast-tests configuration lands.
+- Initial selection: 5 pass / 1 new-fixture failure from an overly broad HTML placeholder replacement, fixed
+  with a unique placeholder. The next node exposed Chromium's one-frame stale geometry immediately after
+  resizing; a condition-based wait now precedes the unchanged exact size assertion (no arbitrary sleep).
+  `kerf doctor`: **ALL OK**, existing optional firmware tooling unavailable. One Impeccable mechanical scan
+  found 13 existing patterns outside the changed selector. Budget/batch/process checks preceded runs; no real
+  project, agent, physical check, full suite or batch run. Stacked on PR #40; no self-merge.
