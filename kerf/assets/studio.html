@@ -1996,7 +1996,7 @@ async function pollJobs() {
     }
     const active = d.jobs.filter(j => j.state === "running").length + (d.sessions || []).length;
     $("#activitycount").textContent = active || "";
-    $("#activitybtn").setAttribute("aria-label", `Activity${active ? `, ${active} running jobs or sessions` : ""}`);
+    $("#activitybtn").setAttribute("aria-label", `Activity${active ? `, ${active} running jobs or claimed assignments` : ""}`);
     const J = [...d.jobs.filter(j => j.state === "running"), ...d.jobs.filter(j => j.state !== "running").slice(0, 3)];
     const SS = (d.sessions || []).filter(x => !J.some(j => j.state === "running" && j.project === x.project));
     $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<button type="button" class="job" onclick="closeShell(false);openJob('${j.id}')" title="${esc(j.tail[0] || "")}">
