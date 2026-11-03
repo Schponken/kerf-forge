@@ -309,10 +309,10 @@ requirements:
 - id: spar_bending
   check: spar_bending
   tubes: [rods.cf_tube_8x6, rods.cf_tube_6x4]
-  y_root: 195
+  y_root: 180
   load_factor: 6
   sf: 1.5
-  why: 6 g pull-out on an elliptical lift distribution where the tubes leave the hub (y 195 = hub_y1); SF 1.5 on the low tensile strength figure
+  why: 6 g pull-out on an elliptical lift distribution where the tubes leave the hub (y 180 = hub_y1); SF 1.5 on the low tensile strength figure
 - id: fold_pull_r
   check: fold_hinge_moment
   joint: fold_r

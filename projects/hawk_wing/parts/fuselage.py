@@ -15,7 +15,7 @@ heat-set insert below the bore, so the boom can neither slide nor roll (tail inc
 from build123d import *
 import importlib.util, pathlib
 from kerf import aero, iface
-from kerf.features import fillet_inside
+from kerf.features import fillet_inside, teardrop_hole
 
 _spec = importlib.util.spec_from_file_location("hw_layout", pathlib.Path(__file__).with_name("layout.py"))
 L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
@@ -153,6 +153,11 @@ def build(ctx):
     body -= ctx.cut(Pos(TONGUE_X0 - 0.5, -7.0, POCKET_Z) * Box(SEAT_X[0] + 3.0 - (TONGUE_X0 - 0.5), 14.0, SEAT_Z - POCKET_Z, align=(Align.MIN, Align.MIN, Align.MIN)),
                     why="pocket under the lip: the clamp's tongue holds its front end down", kind="pocket")
     body -= iface.bolt_pattern(ctx, "boom_clamp", "M3", [(0, 0)], Location((CLAMP_X, 0, bz - (p.boom_od + 0.2) / 2)), kind="heatset", depth=8.0, teardrop="auto")
+
+    # Tail leads leave beside the VTX, then run externally under the boom clear of its transverse clamp screw.
+    lead_exit = Plane(origin=(190.0, 40.0, -38.0), x_dir=(1, 0, 0), z_dir=(0, 1, 0))
+    body -= ctx.cut(lead_exit * teardrop_hole(9.0, 24.0, up_deg=0.0),
+                    why="tail servo plugs exit to the boom exterior; 45-degree roof follows printed +X up", kind="wire hole")
 
     # ---- joints
     for k in ("nose", "motor_mount", "glove", "hatch", "boom_clamp", "tail"):

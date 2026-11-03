@@ -358,6 +358,8 @@ swing-wing publishes a failure log, so several rows rest on one report (DTFB F-1
 
 (filled after the build)
 
-## 2026-11-02 repair checkpoint (not yet verified)
+## 2026-11-02 repair checkpoint
 
-The installed source baseline at 5a98dc7 had a 517.8 x 355.6 x 98 mm case envelope, 2155 g estimated mass, and 7.36 % spread static margin. The current repair keeps every requirement and purchased component unchanged. The pivots move from y=150 to135 mm, with hub outer faces195 to180 and spar inner ends156 to141: hub width45 mm and spar engagement39 mm are preserved. Glove pad widths and pod attachment offsets follow the pivot. The motor stand-off shortens15 mm (nose -175 to-160); fuselage tail shortens6 mm (300 to294), leaving24 mm behind the boom clamp screw at270. These are real geometry changes, not excluded items in the case check. Final measurements and static margin remain pending weight and wiring integration.
+The installed source baseline at 5a98dc7 had a 517.8 x 355.6 x 98 mm case envelope, 2155 g estimated mass, and 7.36 % spread static margin. The current repair keeps every requirement and purchased component unchanged. The pivots move from y=150 to 135 mm, with hub outer faces 195 to 180 and spar inner ends 156 to 141: hub width 45 mm and spar engagement 39 mm are preserved. Glove pad widths and pod attachment offsets follow the pivot. The motor stand-off shortens 15 mm (nose -175 to -160); fuselage tail shortens 6 mm (300 to 294), leaving 24 mm behind the boom clamp screw at 270. These are real geometry changes, not excluded items in the case check. The first requirement run measured 496.8 x 325.6 x 98 mm and PASS for case_fit. Mass remained 2131.2 g and spread static margin 0.0653 (FAIL); half 0.3735, folded 0.9038 and asymmetric 0.3626 passed. Final mass and balance remain pending weight and wiring integration.
+
+Tail servo leads exit through a 9 mm teardrop in the right fuselage side at x=190, z=-38, then run outside under the boom. This avoids the transverse clamp screw through the boom bore. The hole points toward printed +X for a 45-degree roof.

@@ -1514,3 +1514,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Coordinated ownership: glove/hub only. Made the hub box taper relative to pivot_y so the integration
   worker's inward pivot move preserves the original section transition. Python compilation passed;
   CAD/normal-flight strength verification and actual weight reduction are still pending.
+
+## 2026-11-02 — Hawk physical packaging measured (Codex)
+- First scoped concept run completed in139.2 s: case_fit PASS at496.8 x325.6 x98 mm against unchanged500 x330 x220. Mass2131.2 g and spread margin0.0653 remain FAIL; half/folded/asymmetric margins pass.
+- Corrected the spar hand-check load station to actual hub end180 mm (larger unsupported span), inherited the pivot-relative hub taper fix, and added the physical external tail-lead exit to avoid the boom clamp screw. The new exit still needs geometry/check validation.
+- Weight and wiring repairs continue; no full build, independent design-review or flight readiness claim.
