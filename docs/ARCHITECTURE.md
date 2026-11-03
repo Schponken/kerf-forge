@@ -94,9 +94,19 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/fwcheck.py` | Firmware proof (`kerf firmware-check <p>`, and every `kerf build` with a generated program -> `out/firmware/FIRMWARE_CHECK.json`, a FAIL is a build problem): compiles every matching Nano / Nano + PCA9685 sketch folder with arduino-cli 1.3.1 for `arduino:avr:nano` (core arduino:avr 1.8.6; Servo 1.2.2, Adafruit PWM Servo Driver 3.0.2, Adafruit BusIO 1.16.2; installed pinned under `.cache/arduino` by setup.sh), runs it in simavr through `kerf/assets/avrsim.c` (ATmega328P at 16 MHz; Serial commands c, s, x; records every high pulse on D0-D13/A0-A5, and answers I2C as a PCA9685 at 0x40 whose register writes are decoded into pulse widths with auto-increment, sleep-only PRE_SCALE and the sketch's 27 MHz oscillator); Pi scripts are byte-compiled and run against a stub PWM sysfs tree that records every write. Checks per joint: pulses only on wired outputs, none before the first command, inside PULSE_LIMITS, 50 Hz frame, 1500 us after c, the sweep never past +/- the nearer end of the range (and reaching it, ending at centre), no pulses after x. Mixed direct Nano/PCA9685 outputs are routed and checked separately at their original tolerances; PCA channels consume no Nano Servo slots. Missing tools give NOT RUN (kerf doctor warns), never PASS. Setup/checks pass the session proxy through the supported ARDUINO_NETWORK_PROXY setting; [usage and validation](FIRMWARE_CHECKS.md) |
 | `kerf/export.py` | STEP assembly, STL/3MF per part, plate packing, GLB, BOM (with a buy / source link column) |
 | `kerf/pipeline.py` | Runs everything for a project, writes `out/report.json`, renders via `tools/render/render.mjs` (parts drawn as plastic, not glTF's default metal; near-black parts lifted with light edges; a 10 mm grid plate as the floor; `labels` = call-outs with leaders, `focus` = camera framed on those nodes with context, `title` = a line on the sheet). Assembly-step images: a bench sub-assembly alone, otherwise the parts on so far plus this step's parts in colour, framed and labelled, this step's screws in red backed out of their holes, earlier screws grey; part sheets carry the overall size and show the part as printed on the plate |
-| `kerf/cli.py` | `kerf doctor | req | diary | lookback | gallery | simulate | check | build | run --mode | verify | review-status | new | modules | status | calibrate | feedback | find | fixes | price | print | review-pack | optimise | printer | studio | firmware-check` |
+| `kerf/agent.py` | Studio job agent selection (`auto`, `claude`, `codex`), command construction, Claude usage-limit takeover eligibility and Codex JSONL progress translation. `kerf agent [mode]` reads or sets the selection mode. Tests: tests/test_agent.py |
+| `kerf/cli.py` | `kerf doctor | agent | req | diary | lookback | gallery | simulate | check | build | run --mode | verify | review-status | new | modules | status | calibrate | feedback | find | fixes | price | print | review-pack | optimise | printer | studio | firmware-check` |
 
 ## project.yaml
+Parameter resolution rejects nonfinite real scalar numbers in `params`, programmatic overrides and numeric `derived`
+results before geometry starts, with the field name in `ProjectError`. A base number that cannot convert to the
+existing float representation reports that conversion overflow with its parameter name; derived evaluation errors
+retain the expression context. Checks do not coerce enum/string/list values (a literal string `"nan"` stays a string),
+recursively inspect containers, or impose parameter `min`/`max` globally; those remain UI/optimiser controls. Existing
+Boolean behavior and override types are preserved. Derived expressions still evaluate in declaration order and produce
+floats. Tests: tests/test_parameters.py, including real scalar overrides, finite fractions/large integers, enum/list
+values and failure before the geometry builder.
+
 ```yaml
 name: Servo test rig
 printer: Bambu Lab A2L          # bed size for checks and plates

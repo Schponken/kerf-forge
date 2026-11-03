@@ -7,6 +7,7 @@ import importlib.util
 import sys
 import time
 from dataclasses import dataclass, field
+from numbers import Real
 from pathlib import Path
 
 import yaml
@@ -95,21 +96,33 @@ def resolve_dir(name_or_path: str) -> Path:
     raise ProjectError(f"no project.yaml at '{name_or_path}' or projects/{name_or_path}")
 
 
+def _finite_param(value, where):
+    # Compare real scalars without coercing finite large integers/fractions or nonnumeric enum/list values.
+    if isinstance(value, Real) and (value != value or value == _m.inf or value == -_m.inf):
+        raise ProjectError(f"{where}: numeric parameter must be finite")
+    return value
+
+
 def param_values(data: dict, overrides: dict | None = None) -> dict:
     vals = {}
     for k, v in (data.get("params") or {}).items():
         val = v["value"] if isinstance(v, dict) else v
-        vals[k] = float(val) if isinstance(val, (int, float)) else val
+        try:
+            val = float(val) if isinstance(val, (int, float)) else val
+        except OverflowError as e:
+            raise ProjectError(f"param '{k}': numeric value is too large for a finite float") from e
+        vals[k] = _finite_param(val, f"param '{k}'")
     for k, v in (overrides or {}).items():
         if k not in vals:
             raise ProjectError(f"unknown param override '{k}'")
-        vals[k] = v
+        vals[k] = _finite_param(v, f"override '{k}'")
     # derived values: evaluated in order, may use earlier params (python expressions over params only)
     for k, expr in (data.get("derived") or {}).items():
         try:
-            vals[k] = float(eval(str(expr), {"__builtins__": {}}, {**_MATH, **vals}))
+            value = float(eval(str(expr), {"__builtins__": {}}, {**_MATH, **vals}))
         except Exception as e:  # noqa: BLE001
             raise ProjectError(f"derived '{k}' = {expr!r}: {e}") from e
+        vals[k] = _finite_param(value, f"derived '{k}' = {expr!r}")
     return vals
 
 

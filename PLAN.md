@@ -11,6 +11,7 @@ tested before handoff.
 - [x] Engine core: part contract (`ctx`), project loader, joint-tree solver, interference, motion sweeps, coupled-pose sweeps, fastener alignment + screw sizing
 - [x] Print checks per part: single solid, valid, fits printer, watertight, overhang %, wall thickness, mass
 - [x] Mass input validation: reject invalid infill, fractional/negative wall counts and nonfinite/negative explicit purchased masses before geometry and direct mass/print output; preserve valid defaults, zero boundaries and consistent numeric strings; synthetic and adjacent print-package tests.
+- [x] Finite parameter contract: reject actual nonfinite real scalar base, override and derived parameter results before geometry with field context; preserve valid enums/strings/lists, Boolean semantics and existing bounds policy.
 - [x] Requirement checks: mass_max, size_max, distance, clearance_min, static_torque, thrust_to_weight
 - [x] FEA: linear static stress/deflection (gmsh mesh + scikit-fem quadratic tets) validated against beam theory and axial bars (`tests/test_fea.py`); `fea_static` requirement with regions by box, fastener group or joint, layer-direction-aware strength
 - [x] Exports: STEP assembly, STL + 3MF per part, A2L plate packing, GLB, BOM (printed, purchased, screws, inserts)
