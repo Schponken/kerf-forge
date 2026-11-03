@@ -771,29 +771,54 @@ fetch("/api/glossary").then(r => r.json()).then(g => {
   if (S.detail) renderTab();
 }).catch(() => {});
 function glossCheck(c) { return GL.checks[c] || {name: c || "", means: ""}; }
-function glossify(root) {   // wraps the first use of each glossary word in this element (never inside inputs, code or links)
+function glossify(root) {   // every occurrence is explainable where it appears; never wrap inputs, code or links
   if (!GL.rx || !root) return;
-  const seen = new Set(), walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n =>
+  const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n =>
     n.parentElement.closest("code,pre,a,button,input,select,textarea,label,abbr,script,style,svg,iframe,th,h1,.key,.num,.ipart,[title]") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
   const nodes = []; while (walk.nextNode()) nodes.push(walk.currentNode);
   for (const n of nodes) {
     let node = n, m;
     while (node && (m = GL.rx.exec(node.nodeValue))) {
       const word = m[2], key = word.toLowerCase(), at = m.index + m[1].length;
-      if (seen.has(key)) { const rest = node.splitText(at + word.length); node = rest; continue; }
-      seen.add(key);
       const mid = node.splitText(at), rest = mid.splitText(word.length);
-      const ab = document.createElement("abbr"); ab.className = "gl"; ab.textContent = word; ab.title = GL.terms[key][1]; ab.tabIndex = 0;
+      const ab = document.createElement("abbr"); ab.className = "gl"; ab.textContent = word; ab.tabIndex = 0;
       ab.setAttribute("role", "button"); ab.setAttribute("aria-label", `Explain ${word}`); ab.setAttribute("aria-haspopup", "dialog");
       const open = e => { e.preventDefault(); e.stopPropagation(); definition(ab, GL.terms[key]); };
       ab.onclick = open; ab.onkeydown = e => { if (e.key === "Enter" || e.key === " ") open(e); };
+      ab.onpointerenter = e => { if (e.pointerType !== "touch") definition(ab, GL.terms[key], false); };
+      ab.onfocus = () => { if (!restoringGuideFocus) definition(ab, GL.terms[key], false); };
       mid.replaceWith(ab); node = rest;
     }
   }
 }
-function definition(anchor, [word, meaning]) {
-  const el = guidePanel(anchor, "Word explained", `<h2>${esc(word)}</h2><p>${esc(meaning)}</p><div class="guide-actions"><button data-glossary>Browse all words</button></div>`);
+function definition(anchor, [word, meaning], focus = true) {
+  if (GUIDE?.opener === anchor) {
+    if (focus) GUIDE.el.querySelector("button").focus({preventScroll:true});
+    return;
+  }
+  const el = guidePanel(anchor, "Word explained", `<h2>${esc(word)}</h2><p>${esc(meaning)}</p><div class="guide-actions"><button data-glossary>Browse all words</button></div>`, focus);
+  anchor.setAttribute("aria-describedby", "guide-description");
   el.querySelector("[data-glossary]").onclick = () => showGlossary();
+  let timer;
+  const cancel = () => clearTimeout(timer), leave = () => {
+    cancel();
+    // Bridge the gap to the definition without making it disappear under the pointer.
+    timer = setTimeout(() => {
+      if (!anchor.matches(":hover,:focus") && !el.matches(":hover,:focus-within")) closeGuide(false);
+    }, 250);
+  };
+  for (const target of [anchor, el]) {
+    target.addEventListener("pointerenter", cancel); target.addEventListener("pointerleave", leave);
+    target.addEventListener("focusin", cancel); target.addEventListener("focusout", leave);
+  }
+  const cleanup = GUIDE.cleanup;
+  GUIDE.cleanup = () => {
+    cancel(); cleanup(); anchor.removeAttribute("aria-describedby");
+    for (const target of [anchor, el]) {
+      target.removeEventListener("pointerenter", cancel); target.removeEventListener("pointerleave", leave);
+      target.removeEventListener("focusin", cancel); target.removeEventListener("focusout", leave);
+    }
+  };
 }
 function showGlossary() {   // native dialog owns focus, Escape and the background while searching
   const opener = GUIDE?.opener || document.activeElement;
@@ -810,7 +835,10 @@ function showGlossary() {   // native dialog owns focus, Escape and the backgrou
   document.body.appendChild(el);
   el.querySelector("[data-close]").onclick = () => el.close();
   el.addEventListener("click", e => { if (e.target === el) { const r=el.getBoundingClientRect(); if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) el.close(); } });
-  el.addEventListener("close", () => { el.remove(); if (opener?.isConnected) opener.focus({preventScroll:true}); });
+  el.addEventListener("close", () => {
+    el.remove();
+    if (opener?.isConnected) { restoringGuideFocus = true; opener.focus({preventScroll:true}); restoringGuideFocus = false; }
+  });
   el.addEventListener("keydown", e => {
     if(e.key!=="Tab")return;
     const focusable=[...el.querySelectorAll("button,input,[tabindex='0']")].filter(e=>e.getClientRects().length);
@@ -1287,12 +1315,15 @@ const PAGE_GUIDE = {
   docs: ["Read the design’s reasoning", "These documents record the plan, sources and decisions behind the object."],
   history: ["Follow the design’s story", "Compare saved builds. Their results describe those versions and may not apply to the current design."]
 };
-let GUIDE = null;
+let GUIDE = null, restoringGuideFocus = false;
 function closeGuide(restore = true) {
   if (!GUIDE) return;
-  const current = GUIDE; GUIDE = null; current.cleanup(); current.el.remove();
+  const current = GUIDE, returnFocus = current.restoreFocus !== false || current.el.contains(document.activeElement);
+  GUIDE = null; current.cleanup(); current.el.remove();
   current.opener?.setAttribute("aria-expanded", "false");
-  if (restore && current.opener?.isConnected) current.opener.focus({preventScroll:true});
+  if (restore && returnFocus && current.opener?.isConnected) {
+    restoringGuideFocus = true; current.opener.focus({preventScroll:true}); restoringGuideFocus = false;
+  }
 }
 function placeGuide(panel, anchor) {
   const gap = 12, r = anchor?.getBoundingClientRect(), b = panel.getBoundingClientRect();
@@ -1301,7 +1332,7 @@ function placeGuide(panel, anchor) {
   if (top+b.height > innerHeight-gap) top = r ? r.top-b.height-gap : gap;
   panel.style.left = `${left}px`; panel.style.top = `${Math.max(gap, Math.min(top, innerHeight-b.height-gap))}px`;
 }
-function guidePanel(opener, label, body) {
+function guidePanel(opener, label, body, focus = true) {
   closeGuide(false);
   const el = document.createElement("section"); el.className="guide-popover"; el.id="studio-guide";
   el.setAttribute("role","dialog"); el.setAttribute("aria-label",label);
@@ -1313,8 +1344,8 @@ function guidePanel(opener, label, body) {
   const position=()=>{if(opener&&!opener.isConnected){closeGuide(false);return;}placeGuide(el,opener);}, key=e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeGuide();}},
     outside=e=>{if(!el.contains(e.target)&&!opener?.contains(e.target))closeGuide(false);};
   document.addEventListener("keydown",key,true); document.addEventListener("pointerdown",outside); window.addEventListener("resize",position); document.addEventListener("scroll",position,true);
-  GUIDE={el,opener,cleanup:()=>{document.removeEventListener("keydown",key,true);document.removeEventListener("pointerdown",outside);window.removeEventListener("resize",position);document.removeEventListener("scroll",position,true);}};
-  el.querySelector(".guide-close").onclick=()=>closeGuide(); position(); el.querySelector("button").focus({preventScroll:true}); return el;
+  GUIDE={el,opener,restoreFocus:focus,cleanup:()=>{document.removeEventListener("keydown",key,true);document.removeEventListener("pointerdown",outside);window.removeEventListener("resize",position);document.removeEventListener("scroll",position,true);}};
+  el.querySelector(".guide-close").onclick=()=>closeGuide(); position(); if (focus) el.querySelector("button").focus({preventScroll:true}); return el;
 }
 function explainPage(anchor) {
   if (GUIDE?.el.classList.contains("guide-popover")) { closeGuide(); return; }

@@ -995,3 +995,19 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   Per shared usage limit, final CSS confirmation belongs to the manager's single integrated shell review.
 - Doctor ALL OK; batch HELD and process checks preceded targeted tests. One Impeccable detector run found only
   existing out-of-scope patterns. No installs, full suite, geometry builds, FEA, review.json, backend or live jobs.
+
+
+## 2026-11-02 — Definitions directly at the word (Codex, first-use follow-up)
+- User requested no typing or menu hunting for definitions. Every marked occurrence now opens its meaning beside
+  the word immediately on mouse hover or keyboard focus; touch needs one tap. Native title hints are replaced
+  by the same readable definition. The searchable glossary remains optional.
+- Hover/focus does not steal focus; pointer travel into the popup keeps it open. Escape and the close button
+  dismiss it without reopening during focus return. Definitions retain named dialog semantics and connect the
+  focused word to its explanation; viewport placement and reduced-motion behavior use the existing guide.
+- Focused mocked browser regression: **1 passed in 5.17s**, desktop 1440x960 and touch 390x844. Covers hover,
+  keyboard focus/Enter/Escape, single-tap access, repeated occurrences, pointer continuity, focus restoration,
+  bottom/right viewport edges, reduced motion, outside dismissal and GET-only requests with no page errors.
+  Initial fixture omitted /api/quotes; adding its empty response corrected the fixture. Existing broad first-use
+  and glossary suites were not repeated; their prior results are above. Browser-marker warning remains on base.
+- No new dependencies, live jobs, geometry, stress simulation or full batch. Full batch remains HELD. This changes
+  the shared definition layer used by project text; controls and code retain their existing exclusion from wrapping.
