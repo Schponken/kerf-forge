@@ -96,6 +96,7 @@ def _item(source, origin, now):
                      "failed": "The last run failed. Open its activity to see what needs fixing."}.get(state)
     return {"id": f"{origin}:{source.get('id') or source.get('claim_id') or source.get('session') or title}",
             "provider": provider, "session": str(source.get("session") or source.get("id") or ""),
+            "chat_id": source.get("thread_id") if origin == "session" and provider == "Codex" and isinstance(source.get("thread_id"), str) else None,
             "title": title, "description": full, "projects": _projects(source), "state": state,
             "status_label": LABELS[state] if origin == "claim" else plain(source.get("status_label"), 120) or LABELS[state],
             "activity": activity, "action": plain(source.get("action"), 120) if origin == "session" and state != "stale" else "",

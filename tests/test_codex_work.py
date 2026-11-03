@@ -1,10 +1,29 @@
 """Repo-scoped, read-only Codex session discovery and honest source freshness."""
 import json
 import subprocess
+from urllib.parse import unquote, urlparse
 
 import pytest
 
 from kerf import codex_work, studio
+
+
+@pytest.mark.parametrize("thread_id", [None, 12, {}, "", " ", "new", "New", ".", "..", "one/two", "one\\two", "a\x00b", "a\x7fb"])
+def test_chat_link_rejects_missing_reserved_or_invalid_ids(thread_id):
+    assert codex_work._chat_url(thread_id) is None
+
+
+def test_observed_chat_link_preserves_full_id_in_one_encoded_segment():
+    from kerf import work
+    thread_id = '019a1111-2222-7333-8444-555555555555-"<&?é#'
+    observed = codex_work._record({"id": thread_id, "status": {"type": "idle"}}, {}, live=False)
+    parsed = urlparse(observed["url"])
+    assert parsed.scheme == "codex" and parsed.netloc == "threads" and not parsed.query and not parsed.fragment
+    assert unquote(parsed.path[1:]) == thread_id and parsed.path.count("/") == 1
+    item, = work.overview({}, sessions=[observed], now=1000)["items"]
+    assert item["chat_id"] == thread_id and item["url"] == observed["url"]
+    claim, = work.overview({"cards": [{"provider": "Codex", "thread_id": thread_id, "item": "Ownership only"}]})["items"]
+    assert claim["chat_id"] is None and claim["url"] is None
 
 
 def test_repository_matching_uses_origin_or_checkout_not_title(tmp_path, monkeypatch):

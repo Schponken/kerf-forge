@@ -70,6 +70,13 @@ try {
   assert.match(await p.locator('[data-work-item="wing"]').innerText(),/No time estimate yet/);
   assert.equal(await p.locator('.work-page a[href^="javascript:"]').count(),0);
   assert.equal(await p.locator('.work-page a[href^="codex:"]').count(),1);
+  assert.deepEqual(await p.evaluate(()=>[
+   'codex://threads/new','codex://threads/%6eew','codex://threads/.','codex://threads/..',
+   'codex://threads/a/b','codex://threads/a%2fb','codex://threads/a%5cb','codex://threads/a%00b',
+   'codex://threads/a?prompt=new','codex://threads/a#fragment','codex://settings','codex://other/a',
+   'codex://user@threads/a','codex://threads:8/a','codex://threads/%ZZ','javascript:alert(1)',
+   'codex://threads/a?','codex://threads/a#','codex://threads/a\nb',
+  ].map(workLink)),Array(19).fill(null));
   assert.equal(await p.locator('[data-work-item="codex-work"] .work-activity').innerText(),fixture.items[0].activity);
   assert.equal(await p.locator('[data-work-item="codex-work"] .work-action').innerText(),'Running a command');
   await p.locator('[data-work-item="codex-work"] summary').click();
@@ -132,11 +139,12 @@ try {
   await p.evaluate(()=>loadWork());
   assert.match(await p.locator('.work-empty').innerText(),/No work is being reported/);
   assert.match(await p.locator('.work-rail').innerText(),/not installed/);
-  work={...fixture,items:[{...fixture.items[0],title:'<img src=x onerror="window.__unsafe=1">',activity:'<script>unsafe()</script>',action:'<img src=x onerror="window.__unsafe=1">'}]};
+  work={...fixture,items:[{...fixture.items[0],title:'<img src=x onerror="window.__unsafe=1">',activity:'<script>unsafe()</script>',action:'<img src=x onerror="window.__unsafe=1">',chat_id:'<img src=x onerror="window.__unsafe=1">'}]};
   await p.evaluate(()=>loadWork());
   assert.equal(await p.locator('.work-item img').count(),0);
   assert.equal(await p.evaluate(()=>window.__unsafe),undefined);
   assert.match(await p.locator('.work-action').innerText(),/<img/);
+  assert.equal(await p.locator('.work-item dt').filter({hasText:/^Chat ID$/}).evaluate(el=>el.nextElementSibling.textContent),work.items[0].chat_id);
   work={...fixture,items:[{...fixture.items[0],activity:'Running a command',action:'Running a command'}]};
   await p.evaluate(()=>loadWork());
   assert.equal(await p.locator('.work-action').count(),0);
@@ -153,23 +161,24 @@ try {
 
 
 def test_linked_claim_owners_are_visible_searchable_and_preserved_on_refresh(tmp_path):
-    from kerf import work
+    from kerf import codex_work, work
     root = Path(__file__).resolve().parents[1]
     now = time.time()
     long_owner = "codex-plate-clearance-worker-for-full-owner-identity-" + "ab12" * 25
     claims = [
-        {"claim_id": "details", "thread_id": "shared-chat", "session": "codex-owner-details", "provider": "Codex",
+        {"claim_id": "details", "thread_id": "019a1111-2222-7333-8444-555555555555", "session": "codex-owner-details", "provider": "Codex",
          "item": "Clarify claimed tasks", "full": "Clarify claimed tasks: keep each owner's scope and updates visible.",
          "activity": "Checking ownership search and keyboard focus", "updated_at": now - 20,
          "steps": [{"title": "Preserve claim details", "status": "done"}, {"title": "Check phone layout", "status": "pending"}]},
-        {"claim_id": "sources", "thread_id": "shared-chat", "session": long_owner, "provider": "Claude Code",
+        {"claim_id": "sources", "thread_id": "019a1111-2222-7333-8444-555555555555", "session": long_owner, "provider": "Claude Code",
          "item": "Review source geometry", "full": "Review source geometry: compare the saved model with its vendor source.",
          "activity": "Waiting on vendor geometry measurements", "updated_at": now - 7200, "stale": True},
-        {"claim_id": "notes", "thread_id": "shared-chat", "session": "legacy-owner-notes", "item": "Update assembly notes",
+        {"claim_id": "notes", "thread_id": "019a1111-2222-7333-8444-555555555555", "session": "legacy-owner-notes", "item": "Update assembly notes",
          "activity": "Checking the reported remaining work", "stale": True},
     ]
-    session = {"id": "shared-chat", "provider": "Codex", "state": "working", "live": True, "title": "Sample shared chat",
-               "activity": "Reviewing the combined changes", "updated_at": now - 5, "url": "codex://threads/example"}
+    session = codex_work._record({"id": "019a1111-2222-7333-8444-555555555555", "name": "Sample shared chat",
+                                  "status": {"type": "active"}, "updatedAt": now - 5},
+                                 {"items": [{"type": "agentMessage", "text": "Reviewing the combined changes"}]}, live=True)
     fixture = work.overview({"cards": claims, "plan_done": 12, "plan_total": 20, "feed": []}, sessions=[session,
         {"id": "other", "provider": "Studio", "state": "done", "title": "Sample completed job",
          "attention": "Review the completed output."},
@@ -204,7 +213,20 @@ try {
   await p.goto('http://kerf.test/');
   await p.evaluate(t=>setTheme(t),theme);
   await p.locator('#nav_work').click();
-  const card=p.locator('[data-work-item="session:shared-chat"]'), detail=card.locator('details'), summary=card.locator('summary');
+  const card=p.locator('[data-work-item="session:019a1111-2222-7333-8444-555555555555"]'), detail=card.locator('details'), summary=card.locator('summary');
+  const chat=fixture.items.find(item=>item.chat_id), link=card.getByRole('link',{name:'Open chat',exact:true});
+  assert.equal(await link.getAttribute('href'),chat.url);
+  assert.equal(await link.getAttribute('target'),'_blank');
+  assert.equal(await link.getAttribute('rel'),'noopener noreferrer');
+  await p.evaluate(()=>document.addEventListener('click',event=>{
+   const link=event.target.closest('a[href^="codex:"]');
+   if(link) { event.preventDefault(); window.__chatHref=link.href; }
+  },true));
+  await link.focus();
+  await link.press('Enter');
+  assert.equal(await p.evaluate(()=>window.__chatHref),chat.url);
+  await p.evaluate(()=>renderWork());
+  assert.equal(await link.evaluate(el=>el===document.activeElement),true);
   await card.waitFor();
   assert.equal(await p.locator('.work-item').count(),2);
   assert.equal(await p.locator('#work-filter-active span').innerText(),'1');
@@ -213,6 +235,7 @@ try {
   assert.equal(await card.locator(':scope > .work-item-top > .work-state').innerText(),'Working');
   assert.match(await card.locator(':scope > .work-attention').innerText(),/2 claimed tasks need attention/);
   await summary.click();
+  assert.equal(await card.locator('dt').filter({hasText:/^Chat ID$/}).evaluate(el=>el.nextElementSibling.textContent),chat.chat_id);
   assert.equal(await card.locator('.work-claim').count(),3);
   assert.deepEqual(await card.locator('.work-claim .work-state').allTextContents(),['Claimed','No recent update','No recent update']);
   assert.match(await card.innerText(),/1 of 2 reported steps complete/);
@@ -269,6 +292,8 @@ try {
   await p.screenshot({path:CAPTURE+`/work-owners-sample-${theme}-${width}-top.png`,fullPage:true});
   await card.locator('.work-claims').evaluate(el=>el.scrollIntoView({block:'start'}));
   await p.screenshot({path:CAPTURE+`/work-owners-sample-${theme}-${width}-details.png`,fullPage:true});
+  await card.locator('dt').filter({hasText:/^Chat ID$/}).scrollIntoViewIfNeeded();
+  await p.screenshot({path:CAPTURE+`/work-chat-id-${theme}-${width}.png`,fullPage:true});
   // An older partial response must not imply that absent remaining-step text means completion.
   data.items[0].claimed_tasks[0].remaining=[];
   data.items[0].claimed_tasks[1].activity='<img src=x onerror="window.__unsafe=1">';

@@ -1670,7 +1670,15 @@ function workFilter(value) { S.workFilter = value; renderWork(); }
 function workSearch(value) { S.workSearch = value; renderWork(); }
 function workProvider(value) { S.workProvider = value; renderWork(); }
 function workLink(value) {
-  try { const u = new URL(value); return ["https:","codex:"].includes(u.protocol) ? u.href : null; } catch { return null; }
+  try {
+    if (typeof value !== "string" || /[\x00-\x1f\x7f]/.test(value)) return null;
+    const u = new URL(value);
+    if (u.protocol === "https:") return u.href;
+    if (u.protocol !== "codex:" || u.host !== "threads" || u.username || u.password || u.href.includes("?") || u.href.includes("#")) return null;
+    const id = decodeURIComponent(u.pathname.slice(1));
+    return u.pathname.startsWith("/") && id && id.trim() === id && !["new",".",".."].includes(id.toLowerCase()) &&
+      !/[\x00-\x1f\x7f/\\]/.test(id) ? u.href : null;
+  } catch { return null; }
 }
 function workAge(value) {
   return Number.isFinite(Number(value)) && Number(value)>0 ? ago(Math.max(0,Date.now()/1000 - Number(value))) : "time unavailable";
@@ -1720,7 +1728,7 @@ function workTask(item,index) {
       <div><b>${completed ? "" : timed ? `About ${Math.max(1,Math.ceil(eta.seconds/60))} min left` : "No time estimate yet"}</b><span>${completed ? "" : timed ? esc(eta.basis || "Based on previous runs") : "Shown when this work has a reliable estimate"}</span></div>
     </div>
     <div class="work-item-footer"><div class="work-actions">
-      ${link ? `<a id="${focusId}-chat" class="btn" href="${esc(link)}" ${link.startsWith("https:") ? 'target="_blank" rel="noopener noreferrer"' : ""}>Open chat</a>` : ""}
+      ${link ? `<a id="${focusId}-chat" class="btn" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open chat</a>` : ""}
       ${item.job_id ? `<button id="${focusId}-job" onclick="workAction(${index},'job')">Watch job</button>` : ""}
       ${projects.map((p,j)=>`<button id="${focusId}-project-${j}" onclick="workAction(${index},'project',${j})">${projects.length>1 ? esc(p.title || p.name) : "View project"}</button>`).join("")}
       ${projects.length===1 && ["running","working","claimed"].includes(state) ? `<button id="${focusId}-live" onclick="workAction(${index},'live')">Follow 3D</button>` : ""}
@@ -1730,7 +1738,7 @@ function workTask(item,index) {
       ${description && description !== item.activity ? `<p>${esc(description)}</p>` : ""}
       <h3>${completed ? "Remaining work reported" : "Still to do"}</h3>${remaining.length ? `<ul>${remaining.map(step=>`<li>${esc(step)}</li>`).join("")}</ul>` : `<p>${state === "done" ? "No further steps were reported. Completion applies to this run, not the whole project." : "No checklist has been reported. The session may still be deciding the next step."}</p>`}`}
       ${chatSteps ? `<section class="work-chat-steps"><h3>Chat’s reported next steps</h3>${remaining.length ? `<ul>${remaining.map(step=>`<li>${esc(step)}</li>`).join("")}</ul>` : `<p>${known && progress.done === progress.total ? "All reported chat steps are complete." : "Remaining chat steps not reported."}</p>`}</section>` : ""}
-      <dl>${item.started_at ? `<dt>Started</dt><dd>${esc(new Date(item.started_at*1000).toLocaleString())}</dd>` : ""}<dt>Source</dt><dd>${esc(item.source_label || item.source || "Reported session state")}</dd>${item.chat_title && item.chat_title !== item.title ? `<dt>Chat</dt><dd>${esc(item.chat_title)}</dd>` : ""}${item.branch ? `<dt>Branch</dt><dd>${esc(item.branch)}</dd>` : ""}</dl>
+      <dl>${item.started_at ? `<dt>Started</dt><dd>${esc(new Date(item.started_at*1000).toLocaleString())}</dd>` : ""}<dt>Source</dt><dd>${esc(item.source_label || item.source || "Reported session state")}</dd>${item.chat_id ? `<dt>Chat ID</dt><dd>${esc(item.chat_id)}</dd>` : ""}${item.chat_title && item.chat_title !== item.title ? `<dt>Chat</dt><dd>${esc(item.chat_title)}</dd>` : ""}${item.branch ? `<dt>Branch</dt><dd>${esc(item.branch)}</dd>` : ""}</dl>
       ${item.source_detail ? `<p>${esc(item.source_detail)}</p>` : ""}${typeof item.picture === "string" && /^\/(files|thumb)\//.test(item.picture) ? `<img class="work-preview" src="${esc(item.picture)}" alt="Latest saved project preview" loading="lazy">` : ""}
     </details></article>`;
 }
