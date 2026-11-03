@@ -1355,3 +1355,21 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   and triangle exactly for all four parts and retained fingerprint 69c05ed7665e2c58. Preview steps in /tmp identify
   three inserts and three shoulder pivots. Actual project, report, review and output files were not written here;
   parent integration owns backing up and refreshing only the saved viewer's step data.
+## 2026-11-02 — Build it exact placement and tool demonstrations (Codex)
+- Hardware sites are individually selectable with receiving-part names, a stable close-up, an exact seat ring,
+  insertion arrow and persistent projected leader. Selection stays still; local Replay installation explicitly
+  demonstrates that site. Assembly overview, location reset and action pause/resume support inspection.
+- Schematic soldering iron contacts and presses heat-set inserts; subtle smoke appears only during contact.
+  A schematic driver engages and advances screws/shoulder pivots. Shoulder/thread cylinders use their distinct
+  recorded catalog dimensions. Unknown seats/dimensions show explicit warnings without fabricated hardware.
+- Incoming-position ghosts/alignment paths use existing group offsets and the ghost toggle. Written-step
+  inspection cues and recorded joint-motion checks remain honest. Navigation, replay, exit and joint demos
+  cancel and dispose prior props/particles; reduced motion retains seated hardware and static location cues.
+- Added TorusGeometry/SphereGeometry/ArrowHelper to the existing offline Three bundle and regenerated it.
+  Kept the model tool dock/glossary and saved-viewer template refresh workflow. No project geometry, engineering
+  thresholds, catalog values, build/review files, installed app files or stress jobs changed.
+- Focused viewer slice: tests/test_viewer_placements.py, tests/test_viewer_build_it.py, tests/test_viewer.py —
+  7 passed in 26.86 s; final correction reran the new regression — 1 passed in 13.99 s. Real saved finger
+  desktop/phone/iron inspection and drone step 2 (10 sites) contact/navigation smoke test had no JS errors.
+  Screenshots: /tmp/kerf-placement-{desktop,phone,iron}.png. Detector reports only the incumbent global
+  font-size hierarchy warning. Full batch remains HELD; no full suite, geometry rebuild or FEA run.
