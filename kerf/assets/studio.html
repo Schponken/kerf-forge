@@ -8,25 +8,27 @@
 <script src="/ui/thoughtweb.js"></script>
 <style>
 :root, :root[data-theme="dark"]{
-  --bg:#0c0d10; --bg2:#101216; --panel:#15171c; --panel2:#1a1d23; --ink:#ecebe7; --muted:#8d929b; --line:#262a31; --soft:#1e2127;
-  --accent:#ff6a2b; --accent2:#ffb347; --accent-ink:#160a03; --glow:rgba(255,106,43,.35);
-  --ok:#3ddc84; --ok-bg:rgba(61,220,132,.12); --bad:#ff5d5d; --bad-bg:rgba(255,93,93,.13); --warn:#ffc14d; --warn-bg:rgba(255,193,77,.12);
-  --info:#6cb4ff; --info-bg:rgba(108,180,255,.13); --grid:rgba(255,255,255,.035); --shadow:0 20px 60px rgba(0,0,0,.55);
+  --bg:#171b20; --bg2:#1e242b; --panel:#252c34; --panel2:#2d3540; --ink:#edf1f5; --muted:#b0bac6; --line:#46515e; --soft:#35404b;
+  --accent:#9bc1e0; --accent2:var(--accent); --accent-ink:#142735; --control-line:#8495a6; --glow:transparent;
+  --ok:#81c6a0; --ok-bg:#243e32; --bad:#ff9fa3; --bad-bg:#4b292e; --warn:#e7c477; --warn-bg:#443b25;
+  --info:#9fc8ef; --info-bg:#263d52; --grid:transparent; --shadow:0 12px 32px rgba(0,0,0,.28);
   --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 :root[data-theme="light"]{
-  --bg:#f4f3ef; --bg2:#eceae4; --panel:#ffffff; --panel2:#faf9f6; --ink:#1d1f22; --muted:#666b72; --line:#e2dfd8; --soft:#efede8;
-  --accent:#e2530f; --accent2:#f08c2b; --accent-ink:#fff; --glow:rgba(226,83,15,.22);
-  --ok:#1b8a4b; --ok-bg:#e3f4ea; --bad:#c92a2a; --bad-bg:#fbe9e9; --warn:#a1620a; --warn-bg:#fdf2de; --info:#1c5fa8; --info-bg:#e6effa;
-  --grid:rgba(0,0,0,.035); --shadow:0 18px 50px rgba(0,0,0,.14);
+  --bg:#f5f6f7; --bg2:#eef0f2; --panel:#ffffff; --panel2:#f5f6f8; --ink:#202832; --muted:#5d6874; --line:#d4dae0; --soft:#e4e9ee;
+  --accent:#305f86; --accent2:var(--accent); --accent-ink:#fff; --control-line:#7a8794; --glow:transparent;
+  --ok:#216749; --ok-bg:#e5f1e9; --bad:#b52d35; --bad-bg:#fbe9eb; --warn:#805b0f; --warn-bg:#f8efd9; --info:#285f93; --info-bg:#e6eff7;
+  --grid:transparent; --shadow:0 12px 32px rgba(24,35,48,.14);
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;display:flex;overflow:hidden}
-button{font:inherit;cursor:pointer;white-space:nowrap;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:9px;padding:7px 13px;transition:border-color .15s,transform .1s,background .15s,box-shadow .2s}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;cursor:pointer;white-space:nowrap;border:1px solid var(--control-line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;transition:background .12s,border-color .12s}
 button:hover{border-color:var(--muted)}
-a.btn{display:inline-block;text-decoration:none;font:inherit;white-space:nowrap;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:9px;padding:7px 13px}
+a.btn{display:inline-block;text-decoration:none;font:inherit;white-space:nowrap;border:1px solid var(--control-line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px}
 a.btn:hover{border-color:var(--muted)}
+button:focus-visible,a:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ui-icon{width:17px;height:17px;flex:none;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 button small{opacity:.75;font-weight:500;margin-left:4px}
 .param .unit{color:var(--muted);font-size:12px;min-width:30px}
 .menu.modes button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-width:300px}
@@ -48,54 +50,66 @@ button.upgrade{border-color:var(--accent)}
 @media(max-width:560px){.qopts{grid-template-columns:minmax(0,1fr)}}
 #partsbtn{display:none}
 .param .affects{margin-top:2px;opacity:.85}
-button:active{transform:scale(.97)}
-button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:var(--accent-ink);font-weight:650}
-button.primary:hover{box-shadow:0 0 22px var(--glow)}
+button:active{background:var(--soft)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:650}
+button.primary:hover{filter:brightness(.95)}
 button:disabled{opacity:.45;cursor:default;box-shadow:none;transform:none}
-input,textarea,select{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;transition:border-color .15s,box-shadow .15s}
-input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--control-line);border-radius:8px;padding:8px 10px;width:100%;transition:border-color .12s}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:1}
 textarea{min-height:120px;resize:vertical}
 a{color:var(--info)}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
 
-/* ---------- sidebar */
-#side{width:292px;flex:none;border-right:1px solid var(--line);background:var(--bg2);display:flex;flex-direction:column;height:100%;position:relative;z-index:2}
-.brand{display:flex;align-items:center;gap:9px;padding:18px 16px 12px}
-.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;box-shadow:0 0 24px var(--glow);position:relative;overflow:hidden;flex:none}
-.logo::after{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,255,255,.55) 80%,transparent 90%);animation:spin 4s linear infinite}
-.logo svg{position:relative;z-index:1}
-.brand b{font-size:16px;letter-spacing:.2px}
-.brand small{display:block;color:var(--muted);font-size:11.5px}
-.brand > div{min-width:0}.brand b{white-space:nowrap}
-.brand .themebtn{padding:4px 7px}.brand .themebtn ~ .themebtn{margin-left:3px}
-.themebtn{margin-left:auto;padding:5px 8px;border-radius:8px;font-size:13px}
-#newbtn{margin:4px 14px 10px;width:calc(100% - 28px);padding:10px}
-#search{margin:0 14px 8px;width:calc(100% - 28px)}
-#plist{overflow:auto;flex:1;padding:0 8px}
-.pitem{display:flex;gap:11px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:1px solid transparent;transition:background .15s,border-color .15s}
+/* ---------- object stage: navigation stays out of the workspace */
+#side{height:72px;flex:none;display:flex;align-items:center;gap:24px;padding:0 24px;position:relative;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.logo{width:28px;height:28px;border-radius:6px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.brand b{font-size:16px;font-weight:650;white-space:nowrap}
+.shell-actions{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
+#newbtn{display:flex;align-items:center;gap:6px;font-weight:600}
+.shell-disclosure>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 10px;border-radius:8px;white-space:nowrap;font-size:13px}
+.shell-disclosure>summary::-webkit-details-marker{display:none}
+.shell-disclosure>summary:hover,.shell-disclosure[open]>summary{background:var(--soft)}
+.shell-disclosure>summary svg{width:17px;height:17px}
+.shell-disclosure[open]>summary{color:var(--accent)}
+.shell-panel{position:fixed;top:80px;left:24px;width:380px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 100px);background:var(--panel);color:var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;overflow:auto;animation:shellReveal .16s cubic-bezier(.2,.8,.2,1)}
+.shell-disclosure:not([open])>.shell-panel{display:none}
+.shell-panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.shell-panel-head h2{font-size:16px;margin:0}
+.shell-close{border:0;background:none;padding:4px;display:grid;place-items:center;min-width:32px;min-height:32px}
+#activitytray .shell-panel,#toolstray .shell-panel{left:auto;right:24px}
+#toolstray .shell-panel{width:252px}
+.shell-tools{display:grid;gap:4px}
+.shell-tools button{display:flex;align-items:center;gap:12px;border:0;text-align:left;background:none;white-space:normal}
+.shell-tools button:hover{background:var(--soft)}
+.shell-tools .danger{color:var(--bad);border-top:1px solid var(--line);border-radius:0;margin-top:8px;padding-top:12px}
+#search{flex:none;margin:0 0 12px;width:100%}
+#plist{overflow:auto;min-height:0;scroll-padding-block:6px;padding:2px}
+#activitycount{font-size:11px;min-width:17px;text-align:center;border-radius:5px;background:var(--soft);color:var(--ink);padding:1px 4px}
+#activitycount:empty{display:none}
+#activitybtn.has-options:after{content:"";width:6px;height:6px;border-radius:50%;background:var(--info)}
+@keyframes shellReveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.pitem{display:flex;width:100%;gap:10px;align-items:center;text-align:left;white-space:normal;padding:8px;border-radius:8px;cursor:pointer;border:1px solid transparent;background:none;transition:background .12s}
 .pitem:hover{background:var(--soft)}
-.pitem.sel{background:var(--panel);border-color:var(--line);box-shadow:inset 3px 0 0 var(--accent)}
-.thumb{width:48px;height:48px;border-radius:10px;background:var(--soft) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--muted);font-size:18px;position:relative}
-.thumb.running::before{content:"";position:absolute;inset:-3px;border-radius:12px;padding:2px;background:conic-gradient(var(--accent),var(--accent2),transparent 60%,var(--accent));
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 1.4s linear infinite}
+.pitem.sel{background:var(--soft);border-color:var(--control-line)}
+.thumb{width:40px;height:40px;border-radius:6px;background:var(--soft) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--muted);font-size:18px;position:relative}
 .pmeta{min-width:0}
 .pmeta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:620}
 .pmeta span{font-size:12px;color:var(--muted)}
 .sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px;background:var(--muted)}
-.sdot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}.sdot.bad{background:var(--bad);box-shadow:0 0 8px var(--bad)}.sdot.run{background:var(--info);animation:pulse 1s infinite}
+.sdot.ok{background:var(--ok)}.sdot.bad{background:var(--bad)}.sdot.run{background:var(--info)}
 #buildall{padding:6px 14px}
-#jobs{border-top:1px solid var(--line);padding:10px 12px;max-height:32%;overflow:auto}
-#jobs h4{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
-.job{display:flex;gap:8px;align-items:center;padding:6px;border-radius:8px;cursor:pointer;font-size:13px}
+#jobs{overflow:auto;min-height:0;scroll-padding-block:6px;padding:2px}
+#jobs h4{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--ink)}
+.job{display:flex;width:100%;gap:8px;align-items:center;text-align:left;padding:6px;border:0;background:none;border-radius:6px;cursor:pointer;font-size:13px}
 .job:hover{background:var(--soft)}
 .job .lab{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--muted)}
-.dot.running{background:var(--info);box-shadow:0 0 10px var(--info);animation:pulse 1s infinite}.dot.done{background:var(--ok)}.dot.failed,.dot.stopped{background:var(--bad)}
+.dot.running{background:var(--info)}.dot.done{background:var(--ok)}.dot.failed,.dot.stopped{background:var(--bad)}
 
 /* ---------- main */
-#main{flex:1;min-width:0;height:100%;overflow:auto;position:relative;
-  background:radial-gradient(900px 420px at 85% -10%,var(--glow),transparent 60%),
-             linear-gradient(var(--grid) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/28px 28px,var(--bg)}
+#main{flex:1;min-width:0;min-height:0;overflow:auto;position:relative;background:var(--bg)}
 .head{padding:24px 30px 0;animation:fadeUp .4s both;position:relative;z-index:5}
 .head h1{margin:0 0 4px;font-size:24px;letter-spacing:-.2px}
 .desc{color:var(--muted);max-width:920px;margin:0 0 12px}
@@ -175,7 +189,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .sk{background:linear-gradient(90deg,var(--soft) 25%,var(--panel2) 50%,var(--soft) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:10px}
 
 /* ---------- mission control panel */
-#mc{position:fixed;right:18px;bottom:18px;width:min(760px,calc(100vw - 330px));max-height:min(74vh,720px);display:none;flex-direction:column;z-index:6;
+#mc{position:fixed;right:18px;bottom:18px;width:min(760px,calc(100vw - 36px));max-height:min(74vh,720px);display:none;flex-direction:column;z-index:6;
   background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
 #mc.open{display:flex;animation:popIn .35s cubic-bezier(.2,.9,.3,1.2) both}
 #mc.min .mcbody{display:none}
@@ -196,7 +210,7 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .fixalt{margin:-4px 0 6px;padding-left:20px}.fixalt li{margin:3px 0;color:var(--muted)}
 .toast.go{cursor:pointer}.toast.go:hover{filter:brightness(1.12)}.toastgo{display:block;margin-top:4px;font-size:11.5px;font-weight:600;color:var(--accent)}
 .qready{margin-bottom:14px}.qrow{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;margin-top:8px;padding:9px 12px}
-#qbadge{margin:2px 14px 8px;padding:8px 10px;border-radius:9px;text-align:left;font-weight:600;background:rgba(255,180,60,.14);border:1px solid rgba(255,180,60,.45)}
+#qbadge{margin:0 0 12px;white-space:normal;flex:none;padding:8px 10px;border-radius:8px;text-align:left;font-weight:600;background:var(--info-bg);color:var(--info);border:1px solid var(--info)}
 .dot.paused{background:#e0a030}.banner.paused{margin-bottom:10px}
 abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
 .twmodal .card{max-width:none;width:min(860px,94vw);height:min(820px,90vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
@@ -293,15 +307,21 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .mats select{width:auto;font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
 .mats tr.changed td:first-child{color:var(--accent);font-weight:650}
 /* all-projects grid */
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
-.pcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;animation:fadeUp .4s both}
-.pcard:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 12px 34px var(--glow)}
-.pcard .pic{aspect-ratio:4/3;background:radial-gradient(circle at 50% 40%,var(--panel2),var(--bg2)) center/contain no-repeat;display:grid;place-items:center;color:var(--muted);font-size:34px;position:relative}
-.pcard .pic img{width:100%;height:100%;object-fit:contain}
-.pcard .pic .st{position:absolute;left:10px;top:10px}
-.pcard .meta{padding:12px 14px}
-.pcard .meta b{display:block;font-size:15px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pcard .meta span{font-size:12px;color:var(--muted)}
+.collection-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:32px}.collection-head h1{font-size:28px;font-weight:600}.collection-head .desc{margin:4px 0 0}.collection-head .actions{margin:0}.collection-body{padding-top:24px}
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px 32px}
+.pcard{background:none;border:0;border-radius:0;cursor:pointer;text-align:left;padding:0;white-space:normal;min-width:0}
+.pcard:hover .meta b{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.pcard .pic{aspect-ratio:4/3;display:grid;place-items:center;min-width:0}
+.pcard .pic img{width:100%;height:100%;object-fit:contain;min-height:0}
+.pcard .meta{padding:16px 0 0;display:grid;gap:6px}
+.pcard .meta b{font-size:17px;font-weight:600;overflow-wrap:anywhere}
+.pcard .meta .project-evidence{font-size:12px;color:var(--muted)}
+.pcard .st{display:flex;flex-wrap:wrap;gap:6px}.pcard .chip{padding:2px 8px}
+.project-index{margin-top:40px;border-top:1px solid var(--line);padding-top:24px}.project-index:only-child{margin-top:0;border:0;padding-top:0}
+.project-index h2{font-size:16px;font-weight:600;margin:0 0 12px}.project-index .pcard{display:flex;align-items:center;justify-content:space-between;width:100%;gap:24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.project-index .pcard .meta{padding:0}.project-index .pcard .meta b{font-size:15px}.project-index .st{flex:none}
+@media(max-width:1100px){.pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.pgrid{grid-template-columns:minmax(0,1fr);gap:32px}.collection-head{align-items:flex-start;flex-direction:column;gap:12px}.collection-head h1{font-size:24px}.project-index .pcard{align-items:flex-start;gap:12px}.project-index .st{max-width:112px}.pcard .meta b{font-size:16px}}
 /* follow live + Work tab */
 .livebar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-bottom:8px}
 .livetog{display:flex;align-items:center;flex:none;gap:6px;font-weight:620;cursor:pointer;white-space:nowrap}
@@ -359,7 +379,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 @media(max-width:600px){.work-head{flex-direction:column;gap:12px;padding-bottom:16px}.work-refresh{justify-content:flex-start}.work-item-top{flex-direction:column;gap:10px}.work-item{padding:18px 0}.work-rail{grid-template-columns:minmax(0,1fr)}.work-searches{flex-wrap:wrap}.work-searches input{flex-basis:100%}.work-searches select{max-width:none;width:100%}.work-filters{gap:2px}.work-filters button{padding:8px;font-size:12px}.work-measures{gap:14px}.work-notice{align-items:flex-start;flex-direction:column}.work-state{max-width:100%;white-space:normal}.work-item h2{font-size:15px}}
 .sidebtns{display:flex;gap:6px;margin:0 14px 8px}
 .sidebtns button{flex:1;padding:6px 8px;font-size:12.5px}
-.bell.off{opacity:.45}
+.bell .muted-line{display:none}.bell.off .muted-line{display:block}
 /* calmer layout (2026-11-01): one primary action, the rest in a menu; facts as one quiet line */
 .titlerow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .titlerow h1{margin:0}
@@ -377,11 +397,10 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .menu button:disabled{opacity:.4}
 .menu .sub{color:var(--muted);font-size:12px;margin-left:auto}
 .menu hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
-.sidenav{display:flex;gap:4px;margin:0 10px 8px}
-.sidenav button{flex:1;border:0;background:none;color:var(--muted);padding:7px 6px;border-radius:8px;font-size:13px}
-.sidenav button:hover,.sidenav button.on{background:var(--soft);color:var(--ink)}
-#jobs h4{display:flex;align-items:center;justify-content:space-between}
-#jobs h4 button{border:0;background:none;padding:0 2px;font-size:13px}
+.sidenav{display:flex;gap:4px;align-self:stretch;align-items:center}
+.sidenav button{display:flex;align-items:center;gap:7px;border:0;background:none;color:var(--muted);padding:9px 10px;border-radius:6px;font-size:14px}
+.sidenav button:hover{background:var(--soft);color:var(--ink)}
+.sidenav button.on{color:var(--ink);font-weight:650;background:var(--soft)}
 #buildall{display:none!important}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{50%{opacity:.35}}
@@ -395,7 +414,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 @keyframes toastIn{from{opacity:0;transform:translateX(30px) scale(.95)}to{opacity:1;transform:none}}
 @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-@media (max-width:900px){body{flex-direction:column;overflow:auto}#side{width:100%;height:auto;max-height:42vh}.grid2,.howit{grid-template-columns:1fr}#mc{width:calc(100vw - 36px)}}
+@media (max-width:900px){.grid2,.howit{grid-template-columns:1fr}#mc{width:calc(100vw - 36px)}}
 .grid2 > *, .howit > * {min-width:0}
 .head h1,.desc,.card {overflow-wrap:anywhere}
 .card {min-width:0}
@@ -403,13 +422,22 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .mats {overflow-x:auto}
 @media (max-width:900px){
   html,body {height:100%;overflow:hidden}
-  #side {height:auto;max-height:44vh;min-height:0;overflow:auto}   /* lists scroll inside; short screens can reach every control */
-  body:has(#main > .work-page) #side :is(#search,#plist) {display:none}   /* All projects opens the catalog; keep Work in view */
-  .brand {padding:10px 14px 6px}
-  #newbtn {padding:7px;margin-bottom:6px}
-  #search {padding:6px 10px;margin-bottom:4px}
-  #plist {min-height:56px;flex:1 1 auto}
-  #jobs {padding:6px 12px;max-height:80px;flex-shrink:0}
+  #side{height:108px;padding:10px 16px 8px;display:grid;grid-template-columns:minmax(0,1fr) 36px auto 32px;grid-template-rows:36px 42px;gap:10px 8px}
+  .brand{gap:8px}.brand b{font-size:15px}
+  .shell-actions{display:contents}
+  .sidenav{grid-row:2;grid-column:1 / 3;gap:1px;align-self:center;min-width:0}
+  .sidenav button{font-size:12px;padding:8px 7px;gap:4px}
+  .sidenav .ui-icon{display:none}
+  #newbtn{grid-row:1;grid-column:3 / 5;justify-self:end;font-size:13px;padding:7px 10px}
+  #projecttray{grid-row:1;grid-column:2;justify-self:center}
+  #projecttray>summary{padding:7px}.switch-label{display:none}
+  #activitytray{grid-row:2;grid-column:3;justify-self:start}
+  #activitytray>summary{font-size:12px;padding:7px 4px;gap:4px}
+  #toolstray{grid-row:2;grid-column:4;justify-self:end}
+  #toolstray>summary{padding:7px}
+  #activitytray>summary .ui-icon{display:none}
+  .shell-panel,#activitytray .shell-panel,#toolstray .shell-panel{top:116px;left:16px;right:auto;max-height:calc(100dvh - 132px);width:calc(100vw - 32px)}
+  #toolstray .shell-panel{left:auto;right:16px;width:252px}
   #main {min-height:0}
   .head {padding:16px 16px 0}
   .head h1 {font-size:22px}
@@ -425,28 +453,46 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   .menu.modes button {min-width:0;white-space:normal}
 }
 
+@media(max-width:360px){.brand b{font-size:14px}.brand{gap:6px}.logo{width:24px;height:24px}#side{padding-inline:12px}.sidenav button{font-size:11px;padding-inline:6px}#activitytray>summary{font-size:11px}.shell-disclosure>summary{gap:4px}#activitycount{min-width:14px;padding-inline:2px}}
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#ff6a2b"/><stop offset="1" stop-color="#ffb347"/></linearGradient></defs></svg>
-<aside id="side">
-  <div class="brand">
-    <div class="logo"><svg width="18" height="18" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 24V6m0 9 11-9m-7 6 9 12" stroke="#160a03" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <div><b>Kerf Studio</b><small title="describe it → printable, checked parts">describe it → printable parts</small></div>
-    <button class="themebtn" id="helpbtn" onclick="explainPage()" title="Explain this page">?</button>
-    <button class="themebtn" id="themebtn" onclick="toggleTheme()" title="Light / dark">☀</button>
-    <button class="themebtn" onclick="quitApp()" title="Quit Kerf Studio">⏻</button>
+<!-- THESIS: The object owns the screen; navigation opens only when it is useful, instead of reserving a permanent rail.
+OWN-WORLD: A broad neutral stage, compact steel-blue controls and focused floating trays; system text stays readable, with no CAD chrome costume.
+STORY: Choose a project, see its object and evidence, call up a tool when needed. Work remains a direct destination.
+FIRST VIEWPORT: A 72px navigation strip over a full-width workspace. Project search, Activity and utilities reveal independently. Phones use two compact rows, not a stacked catalog.
+FORM: Model presentation table, grounded candidate 7; replacement seed 453fb283 after explicit user rejection of the conventional rail.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent)"/></linearGradient></defs></svg>
+<header id="side" aria-label="Studio navigation">
+  <div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 24V6m0 9 11-9m-7 6 9 12" stroke="currentColor" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><b>Kerf Studio</b></div>
+  <details class="shell-disclosure" id="projecttray"><summary aria-label="Find a project" title="Find a project"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg><span class="switch-label">Find project</span></summary>
+    <section class="shell-panel" aria-label="Project switcher"><div class="shell-panel-head"><h2>Projects</h2><button class="shell-close" onclick="closeShell()" aria-label="Close project switcher"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <input id="search" aria-label="Search projects" placeholder="Search projects" oninput="renderList()"><div id="plist"></div>
+      <div id="buildall" style="display:none"><button onclick="buildAll()"></button></div>
+    </section>
+  </details>
+  <nav class="sidenav" aria-label="Workspace"><button id="nav_grid" onclick="showGrid()">All projects</button><button id="nav_parts" onclick="showParts()" title="Parts you already have">My parts</button><button id="nav_work" onclick="showWork()" title="Tasks, progress and next steps">Work</button></nav>
+  <div class="shell-actions"><button id="newbtn" onclick="showNew()">+ New design</button>
+    <details class="shell-disclosure" id="activitytray"><summary id="activitybtn" title="Running and recent activity">Activity <span id="activitycount"></span></summary>
+      <section class="shell-panel" aria-label="Activity"><div class="shell-panel-head"><h2>Activity</h2><button class="shell-close" onclick="closeShell()" aria-label="Close activity"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+        <button id="qbadge" hidden onclick="closeShell(false);openQuotesPage()" title="Researched options ready for your choice"></button>
+        <div id="jobs"><div id="joblist" class="note">Nothing running.</div></div>
+      </section>
+    </details>
+    <details class="shell-disclosure" id="toolstray"><summary aria-label="Studio tools" title="Studio tools"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="var(--bg)"/><circle cx="16" cy="17" r="3" fill="var(--bg)"/></svg></summary>
+      <section class="shell-panel" aria-label="Studio tools"><div class="shell-panel-head"><h2>Studio tools</h2><button class="shell-close" onclick="closeShell()" aria-label="Close Studio tools"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+        <div class="shell-tools">
+          <button id="helpbtn" onclick="closeShell(false);explainPage()" aria-label="Explain this page"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4M12 17h.01"/></svg>Explain this page</button>
+          <button id="themebtn" onclick="toggleTheme()" aria-label="Change color theme"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" stroke="none"/></svg>Color theme</button>
+          <button id="printerbtn" onclick="closeShell(false);showPrinter()" aria-label="Connect your Bambu printer"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V8h16v9h-3M7 14h10v7H7ZM16 11h1"/></svg>Connect printer</button>
+          <button class="bell" id="bellbtn" onclick="toggleBell()" aria-label="Change notifications"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5ZM10 21h4"/><path class="muted-line" d="m3 3 18 18"/></svg>Notifications</button>
+          <button class="danger" onclick="closeShell(false);quitApp()" aria-label="Quit Kerf Studio"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v8M7 6a8 8 0 1 0 10 0"/></svg>Quit Kerf Studio</button>
+        </div>
+      </section>
+    </details>
   </div>
-  <button id="newbtn" class="primary" onclick="showNew()">+ New design</button>
-  <nav class="sidenav"><button id="nav_grid" onclick="showGrid()" title="Every project as a big card">▦ All projects</button>
-    <button id="nav_parts" onclick="showParts()" title="Parts you already have: designs prefer them and the shopping list leaves them out">▤ My parts</button>
-    <button id="nav_work" onclick="showWork()" title="Codex, Claude Code and Studio: current tasks, progress and next steps">◷ Work</button></nav>
-  <button id="qbadge" hidden onclick="openQuotesPage()" title="Ideas Kerf researched for you: pick one to design"></button>
-  <input id="search" placeholder="Search projects" oninput="renderList()" style="display:none">
-  <div id="plist"></div>
-  <div id="buildall" style="display:none"><button style="width:100%" onclick="buildAll()"></button></div>
-  <div id="jobs"><h4>Activity <button class="bell" id="printerbtn" onclick="showPrinter()" title="Connect your Bambu printer (LAN)">🖨</button> <button class="bell" id="bellbtn" onclick="toggleBell()" title="Notify me when a long job finishes">🔔</button></h4><div id="joblist" class="note">Nothing running.</div></div>
-</aside>
+</header>
 <main id="main"><div class="body"><div class="sk" style="height:34px;width:40%;margin-bottom:12px"></div><div class="sk" style="height:16px;width:70%;margin-bottom:24px"></div><div class="sk" style="height:420px"></div></div></main>
 
 <div id="mc"><div class="scan"></div>
@@ -496,14 +542,28 @@ const about = s => s == null ? "" : s < 90 ? `~${Math.max(10, Math.round(s / 10)
 const fresh = key => { if (S.shown.has(key)) return ""; S.shown.add(key); return " new-in"; };
 
 /* ---------- theme */
-function setTheme(t) { document.documentElement.dataset.theme = t; $("#themebtn").textContent = t === "dark" ? "☀" : "☾"; try { localStorage.setItem("kerf-theme", t); } catch (e) {} document.querySelectorAll("iframe.viewer").forEach(syncTheme); }
+function closeShell(restore = true) {
+  document.querySelectorAll(".shell-disclosure[open]").forEach(d => { d.open = false; if (restore) d.querySelector("summary").focus(); });
+}
+document.querySelectorAll(".shell-disclosure").forEach(d => {
+  d.addEventListener("toggle", () => {
+    if (!d.open) return;
+    document.querySelectorAll(".shell-disclosure[open]").forEach(other => { if (other !== d) other.open = false; });
+    if (d.id === "projecttray") $("#search").focus();
+  });
+});
+addEventListener("keydown", e => { if (e.key === "Escape" && document.querySelector(".shell-disclosure[open]")) { closeShell(); e.preventDefault(); } });
+addEventListener("pointerdown", e => { if (!e.target.closest(".shell-disclosure")) closeShell(false); });
+addEventListener("focusin", e => { if (!e.target.closest(".shell-disclosure")) closeShell(false); });
+
+function setTheme(t) { document.documentElement.dataset.theme = t; $("#themebtn").title = t === "dark" ? "Switch to light theme" : "Switch to dark theme"; $("#themebtn").setAttribute("aria-label", $("#themebtn").title); try { localStorage.setItem("kerf-theme", t); } catch (e) {} document.querySelectorAll("iframe.viewer").forEach(syncTheme); }
 function syncTheme(f) {   // the 3D viewer follows the studio's theme (same origin, so the page can be told directly)
   try { const d = f.contentDocument; if (!d || !d.documentElement) return; d.documentElement.dataset.theme = document.documentElement.dataset.theme;
         const k = f.contentWindow.__kerf; if (k && k.restyle) k.restyle(); else if (typeof f.contentWindow.restyle === "function") f.contentWindow.restyle(); } catch (e) {}
 }
 function toggleTheme() { setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"); }
 let saved = null; try { saved = localStorage.getItem("kerf-theme"); } catch (e) {}
-setTheme(saved || "dark");
+setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
 
 /* ---------- margins: how much of its limit a requirement uses (direction inferred from pass/fail) */
 function margin(r) {
@@ -548,24 +608,28 @@ async function loadProjects() {
   } catch (e) { if (++S.fails >= 3 && !S.closed) closedScreen(); }
 }
 function renderList() {
+  const focused = document.activeElement.closest("#plist .pitem")?.dataset.project, scrollTop = $("#plist").scrollTop;
   const unbuilt = S.projects.filter(p => !p.built).length;
-  $("#search").style.display = S.projects.length > 6 ? "" : "none";
-  document.querySelectorAll(".sidenav button").forEach(b => b.classList.toggle("on", (b.id === "nav_grid" && S.grid) || (b.id === "nav_parts" && S.parts) || (b.id === "nav_work" && S.work)));
+
+  document.querySelectorAll(".sidenav button").forEach(b => { const active = (b.id === "nav_grid" && S.grid) || (b.id === "nav_parts" && S.parts) || (b.id === "nav_work" && S.work); b.classList.toggle("on", active); if (active) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   const est = S.projects.filter(p => !p.built).reduce((a, p) => a + (p.build_s || 0), 0);
   $("#buildall button").textContent = `⚙ Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}${est ? " (" + about(est) + ")" : ""}`;
   const q = ($("#search").value || "").toLowerCase(), first = !S.listed; S.listed = true;
   $("#plist").innerHTML = S.projects.filter(p => !q || (p.title + p.name + p.description).toLowerCase().includes(q)).map((p, i) => {
     const run = p.running && p.running.length;
-    return `<div class="pitem ${p.name === S.sel ? "sel" : ""}" style="${first ? `animation:fadeUp .35s ${i * 40}ms both` : ""}" onclick="select('${p.name}')">
-      <div class="thumb ${run ? "running" : ""}" style="${pic(p) ? `background-image:url('${pic(p)}');background-size:contain;background-color:var(--panel2)` : ""}">${pic(p) ? "" : "◇"}</div>
+    return `<button type="button" class="pitem ${p.name === S.sel ? "sel" : ""}" data-project="${esc(p.name)}" ${p.name === S.sel ? 'aria-current="page"' : ''} onclick="select('${p.name}')">
+      <div class="thumb ${run ? "running" : ""}" style="${pic(p) ? `background-image:url('${pic(p)}');background-size:contain;background-color:var(--panel2)` : ""}">${pic(p) ? "" : '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4v10l-8 4-8-4V7ZM4 7l8 4 8-4M12 11v10"/></svg>'}</div>
       <div class="pmeta"><b>${esc(p.title)}</b><span><i class="sdot ${run ? "run" : !p.built ? "" : p.ok ? "ok" : "bad"}"></i>${run ? "working…" : !p.built ? "not built yet" : p.ok ? "checks pass" : p.problems + (p.problems == 1 ? " problem" : " problems") + (p.worked_on ? " · being worked on" : "")}${p.review && p.review.ok ? " · reviewed" : ""}</span></div>
-    </div>`; }).join("") || `<div class="note" style="padding:10px">No projects.</div>`;
+    </button>`; }).join("") || `<div class="note" style="padding:10px">${q ? "No matching projects. Try another name." : "No projects yet."}</div>`;
+  $("#plist").scrollTop = scrollTop;
+  if (focused) [...$("#plist").children].find(b => b.dataset.project === focused)?.focus({preventScroll:true});
 }
 
 async function select(name, keepTab) {
   const unsaved = Object.keys(S.edits || {}).length + Object.keys(S.medits || {}).length;
   if (unsaved && name !== S.sel && !confirm(`You have ${unsaved} unsaved Tune change${unsaved == 1 ? "" : "s"} on this project. Leave and discard ${unsaved == 1 ? "it" : "them"}?`)) return;
   if (name === S.sel && keepTab === undefined && S.detail && unsaved) { setTab(S.tab); return; }   // same project: keep the edits
+  closeShell(false);
   S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.work = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
   renderList();
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
@@ -709,6 +773,7 @@ function showGlossary() {   // every word and every check, searchable
 
 /* ---------- My parts (catalog/inventory.json) */
 async function showParts() {
+  closeShell(false);
   S.newOpen = true; S.sel = null; S.grid = false; S.parts = true; S.work = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   const d = await api("/api/inventory"); S.inv = {...d.items}; S.invKeys = d.keys;
   renderParts();
@@ -1341,12 +1406,15 @@ async function pollJobs() {
       if (j.state !== "stopped") desktopNotify(j.label, line, target);
       if (j.project === S.sel) refreshDetail();
     }
+    const active = d.jobs.filter(j => j.state === "running").length + (d.sessions || []).length;
+    $("#activitycount").textContent = active || "";
+    $("#activitybtn").setAttribute("aria-label", `Activity${active ? `, ${active} running jobs or sessions` : ""}`);
     const J = [...d.jobs.filter(j => j.state === "running"), ...d.jobs.filter(j => j.state !== "running").slice(0, 3)];
     const SS = (d.sessions || []).filter(x => !J.some(j => j.state === "running" && j.project === x.project));
-    $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<div class="job" onclick="openJob('${j.id}')" title="${esc(j.tail[0] || "")}">
-      <span class="dot ${j.state}"></span><span class="lab">${esc(j.label)}</span><span class="note">${mmss(j.seconds)}</span></div>`).join("") +
-      SS.map(x => `<div class="job sess" onclick="openSession('${x.project}')" title="${esc(x.text + (x.last ? "\nLatest: " + x.last.subject : ""))}">
-      <span class="dot claimed"></span><span class="lab">☁ ${esc(projTitle(x.project))}${x.problems ? ` <small>· ${x.problems} to fix</small>` : ""}</span><span class="note">${esc((x.text.match(/last active ([^)]+)\)/) || [])[1] || "")}</span></div>`).join("") : "Nothing running.";
+    $("#joblist").innerHTML = J.length || SS.length ? J.map(j => `<button type="button" class="job" onclick="closeShell(false);openJob('${j.id}')" title="${esc(j.tail[0] || "")}">
+      <span class="dot ${j.state}"></span><span class="lab">${esc(j.label)}</span><span class="note">${mmss(j.seconds)}</span></button>`).join("") +
+      SS.map(x => `<button type="button" class="job sess" onclick="closeShell(false);openSession('${x.project}')" title="${esc(x.text + (x.last ? "\nLatest: " + x.last.subject : ""))}">
+      <span class="dot claimed"></span><span class="lab">${esc(projTitle(x.project))}${x.problems ? ` <small>· ${x.problems} to fix</small>` : ""}</span><span class="note">${esc((x.text.match(/last active ([^)]+)\)/) || [])[1] || "")}</span></button>`).join("") : "Nothing running.";
   } catch (e) {}
 }
 
@@ -1397,7 +1465,9 @@ async function pollQuotes() {   // the sidebar badge: options waiting for a choi
   let qs = []; try { qs = (await api("/api/quotes")).quotes; } catch (e) { return; }
   const b = $("#qbadge"); if (!b) return;
   b.hidden = !qs.length;
-  b.textContent = qs.length == 1 ? `💡 Options ready: ${qs[0].name.replace(/_/g, " ")}` : `💡 ${qs.length} sets of options ready`;
+  $("#activitybtn").classList.toggle("has-options", !!qs.length);
+  $("#activitybtn").title = qs.length ? `Activity, ${qs.length} sets of options ready` : "Running and recent activity";
+  b.textContent = qs.length == 1 ? `Options ready: ${qs[0].name.replace(/_/g, " ")}` : `${qs.length} sets of options ready`;
 }
 function jobLine(j, ok, st) {
   if (j.state === "paused") return `Paused: Claude usage ran out. It carries on around ${untilText(j.usage)}; nothing is lost.`;
@@ -1426,6 +1496,7 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
+  closeShell(false);
   S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head"><h1>New design</h1><p class="desc">Describe what you want in plain words: what it does, loads or sizes that matter, parts you already own.</p></div>
     <div class="body new">
@@ -1698,6 +1769,7 @@ setInterval(pollLive, 4000);
 
 /* ---------- Work: read-only task ownership and progress, with each source's limits kept visible. */
 async function showWork() {
+  closeShell(false);
   S.work = true; S.grid = false; S.parts = false; S.sel = null; S.newOpen = false; S.ticket = (S.ticket || 0) + 1; renderList();
   renderWork();
   loadWork();
@@ -1914,25 +1986,32 @@ async function doDuplicate() {
   } catch (e) { $("#dgo").disabled = false; toast("Not copied", e.message, "bad"); }
 }
 
-/* ---------- all projects as big cards */
+/* ---------- project collection */
 function showGrid() {
-  const first = !S.grid; S.grid = true; S.parts = false; S.work = false; S.sel = null; S.newOpen = false; renderList();
-  const P = S.projects;
+  closeShell(false);
+  S.grid = true; S.parts = false; S.work = false; S.sel = null; S.newOpen = false; S.ticket = (S.ticket || 0) + 1; renderList();
+  const P = S.projects, pictured = P.filter(p => pic(p)), unpictured = P.filter(p => !pic(p));
   const unbuilt = P.filter(p => !p.built).length;
-  $("#main").innerHTML = `<div class="head"><h1>All projects</h1><p class="desc">${P.length} design${P.length == 1 ? "" : "s"}. Click one to open it.</p>
-      ${unbuilt ? `<div class="actions"><button onclick="buildAll()">⚙ Build the ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}</button></div>` : ""}</div>
-    <div class="body"><div class="pgrid">${P.map((p, i) => {
-      const run = p.running && p.running.length, st = run ? `<span class="chip info">● running</span>` : !p.built ? `<span class="chip">not built</span>` : p.ok ? `<span class="chip ok">✓ checks pass</span>` : p.stubs ? `<span class="chip info">✎ being designed</span>` : `<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`;
-      return `<div class="pcard" style="${first ? `animation-delay:${i * 40}ms` : "animation:none"}" onclick="select('${p.name}')">
-        <div class="pic">${pic(p) ? `<img src="${pic(p)}" alt="" loading="lazy">` : "◇"}<span class="st">${st}</span></div>
-        <div class="meta"><b>${esc(p.title)}</b><span>${p.review && p.review.ok ? "reviewed" : "review needed"}${p.cost_usd != null ? ` · $${fmt(p.cost_usd)}` : ""}${p.device_g != null ? ` · ${fmt(p.device_g)} g` : ""}${p.built_at ? ` · built ${new Date(p.built_at * 1000).toLocaleDateString()}` : ""}</span></div></div>`; }).join("") || `<div class="note">No projects yet.</div>`}</div></div>`;
+  const entry = p => {
+    const run = p.running && p.running.length, st = run ? `<span class="chip info">running</span>` : !p.built ? `<span class="chip">not built</span>` : p.ok ? `<span class="chip ok">checks pass</span>` : p.stubs ? `<span class="chip info">being designed</span>` : `<span class="chip bad">${p.problems} problem${p.problems == 1 ? "" : "s"}</span>`;
+    const evidence = `${p.review && p.review.ok ? "reviewed" : "review needed"}${p.cost_usd != null ? ` · $${fmt(p.cost_usd)}` : ""}${p.device_g != null ? ` · ${fmt(p.device_g)} g` : ""}${p.built_at ? ` · built ${new Date(p.built_at * 1000).toLocaleDateString()}` : ""}`;
+    return `<button type="button" class="pcard" onclick="select('${p.name}')">
+      ${pic(p) ? `<div class="pic"><img src="${pic(p)}" alt="" loading="lazy"></div>` : ""}
+      <div class="meta"><b>${esc(p.title)}</b><span class="project-evidence">${evidence}</span>${pic(p) ? `<span class="st">${st}${p.stale ? '<span class="chip warn">changed since build</span>' : ''}</span>` : ""}</div>
+      ${!pic(p) ? `<span class="st">${st}${p.stale ? '<span class="chip warn">changed since build</span>' : ''}</span>` : ""}</button>`;
+  };
+  $("#main").innerHTML = `<div class="head collection-head"><div><h1>All projects</h1><p class="desc">${P.length} design${P.length == 1 ? "" : "s"}</p></div>
+      ${unbuilt ? `<div class="actions"><button onclick="buildAll()">Build ${unbuilt} unbuilt project${unbuilt == 1 ? "" : "s"}</button></div>` : ""}</div>
+    <div class="body collection-body">${pictured.length ? `<div class="pgrid">${pictured.map(entry).join("")}</div>` : ""}
+      ${unpictured.length ? `<section class="project-index" aria-label="Projects without a preview">${pictured.length ? '<h2>Without a preview</h2>' : ''}${unpictured.map(entry).join("")}</section>` : ""}
+      ${!P.length ? '<p class="note">No projects yet. Start with New design.</p>' : ""}</div>`;
 }
 
 /* ---------- done notifications: desktop notification (server) + a chime and a flashing title here; one switch */
 async function loadSettings() { try { S.settings = await api("/api/settings"); } catch (e) {} paintBell(); }
 function paintBell() {
   const b = $("#bellbtn"); if (!b) return;
-  b.classList.toggle("off", !S.settings.notify); b.textContent = S.settings.notify ? "🔔" : "🔕";
+  b.classList.toggle("off", !S.settings.notify); b.setAttribute("aria-label", S.settings.notify ? "Turn notifications off" : "Turn notifications on");
   b.title = S.settings.notify ? "On: a desktop notification and a chime when a long job finishes. Click to turn off." : "Notifications off. Click to turn on.";
 }
 async function toggleBell() {
