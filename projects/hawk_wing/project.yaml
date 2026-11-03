@@ -533,7 +533,7 @@ requirements:
   max_fraction: 0.5
   root_y: pivot_y
   extra_nmm: 20
-  why: 'opening the folded wing in a 150 km/h dive (about the prop''s pitch speed on 6S, DESIGN.md): CL 0.05, cd 0.015 (aft, resists opening) + 20 N mm friction; the 50 % fraction is 2x the 1.5x-drag rule LisEagle sized its fold actuator by (REFERENCES.md)'
+  why: 'opening the folded wing at the user-revised provisional 100 km/h equivalent-airspeed target (loaded recovery and structural authority remain unproven): CL 0.05, cd 0.015 (aft, resists opening) + 20 N mm friction; the 50 % fraction is 2x the 1.5x-drag rule LisEagle sized its fold actuator by (REFERENCES.md)'
 - id: fold_dive_l
   check: fold_hinge_moment
   joint: fold_l
