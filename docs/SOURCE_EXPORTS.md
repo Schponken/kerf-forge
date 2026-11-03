@@ -16,13 +16,16 @@ source_files:
 
 Use paths relative to the project folder. Files keep that structure in the archive, so code can continue reading
 them relative to its own location. This is a **declared dependency closure**, not static proof of every file Python
-could read: list data files, helpers outside `parts/`, and sidecar files required by a mesh format. The download does
-not execute code to discover dependencies or include an entire data directory automatically.
+could read: list data files, helpers outside `parts/`, and sidecar files required by a mesh format. These declarations
+also participate in review fingerprints and every printed part's cache key, so editing declared data rebuilds cached
+geometry. `DESIGN.md` and `REFERENCES.md` remain archive notes unless explicitly listed as geometry inputs.
+The download does not execute code to discover dependencies or include an entire data directory automatically.
 
 Every selected file must exist and remain inside the project, without symlink components. Absolute/escaping paths,
 hidden files, output/cache folders, review approval and known credential/key filenames are refused. Keep credentials
 out of design sources. Missing required inputs fail the download with the filename instead of returning an incomplete
-ZIP. Unlisted files are left out; the original project is never modified.
+ZIP. Invalid or unreadable geometry inputs also prevent a current review fingerprint; failed builds keep a report
+with the input error and no fingerprint. Unlisted files are left out; the original project is never modified.
 
 The extracted design has no `review.json` or previous build cache. Put it in a Kerf checkout to rebuild it with the
 engine and catalog, then run its checks and obtain its own current review. The existing maker outputs in the ZIP

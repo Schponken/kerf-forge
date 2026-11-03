@@ -508,7 +508,7 @@ def summary(name: str) -> dict:
             "built_at": (d / "out" / "report.json").stat().st_mtime if rep else None,
             "problems": len(rep.get("problems", [])) if rep else None,
             "stubs": len(rep.get("stubs") or []) if rep else 0,       # placeholder parts: the design is still in progress
-            "stale": bool(rep and rv.get("fingerprint") and rep.get("fingerprint") != rv.get("fingerprint")),
+            "stale": bool(rep and (not rv.get("fingerprint") or rep.get("fingerprint") != rv.get("fingerprint"))),
             "review": rv, "thumb": _thumb(d), "running": running, "build_s": estimate(name, "build"),
             "worked_on": bool(rep and not rep.get("ok") and _worked_on(name))}
 

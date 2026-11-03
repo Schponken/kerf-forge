@@ -66,24 +66,46 @@ class Project:
         return d.joinpath(*p)
 
     def fingerprint(self) -> str:
-        """Hash of the project's own design inputs: project.yaml, part sources and the catalog entries it uses
-        (`catalog_deps.json`, written by every check/build; the whole catalog when that file does not exist yet).
-        (Engine code is excluded so engine improvements don't invalidate every review; `kerf verify` rebuilds and
-        re-checks every project from scratch, so an engine change that breaks a design still fails verify.)"""
-        h = hashlib.sha256()
-        deps = _read_deps(self.dir / DEPS)
-        if deps is not None:    # only the catalog entries this project reads (recorded by check/build)
-            h.update(catalog.deps_hash(deps).encode())
-        files = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py")),
-                 *([] if deps is not None else [catalog.CATALOG]),
-                 *sorted(p for p in (self.dir / "meshes").glob("*") if p.is_file()),     # Meshy shells
-                 *sorted(p for p in (self.dir / "imports").glob("*") if p.is_file()),    # the user's own models
-                 calibrate.profile_path(self.data.get("printer", calibrate.DEFAULT_PRINTER))]  # measured fits
-        for f in files:
-            if f.exists():
-                h.update(f.name.encode())
-                h.update(f.read_bytes())
-        return h.hexdigest()[:16]
+        """Declared design inputs, used catalog entries and measured fits; no engine code or generated outputs.
+
+        Keep the legacy hash stream for covered inputs so ordinary projects do not need a new review merely
+        because coverage improved. New inputs include their project-relative path to distinguish nested helpers.
+        """
+        from . import sources
+        try:
+            inputs = sources.input_files(self.dir)
+            code = [self.dir / "project.yaml", *sorted((self.dir / "parts").glob("*.py"))]
+            models = []
+            for name in ("meshes", "imports"):
+                directory = sources.inside(self.dir, name)
+                if directory.exists() and not directory.is_dir():
+                    raise ValueError(f"Design source folder is not a directory: {name}")
+                if directory.exists():
+                    models.extend(sorted(p for p in directory.iterdir() if p.is_symlink() or p.is_file()))
+            legacy = {*code, *models}
+            for f in legacy:
+                sources._design_file(self.dir, f.relative_to(self.dir).as_posix())
+
+            h = hashlib.sha256()
+            deps = _read_deps(self.dir / DEPS)
+            if deps is not None:
+                h.update(catalog.deps_hash(deps).encode())
+            # Preserve the old ordering, including the trusted catalog between part sources and model assets.
+            files = [*code, *([] if deps is not None else [catalog.CATALOG]), *models,
+                     calibrate.profile_path(self.data.get("printer", calibrate.DEFAULT_PRINTER))]
+            for f in files:
+                if f in legacy or f.exists():
+                    h.update(f.name.encode())
+                    h.update(f.read_bytes())
+            for relative, f in sorted(inputs.items()):
+                if f not in legacy:
+                    content = f.read_bytes()
+                    h.update(b"\0input\0" + relative.encode() + b"\0")
+                    h.update(len(content).to_bytes(8, "big"))
+                    h.update(content)
+            return h.hexdigest()[:16]
+        except (OSError, ValueError) as e:
+            raise ProjectError(f"Cannot fingerprint design inputs: {e}") from e
 
 
 def resolve_dir(name_or_path: str) -> Path:

@@ -4,6 +4,7 @@ The memo idea from cadgen (docs/teardowns/text-to-cad.md) at Kerf's scale: one c
 everything its `build(ctx)` can see:
   - the part's source file, plus every other file in the project's parts/ folder that is not itself a part module
     (shared helpers such as fingerlib.py or layout.py, which part modules import) or that its source names by file;
+  - project.yaml source_files: explicitly declared shared data and helpers outside parts/;
   - the part's resolved params (project params + layout values + the item's own params) and its project.yaml spec;
   - the printer's measured-fit profile and the material (iface reads them);
   - the build123d version and this file;
@@ -193,7 +194,7 @@ def _catalog_deps(deps):
 
 def key(proj, pid: str, spec: dict, params: dict, printer: str) -> str:
     """Cache key of everything except the catalog (catalog deps are only known after a build; see lookup)."""
-    from . import calibrate
+    from . import calibrate, sources
     parts_dir = proj.dir / "parts"
     own = proj.dir / spec.get("file", f"parts/{pid}.py")
     part_files = {(proj.dir / ((s or {}).get("file") or f"parts/{q}.py")).resolve()
@@ -203,9 +204,11 @@ def key(proj, pid: str, spec: dict, params: dict, printer: str) -> str:
     h = hashlib.sha256(getattr(build123d, "__version__", "?").encode())
     h.update(Path(__file__).read_bytes())               # this file: the cache format
     # helpers in parts/ (anything not a part module), plus any other part module this one names ("yoke_l.py")
-    for f in [own, *sorted(p for p in parts_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts
-                           and p.resolve() != own.resolve()
-                           and (p.resolve() not in part_files or p.name in src))]:
+    files = [own, *sorted(p for p in parts_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts
+                          and p.resolve() != own.resolve()
+                          and (p.resolve() not in part_files or p.name in src))]
+    files.extend(f for f in sources.extra_files(proj.dir, proj.data).values() if f not in files)
+    for f in files:
         h.update(str(f.relative_to(proj.dir)).encode())
         b = f.read_bytes() if f.exists() else b"<missing>"
         h.update(b)

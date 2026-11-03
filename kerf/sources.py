@@ -1,4 +1,4 @@
-"""Declared project inputs for source downloads; generated outputs and review approval stay separate."""
+"""Declared project inputs for downloads, review fingerprints and explicit build-cache dependencies."""
 from __future__ import annotations
 
 import os
@@ -35,8 +35,16 @@ def _design_file(root: Path, relative: str) -> Path:
     return f
 
 
-def design_files(root: Path) -> dict[str, Path]:
-    """Project contract, recursive Python helpers and explicitly listed extra inputs; never infer arbitrary reads."""
+def extra_files(root: Path, data: dict) -> dict[str, Path]:
+    """Explicit geometry dependencies outside the normal part/layout/import declarations."""
+    extra = data.get("source_files", [])
+    if not isinstance(extra, list) or any(not isinstance(p, str) for p in extra):
+        raise ValueError("source_files must be a list of project-relative file paths")
+    return {Path(p).as_posix(): _design_file(root, p) for p in sorted(extra)}
+
+
+def input_files(root: Path) -> dict[str, Path]:
+    """Contract, recursive Python helpers and declared geometry inputs; never infer arbitrary file reads."""
     contract = _design_file(root, "project.yaml")
     try:
         data = yaml.safe_load(contract.read_text(encoding="utf-8"))
@@ -44,10 +52,7 @@ def design_files(root: Path) -> dict[str, Path]:
         raise ValueError(f"Invalid project.yaml: {e}") from e
     if not isinstance(data, dict) or not isinstance(data.get("parts") or {}, dict):
         raise ValueError("project.yaml must contain a mapping of parts")
-    extra = data.get("source_files", [])
-    if not isinstance(extra, list) or any(not isinstance(p, str) for p in extra):
-        raise ValueError("source_files must be a list of project-relative file paths")
-    needed = {"project.yaml", *extra}
+    needed = {"project.yaml", *extra_files(root, data)}
     for pid, spec in (data.get("parts") or {}).items():
         if not isinstance(spec or {}, dict):
             raise ValueError(f"Part {pid} must be a mapping")
@@ -83,9 +88,15 @@ def design_files(root: Path) -> dict[str, Path]:
         for child in files:
             if child.endswith(".py") and not child.startswith("."):
                 needed.add((Path(directory) / child).relative_to(root).as_posix())
-    for doc in ("DESIGN.md", "REFERENCES.md"):
-        if (root / doc).exists() or (root / doc).is_symlink():
-            needed.add(doc)
     if any(not isinstance(p, str) for p in needed):
         raise ValueError("Design source paths must be strings")
     return {Path(p).as_posix(): _design_file(root, p) for p in sorted(needed)}
+
+
+def design_files(root: Path) -> dict[str, Path]:
+    """The editable geometry inputs plus optional human-readable design/research notes for downloads."""
+    files = input_files(root)
+    for doc in ("DESIGN.md", "REFERENCES.md"):
+        if (root / doc).exists() or (root / doc).is_symlink():
+            files[doc] = _design_file(root, doc)
+    return dict(sorted(files.items()))

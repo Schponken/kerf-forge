@@ -34,14 +34,14 @@ def _jpg(src: Path, dest: Path) -> bool:
 
 def collect(name: str, evals: dict) -> dict:
     """Everything the page shows about one project, from project.yaml, out/report.json, the review and the eval."""
-    from . import cli, project as P
+    from . import cli
     d = ROOT / "projects" / name
     data = yaml.safe_load((d / "project.yaml").read_text(encoding="utf-8")) or {}
     rp = d / "out" / "report.json"
     rep = json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else None
-    fp = P.load(name).fingerprint()
-    built = bool(rep) and rep.get("fingerprint") == fp and bool(rep.get("files"))
     rv = cli.review_status(name)
+    fp = rv.get("fingerprint")
+    built = bool(rep) and bool(fp) and rep.get("fingerprint") == fp and bool(rep.get("files"))
     ev = evals.get(name)
     info = {"name": name, "title": data.get("name", name), "description": " ".join(str(data.get("description", "")).split()),
             "built": built, "ok": bool(rep and rep.get("ok")) and built, "review": rv["ok"], "review_why": rv.get("why", ""),
