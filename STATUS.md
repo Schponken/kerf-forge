@@ -508,3 +508,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   results are only read from commit messages. No check, threshold, catalog value or test was changed; .claude/ untouched.
 - Tests: tests/test_diary.py, tests/test_lessons.py, tests/test_docs.py (targeted only).
 - (Claude, 2026-11-02, options + usage failsafes) Options: "💡 Options ready" sidebar badge from any page and an "Options ready to choose from" list on New design (`/api/quotes`, `studio.list_quotes`); `openQuote(name)` loads THAT request's description and options, so two option runs never mix or block each other's buttons. Usage: a Claude job cut off by the usage limit is PAUSED (session id kept, reset time read from the message), resumes by itself after the reset (setting `autoresume`, skipped while tools/budget.py's switch is on) or now with ▶ Resume (`/api/resume`, `claude -p --resume <session>`); no Claude job starts and auto-fix waits while usage is out (claude_ready code `usage`); every Claude job prompt says to commit as it goes. tests/test_usage_failsafe.py, tests/test_notify_targets.py.
+
+## 2026-11-02 19:00 UTC-5 — leftover engine edits stashed (portable_launcher_gets quote job)
+- Found uncommitted edits in the local tree from before this session (no claim held, author unknown): `edges.part_sharp` (kept
+  sharp corners matched in the part's own frame via kerf_home_loc), its caller in pipeline._print_checks, and a test in
+  tests/test_edges.py (6 pass). Not committed (author's intent unknown): saved as the stash "leftover uncommitted work found in
+  the local tree, author unknown..." (`git stash list`; restore with `git stash pop` on that entry). If finished, note
+  kerf/coves.py:86 and features.py:367/414 still call sharp_inside directly, which may need the same own-frame treatment.
+- The quote itself (.cache/studio/quotes/portable_launcher_gets.json, bungee rail recommended) is untracked by design.
