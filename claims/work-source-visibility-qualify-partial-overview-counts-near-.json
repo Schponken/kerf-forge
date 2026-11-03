@@ -2,9 +2,9 @@
  "item": "Work source visibility: qualify partial overview counts near the summary and make project shortcuts show all matching work, preserving honest ownership and progress.",
  "session": "codex-work-observation",
  "since": 1793675503.8386571,
- "heartbeat": 1793675854.027118,
+ "heartbeat": 1793676011.998739,
  "provider": "Codex",
  "thread_id": "01a19f62-863d-76e3-9e27-0e6a99471996",
  "since_utc": "2026-11-03 03:11",
- "activity": "Validated Work partial source disclosure and project shortcuts; preparing scoped PR"
+ "activity": "Work source coverage and project-filter fixes pass; saving review checkpoint"
 }
