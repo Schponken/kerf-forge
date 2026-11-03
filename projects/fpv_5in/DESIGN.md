@@ -138,8 +138,9 @@ battery, xt60, vtx; body → camera (`cam_tilt`, revolute about the side screws,
 - Motor thread depth is typical (catalog): M3 × 10 with 7.5 mm grip leaves 2.5 mm in the motor, 0.5 mm short of the
   3 mm thread bottom (> the ±0.29 mm screw-length tolerance) — check one before tightening all.
 - VTX height (8 mm incl. heatsink) is typical, not published: 2 mm stays above the stack screw heads.
-- Arm first bending mode is roughly in the gyro noise band (reviewer hand calc ~165 Hz) and PETG-CF softens near a
-  hot motor: hover-test and check Blackbox gyro noise before freestyle.
+- Arm first bending-mode estimate is 185.1 Hz versus the 200.2 Hz hover rotor rate: only 8 % separation
+  against the required 20 % (normal-flight screen below). PETG-CF also softens near a hot motor. The current
+  frequency screen fails; gyro filtering or a quiet gyro trace alone does not prove mechanical endurance.
 - Flight time 12 min is the ideal-hover estimate (momentum theory, figure of merit 0.5); real hover draws more and
   freestyle flying gives about 3–4 min on the 1100 mAh 6S pack.
 - Motor phase runs are modelled as 18 AWG extensions; the motors' own lead gauge/length is not in the catalog (with
@@ -191,3 +192,37 @@ and ramped rib ends; F3 4-wall print settings per object + lightening so T/W ≥
 F4 top_plate `load_axis: z`; F5 `body_strength_3`; F6 estimate + Blackbox gate stated; F7 groove-mouth and bed-outline
 chamfers (not F.bed_chamfer: chamfering the post counterbore mouths moved the body hot spot); F8 arm max_disp 0.87;
 F9 nuts sunk 0.5 mm; F10 VTX routes.
+
+
+## Normal-flight structural screen (2026-11-02)
+The objective here is normal flying, including sustained configured-output thrust and rotor excitation, rather than
+crash survival. `arm_flight_load` now checks the existing arm under the configured 74 % motor-output steady thrust:
+1.685 kg × 9.81 × 0.74² = **9.0517 N** per motor. This uses the existing sourced motor thrust and the existing
+propeller-law output estimate; it is not a measured transient envelope. Supports and motor-screw load seats are
+unchanged. SF 2 follows ENGINEERING.md section 3 for a static load along printed layers; the 0.87 mm limit is the
+existing 1 % arm-length rule. The separate existing crash checks and all their limits remain unchanged.
+
+A real scoped solve on the retained geometry gives **2.46 MPa** p99.9 stress against **17.5 MPa** allowable,
+**0.230 mm** maximum displacement against **0.87 mm**, and **54.7 N/mm** load-point stiffness. The normal-load static
+screen passes. The estimated printed frame is **160.7 g** and thrust/weight remains **6.03** against 6.0.
+
+The vibration screen still **fails**: first bending estimate **185.1 Hz**, hover rotor **200.2 Hz**, blade pass
+**600.5 Hz**, nearest separation about **8 %**, minimum **20 %**. The implementation divides separation by the
+natural frequency, so high-side acceptance at this hover point needs at least 200.2 / 0.8 = **250.25 Hz** (about
+1.83 times the present stiffness at fixed modal mass), not merely 240 Hz. Motor plus prop carried mass is included
+(35.8 g), with the arm's Rayleigh effective-mass contribution. This is a compliance-based first-mode screen at
+estimated hover speed, not a full operating-speed modal analysis.
+
+One deeper, hollow arm candidate was measured and rejected. It used taller 1.6 mm wire-channel walls and a filleted
+closed mid-depth core while retaining the clamp and motor interfaces. Although stiffness increased from 54.7 to
+66.1 N/mm, the mode moved to **201.9 Hz**, almost exactly the candidate's **202.1 Hz** hover excitation. Printed
+mass increased to **171.7 g** and thrust/weight fell to **5.92**. Stiffness improvement alone therefore did not
+improve normal-flight suitability. The original arm geometry was restored; no candidate parts are delivered.
+Exact scalar results and candidate dimensions are in `NORMAL_FLIGHT_SCREEN.json`.
+
+**Limits and next gate:** static stress margin is not a fatigue-life result. The CF-PETG catalog has static
+strength/modulus but no S–N, strain-life, or long-term creep data. Neither this solve nor Betaflight gyro filtering
+establishes repeated-flight life, damping, temperature endurance, or safety through spool-up resonance crossings.
+Before another redesign, measure the printed assembly's bending response over the intended rotor-speed range and
+obtain relevant printed-material cyclic/temperature data. Revisit a lightweight root/section redesign only with a
+mass budget and a predicted frequency outside the excitation band; do not add material just to lower deflection.
