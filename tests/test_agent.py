@@ -174,6 +174,7 @@ def test_paused_claude_job_is_taken_over_by_codex(bins, tmp_path, monkeypatch):
     monkeypatch.setattr(studio, "settings", lambda: {"autoresume": True})
 
     class Old:                                               # a Claude design job the usage limit paused
+        state = "paused"
         id, kind, project, label, env, session, resumed_by = "old1", "design", "agent_test_d", "New design: lamp", None, "s9", None
         agent, request, lines = "claude", "a desk lamp", []
     old = Old()

@@ -315,6 +315,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Reviewed, unchanged: natural_freq already checks the hover rotor and blade-pass rates against a cited 20 % separation; use-story checks only run for listed hazards; thrust already scales test voltage to the pack.
 - servo_link's arm now warns on infill strength (3 % of its volume over the lattice limit near [6.7, -8.1, 4.3]): a boxed 100 % infill modifier or more walls; left for the project's owner.
 
+## 2026-11-02 — Studio cancellation keeps its project locked (Codex)
+- A Stop request, or an authentication/trust hint, used to publish a terminal job state before the child process
+  exited. Builds, trials, parameter/material saves and restores could then overlap that process's remaining writes;
+  Studio's busy/quit/watchdog guards also treated it as finished.
+- Job now records the requested outcome privately, keeps the existing running state while draining output and
+  waiting for exit, then publishes stopped/failed. Manual Stop logs that it is waiting; repeated stops preserve the
+  original outcome. No new UI state or dependency.
+- `tests/test_studio_lifecycle.py`: real children acknowledge SIGTERM but wait for a release file. Both manual and
+  auth-failure cases reproduced the bug before the fix; afterward, conflicting jobs/trial preparation stay blocked,
+  another project remains available, cleanup output is retained, and a graceful exit preserves stopped/failed.
+- Verification: 68 targeted Studio/usability/lifecycle tests passed; the existing progress-order test is excluded
+  because PR #4 already fixes that separate main-branch regression. `kerf doctor`: ALL OK (optional Arduino/simavr
+  tools remain unavailable). Independent code review found no actionable issues. No full suite or hardware run.
+- Resource review saved and reread in CLAUDE.md: keep the current subprocess/progress design; revisit only for
+  jobs that must survive Studio restarts or run across machines. The broad fresh-eyes PLAN item remains open.
+
 ## 2026-11-02 16:20 UTC-5 — Firmware proven + Electronics as a real circuit checked off (Claude, Spencer's session)
 - Code was pushed 2026-11-01 (44df72e firmware, b846908 circuit); this pass verified it on the current tree (batched
   testing: targeted tests only). `pytest tests/test_fwcheck.py tests/test_firmware.py tests/test_circuit.py
@@ -437,6 +453,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   "PAUSED:"; `claims.py next` and the Stop hook's free-item test skip them (`take` can still claim one).
 - Verified: `kerf check servo_link` PASS in 9 s with bracket_fea / arm_fea PAUSED and the warning;
   tests/test_stress_pause.py (3), test_claims.py, test_budget.py pass.
+
 - (01S68R6R, later) Stage timing of a full drone_foldable_wings quick check (--all, 19 min, 3.1 GB peak): two
   clearance_min requirements were 720 s of it. geom.mesh_gap screen -> ~72 s, same exact value. Printed mass now
   cached per shape + spec (~45 s per check). Next hotspots from the same run: core FEA ~300 s (6 parts), print stage
@@ -463,6 +480,20 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   (20.06 vs exact 20.00 broke test_swinging_prop_is_swept's +-0.01 hand calc; reported gaps stay exact). Left, each a
   few s: tessellation straight to numpy in geom.mesh (skip build123d Vectors), a warm check server (~7 s startup per
   command), cold part rebuilds after engine edits (~180 s, fillets in part code).
+
+## 2026-11-02 — PR #8 manager follow-up (Codex)
+- Moved the completed resource review from CLAUDE.md into this session record, as the manager requested. The
+  standing instructions retain current budget controls and the stress-simulation pause. No new resource review.
+- Reviewed decision: **keep** Studio's existing subprocess runner and progress stream. The concrete gap was
+  releasing a project before cancellation finished; recording the requested outcome until process exit fixes it
+  within the current design. A separate job framework adds migration and maintenance without a demonstrated gain.
+  Revisit if jobs must persist across Studio restarts or run on multiple machines. No CAD/simulation replacement
+  was identified for this usability task.
+- Latest main merged without lifecycle code changes. Rechecked the saved note, standing instructions and PR scope;
+  the two real-process cancellation regressions pass again after integration (0.16 s). No full batch or stress solve.
+- Queue refresh against main 9e39eab: resolved only additive STATUS text, preserving both dated entries and their
+  context. Lifecycle source/tests are byte-identical to the prior validated revision; CLAUDE.md and PAUSED.json match
+  current main. No repeated process tests for this documentation-only resolution, and no new feature count.
 
 ## 2026-11-02 22:45 UTC - "How Kerf decided" readable and steerable (Claude)
 - Replaced the force-directed thought web (it never settled, so it shook, and labels overlapped / were cut at 46 chars) with a calm trail read top to bottom: 1 You asked (the whole request) -> 2 What it looked into (one card per question: Looking now / Kept coming back / Looked at / Not pursued + why, "Found:" its notes, its sources as links, follow-up questions inside) -> 3 What it decided (each option Chosen / Set aside with why, and "Came out of" the research it rests on) -> 4 What it's building (parts drawn as one step with chips, then tests). Nothing moves except new items fading in; light, dark and phone width checked in screenshots.
@@ -742,3 +773,39 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   Normal dependency merge `046389c` kept both PLAN/STATUS histories and inherited files unchanged;
   the actual one-line fix and regression tests are a separate commit. Doctor ALL OK with existing
   dependencies; optional firmware tools unavailable. No full suite, project build or stress solve.
+
+
+### 2026-11-02 — PR #8 integration with usage pause and Codex handoff (Codex)
+- Merged current main into the existing cancellation branch, resolving the real Job completion conflict
+  and retaining both STATUS histories. Main's AGENTS, stress pause, session/usage metadata, agent selection,
+  notification and handoff behavior remain. Explicit stop/auth outcomes now take precedence over usage
+  pause only after output is drained and the child exits; the project stays busy until then.
+- Stop can cancel an already-paused job's queued retry. Completion, Stop and resume/handoff registration
+  share the existing reentrant JOB_LOCK. A callback revalidates after its budget check; if successor
+  registration already won the lock, delayed Stop forwards to that successor. No wait/communicate or
+  budget fetch is held under the lock; process registration uses the existing start_job lock.
+- **21 targeted tests pass in 0.67 s** (`test_studio_lifecycle`, `test_usage_failsafe`, `test_agent`).
+  Harmless real-child cases preserve cleanup and project exclusion through graceful exit for stop/auth,
+  with and without usage events, while genuine usage pause schedules only after exit. Event/fake-Timer
+  tests cover Stop racing a started retry callback and both registered successor paths without sleeps.
+  The first run had 20 passes and one fixture error: the old fake paused job lacked `state`; it now
+  explicitly reports paused, preserving all assertions. Claude-only usage tests isolate host Codex;
+  fake-binary agent tests independently retain successful takeover coverage. No paid agents launched.
+- Doctor ALL OK with existing dependencies; optional Arduino/simavr unavailable. No full suite, project
+  build, stress solve, review.json, CLI-flag change or new runner framework. The separate installed-Codex
+  CLI flag compatibility finding is queued for its own lane.
+
+### 2026-11-02 — Queued usage retries respect automatic resume being turned off (Codex)
+- A captured fake-Timer callback reproduced the bug on PR #8: schedule while automatic resume is on,
+  turn it off, dispatch the callback, and one mocked agent launch still occurs. `resume_job(auto=True)`
+  now reads the current setting after its budget lookup, inside the existing job lock, before launch.
+  A disabled callback leaves the job paused, preserves its usage deadline, and records why it did not
+  resume. Manual Resume still works; re-enabling before a queued callback dispatches permits that retry.
+- **25 targeted tests pass in 0.67 s** (`test_studio_lifecycle`, `test_usage_failsafe`, `test_agent`).
+  Four new cases cover off before dispatch, re-enabled before dispatch, off while the callback waits
+  on its budget check, and manual Resume while off (the old callback cannot duplicate its successor).
+  New tests use fake timers and mocked launches; existing lifecycle tests use harmless Python children.
+  No real model/session launched. Doctor ALL OK; optional firmware tools unavailable.
+- Stacked on PR #8's cancellation lock. No new timer registry, settings synchronization, or automatic
+  rescheduling of an already-skipped callback; after such a skip the existing manual Resume remains.
+  Full suite, project builds and stress solves remain unrun under the existing holds.
