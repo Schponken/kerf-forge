@@ -608,9 +608,9 @@ def _fingerprint(proj, rep):
 
 
 def _finish(proj, rep, stg, t0, overrides):
-    if not overrides:           # record what this build read from the catalog, then the fingerprint that depends on it
-        P.record_deps(proj)
-        _fingerprint(proj, rep)
+    # Variant reads extend the existing union too; no original or earlier variant dependency is discarded.
+    P.record_deps(proj)
+    _fingerprint(proj, rep)
     rep["maker_notes"] = maker_notes(rep["warnings"])
     _fold_stubs(proj, rep)
     rep["ok"] = not rep["problems"]

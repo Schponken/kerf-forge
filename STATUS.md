@@ -514,3 +514,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   out-staleness. Earlier fixture corrections are included in that final count, not added to it.
 - Stacked on source-export PR #22. No actual project build, real review edit, browser run, stress solver,
   full suite or benchmark. The full batch remains reserved.
+
+## 2026-11-02 — Temporary parameter variants retain their own provenance (Codex)
+- Confirmed on a tiny synthetic Python pipeline run: saved width 8 and override width 16 both passed, but
+  changed geometry/report overwrote the same out/ with the saved design's fingerprint. Ordinary CLI
+  optimisation already uses a scratch copy; Studio Try writes a copied YAML. No direct CLI override bug
+  or output-path change is claimed.
+- Project load now snapshots a versioned typed signature of changed original override inputs before
+  derived/layout evaluation. The fingerprint and part cache use it; exact typed no-ops keep default
+  behavior. Numeric types/signed zero and container/key order remain distinct. Exact native values only:
+  None/bool/int/finite float/str/list/dict; unsupported/custom types, cycles and nonfinite contents raise
+  a clear ProjectError before derived/build. param_values remains general; this records original inputs,
+  not arbitrary later mutations of Project.params. Variant catalog reads extend the existing safe union.
+- PASS: 63 focused tests in 3.30 s (28 new override cases plus affected review/catalog/cache/report checks).
+  They cover actual 8-to-16 geometry/report distinction, synthetic review/output comparison, derived
+  shadowing with geometry 12-to-24, mandatory cold/warm caches for ordered/mixed-key/type-distinct variants,
+  native no-op compatibility, unsupported/NumPy rejection, cycles and retained catalog dependencies.
+  The earlier 27-case run overlaps this final result and is not added to it. Doctor: ALL OK; optional
+  Arduino/simavr tooling remains unavailable. No real project build/review, FEA, full suite or benchmark.
+- Stacked on review-input PR #32 (itself on source-export #22); no self-merge.

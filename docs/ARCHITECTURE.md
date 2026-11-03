@@ -17,7 +17,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/drives.py` | Printed spur-gear pairs (py_gearworks, FDM backlash, standard centre distance) and GT2 belt maths (length, tooth count, centre for a stock belt, wrap) + belt keep-out solid |
 | `kerf/proxies.py` | Purchased parts and keep-outs built from the catalog, with their joints and fastener sites |
 | `kerf/catalog.py` | Loads `catalog/hardware.json` (every entry has a `source`) |
-| `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item; fingerprints declared local design inputs, used catalog entries and calibration for review freshness. Tests: tests/test_review_inputs.py, tests/test_catalog_deps.py. |
+| `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item; fingerprints declared local design inputs, used catalog entries and calibration plus typed temporary override inputs for review freshness. Tests: tests/test_review_inputs.py, tests/test_override_provenance.py, tests/test_catalog_deps.py. |
 | `kerf/modules.py` | Reusable assembly library (`catalog/modules.yaml`): source contract, interfaces, parameters, inherited checks and live review status; makes independent editable project copies with historical evidence in `module.json`, never copied approval |
 | `kerf/assembly.py` | Joint tree, solve poses, interference, motion sweeps, coupled poses, fastener alignment + screw lengths |
 | `kerf/features.py` | Detailed-modeling helpers: swept channels, uniform shell, gussets, teardrop holes, printed ISO threads (bd_warehouse, phase-matched rod/hole), gear pairs (= drives.spur_pair), snap hooks + living hinges with a strain check, text labels, lightening pockets with a minimum web, `safe_fillet` (applies edge groups one by one, reports failures); `fillet_inside(ctx, body, r, keep=)`: rounds every corner kerf.edges reports with kerf.coves prisms (r, then r/2; no OCC fillet, which can crash; coves gmsh cannot mesh are dropped; corners under a ceiling stay square), keep(at) -> reason declares the mating ones |
@@ -431,13 +431,27 @@ never treat null as current proof. Generated outputs, cache files and review app
 are archive-only notes unless explicitly listed in `source_files`. The manifest is declared dependency coverage,
 not static discovery of arbitrary Python reads. Declared extras also invalidate printed-part cache entries.
 
+Python `project.load(..., overrides=...)` / `pipeline.run(..., overrides=...)` snapshot a versioned typed identity
+of changed override inputs before derived/layout evaluation. Exact same-type/value overrides keep the default hash
+and cache behavior; int/float/bool, signed zero, list order and mapping key types/order remain distinct. Supported
+inputs are exact built-in None, bool, int, finite float, str, list and dict values; Fraction, NumPy scalars, tuples,
+sets, custom objects, cycles and nonfinite nested values fail with ProjectError before derived evaluation/build.
+`param_values` itself remains a general value resolver. The identity records original override inputs, not arbitrary
+later mutations to `Project.params`. It also enters the part cache so distinct variants cannot share wrong geometry.
+Override runs keep the existing output destination and saved YAML: the variant report fingerprint differs from the
+on-disk design, so the saved review cannot describe those outputs as current. A review can still cover the saved
+design while `out_stale` says its outputs need rebuilding. Ordinary CLI optimisation already uses a scratch copy;
+Studio Try writes a copied YAML contract. There is no new override CLI option or output-path policy.
+
 Every check/build records the catalog paths it read
 into `projects/<p>/catalog_deps.json` (a growing union; commit it), so an edit to a catalog entry the project does
 not use leaves its review current, and an edit to one it uses makes it stale. Without that file the whole catalog
 file is hashed. An unreadable or malformed dependency file also falls back to the whole catalog until the next
 check repairs it. Catalog reads refresh automatically when the file changes, so a running Studio process notices
 used-entry edits without restarting. Quick checks retain the union of earlier reads so they cannot discard
-dependencies of stages they did not run; cached part hits re-record their reads too.
+dependencies of stages they did not run; cached part hits re-record their reads too. Override runs add their reads
+to that same conservative union before the final report fingerprint, never dropping saved-design or earlier-variant
+dependencies.
 It also reports `out_stale` (and says so in `why`) when `out/report.json` was built from another fingerprint: the
 review stands, but the shipped ASSEMBLY.md / BOM / renders need `kerf build` (verify rebuilds everything anyway).
 

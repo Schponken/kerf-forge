@@ -6,6 +6,7 @@ everything its `build(ctx)` can see:
     (shared helpers such as fingerlib.py or layout.py, which part modules import) or that its source names by file;
   - project.yaml source_files: explicitly declared shared data and helpers outside parts/;
   - the part's resolved params (project params + layout values + the item's own params) and its project.yaml spec;
+  - a temporary variant's typed original override-input signature, before derived/layout can shadow those values;
   - the printer's measured-fit profile and the material (iface reads them);
   - the build123d version and this file;
   - the engine files the part used: every kerf/*.py whose code ran while the part was built (recorded per part with
@@ -216,7 +217,10 @@ def key(proj, pid: str, spec: dict, params: dict, printer: str) -> str:
             for d in sorted(engine_deps((), _kerf_imports(b.decode("utf-8", "replace"), False)[0])):
                 h.update(d.encode())
                 h.update(_file_hash(d[5:]).encode())
-    h.update(json.dumps(params, sort_keys=True, default=repr).encode())
+    # Variant identity preserves native key types/order; unsorted JSON also accepts mixed mapping keys.
+    h.update(json.dumps(params, sort_keys=not bool(proj.override_signature), default=repr).encode())
+    if proj.override_signature:
+        h.update(b"\0overrides\0" + proj.override_signature)
     h.update(json.dumps(spec, sort_keys=True, default=repr).encode())
     h.update(printer.encode())
     prof = calibrate.profile_path(printer)
