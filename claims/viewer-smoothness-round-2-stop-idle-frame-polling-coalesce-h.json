@@ -1,0 +1,9 @@
+{
+ "item": "Viewer smoothness round 2: stop idle frame polling, coalesce hover picking, and release comparison GPU resources; targeted lifecycle regressions",
+ "session": "codex-round2-viewer-perf",
+ "since": 1793679383.405042,
+ "heartbeat": 1793679383.405042,
+ "provider": "Codex",
+ "thread_id": "01a19f9d-ffbf-7bf3-8d71-ca2d15a910bc",
+ "since_utc": "2026-11-03 04:16"
+}
