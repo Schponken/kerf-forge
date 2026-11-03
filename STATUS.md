@@ -521,6 +521,73 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   (their failures are real problems). Seen while testing, not mine: test_studio_features duplicate (DID NOT RAISE) and
   test_utf8_io (studio.py:956), both from the Studio commit at ~17:15.
 
+## 2026-11-02 — Work claim ownership details (Codex)
+- A shared chat keeps each linked claim's reported owner/provider, activity, update time, scope, attention and
+  checklist. Existing scope details show these as compact task rows; full owner names and activities are searchable,
+  and provider filtering also matches the linked owners. One chat remains one card and one observed live session.
+- Stale ownership updates flag the card for attention without implying that its live chat or another owner stopped.
+  In-progress/recent status filters can overlap attention, each counting a card once. Unknown checklists/times stay
+  unknown; combined progress still requires every claim's checklist. A sole claim cannot hide the chat's own next
+  steps, and identical claim/chat steps are shown once. No subagent execution or ETA is inferred from ownership.
+- 31 focused tests passed in 6.26 s (Work overview/browser, Codex Work, docs); after the independent review's
+  overlapping-filter correction, both browser scenarios passed in 5.14 s. Tests include mixed/stale owners, unknown
+  and complete checklists, live-state retention, owner/activity search, provider matching, refresh focus/open state,
+  escaping and long owners at desktop/phone sizes in both themes. Work's light warning text now clears 4.5:1.
+- Viewed the illustrative captures in .cache/work-owners (work-owners-sample-{dark,light}-{1440,390}-{top,details}.png).
+  No horizontal overflow or browser errors. Impeccable's one mechanical scan found only 13 existing patterns outside
+  the edited Work selectors; no redesign or new design artifacts. The existing tall phone app shell is a separate
+  accepted limitation. Doctor ALL OK using shared dependencies; optional firmware tools remain unavailable.
+- Parent code/screenshot review findings are fixed and covered. No full batch, stress solve, physical hardware,
+  project geometry, catalog, engineering threshold or review.json changed; full verification remains on hold.
+
+
+### 2026-11-02 — Preserve useful Work progress descriptions (Codex; stacked on PR #23)
+- Reproduced public progress text being replaced by a generic tool label. Codex records now retain
+  the latest nonempty public message in `activity` and separately report the later tool's bounded
+  `action` label. A newer public message clears the old action. Live in-progress and saved/waiting
+  actions retain their distinct wording; raw commands, arguments, outputs and reasoning stay private.
+- Work renders the action as a secondary line below the progress description and includes it in search.
+  No-summary fallback stays a single line. Claim records cannot assert tool activity, both claim-overlay
+  paths clear displaced session actions, and stale snapshots clear current actions and set `live=None`.
+  A newer claim can replace stale text while the runtime warning remains; no running/stopped inference.
+- Validation: **37 focused tests pass in 13.70 s** (Codex reader, Work overview, both browser scenarios,
+  docs). Final freshness integration and affected reader/overview selection: **31 pass in 3.25 s**.
+  These selections overlap. Browser checks cover 1440/390 px, light/dark, search, escaping, duplicate
+  suppression, active/attention filters, refresh/focus/open details and no overflow. New text contrast
+  is measured against the actual Work background at the unchanged 4.5:1 threshold; the initial test
+  incorrectly treated a transparent row as black. Four action captures reviewed in `.cache/work-activity/`.
+- Test integration only: copied the exact existing 13-line `tests/browser.mjs` from PR #4's
+  fast-tests-refresh worktree, verified byte-identical, and routed both Work scripts through it. It
+  reuses a worker browser when supplied, otherwise starts its own; no marker/config/fixture edits.
+- Impeccable incumbent refinement: 13 preexisting mechanical findings, none in changed Work selectors.
+  Doctor ALL OK with reused dependencies (optional Arduino/simavr unavailable). Existing phone shell
+  height is unchanged. No real Codex session connection, full batch, stress run, geometry or review edits.
+
+
+### 2026-11-02 — Work links identify real observed Codex chats (Codex; stacked on PR #29)
+- Found that only hand-written browser fixtures supplied chat URLs: the actual Codex reader did not,
+  so real sessions had no Open chat action. Verified the existing-chat route in the official
+  [desktop app Commands reference](https://learn.chatgpt.com/docs/app/commands#deep-links), which documents
+  `codex://threads/<thread-id>` separately from the new-chat route. Local Info.plist confirms scheme
+  registration; no route was inferred from registration alone. One targeted official source lookup.
+- The reader now supplies the documented link from the full observed technical ID, percent-encoded as
+  a single path segment. Invalid/non-string/control/reserved IDs get no link. Work accepts only existing
+  chat routes for codex links (no new/settings route, credentials, port, query, fragment or decoded
+  path separator); HTTPS handling remains. Open chat uses target=_blank plus noopener/noreferrer,
+  reusing the native shell's existing external-window delegate without changing Swift or the launcher.
+- Full observed Chat ID is escaped and wrapped in Scope & next steps. Shared claims alone cannot
+  supply that observed identity. No clipboard flow, synthetic URLs or automatic navigation was added.
+- Validation: **52 focused tests pass in 16.25 s** (Codex reader, Work overview, browser, docs).
+  Final full-ID escaping/capture browser selection: **2 pass in 13.70 s**, overlapping the earlier run.
+  The browser fixture goes through actual `_record` → overview → DOM, asserts full href/ID/target/rel,
+  intercepts keyboard activation before navigation, and preserves focus through refresh. Invalid route,
+  escaping, 1440/390 px, light/dark, no-overflow and existing Work filtering checks pass. Full-ID and top
+  captures in `.cache/work-chat-links/` visually reviewed. Mechanical audit: 13 incumbent findings,
+  none in changed Work selectors. Doctor ALL OK; existing optional Arduino/simavr unavailable.
+- No production chat, native app, real session connection, full batch or stress run. The native external
+  handoff is verified by source path and DOM attributes, not a live app launch. Opening a documented
+  link still depends on an installed app handler and the chat existing on that computer. Phone shell
+  height remains the previously accepted separate limitation.
 ## 2026-11-02 (Claude, Learning Mode phases 2 and 3)
 - `kerf diary <p>` / `--all` (kerf/diary.py) rebuilds each project's diary from git history into learning/diary/<p>.json + .md:
   review.json versions followed from round to round, check PASS/FAIL events and commit-noted problems ("crashed at 97 deg"),
@@ -579,3 +646,50 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+## 2026-11-03 01:52 UTC — Work reflects agent jobs, usage pauses and continuations (Codex)
+- Reproduced through `studio.work()` with in-memory jobs: a Codex edit appeared as Claude, while a usage-paused
+  design became idle/Not running and still said it was designing a part. The Work serialization now carries the
+  known agent, ended timestamp, usage/resume metadata and current retry/budget policy. No Job lifecycle, timer,
+  resume, cancellation or agent-selection code changed; `Job.info` did not need modification.
+- Work labels paused runs explicitly, groups them for attention without claiming user input is required, and
+  separates the reported usage reset from finish ETA. Pause details say whether retry is enabled/off/budget-blocked
+  or a resumable session is missing; enabled policy never promises a queued timer. A prior run with `resumed_by`
+  becomes Continued, not Finished, and shows an observed successor's provider/state with Watch continuing job;
+  unobserved successors get no dead navigation. Previous-run activity remains accessible. Historical missing or
+  invalid agent metadata retains Claude fallback; known non-agent jobs stay Studio. Claim/session behavior is unchanged.
+- Validation: **81 passed in 18.79 s** (`tests/test_work_job_states.py`, `tests/test_work_job_page.py`,
+  `tests/test_work_overview.py`, `tests/test_work_page.py`, `tests/test_codex_work.py`, plus docs requirement/YAML/
+  engineering-contract nodes). Initial 75 pass / 3 browser failures came from old fixture routes returning `{}`
+  for main's new `/api/quotes` poll; corrected all three to the actual empty `{quotes: []}` schema, keeping every
+  assertion. One browser-marker registration warning remains until the pending fast-tests configuration lands;
+  the new browser node is explicitly marked. Known agent docs-map failures are covered by PR #34, not repeated here.
+- The actual serialization-to-DOM fixture verifies provider labels, pause/active/recent filters, reset-vs-ETA,
+  escaping, unknown successors, keyboard navigation/focus and no overflow at 1440/390 px in dark/light themes.
+  Viewed `.cache/work-job-states/work-job-{paused,continuation}-{light,dark}-{1440,390}.png`; existing tall phone
+  app-shell height remains unchanged. Impeccable's one mechanical scan found 13 existing issues outside edited
+  Work selectors. `kerf doctor`: **ALL OK**, existing optional firmware tools unavailable.
+- Based on PR #31 and current main, preserving both STATUS sides of their additive conflict. Budget off and
+  batch/duplicate-process status checked before focused runs. No real agent process/chat, timer, physical project,
+  stress solve, full suite or full batch. Exact observed session/job dedup is a separate pending investigation.
+
+## 2026-11-03 — Studio progress descriptions survive tool updates in Work (Codex)
+- Reproduced through actual `studio.work()` with an in-memory job: a public note about hinge clearance
+  followed by a tool event became only "Checking the design". Running design/edit/fix/quote jobs now retain
+  the latest nonempty public note with the existing bounded phase/stage label as a separate action. A newer
+  note clears the action; no-note and identical-note fallbacks stay one line. Raw tool names, arguments,
+  commands, output and reasoning do not enter these descriptions; no progress or ETA is inferred.
+- Hint/result boundaries prevent an old note from returning, including cleanup tools after a setup failure.
+  Setup attention stays visible; the activity says it is waiting only while the process runs, and says it
+  stopped once failed/stopped. Paused and continued jobs keep PR #37's status descriptions and no action.
+  Build progress/results retain their existing behavior. No lifecycle, serialization, overview dedup, HTML,
+  CSS or source-reader changes; the existing Work action/search/escaping/refresh controls render the fields.
+- **70 targeted tests pass in 4.54 s** (`test_work_job_activity`, `test_work_job_states`, `test_work_overview`);
+  **1 overlapping browser test passes in 4.47 s** after adjusting only the capture scroll position. The first
+  browser attempt caught a harness assignment to `S.work` instead of its data; the harness now exercises
+  the actual refresh through mocked `/api/work`, preserving all assertions. One browser-marker warning
+  remains until pending PR #4 registers the marker. Doctor ALL OK; optional firmware tools unavailable.
+- Viewed `.cache/work-job-activity/work-job-activity-{dark,light}-{1440,390}.png`: actual serialized note/action,
+  escaped long content, search, keyboard activation, refresh focus/open details and wrapping all verified.
+  The existing tall phone shell is owned by the separate mobile-layout lane. No real model/session launch,
+  native chat opening, project build, stress solve or full suite; shared claims/budget checked, full batch HELD.

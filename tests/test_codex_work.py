@@ -1,10 +1,29 @@
 """Repo-scoped, read-only Codex session discovery and honest source freshness."""
 import json
 import subprocess
+from urllib.parse import unquote, urlparse
 
 import pytest
 
 from kerf import codex_work, studio
+
+
+@pytest.mark.parametrize("thread_id", [None, 12, {}, "", " ", "new", "New", ".", "..", "one/two", "one\\two", "a\x00b", "a\x7fb"])
+def test_chat_link_rejects_missing_reserved_or_invalid_ids(thread_id):
+    assert codex_work._chat_url(thread_id) is None
+
+
+def test_observed_chat_link_preserves_full_id_in_one_encoded_segment():
+    from kerf import work
+    thread_id = '019a1111-2222-7333-8444-555555555555-"<&?é#'
+    observed = codex_work._record({"id": thread_id, "status": {"type": "idle"}}, {}, live=False)
+    parsed = urlparse(observed["url"])
+    assert parsed.scheme == "codex" and parsed.netloc == "threads" and not parsed.query and not parsed.fragment
+    assert unquote(parsed.path[1:]) == thread_id and parsed.path.count("/") == 1
+    item, = work.overview({}, sessions=[observed], now=1000)["items"]
+    assert item["chat_id"] == thread_id and item["url"] == observed["url"]
+    claim, = work.overview({"cards": [{"provider": "Codex", "thread_id": thread_id, "item": "Ownership only"}]})["items"]
+    assert claim["chat_id"] is None and claim["url"] is None
 
 
 def test_repository_matching_uses_origin_or_checkout_not_title(tmp_path, monkeypatch):
@@ -45,13 +64,33 @@ def test_summary_uses_public_activity_and_explicit_checkboxes():
     ]}
     result = codex_work._record(thread, turn, live=True)
     assert result["title"] == thread["name"]
-    assert result["activity"] == "Last activity: ran a command"
+    assert result["activity"] == "Checking the fit."
+    assert result["action"] == "Last activity: ran a command"
     assert result["steps"] == [{"title": "Inspect", "status": "completed"}, {"title": "Validate", "status": "pending"}]
     assert "secret" not in json.dumps(result) and "private reasoning" not in json.dumps(result)
     thread["status"] = {"type": "active", "activeFlags": []}
     turn["items"] = [{"type": "commandExecution", "status": "inProgress"}]
     assert codex_work._record(thread, turn, live=True)["activity"] == "Running a command"
     assert codex_work._record(thread, turn, live=False)["activity"] == "Last activity: ran a command"
+
+
+@pytest.mark.parametrize("live,status,action", [
+    (True, {"type": "active"}, "Editing project files"),
+    (False, {"type": "active"}, "Last activity: edited project files"),
+    (True, {"type": "idle"}, "Last activity: edited project files"),
+    (True, {"type": "active", "activeFlags": ["waitingOnApproval"]}, "Last activity: edited project files"),
+])
+def test_public_summary_survives_tool_action_and_new_message_clears_it(live, status, action):
+    thread = {"id": "demo", "status": status}
+    turn = {"items": [{"type": "agentMessage", "text": "Checking hinge clearance; motion sweep next."},
+                      {"type": "fileChange", "status": "inProgress", "changes": "private diff"},
+                      {"type": "agentMessage", "text": "  "}]}
+    item = codex_work._record(thread, turn, live)
+    assert item["activity"] == "Checking hinge clearance; motion sweep next."
+    assert item["action"] == action and "private diff" not in json.dumps(item)
+    turn["items"].append({"type": "agentMessage", "text": "Clearance checked; reviewing results."})
+    newer = codex_work._record(thread, turn, live)
+    assert newer["activity"] == "Clearance checked; reviewing results." and newer["action"] == ""
 
 
 def test_protocol_falls_back_to_saved_history_and_only_reads(tmp_path, monkeypatch):
@@ -95,7 +134,8 @@ for line in sys.stdin:
         "initialize", "initialized", "thread/list", "thread/turns/list"}
 
 
-def test_failed_refresh_retains_stale_snapshot_and_throttles_retries(tmp_path, monkeypatch):
+@pytest.mark.parametrize("activity", ["Checking hinge clearance.", "Running a command"])
+def test_failed_refresh_retains_stale_snapshot_and_throttles_retries(tmp_path, monkeypatch, activity):
     monkeypatch.setattr(codex_work, "_CACHE", {})
     clock = [100.0]
     monkeypatch.setattr(codex_work.time, "time", lambda: clock[0])
@@ -105,16 +145,42 @@ def test_failed_refresh_retains_stale_snapshot_and_throttles_retries(tmp_path, m
         calls.append(root)
         if len(calls) > 1:
             raise TimeoutError()
-        return {"sessions": [{"id": "demo", "state": "working"}], "source": {"name": "Codex", "updated_at": 100}}
+        return {"sessions": [{"id": "demo", "state": "working", "activity": activity, "action": "Running a command"}],
+                "source": {"name": "Codex", "updated_at": 100}}
 
     monkeypatch.setattr(codex_work, "_collect", collect)
     assert codex_work.snapshot(tmp_path)["sessions"][0]["state"] == "working"
     clock[0] = 131
     result = codex_work.snapshot(tmp_path)
     assert result["sessions"][0]["state"] == "stale"
+    assert result["sessions"][0]["action"] == ""
+    assert result["sessions"][0]["live"] is None
+    assert result["sessions"][0]["activity"] == (activity if activity != "Running a command" else "No fresh activity summary is available.")
     assert result["source"]["updated_at"] == 100 and result["source"]["state"] == "unavailable"
     codex_work.snapshot(tmp_path)
     assert len(calls) == 2
+
+
+def test_failed_live_refresh_can_use_newer_claim_activity(tmp_path, monkeypatch):
+    from kerf import work
+    cached = codex_work._record({"id": "chat", "updatedAt": 100, "status": {"type": "active"}},
+                               {"items": [{"type": "agentMessage", "text": "Checking hinge clearance."},
+                                          {"type": "commandExecution", "status": "inProgress"}]}, live=True)
+    monkeypatch.setattr(codex_work, "_CACHE", {str(tmp_path.resolve()): {"at": 100, "value": {"sessions": [cached]}}})
+    monkeypatch.setattr(codex_work.time, "time", lambda: 140)
+
+    def unavailable(root):
+        raise TimeoutError()
+
+    monkeypatch.setattr(codex_work, "_collect", unavailable)
+    snapshot = codex_work.snapshot(tmp_path)
+    item, = work.overview({"cards": [{"thread_id": "chat", "item": "Check hinge", "updated_at": 130,
+                                     "activity": "Clearance checked; reviewing results."}]},
+                          sessions=snapshot["sessions"], now=140)["items"]
+    assert item["activity"] == "Clearance checked; reviewing results." and item["updated_at"] == 130
+    assert item["action"] == "" and item["live"] is None
+    assert item["state"] == "stale" and item["status_label"] == "Last known state" and item["attention"]
+    assert item["source_label"] == "Codex last known session + Git claim"
 
 
 def test_work_combines_main_claims_codex_and_local_jobs(monkeypatch):
