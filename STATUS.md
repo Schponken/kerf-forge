@@ -1137,3 +1137,25 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Detector ran once: 12 existing findings outside this lane, none in briefing code. Doctor ALL OK; existing optional
   firmware tools unavailable. No installs, project build/check, geometry, stress simulation, real print, actual
   provider run, full suite or app launch. Full batch remains HELD. Root reviews/integrates the focused PR.
+
+## 2026-11-02 — Tune experience (Codex, in review)
+- Replaced Tune's nested cards with an unboxed measurements/materials workbench and a saved-to-edited draft ledger.
+  Each parameter and material has Undo; discard resets the draft. Typing/keyboard sliders update actions immediately
+  without losing focus. Blank, nonfinite, nondecimal and declared out-of-range values stay editable with an associated
+  error and block Try/Save; the last valid edit remains intact. Units, assumptions and range provenance stay visible.
+- Trials now identify their recorded values and distinguish them from later edits. Copy promises enabled checks only;
+  paused stress checks do not prove strength. Material density is no longer called weight; catalog strength is distinct
+  from part strength. Existing requirement effects and better/worse comparison logic are retained.
+- Save and Try snapshot the original project and inputs and suppress duplicate dispatch. Successful parameter saves
+  clear only acknowledged parameter edits; if the material save fails, those edits remain for retry. Responses from
+  another project cannot clear the newly selected project's draft. Backend parameter/material writer fixes are separate.
+- Mocked `tests/test_tune_experience.py`: 1 passed in 6.60 s across desktop/phone and both themes, including partial save
+  failure and navigation during save. Initial mock run used an empty glossary and failed before Tune assertions; fixed
+  the fixture to supply a normal glossary term. Existing assertions were not changed. Final shared-shell visual
+  confirmation is pending; no geometry, build, full suite, native app or live provider job was run. Batch remains HELD.
+- Source frozen after the green run; latest usage guidance defers the final composed-shell review to the root
+  integration pass. The first screenshot batch exposed clipped tall-element captures inside the scrolling app;
+  the fixture now captures viewport top/controls/trial views. It can optionally compose frozen shell cc8aa48 for a
+  clearly labelled integration preview. One added material-Undo assertion and these capture-only changes await
+  that integrated run; no production source changed after the passing test. Detector ran once; its findings are
+  in incumbent global chrome outside Tune. No claim of completed combined visual review is made here.
