@@ -36,4 +36,5 @@ def build(ctx):
     body -= Pos(0, 0, -SLEEVE - 1) * Cylinder(BORE_D / 2, SLEEVE + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))
     ctx.rigid("leg", Location((0, 0, 0)))
     body, left = features.fillet_inside(ctx, body, 2.0)
+    print("LEFT", left)
     return ctx.finish(body)

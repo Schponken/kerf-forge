@@ -8,9 +8,11 @@ and side screws are vertical, the bottom screw gets a teardrop roof.
 Top at rail z 40 (a tractor prop flies over it, limit 80); the sled plate (z >= 42, |y| <= 36) runs over the cap at the end of a stop.
 """
 from build123d import *
-from kerf import features, iface
+from kerf import catalog, features, iface
 
 AXLE = "motion.rod_8mm_smooth"
+AX_D = float(catalog.get(AXLE)["d"])
+PRESS = float(catalog.get("fdm_fits.pin")["press_allowance_d"])
 GRIP = 6.0               # printed wall under an M5 tee-nut screw head (layout TNUT_GRIP)
 CAP_T = 8.0              # cap over the rail end face, x 0..8 (contract)
 BEAM_X = 10.0            # cap beam extends this far behind the end face: stops short of the screw heads at x = -15 (head r 4.25)
@@ -26,7 +28,8 @@ def _box(x0, x1, y0, y1, z0, z1):
 
 def _prism(pts, y0, y1):
     """Polygon (x, z) extruded along y from y0 to y1."""
-    return Pos(0, y1, 0) * extrude(Plane.XZ * Polygon(*pts, align=None), y1 - y0)
+    s = extrude(Plane.XZ * Polygon(*pts, align=None), y1 - y0)   # the extrude side follows the winding: re-seat on y0
+    return Pos(0, y0 - s.bounding_box().min.Y, 0) * s
 
 
 def _tnuts(ctx, group, xs, bottom):
@@ -55,8 +58,9 @@ def build(ctx):
         strut = _prism([(CAP_T - 1, Z_BOT), (CAP_T - 1, Z_TOP), (px, pz + BOSS_R + 2), (px, pz - BOSS_R - 2)], y0, y1)
         boss = Pos(px, (y0 + y1) / 2, pz) * Rot(90, 0, 0) * Cylinder(BOSS_R, y1 - y0)
         body += ctx.add(strut + boss, why="axle cheek: compression strut from the axle boss back to the cap (474 N each), 14.5 mm thick", kind="strut")
-        body -= ctx.cut(iface.pin_hole(ctx, AXLE, Location((px, sy * Y_OUT, pz), (-90 * sy, 0, 0)), "axle", Y_OUT - Y_IN, fit="press", teardrop="auto"),
-                        why="press seat for the 8 mm axle", kind="axle bore")
+        # shortcut: hand-cut press bore (iface.pin_hole needs a stocked pin length; rod_8mm_smooth has none), diameter from catalog fits
+        body -= ctx.cut(Pos(px, (y0 + y1) / 2, pz) * Rot(90, 0, 0) * Cylinder((AX_D + PRESS) / 2, y1 - y0 + 2),
+                        why="press seat for the 8 mm axle (rod + fdm_fits.pin press allowance)", kind="axle bore")
     body -= ctx.cut(_tnuts(ctx, "s4_front", [-15, -45], -30), why="s4_front tee-nut screw holes", kind="screw holes")
 
     def keep(at):

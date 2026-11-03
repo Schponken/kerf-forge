@@ -57,4 +57,5 @@ def build(ctx):
         ctx.linear("slide", Axis((0, 0, 0), (-1, 0, 0)), range=(0, 9 * pitch))
     ctx.rigid("section", Location((0, 0, 0)))
     body, left = features.fillet_inside(ctx, body, 1.0)
+    print("LEFT", left)
     return ctx.finish(body)

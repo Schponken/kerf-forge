@@ -46,4 +46,5 @@ def build(ctx):
     ctx.rigid("hook_mid", Location((X_HOOK, p.STRAND_Y[3], p.Z_BOT)))
     ctx.rigid("hook_out", Location((X_HOOK, p.STRAND_Y[5], p.Z_BOT)))
     body, left = features.fillet_inside(ctx, body, 2.0)
+    print("LEFT", left)
     return ctx.finish(body)
