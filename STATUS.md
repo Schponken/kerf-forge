@@ -990,3 +990,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   failure and navigation during save. Initial mock run used an empty glossary and failed before Tune assertions; fixed
   the fixture to supply a normal glossary term. Existing assertions were not changed. Final shared-shell visual
   confirmation is pending; no geometry, build, full suite, native app or live provider job was run. Batch remains HELD.
+- Source frozen after the green run; latest usage guidance defers the final composed-shell review to the root
+  integration pass. The first screenshot batch exposed clipped tall-element captures inside the scrolling app;
+  the fixture now captures viewport top/controls/trial views. It can optionally compose frozen shell cc8aa48 for a
+  clearly labelled integration preview. One added material-Undo assertion and these capture-only changes await
+  that integrated run; no production source changed after the passing test. Detector ran once; its findings are
+  in incumbent global chrome outside Tune. No claim of completed combined visual review is made here.
