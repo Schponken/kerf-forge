@@ -7,12 +7,13 @@ import pytest
 from kerf import req_launch as RL
 from kerf.requirements import G
 
-LIN = {"force_curve": [[1.0, 100.0], [3.0, 300.0]], "efficiency": 1.0, "mass_g_per_m": 0.0}   # 100 N per 100 % stretch
+LIN = {"force_curve": [[1.0, 100.0], [3.0, 300.0]], "efficiency": 1.0, "mass_per_m_g": 0.0}   # 100 N per 100 % stretch
 
 
 @pytest.fixture
 def cat(monkeypatch):
     monkeypatch.setattr(RL.catalog, "get", lambda path: {"test.lin": LIN}[path])
+    LIN["force_curve_stiff"] = [[1.0, 200.0], [3.0, 600.0]]                     # twice as stiff
 
 
 def _run(**kw):
@@ -38,11 +39,11 @@ def test_slope_friction_efficiency_and_max_g(cat):
 
 def test_strand_mass_notches_and_table(cat):
     # 2 strands, notch 3 moves both lengths +100 mm: e from 1.1 to 0.1 -> W = 2 x 100 x (1.1^2 - 0.1^2) / 2 x 1 m = 120 J
-    LIN["mass_g_per_m"] = 300.0              # 0.3 kg per strand -> m_eff = 1 + 2 x 0.3 / 3 = 1.2 kg
+    LIN["mass_per_m_g"] = 300.0              # 0.3 kg per strand -> m_eff = 1 + 2 x 0.3 / 3 = 1.2 kg
     try:
         r = _run(strands=2, notch=3, notches=3, notch_pitch_mm=50, max_strands=2)
     finally:
-        LIN["mass_g_per_m"] = 0.0
+        LIN["mass_per_m_g"] = 0.0
     assert r["value"] == pytest.approx(math.sqrt(2 * 120 / 1.2), abs=0.02)
     assert r["table"]["2x3"] == pytest.approx(r["value"], abs=0.01) and r["table"]["1x1"] < r["table"]["2x1"]
 
@@ -64,3 +65,18 @@ def test_v_cord_brake_stop_distance(cat):
     d = math.sqrt((w + D / 2) ** 2 - w * w)
     assert r["brake_stop_mm"] == pytest.approx(d, abs=1.0) and r["ok"]
     assert r["brake_peak_n"] == pytest.approx(2 * n * 100 * D / L * d / math.hypot(w, d), rel=0.01)
+
+
+def test_named_curve_doubles_the_energy(cat):
+    # the stiff curve is 2x the force at every stretch: 2 x 50 J -> sqrt(200) m/s; a missing curve is refused
+    r = _run(curve="force_curve_stiff")
+    assert r["value"] == pytest.approx(math.sqrt(200), abs=0.01) and r["curve"] == "force_curve_stiff"
+    with pytest.raises(ValueError, match="has no 'nope'"):
+        _run(curve="nope")
+
+
+def test_prestretched_brake_stops_sooner(cat):
+    b = {"elastic": "test.lin", "strands": 2, "half_gap_mm": 30, "free_mm": 400, "max_stop_mm": 300}
+    loose = _run(moving_g=500, payload_g=500, brake=b)["brake_stop_mm"]
+    tight = _run(moving_g=500, payload_g=500, brake={**b, "rest_mm": 200})["brake_stop_mm"]
+    assert tight < loose

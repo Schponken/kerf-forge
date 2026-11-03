@@ -1013,5 +1013,53 @@
     "checked": "2026-11-01",
     "source": "https://www.heilind.com/amp2-520275-2.html",
     "note": "TE Connectivity 2-520275-2 Ultra-Fast 187 insulated receptacle, 22-18 AWG, red, at Heilind: $0.1553 each, minimum/multiple 1/1 (read in a browser)."
+  },
+  "motion.vwheel_delrin_solid": {
+    "buy": "https://openbuildspartstore.com/solid-v-wheel-kit/",
+    "pack_qty": 1,
+    "pack_usd": 5.19,
+    "checked": "2026-11-02",
+    "source": "https://ratrig.com/solid-v-wheel-kit.html",
+    "note": "OpenBuilds Solid V Wheel Kit (Delrin, 2 x 625-2RS, 2 shims, lock nut) 5.19 USD: from a search-result snippet for openbuildspartstore.com / us.openbuilds.com, whose pages could not be opened from the research machine (DNS). Rat Rig (opened) lists the same kit at EUR 2.75 (sale EUR 1.00). Re-check before ordering."
+  },
+  "motion.tnut_m5_vslot": {
+    "buy": "https://openbuildspartstore.com/tee-nuts-m5-pack/",
+    "pack_qty": 10,
+    "pack_usd": 2.99,
+    "checked": "2026-11-02",
+    "source": "https://3dprintingcanada.com/products/openbuilds-tee-nut-single-hole-m5-10-pack",
+    "note": "OpenBuilds M5 tee nut 10-pack 2.99 USD (Hackster listing, search snippet; 3D Printing Canada 10-pack 3.95 CAD, price amount not readable on the opened page)."
+  },
+  "motion.qr_pin_6mm": {
+    "buy": "https://aftfasteners.com/kipp-ball-lock-pins-w-l-grip-d1-6-mm-l-30-mm-l1-6-8-mm-stainless-steel-qty-1-k0792-102606030",
+    "pack_qty": 1,
+    "pack_usd": 35.62,
+    "checked": "2026-11-02",
+    "source": "https://www.fabory.com/en/p/58648060040",
+    "note": "Kipp 6 mm x 30 mm stainless ball lock pin at AFT Fasteners 35.62 USD each (search snippet, page not opened). Cheap imports are 3-6 USD each but unverified."
+  },
+  "motion.shock_cord_6mm": {
+    "buy": "https://atwoodrope.com/products/1-4-bungee-shock-cord-tan",
+    "pack_qty": 1,
+    "pack_usd": 15.99,
+    "checked": "2026-11-02",
+    "source": "https://atwoodrope.com/products/1-4-bungee-shock-cord-tan",
+    "note": "Atwood Rope 1/4 in tan bungee shock cord 15.99 USD; lengths 25/50/100 ft offered, the page does not say which length the price applies to (assume the 25 ft)."
+  },
+  "motion.tent_stake_steel": {
+    "buy": "https://www.farmandfleet.com/products/1451316-coghlans-9-steel-tent-stake.html",
+    "pack_qty": 1,
+    "pack_usd": 1.49,
+    "checked": "2026-11-02",
+    "source": "https://www.farmandfleet.com/products/1451316-coghlans-9-steel-tent-stake.html",
+    "note": "Coghlan's 9 in steel tent stake 1.49 USD (read as '$ 1 49' on the opened page)."
+  },
+  "rods.alu_tube_20x1_5": {
+    "buy": "https://speedymetals.com/p-4565-34-od-x-0065-wall-tube-6061-t6-aluminum.aspx",
+    "pack_qty": 1,
+    "pack_usd": 13.15,
+    "checked": "2026-11-02",
+    "source": "https://speedymetals.com/p-4565-34-od-x-0065-wall-tube-6061-t6-aluminum.aspx",
+    "note": "US near-equivalent 3/4 in OD x 0.065 in wall 6061-T6, 72 in length, 13.15 USD (search snippet, page not opened). The metric 20 x 1.5 mm tube on ehorst.de is login-priced."
   }
 }

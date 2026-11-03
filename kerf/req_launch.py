@@ -17,7 +17,7 @@ result carries the whole setting table (exit speed per strands x notch for this 
 `brake` (optional): the sled (without the payload, which has left) is stopped by `strands` elastic cords crossing its
 path between two posts `half_gap_mm` either side of it (a V as it is pushed in): pushed in by d, the cord's length
 between its anchors (`free_mm`, the crossing included) grows by 2 (sqrt(w^2 + d^2) - w) and pushes back with
-2 n T d / sqrt(w^2 + d^2). The launch elastic keeps pulling (its force at end_mm - d). The stop distance must be at
+2 n T d / sqrt(w^2 + d^2); `rest_mm` (default free_mm) is the cord's unstretched length when it is tied in pre-stretched. The launch elastic keeps pulling (its force at end_mm - d). The stop distance must be at
 most `max_stop_mm`; the peak force and deceleration go into the result for the strength checks of the sled bumper and
 the brake posts.
 """
@@ -31,6 +31,14 @@ from .requirements import UNITS, G, _ev, check
 
 UNITS["bungee_launch"] = ("m/s", "min")
 STEPS = 400
+
+
+def curve_entry(path: str, curve: str = "force_curve") -> dict:
+    """The catalog elastic with `curve` (e.g. force_curve_premium, the stiff end of the sourced spread) as its force_curve."""
+    e = catalog.get(path)
+    if curve not in e:
+        raise ValueError(f"{path} has no '{curve}' (a list of [elongation, N per strand] points with a source)")
+    return {**e, "force_curve": e[curve]}
 
 
 def force_n(entry: dict, path: str, e: float) -> float:
@@ -65,7 +73,7 @@ def launch(entry, path, strands, rest_mm, start_mm, end_mm, mass_kg, angle_deg=0
     s = (start_mm - end_mm) / 1000.0
     a = math.radians(angle_deg)
     drag = mass_kg * G * (math.sin(a) + rolling_mu * math.cos(a))
-    m_strand = float(entry.get("mass_g_per_m", 0.0)) * rest_mm / 1e6
+    m_strand = float(entry.get("mass_per_m_g", 0.0)) * rest_mm / 1e6
     m_eff = mass_kg + strands * m_strand / 3.0
     W = work_j(entry, path, strands, rest_mm, end_mm, start_mm)
     E = eta * W - drag * s
@@ -79,13 +87,14 @@ def launch(entry, path, strands, rest_mm, start_mm, end_mm, mass_kg, angle_deg=0
 def stop(brake: dict, v: float, mass_kg: float, launch_entry, launch_path, strands, rest_mm, end_mm, params) -> dict:
     """Stop distance (mm), peak force (N) and deceleration (g) of the sled hitting a V cord brake at speed v."""
     path = brake["elastic"]
-    be = catalog.get(path)
+    be = curve_entry(path, brake.get("curve", "force_curve"))
     n = _ev(brake.get("strands", 1), params)
     w, L = _ev(brake["half_gap_mm"], params), _ev(brake["free_mm"], params)
+    Lr = _ev(brake.get("rest_mm", L), params)      # cord rest length < free_mm: tied in pre-stretched
     ke, d, h, peak = 0.5 * mass_kg * v * v, 0.0, 0.5, 0.0
     while ke > 0:
         hyp = math.hypot(w, d)
-        f_brake = 2 * n * force_n(be, path, 2 * (hyp - w) / L) * d / hyp
+        f_brake = 2 * n * force_n(be, path, (L + 2 * (hyp - w)) / Lr - 1) * d / hyp
         f_pull = strands * force_n(launch_entry, launch_path, max(end_mm - d, 0) / rest_mm - 1)
         peak = max(peak, f_brake)
         ke -= (f_brake - f_pull) * h / 1000.0
@@ -98,12 +107,14 @@ def stop(brake: dict, v: float, mass_kg: float, launch_entry, launch_path, stran
 @check("bungee_launch")
 def bungee_launch(proj, asm, elastic, strands, rest_mm, start_mm, end_mm, payload_g=0.0, moving=(), moving_g=None,
                   angle_deg=0.0, rolling_mu=0.0, efficiency=None, notch=1, notches=1, notch_pitch_mm=0.0,
-                  max_strands=None, min_speed_m_s=None, max_speed_m_s=None, max_g=None, brake=None):
+                  max_strands=None, min_speed_m_s=None, max_speed_m_s=None, max_g=None, brake=None,
+                  curve="force_curve"):
     """Exit speed of a payload from an elastic launcher at its setting (strands x notch) vs [min, max] speed and the
-    peak acceleration vs max_g; optional brake stop distance vs brake.max_stop_mm."""
+    peak acceleration vs max_g; optional brake stop distance vs brake.max_stop_mm. `curve` picks the catalog force
+    curve (the soft end of a sourced spread to prove the speed, the stiff end for peak g, forces and the brake)."""
     p = proj.params or {}
     ev = lambda x: _ev(x, p)  # noqa: E731
-    entry = catalog.get(elastic)
+    entry = curve_entry(elastic, curve)
     sled_g = ev(moving_g) if moving_g is not None else sum(item_mass_g(proj.items[i]) for i in moving)
     m = (sled_g + ev(payload_g)) / 1000.0
     n, L0, k = int(ev(strands)), ev(rest_mm), ev(notch_pitch_mm)
@@ -132,7 +143,7 @@ def bungee_launch(proj, asm, elastic, strands, rest_mm, start_mm, end_mm, payloa
     if mg is not None and r["peak_g"] > mg:
         ok = False
     out = {"value": round(r["v"], 2), "limit": lo if lo is not None else hi, "peak_g": round(r["peak_g"], 2),
-           "pull_n": round(r["pull_n"], 1), "work_j": round(r["work_j"], 1), "table": table}
+           "curve": curve, "pull_n": round(r["pull_n"], 1), "end_pull_n": round(r["end_pull_n"], 1), "work_j": round(r["work_j"], 1), "table": table}
     if brake:
         sled = sled_g / 1000.0
         b = stop(brake, r["v"], sled, entry, elastic, n, L0, ev(end_mm) + shift(nt), p)
