@@ -371,3 +371,8 @@ The single balance candidate slides the battery from x=-45 to -68 (nominal front
 Fuselage print orientation candidate [0,-40,40] gives a measured cached CAD envelope of287.48 x297.52 x253.99 mm, within the A2L330 x320 x325 mm volume; the original standing orientation was414 mm tall. Supports are required. This fixes the geometric envelope only: internal support removal, bed attachment and sliced print feasibility remain unverified, and layer-strength warnings remain active.
 
 The user selected the lower dive-speed option: the new provisional target is100 km/h equivalent airspeed, replacing the original150 km/h dive sizing point. The low-lift sweep-actuator requirements use100 km/h; the separate4 g/84 km/h pull sizing case stays unchanged. This is a revised requested target, not a verified safe speed. The new recovery analysis must distinguish lift, structural, deployment and flutter evidence.
+## Lower-speed dive/recovery checkpoint (2026-11-02)
+The user selected a lower provisional dive target: 100 km/h EAS. See `DIVE_RECOVERY.md` for the dynamic-pressure
+gates, symmetric position-confirmed re-extension concept, actual-mass lift check, gentler 2 g recovery proposal
+and altitude/radius calculation. The new requirement remains explicitly UNPROVEN with an unknown complete
+structural limit; neither the previous 150 km/h aspiration nor 6 g spar sizing establishes a safe dive/recovery.

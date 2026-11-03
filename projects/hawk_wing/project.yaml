@@ -642,3 +642,13 @@ requirements:
   direction: [0, 0, 1]
   length_mm: 25
   why: with the hatch off, the pack's XT60 plugs in from above through the shelf window
+
+- id: dive_recovery_screen
+  check: dive_recovery
+  dive_eas_kmh: 100
+  reopen_eas_kmh: 80
+  recovery_g: 2.0
+  structural_limit_g: null
+  altitude_m: 3000
+  re: 200000
+  why: "Provisional lower-speed dive concept: dynamic-pressure/EAS-gated re-extension then a gentler 2 g spread-wing recovery. The 3000 m atmosphere is an analysis example, not an operating approval. Structural limit remains unknown until the complete load path is verified; 6 g spar sizing alone does not establish it. DIVE_RECOVERY.md states deployment/flutter/height exclusions."

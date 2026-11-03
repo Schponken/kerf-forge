@@ -351,3 +351,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Viewer smoothness round 2: stop idle frame polling, coalesce hover picking, and release comparison GPU resources; targeted lifecycle regressions
 
 - [ ] Hawk wing electrical wiring: complete sourced power tree, separated BEC rails and routed physical leads without weakening endurance limits
+- [x] Hawk normal dive/recovery envelope: check lift-limited pullout against actual mass, distinguish equivalent/true airspeed and altitude, document deployment gates and unproven aerodynamic/structural limits.
