@@ -527,3 +527,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Engine: `size_max include:` (items subset, test), `kerf req` advice loop no longer shadows its timer (TypeError).
 - Next: part-designers on pod/cap/hub, glove, body, wings, tail (running); then wiring routes, kerf check PASS, build,
   renders, design-reviewer. FEA is PAUSED: pivot strength is designed by load path + hand checks, unproven.
+
+## 2026-11-02 20:15 UTC-5 — Claude offline: Codex takes over (Spencer), session 01S68R6S
+- Claude is out of usage. AGENTS.md (Codex reads it automatically) maps CLAUDE.md's rules onto Codex and switches on
+  "CLAUDE OFFLINE MODE": a Codex manager task merges other Codex PRs (22 open, none merged since #11); Codex never
+  writes review.json (design-reviewer sub-line left for Claude). Snapshot, priorities and ready-to-paste task prompts:
+  docs/status/CODEX_TAKEOVER.md. First Claude session back: end the mode as AGENTS.md says.
