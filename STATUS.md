@@ -672,3 +672,20 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Based on PR #31 and current main, preserving both STATUS sides of their additive conflict. Budget off and
   batch/duplicate-process status checked before focused runs. No real agent process/chat, timer, physical project,
   stress solve, full suite or full batch. Exact observed session/job dedup is a separate pending investigation.
+
+## 2026-11-03 — Work fixtures stay isolated when shared claim readers are integrated (Codex)
+- PR #17 moves Work's cache revision to `live.shared_revision`; PR #37's job snapshot fixture mocked
+  only the old `studio._git` lookup. Combining them would miss the seeded cache and read real claims.
+  The fixture now mocks both revision lookups to its existing value. `raising=False` also supports
+  the standalone PR #37 base before the shared helper exists. No assertion or production code changed.
+- **30 standalone job-state tests pass in 0.06 s**. The same two-line fixture change passed in a clean,
+  local-only integration at `4323f79af69727c68f2bb6f1ddf55133be9993fe`: **195 targeted tests in 59.96 s**
+  covering shared/Codex readers, ownership/job state/activity/dedup, Work/mobile browsers, late navigation,
+  cancellation/resume and safe command generation. The proof includes reviewed PRs #17, #23→#29→#31→#37→#41→#44,
+  #26+#36→#42, #8→#39, #12 and #40→#43; all exact reviewed heads were verified as ancestors. No aggregate PR
+  or remote merge. Additive docs/test conflicts retained both sides; the separately found production
+  discovery mismatch is fixed in #42. Integrated phone/dedup/activity and desktop pause captures reviewed.
+- Doctor ALL OK; optional firmware tools unavailable. Five integrated browser-marker registration warnings
+  await pending PR #4. No real model/chat/app-server launch, project build, stress solve or full suite;
+  full batch remained HELD. The integration report and JUnit evidence are in the local proof worktree's
+  `.cache/work-integration/REPORT.md` and `results.xml`.

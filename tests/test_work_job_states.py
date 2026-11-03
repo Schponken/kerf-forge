@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kerf import codex_work, studio, work
+from kerf import codex_work, live, studio, work
 
 NOW = 1_800_000_000
 
@@ -20,6 +20,7 @@ def snapshot(monkeypatch):
     monkeypatch.setattr(studio, "JOBS", {})
     monkeypatch.setattr(studio, "_live_thread", lambda: None)
     monkeypatch.setattr(studio, "_git", lambda *a: "fixture-revision")
+    monkeypatch.setattr(live, "shared_revision", lambda root: "fixture-revision", raising=False)
     monkeypatch.setattr(studio, "_times", lambda: {})
     monkeypatch.setattr(studio, "settings", lambda: {"autoresume": True})
     monkeypatch.setattr(studio, "budget_stop", lambda: "")
