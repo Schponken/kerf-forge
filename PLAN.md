@@ -160,6 +160,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [x] "How Kerf decided" readable and steerable (Spencer, 2026-11-02: "difficult to follow, shaking violently, labels unreadable"): replace the force-directed web with a calm, fixed-layout decision trail (your request -> questions it researched, each with what it found and its sources -> options weighed with chosen / set aside and why -> what it is building), labels always readable, no motion except new items fading in; opens by itself as a compact strip the moment a design job starts researching, expands to the full trail; steer by marking a question or option "focus" / "skip" (saved for the job to read at its next stage change, no extra model turns, never interrupts it); tests (layout stable, labels not overlapping, auto-open, steer file)
 
 ## Studio + viewer features (Spencer's picks, 2026-11-01)
+- [x] Studio journey reliability: keep navigation current during delayed project, inventory and guide requests; show recoverable loading failures; cover mocked desktop/mobile journeys.
 
 - [x] Tune experience: a deliberate parameter workbench with reversible draft changes, accessible value errors, clear units and ranges, and truthful recorded-trial context; mocked desktop/mobile checks only.
 

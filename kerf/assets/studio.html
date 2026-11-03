@@ -805,7 +805,7 @@ async function loadProjects() {
     if (!S.sel && S.projects.length && !S.newOpen && !S.grid && !S.work) select(S.projects[0].name);
     if (S.grid) showGrid();
     fillPictures();
-    if (!S.projects.length && !S.newOpen) welcome();
+    if (!S.projects.length && !S.newOpen && !S.work && !S.grid && !S.parts) welcome();
     S.fails = 0;
   } catch (e) { if (++S.fails >= 3 && !S.closed) closedScreen(); }
 }
@@ -827,9 +827,19 @@ function renderList() {
   if (focused) [...$("#plist").children].find(b => b.dataset.project === focused)?.focus({preventScroll:true});
 }
 
+function tuneDraftCount() {
+  return new Set([...Object.keys(S.edits || {}), ...Object.keys(S.tune?.edits === S.edits ? S.tune.invalid || {} : {})]).size + Object.keys(S.medits || {}).length;
+}
+function canLeaveProject(next = null) {
+  const unsaved = tuneDraftCount();
+  if (!S.sel || next === S.sel || !unsaved) return true;
+  if (!confirm(`You have ${unsaved} unsaved Tune change${unsaved == 1 ? "" : "s"} on this project. Leave and discard ${unsaved == 1 ? "it" : "them"}?`)) return false;
+  S.edits = {}; S.medits = {};
+  return true;
+}
 async function select(name, keepTab) {
-  const unsaved = Object.keys(S.edits || {}).length + Object.keys(S.medits || {}).length;
-  if (unsaved && name !== S.sel && !confirm(`You have ${unsaved} unsaved Tune change${unsaved == 1 ? "" : "s"} on this project. Leave and discard ${unsaved == 1 ? "it" : "them"}?`)) return;
+  const unsaved = tuneDraftCount();
+  if (!canLeaveProject(name)) return;
   if (name === S.sel && keepTab === undefined && S.detail && unsaved) { setTab(S.tab); return; }   // same project: keep the edits
   closeShell(false);
   S.sel = name; S.newOpen = false; S.grid = false; S.parts = false; S.work = false; S.edits = {}; S.medits = {}; if (!keepTab) S.tab = "model"; S.doc = null;
@@ -837,12 +847,12 @@ async function select(name, keepTab) {
   const ticket = S.ticket = (S.ticket || 0) + 1;   // a slower answer for an earlier click must not replace this one
   $("#main").innerHTML = `<div class="body"><p role="status">Loading project…</p></div>`;
   let d;
-  try { d = await api(`/api/project/${name}`); } catch (e) { if (ticket === S.ticket) $("#main").innerHTML = `<div class="body"><div class="banner bad" role="alert">Couldn’t load this project: ${esc(e.message)}</div><button onclick="select(S.sel)">Try again</button></div>`; return; }
-  if (ticket !== S.ticket) return;
+  try { d = await api(`/api/project/${name}`); } catch (e) { if (ticket === S.ticket && name === S.sel) $("#main").innerHTML = `<div class="body"><div class="banner bad" role="alert">Couldn’t load this project: ${esc(e.message)}</div><button onclick="select(S.sel)">Try again</button></div>`; return; }
+  if (ticket !== S.ticket || name !== S.sel) return;
   S.detail = d;
   renderProject();
 }
-async function refreshDetail() { if (S.sel && !S.newOpen) { const name = S.sel; try { const d = await api(`/api/project/${name}`); if (name === S.sel) { S.detail = d; renderProject(); } } catch (e) {} } }
+async function refreshDetail() { if (S.sel && !S.newOpen) { const name = S.sel, ticket = S.ticket; try { const d = await api(`/api/project/${name}`); if (name === S.sel && ticket === S.ticket) { S.detail = d; renderProject(); } } catch (e) {} } }
 
 function statusPill(p) {
   if (p.running && p.running.length) return `<span class="pill info">● working…</span>`;
@@ -1080,10 +1090,18 @@ function showGlossary() {   // native dialog owns focus, Escape and the backgrou
 
 /* ---------- My parts (catalog/inventory.json) */
 async function showParts() {
+  if (!canLeaveProject()) return;
   closeShell(false);
   S.newOpen = true; S.sel = null; S.grid = false; S.parts = true; S.work = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
-  const d = await api("/api/inventory"); S.inv = {...d.items}; S.invKeys = d.keys;
-  renderParts();
+  const ticket = S.ticket;
+  $("#main").innerHTML = `<div class="body"><p role="status">Loading your parts…</p></div>`;
+  try {
+    const d = await api("/api/inventory");
+    if (ticket !== S.ticket || !S.parts) return;
+    S.inv = {...d.items}; S.invKeys = d.keys; renderParts();
+  } catch (e) {
+    if (ticket === S.ticket && S.parts) $("#main").innerHTML = `<div class="body"><div class="banner bad" role="alert">Couldn’t load your parts: ${esc(e.message)}</div><button onclick="showParts()">Try again</button></div>`;
+  }
 }
 function renderParts() {
   const rows = Object.entries(S.inv).sort();
@@ -1099,7 +1117,7 @@ function renderParts() {
 function addPart() { const k = $("#invadd").value.trim(), q = parseFloat($("#invqty").value) || 1;
   if (!S.invKeys.some(x => x.key === k)) { toast("Unknown part", "Pick one from the list (they are the parts Kerf can price).", "bad"); return; }
   S.inv[k] = (S.inv[k] || 0) + q; renderParts(); }
-async function saveParts() { try { const r = await api("/api/inventory", {items: S.inv}); S.inv = {...r.items}; renderParts(); toast("Saved", "My parts updated. Rebuild a project to see its shopping list change.", "ok"); }
+async function saveParts() { const ticket = S.ticket; try { const r = await api("/api/inventory", {items: S.inv}); if (ticket === S.ticket && S.parts) { S.inv = {...r.items}; renderParts(); } toast("Saved", "My parts updated. Rebuild a project to see its shopping list change.", "ok"); }
   catch (e) { toast("Not saved", e.message, "bad"); } }
 
 /* ---------- welcome / empty state */
@@ -1535,12 +1553,21 @@ async function renderDocs(el) {
   S.doc = S.doc && d.docs.includes(S.doc) ? S.doc : d.docs[0];
   const names = {"DESIGN.md": "Design", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring", "out/firmware/BRINGUP.md": "Bring-up",
                  "out/bom.md": "Shopping list", "out/plates/PRINT_SETTINGS.md": "Print settings"};
-  el.innerHTML = `<div class="docnav"><button onclick="setTab('files')">← Files & guides</button>${d.docs.map(x => `<button class="${x === S.doc ? "primary" : ""}" onclick="S.doc='${x}';renderTab()">${names[x] || x}</button>`).join("")}</div><div class="card doc" id="docbody"><div class="sk" style="height:300px"></div></div>`;
-  const txt = await (await fetch(fileUrl(d.name, S.doc))).text();
-  const dir = S.doc.includes("/") ? S.doc.slice(0, S.doc.lastIndexOf("/") + 1) : "";
-  let html = window.marked ? marked.parse(txt) : `<pre>${esc(txt)}</pre>`;
-  html = html.replace(/(src|href)="(?!https?:|#|\/|mailto:)([^"]+)"/g, (m, a, u) => `${a}="${fileUrl(d.name, dir + u)}"`);
-  const b = $("#docbody"); if (b) b.innerHTML = html;
+  const doc = S.doc;
+  el.innerHTML = `<div class="docnav"><button onclick="setTab('files')">← Files & guides</button>${d.docs.map(x => `<button class="${x === doc ? "primary" : ""}" aria-pressed="${x === doc}" onclick="S.doc='${x}';renderTab()">${names[x] || x}</button>`).join("")}</div><div class="card doc" id="docbody"><p role="status">Loading guide…</p></div>`;
+  const b = el.querySelector("#docbody");
+  try {
+    const response = await fetch(fileUrl(d.name, doc));
+    if (!response.ok) throw new Error("The guide is unavailable. Try again in a moment.");
+    const txt = await response.text();
+    if (!b.isConnected) return;
+    const dir = doc.includes("/") ? doc.slice(0, doc.lastIndexOf("/") + 1) : "";
+    let html = window.marked ? marked.parse(txt) : `<pre>${esc(txt)}</pre>`;
+    html = html.replace(/(src|href)="(?!https?:|#|\/|mailto:)([^"]+)"/g, (m, a, u) => `${a}="${fileUrl(d.name, dir + u)}"`);
+    b.innerHTML = html;
+  } catch (e) {
+    if (b.isConnected) b.innerHTML = `<div class="banner bad" role="alert">Couldn’t load this guide: ${esc(e.message)}</div><button onclick="renderTab()">Try again</button>`;
+  }
 }
 
 /* ---------- jobs + mission control */
@@ -1955,7 +1982,7 @@ async function openJob(id) {   // an Activity row: its project's page, with the 
   if (j && j.project && j.project !== "*" && (S.projects || []).some(p => p.name === j.project) && S.sel !== j.project) await select(j.project, true);
   watch(id);
 }
-async function openSession(n) { await select(n); setTab("results"); }
+async function openSession(n) { await select(n); if (S.sel === n) setTab("results"); }
 async function pollJobs() {
   try {
     const d = await api(NATIVE ? "/api/jobs?native=1" : "/api/jobs"); S.jobsList = d.jobs;
@@ -2022,7 +2049,7 @@ async function resumeJob(id) {
   try { const r = await api("/api/resume", {job: id}); watch(r.job); toast("Resumed", "Kerf is picking up where the job stopped.", "ok"); }
   catch (e) { toast("Not resumed", e.message, "bad"); }
 }
-async function openQuotesPage() { showNew(); await listQuotes(); const el = $("#quotesready"); if (el) el.scrollIntoView({block: "start"}); }
+async function openQuotesPage() { showNew(); if (!$("#ndesc")) return; await listQuotes(); const el = $("#quotesready"); if (el) el.scrollIntoView({block: "start"}); }
 async function pollQuotes() {   // the sidebar badge: options waiting for a choice, from anywhere in Studio
   let qs = []; try { qs = (await api("/api/quotes")).quotes; } catch (e) { return; }
   const b = $("#qbadge"); if (!b) return;
@@ -2058,6 +2085,7 @@ function burst() {
 const EXAMPLES = ["a wall mount for my DJI Osmo Pocket 3 with a 1/4-20 screw", "a 2-axis pan-tilt for a phone, SG90 servos",
   "a parametric project box for an Arduino Uno with a snap lid", "a 3\" cinewhoop frame for 1404 motors", "a gripper that picks up a 60 mm ball with one MG996R"];
 function showNew() {
+  if (!canLeaveProject()) return;
   closeShell(false);
   S.newOpen = true; S.quote = null; S.sel = null; S.grid = false; S.parts = false; S.work = false; S.ticket = (S.ticket || 0) + 1; renderList();   // drops a project still loading
   $("#main").innerHTML = `<div class="head briefing-head"><h1>What would you like to make?</h1><p class="desc">Start with an object you have in mind, or a problem you want to solve.</p></div>
@@ -2348,6 +2376,7 @@ setInterval(pollLive, 4000);
 
 /* ---------- Work: read-only task ownership and progress, with each source's limits kept visible. */
 async function showWork() {
+  if (!canLeaveProject()) return;
   closeShell(false);
   if (!S.work) { S.workObserved = null; S.workUpdates = []; S.workUpdateSeq = 0; S.workUpdatesOpen = false; }
   S.work = true; S.grid = false; S.parts = false; S.sel = null; S.newOpen = false; S.ticket = (S.ticket || 0) + 1; renderList();
@@ -2643,6 +2672,7 @@ async function doDuplicate() {
 
 /* ---------- project collection */
 function showGrid() {
+  if (!canLeaveProject()) return;
   closeShell(false);
   S.grid = true; S.parts = false; S.work = false; S.sel = null; S.newOpen = false; S.ticket = (S.ticket || 0) + 1; renderList();
   const P = S.projects, pictured = P.filter(p => pic(p)), unpictured = P.filter(p => !pic(p));
