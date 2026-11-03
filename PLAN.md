@@ -349,3 +349,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Maker download containment: refuse linked or special generated output files so a project ZIP contains only regular files within its own output tree; preserve valid nested maker outputs and explain invalid exports.
 - [x] New design intent safety: retain tab-session brief and clarification drafts; prevent late saved-options responses from replacing newer input; focused browser regression
 - [x] Viewer smoothness round 2: stop idle frame polling, coalesce hover picking, and release comparison GPU resources; targeted lifecycle regressions
+
+- [x] Hawk normal dive/recovery envelope: check lift-limited pullout against actual mass, distinguish equivalent/true airspeed and altitude, document deployment gates and unproven aerodynamic/structural limits.

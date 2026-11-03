@@ -277,6 +277,71 @@ def fold_hinge_moment(proj, asm, joint, item, side, speed_kmh, cd, cl=0.0, actua
                       f"{float(stall_kgcm):g} x ratio {float(ratio):g} x {max_fraction:g}"}
 
 
-UNITS.update({"static_margin": ("x MAC", "range"), "wing_loading": ("g/dm²", "max"), "stall_speed": ("km/h", "max"),
+@check("dive_recovery")
+def dive_recovery(proj, asm, dive_eas_kmh, reopen_eas_kmh, recovery_g, structural_limit_g=None,
+                  altitude_m=0.0, re=None, wing="wing_"):
+    """Spread-wing lift/kinematic screen, NOT deployment, flutter or flight certification.
+
+    EAS fixes q = rho0 V_eas²/2. NASA Glenn's troposphere fit supplies density ratio (0..11 km).
+    Constant-speed circular recovery needs n = 1 + V_tas²/(g R) at its bottom; R is also the ideal
+    altitude loss from vertical to level. Unknown structural limit blocks a pass. No deployment time,
+    deceleration distance, terrain or reserve is credited by this screen.
+    """
+    vals = {"dive_eas_kmh": dive_eas_kmh, "reopen_eas_kmh": reopen_eas_kmh, "recovery_g": recovery_g,
+            "altitude_m": altitude_m}
+    if structural_limit_g is not None:
+        vals["structural_limit_g"] = structural_limit_g
+    for key, val in vals.items():
+        if isinstance(val, bool) or not isinstance(val, (int, float)) or not math.isfinite(val):
+            raise ValueError(f"{key} must be a finite number")
+    if not 0 < reopen_eas_kmh <= dive_eas_kmh or recovery_g <= 1:
+        raise ValueError("need 0 < reopen EAS <= dive EAS and recovery_g > 1")
+    if not 0 <= altitude_m <= 11000:
+        raise ValueError("altitude_m must be within the NASA troposphere fit (0..11000 m)")
+    if structural_limit_g is not None and structural_limit_g <= 1:
+        raise ValueError("structural_limit_g must exceed 1, or be null when unproven")
+    pf = _pf(proj, wing)
+    geom = pf.geometry()
+    cl2, reynolds = aero.clmax_2d(pf.root_airfoil, re)
+    cl_max = 0.9 * cl2 * math.cos(math.radians(geom["sweep_c4_deg"]))
+    mass_g = _mass(proj)
+    area = geom["area_mm2"] / 1e6
+    if not all(math.isfinite(x) and x > 0 for x in (mass_g, area, cl_max)):
+        raise ValueError("positive actual mass, wing area and CLmax are required")
+
+    def nasa_density(height):
+        temp_k = 15.04 - 0.00649 * height + 273.1
+        pressure_kpa = 101.29 * (temp_k / 288.08) ** 5.256
+        return pressure_kpa / (0.2869 * temp_k)
+
+    # Normalize the approximate fit to the engine's existing sea-level reference density.
+    rho = aero.RHO * nasa_density(altitude_m) / nasa_density(0)
+    q_dive = 0.5 * aero.RHO * (dive_eas_kmh / 3.6) ** 2
+    q_open = 0.5 * aero.RHO * (reopen_eas_kmh / 3.6) ** 2
+    weight = mass_g / 1000 * 9.80665
+    lift_g = q_open * area * cl_max / weight
+    required_eas = math.sqrt(2 * recovery_g * weight / (aero.RHO * area * cl_max)) * 3.6
+    tas = reopen_eas_kmh * math.sqrt(aero.RHO / rho)
+    radius = (tas / 3.6) ** 2 / (9.80665 * (recovery_g - 1))
+    lift_ok = lift_g >= recovery_g
+    structure = "unproven" if structural_limit_g is None else "within_limit" if recovery_g <= structural_limit_g else "exceeded"
+    ok = lift_ok and structure == "within_limit"
+    return {"ok": ok, "value": None if structural_limit_g is None else round(lift_g, 3), "limit": recovery_g, "unit": "g available", "bound": "min",
+            "status": "unproven" if structural_limit_g is None else "pass" if ok else "fail",
+            "evidence": {"lift": "estimated", "structure": structure, "deployment": "unproven", "flutter": "unproven"},
+            "lift_capacity_g": round(lift_g, 3), "mass_g": round(mass_g, 2), "cl_max": round(cl_max, 4), "reynolds": reynolds,
+            "dive_q_pa": round(q_dive, 2), "reopen_q_pa": round(q_open, 2), "density_kg_m3": round(rho, 5),
+            "reopen_tas_kmh": round(tas, 2), "required_recovery_eas_kmh": round(required_eas, 2),
+            "conditional_radius_m": round(radius, 2),
+            "feasible_kinematic_radius_m": None if not ok else round(radius, 2),
+            "detail": f"spread-wing estimate: {mass_g:.0f} g, CLmax {cl_max:.3f} at Re {reynolds:g}; "
+                      f"{reopen_eas_kmh:g} km/h EAS gives {lift_g:.2f} g available vs {recovery_g:g} g requested; "
+                      f"structure {structure}. Dive/reopen q {q_dive:.0f}/{q_open:.0f} Pa; at {altitude_m:g} m "
+                      f"reopen TAS {tas:.1f} km/h, conditional constant-speed radius {radius:.1f} m. "
+                      "Radius is not a safe recovery height: deployment, deceleration, control delay, terrain, "
+                      "flutter, gusts and reserves are unproven; no flight authorization."}
+
+
+UNITS.update({"dive_recovery": ("g available", "min"), "static_margin": ("x MAC", "range"), "wing_loading": ("g/dm²", "max"), "stall_speed": ("km/h", "max"),
               "spar_bending": ("x allowable", "max"), "static_margin_tail": ("x MAC", "range"),
               "fold_hinge_moment": ("kg·cm", "max")})

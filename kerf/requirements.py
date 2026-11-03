@@ -835,7 +835,7 @@ def miss_scale(r: dict) -> str:
 REDESIGN_TIER = {
     **dict.fromkeys(("mass_max", "size_max", "thrust_to_weight", "flight_time", "run_time", "power_budget", "cg",
                      "static_margin", "static_margin_tail", "wing_loading", "stall_speed", "tip_over", "static_torque",
-                     "joint_speed", "grip_hold", "prop_ground", "bungee_launch"), 0),
+                     "joint_speed", "grip_hold", "prop_ground", "bungee_launch", "dive_recovery"), 0),
     **dict.fromkeys(("fea_static", "impact_fea", "drop_impact", "spar_bending", "fold_hinge_moment", "gear_bending",
                      "planetary_bending", "worm_drive", "cantilever_stress", "flex_strain", "creep_limit",
                      "natural_freq", "stop_impact"), 1),
@@ -887,7 +887,7 @@ def run_all(proj, asm, quick: bool = False, only=None, pick=None, by_redesign_co
 
 # checks whose failure means a part could break: never `advisory`, and they make a part load-carrying (0.8 mm walls)
 STRENGTH_CHECKS = {"fea_static", "impact_fea", "cantilever_stress", "stop_impact", "natural_freq", "spar_bending", "gear_bending",
-                   "planetary_bending", "worm_drive", "flex_strain", "creep_limit", "weak_link", "drop_impact", "impact_case"}
+                   "planetary_bending", "worm_drive", "flex_strain", "creep_limit", "weak_link", "drop_impact", "impact_case", "dive_recovery"}
 
 
 # Stress simulations: every check that meshes a part and runs the FEA solver (directly or through fea_static).
