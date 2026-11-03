@@ -325,3 +325,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [ ] Viewer stage redesign: put real geometry center stage with compact contextual tools, accessible disclosures, optional part colors and grid, and current-template delivery for compatible saved viewers; preserve inspection, motion, cut, stress, assembly and engineering warnings; targeted browser tests.
 
 - [x] Focused test workflow: bind pytest imports to the active worktree and provide a read-only checkout/test preflight plus exact-head review receipts; preserve all existing test selection and coordination rules.
+
+- [x] Viewer stage redesign: put real geometry center stage with compact contextual tools, accessible disclosures, optional part colors and grid, and current-template delivery for compatible saved viewers; preserve inspection, motion, cut, stress, assembly and engineering warnings; targeted browser tests.
