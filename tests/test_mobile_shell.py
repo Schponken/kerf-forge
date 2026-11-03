@@ -56,6 +56,7 @@ try {
   projects=Array.from({length:30},(_,i)=>({name:'fixture_'+i,title:'Fixture project '+i,description:'',built:false}));
   jobs=Array.from({length:30},(_,i)=>({id:'fixture_job_'+i,kind:'check',project:'fixture_'+i,label:'Fixture check '+i,state:'running',seconds:30,tail:[]}));
   await p.evaluate(async()=>{await loadProjects();await pollJobs();});
+  await p.locator('#nav_grid').click(); // The mobile Work page uses this existing entry point for the catalog.
   const full=await bounds();
   assert.ok(full.plist.client>=50 && full.plist.scroll>full.plist.client,JSON.stringify(full));
   assert.ok(full.jobs.scroll>full.jobs.client,JSON.stringify(full));
@@ -69,7 +70,7 @@ try {
    assert.equal(full.side.width,empty.side.width);assert.equal(full.side.height,empty.side.height);
    assert.equal(full.main.left,empty.main.left);assert.equal(full.main.top,empty.main.top);
   }
-  if(width===390) await p.screenshot({path:CAPTURE+`/work-populated-${theme}-${width}-${height}.png`,fullPage:true});
+  if(width===390) await p.screenshot({path:CAPTURE+`/catalog-populated-${theme}-${width}-${height}.png`,fullPage:true});
   // Reach the last project/job through their own scroll panes and the short-screen outer fallback.
   await p.evaluate(()=>{window.select=id=>window.__project=id;window.openJob=id=>window.__job=id;});
   const lastProject=p.locator('#plist .pitem').last(),lastJob=p.locator('#joblist .job').last();
