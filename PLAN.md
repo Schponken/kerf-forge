@@ -299,9 +299,6 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Automatic resume setting: recheck the current switch when a queued usage retry dispatches; preserve manual Resume and re-enabled queued retries, with mocked timer tests only.
 
 - [x] Shared claims on PR branches: take, heartbeat and release update the shared main claim without publishing feature code; fresh ownership and budget controls hold across dirty worktrees and concurrent pushes; real-git tests.
-- [ ] Fast tests (Spencer, 2026-11-02, efficiency): the suite runs in parallel (pytest-xdist, pinned) with slow / browser / all-project tests marked so `pytest -m "not slow"` is the per-change default; shared expensive fixtures (built projects, browsers) cached per session; report the before/after wall time in STATUS.md; no test removed or loosened
-- [x] Reviews go stale only for real changes (Spencer, 2026-11-02, efficiency): a project's geometry fingerprint hashes only the catalog entries that project actually uses (plus its own files), so editing an unrelated catalog part no longer forces a re-review of every project; tests prove a used-entry change still invalidates and an unused one does not
-- [ ] Fresh-eyes usability pass (Spencer, 2026-11-02; IN PROGRESS in ChatGPT Codex, delivered as pull requests - Claude sessions: don't start it, review/merge its PRs instead): look at Kerf as a first-time user (README, setup, Kerf Studio every screen at desktop + phone width, viewer, CLI help and error messages, output files) for what is confusing, overwhelming or unintuitive and for likely user mistakes / failure paths (port in use, Claude not signed in, job running, dirty repo, missing build, bad input); fix each with a test, leaving the Checks tab wording, Follow live and Work tab to their claimed items (findings for those go in their sessions' STATUS notes)
 - [x] Studio shared-claim compatibility: project ownership, edit guards and Activity read shared main consistently with Work; exclude budget/control records from task cards and preserve offline source honesty.
 - [ ] Run `kerf verify` (full) twice from a clean clone (`git clone` to /tmp, `./setup.sh`, `kerf verify`) — both PASS
 - [x] design-reviewer subagent does a final cross-project audit against docs/ENGINEERING.md and writes AUDIT.md; every finding fixed or explicitly justified
@@ -322,8 +319,6 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 - [x] Active job story redesign: concise current action and recorded stages, expandable research and decision evidence, accessible steering acknowledgements; fixture-only browser checks.
 
-- [ ] Viewer stage redesign: put real geometry center stage with compact contextual tools, accessible disclosures, optional part colors and grid, and current-template delivery for compatible saved viewers; preserve inspection, motion, cut, stress, assembly and engineering warnings; targeted browser tests.
+- [x] Viewer stage redesign: put real geometry center stage with compact contextual tools, accessible disclosures, optional part colors and grid, and current-template delivery for compatible saved viewers; preserve inspection, motion, cut, stress, assembly and engineering warnings; targeted browser tests.
 
 - [x] Focused test workflow: bind pytest imports to the active worktree and provide a read-only checkout/test preflight plus exact-head review receipts; preserve all existing test selection and coordination rules.
-
-- [x] Viewer stage redesign: put real geometry center stage with compact contextual tools, accessible disclosures, optional part colors and grid, and current-template delivery for compatible saved viewers; preserve inspection, motion, cut, stress, assembly and engineering warnings; targeted browser tests.
