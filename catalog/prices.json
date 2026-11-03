@@ -950,6 +950,22 @@
     "source": "https://www.servocity.com/4mm-stainless-steel-precision-shafting/",
     "note": "ServoCity 4 mm stainless precision shafting, 100 mm length (SKU 2100-0004-0100) $2.79 each; other stocked lengths 25 mm $1.99, 50 mm $2.29, 150 mm $3.29, 200 mm $3.79, 250 mm $4.19. Price is per 100 mm piece: re-check if a project uses another length. Stock status not shown on the page."
   },
+  "bearings.625": {
+    "buy": "https://www.3djake.com/3djake/ball-bearing?sai=33706",
+    "pack_qty": 8,
+    "pack_usd": 6.54,
+    "checked": "2026-11-02",
+    "source": "https://www.3djake.com/3djake/ball-bearing?sai=33706",
+    "note": "3DJake 'Ball Bearing, F625ZZ - 5 x 16 x 5 mm (8 pcs)', $6.54 excluding VAT for 8 ($0.82 each), In stock ('only 30 left'). Option needs 4, so one pack covers it; the unit price is per bearing. Price shown as '$' without a currency code on the page and excludes VAT and shipping. Alternatives seen in search results only (not opened): eBay 10-pack of 625ZZ about $10.95."
+  },
+  "rods.ss_rod_5": {
+    "buy": "https://www.servocity.com/5mm-stainless-steel-precision-shafting/",
+    "pack_qty": 1,
+    "pack_usd": 2.89,
+    "checked": "2026-11-02",
+    "source": "https://www.servocity.com/5mm-stainless-steel-precision-shafting/",
+    "note": "ServoCity 5 mm stainless round shafting, 100 mm length (SKU 2100-0005-0100) $2.89 each; other stocked lengths 50 mm $2.39, 150 mm $3.39 (SKU 634280), 200 mm $3.89 (634282), 250 mm $4.29, 300 mm $4.79. Price is per 100 mm piece: re-check if the pin is cut from another length. Stock status not shown on the page."
+  },
   "wire:AWG14": {
     "buy": "https://protosupplies.com/product/silicone-wire-14awg-ultra-flexible-2-conductor/",
     "pack_qty": 0.6096,

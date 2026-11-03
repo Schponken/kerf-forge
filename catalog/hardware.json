@@ -193,9 +193,11 @@
    "outer_d": 16,
    "width": 5,
    "weight_g": 5,
-   "source": "https://www.im-tek.com/skf-625-z",
+   "source": "https://kramp.com/shop-de/en/p/deep-groove-ball-bearing-5x16x5mm-skf--7500625ZZ",
    "confidence": "datasheet",
-   "note": "SKF 625-Z."
+   "static_load_n": 380,
+   "dynamic_load_n": 1140,
+   "note": "SKF 625-Z/625-2Z family. Kramp SKF 7500625ZZ page (opened 2026-11-02) lists bore 5, OD 16, width 5 mm, basic static radial load 380 N, basic dynamic radial load 1140 N (the LOW end: other makers quote 670-675 N static / 1730 N dynamic for 625ZZ, e.g. Daiwa, NSK via qualitybearingsonline.ca, FAG 440 N / 1320 N). Earlier source https://www.im-tek.com/skf-625-z returned 403 to automated reading. Use C0 = 380 N for the pin couple check; a miniature bearing with a shield is not rated for large moment load, so the glove couple should be spread over the bearing spacing."
   },
   "688": {
    "bore": 8,
@@ -514,6 +516,23 @@
    "source": "https://www.servocity.com/4mm-stainless-steel-precision-shafting/ ; https://robotshop.com/products/servocity-4mm-shaft-stainless-steel-150mm-length ; https://ondrives.com/z-4-300a",
    "confidence": "multiple-vendors",
    "note": "ServoCity 4 mm stainless steel precision shafting, stocked cut lengths 25/50/100/150/200/250 mm (SKU 2100-0004-0100 = 100 mm, $2.79; page opened 2026-10-31). RobotShop listing of the same shaft: Rockwell 83B (NOT hardened), 10 RMS finish, 25 mm piece weighs 0.09 oz (2.4 g). DIAMETER TOLERANCE NOT PUBLISHED by either page: size printed bores with a fit coupon / kerf calibrate and the real rod (Robo9 gripper prints a 6.0-6.3 mm test plate for the same reason). density 7.9 g/cm3: Ondrives Z-4-300A 4 mm hardened shaft lists 0.099 kg per metre -> 7.88 g/cm3; RobotShop 2.4 g / 25 mm -> ~7.6 (rounded weight). Hardened alternative with a published fit: Ondrives Z-4-300A, 4 mm h6 (0/-0.008), Cf53 62 HRC, 300 mm (cut to length with an abrasive disc). Use as a guide rod for printed sliding bushings or as a long pin (pin_dims reads od + lengths)."
+  },
+  "ss_rod_5": {
+   "od": 5.0,
+   "id": 0,
+   "density": 7.8,
+   "lengths": [
+    50,
+    100,
+    150,
+    200,
+    250,
+    300
+   ],
+   "buy": "https://www.servocity.com/5mm-stainless-steel-precision-shafting/",
+   "source": "https://www.servocity.com/5mm-stainless-steel-precision-shafting/",
+   "confidence": "vendor-listing",
+   "note": "ServoCity 5 mm stainless steel round (precision) shafting, stocked cut lengths 50/100/150/200/250/300 mm (SKUs 2100-0005-0050, 2100-0005-0100, 634280, 634282, 2100-0005-0250, 2100-0005-0300; page opened 2026-11-02). Listed weights: 50 mm 7.7 g, 150 mm 22.9 g, 200 mm 31 g, 250 mm 38 g, 300 mm 46 g -> 7.8 g/cm3 from the 300 mm piece (46 g / 5.89 cm3); the 100 mm 15 g is rounded. The page does NOT state a diameter tolerance, hardness or stainless grade (same gap as ss_rod_4, whose RobotShop listing gives Rockwell 83B, i.e. not hardened): size the 625 bearing bore fit and the hub press fit with a coupon on the real rod, and treat the pin as a soft stainless pin for bending/shear (do not assume hardened steel)."
   }
  },
  "tripod_nut_1_4_20": {
