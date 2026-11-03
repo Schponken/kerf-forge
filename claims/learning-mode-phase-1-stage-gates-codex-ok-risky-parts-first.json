@@ -1,0 +1,9 @@
+{
+ "item": "Learning Mode phase 1, stage gates (Codex OK): risky-parts-first gates (strength sizing for load-carrying parts, a moving-parts test with blocks, wire paths in the layout, rough review) must pass before detail work unlocks; only where they matter (a cable clip skips strength sizing); only projects started after the gate lands; tests (a test project is blocked until gates pass, a simple part is not)",
+ "session": "codex-learning-gates",
+ "since": 1793682421.035682,
+ "heartbeat": 1793682421.035682,
+ "provider": "Codex",
+ "thread_id": "codex-learning-gates",
+ "since_utc": "2026-11-03 05:07"
+}
