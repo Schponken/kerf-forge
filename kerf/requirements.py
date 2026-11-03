@@ -56,13 +56,16 @@ def mass_max(proj, asm, max_g, include=None):
 
 
 @check("size_max")
-def size_max(proj, asm, max_mm):
-    shapes = [it.shape for it in proj.items.values() if it.role != "keepout" and it.shape is not None]
+def size_max(proj, asm, max_mm, include=None):
+    """Assembled bounding box at the home pose under max_mm [x, y, z]. `include`: only these items (e.g. what stays
+    together with the wings and tail off, for a transport case)."""
+    ids = include or [i for i, it in proj.items.items() if it.role != "keepout"]
+    shapes = [proj.items[i].shape for i in ids if proj.items[i].shape is not None]
     lo = np.min([geom.bbox(s)[0] for s in shapes], axis=0)
     hi = np.max([geom.bbox(s)[1] for s in shapes], axis=0)
     size = (hi - lo).tolist()
     return {"ok": all(a <= b for a, b in zip(size, max_mm)), "value": [round(x, 1) for x in size], "limit": max_mm,
-            "detail": "assembled bounding box at home pose (mm)"}
+            "detail": "assembled bounding box at home pose (mm)" + (f" of {len(ids)} items: {', '.join(ids)}" if include else "")}
 
 
 @check("distance")

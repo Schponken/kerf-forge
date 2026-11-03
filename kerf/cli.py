@@ -112,8 +112,8 @@ def req(name, ids) -> int:
         _p(f"  {x['id']}: {req_line(x)}")
         if x.get("value") is None and x.get("detail"):
             _p(f"      {x['detail']}")
-        for t in x.get("advice") or []:
-            _p(f"      -> {t}")
+        for tip in x.get("advice") or []:
+            _p(f"      -> {tip}")
     for p in r["problems"]:
         _p(f"PROBLEM {p}")
     _p(f"{'ok' if r['ok'] else 'FAIL'}: {len(r['results'])} requirement(s) in {time.time() - t:.1f} s "
