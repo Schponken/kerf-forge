@@ -1544,3 +1544,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Combined source PRs66–77 locally; no remote merges or round-two installation yet. Current source heads, first combined test result102PASS/1contact-observer timeout and engineering limits are recorded in docs/status/ROUND2_INTEGRATION.md.
 - Latest user steering is retained: normal operating flight strength rather than crash optimization, physically coherent assembly movement, and fix the actual Hawk-wing eight-problem report using its exact dirty-source snapshot5a98dc7.
 - Remaining: consumer/performance confirmation, coordinated Hawk mass/packing/wiring corrections and required checks, guarded install/native verification. Full batch held; prior installed project edits preserved.
+
+## 2026-11-02 — Deterministic contact observation in the viewer regression (Codex)
+- The combined run at acac132 passed 102 cases but missed the performance fixture's first tool-contact observation.
+  The unchanged source passed in isolation. That fixture's 4x speed left only a 360 ms contact window, observed
+  after a separate browser/Node roundtrip. The fixture now runs this action at normal speed and installs an in-page
+  contact watcher before replay; it clicks the actual Pause action on contact and then stops watching.
+- All phase/contact, paused tool-position, zero scheduled frames and successful UI-resume assertions remain.
+  One injected 2 s Node delay after replay setup (longer than the entire old 4x demonstration) passed with the
+  contact latched/paused. Normal focused run: tests/test_viewer_performance.py, 1 PASS in 11.71 s; stationary and
+  paused callbacks remain 0, hover burst raycasts 1, and comparison disposal 4/4 for all three cycles.
+- Test-only change; no production pause fix was justified by the evidence. No CAD build, broad suite or installation.

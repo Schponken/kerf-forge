@@ -91,9 +91,20 @@ try {
  const settledFrames=await p.evaluate(s=>window.frameCalls-s,end);
  // Paused installation tweens preserve their clock without polling, then resume explicitly.
  await p.click('#tabAsm');
- await p.evaluate(()=>{const K=window.__kerf;K.asm.speed=4;return K.asm.show(1,false);});
- await p.click('#a_install_re');await p.waitForFunction(()=>window.__kerf.asm.demo?.contact);
- await p.click('#a_pause');await p.waitForTimeout(300);
+ await p.evaluate(()=>{const K=window.__kerf;K.asm.speed=1;return K.asm.show(1,false);});
+ // Latch contact in-page so a delayed Node/browser roundtrip cannot miss the press phase.
+ await p.evaluate(()=>{
+  const pauseOnContact=()=>{
+   if(window.__kerf.asm.demo?.contact) {
+    window.contactObserved=true; document.querySelector('#a_pause').click();
+   } else requestAnimationFrame(pauseOnContact);
+  };
+  requestAnimationFrame(pauseOnContact);
+  document.querySelector('#a_install_re').click();
+ });
+ await p.waitForFunction(()=>window.__kerf.asm.demo?.paused);
+ assert.equal(await p.evaluate(()=>window.contactObserved && window.__kerf.asm.demo.contact),true);
+ await p.waitForTimeout(300);
  const paused=await p.evaluate(()=>({frames:window.frameCalls,tool:window.__kerf.asm.demo.tool.position.toArray()}));
  await p.waitForTimeout(150);
  const pausedFrames=await p.evaluate(s=>window.frameCalls-s,paused.frames);
