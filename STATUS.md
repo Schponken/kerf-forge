@@ -974,3 +974,24 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+
+## 2026-11-02 — First-use studio guidance (Codex, first-use)
+- Replaced the interrupting first-run spotlight with an optional contextual page guide. The short tour keeps the
+  workspace usable, has Back/End/Escape and focus return, and retains the stable project-build target. Definitions
+  now open beside the term by mouse, touch, Enter or Space. The searchable glossary uses a named native dialog,
+  labelled search, result count, keyboard-scrollable definitions and explicit empty-search recovery.
+- Welcome now starts from the object the user wants to make, gives one direct design action and keeps incomplete
+  verification explicit. Successful assistant readiness is a compact disclosure with last-check time and recheck;
+  unavailable/auth/usage explanations and disabled design actions are preserved. No automatic tour or design job.
+- Mocked browser test tests/test_first_use.py: **1 passed in 8.48s**, covering 1440x960 and 390x844 in light/dark,
+  no page errors, GET-only requests, viewport bounds, reduced motion, focus return, tour navigation, glossary
+  filtering/recovery and readiness failure states. Two glossary contract tests: **2 passed in 1.63s**. A native
+  dialog reverse-Tab boundary was corrected; test waits for its asynchronous close event before asserting removal.
+  Browser marker is not registered on this base (existing marker-refresh work is separate).
+- Captures inspected in /tmp/kerf-first-use-review: welcome/help/tour/glossary, four contexts each. They include
+  the earlier shell. After this pass, scoped CSS removes the welcome's inherited entrance, enlarges close/ready
+  hit targets and wraps glossary keys; capture settling and the older start-tour test were made deterministic.
+  Per shared usage limit, final CSS confirmation belongs to the manager's single integrated shell review.
+- Doctor ALL OK; batch HELD and process checks preceded targeted tests. One Impeccable detector run found only
+  existing out-of-scope patterns. No installs, full suite, geometry builds, FEA, review.json, backend or live jobs.

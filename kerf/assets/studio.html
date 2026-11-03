@@ -187,8 +187,13 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 @media (prefers-reduced-motion:reduce){.scene .who,.scene .tool{animation:none}}
 .cert{display:flex;gap:16px;margin-bottom:14px;border:1px solid rgba(60,200,120,.4);background:linear-gradient(135deg,rgba(60,200,120,.10),transparent)}.cert .seal{font-size:46px;line-height:1}
 .fsay{margin:-4px 0 8px}
-.tourlay{position:fixed;inset:0;z-index:90}.tourlay .spot{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.55);border:2px solid var(--accent,#f80);transition:all .25s;pointer-events:none}
-.tourlay .bub{position:fixed;width:340px;background:var(--card,#1b1d22);color:inherit;border:1px solid rgba(255,140,40,.4);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.guide-popover,.tourlay .bub{position:fixed;z-index:90;width:min(380px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;background:var(--panel);color:var(--ink);border:0;border-radius:14px;padding:22px;box-shadow:var(--shadow);animation:guide-reveal .16s ease-out}
+.guide-popover h2,.tourlay h2,.glmodal h2{font-size:20px;line-height:1.2;letter-spacing:-.02em;margin:0 0 12px}.guide-popover p,.tourlay p{margin:0 0 18px;line-height:1.6}.guide-popover .guide-actions{display:grid;gap:8px}.guide-popover .guide-actions button{text-align:left;white-space:normal;min-height:44px}
+.guide-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.guide-close{min-height:44px;padding:5px 9px}.guide-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:16px;border-top:1px solid var(--line)}.guide-foot button{min-height:40px}.guide-foot .note{color:var(--muted)}
+.guide-popover :focus-visible,.tourlay :focus-visible,.glmodal :focus-visible,.welcome-studio :focus-visible,abbr.gl:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.tourlay{position:fixed;inset:0;z-index:90;pointer-events:none}.tourlay .spot{position:fixed;border-radius:10px;border:2px solid var(--accent);pointer-events:none}.tourlay .bub{pointer-events:auto}
+@keyframes guide-reveal{from{transform:translateY(5px)}to{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.guide-popover,.tourlay .bub{animation:none}}
 .job.sess .lab small{color:var(--muted)}.dot.claimed{background:#5aa9ff;box-shadow:0 0 0 3px rgba(90,169,255,.18)}
 .wrecent ul{margin:6px 0 0;padding-left:18px}.wrecent li{margin:2px 0}
 .misstag{font-size:11px;margin-top:4px;white-space:nowrap}.misstag.nearmiss{color:#e0a030}.misstag.close{color:#e07a30}.misstag.faroff{color:var(--bad)}
@@ -197,7 +202,10 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .qready{margin-bottom:14px}.qrow{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;margin-top:8px;padding:9px 12px}
 #qbadge{margin:2px 14px 8px;padding:8px 10px;border-radius:9px;text-align:left;font-weight:600;background:rgba(255,180,60,.14);border:1px solid rgba(255,180,60,.45)}
 .dot.paused{background:#e0a030}.banner.paused{margin-bottom:10px}
-abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent,#f80);cursor:help}.glmodal .card{max-width:none}.glrow{padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.18)}
+abbr.gl{text-decoration:none;border-bottom:1px dotted var(--accent);cursor:help}.glmodal{width:min(680px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:28px;color:var(--ink);background:var(--panel);border:0;border-radius:14px;box-shadow:var(--shadow)}.glmodal::backdrop{background:rgba(0,0,0,.35)}.glmodal .gl-search{display:block;margin:18px 0 12px}.glmodal .gl-search span{display:block;margin-bottom:6px;font-size:13px;color:var(--muted)}.glmodal .gllist{max-height:54dvh;overflow:auto;overscroll-behavior:contain}.glrow{overflow-wrap:anywhere;padding:16px 0;border-bottom:1px solid var(--line)}.glrow b{display:block;margin-bottom:5px}.glrow .note{display:block;margin-top:6px}.gl-empty{padding:24px 0}.gl-count{margin:0 0 10px;color:var(--muted);font-size:12px}
+.welcome-body{animation:none}.welcome-studio{max-width:860px;margin:clamp(24px,7vh,90px) auto;padding:0 18px}.welcome-studio h1{font-size:clamp(32px,5vw,52px);line-height:1.08;letter-spacing:-.03em;font-weight:550;max-width:18ch;margin:0 0 24px}.welcome-studio .welcome-intro{font-size:18px;line-height:1.6;max-width:56ch;margin:0 0 28px}.welcome-studio .welcome-actions{display:flex;flex-wrap:wrap;gap:10px}.welcome-studio button{min-height:44px}.welcome-studio .welcome-path{display:flex;gap:32px;padding:28px 0 0;margin:40px 0 0;border-top:1px solid var(--line);list-style:none}.welcome-studio .welcome-path li{flex:1;line-height:1.55}.welcome-studio .welcome-path b{display:block;margin-bottom:7px;font-size:15px}.welcome-studio .welcome-path span{color:var(--muted)}.welcome-studio .welcome-caution{max-width:65ch;margin:26px 0 0;font-size:13px;color:var(--muted)}
+.ready-status{margin-bottom:18px;font-size:13px}.ready-status summary{cursor:pointer;width:fit-content;color:var(--muted);padding:12px 0}.ready-status .ready-detail{margin:8px 0 0;max-width:58ch;line-height:1.6}.ready-status time{display:block;color:var(--muted);font-size:12px;margin-top:6px}.ready-status button{margin-top:10px}.ready-loading{padding:8px 0 18px;color:var(--muted);font-size:13px}
+@media(max-width:560px){.welcome-studio{margin:28px auto;padding:0}.welcome-studio .welcome-path{display:block;margin-top:28px;padding-top:8px}.welcome-studio .welcome-path li{padding-top:20px}.glmodal{padding:20px}.guide-popover,.tourlay .bub{padding:18px}}
 .twmodal .card{max-width:none;width:min(860px,94vw);height:min(820px,90vh);display:flex;flex-direction:column}.twmodal .twhost{flex:1;min-height:0;margin-top:8px}
 #mc .scan{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
   background:linear-gradient(var(--grid) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/22px 22px}
@@ -753,13 +761,13 @@ function renderTab() {
   if (t !== "model") glossify(el);
 }
 
-/* ---------- plain-English layer (kerf/glossary.py): jargon gets a dotted underline; hover or tap shows the meaning */
+/* ---------- plain-English layer: definitions stay beside the word, with keyboard and touch access */
 const GL = {checks: {}, terms: {}, rx: null};
 fetch("/api/glossary").then(r => r.json()).then(g => {
   GL.checks = g.checks; GL.terms = {};
   for (const [k, v] of Object.entries(g.terms)) GL.terms[k.toLowerCase()] = [k, v];
   const keys = Object.keys(g.terms).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  GL.rx = new RegExp(`(^|[^\\w-])(${keys.join("|")})(?![\\w-])`, "i");
+  GL.rx = keys.length ? new RegExp(`(^|[^\\w-])(${keys.join("|")})(?![\\w-])`, "i") : null;
   if (S.detail) renderTab();
 }).catch(() => {});
 function glossCheck(c) { return GL.checks[c] || {name: c || "", means: ""}; }
@@ -776,23 +784,48 @@ function glossify(root) {   // wraps the first use of each glossary word in this
       seen.add(key);
       const mid = node.splitText(at), rest = mid.splitText(word.length);
       const ab = document.createElement("abbr"); ab.className = "gl"; ab.textContent = word; ab.title = GL.terms[key][1]; ab.tabIndex = 0;
-      ab.onclick = e => { e.stopPropagation(); toast(GL.terms[key][0], GL.terms[key][1], "info"); };
+      ab.setAttribute("role", "button"); ab.setAttribute("aria-label", `Explain ${word}`); ab.setAttribute("aria-haspopup", "dialog");
+      const open = e => { e.preventDefault(); e.stopPropagation(); definition(ab, GL.terms[key]); };
+      ab.onclick = open; ab.onkeydown = e => { if (e.key === "Enter" || e.key === " ") open(e); };
       mid.replaceWith(ab); node = rest;
     }
   }
 }
-function showGlossary() {   // every word and every check, searchable
-  const el = document.createElement("div"); el.className = "modal glmodal";
-  const rows = [...Object.values(GL.terms).map(([k, v]) => [k, v, "word"]), ...Object.entries(GL.checks).map(([k, c]) => [c.name, c.means, "check · " + k])]
+function definition(anchor, [word, meaning]) {
+  const el = guidePanel(anchor, "Word explained", `<h2>${esc(word)}</h2><p>${esc(meaning)}</p><div class="guide-actions"><button data-glossary>Browse all words</button></div>`);
+  el.querySelector("[data-glossary]").onclick = () => showGlossary();
+}
+function showGlossary() {   // native dialog owns focus, Escape and the background while searching
+  const opener = GUIDE?.opener || document.activeElement;
+  closeGuide(false);
+  document.querySelector("dialog.glmodal")?.close();
+  const el = document.createElement("dialog"); el.className = "glmodal"; el.setAttribute("aria-labelledby", "gl-title");
+  const rows = [...Object.values(GL.terms).map(([k, v]) => [k, v, ""]), ...Object.entries(GL.checks).map(([k, c]) => [c.name, c.means, "Check: " + k])]
     .sort((a, b) => a[0].localeCompare(b[0]));
-  el.innerHTML = `<div class="card" style="width:min(720px,94vw);max-height:84vh;display:flex;flex-direction:column"><div class="row" style="justify-content:space-between"><h3 style="margin:0">📖 Words Kerf uses, in plain English</h3><button>Close</button></div>
-    <input type="search" placeholder="Search, e.g. FEA, infill, servo" style="margin:10px 0">
-    <div class="gllist" style="overflow:auto">${rows.map(([k, v, t]) => `<div class="glrow"><b>${esc(k)}</b> <span class="note">${esc(t)}</span><div>${esc(v)}</div></div>`).join("")}</div></div>`;
+  el.innerHTML = `<div class="guide-top"><h2 id="gl-title">Words, explained</h2><button class="guide-close" data-close>Close</button></div>
+    <label class="gl-search"><span>Find a word or check</span><input type="search" placeholder="Try FEA, infill or servo" aria-controls="gl-list"></label>
+    <p class="gl-count" role="status" aria-live="polite"></p>
+    <div class="gllist" id="gl-list" role="region" aria-label="Definitions" tabindex="0">${rows.map(([k, v, t]) => `<div class="glrow"><b>${esc(k)}</b><div>${esc(v)}</div>${t ? `<span class="note">${esc(t)}</span>` : ""}</div>`).join("")}</div>
+    <div class="gl-empty" hidden><b>No matching words</b><p>Try a shorter word or clear the search to see everything.</p><button data-clear>Clear search</button></div>`;
   document.body.appendChild(el);
-  const close = () => el.remove();
-  el.querySelector("button").onclick = close; el.onclick = e => { if (e.target === el) close(); };
-  const q = el.querySelector("input"); q.focus();
-  q.oninput = () => el.querySelectorAll(".glrow").forEach(r => r.style.display = r.textContent.toLowerCase().includes(q.value.toLowerCase()) ? "" : "none");
+  el.querySelector("[data-close]").onclick = () => el.close();
+  el.addEventListener("click", e => { if (e.target === el) { const r=el.getBoundingClientRect(); if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) el.close(); } });
+  el.addEventListener("close", () => { el.remove(); if (opener?.isConnected) opener.focus({preventScroll:true}); });
+  el.addEventListener("keydown", e => {
+    if(e.key!=="Tab")return;
+    const focusable=[...el.querySelectorAll("button,input,[tabindex='0']")].filter(e=>e.getClientRects().length);
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
+  const q = el.querySelector("input"), filter = () => {
+    let count = 0;
+    el.querySelectorAll(".glrow").forEach(r => { const shown=r.textContent.toLowerCase().includes(q.value.trim().toLowerCase()); r.style.display=shown?"":"none"; if(shown) count++; });
+    el.querySelector(".gl-count").textContent = `${count} ${count === 1 ? "entry" : "entries"}`;
+    el.querySelector(".gl-empty").hidden = count > 0;
+  };
+  q.oninput = filter; el.querySelector("[data-clear]").onclick=()=>{q.value="";filter();q.focus();};
+  filter(); el.showModal(); q.focus();
 }
 
 /* ---------- My parts (catalog/inventory.json) */
@@ -820,14 +853,15 @@ async function saveParts() { try { const r = await api("/api/inventory", {items:
 
 /* ---------- welcome / empty state */
 function welcome() {
-  $("#main").innerHTML = `<div class="body"><div class="card empty" style="text-align:left;max-width:760px">
-    <h2 style="margin-top:0">Welcome to Kerf Studio</h2>
-    <p>Describe a device in plain words and Kerf designs every printed part, picks the purchased parts, proves it fits,
-      moves and holds, and writes print plates, a priced shopping list and an assembly guide.</p>
-    <ol><li><b>+ New design</b>: say what it should do ("a pan-tilt camera head for a Pi camera").</li>
-      <li>Watch it work; when it finishes, the 3D model, checks and files appear here.</li>
-      <li><b>Tune</b> a dimension, <b>Try</b> it (your files stay untouched), then <b>Build</b> and print.</li></ol>
-    <button class="primary" onclick="showNew()">+ New design</button></div></div>`;
+  $("#main").innerHTML = `<div class="body welcome-body"><section class="welcome-studio" aria-labelledby="welcome-title">
+    <h1 id="welcome-title">What would you like to make?</h1>
+    <p class="welcome-intro">A useful object starts with an idea. Tell Kerf what it should do; it can research options, design the parts and prepare the files for making it.</p>
+    <div class="welcome-actions"><button class="primary" onclick="showNew()">Start a design</button><button onclick="explainPage(this)">How Kerf works</button></div>
+    <ol class="welcome-path"><li><b>Describe the job</b><span>Use everyday words. A device, a problem or a rough idea is enough to begin.</span></li>
+      <li><b>Explore the design</b><span>Inspect the model, adjust a measurement and follow the work as it develops.</span></li>
+      <li><b>Read the evidence</b><span>Review the checks and unresolved issues before choosing files to make.</span></li></ol>
+    <p class="welcome-caution">A model is not proof that a design is safe to make. Paused strength checks leave strength unproven; missing reviews and failed checks remain visible with the design.</p>
+    </section></div>`;
 }
 
 /* ---------- history: one entry per build from Studio, with what changed */
@@ -1229,44 +1263,89 @@ function printCert() {
   w.document.close(); w.focus(); w.print();
 }
 
-/* "Explain this page" + first-run tour: a spotlight walks through what is on screen, in plain words */
+/* Contextual guidance is optional; the model and its essential status remain available. */
 const TOUR = {
-  start: [["#newbtn", "Start here: describe what you want in plain words, like “a phone stand that holds a tablet”. Kerf designs every part."],
-          ["#plist", "Your projects. The dot shows whether each one passes all its checks."],
-          ["#nav_work", "See what Kerf is working on right now."], ["#jobs", "Running and recent jobs. Click one to watch it work."],
-          ["#helpbtn", "Lost? Press ? on any page for a walk-through like this one."]],
-  head: [[".head h1", "The project you are looking at."], ["#project-build", "Build kit: checks everything, then makes the print files, shopping list and assembly guide."],
-         ["#tabs", "Each tab shows one side of the design."]],
-  model: [["#mainviewer", "The 3D model. Drag to spin it, scroll to zoom. Use the buttons on it to cut it open or colour the stress."]],
-  tune: [[".param", "Move a slider to change a measurement. Under it: which parts and checks it changes."],
-         [".grid2 .primary", "Try these values: Kerf rebuilds a copy and re-checks it, and your design stays untouched until you Save."]],
-  results: [[".summary", "The score: how many engineering checks pass and how many are close to their limit."], [".issue", "Something to fix, explained: what is wrong, why it matters, what usually fixes it."],
-            [".cert", "This build’s recorded checks and review status. Read these before making the design."], ["table", "Each row is a number the design must meet. The bar shows how much room is left. Hover a name for what it means."]],
-  files: [[".files h3", "Everything you need to make it. Print plates go straight to the printer."]],
-  history: [[".hist", "Each build is saved with its numbers and picture, so you can compare and go back."]],
+  start: [["#newbtn", "Start here: describe what you want in plain words, like “a stand that holds my tablet”. Kerf can research options and design the parts.", "Begin with an idea"],
+          ["#nav_grid", "Your saved designs live here. Open one to inspect its model, checks and files.", "Explore your objects"],
+          ["#nav_work", "See current work and what needs attention. A task can be claimed without an agent actively running it.", "Follow the work"]],
+  head: [[".head h1", "This is the design you are viewing. Its current build and review status tell you what is known about it.", "Your design"],
+         ["#project-build", "Build kit runs the available checks and makes the print files, shopping list and assembly guide. Paused checks do not prove strength.", "Build and check"],
+         ["#tabs", "Move between the model, adjustments, checks and files. Review unresolved issues before making the design.", "Explore the evidence"]],
+  model: [["#mainviewer", "Drag to turn the model and scroll to zoom. A model shows geometry; check results and review status are separate evidence.", "Look around the object"]],
+  tune: [[".param", "Change a measurement, then try the values on a copy. Your saved design changes only when you choose to save.", "Try an adjustment"]],
+  results: [[".summary", "See which engineering checks passed and which need attention. Paused or missing checks are not passes.", "Read the checks"],
+            [".issue", "Each issue explains the problem, why it matters and what may fix it.", "Understand an issue"],
+            [".cert", "This build’s recorded checks and review status. Read these before making the design.", "Check the build record"]],
+  files: [["#tabbody", "Choose the files for your next step. A printable file is not proof of safety; review the current checks and review status first.", "Prepare to make"]],
+  history: [["#tabbody", "Compare saved builds to understand what changed. An older build’s checks describe that version, not the current design.", "See how it developed"]],
 };
-function explainPage() {
-  const steps = S.detail && document.querySelector(".head h1") ? [...TOUR.head, ...(TOUR[S.tab] || [])] : TOUR.start;
-  tour(steps.filter(([q]) => { const e = document.querySelector(q); return e && e.getClientRects().length; }));
+const PAGE_GUIDE = {
+  model: ["Explore the object", "Turn the model to inspect the design. Its checks and review status tell you what has been verified."],
+  tune: ["Try a change", "Adjust a measurement and test it on a copy. Review the result before saving it to the design."],
+  results: ["Understand the checks", "Look for failed, paused and missing checks, then read the review status. A pass only covers the checks that actually ran."],
+  files: ["Prepare to make", "Find the print files, shopping list and assembly instructions. Read the current checks and unresolved issues before using them."],
+  docs: ["Read the design’s reasoning", "These documents record the plan, sources and decisions behind the object."],
+  history: ["Follow the design’s story", "Compare saved builds. Their results describe those versions and may not apply to the current design."]
+};
+let GUIDE = null;
+function closeGuide(restore = true) {
+  if (!GUIDE) return;
+  const current = GUIDE; GUIDE = null; current.cleanup(); current.el.remove();
+  current.opener?.setAttribute("aria-expanded", "false");
+  if (restore && current.opener?.isConnected) current.opener.focus({preventScroll:true});
 }
-function tour(steps, i = 0) {
-  document.querySelectorAll(".tourlay").forEach(x => x.remove());
-  if (i >= steps.length) return;
-  const [q, text] = steps[i], el = document.querySelector(q); el.scrollIntoView({block: "nearest"});
-  const r = el.getBoundingClientRect(), lay = document.createElement("div"); lay.className = "tourlay";
-  const below = r.bottom + 170 < innerHeight, left = Math.min(Math.max(12, r.left), innerWidth - 352);
-  lay.innerHTML = `<div class="spot" style="left:${r.left - 6}px;top:${r.top - 6}px;width:${r.width + 12}px;height:${Math.min(r.height, innerHeight - 40) + 12}px"></div>
-    <div class="bub" style="left:${left}px;${below ? `top:${r.bottom + 14}px` : `top:${Math.max(12, r.top - 150)}px`}"><div>${esc(text)}</div>
-    <div class="row" style="justify-content:space-between;margin-top:10px"><span class="note">${i + 1} of ${steps.length}</span>
-    <span><button data-a="x">Skip</button> <button class="primary" data-a="n">${i + 1 < steps.length ? "Next" : "Got it"}</button></span></div></div>`;
+function placeGuide(panel, anchor) {
+  const gap = 12, r = anchor?.getBoundingClientRect(), b = panel.getBoundingClientRect();
+  const left = Math.max(gap, Math.min(r?.left ?? innerWidth-b.width-gap, innerWidth-b.width-gap));
+  let top = r ? r.bottom+gap : gap;
+  if (top+b.height > innerHeight-gap) top = r ? r.top-b.height-gap : gap;
+  panel.style.left = `${left}px`; panel.style.top = `${Math.max(gap, Math.min(top, innerHeight-b.height-gap))}px`;
+}
+function guidePanel(opener, label, body) {
+  closeGuide(false);
+  const el = document.createElement("section"); el.className="guide-popover"; el.id="studio-guide";
+  el.setAttribute("role","dialog"); el.setAttribute("aria-label",label);
+  el.innerHTML=`<div class="guide-top"><span></span><button class="guide-close" aria-label="Close guidance">Close</button></div>${body}`;
+  el.querySelector(".guide-top span").replaceWith(el.querySelector("h2"));
+  el.querySelector("p").id="guide-description"; el.setAttribute("aria-describedby","guide-description");
+  document.body.appendChild(el);
+  opener?.setAttribute("aria-controls", el.id); opener?.setAttribute("aria-expanded","true");
+  const position=()=>{if(opener&&!opener.isConnected){closeGuide(false);return;}placeGuide(el,opener);}, key=e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeGuide();}},
+    outside=e=>{if(!el.contains(e.target)&&!opener?.contains(e.target))closeGuide(false);};
+  document.addEventListener("keydown",key,true); document.addEventListener("pointerdown",outside); window.addEventListener("resize",position); document.addEventListener("scroll",position,true);
+  GUIDE={el,opener,cleanup:()=>{document.removeEventListener("keydown",key,true);document.removeEventListener("pointerdown",outside);window.removeEventListener("resize",position);document.removeEventListener("scroll",position,true);}};
+  el.querySelector(".guide-close").onclick=()=>closeGuide(); position(); el.querySelector("button").focus({preventScroll:true}); return el;
+}
+function explainPage(anchor) {
+  if (GUIDE?.el.classList.contains("guide-popover")) { closeGuide(); return; }
+  const visible=q=>{const e=$(q);return e&&e.getClientRects().length?e:null;};
+  const opener=anchor||visible("#helpbtn")||visible("#toolstray > summary")||visible("#newbtn");
+  const project = S.detail && visible(".head h1") && !S.newOpen && !S.work && !S.parts;
+  const content = project ? PAGE_GUIDE[S.tab] || PAGE_GUIDE.model : S.work ? ["See what is happening", "Work brings together running jobs, claimed tasks and recent outcomes. Open an item to see the evidence behind its status."] : S.newOpen && !S.parts ? ["Start with the job it should do", "Describe an object or a problem in everyday words. Kerf can research options before you choose a design to develop."] : ["From an idea to an object", "Describe what you want to make. Kerf can research options, design parts and prepare files; the checks and review show what has been verified."];
+  const steps=(project?[...TOUR.head,...(TOUR[S.tab]||[])]:TOUR.start).filter(([q])=>visible(q));
+  const el=guidePanel(opener,"Explain this page",`<h2>${esc(content[0])}</h2><p>${esc(content[1])}</p><div class="guide-actions">${steps.length?`<button data-tour>Show me around this page</button>`:""}<button data-glossary>Words, explained</button></div>`);
+  el.querySelector("[data-tour]")?.addEventListener("click",()=>tour(steps,0,opener));
+  el.querySelector("[data-glossary]").onclick=()=>showGlossary();
+}
+function tour(steps, i = 0, opener = GUIDE?.opener || document.activeElement) {
+  closeGuide(false);
+  if(i<0 || i>=steps.length){if(opener?.isConnected)opener.focus({preventScroll:true});return;}
+  const [q,text,title="Around the studio"]=steps[i], target=$(q);
+  if(!target||!target.getClientRects().length){tour(steps,i+1,opener);return;}
+  target.scrollIntoView({block:"nearest",behavior:"instant"});
+  const lay=document.createElement("div");lay.className="tourlay";
+  lay.innerHTML=`<div class="spot" aria-hidden="true"></div><section class="bub" role="dialog" aria-labelledby="tour-title" aria-describedby="tour-copy tour-progress"><div class="guide-top"><h2 id="tour-title">${esc(title)}</h2><button class="guide-close" data-a="x">End tour</button></div><p id="tour-copy">${esc(text)}</p><div class="guide-foot"><span class="note" id="tour-progress">${i+1} of ${steps.length}</span><span>${i?'<button data-a="b">Back</button> ':""}<button class="primary" data-a="n">${i+1<steps.length?"Next":"Done"}</button></span></div></section>`;
   document.body.appendChild(lay);
-  lay.querySelector("[data-a=n]").onclick = () => tour(steps, i + 1);
-  lay.querySelector("[data-a=x]").onclick = () => lay.remove();
+  const panel=lay.querySelector(".bub"),position=()=>{if(!target.isConnected){closeGuide();return;}const r=target.getBoundingClientRect();const spot=lay.querySelector(".spot");Object.assign(spot.style,{left:`${Math.max(2,r.left-4)}px`,top:`${Math.max(2,r.top-4)}px`,width:`${Math.min(r.width+8,innerWidth-4)}px`,height:`${Math.min(r.height+8,innerHeight-4)}px`});placeGuide(panel,target);},
+    key=e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeGuide();}}, outside=e=>{if(!panel.contains(e.target))closeGuide(false);};
+  document.addEventListener("keydown",key,true);document.addEventListener("pointerdown",outside);window.addEventListener("resize",position);document.addEventListener("scroll",position,true);
+  GUIDE={el:lay,opener,cleanup:()=>{document.removeEventListener("keydown",key,true);document.removeEventListener("pointerdown",outside);window.removeEventListener("resize",position);document.removeEventListener("scroll",position,true);}};
+  lay.querySelector('[data-a="n"]').onclick=()=>tour(steps,i+1,opener);
+  lay.querySelector('[data-a="b"]')?.addEventListener("click",()=>tour(steps,i-1,opener));
+  lay.querySelector('[data-a="x"]').onclick=()=>closeGuide();position();lay.querySelector('[data-a="n"]').focus({preventScroll:true});
 }
-function firstRun() {   // the start tour once per browser (best effort: storage can be unavailable)
-  if (navigator.webdriver) return;   // automated test browsers: no surprise overlay
-  try { if (localStorage.getItem("kerf.toured")) return; localStorage.setItem("kerf.toured", "1"); } catch (e) { return; }
-  setTimeout(() => { if (!document.querySelector(".modal,.tourlay")) tour(TOUR.start.filter(([q]) => document.querySelector(q))); }, 1200);
+function firstRun() {   // Welcome and Help provide orientation; never interrupt the user's first action.
+  const button=$("#helpbtn"); if(button){button.setAttribute("aria-label","Explain this page");button.setAttribute("aria-haspopup","dialog");}
 }
 window.addEventListener("load", firstRun);
 
@@ -1675,11 +1754,12 @@ function readyCard(st) {
 }
 function showReady(st) {
   const el = $("#ready"); if (!el) return;
-  el.innerHTML = st.ok ? `<div class="banner ok">✓ Claude Code is installed, trusts this folder and is signed in.</div>`
+  const checked = new Date();
+  el.innerHTML = st.ok ? `<details class="ready-status"><summary>Design assistant is ready</summary><div class="ready-detail">Claude Code is installed, trusts this folder and is signed in.<time datetime="${checked.toISOString()}">Checked ${esc(checked.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}))}</time><button onclick="checkReady()">Check again</button></div></details>`
     : st.code === "usage" ? `<div class="banner warn">⏸ ${esc(st.why)}</div>` : readyCard(st);
   for (const id of ["#nstart", "#nquote"]) { const b = $(id); if (b) b.disabled = !st.ok; }
 }
-async function checkReady() { const el = $("#ready"); if (el) el.innerHTML = `<div class="sk" style="height:44px;margin-bottom:14px"></div>`;
+async function checkReady() { const el = $("#ready"); if (el) el.innerHTML = `<div class="ready-loading" role="status">Checking design assistant…</div>`;
   try { showReady(await api("/api/claude")); } catch (e) { showReady({ok: false, code: "auth", why: e.message}); } }
 async function setupClaude() {
   try { const r = await api("/api/claude-setup", {}); toast("Terminal opened", r.opened ? "Follow the steps in the Terminal window, then click Check again." : "Run this in Terminal: " + r.command, "ok"); }

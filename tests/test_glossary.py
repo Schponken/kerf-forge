@@ -60,7 +60,8 @@ def test_explain_this_page_tour_and_the_certificate(server, tmp_path):  # noqa: 
     out = _browser(server + "/", """
 await p.waitForFunction(() => typeof explainPage === 'function');
 await p.evaluate(() => { try { localStorage.setItem('kerf.toured', '1'); } catch (e) {} document.querySelectorAll('.tourlay').forEach(x => x.remove()); });
-await p.evaluate(() => explainPage());
+await p.evaluate(() => { S.detail = null; S.newOpen = false; explainPage(); });
+await p.click('[data-tour]');
 out.first = await p.textContent('.tourlay .bub');
 out.steps = [];
 for (let i = 0; i < 8 && await p.$('.tourlay'); i++) { out.steps.push(await p.textContent('.tourlay .bub .note')); await p.click('.tourlay [data-a=n]'); }
