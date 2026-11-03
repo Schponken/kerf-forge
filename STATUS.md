@@ -1524,3 +1524,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   Final recovery 17.71 s. Final guarded-refresh payload: isolated worktree .cache/assembly-paths/finger-paths-final.json.
   Root owns the saved-viewer refresh and consumer integration. No actual project/output/cache writes, FEA,
   real job, full suite or installation here; batch remains HELD. The guide does not establish physical assembly certification.
+## 2026-11-02 — Correct normal-operation resonance sizing advice (Codex)
+- Fixed advice that suggested `e * (1 +/- separation)` even though the actual gate is `abs(e - fn) / fn >= separation`. Correct boundaries are `e / (1 + separation)` and `e / (1 - separation)`; whole-Hz targets round outward and clear every reported excitation band. For 200.2/600.5 Hz, 185 Hz and 20% separation, guidance now says at least 251 Hz or at most 166 Hz.
+- Advice follows the separate min_ratio branch and highest-excitation rule, including its precedence; zero separation stays zero, separation >= 1 has only a lower solution, and invalid values produce no bogus target. Engineering checks and thresholds are unchanged.
+- Focused tests/test_advice.py: **11 passed in 1.64 s**. New cases feed targets into the actual frequency check with mocked compliance/mass, covering both branches, overlapping bands, boundary equality/epsilon and edge inputs. Receipt: docs/status/RESONANCE_ADVICE.md.
+- No FEA/CAD, project/material/catalog edits, fatigue-life claim, installed-app change, benchmark or full-suite run. Strength resume PR remains separate.
