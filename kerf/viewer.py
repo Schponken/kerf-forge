@@ -14,6 +14,7 @@ import base64
 import json
 import os
 import re
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -173,7 +174,7 @@ def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None 
       except Exception as e:  # noqa: BLE001 - the rest of the viewer works without it; the page says why
         steps, steps_error = None, f"{type(e).__name__}: {e}"
     A.solve(asm)
-    return {"items": out_items, "joints": joints, "report": rp, "params": params, "attr_error": attr_error,
+    return {"viewer_schema": 1, "items": out_items, "joints": joints, "report": rp, "params": params, "attr_error": attr_error,
             "steps": steps, "steps_error": steps_error, "project_dir": f"projects/{proj.dir.name}",
             "bounds": [[round(float(x), 3) for x in lo], [round(float(x), 3) for x in hi]]}
 
@@ -229,6 +230,47 @@ def embedded(path) -> dict | None:
         return None
     a = t.index(">", a) + 1
     return json.loads(t[a:t.index("</script>", a)])
+
+
+def current_html(path) -> str | None:
+    """Present a compatible saved mesh with today's UI, without rebuilding or changing the saved export.
+
+    Unversioned viewers use the same original mesh contract. Unknown versions, incomplete data and older
+    pages without that contract stay on their baked template; the file route retains its existing fallback.
+    """
+    try:
+        d = embedded(path)
+    except (ValueError, UnicodeError):
+        return None
+    if not isinstance(d, dict) or d.get("viewer_schema", 1) != 1:
+        return None
+    if not isinstance(d.get("report"), dict) or not isinstance(d.get("items"), list) or not isinstance(d.get("joints"), list):
+        return None
+    if d["report"].get("project") is not None and not isinstance(d["report"]["project"], str):
+        return None
+
+    def vector(v, size=3):
+        return (isinstance(v, list) and len(v) == size
+                and all(isinstance(x, (int, float)) and not isinstance(x, bool) and abs(x) <= sys.float_info.max for x in v))
+
+    bounds = d.get("bounds")
+    if not isinstance(bounds, list) or len(bounds) != 2 or not all(vector(v) for v in bounds):
+        return None
+    for j in d["joints"]:
+        if (not isinstance(j, dict) or not isinstance(j.get("name"), str)
+                or j.get("kind") not in ("revolute", "linear") or not vector(j.get("axis"))
+                or not vector(j.get("point")) or not vector(j.get("range"), 2)
+                or not vector([j.get("home")], 1) or not isinstance(j.get("moves"), list)):
+            return None
+    joint_names = {j["name"] for j in d["joints"]}
+    for it in d["items"]:
+        if (not isinstance(it, dict) or not all(isinstance(it.get(k), str) for k in ("id", "role", "color", "verts", "tris"))
+                or it["role"] not in ("printed", "purchased", "keepout")
+                or not vector(it.get("explode")) or not isinstance(it.get("joints"), list)
+                or not all(isinstance(n, str) and n in joint_names for n in it["joints"])
+                or not all(isinstance(it.get(k), int) and it[k] >= 0 for k in ("nv", "nt"))):
+            return None
+    return html(d)
 
 
 # ---------------------------------------------------------------- stress colours

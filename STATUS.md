@@ -617,3 +617,26 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+## 2026-11-03 — Object stage: current saved meshes, contextual tools (Codex)
+- The actual viewer now opens with full-width geometry, neutral display materials and a compact tool rail.
+  Parts, motion, inspection, assembly, shopping, print and checks remain available in dismissible contextual
+  trays; optional part colors, edges and ground grid preserve the original data. Warning access stays visible.
+  Keyboard parts/inspection, model orbit/zoom/fit, named controls, Escape and reduced motion are supported.
+- Current-template delivery reads compatible saved kerf-data for existing files/trial viewer routes, with a
+  schema tag on newly generated data and original-file fallback for unsupported/incomplete saved contracts.
+  Saved exports are not rewritten. No geometry, catalog, check threshold, review.json, job or FEA changes.
+- First visual review used the existing FPV viewer (38 items, two joints) at desktop/phone in both themes.
+  The one correction fits projected bounds and reserves actual canvas space beside/above open trays. Existing
+  final desktop-light and phone-dark/Parts captures in .cache/viewer-stage/{desktop,phone}-confirm.png confirm
+  visible model framing and persistent warnings; these were read again on resume, not recaptured.
+- Prior recorded validation: seven helper/route cases passed; three browser nodes passed in 19.42 s.
+  Final 14-node confirmation was interrupted and its summary is unavailable. A recovery invocation through
+  the shared .venv/bin/pytest entrypoint imported the installed root checkout (missing current_html and #notice),
+  yielding 12 failed / 2 passed in 43.89 s; it is not current-branch evidence. No production workaround was made.
+  Integration owns the pending final selection: PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_viewer_stage.py
+  tests/test_viewer.py::test_page_cut_stress_build_it_compare_and_picture
+  tests/test_viewer_build_it.py::test_build_it_labels_closeups_and_bench_context. PLAN remains unchecked until green.
+- Full batch remains HELD. No actual project rebuild or native app launch. The surface brief records limits;
+  inherited small engineering text was the only mechanical design-detector warning. Combined shell validation
+  belongs to the integration owner; this branch is frozen for that handoff.

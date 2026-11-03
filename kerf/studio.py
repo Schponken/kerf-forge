@@ -1838,6 +1838,11 @@ class Handler(BaseHTTPRequestHandler):
                 ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
                 if f.suffix == ".md":
                     ctype = "text/plain; charset=utf-8"
+                if f.name == "viewer.html":
+                    from .viewer import current_html
+                    page = current_html(f)
+                    if page is not None:
+                        return self._send(200, page.encode("utf-8"), ctype)
                 return self._send(200, f.read_bytes(), ctype)
             return self._err("not found", 404)
         except Exception as e:  # noqa: BLE001
