@@ -1381,3 +1381,44 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Restarted Kerf Studio with no running jobs. Native UI verified insert location, Replay installation, step navigation and the second step's M3 shoulder-screw location. Installed source hashes and all 20 pre-existing modified project files still match after restart.
 - Desktop/phone captures reviewed in one correction pass plus confirmation: clearer local replay, reduced duplicate copy, moved label off tool contact and phone step controls away from target. These are schematic installation demonstrations, not physical assembly validation. Unknown unrecorded pin seats remain explicitly unavailable; older projects gain new missing metadata on future builds.
 - Backup: ~/Library/Application Support/KerfStudio/backups/20261102-230847-assembly-guide. Integration proof and recovery/install manifests: .cache/assembly-guide-integration/.
+
+
+## 2026-11-02 — Complete declared source downloads (Codex)
+- Reproduced omitted nested Python/CSV helpers and declared STEP input in a synthetic Studio download. Source ZIPs
+  now retain recursive Python helpers, part/layout/import/Meshy inputs and explicit project.yaml source_files; data
+  reads are declared, not inferred by executing or scanning Python. Shared the existing module containment check;
+  module manifest policy and generated maker loops/constants remain unchanged for concurrent supplier/BOM work.
+- Selected inputs must exist and remain contained with no symlink components; hidden/cache/output/review/known
+  credential files are refused. Malformed YAML/UTF-8 and missing inputs return a useful 400 error before an archive
+  is sent. The original files stay unchanged; no review approval/build cache is copied into the design folder.
+- 39 exact archive/source/module tests PASS in 3.08 s. An extracted synthetic design rebuilds its nested helper,
+  declared CSV, layout and imported STEP after deleting the original (body 42 / lid 24 mm3). Parent review found the
+  malformed-contract case; its two HTTP regressions plus rebuild/package-map checks PASS (4 tests, 1.94 s).
+  Docs explain declared dependency limits; no actual project build, full batch, FEA or paid model call.
+- Separate saved follow-up: existing maker-output loops can follow output symlinks; their containment repair is
+  assigned separately. This change validates design inputs and intentionally leaves maker-output behavior intact.
+- Completion is the source-export child only; the broader Fresh-eyes usability task remains open.
+
+## 2026-11-02 — Contained maker downloads (Codex)
+- Reproduced an output-file symlink exporting bytes from a harmless temporary outside fixture. Maker selections
+  now validate the output root, selected folders/files and recursive entries before starting ZIP creation. Links,
+  special files, wrong types and unreadable traversal fail explicitly; no partial archive is returned.
+- Missing optional outputs remain okay. Valid nested bytes/paths and the regular .glb preview exclusion remain;
+  additive supplier and fastener-report lists are preserved and exercised by a fixture. No changes to those constants.
+- 21 targeted tests PASS in 2.99 s: output root/selected/nested/file/dangling links, FIFO/socket rejection without
+  reads, wrong types, traversal errors, useful HTTP400, regular outputs and source-export rebuild compatibility.
+  Independent parent review approved. Stacked on source-export PR22; no full batch, actual project build, FEA,
+  printer action or real private data access. The earlier saved maker-output containment follow-up is resolved.
+
+## 2026-11-02 — Studio round 2 complete and contained downloads (Codex)
+- Integrated absent prior source-export heads 3a9088f/47aba1b and maker-output safety b7e1ece into assembly-guide
+  base 06cbf88, preserving the existing source manifest, module helper and regular-output validation. No remote merge.
+- Fixed two remaining defects: Download everything omitted the saved URDF package; files/trial/history routes
+  validated only the tail, so a traversal or linked project segment escaped their intended root. Saved simulation
+  bytes now travel with the ZIP and all three routes validate the project segment through the shared helper.
+- New fixtures reproduced 8 failures plus 1 valid pass before the new fixes. Clean tested code
+  65964a655acec95d9e28332e35be50e0d3f2d7c8: 60 focused fixture cases PASS in 3.67 s, including extracted source
+  rebuild, source/output refusal and valid download byte preservation. Receipt: .cache/round2-export/; written
+  review and command: docs/usability/ROUND2_EXPORT_REVIEW.md. Doctor ALL OK using existing dependencies; no install.
+- Documentation/PLAN completion follows the tested code with no source changes. Batch HELD; no UI changes/captures,
+  actual project builds, jobs, FEA, full suite, app update, geometry/report/catalog edits or readiness claim.
