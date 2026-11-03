@@ -268,3 +268,27 @@ def test_ship_shoulder_insert_text_eng19():
     from kerf import ship
     src = inspect.getsource(ship)
     assert "an insert left proud only adds play" in src and "an insert left proud clamps it" not in src
+
+
+def test_lock_pin_holds_a_fold_joint(tmp_path):
+    # a removable lock pin (quick-release / clevis) in slip holes on both sides of a moving joint (held by its detent):
+    # no bind / locks-the-joint problem, the joint is recorded as locked, the grip is the shortest stocked length >= stack
+    proj, asm = _asm(tmp_path, lug_fit="lock", arm_fit="lock")
+    out, problems, _ = pins.check(asm)
+    assert problems == [], problems
+    (pj,) = out
+    assert pj["lock"] and pj["locks"] == ["swing"] and pj["fixed_in"] == []
+    assert pj["length_mm"] == 16 and pj["span_mm"] == pytest.approx(16)
+    rows = export.bom(proj, [], {}, tmp_path, pins=out)
+    assert any(r["type"] == "pin" and "quick-release pin, 16 mm grip" in r["item"] and "swing" in r["note"] for r in rows)
+
+
+def test_lock_pin_mixed_with_press_and_no_grip(tmp_path):
+    _, asm = _asm(tmp_path, lug_fit="press", arm_fit="lock")
+    _, problems, _ = pins.check(asm)
+    assert any("mixes a removable lock pin" in p for p in problems), problems
+    # 18 mm stack: the 20 mm grip is within LOCK_SLACK (2 mm); 13 mm stack: 12 is too short, 16 rattles -> problem
+    out, problems, _ = pins.check(_asm(tmp_path / "b", lug_fit="lock", arm_fit="lock", lug_out=9.0)[1])
+    assert problems == [] and out[0]["length_mm"] == 20
+    out, problems, _ = pins.check(_asm(tmp_path / "c", lug_fit="lock", arm_fit="lock", lug_out=6.5)[1])
+    assert out[0]["length_mm"] is None and any("no stocked" in p and "grip" in p for p in problems), problems

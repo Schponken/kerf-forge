@@ -380,6 +380,10 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
                          "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; {lock_advice(pj['fixed_fit'])}"})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pj['pin']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
+        elif pj.get("lock"):
+            rows.append({"type": "pin", "item": f"{g(pj['d_mm'])} mm quick-release pin, {g(pj['length_mm'])} mm grip", "qty": 1,
+                         "spec": pj["pin"], "link": catalog.get(pj["pin"]).get("buy", ""),
+                         "note": f"locks '{', '.join(pj['locks'])}' (pull it to move them); keep it on its lanyard"})
         else:
             rows.append({"type": "pin", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm steel dowel pin", "qty": 1,
                          "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})

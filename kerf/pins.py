@@ -9,6 +9,9 @@ solved at home, `check(asm)` proves for each group:
 - a stocked pin length (catalog `lengths`, or standard screw lengths for a screw pivot) fits inside the outer faces and,
   at some position, reaches every hole by at least min(hole length, 1.5 d); a screw pivot's head sits on a free hole and its thread
   reaches the insert/pilot by the screw's minimum engagement.
+A `lock` group (removable quick-release / clevis pin holding a fold or slide joint at home) has slip holes only: the pin
+is held by its own detent, the joints it splits are the ones it locks (recorded in `locks`: pull it to move them), and a
+stocked grip length must reach from the head face past the far face by at most LOCK_SLACK (no rattle).
 """
 from __future__ import annotations
 
@@ -50,6 +53,7 @@ def lock_advice(fixed_fit) -> str:
 
 PIN_SPAN_SLACK = 1.0  # mm; a dowel this much shorter than its span gets a warning (ENG-13)
 SHOULDER_PLAY = 0.5  # mm; most axial play a shoulder-screw pivot may leave between the head and the moving part
+LOCK_SLACK = 2.0     # mm; most a lock pin's grip may exceed the stack it holds before the joint rattles
 
 
 def _min_cover(s, d: float) -> float:
@@ -78,6 +82,14 @@ def check(asm) -> tuple[list, list, list]:
         d = pd["d"]
         _, _, o0, u = sites[0]
         bad = False
+        fits = {s.fit for _, s, _, _ in sites}
+        if "lock" in fits:
+            if fits != {"lock"}:
+                problems.append(f"pin group '{g}': mixes a removable lock pin with {sorted(fits - {'lock'})} holes; a lock pin "
+                                f"slides out of every part (fit='lock' on all of them)")
+                continue
+            out.append(_lock(asm, g, pin, pd, sites, items, o0, u, problems))
+            continue
         for iid, s, o, z in sites:
             ang = np.degrees(np.arccos(np.clip(abs(np.dot(z, u)), -1, 1)))
             off = _line_off(o0, u, o)
@@ -178,6 +190,36 @@ def check(asm) -> tuple[list, list, list]:
                     "fixed_in": fixed, "free_in": free, "screw_pivot": pd["screw"], "shoulder": bool(pd.get("shoulder")),
                     "fixed_fit": sorted({s.fit for _, s, _, _ in sites if s.fit in FIXED})})
     return out, problems, warnings
+
+
+def _lock(asm, g, pin, pd, sites, items, o0, u, problems) -> dict:
+    """A removable lock pin: coaxial slip holes, the joints it splits are locked at home, a grip length >= the stack."""
+    for iid, s, o, z in sites:
+        ang = np.degrees(np.arccos(np.clip(abs(np.dot(z, u)), -1, 1)))
+        off = _line_off(o0, u, o)
+        if ang > ANG_TOL_DEG or off > OFF_TOL:
+            problems.append(f"pin group '{g}': hole in {iid} at {np.round(o, 2).tolist()} is off the pin axis "
+                            f"({off:.2f} mm, {ang:.1f} deg); limit {OFF_TOL} mm / {ANG_TOL_DEG} deg")
+    locks = []
+    for e in asm.movable:
+        inside = {i for i in items if i in asm.subtree(e.child)}
+        if inside and inside != set(items):
+            locks.append(e.name)
+    if not locks:
+        problems.append(f"pin group '{g}': lock pin holds no moving joint (every hole is on one side of every joint); "
+                        f"use fit='press'/'free' for a fixed pin")
+    t = []
+    for iid, s, o, z in sites:
+        t0 = float(np.dot(o - o0, u))
+        t += [t0, t0 - s.depth * float(np.sign(np.dot(z, u)))]
+    span = max(t) - min(t)
+    length = next((L for L in sorted(pd["lengths"]) if span - 1e-3 <= L <= span + LOCK_SLACK), None)
+    if length is None:
+        problems.append(f"pin group '{g}': no stocked {pin} grip length between the {span:.1f} mm stack and "
+                        f"{span + LOCK_SLACK:.1f} mm (stocked {pd['lengths']}); make the stack equal a stocked grip")
+    return {"group": g, "pin": pin, "d_mm": pd["d"], "length_mm": length, "span_mm": round(span, 2),
+            "fixed_in": [], "free_in": sorted(items), "screw_pivot": False, "shoulder": False, "fixed_fit": [],
+            "lock": True, "locks": locks}
 
 
 def _shoulder(g, pin, pd, iv, lo, hi, problems):

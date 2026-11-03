@@ -419,7 +419,7 @@ from the catalog) or a screw size (`M3`) used as a pivot; `fit` is `free` (turns
 `fdm_fits.pin` allowances) or `heatset`/`tap` (screw pivot thread). kerf/pins.py proves per group: every hole coaxial
 (0.05 mm, 0.5 deg), the pin held by some part, each moving joint that splits the group turns about the pin axis (or
 slides along it) with the pin held on one side only, and a stocked length that reaches every hole by min(hole,
-1.5 d). Screw pivots get a threadlocker warning; pins, pivot screws and inserts go into the BOM.
+1.5 d). Screw pivots get a threadlocker warning; pins, pivot screws and inserts go into the BOM. `fit=lock` is a removable quick-release / clevis pin that holds a fold or slide joint at home: slip holes in every part, no held side, the joints it splits are recorded as `locks`, and a stocked grip length must cover the stack by at most pins.LOCK_SLACK.
 
 ## Fingerprint and catalog_deps.json
 `kerf review-status` ties a review to the project's fingerprint: project.yaml, parts/*.py, meshes, the printer
