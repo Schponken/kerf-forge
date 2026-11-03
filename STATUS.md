@@ -1412,3 +1412,20 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - “Use these values as a draft” restores recorded measurements/materials without saving or starting a job. Replacing a draft asks first; current ranges validate restored values, unavailable entries are reported, invalid values block Try/Save, and ordinary Undo/Discard remain available. Keyboard focus lands on the invalid value or draft review; the new action has a 44 px touch target.
 - Final targeted fixture run: `PYTHONPATH="$PWD" KERF_TUNE_SCREENSHOTS=/tmp/kerf-round2-tune /Users/spencergross/Documents/ChatGPT/Kerf\ Studio/.venv/bin/python -m pytest -q tests/test_tune_experience.py --junitxml=.cache/round2-tune/results.xml` — 1 passed in 5.99 s, covering desktop/phone and light/dark, cancellation/acceptance, recovery validation, unavailable values, comparison edge cases, partial saves and project switching; zero page errors. Existing unregistered browser-marker warning remains. Receipts: `.cache/round2-tune/tests.log` and `results.xml`.
 - Inspected the four fixture layouts in one pass and confirmed a scoped touch-target correction. Detector findings are identical to the 12 pre-existing shell findings; no Tune finding added. No real builds, stress/FEA, full suite, installation, project/output changes, catalog/threshold changes, or review.json edits.
+## 2026-11-02 — Build it reading, replay and keyboard flow (Codex, round2-assembly)
+- Written operation order now precedes location controls. Insert and shoulder-screw explanations remain visible
+  beside the selected hardware. The end of the guide distinguishes user-marked completion from physical proof.
+- Replay step runs the saved operation sequence; Replay installation demonstrates only the selected location.
+  Stop walkthrough cancels and disposes its active scene. Pending local replays cannot overtake a newer scene.
+  Native completion toggles, named/current step navigation, preserved focus and control-aware shortcuts make the
+  same flow work by keyboard. Action pause/resume requests redraw for the parallel viewer scheduler update.
+- Focused selection: new assembly-flow browser regression plus existing placements and Build it regressions,
+  **3 passed in 27.93s**. Final assembly-flow source (focus retention and pause/resume wakeup included):
+  **1 passed in 9.80s**. A first artifact-only rerun failed because its requested temporary parent did not exist;
+  creating the ignored cache directory resolved setup without changing checks. Desktop/light 1440x960 and
+  phone/dark/reduced-motion 390x844 captures reviewed once; no overflow or JavaScript errors. Final evidence:
+  `.cache/assembly-round2-tests/test_assembly_reading_replays_0/{desktop,phone}.png`.
+- Detector reports only the incumbent global type-size hierarchy warning. No project files, geometry, catalog,
+  review.json, full suite, FEA, live jobs or installed-app changes. Saved offsets remain illustrative: this patch
+  does not validate insertion-path collisions, assembly feasibility or tool access; the integration owner has
+  the exact producer/animation limitations for the separately requested physical-path follow-up.
