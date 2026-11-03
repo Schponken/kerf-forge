@@ -69,33 +69,47 @@ class Job:
         threading.Thread(target=self._pump, daemon=True).start()
 
     def _pump(self):
-        for raw in self.proc.stdout:
-            for ln in (self.parse(raw) if self.parse else [raw.rstrip("\n")]):
-                if ln is None:
-                    continue
-                if ln.startswith("@@"):
-                    try:
-                        ev = json.loads(ln[2:])
-                        if ev.get("k") == "session":
-                            self.session = ev.get("id") or self.session
-                            continue
-                        if ev.get("k") == "usage":
-                            self.usage = ev
-                            USAGE.update(until=max(USAGE["until"], float(ev.get("until") or 0)), text=ev.get("text", ""))
-                        self.events.append(ev)
-                        if ev.get("k") == "hint":   # can't succeed: stop now, say why
-                            with JOB_LOCK:
-                                if self._stop_state is None:
-                                    self._stop_state = "failed"
-                                    try:
-                                        os.killpg(self.proc.pid, 15)
-                                    except Exception:  # noqa: BLE001
-                                        self.proc.terminate()
+        try:
+            for raw in self.proc.stdout:
+                for ln in (self.parse(raw) if self.parse else [raw.rstrip("\n")]):
+                    if ln is None:
                         continue
-                    except Exception:  # noqa: BLE001
-                        pass
-                self.lines.append(ln)
+                    if ln.startswith("@@"):
+                        try:
+                            ev = json.loads(ln[2:])
+                            if ev.get("k") == "session":
+                                self.session = ev.get("id") or self.session
+                                continue
+                            if ev.get("k") == "usage":
+                                self.usage = ev
+                                USAGE.update(until=max(USAGE["until"], float(ev.get("until") or 0)), text=ev.get("text", ""))
+                            self.events.append(ev)
+                            if ev.get("k") == "hint":   # can't succeed: stop now, say why
+                                with JOB_LOCK:
+                                    if self._stop_state is None:
+                                        self._stop_state = "failed"
+                                        try:
+                                            os.killpg(self.proc.pid, 15)
+                                        except Exception:  # noqa: BLE001
+                                            self.proc.terminate()
+                            continue
+                        except Exception:  # noqa: BLE001
+                            pass
+                    self.lines.append(ln)
+        except Exception as e:  # noqa: BLE001 - failed output processing must not orphan a running job
+            with JOB_LOCK:
+                self._stop_state = self._stop_state or "failed"
+                self.lines.append(f"(output processing failed: {e})")
+            # The pipe is no longer drained; kill the group so a full pipe cannot block cleanup.
+            try:
+                os.killpg(self.proc.pid, 9)
+            except OSError:
+                try:
+                    self.proc.kill()
+                except ProcessLookupError:
+                    pass
         rc = self.proc.wait()
+        self.proc.stdout.close()
         with JOB_LOCK:
             self.ended = time.time()
             if rc and self._stop_state is None:
@@ -302,19 +316,22 @@ def fix_job(name: str) -> Job:
 def auto_fix(job) -> Job | None:
     """A Studio build / check that ends with problems starts a fix job by itself (setting `autofix`, on by default),
     once per design state, so a failed Build goes straight to fixing instead of a list to read."""
-    if job.kind not in ("build", "check") or job.project in ("*", None) or not settings().get("autofix"):
+    if (job.state not in ("done", "failed") or job.kind not in ("build", "check")
+            or job.project in ("*", None) or not settings().get("autofix")):
         return None
     if budget_stop() or not pick_agent() or (pick_agent() == "claude" and usage_blocked()):
         return None                       # budget switch on, or no agent can run now (Claude out of usage, no Codex)
-    rep = _report(PROJECTS / job.project)
-    ok, _ = fixable(job.project)
-    if not ok:
-        return None
-    fp = (rep or {}).get("fingerprint")
-    if fp and AUTOFIXED.get(job.project) == fp:
-        return None                       # this exact design already had its automatic try: the button is still there
-    AUTOFIXED[job.project] = fp
-    return fix_job(job.project)
+    with JOB_LOCK:
+        rep = _report(PROJECTS / job.project)
+        ok, _ = fixable(job.project)
+        if not ok:
+            return None
+        fp = (rep or {}).get("fingerprint")
+        if fp and AUTOFIXED.get(job.project) == fp:
+            return None                       # this exact design already had its automatic try: the button is still there
+        successor = fix_job(job.project)
+        AUTOFIXED[job.project] = fp
+        return successor
 
 
 def printer_info(live: bool = False) -> dict:
