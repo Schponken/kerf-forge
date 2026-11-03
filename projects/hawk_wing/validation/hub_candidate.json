@@ -1,0 +1,167 @@
+{
+  "candidate_commit": "ea82e3c",
+  "status": "rejected for ready integration; preserved as experimental WIP",
+  "mass_g": {
+    "hub_r": 103.31692140510243,
+    "cap_r": 21.307871697528075
+  },
+  "geometry_validity": {
+    "hub_r": "one valid solid",
+    "cap_r": "one valid solid"
+  },
+  "case": {
+    "settings": {
+      "part": "hub_r",
+      "fixed": {
+        "any": [
+          {
+            "cylinder": {
+              "at": "bear_top",
+              "r": 8,
+              "tol": 0.4,
+              "span": [
+                0,
+                5
+              ]
+            }
+          },
+          {
+            "cylinder": {
+              "at": "bear_bot",
+              "r": 8,
+              "tol": 0.4,
+              "span": [
+                0,
+                5
+              ]
+            }
+          }
+        ]
+      },
+      "loads": [
+        {
+          "cylinder": {
+            "at": "main",
+            "r": 4.1,
+            "tol": 0.4,
+            "span": [
+              3,
+              9
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            -106.5755224224962
+          ]
+        },
+        {
+          "cylinder": {
+            "at": "main",
+            "r": 4.1,
+            "tol": 0.4,
+            "span": [
+              31,
+              37
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            127.91173408928918
+          ]
+        },
+        {
+          "cylinder": {
+            "at": "rear",
+            "r": 3.1,
+            "tol": 0.4,
+            "span": [
+              3,
+              9
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            -38.92446181741272
+          ]
+        },
+        {
+          "cylinder": {
+            "at": "rear",
+            "r": 3.1,
+            "tol": 0.4,
+            "span": [
+              31,
+              37
+            ]
+          },
+          "force_n": [
+            0,
+            0,
+            46.81593736540464
+          ]
+        },
+        {
+          "box": [
+            [
+              55,
+              142.0,
+              8
+            ],
+            [
+              175,
+              180.0,
+              40
+            ]
+          ],
+          "force_n": [
+            0,
+            0,
+            5.758943004862239
+          ]
+        }
+      ],
+      "sf": 2,
+      "direction": "auto",
+      "max_disp_mm": 1
+    },
+    "target_force_n": 34.98663021964714,
+    "target_moment_about_pivot_nmm": 5311.669292096102
+  },
+  "result": {
+    "mesh_size": 6.0,
+    "ok": false,
+    "value": 16.92,
+    "limit": 24.0,
+    "sf_min": 2.0,
+    "applied_force_n": [
+      0.0,
+      0.0,
+      34.9866
+    ],
+    "applied_moment_nmm": [
+      10023.596,
+      -4910.602,
+      0.0
+    ],
+    "max_disp_mm": 4.053,
+    "max_disp_at": [
+      43.3,
+      180.0,
+      -0.2
+    ],
+    "work_nmm": 330.62937732477315,
+    "detail": "FEA hub_r: von Mises p99.9 (MPa) vs PETG auto strength / SF 2; peak 65.30 MPa at [198.6, 136.6, 0.0], deflection 4.053 mm (limit 1) at [43.3, 180.0, -0.2], 17051 elements; iterative solver stalled on a 8.40 mm mesh (135885 unknowns); solved exactly on a coarser mesh"
+  },
+  "interpretation": [
+    "Vertical force and pivot moment reproduce the integrated 1800g/6g load within 0.3%; no additional torque is added.",
+    "Maximum displacement is at the leading-edge corner, not a measured spar-socket rotation.",
+    "The 1mm displacement target is diagnostic, not an existing project requirement; this does not prove the aircraft cannot fly.",
+    "Solver coarsened after iterative stall; no candidate mesh convergence or print-infill proof.",
+    "The larger cap increases projected frontal area; no aerodynamic improvement or Cd estimate.",
+    "The socket relief exclusion is cylindrical while the bore has a teardrop roof; the claimed 2.4mm roof wall has not been established.",
+    "No full sweep/contact check: rejected before ready integration because there is no meaningful mass saving and structural/aerodynamic questions remain."
+  ]
+}

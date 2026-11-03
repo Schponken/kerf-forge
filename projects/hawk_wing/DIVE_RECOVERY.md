@@ -1,7 +1,7 @@
 # Hawk: lower-speed dive and re-extension design screen
 
-Status: **UNPROVEN; not a flight procedure or approved flight envelope.** The user chose a lower target on
-2026-11-02: **100 km/h equivalent airspeed (EAS)**, replacing the old 150 km/h design aspiration. No CFD,
+Status: **UNPROVEN; not a flight procedure or approved flight envelope.** The user chose a lower-speed direction on
+2026-11-02; the coordinating agent selected **100 km/h equivalent airspeed (EAS)** as a provisional target, replacing the old 150 km/h design aspiration. No CFD,
 wind-tunnel, flutter, deployment-time or flight result establishes an aerodynamic improvement yet.
 
 ## Pressure, geometry and deployment contract

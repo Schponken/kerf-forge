@@ -1558,3 +1558,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   and 20-minute target, finite/dynamic route points, transport parameter changes and sourced connector quantities.
   Initial tuning fixture reused derived parameters and correctly tripped layout's collision guard; reloaded the
   project contract as the real tuning flow does. CAD route clearance remains the flight lead's integrated gate.
+
+## 2026-11-02 — Hawk isolated candidate final receipt (Codex)
+- Frozen implementation7911eea: 17 focused tests PASS in2.54 s; full `kerf check hawk_wing --all` FAIL in507.2 s with63 reported problems. Final fingerprint8614ff72b99bbbb3.
+- Case fit passes496.8 x325.6 x98 mm. Spread margin0.0799 remains below0.08; mass2215.4 g incl109.7 g wiring, stall46.8 km/h and endurance15.6 min fail. Mechanical sweep, wiring, print/access and strength findings remain. Full exact report and concise before/after receipt saved in projects/hawk_wing/validation/final_check_report.json and VALIDATION_RECEIPT.md.
+- Deeper hub/cap experiment rejected, geometry excluded. Provisional100 km/h target was selected by the coordinating agent following the user's lower-speed direction; no safe-flight or aerodynamic-improvement claim. Original project stays unchecked, PR81 draft; installed sources unchanged. No further tests/build/install.

@@ -23,5 +23,7 @@
  "servo_horns.aluminum_25T",
  "servos.KST_X08_Plus",
  "servos.MG996R",
- "tools.hex_key"
+ "tools.hex_key",
+ "wire.awg",
+ "wire.silicone"
 ]
