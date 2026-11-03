@@ -22,7 +22,7 @@ L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
 BOX_X0 = 180.0           # raised box starts here: 1.5 mm aft of the rear spar socket's wall (tube x 171..175 + r 3.1)
 BOX_TOP = 6.0            # = boss top: the cap sits at 6.5
 DISC_TOP_IN = 2.5        # inboard half of the disc, inside the glove notch: just under the glove's top skin there (3.6..4.6)
-BOX_TAPER_Y = 182.0      # the box's top and underside close in from here to a point at y 194, inside the airfoil
+BOX_TAPER_FROM_ROOT = 32.0      # the box's top and underside close in from here to a point at y 194, inside the airfoil
 BITE_CLR = 0.5           # the hub keeps this far off the glove's trailing edge at the end of the sweep
 RELIEF_DEG = 2.3         # > stop over-travel (2.2 deg) + the 0.5 mm glove gap; the main socket mouth (x 100) is then at y 155.5, tube end 156
 LEAD_D = 4.0
@@ -77,7 +77,7 @@ def right_body(ctx):
 
     # raised closed box aft of the rear spar (top z 6, flat underside z -2), tapering out into the airfoil at y 194
     prof = Plane(origin=(BOX_X0, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0)) * Polygon(
-        (p.pivot_y, L.HUB_DISC_Z0), (BOX_TAPER_Y, L.HUB_DISC_Z0), (p.hub_y1 - 1, 1.4), (BOX_TAPER_Y, BOX_TOP), (p.pivot_y, BOX_TOP), align=None)
+        (p.pivot_y, L.HUB_DISC_Z0), (p.pivot_y + BOX_TAPER_FROM_ROOT, L.HUB_DISC_Z0), (p.hub_y1 - 1, 1.4), (p.pivot_y + BOX_TAPER_FROM_ROOT, BOX_TOP), (p.pivot_y, BOX_TOP), align=None)
     box = extrude(prof, c[0] + p.pivot_back - BOX_X0 + 1.0, dir=(1, 0, 0))
     body += ctx.add(box, why="raised closed box aft of the rear spar: keeps the section 8 mm deep (airfoil is 3-6 mm there) so the 5.5 N m "
                     "root moment reaches the boss as torsion + bending of a deep section (sibling hub's weak point)", kind="box")

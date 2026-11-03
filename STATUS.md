@@ -1506,3 +1506,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Preserved the installed dirty project sources verbatim at 5a98dc7; installed and isolated source fingerprints both adf3ad47a8d22d2d. The installed project is untouched.
 - Packaging repair moves pivots inward 15 mm while retaining hub width and spar engagement, and shortens the motor stand-off 15 mm and boom socket tail 6 mm. Pod pads, lead entry and rim now follow the pivot position. Requirements and hardware catalog values are unchanged.
 - WIP: geometry and concept checks running; weight and wiring repairs proceed from the preserved baseline. No design-review approval or flight readiness claimed.
+
+## 2026-11-03 — Hawk weight diagnosis (Codex weight worker, in progress)
+- Audited snapshot `5a98dc7` through the installed engine's validated geometry cache: glove 360.98 g,
+  fuselage 272.21 g, each hub 110.14 g, each pod 72.02 g. No stubs; outer skins already one wall / 3%.
+  Baseline 2155.1 g excludes wiring. `projects/hawk_wing/WEIGHT_AUDIT.md` records evidence and limits.
+- Coordinated ownership: glove/hub only. Made the hub box taper relative to pivot_y so the integration
+  worker's inward pivot move preserves the original section transition. Python compilation passed;
+  CAD/normal-flight strength verification and actual weight reduction are still pending.
