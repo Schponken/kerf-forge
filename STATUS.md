@@ -1009,3 +1009,62 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - No backend data schema, global shell/tokens, project header/viewer, real user data, live agent, model call, geometry,
   stress solve or full suite. Browser marker registration still awaits pending test configuration. Root will validate
   the final creative shell/project/Work integration separately; this PR is a scoped Work feature, not an aggregate.
+
+## 2026-11-03 — Follow live label overlap fixed in native WebKit (Codex)
+- Reproduced the user's two desktop screenshots in an isolated system WKWebView fixture using Studio's actual
+  CSS/liveBar function. The global input width of 100% made the checkbox 80.55px wide at a 1440px viewport;
+  label text occupied x412.55–483.08 while the adjacent helper began at x414.55. Chromium's native checkbox
+  stayed 13px and did not reproduce this overlap, so Chromium alone would have missed the reported defect.
+- Four scoped CSS rules give the checkbox its intrinsic width, prevent label shrinking, let the control row wrap,
+  and wrap long status/error messages within the row. Native after: checkbox 12px, text x344–414.53 contained
+  in its label, helper begins x426.55 (12px gap). No markup, wording, polling, API, project or global input change.
+- Validation: **2 browser tests passed in 4.89s** (`tests/test_follow_live_layout.py` and the existing
+  `tests/test_usability.py::test_phone_tune_and_connection_recovery`), with one expected browser-marker warning
+  until the pending marker registration lands. New coverage uses 1440/1024/390/320px, both themes, on/off/long
+  unbroken error text, label click, focused Space-key toggle, exact mocked API calls and nonoverlapping bounds.
+  The interrupted tool call completed successfully in the background; its final log and no remaining process
+  were verified on resume, without repeating the completed selection.
+- Temporary native WKWebView harness assertions also pass 18 width/theme/state combinations (1440/390/320px,
+  dark/light, off/on/error). This uses the installed system engine, not the running Kerf app; no toolchain install.
+  Viewed `.cache/follow-live-layout/follow-off-dark-1440.png` and `follow-error-light-390.png`; other browser
+  captures are saved alongside them. One mechanical scan found 13 pre-existing patterns outside the edited rules.
+  `kerf doctor`: **ALL OK**, existing optional firmware tooling unavailable. Budget/batch/process checks made;
+  no real live-follow request, native app interaction, geometry/build, stress solve, full suite or batch run.
+
+## 2026-11-03 — Studio shell accessibility and visual baseline checkpoint (Codex, WIP)
+- Checkpointed neutral tokens, readable contrast, native keyboard project/Activity buttons, explicit utility labels,
+  and removal of decorative shared-shell gradients/glows. This is an intermediate design, not a finished PLAN item.
+- Loaded synthetic gallery/Work captures use existing saved thumbnails/reports with an explicit fixture caption;
+  no physical checks, real app interaction or new build ran. The focused shell browser test passes (1 in 17.07s);
+  shell plus strict short-screen scroll regression passed (2 in 25.25s). Initial checks exposed asynchronous fixture
+  timing and real 1.125px focus clipping; condition waits and 6px scroll padding resolved them without weakened assertions.
+- The user rejected the conventional permanent sidebar composition after review. Next: replace it with an object-first
+  full-width stage and on-demand project/activity trays, preserving the verified access and color improvements.
+  The current desktop/mobile captures are baseline evidence, not acceptance of the final direction.
+
+
+## 2026-11-03 03:15 UTC — full-width Studio shell and object-led project collection (Codex)
+- Replaced the permanent sidebar with a 72px top navigation strip, or two 108px rows on phones. Projects,
+  Activity and utilities open in labelled native disclosures with close/Escape, outside-click and focus behavior.
+  Empty or busy project/job lists no longer consume the workspace. Phone search and New design have distinct
+  grid areas. Closed panels explicitly leave layout, preventing invisible fixed trays from retaining hit geometry.
+- The project collection displays saved model images at larger scale without decorative tiles. Projects without
+  previews use compact rows; all projects remain selectable, and observed build/check/review/stale evidence stays
+  explicit. Search explains a no-match result. Polling preserves the focused project and scroll position; All
+  projects invalidates pending project requests so a slower response cannot replace that destination.
+- Shared PRODUCT.md, DESIGN.md and surface brief record the neutral/graphite palette, restrained steel blue,
+  system typography, scoped ownership and disclosure contract. Contract sent to all active surface owners and
+  reread after saving. No new dependency or font. Other surfaces' content/behavior remains their owners' work.
+- Validation: **3 passed in 18.78s** (`tests/test_studio_shell.py`, `tests/test_mobile_shell.py`,
+  `tests/test_work_mobile_navigation.py`), with three existing unregistered browser-marker warnings. Coverage
+  includes OS theme/default persistence, measured text/control contrast, keyboard navigation/focus, project and
+  activity scrolling, saved options, full-width resize behavior, no overlapping header controls or horizontal
+  overflow, empty/30-item lists, and 320/390/844/1440px viewports. Prior correction run: 2 pass / 1 fail in 14.80s;
+  explicit closed-tray display fixed the original strict overlap assertion, with no loosened threshold.
+- Viewed the final light/dark desktop/phone collection captures in `.cache/studio-shell/final`; they use three
+  read-only saved model renders in a labelled illustrative workspace. One detector pass reported 12 incumbent
+  findings in other surfaces (tabs, job progress/toasts and lightbox); passed to integration instead of changing
+  another owner's selectors. Sibling/integration critique remains the parent task's responsibility.
+- `kerf doctor`: **ALL OK**, with existing optional firmware-tool warnings. Batch remains HELD; duplicate-process
+  checks and the shared two-suite browser coordinator preceded runs. No real jobs, geometry/project builds,
+  stress solve, full suite, new review.json or native app run. This shell is a scoped PR, not a finished whole-UI claim.
