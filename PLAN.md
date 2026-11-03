@@ -268,6 +268,7 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [ ] Learning Mode phase 8, the switch (Codex OK): Studio corner switch (budget in tokens / runs per week, overnight 1-7 am ET, steps aside when other Kerf jobs run, what it's doing now, weekly report card whose claims match the diary, undo, off); `kerf learn run` is the local runner Studio starts, using kerf/agent.py (Claude, or Codex when Claude's usage is out); fences enforced in code: never edits checks / thresholds / catalog values / tests / review.json, no purchases or prints; tests
 
 ## Phase 5 — final audit
+- [x] Work overview clarity: improve multi-job ownership, attention, observed changes and remaining-work scanning without inventing progress or finish times.
 - [x] Work active-run identity: combine one running Studio Codex job with its exact observed chat without duplicate counts, retaining job controls, live context and per-owner scopes; keep ambiguous and historical runs separate.
 - [x] Studio job descriptions: preserve public progress notes alongside bounded current action labels in Work; keep pause and continuation status authoritative, with actual serialization and browser evidence.
 - [x] Work ownership breakdown: show each linked claim owner, activity, freshness and remaining steps within a shared Codex chat; preserve truthful live state, attention filters, search and responsive details.

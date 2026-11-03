@@ -974,3 +974,38 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+## 2026-11-03 02:58 UTC — Work explains assignments, immediate actions and observed changes (Codex)
+- Assessed seven synthetic tasks on the reviewed Work integration proof `4323f79`: the old In progress count mixed
+  two running items with one claim, opaque/truncated identities distracted from ownership, remaining steps were
+  hidden, repeated unknown-progress/ETA paragraphs crowded the phone, and only Git commits explained changes.
+- Work now separates working/assigned/paused counts, provides a waiting-for-input filter, orders actual running
+  work before pauses/stale ownership, keeps readable owners visible and exact technical IDs in Details, and exposes
+  the first reported remaining item. The label says Reported remaining because build lists include the current
+  stage. Waiting cards put the existing Open chat/Watch job beside the status; no new job or chat is launched.
+  Custom warnings, public note/current action, known progress/estimate basis, all owner scopes and navigation remain.
+- Text audit: removed redundant queue headings and only the exact generic waiting sentence (kept in Details).
+  Unknown progress/time remain visible as quiet metadata; their explanations and full identity/provenance stay in
+  keyboard/tap disclosures. Scan copy says assigned/owners, retaining exact Git claim evidence within details.
+- A bounded six-entry local changes list records successful observations while this view is open, with stable
+  entry IDs and jump-to-task controls. It creates no history on first load, timestamp-only heartbeat or disappearance,
+  and says Observed rather than inventing event time. Per-source field validity keeps healthy Studio jobs visible
+  when Codex or shared Git is unavailable, suppresses stale derived context and false completions, and records a
+  reliable local terminal result as observed status without asserting an uncertain prior transition.
+- Validation: **7 focused tests passed in 33.78 s** (`test_work_clarity`, existing Work/owner/browser, job-page,
+  job-activity browser and exact dedup browser). They cover mixed-source failures/recovery, bounded history, escaping,
+  identity/focus/open-disclosure preservation, input filtering, remaining scope and all existing controls. Initial
+  browser pass was **5 passed / 1 failed in 31.67 s**: the unchanged long-owner fixture caught a new feed title button
+  inheriting global nowrap; max-width/wrapping fixed it. Root review also caught an overly broad outage guard; the
+  final selection includes independent healthy local jobs and joined-job evidence under unavailable external sources.
+- Before/after fixtures at 1440/390 px, both themes, are under `.cache/work-clarity/{before-*,round1,round2}`.
+  The new fixture temporarily substitutes only Work CSS/JS into the frozen combined proof to retain mobile #43;
+  the feature branch itself remains based only on #44. Inspected final queue and changes captures; waiting action
+  is now in the first phone viewport. A final copy-only change uses Reported remaining rather than Next reported step.
+- Impeccable context/new-work/operate/craft-floor applied as an existing-surface refinement. One detector found 13
+  incumbent patterns outside the edited Work selectors. Sibling newcomer review identified waiting action placement
+  and repeated waiting text; both corrected in one batch. No new visual-world/DESIGN rewrite; the shell worker owns
+  that separate direction. Reciprocal review flagged duplicate phone project navigation in the shell for its owner.
+- No backend data schema, global shell/tokens, project header/viewer, real user data, live agent, model call, geometry,
+  stress solve or full suite. Browser marker registration still awaits pending test configuration. Root will validate
+  the final creative shell/project/Work integration separately; this PR is a scoped Work feature, not an aggregate.
