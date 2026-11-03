@@ -136,8 +136,8 @@ parts:
   wing_l2: {file: parts/wing.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed}
   ail_r: {file: parts/aileron.py, material: PETG, print_rot: [90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45}
   ail_l: {file: parts/aileron.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45}
-  skid_r: {file: parts/skid.py, material: PETG, print_rot: [90, 0, 0], infill: 0.15, walls: 2}
-  skid_l: {file: parts/skid.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.15, walls: 2}
+  skid_r: {file: parts/skid.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2}
+  skid_l: {file: parts/skid.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2}
   tail_mount: {file: parts/tail_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.3, walls: 4, load_axis: [Z, Y]}  # stab lift Z, fin side force Y; X (drag) is small and the stab/fin seats spread it
   hstab: {file: parts/hstab.py, material: PETG, print_rot: [0, 120, 0], infill: 0.05, walls: 1, airfoil: naca0009}
   elevator: {file: parts/elevator.py, material: PETG, print_rot: [0, -90, 0], infill: 0.05, walls: 1, airfoil: naca0009}

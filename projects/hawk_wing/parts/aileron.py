@@ -13,7 +13,6 @@ as printed, so it prints round.
 from build123d import *
 import numpy as np
 from kerf import aero
-from kerf.features import safe_fillet
 
 import importlib.util, pathlib
 _here = pathlib.Path(__file__)
@@ -57,10 +56,7 @@ def build(ctx):
     hole = Pos(float(hole_c[0]), s * (y_end + W.HORN_T / 2), float(hole_c[2])) * Rot(90, 0, 0) * Cylinder(ROD_HOLE / 2, W.HORN_T + 2)
     surf = surf + ctx.add(horn, why="control horn on the inner end, printed flat on the bed with it", kind="horn")
     surf = surf - ctx.cut(hole, why="1.2 mm Z-bend pushrod, free fit, hole HORN_R under the hinge line", kind="pushrod hole")
-    # horn root fillet (load path): the horn's two plate faces meet the curved bottom skin
-    root = [e for e in surf.edges() if abs(abs(e.center().Y) - (y_end + W.HORN_T)) < 0.05
-            and e.center().Z > hole_c[2] + W.HORN_R - 1.5 and abs(e.center().Z - h[2]) < 2.5]
-    surf, failed = safe_fillet(surf, [(root, 1.0)])
-    ctx.notes += [f"horn root fillet not applied: {f}" for f in failed]
+    # no horn-root fillet: the plate meets the 1 mm skin along two ~6 mm tangent edges OCC cannot fillet at any radius
+    # (r 0.4..1.0), and the attempt left a sliver that made the mesh non-watertight; the plate prints flat, in-plane
     ctx.rigid("hinge", Axis(tuple(ha), tuple(d)).location)
     return ctx.finish(aero.largest(surf))
