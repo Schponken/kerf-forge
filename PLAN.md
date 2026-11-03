@@ -192,14 +192,14 @@ Work these in order unless one is blocked; each item is done only with tests and
   - [ ] fpv_wing gets its use story (after its E7 owner finishes, so its review is not made stale mid-way)
 - [ ] Simulate it moving: dynamic load cases from the use story (drop / crash impulse with contact time, hard stops from joint speed and inertia, vibration: first natural frequency vs motor / prop excitation) as requirement checks with hand-calculated tests
   - [x] kerf/req_dynamic.py: impact_fea, stop_impact, natural_freq from one FEA solve's stiffness (fea.static reports f.u); story impact_case accepts impact_fea; tests/test_dynamic.py hand checks (3EI/L^3, impact formulas, end-axis inertia, KV rotor rates)
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - fpv_5in arm_resonance PASSES (now FAILS on a real finding: arm f_n 186 Hz is 7 % from the 200 Hz hover rotor rate; needs >= 20 %)
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - a project uses impact_fea and stop_impact (a surviving drop / a driven hard stop)
+  - [ ] fpv_5in arm_resonance PASSES (now FAILS on a real finding: arm f_n 186 Hz is 7 % from the 200 Hz hover rotor rate; needs >= 20 %)
+  - [ ] a project uses impact_fea and stop_impact (a surviving drop / a driven hard stop)
 - [ ] Failure modes: per-part failure table in the report (how it fails, what it takes with it, repair time); `weak_link` requirement proving the cheap part fails before the expensive one under the crash case
   - [x] kerf/failure.py: report.json `failure_modes` (governing case, use, how by print direction, bought parts it takes with it + price, screws to undo, reprint time lower bound + filament cost) in ASSEMBLY.md "If it breaks" and the review pack; `weak_link` (stress uses at the same applied force); tests/test_failure.py
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - fpv_5in `arm_breaks_first` PASSES (now FAILS on a real finding: under the arm crash event the body uses 94 % of its limit, the arm 76 %: the body would break first)
+  - [ ] fpv_5in `arm_breaks_first` PASSES (now FAILS on a real finding: under the arm crash event the body uses 94 % of its limit, the arm 76 %: the body would break first)
 - [ ] Design for life: fatigue check for flexing parts (living hinges, snap fits), creep limit for plastic under constant load, vibration rule for screws (threadlocker / nyloc / inserts), heat limit by material Tg vs the use story
   - [x] kerf/req_life.py: flex_strain (snap 1.5ty/L^2, hinge ta/2L vs 70 % yield / 50 % break strain, halved across layers, fatigue data required for cycles > 1), creep_limit (documented creep-rupture stress / SF 3; PLA point sourced), screw_locking (metal-thread groups on vibrating projects; ASSEMBLY.md lists the locking); heat limit is the use story's heat_limit (ISO 75 HDT); tests/test_life.py; fpv_5in screws_stay_put PASSES
-  - [ ] PAUSED: stress simulations (Spencer 2026-11-02) - creep_limit and flex_strain used by a project (needs sourced PETG creep data for a PETG constant-load part; no project has a snap fit or living hinge yet)
+  - [ ] creep_limit and flex_strain used by a project (needs sourced PETG creep data for a PETG constant-load part; no project has a snap fit or living hinge yet)
 - [x] Optimise then explain: `kerf optimise <p>` searches declared params (mass / cost / a requirement margin) within every check, writes the trade-off table; tested on a small project
 - [x] Human factors: reach / access checks from the use story (battery swap with gloves, tool access), carry and repair notes in ASSEMBLY.md
 - [x] Learn from results: `kerf feedback` takes logs / photos / notes, records what failed where, and turns repeated findings into ENGINEERING.md rules or catalog corrections (with the evidence)
@@ -338,3 +338,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Studio background-job recovery round 2: preserve Stop, retry failed auto-fix launches, and reap jobs after output processing fails; mocked regression tests.
 - [x] Work ownership evidence: correlate claims only with unambiguous chat identities and label owner updates separately from observed session activity; focused fixtures.
 - [x] Studio Tune round 2: honest requirement comparisons and recover recorded try values into a validated draft; fixture browser tests
+- [x] Resume strength simulations (Spencer, 2026-11-02): restore enabled policy, preserve unrelated holds, verify runtime and saved strength provenance with focused tests and one bounded real FEA solve.

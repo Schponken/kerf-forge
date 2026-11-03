@@ -198,10 +198,18 @@ def _out_stale(proj, fp) -> str:
     if not rp.exists():
         return "out/ not built yet: run kerf build"
     try:
-        ofp = json.loads(rp.read_text(encoding="utf-8")).get("fingerprint")
+        rep = json.loads(rp.read_text(encoding="utf-8"))
+        ofp = rep.get("fingerprint")
     except Exception:  # noqa: BLE001
         return "out/report.json unreadable: run kerf build"
-    return "" if ofp == fp else f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
+    if ofp != fp:
+        return f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
+    from . import requirements
+    pending = [r["id"] for r in rep.get("requirements", [])
+               if r.get("paused") or (r.get("skipped") and r.get("check") in requirements.STRESS_SIMS)]
+    if pending and not requirements.stress_paused():
+        return f"out/ strength checks not run: {', '.join(pending)}; strength is unproven: run kerf build"
+    return ""
 
 
 def _slowest_tests(stdout: str) -> list:

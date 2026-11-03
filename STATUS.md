@@ -1429,3 +1429,9 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   review.json, full suite, FEA, live jobs or installed-app changes. Saved offsets remain illustrative: this patch
   does not validate insertion-path collisions, assembly feasibility or tool access; the integration owner has
   the exact producer/animation limitations for the separately requested physical-path follow-up.
+## 2026-11-02 — Resume strength simulation runtime (Codex)
+- Spencer authorized strength simulations to resume. Removed only PAUSED.json's stress_sims flag, updated the current CLAUDE/board guidance and the learning lesson, and reopened the four existing strength follow-ups without claiming they pass. The full-suite batch hold remains in force.
+- Fixed saved-output provenance: matching geometry does not make old paused/skipped FEA results current after activation. CLI review-status flags those outputs stale with an explicit strength-unproven/rebuild reason; original report bytes and geometry/review fingerprints remain unchanged.
+- Focused activation/pause/freshness/lesson regressions: **24 passed in 1.85 s**. One actual enabled, cache-disabled axial PETG bar FEA: **PASS**, 420 tets, 0.266 s, bulk 1.00022 MPa vs 1 MPa theory, displacement 0.027 mm vs 0.027397 mm theory. Clamp-local p99.9 remains 1.10 MPa against 24 MPa allowed. Solver slot serialized with project-strength work.
+- Current strength improvement scope is normal flight and operating loads; existing crash/impact checks are preserved without making crash optimization the objective.
+- Receipt: docs/status/STRENGTH_RESUME.md. Resource review kept the existing gmsh/scikit-fem solver and improved evidence freshness; no external tool was justified. No project geometry, thresholds/catalog, review.json, installed app or full-suite run changed.
