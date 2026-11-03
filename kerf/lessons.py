@@ -96,13 +96,14 @@ def from_diary(d: dict) -> list[dict]:
     for x in d["problems"]:
         text = f"{x['issue']} {x.get('fix', '')}"
         rid = _classify(text, x["issue"][:140])
+        cost = diary.sum_minutes([x.get("active_minutes_est")])
         if not rid:
             occ.append({"lesson": OTHER_ID, "project": p, "problem": x["id"], "severity": x.get("severity"), "part": x.get("part"),
-                        "stage": x["stage"], "cost_min": x.get("active_minutes_est"), "redrawn": x.get("parts_redrawn") or [],
+                        "stage": x["stage"], "cost_min": cost, "redrawn": x.get("parts_redrawn") or [],
                         "issue": x["issue"][:140]})
             continue
         occ.append({"lesson": rid, "project": p, "problem": x["id"], "severity": x.get("severity"), "part": x.get("part"),
-                    "stage": x["stage"], "cost_min": x.get("active_minutes_est"), "redrawn": x.get("parts_redrawn") or [],
+                    "stage": x["stage"], "cost_min": cost, "redrawn": x.get("parts_redrawn") or [],
                     "issue": x["issue"][:140]})
     # "review only at the end": the first review round already held a pile of problems and no earlier stage saw any
     rev = [x for x in d["problems"] if x["source"] == "review"]
@@ -110,7 +111,7 @@ def from_diary(d: dict) -> list[dict]:
     if len(first) >= EARLY_MIN_FINDINGS and all(x["stage"] == "final review" for x in first):
         sev = sum(1 for x in first if x.get("severity") in ("blocker", "major"))
         occ.append({"lesson": REVIEW_EARLY[0], "project": p, "problem": f"{p}-review-round-1", "severity": "blocker" if sev else "minor",
-                    "part": None, "stage": "final review", "cost_min": sum(x.get("active_minutes_est") or 0 for x in first),
+                    "part": None, "stage": "final review", "cost_min": diary.sum_minutes(x.get("active_minutes_est") for x in first),
                     "redrawn": sorted({m for x in first for m in x.get("parts_redrawn") or []}),
                     "issue": f"{len(first)} problems ({sev} blocker/major) first seen in review round 1; no earlier review or check found any"})
     return occ
@@ -142,7 +143,7 @@ def group(diaries: list[dict]) -> dict:
             row = {"id": lid, "kind": m[1], "lesson": m[2], "earliest_stage": m[3], "catcher_type": m[4], "catcher": m[5]}
         row.update(level="note" if lid == OTHER_ID else level_of(ev), count=len(ev), projects=sorted({e["project"] for e in ev}),
                    late_by_stages=max((STAGE_RANK[e["stage"]] - STAGE_RANK[row["earliest_stage"]] for e in ev), default=0) if row["earliest_stage"] else 0,
-                   cost_min=sum(e["cost_min"] or 0 for e in ev), evidence=ev)
+                   cost_min=diary.sum_minutes(e["cost_min"] for e in ev), evidence=ev)
         lessons.append(row)
     lessons.sort(key=lambda r: (LEVELS.index(r["level"]), -len(r["projects"]), -r["count"], r["id"]))
     return {"rule": "1 project = note; 2+ projects = instruction; 2+ projects found at final review or costing redraws = proposed gate (never auto-enforced)",

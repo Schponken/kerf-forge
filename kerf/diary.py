@@ -14,6 +14,7 @@ token usage from a Claude Code session log. Output: learning/diary/<p>.json and 
 from __future__ import annotations
 
 import json
+import math
 import re
 import statistics
 import subprocess
@@ -126,14 +127,37 @@ def _modules_changed(cms: list[dict], lo: int, hi: int, p: str) -> list[str]:
     return sorted(mods)
 
 
+def _timing(cms: list[dict], i: int | None, j: int | None) -> dict:
+    reason = "No resolving commit provides a timing anchor." if j is None else "No earlier project commit provides a timing anchor."
+    if i is not None and j is not None:
+        try:
+            times = [_t(c["time"]) for c in cms[i:j + 1]]
+            if any(t.utcoffset() is None for t in times):
+                raise ValueError("commit time has no timezone")
+            gaps = [(b - a).total_seconds() / 60 for a, b in zip(times, times[1:])]
+            if any(gap < 0 for gap in gaps):
+                reason = "Commit author times move backward within this problem's history."
+            else:
+                return {"wall_minutes": round((times[-1] - times[0]).total_seconds() / 60),
+                        "active_minutes_est": round(sum(min(GAP_CAP_MIN, gap) for gap in gaps)), "timing_note": None}
+        except (KeyError, TypeError, ValueError, OverflowError):
+            reason = "A commit has a missing or invalid timestamp or timezone."
+    return {"wall_minutes": None, "active_minutes_est": None, "timing_note": reason}
+
+
+def sum_minutes(values) -> int | float | None:
+    """Unknown or invalid historical timing cannot become zero in an aggregate."""
+    values = list(values)
+    if any(type(v) not in (int, float) or v < 0 or (type(v) is float and not math.isfinite(v)) for v in values):
+        return None
+    total = sum(values)
+    return total if type(total) is int or math.isfinite(total) else None
+
+
 def _cost(cms: list[dict], i: int, j: int | None, target: str | None, p: str, mods: dict) -> dict:
     """Cost of a problem recorded at commit index i, fixed at commit index j (None = still open)."""
-    if j is None:
-        return {"wall_minutes": None, "active_minutes_est": None, "parts_redrawn": [], "target_redrawn": False}
-    wall = (_t(cms[j]["time"]) - _t(cms[i]["time"])).total_seconds() / 60
-    active = sum(min(GAP_CAP_MIN, (_t(cms[k]["time"]) - _t(cms[k - 1]["time"])).total_seconds() / 60) for k in range(i + 1, j + 1))
-    red = _modules_changed(cms, i + 1, j, p)
-    return {"wall_minutes": round(wall), "active_minutes_est": round(active), "parts_redrawn": red,
+    red = _modules_changed(cms, i + 1, j, p) if j is not None else []
+    return {**_timing(cms, i, j), "parts_redrawn": red,
             "target_redrawn": bool(target and target in red)}
 
 
@@ -224,12 +248,11 @@ def build(repo: Path | str | None, p: str) -> dict:
         if f"projects/{p}/review.json" in c["files"] or not _NOTED.search(c["subject"]):
             continue
         stage, why = stage_at(repo, p, c["hash"], "check")
-        gap = (_t(c["time"]) - _t(cms[k - 1]["time"])).total_seconds() / 60 if k else 0
         problems.append({"id": f"{p}-{len(problems) + 1}", "source": "commit", "severity": None, "part": None,
                          "issue": c["subject"][:300], "fix": c["body"][:300], "found_commit": c["hash"][:8], "found_time": c["time"],
                          "stage": stage, "stage_why": why, "rounds_seen": [c["hash"][:8]], "status": "resolved",
                          "resolved_commit": c["hash"][:8], "resolved_time": c["time"], "resolved_how": "noted and fixed in the same commit",
-                         "wall_minutes": round(gap), "active_minutes_est": round(min(gap, GAP_CAP_MIN)),
+                         **_timing(cms, k - 1 if k else None, k),
                          "parts_redrawn": _modules_changed(cms, k, k, p), "target_redrawn": False})
     for pr in problems:
         pr.pop("_ci", None), pr.pop("_target", None)
@@ -250,7 +273,7 @@ def totals(d: dict) -> dict:
     redraws = sorted({m for x in ps for m in x.get("parts_redrawn") or []})
     tok = {k: sum(s.get(k, 0) for s in d["sessions"]) for k in ("input_tokens", "output_tokens", "cache_creation_tokens", "cache_read_tokens")}
     return {"problems": len(ps), "by_stage": by_stage, "open": sum(1 for x in ps if x["status"] == "open"),
-            "active_minutes_est": sum(x.get("active_minutes_est") or 0 for x in ps), "parts_redrawn": redraws, "tokens": tok}
+            "active_minutes_est": sum_minutes(x.get("active_minutes_est") for x in ps), "parts_redrawn": redraws, "tokens": tok}
 
 
 # --- token usage from a Claude Code session log -------------------------------------------------------------------
@@ -322,10 +345,12 @@ def _short(mods: list[str]) -> str:
 
 def render_md(d: dict) -> str:
     t = d["totals"]
+    minutes = sum_minutes([t.get("active_minutes_est")])
+    total = f"{minutes} min" if minutes is not None else "unknown (some problems lack reliable timing)"
     L = [f"# Diary: {d['project']}", "",
          f"{t['problems']} problems recorded ({t['open']} open). Found at: " + ", ".join(f"{s} {n}" for s, n in t["by_stage"].items()) + ".",
-         f"Estimated active fix time {t['active_minutes_est']} min; parts redrawn: {', '.join(t['parts_redrawn']) or 'none'}. "
-         "Costs are estimates from git (commit times, edited part files).", ""]
+         f"Estimated active fix time {total}; parts redrawn: {', '.join(t['parts_redrawn']) or 'none'}. "
+         "Costs are historical rework estimates from git, not measured work or savings.", ""]
     if d["reviews"]:
         L += ["## Review rounds", "", "| Commit | Date | Verdict | Findings |", "|---|---|---|---|"]
         L += [f"| {r['commit']} | {r['date']} | {r['verdict']} | {r['findings']} |" for r in d["reviews"]]
@@ -333,8 +358,12 @@ def render_md(d: dict) -> str:
     L += ["## Problems", "", "| Id | Sev | Part | Stage | Status | ~min | Redrawn | What |", "|---|---|---|---|---|---|---|---|"]
     for x in d["problems"]:
         what = x["issue"].replace("|", "/").replace("\n", " ")[:90]
+        minutes = sum_minutes([x.get("active_minutes_est")])
         L.append(f"| {x['id'].split('-')[-1]} | {x['severity'] or x['source']} | {x['part'] or ''} | {x['stage']} | {x['status']} | "
-                 f"{x.get('active_minutes_est') if x.get('active_minutes_est') is not None else ''} | {_short(x.get('parts_redrawn') or [])} | {what} |")
+                 f"{minutes if minutes is not None else 'unknown'} | {_short(x.get('parts_redrawn') or [])} | {what} |")
+    unknown = [x for x in d["problems"] if sum_minutes([x.get("active_minutes_est")]) is None]
+    if unknown:
+        L += ["", "Timing unavailable:"] + [f"- {x['id']}: {x.get('timing_note') or 'No reliable timing was recorded.'}" for x in unknown]
     if d["sessions"]:
         k = t["tokens"]
         L += ["", "## Token use (measured, from session logs)", "",

@@ -579,3 +579,24 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+## 2026-11-03 02:28 UTC — Historical diary timing stays unknown when dates conflict (Codex)
+- Reproduced using four harmless temp Git commits: author times 12:00→10:00→13:00 yielded a resolved check with
+  wall 60 min but active -30 min; a later noted fix dated 09:00 yielded -240 min. Diary Markdown reported -270 min,
+  and lesson costs propagated the negatives. No real project history, diary, review or geometry was changed.
+- A shared timing calculation now rejects any backward adjacent author interval within a problem span, missing or
+  invalid/timezone-free timestamps, or a missing prior/resolving anchor. Wall/active minutes are null with a
+  `timing_note`; original commit order, resolution, redraw and target-redraw evidence remain. Same-commit notes use
+  the same rule instead of inventing zero for the first commit. Valid monotonic intervals keep the 90-minute gap
+  cap; equal timestamps remain a genuine zero, and timezone offsets are compared as actual instants.
+- Diary totals and lesson occurrence/first-review/group costs propagate unknown, including legacy negative or
+  nonfinite estimates, without turning missing evidence into zero. Markdown explicitly shows unknown timing and
+  its reason. Token measurements, occurrence counts, stage inference, promotion rules and gate behavior are
+  unchanged; historical estimated rework is not an application count, measured effort or claimed savings.
+- Validation: **31 passed in 4.71 s** across `tests/test_diary_timing.py`, `tests/test_diary.py` and
+  `tests/test_lessons.py`. Initial **29 passed / 2 failed in 4.98 s** were new fixture assertions comparing Git's
+  equivalent `Z` and `+00:00` spelling; they now compare exact parsed instants in the same sequence, keeping the
+  original ordering assertion. Tests cover backward endpoints/interior dates, preserved resolution/redraws, real
+  zero, cap/timezone behavior, missing anchors, unknown aggregation, legacy invalid estimates and Markdown.
+- Scope is diary/lesson evidence only. No scorecard schema/UI, rule thresholds, real diary output, live session,
+  history-wide scan, model call, project build, stress solve or full suite. Batch/process checks ran first; budget off.
