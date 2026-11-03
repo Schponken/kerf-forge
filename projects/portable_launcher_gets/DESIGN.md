@@ -235,3 +235,37 @@ brake_l/r (+ posts). sec3 - bipod_l/r - leg_l/r - foot_l/r. sec2 - anchor_rack_a
 anchor. rear_block -(trigger -25..0)- trigger; rear_block -(sled_travel 0..2800)- sled (4 wheels, tail pin + 2 rollers, strands_top)
 - cradle -(fly_off 0..700)- drone (+ wing, prop keep-out). rear_foot - pedal_base -(pedal 0..15)- pedal.
 Coupled poses: `folded` (fold_a -180, fold_b 180, fold_c -180 and halfway), `drone_leaves` (sled in the brake, drone 0..600 mm out).
+
+## Interface table
+| Part A | Part B | Interface | Group | Hardware |
+|---|---|---|---|---|
+| rear_block / hinge_aft_x / hinge_fwd_x / nose_block | rail sections | M5 tee-nut screws, 6 mm printed grip (12 mm screws) | s1_rear, s{n}_front, s{n}_rear, s4_front | 5 per block |
+| hinge_aft_x | hinge_fwd_x | QR ball-lock pins, slip holes (`fit="lock"`), either one is the hinge | fold{j}_pos / fold{j}_neg | 2 x 6 mm QR, 50 mm grip, per joint |
+| anchor_rack_a/b | section 2 | M5 tee-nut screws, heads flush underneath | s2_rack_a / s2_rack_b | 2 per rack |
+| anchor | anchor_rack | QR pin in the set notch | anchor_notch | 1 x 6 mm QR |
+| bipod_l/r | section 3 | M5 tee-nut screws | s3_bipod | 2 per side |
+| brake_l/r | section 4 | M5 tee-nut screws | s4_brake | 3 per side |
+| rear_foot | rear_block | 5 mm steel pin, press in the foot, free in the block | rail_pivot | rods.ss_rod_5 x 50 |
+| rear_block | trigger | 5 mm steel pivot pin + QR safety pin | trigger_pin, safety | rods.ss_rod_5, 6 mm QR |
+| sled | wheels | M5 x 25 axle from the top, 6 mm spacer (eccentric on wheels 3, 4), nyloc under the wheel | held_by | 4 kits |
+| sled | tail pin + rollers | 5 mm pin pressed in the tail lugs, 2 x 625 on it | held_by | rods.ss_rod_5 x 50, 2 x 625 |
+| sled | cradle | 2 x 4 mm pins (press in the cradle) + snap hook on the sled's lip | cradle_pins | rods.ss_rod_4 x 25 |
+| nose_block | pulley | 8 mm axle pressed through both cheeks, 2 x 608 in the pulley | held_by | motion.rod_8mm_smooth x 100 |
+| brake_l/r | posts | 8 mm steel post pressed top and bottom | held_by | motion.rod_8mm_smooth x 40 |
+| pedal_base | pedal | 4 mm pin | pedal_pin | rods.ss_rod_4 |
+
+## Risks and numbers to measure on the real hardware first
+- **Latex force** (dominant): the sourced curves differ 2.1x. Measure one strand at 100 / 200 / 300 % before cutting the
+  set; put the numbers in the catalog `force_curve` and rebuild: the setting table and every cradle card follow.
+- **Stakes**: no steel-stake pull-out test exists (research); 4 stakes at 45 deg + a boot on the plate for settings
+  above 4 strands.
+- **QR pins**: industrial 6 mm ball-lock pins cost ~$35 each (Kipp); hobby pins are $3-6 with unverified balls. Six fold
+  pins + safety + notch = 8 pins. Check the balls hold the pin under a firm pull before trusting a hobby set.
+- **Joint play**: a 0.35 mm slip on a 6 mm pin over the 40 mm lever is ~0.5 deg of kink when a joint's bending reverses;
+  the sled's Delrin wheels ride over it, but measure the step at each joint (< 0.3 mm) after assembly.
+- **Tee nuts, V-slot slot geometry, wheel centre-to-face (10.0 mm)**: from bd_warehouse / a forum quote, UNVERIFIED;
+  check one wheel on the rail before printing the sled (the eccentric spacers give +-0.75 mm).
+- **Dry fire** (no drone on the sled; commodity latex, 0.40 kg sled): 1 strand stops in 187-212 mm, 2 strands notch 1 in
+  299 mm (the limit), 2 x 10 in 342 mm and 3 strands in 390-450 mm: the sled then hits the nose block. Test-fire empty
+  on ONE strand only (ASSEMBLY.md, use story).
+- **Brake cords wear** (latex, UV): replace with the launch strands.
