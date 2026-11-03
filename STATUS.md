@@ -672,3 +672,28 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Based on PR #31 and current main, preserving both STATUS sides of their additive conflict. Budget off and
   batch/duplicate-process status checked before focused runs. No real agent process/chat, timer, physical project,
   stress solve, full suite or full batch. Exact observed session/job dedup is a separate pending investigation.
+
+## 2026-11-03 02:02 UTC — content-sized mobile sidebar with scroll access (Codex)
+- Inspected the layout history and current shared claim before the scoped claim: a0f4846 fixed Activity spilling
+  by setting the mobile sidebar to 44vh and clipping overflow. The retained Claude layout heartbeat was still
+  1793657319 (2026-11-02 22:48 UTC), over 90 minutes old; its existing PLAN completion and claim remain untouched.
+- Two mobile-only CSS values change: `height:auto` and `overflow:auto`. The 44vh ceiling, 56px project-list
+  minimum and existing internal list scrolling remain. Empty/short lists no longer stretch the sidebar into
+  blank space, while very short screens can scroll the outer sidebar to controls that were previously clipped.
+  Desktop sizing and navigation behavior are unchanged; no new menu or route state.
+- Same illustrative Work fixture, before/after: at 390x844 the empty sidebar shrinks 371.36 -> 254.97px, recovering
+  116.39px for content; at 390x1000 it shrinks 440 -> 254.97px, recovering 185.03px. **Populated lists still use the
+  44vh ceiling** (440px at 390x1000); this is not a complete many-project mobile navigation redesign. A separate
+  Work-only navigation refinement remains useful because All projects already provides project navigation.
+- Validation: **5 focused browser tests passed in 26.21 s**: new `tests/test_mobile_shell.py`, both existing
+  `tests/test_work_page.py` cases, `tests/test_work_job_page.py`, and
+  `tests/test_usability.py::test_phone_tune_and_connection_recovery`. The new fixture covers 390x844, 390x1000,
+  320x568, 844x390 and 1440x900 in both themes, empty and 30-project/30-job sidebars, bounded containers, internal
+  and outer scrolling, last-project/job clicks, every sidebar button's focus visibility, Tab/Enter navigation,
+  no horizontal overflow and unchanged desktop geometry. Two expected browser-marker registration warnings
+  remain until the pending fast-tests configuration lands; no assertion changed or loosened.
+- Viewed matching `.cache/mobile-shell/{before,after}/work-dark-390-844.png` and populated after captures;
+  before/after light/dark captures at both phone heights are saved there. Impeccable's one mechanical scan found
+  13 existing patterns outside the edited sidebar rule. `kerf doctor`: **ALL OK**, existing optional firmware
+  tools unavailable. Budget off, batch held, duplicate-process status checked; no real project/agent, full suite,
+  stress or batch run. Stacked on PR #37 for independent review, never self-merged.
