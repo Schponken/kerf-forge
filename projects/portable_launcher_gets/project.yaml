@@ -67,11 +67,11 @@ parts:
   hinge_fwd_c: {file: parts/hinge_fwd.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x, params: {jt: 3, sec: 4}}
   anchor_rack_a: {file: parts/anchor_rack.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: x, params: {first_notch: 1}}
   anchor_rack_b: {file: parts/anchor_rack.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: x, params: {first_notch: 6}}
-  anchor: {file: parts/anchor.py, material: PETG, print_rot: [0, 0, 0], infill: 0.6, load_axis: x}
-  bipod_l: {file: parts/bipod_mount.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: z, params: {side: 1}}
-  bipod_r: {file: parts/bipod_mount.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: z, params: {side: -1}}
-  foot_l: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z, params: {side: 1}}
-  foot_r: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z, params: {side: -1}}
+  anchor: {file: parts/anchor.py, material: PETG, print_rot: [180, 0, 0], infill: 0.6, load_axis: x}
+  bipod_l: {file: parts/bipod_mount.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: z, params: {side: 1}}
+  bipod_r: {file: parts/bipod_mount.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: z, params: {side: -1}}
+  foot_l: {file: parts/leg_foot.py, material: PETG, print_rot: [195, -11, 0], infill: 0.4, load_axis: z, params: {side: 1}}
+  foot_r: {file: parts/leg_foot.py, material: PETG, print_rot: [165, -11, 0], infill: 0.4, load_axis: z, params: {side: -1}}
   nose_block: {file: parts/nose_block.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, z]}
   pulley: {file: parts/pulley.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: [x, z]}
   brake_l: {file: parts/brake_post.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, y], params: {side: 1}}

@@ -62,5 +62,9 @@ def build(ctx):
 
     ctx.rigid("section", Location((0, 0, 0)))
     ctx.rigid("leg", leg)
-    body, left = features.fillet_inside(ctx, body, 2.0)
+    def square(at):    # the tube's flat end sits square in the bore floor and the bore wall is a plain tube
+        q = leg.inverse() * Vector(*at)
+        if math.hypot(q.X, q.Y) < BORE_D / 2 + 1.5 and q.Z > -1.0:
+            return "tube end and tube bore stay square: the 20 mm tube sits in them"
+    body, left = features.fillet_inside(ctx, body, 2.0, keep=square)
     return ctx.finish(body)
