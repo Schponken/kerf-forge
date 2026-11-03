@@ -2,9 +2,9 @@
  "item": "Learning Mode integration: expose stage evidence and scorecards through the CLI, verify combined behavior, and preserve remaining phase boundaries.",
  "session": "codex-learning-integration",
  "since": 1793682432.581183,
- "heartbeat": 1793682592.762468,
+ "heartbeat": 1793682797.573156,
  "provider": "Codex",
  "thread_id": "01a19e15-de6d-78b1-b4d9-942e1fc9ce46",
  "since_utc": "2026-11-03 05:07",
- "activity": "Connecting Learning Mode evidence commands; combined tests pending worker integration"
+ "activity": "52 combined checks passed; scorecards installed for next restart, remaining Learning phases recorded"
 }
