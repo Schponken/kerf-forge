@@ -29,6 +29,7 @@ try {
  for(const theme of ['dark','light']) for(const [width,height] of [[1440,1000],[390,844]]) {
   const p=await browser.newPage({viewport:{width,height}}),errors=[],posts=[];
   await p.emulateMedia({reducedMotion:'reduce'});p.on('pageerror',e=>errors.push(e.message));
+  let acceptDialog=true;p.on('dialog',d=>acceptDialog?d.accept():d.dismiss());
   let quote=structuredClone(comparison),delayed=null,quoteReads=0;
   await p.route('**/*',async r=>{
    const path=new URL(r.request().url()).pathname;
@@ -38,6 +39,7 @@ try {
    if(path==='/api/jobs')return r.fulfill({json:{jobs:[],sessions:[]}});
    if(path==='/api/quotes')return r.fulfill({json:{quotes:[]}});
    if(path==='/api/quote/plants'){quoteReads++;if(delayed)await delayed.promise;return r.fulfill({json:quote});}
+   if(path==='/api/quote/other')return r.fulfill({json:quote});
    if(path==='/api/claude')return r.fulfill({json:{ok:true}});
    if(path==='/api/glossary')return r.fulfill({json:{checks:{},terms:{}}});
    if(path.endsWith('.js'))return r.fulfill({contentType:'text/javascript',body:''});
@@ -69,11 +71,20 @@ try {
   await p.locator('#nquote').click();await p.waitForFunction(()=>document.querySelector('.toast'));
   assert.equal(posts.length,1);assert.equal(posts[0].path,'/api/quote');assert.equal(posts[0].name,'plants');
   assert.deepEqual(posts[0].intake,{request_kind:'scenario',budget:'60',power:'USB',mounting:'Shelf',environment:'Wet / splashes',printer:'Bambu Lab A2L',material:'PETG',notes:'Keep the floor dry.',who:'Me',how_often:'When travelling',goes_wrong:'A leak',success:'Six plants watered for ten days',priority:'Reliability and low maintenance',effort:'One evening; no soldering'});
+  // Brief and every constraint survive My parts and a reload in this tab.
+  await use.click();await p.locator('a').filter({hasText:'My parts'}).click();await p.evaluate(()=>showNew());
+  assert.equal(await p.locator('#i_success').inputValue(),'Six plants watered for ten days');
+  assert.equal(await p.locator('#i_budget').inputValue(),'60');
+  assert.equal(await p.locator('#nname').inputValue(),'plants');
+  await p.reload();await p.evaluate(()=>showNew());await p.waitForFunction(()=>!$('#nquote').disabled);
+  assert.equal(await p.locator('#i_notes').inputValue(),'Keep the floor dry.');
+  assert.equal(await p.locator('#i_environment').inputValue(),'Wet / splashes');
+  await p.locator('#ndesc').fill('my plants die when I travel');assert.equal(await p.locator('#nname').inputValue(),'plants');
   // A synthetic label is present in every saved screenshot, not in production UI.
   await p.evaluate(()=>{const l=document.createElement('div');l.id='fixture-label';l.textContent='SYNTHETIC BROWSER FIXTURE · no jobs or researched results';l.style.cssText='position:fixed;bottom:0;left:0;right:0;padding:4px 12px;z-index:9999;background:#202832;color:#fff;font:11px system-ui;text-align:center';document.body.append(l);document.querySelectorAll('.toast').forEach(e=>e.remove());$('#main').scrollTop=0;});
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   assert.equal(await p.locator('#main').evaluate(e=>e.scrollWidth<=e.clientWidth),true);
-  await p.screenshot({path:CAPTURE+`/briefing-${theme}-${width}.png`,fullPage:true});
+  await p.screenshot({path:CAPTURE+`/briefing-${theme}-${width}.png`,fullPage:true,animations:'disabled'});
   quote.context={description:posts[0].description,intake:posts[0].intake};
   await p.evaluate(()=>showQuote('plants'));await p.locator('.qopt').first().waitFor();
   assert.equal(await p.locator('.qopt').count(),3);assert.equal(await p.locator('.qopt').first().locator('button').count(),0);
@@ -86,7 +97,7 @@ try {
   await p.locator('.briefing-tradeoffs summary').nth(1).click();
   await p.locator('#quote').evaluate(e=>e.scrollIntoView({block:'start'}));
   assert.equal(await p.locator('#main').evaluate(e=>e.scrollWidth<=e.clientWidth),true);
-  await p.screenshot({path:CAPTURE+`/options-${theme}-${width}.png`,fullPage:true});
+  await p.screenshot({path:CAPTURE+`/options-${theme}-${width}.png`,fullPage:true,animations:'disabled'});
   await p.locator('.qopt').nth(1).locator('button').click();assert.equal(posts.at(-1).path,'/api/new');assert.equal(posts.at(-1).option_index,1);assert.equal(posts.at(-1).option.route,'adapt');
   quote.questions=['How much water do the plants use each day?','Will the shelf hold a full reservoir?'];
   await p.evaluate(()=>showQuote('plants'));
@@ -95,7 +106,10 @@ try {
   await p.locator('#quote-answers').fill('About 120 ml per plant per day. I will check the shelf load before choosing.');
   assert.equal(await p.locator('#quote-refine').isEnabled(),true);
   await p.locator('#quote').evaluate(e=>e.scrollIntoView({block:'start'}));
-  await p.screenshot({path:CAPTURE+`/clarify-${theme}-${width}.png`,fullPage:true});
+  await p.screenshot({path:CAPTURE+`/clarify-${theme}-${width}.png`,fullPage:true,animations:'disabled'});
+  await p.evaluate(()=>showNew());await p.locator('#quote-answers').waitFor();
+  assert.match(await p.locator('#quote-answers').inputValue(),/120 ml per plant/);
+  assert.equal(await p.locator('#quote-refine').isEnabled(),true);
   await p.locator('#quote-refine').click();assert.equal(posts.at(-1).path,'/api/quote');
   assert.match(posts.at(-1).intake.notes,/Keep the floor dry\.[\s\S]*How much water[\s\S]*120 ml/);
   assert.match(await p.locator('#quote').innerText(),/Your request changed/);
@@ -113,10 +127,39 @@ try {
    const requested=p.waitForRequest(r=>new URL(r.url()).pathname==='/api/quote/plants');
    await p.evaluate(open=>{window.pendingQuote=open?openQuote('plants'):showQuote('plants');},open);
    await requested;
-   await p.evaluate(()=>showNew());await p.locator('#ndesc').fill('A fresh, different brief');delayed.resolve();delayed=null;
+   await p.evaluate(()=>clearBrief());await p.locator('#ndesc').fill('A fresh, different brief');delayed.resolve();delayed=null;
    await p.evaluate(()=>window.pendingQuote);
    assert.equal(await p.locator('#ndesc').inputValue(),'A fresh, different brief');assert.equal(await p.locator('.qopt').count(),0);
   }
+  // Typing while a saved request loads protects the current form.
+  delayed={};delayed.promise=new Promise(resolve=>delayed.resolve=resolve);
+  const requested=p.waitForRequest(r=>new URL(r.url()).pathname==='/api/quote/plants');
+  await p.evaluate(()=>{window.pendingQuote=openQuote('plants');});await requested;
+  await p.locator('#ndesc').fill('Newer camera arm brief');delayed.resolve();delayed=null;await p.evaluate(()=>window.pendingQuote);
+  assert.equal(await p.locator('#ndesc').inputValue(),'Newer camera arm brief');assert.equal(await p.locator('.qopt').count(),0);
+  // The most recently opened option set wins, even if an older request finishes later.
+  delayed={};delayed.promise=new Promise(resolve=>delayed.resolve=resolve);
+  const older=p.waitForRequest(r=>new URL(r.url()).pathname==='/api/quote/plants');
+  await p.evaluate(()=>{window.pendingQuote=openQuote('plants');});await older;
+  await p.evaluate(()=>openQuote('other'));assert.equal(await p.locator('#nname').inputValue(),'other');
+  delayed.resolve();delayed=null;await p.evaluate(()=>window.pendingQuote);
+  assert.equal(await p.locator('#nname').inputValue(),'other');
+  await p.locator('#ndesc').fill('Newer camera arm brief');
+  // A declined replacement preserves the exact draft; accepting loads one response without a second read.
+  acceptDialog=false;await p.evaluate(()=>openQuote('plants'));
+  assert.equal(await p.locator('#ndesc').inputValue(),'Newer camera arm brief');
+  acceptDialog=true;const beforeOpen=quoteReads;await p.evaluate(()=>openQuote('plants'));
+  assert.equal(quoteReads,beforeOpen+1);assert.equal(await p.locator('#ndesc').inputValue(),'my plants die when I travel');
+  acceptDialog=false;await p.locator('.briefing-draft-note button').click();
+  assert.equal(await p.locator('#ndesc').inputValue(),'my plants die when I travel');
+  acceptDialog=true;await p.locator('.briefing-draft-note button').focus();await p.keyboard.press('Enter');
+  assert.equal(await p.locator('#ndesc').inputValue(),'');assert.equal(await p.evaluate(()=>document.activeElement.id),'ndesc');
+  await p.reload();await p.evaluate(()=>showNew());assert.equal(await p.locator('#ndesc').inputValue(),'');
+  // Storage denial still retains navigation drafts in memory.
+  await p.evaluate(()=>{window.originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw Error('Storage unavailable in fixture');};});
+  await p.locator('#ndesc').fill('A brief kept without browser storage');await p.evaluate(()=>showNew());
+  assert.equal(await p.locator('#ndesc').inputValue(),'A brief kept without browser storage');
+  await p.evaluate(()=>{Storage.prototype.setItem=window.originalSetItem;});
   const beforeCancel=quoteReads;
   await p.evaluate(async()=>{const original=showNew;window.showNew=()=>{};S.newOpen=false;$('#main').innerHTML='<p id="cancelled">Project kept open</p>';await openQuote('plants');window.showNew=original;});
   assert.equal(quoteReads,beforeCancel);assert.equal(await p.locator('#cancelled').innerText(),'Project kept open');

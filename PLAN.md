@@ -346,3 +346,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Complete Studio source exports: preserve declared imported assets and nested design dependencies in downloaded project archives; reject missing or escaping sources without exporting caches or stale review approval.
 
   - [x] Maker download containment: refuse linked or special generated output files so a project ZIP contains only regular files within its own output tree; preserve valid nested maker outputs and explain invalid exports.
+- [x] New design intent safety: retain tab-session brief and clarification drafts; prevent late saved-options responses from replacing newer input; focused browser regression
