@@ -989,3 +989,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   browser selection 1 passed, four desktop/phone light/dark combinations (6.99s). One correction/confirmation round
   pending. Full batch HELD; no real project changes/builds, stress/FEA, installs or provider jobs. Scope and evidence
   limits: docs/usability/2026-11-02/history-story.md. Captures outside git: /tmp/kerf-history-captures.
+
+## 2026-11-02 — Studio History final confirmation (Codex, design-history)
+- Final correction keeps table row labels readable and clears fixture toasts through the DOM. The existing History
+  browser node passed: **1 passed in 7.33 s**, covering four desktop/phone light/dark contexts, exact comparisons,
+  disclosures/focus, cancellation, restore failure, picture dismissal, late-response navigation and empty history.
+  This overlaps the earlier browser run; it is not additional unique coverage. Existing browser-marker warning remains.
+- Retained the earlier saved-history/restore and geometry regression result: **3 passed in 2.19 s**. No further test
+  expansion, project builds, real jobs, geometry or review.json edits. Full batch HELD; stress/FEA remain paused.
+- PLAN item complete; ready for manager integration against codex/studio-redesign-base (59f305e). The replacement
+  shell and combined onboarding remain the integration owner's validation. Final captures: /tmp/kerf-history-captures.

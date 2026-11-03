@@ -103,7 +103,7 @@ for(const theme of ['dark','light']) for(const [width,height] of [[1512,982],[39
  await page.locator('#history-restore').click();assert.match(await story.innerText(),/no longer in this design/);
  // Returning to the latest build gives a bounded visual capture in both themes and sizes.
  await page.locator('#history-build-'+H[0].stamp).click();
- await page.evaluate(()=>{document.activeElement.blur();$('#toasts').innerHTML='';$('#main').scrollTop=0;});
+ await page.evaluate(()=>{document.activeElement.blur();$('#toasts').replaceChildren();$('#main').scrollTop=0;});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await page.screenshot({path:CAPTURE+`/history-${theme}-${width}.png`,fullPage:true});
  await page.locator('#history-checks').click();await page.locator('#history-checks').scrollIntoViewIfNeeded();

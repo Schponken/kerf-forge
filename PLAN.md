@@ -304,4 +304,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)
 - [x] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project
 
-- [ ] Studio History redesign: readable saved-build story, honest comparisons and intentional parameter restore.
+- [x] Studio History redesign: readable saved-build story, honest comparisons and intentional parameter restore.
