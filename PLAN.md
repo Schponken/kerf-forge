@@ -325,3 +325,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Focused test workflow: bind pytest imports to the active worktree and provide a read-only checkout/test preflight plus exact-head review receipts; preserve all existing test selection and coordination rules.
 
 - [x] Viewer direct definitions: selected technical terms reveal existing glossary meanings on hover, focus or one tap in offline saved viewers.
+
+- [ ] Assembly guide integration: verify exact placement and tool demonstrations together, install tested guide in Studio, and preserve saved geometry.
