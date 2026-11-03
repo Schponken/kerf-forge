@@ -2,9 +2,9 @@
  "item": "`hawk_wing` \u2014 ~1 m swing-wing FPV plane, outboard-pivot sweep on a fixed glove (F-14 style), conventional tail, wings spread on failsafe, field-swappable panels (Studio request 2026-11-02, picked option 0): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS",
  "session": "codex-hawk-flight-fix",
  "since": 1793679978.481576,
- "heartbeat": 1793680580.4844449,
+ "heartbeat": 1793680771.6802251,
  "provider": "Codex",
  "thread_id": "01a19fa8-01cc-7121-b162-727052957795",
  "since_utc": "2026-11-03 04:26",
- "activity": "Integrating real wiring with forward battery placement; keeping strength failures explicit"
+ "activity": "Keeping supported print and layer-strength limitations explicit before final integrated check"
 }
