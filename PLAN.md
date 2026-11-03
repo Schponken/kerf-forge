@@ -355,3 +355,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Normal-operation resonance guidance: recommend frequency bands that satisfy the actual separation or min_ratio gate, including every excitation, with focused mocked checks and no FEA rerun.
 
 - [x] Viewer paused-lifecycle regression: latch tool contact in-page at normal speed so combined runs retain exact pause/idle/resume coverage
+
+- [x] Check evidence clarity: distinguish explicitly unproven engineering results from measured target failures.
