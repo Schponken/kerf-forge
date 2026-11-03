@@ -2,8 +2,8 @@
  "item": "`drone_launching_system` \u2014 bungee rail catapult for drone_foldable_wings: 3 m folding V-slot rail on a bipod, rolling sled + saddles, latex bungee over a front pulley, latch + pull-cord trigger, PETG on the A2L (Studio request 2026-11-02, picked option 0): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS, tests/test_launcher_fits_drone.py",
  "session": "89febfe77c",
  "since": 1793664838.12112,
- "heartbeat": 1793668468.953718,
+ "heartbeat": 1793668759.723694,
  "provider": "Claude Code",
  "since_utc": "2026-11-03 00:13",
- "activity": "Hinge blocks being designed (WIP commit)"
+ "activity": "Anchor/rack and hinge blocks coming in (WIP)"
 }
