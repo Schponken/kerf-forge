@@ -1,0 +1,1198 @@
+{
+ "project": "bionic_finger",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "558f6b0c",
+   "time": "2026-10-30T20:46:05-04:00",
+   "subject": "bionic_finger (E5) WIP: side-printed lap-knuckle finger, contract + 4 parts, swept tendon channels",
+   "parts": [
+    "base",
+    "distal",
+    "fingerlib",
+    "middle",
+    "proximal"
+   ]
+  },
+  {
+   "hash": "541356b4",
+   "time": "2026-10-30T20:47:29-04:00",
+   "subject": "bionic_finger: DESIGN.md; eval counts a verified pin or screw per named joint (brief says pin/fastener check)",
+   "parts": []
+  },
+  {
+   "hash": "e5220246",
+   "time": "2026-10-30T21:17:36-04:00",
+   "subject": "bionic_finger: knuckle faces grooved for the neighbour's tendon runs (channels clear at home), FEA deflection limit documented",
+   "parts": [
+    "fingerlib"
+   ]
+  },
+  {
+   "hash": "f56a1290",
+   "time": "2026-10-30T21:20:08-04:00",
+   "subject": "bionic_finger: REFERENCES.md (+2 INDEX rows) and a handover note for the E5 claim holder (axial pin retention blocker, line strength, tendon travel)",
+   "parts": []
+  },
+  {
+   "hash": "3fa3806c",
+   "time": "2026-10-31T01:42:42+00:00",
+   "subject": "bionic_finger: kerf check PASS \u2014 tendon runs cut through neighbouring knuckles, full-depth child knuckle band + swept cut in parent (proximal deflection), deter",
+   "parts": [
+    "base",
+    "distal",
+    "fingerlib",
+    "middle",
+    "proximal"
+   ]
+  },
+  {
+   "hash": "851f0843",
+   "time": "2026-10-31T01:56:14+00:00",
+   "subject": "bionic_finger: M3 screw pivots (axial hold), pockets without knife edges, line strength + tendon travel in DESIGN",
+   "parts": [
+    "fingerlib"
+   ]
+  },
+  {
+   "hash": "51c543e1",
+   "time": "2026-10-31T02:42:11+00:00",
+   "subject": "Engine: shoulder-screw pivots (motion.shoulder_4_m3 sourced: shoulder is the bearing, shoulder length picked so the head never clamps), hard_stop requirement (j",
+   "parts": []
+  },
+  {
+   "hash": "1d79f40d",
+   "time": "2026-10-31T03:04:29+00:00",
+   "subject": "Electrical/assembly-doc follow-ups: power_budget voltage drop (avg must hold, peak sag reported; tests by hand), wire-end verbs (ends:/catalog terminal: solder|",
+   "parts": []
+  },
+  {
+   "hash": "4a193c24",
+   "time": "2026-10-31T03:19:10+00:00",
+   "subject": "bionic_finger review round 1: shoulder-screw pivots, hard stops at straight, flexor-line FEA, crimp line stop, chunked cuts",
+   "parts": [
+    "fingerlib"
+   ]
+  },
+  {
+   "hash": "6168b97d",
+   "time": "2026-10-31T03:30:46+00:00",
+   "subject": "bionic_finger review round 2 minors: shoulder-screw buy link in BOM (catalog buy/buy_note), DESIGN side play, insert flush + torque steps, stop/lug notes",
+   "parts": []
+  },
+  {
+   "hash": "ae90d5a5",
+   "time": "2026-10-31T03:40:04+00:00",
+   "subject": "ASSEMBLY.md: screw-pivot heat-set inserts listed per step (test), flush-insert + plate, shoulder screws tightened gently; tools list; bionic_finger tendon assem",
+   "parts": []
+  },
+  {
+   "hash": "acd8ffff",
+   "time": "2026-10-31T03:56:23+00:00",
+   "subject": "ASSEMBLY.md tools line lists only what's needed; bionic_finger rebuilt",
+   "parts": []
+  },
+  {
+   "hash": "46b8032a",
+   "time": "2026-10-31T03:58:11+00:00",
+   "subject": "E5 bionic_finger done: review PASS, eval accepts; PLAN checked, claim released",
+   "parts": []
+  },
+  {
+   "hash": "bd486a24",
+   "time": "2026-10-31T13:02:15+00:00",
+   "subject": "bionic_finger audit fixes C-1..C-9 (part-designer): washer line stops + distal FEA, single-shear-proof segments (D 18), base/middle FEA, true 2.2 channels, inse",
+   "parts": [
+    "base",
+    "distal",
+    "fingerlib",
+    "middle",
+    "proximal"
+   ]
+  },
+  {
+   "hash": "487e740c",
+   "time": "2026-10-31T13:33:22+00:00",
+   "subject": "bionic_finger audit fixes done: review PASS at d4dc6e4152092833; DESIGN play/torque text corrected; ship.py shoulder-screw torque 0.2-0.3 N m",
+   "parts": []
+  },
+  {
+   "hash": "5545b8bc",
+   "time": "2026-10-31T13:44:36+00:00",
+   "subject": "bionic_finger: commit build's catalog_deps.json (fingerprint back to reviewed d4dc6e41)",
+   "parts": []
+  },
+  {
+   "hash": "9a8f1fbe",
+   "time": "2026-10-31T22:57:28-04:00",
+   "subject": "BOM: every project purchase priced from a shop page; merged notes; biggest packs",
+   "parts": []
+  },
+  {
+   "hash": "ed1f9473",
+   "time": "2026-11-01T13:35:58-05:00",
+   "subject": "params state their unit (mm / \u00b0 / teeth) in the six finished projects; test",
+   "parts": []
+  },
+  {
+   "hash": "821d7026",
+   "time": "2026-11-01T16:09:42-05:00",
+   "subject": "fillet_inside leaves corners under a ceiling square (a fillet there would overhang) and declares them; detail pass on bionic_finger and fpv_5in (body, top plate",
+   "parts": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ]
+  },
+  {
+   "hash": "a7a3fd57",
+   "time": "2026-11-01T17:50:18-05:00",
+   "subject": "bionic_finger: style radii, Load -> section, declared-corner notes",
+   "parts": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ]
+  },
+  {
+   "hash": "e8f3fa74",
+   "time": "2026-11-01T20:04:27-05:00",
+   "subject": "bionic_finger, fpv_5in, tvc_drone: detail pass uses OCC's fillet first (it ran on these bodies before), coves for the rest",
+   "parts": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ]
+  },
+  {
+   "hash": "1813053f",
+   "time": "2026-11-02T17:28:31-05:00",
+   "subject": "bionic_finger: catalog_deps.json as regenerated by a check run in this shared tree (the engine's material-suggestion hint now reads materials.*); no geometry ch",
+   "parts": []
+  },
+  {
+   "hash": "dd32cf93",
+   "time": "2026-11-02T17:31:05-05:00",
+   "subject": "bionic_finger: flat channel floors so the proximal mesh is watertight",
+   "parts": [
+    "fingerlib"
+   ]
+  },
+  {
+   "hash": "259a710a",
+   "time": "2026-11-02T17:54:50-05:00",
+   "subject": "bionic_finger: design review at 69c05ed7 (FAIL: pivot-screw bending unproven, distal stop FEA 4 % over before the pause; minors)",
+   "parts": []
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "51c543e1",
+   "time": "2026-10-31T02:42:11+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 9
+  },
+  {
+   "commit": "6168b97d",
+   "time": "2026-10-31T03:30:46+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "ae90d5a5",
+   "time": "2026-10-31T03:40:04+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 5
+  },
+  {
+   "commit": "46b8032a",
+   "time": "2026-10-31T03:58:11+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 5
+  },
+  {
+   "commit": "487e740c",
+   "time": "2026-10-31T13:33:22+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 8
+  },
+  {
+   "commit": "259a710a",
+   "time": "2026-11-02T17:54:50-05:00",
+   "date": "2026-11-02",
+   "verdict": "FAIL",
+   "findings": 8
+  }
+ ],
+ "problems": [
+  {
+   "id": "bionic_finger-1",
+   "source": "review",
+   "severity": "blocker",
+   "part": "base/proximal/middle/distal (fingerlib.child_end, parent_end)",
+   "issue": "No hyperextension (straight) hard stop at any joint. Child positioned at negative flexion against its parent in assembly.step: intersection volume is zero at -10, -30 and -45 deg, 0.09 mm3 at -60 deg, and 13.6 mm3 only at -70 deg (same for mcp, pip and dip). The pocket rect |x-lj| <= XT removes all parent material in the child's band, and child_end keeps nothing behind the axis outside RH. So the extensor (or the elastic the DESIGN recommends on it) pulls each joint backward until something at about -60 deg stops it. With 3 joints and 2 tendons the straight pose is not defined by line lengths:",
+   "fix": "Add a dorsal extension stop at every joint that makes contact at 0 deg (0 to -2 deg), e.g. a dorsal lug on the child's non-knuckle band that sits behind the axis and bears on a matching dorsal shoulder of the parent's knuckle band (shrink RK or the pocket there, or let the lug stand just proud of the dorsal surface). Prove it: sweep each joint to -5 deg and require contact, while keeping [0, range",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-2",
+   "source": "review",
+   "severity": "major",
+   "part": "fingerlib.pin_holes / all joints",
+   "issue": "The pivots are ISO 4762 M3 x 14 SHCS, which are fully threaded at that length (b = 18 mm). The moving part therefore turns on thread crests in a 3.35 mm printed PETG bore for 7.85 mm. The real pivot load is set by the tendon, not by the 15 N FEA case: DESIGN s7 gives flexor tension = 22.5 x tip force at the mcp (about 225-340 N for a 10-15 N tip force). That is about 10-14 MPa of projected bearing on threads, cycling, so the bore wears oval and the finger gets sloppy quickly. kerf itself warns on all three pin groups to 'use a shoulder screw'. DESIGN s8 states pin bearing as 0.64 MPa from the ",
+   "fix": "Turn on a smooth surface: an ISO 7379 shoulder screw (4 mm shoulder, M3 thread, bore 4.35), or a 3 mm steel dowel/brass tube bushing pressed into the child with the M3 screw through it. Add a catalog entry with its source. Redo the pin bearing hand-check with the tendon reaction (tip force + flexor tension vector) and state it in DESIGN s8.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-3",
+   "source": "review",
+   "severity": "minor",
+   "part": "base/proximal/middle (parent knuckle band)",
+   "issue": "Over the top ~1 mm of the heat-set bore (the gap face), the swept extensor groove comes to r ~ 2.5 mm from the pivot axis. Measured: a ring r 2.05-3.0 at the gap face is only 96 % solid on base/proximal. The CNC Kitchen insert knurl is D1 4.6 (r 2.3), so the wall is ~0.2 mm against a catalog min wall of 1.6. Plastic the hot insert pushes aside will flow into the extensor groove and leave a lip in the 0.3 mm lap gap.",
+   "fix": "Recess the insert 0.3-0.5 mm below the gap face (bore counterbore) and/or move the extensor crown points out (EXT 5 -> 5.5 to 6 with the wrap angle) so the swept groove stays >= 1.6 mm from the insert OD; or use the M3 short insert (L 3.0) set deeper.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-4",
+   "source": "review",
+   "severity": "minor",
+   "part": "fingerlib.crossing_cuts",
+   "issue": "The knuckle-face tendon grooves are a union of straight tubes at 10 deg steps. The part renders (proximal/base/distal top views) show a serrated fan of ridges that the braided line rides across as the joint turns. Under 200+ N of flexor tension those ridges abrade the line and the plastic.",
+   "fix": "Sample at 2-3 deg, or build the groove as one swept/lofted solid, so the fan floor is smooth.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1",
+    "6168b97d",
+    "ae90d5a5",
+    "46b8032a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-5",
+   "source": "review",
+   "severity": "minor",
+   "part": "distal",
+   "issue": "Line termination: 3 mm knot pockets behind a 2.2 mm channel. A single stopper knot in 0.5 mm braid is ~1.5-2 mm and can pull into the channel, so retention rests mostly on CA glue. At straight-finger tip loads the flexor carries 5-11x the tip force here.",
+   "fix": "Specify a crimp sleeve or bead larger than 2.5 mm (or a double figure-eight), or add a cross-pin/transverse wrap post in the distal so the line does not depend on the glue.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-6",
+   "source": "review",
+   "severity": "minor",
+   "part": "all (tendon geometry)",
+   "issue": "The flexor moment arm is only 4 mm (inside the 7.5 mm knuckle disc), so tendon tension is 22.5x the tip force at a straight finger. The 445 N line rates ~10 N tip force at SF 2, and the actuator and pivots see the full tension. Documented in DESIGN, but it drives the pivot wear above.",
+   "fix": "If a larger grip force is wanted, route the flexor palmar of the knuckle (a pulley/sheath at r ~ 6-7 mm) to halve the tension. Otherwise state the tip-force rating in the README/ASSEMBLY.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-7",
+   "source": "review",
+   "severity": "minor",
+   "part": "all (pin screws)",
+   "issue": "The screw heads (5.5 dia x 3 mm, on alternating sides) are not modelled as proxies, so they are not in any collision or envelope check. The real finger is ~22 mm wide at the knuckles, against 16 mm for the parts, and a neighbouring finger in a hand will rub the heads.",
+   "fix": "Add the screws as catalog proxies so the sweeps include the heads, or use a low-head (ISO 7380 / DIN 7984) screw or counterbore the heads into the outer faces, and note the spacing to adjacent fingers.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-8",
+   "source": "review",
+   "severity": "minor",
+   "part": "middle, distal",
+   "issue": "Wall check warns of 1.14-1.15 mm walls (below the 1.2 mm reliable minimum), at the tendon grooves and knot pockets.",
+   "fix": "Shift the knot pockets or channel 0.1-0.2 mm, or narrow the groove locally, to get >= 1.2 mm.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1",
+    "6168b97d",
+    "ae90d5a5",
+    "46b8032a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-9",
+   "source": "review",
+   "severity": "minor",
+   "part": "proximal (FEA)",
+   "issue": "The FEA follows the brief's load case: hot spots at the pip load bore and the mcp fixed bore, where expected, with peak 12.4 MPa against a 24 MPa allowable and 0.34 mm deflection. But it omits the flexor compression, which is the dominant real load (axial ~20x tip force plus bearing at both bores).",
+   "fix": "Add a second load case with the tendon reaction at both pivots, so the pivot-bore bearing at the real load is shown.",
+   "found_commit": "51c543e1",
+   "found_time": "2026-10-31T02:42:11+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "51c543e1"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4a193c24",
+   "resolved_time": "2026-10-31T03:19:10+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "fingerlib"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-10",
+   "source": "review",
+   "severity": "minor",
+   "part": "all joints (fingerlib W/GAP, shoulder length)",
+   "issue": "Axial play per joint is now 0.45 mm: the 0.3 lap gap plus 0.15 from the 8 mm shoulder over the 7.85 stack. Diametral play is ~0.35-0.38 (4.35 hole on a 3.97-4.0 shoulder). Both are single-shear laps, so each joint can tilt about 1.7 deg sideways. That adds up to roughly 4-5 mm of side-to-side wobble at the fingertip, more than the round-1 screw pivot had. The brief does not limit it, but a finger that wobbles this much is noticeable in a hand.",
+   "fix": "Cut the stack slack: make the gap 0.15 and the band 7.7 so 7.85 + 0.15 -> about 8.0 - 0.05, and/or use a 4.2 free hole for the ground shoulder (print a coupon first). A thin PTFE shim in the lap would also help. State the expected tip side play in DESIGN.",
+   "found_commit": "6168b97d",
+   "found_time": "2026-10-31T03:30:46+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "6168b97d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ae90d5a5",
+   "resolved_time": "2026-10-31T03:40:04+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-11",
+   "source": "review",
+   "severity": "minor",
+   "part": "base/proximal/middle (insert mouth)",
+   "issue": "The shoulder bottoms on the insert face and the joint only has 0.15 mm of head play. An insert left even ~0.15 mm proud of the gap face (normal for hand heat-setting) will clamp the moving part when the screw is tightened fully. Tightening against the insert also loads it in pull-out, and its mouth wall to the swept extensor groove is only ~0.2 mm. ASSEMBLY.md says 'tighten fully' with no check of flushness and no torque limit.",
+   "fix": "Add an assembly step: seat each insert flush to 0.05 mm below the face (press it flat with a plate while it is hot), and tighten the shoulder screw only until it stops (light torque, threadlocker instead of torque). Better: give the parent a 0.2 mm counterbore so the insert can sit slightly low.",
+   "found_commit": "6168b97d",
+   "found_time": "2026-10-31T03:30:46+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "6168b97d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ae90d5a5",
+   "resolved_time": "2026-10-31T03:40:04+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-12",
+   "source": "review",
+   "severity": "minor",
+   "part": "DESIGN.md",
+   "issue": "Section 2 'Side play' is stale. It still says the 7.85 mm lap faces and that the 0.3 mm gap is the only axial play. The bands are now 7.55 and the play is 0.45 mm. The stop contact is also on one band only (y -7.7 to -0.15, z 7.9-9.5), which DESIGN does not describe.",
+   "fix": "Update section 2 with the current numbers and the expected tip side play.",
+   "found_commit": "6168b97d",
+   "found_time": "2026-10-31T03:30:46+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "6168b97d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ae90d5a5",
+   "resolved_time": "2026-10-31T03:40:04+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-13",
+   "source": "review",
+   "severity": "minor",
+   "part": "bom (motion.shoulder_4_m3)",
+   "issue": "In report.json the shoulder-screw BOM rows have an empty buy link and no price. It is the one non-commodity part, and the owner needs the exact part number (McMaster 97505A106, 4 x 8, low 7 x 1.8 slotted head) to order it.",
+   "fix": "Add buy/price data for the catalog entry so the BOM lists the 97505A106 link and price.",
+   "found_commit": "6168b97d",
+   "found_time": "2026-10-31T03:30:46+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "6168b97d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ae90d5a5",
+   "resolved_time": "2026-10-31T03:40:04+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-14",
+   "source": "review",
+   "severity": "minor",
+   "part": "proximal/middle/distal (child stop lug, fingerlib.child_end)",
+   "issue": "In the child's top band the lug is cut by the r = RH circle. Where that circle meets the lug's lower edge (z = 7, x ~ 3.7) it leaves a sharp cusp, visible as a thin crescent in the middle part's top view. It is cosmetic and will print as a fragile point, but it is not on the load path (the stop face is the 1.6 x 7.55 mm face at x = 0.15).",
+   "fix": "Start the lug's lower edge at z = RH in the top band (or round the cusp) so there is no zero-thickness tip.",
+   "found_commit": "6168b97d",
+   "found_time": "2026-10-31T03:30:46+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "6168b97d"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ae90d5a5",
+   "resolved_time": "2026-10-31T03:40:04+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-15",
+   "source": "review",
+   "severity": "minor",
+   "part": "out/ASSEMBLY.md, bom (generated)",
+   "issue": "The owner-facing build sheet still has 'Tools: none', no insert heat-set step, no flush-to-low instruction, no torque limit (each pivot line says 'tighten until the shoulder bottoms'), and no tendon threading / crimp-sleeve steps. The BOM note still says 'tighten fully'. The correct procedure exists only in DESIGN.md s9, so someone working from ASSEMBLY.md can leave an insert proud (clamping the joint, which has only 0.15 mm of head play) or pull an insert whose mouth wall to the extensor groove is ~0.2 mm.",
+   "fix": "Have the generator include the project's assembly notes (e.g. an `assembly.notes`/per-step text field in project.yaml, or append DESIGN s9), list the tools (soldering iron with insert tip, flat plate, small slotted driver, crimper), and add a 'light torque' note for shoulder pivots into heat-set inserts. That is a general engine improvement, not a one-project patch.",
+   "found_commit": "ae90d5a5",
+   "found_time": "2026-10-31T03:40:04+00:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "ae90d5a5"
+   ],
+   "status": "resolved",
+   "resolved_commit": "46b8032a",
+   "resolved_time": "2026-10-31T03:58:11+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 18,
+   "active_minutes_est": 18,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-16",
+   "source": "review",
+   "severity": "minor",
+   "part": "all joints",
+   "issue": "Side play is unchanged in geometry: 0.45 mm axial, ~1.7 deg tilt per joint, a few mm of fingertip wobble. It is now documented in DESIGN s2 with remedies (4.2 mm hole after a test pair, or a 0.2 mm PTFE washer under the head, which cuts the play to 0.25 mm without clamping).",
+   "fix": "Accept as documented, or apply the 4.2 mm hole after the test print.",
+   "found_commit": "ae90d5a5",
+   "found_time": "2026-10-31T03:40:04+00:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "ae90d5a5",
+    "46b8032a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "bd486a24",
+   "resolved_time": "2026-10-31T13:02:15+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 562,
+   "active_minutes_est": 108,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "fingerlib",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-17",
+   "source": "review",
+   "severity": "minor",
+   "part": "proximal/middle/distal (child stop lug)",
+   "issue": "Cosmetic cusp where the pocket circle cuts the child's top-band lug (documented in DESIGN). It is not on the load path.",
+   "fix": "Optional: start the lug at z = RH in the top band.",
+   "found_commit": "ae90d5a5",
+   "found_time": "2026-10-31T03:40:04+00:00",
+   "review_round": 3,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "ae90d5a5",
+    "46b8032a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "bd486a24",
+   "resolved_time": "2026-10-31T13:02:15+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 562,
+   "active_minutes_est": 108,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "fingerlib",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-18",
+   "source": "review",
+   "severity": "minor",
+   "part": "out/ASSEMBLY.md step 4 (distal assembly_note)",
+   "issue": "Order and practicality of the tendon step. The note is nested under 'Fit distal' and says 'After the dip pivot screw below', so it reads before the screw it depends on. Threading a braid ~90 mm from the base's back face through 2.2 mm channels that hand over into the 0.3 mm lap gap and knuckle grooves at three joints, after everything is assembled, will snag at each channel/groove transition unless the tip is stiffened.",
+   "fix": "Make tendons their own final step after the dip pivot, rather than a sub-bullet. Add: stiffen the line end with a drop of CA (or use a fine wire leader) and feed it with the finger slightly curled, then check it slides with no snag before fitting the crimp sleeve. Add a crimping tool or pliers to the tools list.",
+   "found_commit": "46b8032a",
+   "found_time": "2026-10-31T03:58:11+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1593 bytes",
+   "rounds_seen": [
+    "46b8032a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "bd486a24",
+   "resolved_time": "2026-10-31T13:02:15+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 544,
+   "active_minutes_est": 90,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "fingerlib",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-19",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "base_fea_line has a volume peak of 194 MPa and a surface peak of 61.8 MPa at [-4.3, -0.2, -3.6]. That point is the sharp corner where the swept flexor groove meets the pocket step on the gap face of the mcp knuckle band, which is the band the pin moment bends hardest. The p99.9 is 19.6 MPa, so the check passes, but this is a real notch in the main load path and not only a meshing artefact. The proximal (58.5 MPa at the extensor groove lip at the pip, [44.3, 0.2, 7.3]) and the middle (44.5 MPa) peak at the same kind of corner.",
+   "fix": "Round the groove-to-pocket-step corners on the gap face, for example by giving the swept groove a 0.5 mm edge radius or using a teardrop with a rounded crown at the XT step. If that is not possible, state the local-yield argument and the effective SF at the notch in DESIGN s8.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-20",
+   "source": "review",
+   "severity": "minor",
+   "part": "proximal",
+   "issue": "Under the 222 N line case plus the pin moment, proximal_fea_line shows 1.33 mm of deflection at the rim of the pip knuckle disc ([53, 0.9, -0.3]). This is mostly the 7.6 mm knuckle band twisting out of plane. No deflection limit is set for that case, and DESIGN s8 does not mention the number. At full line tension the pip pivot will visibly rock sideways, on top of the clearance wobble described in s2.",
+   "fix": "Add max_disp_mm to proximal_fea_line and middle_fea_line, for example 1.5 mm, so the number is guarded. Also state in DESIGN s2/s8 that the knuckles twist about 1.3 mm at rated line tension.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-21",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "DESIGN s9 step 1 says an insert left proud of the boss 'eats the 0.2 mm play and clamps the joint' and one sunk below 'leaves more play'. That is backwards. The shoulder bottoms on the insert, so a proud insert moves the head outward and adds play, and only an insert sunk by more than the 0.4 mm axial play clamps the band. The generated ASSEMBLY.md has it right. s10 says 'a missing boss makes the joint clamp', which is also wrong: with no boss the band slides between the parent's gap face and the head, and the 0.4 mm play is unchanged. s2's claim that the boss 'is what makes the numbers work' ",
+   "fix": "Correct DESIGN s2, s9 step 1 and s10 so they agree with ASSEMBLY.md: press the insert flush or slightly proud, never sunk.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-22",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Tightening the shoulder screw until the shoulder bottoms preloads the screw, and that preload pulls the heat-set insert toward the face it was pressed in from. That is its weakest direction, and nothing behind it takes the load. At the ~0.5 N m given in ASSEMBLY.md and DESIGN s9, the preload is about T/(0.2 d) = 0.5/(0.2 x 0.003) = ~830 N, which is in the range where an M3 insert pulls out of PETG. DESIGN s8 says 'insert pull-out not loaded', which overlooks the preload. The joint also rubs against the screw head, which tends to unscrew a lightly tightened screw.",
+   "fix": "Specify about 0.2-0.3 N m (snug by hand with a small flat blade) plus a drop of medium threadlocker on the metal threads only. Keep it off the PETG, because anaerobic threadlockers crack PETG. Correct the 'pull-out not loaded' line in DESIGN s8.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-23",
+   "source": "review",
+   "severity": "minor",
+   "part": "middle",
+   "issue": "The p2 wall is 1.27 mm, below the 1.6 mm structural-part guideline in ENGINEERING.md s5. It sits at the grooves on the short top band. The check passes (it fails only below 0.8 mm) and DESIGN s10 discloses it.",
+   "fix": "Accept and keep it disclosed. If it matters, trim the top-band cut-back near the grooves so the band keeps 1.6 mm, then rerun the sweeps.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-24",
+   "source": "review",
+   "severity": "minor",
+   "part": "distal",
+   "issue": "Tendon threading. The swept fan grooves at each knuckle open out to the disc rim, as the part renders show. A CA-stiffened line pushed from the base's back face can follow a fan groove and come out at a knuckle rim instead of carrying on into the next channel. The washer, bead and knot also have to be fitted inside a 4.5 mm slot (0.3 washer + up to 3.0 bead + knot), which is tight with a 3 mm bead.",
+   "fix": "In the tendon step, say to thread each joint with the finger at about 30 deg and to guide the line across each gap with tweezers. Alternatively, use a 0.3 mm steel-wire leader. Recommend the 2.5 mm bead size.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-25",
+   "source": "review",
+   "severity": "minor",
+   "part": "distal",
+   "issue": "DESIGN s7 says the two stop slots are '1.6 mm apart with >= 1.6 mm skin'. From the code (r 2.7 at z -3.8 and +4.0) the gap between the slots is 2.4 mm and the skin at the slot ends is about 1.8-2.0 mm, so the text is stale. The numbers are better than stated.",
+   "fix": "Update the numbers in DESIGN s7.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-26",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "BOM and ASSEMBLY ordering. The shoulder screw and the M3 insert each still appear as three separate one-off rows (one per hinge) rather than one row of qty 3. In ASSEMBLY.md step 4, the tendon note comes before the dip pivot bullet, and the 'last: bolt to the frame' note sits in step 1.",
+   "fix": "Consolidate identical fastener rows in kerf/ship.py (an engine change that benefits every project), or accept it as cosmetic. Moving the frame-mount note to a final step would also make the guide read in build order.",
+   "found_commit": "487e740c",
+   "found_time": "2026-10-31T13:33:22+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 1717 bytes",
+   "rounds_seen": [
+    "487e740c"
+   ],
+   "status": "resolved",
+   "resolved_commit": "821d7026",
+   "resolved_time": "2026-11-01T16:09:42-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1896,
+   "active_minutes_est": 281,
+   "parts_redrawn": [
+    "base",
+    "distal",
+    "middle",
+    "proximal"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "bionic_finger-27",
+   "source": "review",
+   "severity": "major",
+   "part": "base",
+   "issue": "All three pivots (mcp in base, pip in proximal, dip in middle; fingerlib.PIN = motion.shoulder_4_m3). The joints are single-shear laps. The child band bears on the shoulder centred 0.2 + 7.6/2 = 4.0 mm from the shoulder end, and the shoulder end sits on the insert mouth, so the M3 thread neck is a short cantilever. At the designer's own 222 N line case: M = 222 x 4.0 = 888 N mm on the M3 minor section (d3 2.387, Z = pi d3^3/32 = 1.34 mm3), which gives up to 665 MPa. If the contact moves toward the near end of the band, it is still about 330 MPa (lever 2 mm). The preload at 0.2-0.3 N m only car",
+   "fix": "Pick a shoulder screw with a known grade and record it in the catalog with its source: an alloy-steel class 12.9 4 mm shoulder, M3 (e.g. the Accu SSH-M3-8 already cited in the entry; yield about 1080 MPa, which gives SF about 1.6-3 on the estimate above). Its 6 x 3 socket head changes the 1.8 mm head-proud figure, so re-check the neighbour-finger room. Add the thread-neck bending and insert-mouth ",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-28",
+   "source": "review",
+   "severity": "major",
+   "part": "distal",
+   "issue": "Washer line stops. The last FEA run before the pause gave distal_fea_extensor = 25.01 MPa p99.9 against 24.0 allowed (FAIL), peaking at [9.0, 0, 3.2] on the palmar wall of the extensor channel's last, 40 deg descending leg just behind the washer step. distal_fea_flexor was 23.89 (0.5 % margin). Both runs were on the detail-pass geometry. The dd32cf9 flat floor only adds material at y = +/-0.95 on the bed side and cannot reach that y = 0 site, so the fail very probably still stands. DESIGN s8 still lists 20.0 and 18.5 MPa and calls the FEA 'the proof', which overstates what has been proven. The",
+   "fix": "Move the channel end away from the seat: stop_step 1.5 -> 2.0 (inside its declared range) and raise ext_stop_z toward 4.4 so the last leg is flatter and the line kink at the hole entry is smaller. Round the convex corner where the descending leg leaves the 6.15 run (r >= 1 mm in the XZ plane). Re-check flexor_open/extensor_open and the slot skins with `kerf req`. In DESIGN s8, replace the stale nu",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-29",
+   "source": "review",
+   "severity": "minor",
+   "part": "middle",
+   "issue": "The report's '4 sharp inside corners' on middle and '2' on distal come from an engine frame bug, not missing design work. kerf/pipeline.py:214 calls edges.split_kept on edges.sharp_inside(it.shape) after the joint solve has moved the shape into the assembly frame, while ctx.keep_sharp (kerf/ctx.py:104) stores part-frame points. The middle's [44.1, -3.7, 9.0] and [68.8, -3.7, 9.0] are part-frame x 0.1 / 24.8, exactly the corners middle.py's keep lambda declares. The [56.5/56.7, 1.9, ...] edges are channel roof apexes (y = 1.1 / sin 35 = 1.9), which fillet_inside declares 'faces down'. The dista",
+   "fix": "In _print_checks, map the kerf_sharp_ok points through it.shape.location before split_kept (or compute sharp_inside on the unmoved shape). Check kerf_sites the same way. Add a test with a child part offset from the origin.",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-30",
+   "source": "review",
+   "severity": "minor",
+   "part": "proximal",
+   "issue": "Stale and broken evidence in the review pack. Every out/renders/fea_*.png is from Oct 31 23:45, before the detail pass, the flat floor and the pause. The proximal ones show a broken solve (proximal_fea p99.9 1824.77 MPa for a 15 N load; proximal_fea_line 4793 MPa), which fits the non-manifold proximal mesh that dd32cf9 fixed. The brief's graded requirement proximal_fea therefore has no valid result on the current geometry. By hand it is trivial (660 N mm / Z about 800 mm3 = 0.8 MPa, bearing 0.5 MPa), so the risk is low, but it is unproven. Also, out/review/catalog.json is empty ('0 entries') a",
+   "fix": "Have the build or review-pack delete or label FEA renders whose requirement is NOT RUN (PAUSED), and fill review/catalog.json from catalog_deps.json. When stress resumes, run proximal_fea and proximal_fea_line first and confirm the mesh is one connected watertight body.",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-31",
+   "source": "review",
+   "severity": "minor",
+   "part": "distal",
+   "issue": "DESIGN.md is stale in several places since the detail pass and dd32cf9. s7 says the clear diameter across a joint is '0.4 gap + 2 x 0.9 groove = 2.2 mm' and does not describe the flat channel floor (FLOOR = 30 deg, bed-side groove now 0.75 mm deep, probe 1.91 mm). s10 says middle wall p2 >= 1.27 (now 1.40). s8b says masses 7.2/10.2/6.2 and total 28.9 g (now 7.4/10.4/6.3, 29.3 g). s8a says the distal is '18 mm deep knuckle tapering to the fingertip pad', but distal.py is a constant 18 mm rectangle ending in an R9 half-round with no taper. No section says the six fea_static results are PAUSED an",
+   "fix": "Update s7 (flat floor, 1.91 mm), s8/s8a/s8b/s10 to the current report, and add one line in s8 stating the paused status.",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-32",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Tendon exits. Both lines leave the base's back face through plain 2.2 mm holes with a sharp edge. There is no flare and no seat for a Bowden sheath, although the actuator sits behind and the line will rarely leave exactly along X. Under 100-200 N, a braid pulled at an angle over a square PETG edge saws a slot in it and frays. This is the only place on the finger where the line slides over a fixed edge at full load.",
+   "fix": "Give each exit a 1-1.5 mm radius bell-mouth (cove the channel end), or a counterbore for a PTFE Bowden sheath (e.g. 2.0-2.5 mm OD x 5 mm) so the sheath carries the angle. Note it in DESIGN s7 and in the base's assembly_note.",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-33",
+   "source": "review",
+   "severity": "minor",
+   "part": "proximal",
+   "issue": "Concept lever left unused. The flexor runs 4.7 mm palmar of the axes while the extensor uses 6.15 mm (the same 1.75 mm skin would allow the flexor at about -6.15). The required line tension, and with it every pivot load (finding 1) and the distal stop load (finding 2), scales with 1/arm. At 6.15 the straight-finger ratio drops from 19.4 F to about 14.8 F, 24 % less for the same fingertip force. The C-6 insert-wall constraint gets easier, not harder, because the chord only moves further from the axis.",
+   "fix": "Try FLEX about 6.0 with flexor crown or exit points like the extensor's. Re-run the sweeps, channel_clear and the 1.6 mm insert-wall check. If it holds, update DESIGN s7's tip-force rating (about 14-15 N at a straight tip for 222 N).",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "bionic_finger-34",
+   "source": "review",
+   "severity": "minor",
+   "part": "distal",
+   "issue": "Proportions and craft. All four parts are the same 15.6 x 18 mm box section with full-round ends. The fingertip is 18 mm deep, while an adult index distal is about 12-14 mm (the brief asks for 'like a real index finger'). The mid-shafts carry about 1 MPa at the brief's 15 N case, so the uniform box is not derived from the load except at the knuckle bands. The 10-deg stepped swept grooves leave a serrated fan of ridges on every knuckle rim (visible in all part sheets). That is disclosed in s10 as a possible rub point for a 0.8 mm line. Everything else is purposeful: the lugs, the bosses, the ch",
+   "fix": "Optional, on the next geometry pass: taper the distal past the stop slots toward about 14 mm at the tip (the slots need about 1.7 mm of skin at z -6.5 / +6.7, so the taper starts at x about 16). Consider 5-deg STEP only where the ridges face the line (rim, r > 8). Spec the 0.5-0.6 mm braid in the BOM row rather than 0.5-0.8.",
+   "found_commit": "259a710a",
+   "found_time": "2026-11-02T17:54:50-05:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "5 real part files, median 2363 bytes",
+   "rounds_seen": [
+    "259a710a"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 34,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 34
+  },
+  "open": 8,
+  "active_minutes_est": 2950,
+  "parts_redrawn": [
+   "base",
+   "distal",
+   "fingerlib",
+   "middle",
+   "proximal"
+  ],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}

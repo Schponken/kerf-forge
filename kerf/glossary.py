@@ -18,6 +18,7 @@ CHECKS = {
     "fea_static": ("Strength under load", "A computer stress test (FEA) of one part under its real loads: the plastic stays well below breaking."),
     "flex_strain": ("Snap / hinge bend", "A snap-fit or living hinge bends without cracking, even after many uses."),
     "flight_time": ("Flight time", "How long the battery keeps it in the air at hover."),
+    "bungee_launch": ("Launch speed", "How fast the bungee throws the drone off the rail at its setting (strands x notch), how hard it pulls, and that the brake stops the sled in time."),
     "fold_hinge_moment": ("Wing fold load", "How hard the air pushes on a folding wing's hinge, so the servo can hold it."),
     "gear_bending": ("Gear tooth strength", "Gear teeth don't snap off when the motor pushes as hard as it can."),
     "grip_hold": ("Grip doesn't slip", "The gripper squeezes hard enough that the object doesn't slide out."),

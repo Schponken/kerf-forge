@@ -1,0 +1,9 @@
+{
+ "item": "`portable_launcher_gets` \u2014 portable folding no-power launcher for many fixed-wing drones (foam, up to 2 kg, pusher or tractor, high or low wing): 3 m V-slot rail in four hinged sections on a bipod + staked foot, V-wheel sled, latex strands over a nose pulley to a notched anchor (strands x notch setting per drone), 2:1 cocking strap, safety pin + foot-pedal release while holding the radio, shock-cord brake, swappable cradle per drone from a template, PETG on the A2L (Studio request 2026-11-02, picked option 0): REFERENCES.md, DESIGN.md, `kerf build` PASS, design-reviewer PASS",
+ "session": "89febfe77c",
+ "since": 1793665141.365622,
+ "heartbeat": 1793668968.501176,
+ "provider": "Claude Code",
+ "since_utc": "2026-11-03 00:19",
+ "activity": "Sled + anchor/bipod/nose parts landing (WIP)"
+}

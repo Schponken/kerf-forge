@@ -489,7 +489,7 @@ def stack_mount(ctx, stack: str, loc: Location, group: str, depth: float, kind: 
 
 
 # ---------------------------------------------------------------- pins (printed hinges, dowels, screw pivots)
-PIN_FITS = ("free", "press", "heatset", "tap")
+PIN_FITS = ("free", "press", "heatset", "tap", "lock")
 
 
 def pin_dims(pin: str) -> dict:
@@ -517,6 +517,8 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
     fit: free  - the pin turns in this hole (moving knuckle), d + fdm_fits.pin.free_allowance_d
          press - a steel dowel is pressed in and held here, d + fdm_fits.pin.press_allowance_d
          heatset / tap - a screw used as the pivot threads in here (pin = "M3" etc.; blind, from iface.hole)
+         lock  - a removable locking pin (quick-release ball-lock / clevis pin) that holds a fold or slide joint at
+                 home: a slip hole in every part, the pin held by its own detent; catalog `lengths` = grip lengths
     teardrop: for horizontal holes, the direction (deg in loc's XY plane) that is UP on the printer.
     The assembled check (kerf/pins.py) proves all holes of a group are coaxial, that the pin is held on one side and
     free on the other side of every moving joint, that the joint turns about the pin axis, and picks the pin length."""
@@ -533,7 +535,8 @@ def pin_hole(ctx, pin: str, loc: Location, group: str, depth: float, fit: str = 
     if fit == "press" and pd["screw"]:
         raise ValueError("a screw cannot be pressed in; use fit='heatset' or 'tap' for a screw pivot")
     f = catalog.get("fdm_fits.pin")
-    r = (pd["d"] + calibrate.pin_allowance(fit, _first(f, f"{fit}_allowance_d"))) / 2
+    af = "free" if fit == "lock" else fit       # a lock pin slides in and out like a free pin
+    r = (pd["d"] + calibrate.pin_allowance(af, _first(f, f"{af}_allowance_d"))) / 2
     z1 = -depth - (EXTRA if through else 0.0)
     c = _teardrop(r, z1, EXTRA, teardrop) if teardrop is not None else _cyl(r, z1, EXTRA)
     ctx.pin_site(PinSite(group, pin, fit, loc, depth, pd["d"], teardrop=teardrop is not None))

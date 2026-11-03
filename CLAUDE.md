@@ -59,6 +59,8 @@ Other Claude sessions may be working in this repo at the same time. To never bre
 - **ChatGPT Codex works here too** (Spencer, 2026-11-02): it claims PLAN items with `tools/claims.py` like any
   session (claims are pushed straight to main), delivers code as pull requests, and never merges its own PRs; the
   "Kerf manager" scheduled session reviews and merges them. Treat a Codex claim exactly like a Claude claim.
+  While AGENTS.md has a "CLAUDE OFFLINE MODE" section, a Codex manager task merges instead (see AGENTS.md); the
+  first Claude session back ends that mode as AGENTS.md describes.
 - **Claim before you work** (`tools/claims.py next` / `take`); `tools/claims.py list` shows who holds what. A claim is
   stale after 90 minutes without a heartbeat and may then be taken over.
 - **Pull before you push, never force:** `git pull --rebase` then `git push`. Never `push --force`, `reset --hard` to

@@ -1,183 +1,237 @@
-/* Kerf Studio thought web: a growing map of how a design job explores (kerf/thoughtweb.py builds the graph from the
-   job's visible actions and notes; this file only draws it). TW.mount(el, url, {live}) -> {stop()}.
-   Core = your request; ideas branch off ideas they share words with; sources hang off the idea they serve; the plan's
-   options glow when chosen and fade when set aside; the build trunk grows parts and tests. */
+/* Kerf Studio "How Kerf decided": the story of a design job, told as a calm trail you can read top to bottom
+   (kerf/thoughtweb.py builds the data from the job's visible actions and notes; this file only draws it).
+     1 You asked  ->  2 What it looked into (each question, what it found, where)  ->  3 What it decided (options, chosen
+     and set aside, and why)  ->  4 What it's building.
+   Fixed layout: nothing moves except new items fading in, labels wrap instead of being cut or overlapping.
+   TW.mount(el, url, {mode: "full" | "strip", job, onOpen, onResearch}) -> {stop(), refresh()}
+     full : the whole trail; on a running job, questions can be steered (focus / skip) and a note sent (kerf/steer.py)
+     strip: one compact line for the job panel (current step, counts, latest finding) with a button to open the trail */
 (function () {
   const css = `
-.tw{position:relative;height:100%;min-height:300px;border-radius:12px;overflow:hidden;
-  background:radial-gradient(ellipse at 50% 45%,rgba(60,130,255,.13),transparent 65%),#070b14;color:#cfe3ff;font:12px/1.3 system-ui,-apple-system,sans-serif}
-.tw svg{position:absolute;inset:0;width:100%;height:100%}
-.tw .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(120,170,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.06) 1px,transparent 1px);background-size:28px 28px}
-.tw .e{fill:none;stroke:#3d6fb8;stroke-opacity:.55;stroke-width:1.4}
-.tw .e.set_aside{stroke:#5b6170;stroke-dasharray:3 4;stroke-opacity:.45}
-.tw .e.chosen{stroke:#ffcf5a;stroke-opacity:.9;stroke-width:2.4}
-.tw .e.build{stroke:#4fd18b;stroke-opacity:.7}
-.tw .n circle{stroke-width:1.5;transition:r .4s}
-.tw .n.core circle{fill:#1b4fd6;stroke:#9cc2ff;filter:url(#twglow)}
-.tw .n.idea circle{fill:#123a7a;stroke:#6aa8ff}
-.tw .n.source circle{fill:#0c1b33;stroke:#79e0ff}
-.tw .n.decision circle,.tw .n.trunk circle{fill:#2a2150;stroke:#c7a6ff}
-.tw .n.option circle{fill:#3a2f10;stroke:#ffcf5a}
-.tw .n.build circle{fill:#0f3a26;stroke:#4fd18b}
-.tw .n.active circle{animation:twpulse 1.6s ease-in-out infinite}
-.tw .n.pursued circle{stroke-width:2.6}
-.tw .n.chosen circle{fill:#5a4512;stroke:#ffdf7a;filter:url(#twglow)}
-.tw .n.set_aside{opacity:.42}
-.tw .n.set_aside circle{fill:#1a1d24;stroke:#6b7080;stroke-dasharray:2 2}
-.tw .n text{fill:#d7e8ff;font-size:11px;paint-order:stroke;stroke:#070b14;stroke-width:3px;stroke-linejoin:round;pointer-events:none}
-.tw .n.source text{fill:#9fdcf0;font-size:10px}
-.tw .n.core text{font-size:13px;font-weight:700}
-.tw .n.set_aside text{fill:#8d93a3;text-decoration:line-through}
-.tw .n .why{fill:#9aa1b2;font-size:9.5px;text-decoration:none}
-.tw.many .n.source:not(.active) text,.tw.many .n.build:not(.active) text{display:none}
-.tw .n:hover text{display:inline}
-.tw .n.new{animation:twgrow .7s cubic-bezier(.2,1.6,.4,1)}
-.tw .pulse{fill:#bfe1ff;filter:url(#twglow)}
-.tw .now{position:absolute;left:12px;right:12px;bottom:10px;padding:7px 10px;border-radius:9px;background:rgba(10,20,40,.78);
-  border:1px solid rgba(110,160,255,.25);backdrop-filter:blur(4px);font-size:12.5px;display:flex;gap:8px;align-items:center}
-.tw .now b{color:#fff}.tw .now .dot{width:8px;height:8px;border-radius:50%;background:#6aa8ff;box-shadow:0 0 10px #6aa8ff;flex:none}
-.tw .legend{position:absolute;top:8px;left:10px;display:flex;gap:10px;flex-wrap:wrap;font-size:10.5px;color:#9db6d8}
-.tw .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:-1px}
-.tw .tip{position:absolute;max-width:260px;padding:8px 10px;border-radius:9px;background:#0d1730;border:1px solid #2c4f8c;
-  font-size:12px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:3}
-.tw .tip.on{opacity:1}.tw .tip small{display:block;color:#93a9c8;margin-top:4px}
-.tw .replay{position:absolute;top:6px;right:10px;display:flex;gap:6px;align-items:center;font-size:11px;color:#9db6d8}
-.tw .replay input{width:120px}.tw .replay button{background:#132648;color:#cfe3ff;border:1px solid #2c4f8c;border-radius:6px;padding:2px 8px;cursor:pointer}
-.tw .empty{position:absolute;inset:0;display:grid;place-items:center;color:#7f97bb;font-size:13px}
-.tw .disclaimer{position:absolute;right:10px;bottom:46px;font-size:9.5px;color:#61789b}
-@keyframes twpulse{0%,100%{stroke-opacity:1}50%{stroke-opacity:.35}}
-@keyframes twgrow{from{transform:scale(.1);opacity:0}to{transform:scale(1);opacity:1}}
-@media (prefers-reduced-motion:reduce){.tw .n.active circle,.tw .n.new{animation:none}}`;
+.twv{--tw-bg:var(--panel2,#1a1d23);--tw-card:var(--panel,#15171c);--tw-line:var(--line,#262a31);--tw-ink:var(--ink,#ecebe7);
+  --tw-muted:var(--muted,#8d929b);--tw-info:var(--info,#6cb4ff);--tw-ok:var(--ok,#3ddc84);--tw-acc:var(--accent,#ff6a2b);
+  color:var(--tw-ink);font:13.5px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+.twv.full{height:100%;display:flex;flex-direction:column;min-height:0}
+.twv .twnow{display:flex;gap:9px;align-items:flex-start;padding:9px 12px;border-radius:10px;background:var(--tw-bg);border:1px solid var(--tw-line);margin-bottom:10px}
+.twv .dot{width:9px;height:9px;border-radius:50%;background:var(--tw-info);flex:none;margin-top:5px}
+.twv.live .dot{box-shadow:0 0 0 0 var(--tw-info);animation:twbeat 2s ease-out infinite}
+.twv.over .dot{background:var(--tw-ok)}
+.twv .scroll{flex:1;min-height:0;overflow:auto;padding-right:4px}
+.twv ol.trail{list-style:none;margin:0;padding:0}
+.twv .st{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;position:relative;padding-bottom:16px}
+.twv .st:not(:last-child)::before{content:"";position:absolute;left:14px;top:30px;bottom:0;width:2px;background:var(--tw-line)}
+.twv .st.done:not(:last-child)::before{background:color-mix(in srgb,var(--tw-ok) 55%,transparent)}
+.twv .num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;border:2px solid var(--tw-line);background:var(--tw-card);color:var(--tw-muted)}
+.twv .st.done .num{border-color:var(--tw-ok);color:var(--tw-ok)}
+.twv .st.cur .num{border-color:var(--tw-info);color:var(--tw-info)}
+.twv .st.next{opacity:.62}
+.twv h4{margin:4px 0 2px;font-size:15px}.twv h4 .cnt{font-weight:500;font-size:12.5px;color:var(--tw-muted);margin-left:6px}
+.twv .hint{margin:0 0 8px;color:var(--tw-muted);font-size:12.5px}
+.twv .ask{margin:2px 0 0;font-size:14px}
+.twv .twc{background:var(--tw-card);border:1px solid var(--tw-line);border-radius:11px;padding:10px 12px;margin:0 0 8px}
+.twv .twc.s-active{border-color:color-mix(in srgb,var(--tw-info) 60%,var(--tw-line))}
+.twv .twc.s-set_aside,.twv .opt.aside{opacity:.72}
+.twv .qh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.twv .qt{font-weight:600;overflow-wrap:anywhere}
+.twv .badge{font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px;white-space:nowrap;border:1px solid var(--tw-line);color:var(--tw-muted)}
+.twv .b-active{color:var(--tw-info);border-color:color-mix(in srgb,var(--tw-info) 50%,transparent)}
+.twv .b-pursued{color:var(--tw-acc);border-color:color-mix(in srgb,var(--tw-acc) 50%,transparent)}
+.twv .b-chosen{color:var(--tw-ok);border-color:color-mix(in srgb,var(--tw-ok) 55%,transparent)}
+.twv .found{margin:6px 0 0;font-size:13px}.twv .found span{color:var(--tw-muted)}
+.twv .why{margin:5px 0 0;font-size:12.5px;color:var(--tw-muted)}
+.twv .srcs{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.twv .src{font-size:11.5px;padding:2px 8px;border-radius:7px;background:var(--tw-bg);border:1px solid var(--tw-line);color:var(--tw-ink);text-decoration:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.twv a.src:hover{border-color:var(--tw-info)}
+.twv .more{font-size:11.5px;padding:2px 8px;border-radius:7px}
+.twv .fups{margin:8px 0 0;padding-left:10px;border-left:2px solid var(--tw-line)}
+.twv .fu{margin:0 0 6px}.twv .fu .lead{color:var(--tw-muted);font-size:12px}
+.twv .opt{border-left:3px solid var(--tw-line)}.twv .opt.chosen{border-left-color:var(--tw-ok)}
+.twv .from{margin-top:5px;font-size:12px;color:var(--tw-muted)}.twv .from a{color:var(--tw-info);cursor:pointer}
+.twv .st>div{min-width:0}.twv .steps{list-style:none;margin:0;padding:0}.twv .steps .srcs{margin-top:4px}.twv .steps li{padding:3px 0;display:grid;grid-template-columns:16px minmax(0,1fr);gap:8px}.twv .steps .ic{width:16px;text-align:center;color:var(--tw-ok)}
+.twv .steps li.active .ic{color:var(--tw-info)}
+.twv .pending{color:var(--tw-muted);font-size:12.5px;margin:2px 0 0}
+.twv .steer{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.twv .steer button{font-size:12px;padding:3px 10px;border-radius:8px}
+.twv .steer button.on{border-color:var(--tw-acc);color:var(--tw-acc)}
+.twv .sd{font-size:11.5px;color:var(--tw-muted)}
+.twv .tell{display:flex;gap:6px;margin-top:8px}.twv .tell input{flex:1;min-width:0;font:inherit;padding:7px 10px;border-radius:9px;border:1px solid var(--tw-line);background:var(--tw-card);color:var(--tw-ink)}
+.twv .foot{font-size:11px;color:var(--tw-muted);margin-top:6px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.twv .flash{outline:2px solid var(--tw-info);outline-offset:2px}
+.twv .new{animation:twin .5s ease-out both}
+.twv.strip{display:flex;gap:10px;align-items:center;padding:8px 12px;border-radius:11px;background:var(--tw-bg);border:1px solid var(--tw-line);cursor:pointer}
+.twv.strip .sl{flex:1;min-width:0}.twv.strip .l1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.twv.strip .l2{font-size:12px;color:var(--tw-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.twv.strip button{flex:none;font-size:12.5px;padding:5px 11px}
+@keyframes twin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes twbeat{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--tw-info) 60%,transparent)}100%{box-shadow:0 0 0 9px transparent}}
+@media (prefers-reduced-motion:reduce){.twv .new,.twv.live .dot{animation:none}}`;
   if (!document.getElementById("twcss")) { const s = document.createElement("style"); s.id = "twcss"; s.textContent = css; document.head.appendChild(s); }
 
-  const R = {core: 15, idea: 8, decision: 10, trunk: 9, option: 8, source: 4.5, build: 6};
-  const LEN = {idea: 95, decision: 105, trunk: 105, option: 70, source: 52, build: 58};
-  const VERB = {idea: "Exploring", source: "Looking at", decision: "Deciding", option: "Weighing", build: "Building", trunk: "Building", core: "Starting on"};
-  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
-  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const KNOWN = "What Kerf already knows";
+  const STATE = {active: ["Looking now", "b-active"], pursued: ["Kept coming back to it", "b-pursued"], explored: ["Looked at", ""],
+                 set_aside: ["Not pursued", ""], chosen: ["Chosen", "b-chosen"]};
+  const VERB = {idea: "Looking into", source: "Reading", decision: "Deciding", option: "Weighing", build: "Building", trunk: "Building", core: "Starting on"};
+  const SHOW_SRC = 6;
+
+  /* the job's graph -> the four steps of the story */
+  function model(d, limit) {
+    const nodes = (d.nodes || []).filter(n => n.t <= limit), by = new Map(nodes.map(n => [n.id, n]));
+    const kids = new Map(); for (const n of nodes) { if (!kids.has(n.parent)) kids.set(n.parent, []); kids.get(n.parent).push(n); }
+    const of = (id, kind) => (kids.get(id) || []).filter(n => n.kind === kind);
+    const core = nodes.find(n => n.kind === "core");
+    const top = core ? of(core.id, "idea") : [];
+    const known = top.find(n => n.label === KNOWN);
+    const questions = top.filter(n => n !== known).map(q => {
+      const fups = [], stack = of(q.id, "idea");
+      while (stack.length) { const f = stack.shift(); fups.push(f); stack.push(...of(f.id, "idea")); }
+      return {q, fups, srcs: of(q.id, "source")};
+    });
+    const decision = nodes.find(n => n.kind === "decision");
+    const options = nodes.filter(n => n.kind === "option").sort((a, b) => (b.state === "chosen") - (a.state === "chosen") || a.t - b.t);
+    const trunk = nodes.find(n => n.kind === "trunk"), builds = trunk ? of(trunk.id, "build") : [];
+    const nsrc = nodes.filter(n => n.kind === "source").length;
+    const stage = !d.live ? "over" : builds.length || trunk ? "build" : decision ? "decide" : "research";
+    const last = [...nodes].filter(n => n.kind !== "core").sort((a, b) => b.touched - a.touched || b.t - a.t)[0];
+    const finding = [...nodes].filter(n => (n.notes || []).length).sort((a, b) => b.touched - a.touched)[0];
+    return {nodes, by, of, core, known, questions, decision, options, trunk, builds, nsrc, stage, last, finding};
+  }
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 
   function mount(el, url, opt = {}) {
-    el.innerHTML = `<div class="tw"><div class="grid"></div><svg><defs><filter id="twglow" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-      <g class="cam"><g class="edges"></g><g class="pulses"></g><g class="nodes"></g></g></svg>
-      <div class="legend"><span><i style="background:#6aa8ff"></i>exploring</span><span><i style="background:#79e0ff"></i>reference</span>
-      <span><i style="background:#ffcf5a"></i>chosen</span><span><i style="background:#6b7080"></i>set aside</span><span><i style="background:#4fd18b"></i>building</span></div>
-      <div class="replay" hidden><button class="play">▶ Replay</button><input type="range" min="0" value="0"></div>
-      <div class="tip"></div><div class="empty">Waiting for the first idea…</div>
-      <div class="disclaimer">a simplified map of what it looked at and decided</div>
-      <div class="now"><span class="dot"></span><span class="txt">Getting ready…</span></div></div>`;
-    const root = el.querySelector(".tw"), svg = root.querySelector("svg"), cam = root.querySelector(".cam");
-    const gE = root.querySelector(".edges"), gN = root.querySelector(".nodes"), gP = root.querySelector(".pulses");
-    const tip = root.querySelector(".tip"), now = root.querySelector(".now .txt"), empty = root.querySelector(".empty");
-    const rp = root.querySelector(".replay"), slider = rp.querySelector("input"), play = rp.querySelector(".play");
-    const P = new Map();            // id -> {x,y,vx,vy,n,el,edge,touched}
-    let data = {nodes: [], steps: 0}, stopped = false, timer = null, view = {x: -300, y: -200, w: 600, h: 400}, limit = Infinity;
-    let pulses = [];
+    const strip = opt.mode === "strip";
+    el.innerHTML = strip ? `<div class="twv strip" title="See how Kerf is researching and deciding"><span class="dot"></span><div class="sl"><div class="l1">Getting ready…</div><div class="l2"></div></div><button class="open">How it's deciding ⤢</button></div>`
+      : `<div class="twv full"><div class="twnow"><span class="dot"></span><div class="nowt">Loading…</div></div><div class="scroll"><ol class="trail"></ol>
+         <div class="tellbox" hidden><div class="tell"><input maxlength="500" placeholder="Tell Kerf something, e.g. “keep it under 200 g” or “look at folding-wing gliders”"><button class="send">Send</button></div>
+         <div class="foot"><span>Kerf reads it at its next step. It doesn't pause, restart or cost an extra turn.</span></div></div>
+         <div class="foot"><span>Built only from what Kerf did and wrote down (searches, pages, its notes and its plan), not hidden thinking.</span><span class="rp" hidden><button class="play">▶ Replay</button></span></div></div></div>`;
+    const root = el.querySelector(".twv");
+    let data = {nodes: [], steps: 0}, sig = "", stopped = false, timer = null, limit = Infinity, researched = false;
+    const seen = new Set(), open = new Set();
+    let first = true;
 
-    function place(n) {
-      const par = P.get(n.parent);
-      if (!par) return {x: 0, y: 0};
-      const gp = P.get(par.n.parent), base = gp ? Math.atan2(par.y - gp.y, par.x - gp.x) : Math.random() * 6.28;
-      const a = base + (Math.random() - .5) * 1.6, d = (LEN[n.kind] || 70) * .6;
-      return {x: par.x + Math.cos(a) * d, y: par.y + Math.sin(a) * d};
+    function steerOf(id) { const e = (data.steer || []).filter(x => x.node === id && x.action !== "note").pop(); return e; }
+    function steerUi(n) {
+      if (!data.steerable) return "";
+      const e = steerOf(n.id), st = e ? `<span class="sd">You: ${e.action === "focus" ? "focus on this" : "skip this"} · ${e.delivered ? "Kerf has it ✓" : "it reads this at its next step"}</span>` : "";
+      return `<div class="steer"><button data-steer="focus" data-node="${n.id}" class="${e && e.action === "focus" ? "on" : ""}">Focus on this</button>` +
+        `<button data-steer="skip" data-node="${n.id}" class="${e && e.action === "skip" ? "on" : ""}">Skip this</button>${st}</div>`;
     }
-    function sync() {
-      const shown = data.nodes.filter(n => n.t <= limit);
-      empty.style.display = shown.length > 1 ? "none" : "";
-      const keep = new Set(shown.map(n => n.id));
-      for (const [id, p] of P) if (!keep.has(id)) { p.el.remove(); p.edge && p.edge.remove(); P.delete(id); }
-      for (const n of shown) {
-        let p = P.get(n.id);
-        if (!p) {
-          const xy = place(n);
-          p = {x: xy.x, y: xy.y, vx: 0, vy: 0, n, touched: n.touched};
-          if (n.parent) { p.edge = document.createElementNS("http://www.w3.org/2000/svg", "path"); gE.appendChild(p.edge); }
-          p.el = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          gN.appendChild(p.el);
-          p.el.addEventListener("mouseenter", ev => showTip(p, ev)); p.el.addEventListener("mouseleave", () => tip.classList.remove("on"));
-          p.fresh = true; P.set(n.id, p);
-          if (n.parent) pulse(n.parent, n.id);
-        } else if (n.touched > p.touched && n.parent) { pulse(n.parent, n.id); }
-        p.touched = n.touched; p.n = n;
-        const r = (R[n.kind] || 6) + Math.min(5, Math.log2(1 + (n.touches || 1)) * (n.kind === "idea" ? 1.3 : .4));
-        const lab = n.kind === "source" ? n.label.slice(0, 34) : n.label.slice(0, 46);
-        p.el.setAttribute("class", `n ${n.kind} ${n.state}${p.fresh ? " new" : ""}`);
-        p.el.innerHTML = `<circle r="${r.toFixed(1)}"/><text x="${r + 4}" y="4">${esc(lab)}</text>` +
-          (n.state === "set_aside" && n.reason ? `<text class="why" x="${r + 4}" y="16">set aside: ${esc(n.reason.slice(0, 50))}</text>` : "");
-        if (p.edge) p.edge.setAttribute("class", `e ${n.state} ${n.kind === "build" || n.kind === "trunk" ? "build" : ""}`);
-        setTimeout(() => { p.fresh = false; }, 800);
-      }
-      const last = [...shown].sort((a, b) => b.touched - a.touched || b.t - a.t)[0];
-      if (last) now.innerHTML = `<b>${VERB[last.kind] || "Working on"}:</b> ${esc(last.label)}${last.notes && last.notes.length ? ` — <span style="color:#9fb6d6">${esc(last.notes[last.notes.length - 1])}</span>` : ""}`;
+    const nw = n => { const f = !first && !seen.has(n.id); seen.add(n.id); return f ? " new" : ""; };
+    function srcs(list, key) {
+      if (!list.length) return "";
+      const all = open.has(key), shown = all ? list : list.slice(0, SHOW_SRC);
+      return `<div class="srcs">${shown.map(s => /^https?:\/\//.test(s.url || "") ?
+        `<a class="src${nw(s)}" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.url)}">${esc(s.label)}</a>` :
+        `<span class="src${nw(s)}" title="${esc(s.label)}">${esc(s.label)}</span>`).join("")}` +
+        (list.length > SHOW_SRC ? `<button class="more" data-more="${key}">${all ? "show fewer" : `+${list.length - SHOW_SRC} more`}</button>` : "") + `</div>`;
     }
-    function pulse(from, to) { if (!calm) pulses.push({from, to, t: 0}); }
-    function showTip(p, ev) {
-      const n = p.n, b = root.getBoundingClientRect();
-      tip.innerHTML = `<b>${esc(n.label)}</b>${n.url ? `<small>${esc(n.url)}</small>` : ""}${(n.notes || []).map(t => `<small>“${esc(t)}”</small>`).join("")}` +
-        `<small>${{active: "being explored now", pursued: "pursued: it kept coming back to this", explored: "looked at", set_aside: "set aside" + (n.reason ? ": " + esc(n.reason) : ""), chosen: "chosen"}[n.state] || ""}</small>`;
-      tip.style.left = Math.min(ev.clientX - b.left + 12, b.width - 270) + "px"; tip.style.top = (ev.clientY - b.top + 12) + "px";
-      tip.classList.add("on");
+    let cur = null;   // the one question it is on right now; other recent ones read "looked at"
+    const st = n => n.state === "active" && !(data.live && n.id === cur) ? "explored" : n.state;
+    function badge(n) { const [t, c] = STATE[st(n)] || ["", ""]; return t ? `<span class="badge ${c}">${t}</span>` : ""; }
+    function found(n) {
+      const notes = (n.notes || []).slice(-2);
+      const why = n.state === "set_aside" && n.reason ? `<div class="why">Why not: ${esc(n.reason)}</div>` : "";
+      return notes.map(t => `<div class="found"><span>Found:</span> ${esc(t)}</div>`).join("") + why;
     }
-    function step() {
-      const arr = [...P.values()];
-      for (let i = 0; i < arr.length; i++) {                     // repulsion
-        const a = arr[i];
-        for (let k = i + 1; k < arr.length; k++) {
-          const b = arr[k]; let dx = a.x - b.x, dy = a.y - b.y; const d2 = dx * dx + dy * dy + 0.01;
-          if (d2 > 160000) continue;
-          const f = 2200 / d2; a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
-        }
+    function question({q, fups, srcs: s}, m) {
+      const fu = fups.map(f => `<div class="fu${nw(f)}"><div class="qh"><span class="lead">↳ then asked</span><span class="qt">${esc(f.label)}</span>${badge(f)}</div>${found(f)}${srcs(m.of(f.id, "source"), f.id)}</div>`).join("");
+      return `<div class="twc q s-${[q, ...fups].some(f => st(f) === "active") ? "active" : st(q)}${nw(q)}" data-id="${q.id}"><div class="qh">${badge(q)}<span class="qt">${esc(q.label)}</span>` +
+        `<span class="badge">${plural(s.length + fups.reduce((a, f) => a + m.of(f.id, "source").length, 0), "source")}</span></div>` +
+        `${found(q)}${srcs(s, q.id)}${fu ? `<div class="fups">${fu}</div>` : ""}${m.decision ? "" : steerUi(q)}</div>`;
+    }
+    function render(m) {
+      const live = !!data.live;
+      root.classList.toggle("live", live); root.classList.toggle("over", !live);
+      const ideas = m.nodes.filter(n => n.kind === "idea" && n.label !== KNOWN).sort((a, b) => b.touched - a.touched || b.t - a.t);
+      cur = live && m.stage === "research" && ideas[0] ? ideas[0].id : null;
+      const nowt = live ? (m.last ? `<b>Now · ${VERB[m.last.kind] || "Working on"}:</b> ${esc(m.last.label)}` : "<b>Starting…</b>")
+        : `<b>How this design was decided.</b> Read it top to bottom: what you asked, what it researched, what it chose and why, what it built.`;
+      if (strip) {
+        const word = {research: "Researching", decide: "Deciding", build: "Building", over: "Finished"}[m.stage];
+        root.querySelector(".l1").innerHTML = `<b>${word}</b> · ${esc(m.last ? m.last.label : "starting")}`;
+        root.querySelector(".l1").title = m.last ? m.last.label : "";
+        const chosen = m.options.find(o => o.state === "chosen");
+        root.querySelector(".l2").textContent = [plural(m.questions.length, "question"), plural(m.nsrc, "source"),
+          chosen ? `chose: ${chosen.label}` : m.finding ? `found: ${m.finding.notes[m.finding.notes.length - 1]}` : ""].filter(Boolean).join(" · ");
+        return;
       }
-      for (const p of arr) {                                      // springs to the parent, core held at the centre
-        const par = P.get(p.n.parent);
-        if (par) { const dx = p.x - par.x, dy = p.y - par.y, d = Math.hypot(dx, dy) || 1, k = (d - (LEN[p.n.kind] || 70)) * .03;
-          p.vx -= dx / d * k; p.vy -= dy / d * k; par.vx += dx / d * k * .3; par.vy += dy / d * k * .3; }
-        else { p.vx -= p.x * .05; p.vy -= p.y * .05; }
-      }
-      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; const zoom = view.w / (svg.clientWidth || 600);
-      root.classList.toggle("many", arr.length > 28);
-      for (const p of arr) {
-        p.vx *= .82; p.vy *= .82; p.x += Math.max(-8, Math.min(8, p.vx)); p.y += Math.max(-8, Math.min(8, p.vy));
-        x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x + (p.n.kind === "source" ? 40 : 150) * zoom); y1 = Math.max(y1, p.y + 14 * zoom);
-        p.el.setAttribute("transform", `translate(${p.x.toFixed(1)},${p.y.toFixed(1)}) scale(${zoom.toFixed(3)})`);   // same size on screen at any zoom
-        const par = P.get(p.n.parent);
-        if (p.edge && par) { const mx = (p.x + par.x) / 2 + (p.y - par.y) * .12, my = (p.y + par.y) / 2 - (p.x - par.x) * .12;
-          p.edge.setAttribute("d", `M${par.x.toFixed(1)},${par.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${p.x.toFixed(1)},${p.y.toFixed(1)}`); }
-      }
-      if (arr.length) {                                            // camera eases to fit everything
-        const bw = svg.clientWidth || 600, bh = svg.clientHeight || 360, pad = 30 * zoom + 20;
-        y1 += 40 * zoom;                                           // room above the caption bar
-        let w = Math.max(320, x1 - x0 + pad * 2), h = Math.max(220, y1 - y0 + pad * 2);
-        if (w / h > bw / bh) h = w * bh / bw; else w = h * bw / bh;
-        const tx = (x0 + x1) / 2 - w / 2, ty = (y0 + y1) / 2 - h / 2;
-        view.x += (tx - view.x) * .1; view.y += (ty - view.y) * .1; view.w += (w - view.w) * .1; view.h += (h - view.h) * .1;
-        svg.setAttribute("viewBox", `${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`);
-      }
-      gP.innerHTML = ""; const pr = (3 * zoom).toFixed(2);
-      pulses = pulses.filter(q => q.t < 1);
-      for (const q of pulses) {
-        const a = P.get(q.from), b = P.get(q.to); q.t += .035; if (!a || !b) { q.t = 1; continue; }
-        gP.insertAdjacentHTML("beforeend", `<circle class="pulse" r="${pr}" cx="${(a.x + (b.x - a.x) * q.t).toFixed(1)}" cy="${(a.y + (b.y - a.y) * q.t).toFixed(1)}"/>`);
-      }
-      if (!stopped) requestAnimationFrame(step);
+      root.querySelector(".nowt").innerHTML = nowt;
+      const cls = k => { const order = ["research", "decide", "build", "over"], i = order.indexOf(m.stage), j = order.indexOf(k);
+        return i === 3 || j < i ? "done" : j === i ? "cur" : "next"; };
+      const opts = m.options.map(o => {
+        const from = o.based_on && m.by.get(o.based_on);
+        return `<div class="twc opt ${o.state === "chosen" ? "chosen" : "aside"}${nw(o)}"><div class="qh">${o.state === "chosen" ? `<span class="badge b-chosen">✓ Chosen</span>` : `<span class="badge">Set aside</span>`}<span class="qt">${esc(o.label)}</span></div>` +
+          (o.reason ? `<div class="why">${o.state === "chosen" ? "Why: " : "Why not: "}${esc(o.reason)}</div>` : "") +
+          (from ? `<div class="from">Came out of: <a data-goto="${from.id}">${esc(from.label)}</a></div>` : "") + `</div>`;
+      }).join("");
+      const research = m.questions.map(x => question(x, m)).join("") +
+        (m.known ? `<div class="twc q${nw(m.known)}" data-id="${m.known.id}"><div class="qh"><span class="qt">Checked what Kerf already knows</span><span class="badge">${plural(m.of(m.known.id, "source").length, "source")}</span></div>` +
+          `<div class="why">Its past builds, the parts catalog with real sizes, and its engineering rule books.</div>${srcs(m.of(m.known.id, "source"), m.known.id)}</div>` : "");
+      const lastB = m.builds[m.builds.length - 1], groups = [];   // parts drawn one after another read as one step
+      for (const b of m.builds) { const part = /^Drawing the /.test(b.label), g = groups[groups.length - 1];
+        if (part && g && g.parts) g.items.push(b); else groups.push({parts: part, items: [b]}); }
+      const stepLi = g => { const act = live && g.items.includes(lastB), ic = `<span class="ic">${act ? "●" : "✓"}</span>`;
+        if (!g.parts) return `<li class="${act ? "active" : ""}${nw(g.items[0])}">${ic}<span>${esc(g.items[0].label)}</span></li>`;
+        g.items.forEach(nw);
+        return `<li class="${act ? "active" : ""}">${ic}<span>${act ? "Drawing" : "Drew"} ${plural(g.items.length, "part")}<div class="srcs">${g.items.map(b =>
+          `<span class="src">${esc(b.label.replace(/^Drawing the /, ""))}</span>`).join("")}</div></span></li>`; };
+      root.querySelector(".trail").innerHTML = `
+        <li class="st done"><div class="num">1</div><div><h4>You asked</h4><p class="ask">${esc((m.core ? m.core.detail || m.core.label : data.label || "").replace(/^New design:\s*/, ""))}</p></div></li>
+        <li class="st ${cls("research")}"><div class="num">2</div><div><h4>What it looked into<span class="cnt">${plural(m.questions.length, "question")} · ${plural(m.nsrc, "source")}</span></h4>
+          <p class="hint">Each card is one question it researched: what it found, and the pages and past builds it read.${data.steerable && !m.decision ? " Steer it with Focus / Skip while it is still researching." : ""}</p>
+          ${research || `<p class="pending">${live ? "Starting the research…" : "No research was recorded for this design."}</p>`}</div></li>
+        <li class="st ${cls("decide")}"><div class="num">3</div><div><h4>What it decided${m.options.length ? `<span class="cnt">${plural(m.options.length, "option")} weighed</span>` : ""}</h4>
+          ${opts || (m.decision ? `<p class="pending">It wrote its plan (DESIGN.md) without listing alternatives.</p>` :
+            `<p class="pending">Comes after the research: it weighs a few ways to build it and says why it picks one.</p>`)}</div></li>
+        <li class="st ${cls("build")}"><div class="num">4</div><div><h4>What it's building${groups.length ? `<span class="cnt">${plural(groups.length, "step")}</span>` : ""}</h4>
+          ${m.builds.length ? `<ul class="steps">${groups.map(stepLi).join("")}</ul>`
+            : `<p class="pending">Comes after the plan: it draws each part, then tests that everything fits, moves and holds.</p>`}</div></li>`;
+      root.querySelector(".tellbox").hidden = !data.steerable;
+      root.querySelector(".rp").hidden = live || !(data.steps > 1);
+    }
+    function draw(force) {
+      const s = JSON.stringify([data, limit === Infinity ? -1 : limit, [...open]]);
+      if (s === sig && !force) return;
+      sig = s;
+      const m = model(data, limit);
+      if (!researched && (m.questions.length || m.known || m.decision || m.trunk)) { researched = true; opt.onResearch && opt.onResearch(); }
+      render(m); first = false;
     }
     async function load() {
       try {
-        const r = await fetch(url); const d = await r.json();
+        const r = await fetch(url), d = await r.json();
         if (d.error) throw new Error(d.error);
-        data = d;
-        if (!d.live) { rp.hidden = false; slider.max = d.steps; if (limit === Infinity) slider.value = d.steps; }
-        sync();
-        if (d.live && !stopped) timer = setTimeout(load, 1500);
+        data = d; draw();
+        if (d.live && !stopped) timer = setTimeout(load, strip ? 2500 : 1500);
       } catch (e) { if (!stopped) timer = setTimeout(load, 4000); }
     }
-    slider.oninput = () => { limit = +slider.value >= data.steps ? Infinity : +slider.value; sync(); };
-    play.onclick = () => {
-      let s = 0; limit = 0; P.forEach(p => { p.el.remove(); p.edge && p.edge.remove(); }); P.clear();
-      const tick = () => { if (stopped) return; s += 1; slider.value = s; limit = s >= data.steps ? Infinity : s; sync(); if (s < data.steps) setTimeout(tick, 420); };
+    async function steer(body) {
+      try {
+        const r = await fetch("/api/steer", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({job: opt.job, ...body})});
+        const d = await r.json(); if (d.error) throw new Error(d.error);
+        clearTimeout(timer); load(); return true;
+      } catch (e) { (window.toast || alert)("Couldn't steer", e.message, "bad"); return false; }
+    }
+    root.addEventListener("click", ev => {
+      const b = ev.target.closest("button, a[data-goto]");
+      if (strip) { if (opt.onOpen) opt.onOpen(); return; }
+      if (!b) return;
+      if (b.dataset.more) { open.has(b.dataset.more) ? open.delete(b.dataset.more) : open.add(b.dataset.more); draw(true); }
+      else if (b.dataset.steer) { const n = data.nodes.find(x => x.id === b.dataset.node); if (n) steer({action: b.dataset.steer, node: n.id, label: n.label}); }
+      else if (b.dataset.goto) { const c = root.querySelector(`[data-id="${b.dataset.goto}"]`); if (c) { c.scrollIntoView({block: "center", behavior: "smooth"}); c.classList.add("flash"); setTimeout(() => c.classList.remove("flash"), 1400); } }
+      else if (b.classList.contains("send")) sendNote();
+      else if (b.classList.contains("play")) replay();
+    });
+    async function sendNote() {
+      const i = root.querySelector(".tell input"), t = i.value.trim(); if (!t) return;
+      if (await steer({action: "note", text: t})) { i.value = ""; (window.toast || (() => {}))("Sent to Kerf", "It reads this at its next step.", "ok"); }
+    }
+    if (!strip) root.querySelector(".tell input").addEventListener("keydown", e => { if (e.key === "Enter") sendNote(); });
+    function replay() {   // grow the finished story again, one recorded step at a time
+      const ts = [...new Set(data.nodes.map(n => n.t))].sort((a, b) => a - b); let i = 0; seen.clear(); first = false;
+      const tick = () => { if (stopped) return; limit = i < ts.length - 1 ? ts[i] : Infinity; draw(); i += 1; if (i < ts.length) setTimeout(tick, 380); };
       tick();
-    };
-    requestAnimationFrame(step);
+    }
     load();
     return {stop() { stopped = true; clearTimeout(timer); }, refresh: load};
   }

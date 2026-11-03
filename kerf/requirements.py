@@ -56,13 +56,16 @@ def mass_max(proj, asm, max_g, include=None):
 
 
 @check("size_max")
-def size_max(proj, asm, max_mm):
-    shapes = [it.shape for it in proj.items.values() if it.role != "keepout" and it.shape is not None]
+def size_max(proj, asm, max_mm, include=None):
+    """Assembled bounding box at the home pose under max_mm [x, y, z]. `include`: only these items (e.g. what stays
+    together with the wings and tail off, for a transport case)."""
+    ids = include or [i for i, it in proj.items.items() if it.role != "keepout"]
+    shapes = [proj.items[i].shape for i in ids if proj.items[i].shape is not None]
     lo = np.min([geom.bbox(s)[0] for s in shapes], axis=0)
     hi = np.max([geom.bbox(s)[1] for s in shapes], axis=0)
     size = (hi - lo).tolist()
     return {"ok": all(a <= b for a, b in zip(size, max_mm)), "value": [round(x, 1) for x in size], "limit": max_mm,
-            "detail": "assembled bounding box at home pose (mm)"}
+            "detail": "assembled bounding box at home pose (mm)" + (f" of {len(ids)} items: {', '.join(ids)}" if include else "")}
 
 
 @check("distance")
@@ -832,7 +835,7 @@ def miss_scale(r: dict) -> str:
 REDESIGN_TIER = {
     **dict.fromkeys(("mass_max", "size_max", "thrust_to_weight", "flight_time", "run_time", "power_budget", "cg",
                      "static_margin", "static_margin_tail", "wing_loading", "stall_speed", "tip_over", "static_torque",
-                     "joint_speed", "grip_hold", "prop_ground"), 0),
+                     "joint_speed", "grip_hold", "prop_ground", "bungee_launch"), 0),
     **dict.fromkeys(("fea_static", "impact_fea", "drop_impact", "spar_bending", "fold_hinge_moment", "gear_bending",
                      "planetary_bending", "worm_drive", "cantilever_stress", "flex_strain", "creep_limit",
                      "natural_freq", "stop_impact"), 1),
@@ -963,3 +966,4 @@ from . import req_motion  # noqa: E402,F401  (grip_hold, joint_speed, drop_impac
 from . import failure  # noqa: E402,F401  (weak_link)
 from . import req_life  # noqa: E402,F401  (flex_strain, creep_limit, screw_locking)
 from . import req_human  # noqa: E402,F401  (repair_access)
+from . import req_launch  # noqa: E402,F401  (bungee_launch)

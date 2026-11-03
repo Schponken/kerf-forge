@@ -44,6 +44,7 @@ EXT = 6.15        # extensor line above the axis = wrap radius of the crown poin
 EXT_WRAP = 0.0    # crown angle offset from straight up (parent 90 + this, child 90 - this)
 EXT_A = 5.0
 ROOF = 55.0       # channel roof slope (deg from horizontal on the printer) - no supports
+FLOOR = 30.0      # channel floor flat this far up the round bottom (deg from the bottom point), see _tube
 STEP = 10.0       # joint sampling for swept tendon cuts (deg). Between two steps the line lies between two tube axes at
                   # most 1.64 mm apart (9.4 mm from the axis, the pocket rim), so <= 0.82 mm off the nearer axis: inside
                   # its 1.1 mm radius with a 0.25 mm line radius to spare (0.5 mm line). A 0.8 mm line can brush the
@@ -88,7 +89,8 @@ def assemble(bottom: Sketch, top: Sketch, b: int):
 # ---- tendon channels ----
 
 def _tube(p0, p1, up, d=TUBE_D, ext=0.4):
-    """Channel cutter from p0 to p1 (points in the y=0 plane) with a pointed roof toward `up` (+1/-1 along Y)."""
+    """Channel cutter from p0 to p1 (points in the y=0 plane) with a pointed roof toward `up` (+1/-1 along Y) and a
+    flat floor on the bed side."""
     import numpy as np
     a, b = np.array(p0, float), np.array(p1, float)
     L = float(np.linalg.norm(b - a))
@@ -100,8 +102,12 @@ def _tube(p0, p1, up, d=TUBE_D, ext=0.4):
     apex = r / math.sin(beta)
     # roof triangle on the tangent chord (not the full chord at the centre), so the cutter is exactly d wide
     tx, ty = r * math.sin(beta), r * math.cos(beta)
+    # flat floor FLOOR deg up the round bottom: round floors all touch the plane y = -up * r, and where two tubes cross
+    # OCC left a non-manifold seam there (proximal pip crown, 2026-11-02); coplanar flats fuse cleanly. The cutter only
+    # shrinks (the part keeps all its material); the line bears in the XZ plane, where the channel stays d wide.
+    f = r * math.cos(math.radians(FLOOR))
     pl = Plane(origin=tuple(a - t * ext), x_dir=(0, up, 0), z_dir=tuple(t))
-    prof = Circle(r) + Polygon((apex, 0), (tx, ty), (tx, -ty), align=None)
+    prof = Circle(r) + Polygon((apex, 0), (tx, ty), (tx, -ty), align=None) - Pos(-f - r, 0) * Rectangle(2 * r, 2 * r + 1)
     return extrude(pl * prof, L + 2 * ext)
 
 

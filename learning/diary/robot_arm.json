@@ -1,0 +1,2044 @@
+{
+ "project": "robot_arm",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "ca895cd6",
+   "time": "2026-10-30T23:57:40+00:00",
+   "subject": "robot_arm (E3) WIP: contract + 10 parts, kerf check PASS (sweeps, torques, reach, grip)",
+   "parts": [
+    "base",
+    "finger",
+    "forearm",
+    "gripper",
+    "layout",
+    "retainer",
+    "turntable",
+    "upper_arm",
+    "yaw_gear",
+    "yoke_l",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "ee09e8ae",
+   "time": "2026-10-31T00:14:24+00:00",
+   "subject": "robot_arm: FEA on every structural part, hex-key access holes, 1.5 mm fork gaps for horn spread, DESIGN.md, REFERENCES.md, BOM extras",
+   "parts": [
+    "finger",
+    "forearm",
+    "gripper",
+    "layout",
+    "turntable",
+    "yaw_gear",
+    "yoke_l",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "718d8fc3",
+   "time": "2026-10-31T00:40:56+00:00",
+   "subject": "robot_arm review round 1: bearing bore clears inner races, gear guard + cable route, couple-correct FEA loads, turntable held at bearings, jaw judged across lay",
+   "parts": [
+    "base",
+    "forearm",
+    "turntable",
+    "upper_arm",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "c7c4a427",
+   "time": "2026-10-31T01:15:55+00:00",
+   "subject": "robot_arm round 2 fixes: web/foot fillets, FEA held at horn screws + pivot bore, grip 0-65, gear 1.2 mm over tower, DESIGN.md numbers",
+   "parts": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "6de8d59e",
+   "time": "2026-10-31T01:46:57+00:00",
+   "subject": "engine: screw heads are solids in interference + sweeps (kerf/heads.py, test); robot_arm: yaw horn screws counterbored into the gear (platform swept over them)",
+   "parts": [
+    "yaw_gear"
+   ]
+  },
+  {
+   "hash": "8f4cffdf",
+   "time": "2026-10-31T02:04:36+00:00",
+   "subject": "robot_arm: cable mast on the turntable + cable post on the base (lead bundle spans above the arm, checked by channel_clear cable_loop at 10 poses), gear-mesh si",
+   "parts": [
+    "base",
+    "cable_mast",
+    "turntable"
+   ]
+  },
+  {
+   "hash": "4f5e6b57",
+   "time": "2026-10-31T02:23:26+00:00",
+   "subject": "catalog: DS3218/DS3225 currents, Adafruit PCA9685 board, MEAN WELL LRS-100-5 (5 V 18 A), WAGO 221-415 splice, Pololu 300 mm servo lead (all sourced); robot_arm:",
+   "parts": [
+    "yoke_l",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "1d79f40d",
+   "time": "2026-10-31T03:04:29+00:00",
+   "subject": "Electrical/assembly-doc follow-ups: power_budget voltage drop (avg must hold, peak sag reported; tests by hand), wire-end verbs (ends:/catalog terminal: solder|",
+   "parts": []
+  },
+  {
+   "hash": "57d99f86",
+   "time": "2026-10-31T03:09:19+00:00",
+   "subject": "robot_arm: complete electrics (MEAN WELL LRS-100-5, WAGO buses, PCA9685 on the base post, Nano on USB; 14 routed runs checked at every joint limit, power_budget",
+   "parts": [
+    "base",
+    "forearm",
+    "gripper",
+    "upper_arm",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "cd6ea603",
+   "time": "2026-10-31T03:44:57+00:00",
+   "subject": "robot_arm: jaw 10 mm thick + root wedge + post fillets (gripper FEA p99.9 5.1), DESIGN.md: cables, electrics, FEA numbers, assembly order (desk first), pivot sc",
+   "parts": [
+    "gripper"
+   ]
+  },
+  {
+   "hash": "c8134eee",
+   "time": "2026-10-31T04:08:55+00:00",
+   "subject": "robot_arm: review round 3 (FAIL: electrics completeness, wire ends, assembly order)",
+   "parts": []
+  },
+  {
+   "hash": "bc5312f9",
+   "time": "2026-10-31T06:53:46+00:00",
+   "subject": "catalog: C13 cord, UL1015 18 AWG mains wire, 4.8 mm insulated FASTON, WAGO 216-203 ferrule, USB mini-B cables, Littelfuse 75 % fuse derating + ATO opening times",
+   "parts": []
+  },
+  {
+   "hash": "e5b8ec6c",
+   "time": "2026-10-31T07:08:50+00:00",
+   "subject": "electrical: run fuses (derating + wire protection), ready-made servo leads (lead:), crimp ends, ferrules on screw ends, mains side (inlet/cord/fuse/jumpers), ad",
+   "parts": [
+    "psu_hood"
+   ]
+  },
+  {
+   "hash": "ac673bfe",
+   "time": "2026-10-31T07:21:13+00:00",
+   "subject": "robot_arm: base + stall FEA, edge distances, mast foot, post gussets, teardrop pivots, washers/USB/threadlocker BOM, assembly order + desk step",
+   "parts": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "layout",
+    "turntable",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "721078d6",
+   "time": "2026-10-31T07:44:04+00:00",
+   "subject": "robot_arm: DESIGN.md electrics, assembly order, numbers from report; psu_arm route round bus_yaw",
+   "parts": []
+  },
+  {
+   "hash": "e5c31eca",
+   "time": "2026-10-31T08:08:28+00:00",
+   "subject": "wiring: supply trim step, tools list from wire ends, no zero heat-shrink rows (tests); robot_arm hood bench note",
+   "parts": []
+  },
+  {
+   "hash": "7b72d266",
+   "time": "2026-10-31T08:37:06+00:00",
+   "subject": "robot_arm review round 4 (FAIL) fixes: hood pot/LED holes (LRS SVR1 + LED positions in catalog, scaled from the datasheet), side vent window, floor tie bridge, ",
+   "parts": [
+    "cable_mast",
+    "psu_hood"
+   ]
+  },
+  {
+   "hash": "1eb5887e",
+   "time": "2026-10-31T09:16:47+00:00",
+   "subject": "robot_arm: yaw servo mounted from below (top_through) so the shelf is solid round all 4 tab holes (ENG-1 holewall flagged the boss slot), widened key pocket, le",
+   "parts": [
+    "base",
+    "psu_hood"
+   ]
+  },
+  {
+   "hash": "378d46ef",
+   "time": "2026-10-31T09:44:35+00:00",
+   "subject": "robot_arm: stall FEA as crash case SF 3 (ENG-2), yaw lead route clear of the guard hole edge, DESIGN numbers; STATUS",
+   "parts": []
+  },
+  {
+   "hash": "bb3def5f",
+   "time": "2026-10-31T10:17:20+00:00",
+   "subject": "robot_arm review round 6 (FAIL, blocker: yaw lead trapped between housing and guard): lead now leaves through a groove in the base underside; cable boss protrus",
+   "parts": [
+    "base"
+   ]
+  },
+  {
+   "hash": "7c4e94ff",
+   "time": "2026-10-31T10:49:46+00:00",
+   "subject": "robot_arm review round 7 (FAIL: FEA loads from pre-ENG-6 masses): loads recomputed from the current report masses + margin, stale guard hole removed, 3 mm lead-",
+   "parts": [
+    "base"
+   ]
+  },
+  {
+   "hash": "27c2c507",
+   "time": "2026-10-31T11:28:16+00:00",
+   "subject": "robot_arm review round 8 (FAIL: base_fea couple used a 25 mm bearing spacing, real 20.5): bearing couple as 1860/(z_bhi - z_blo), turntable couples 1010, forear",
+   "parts": [
+    "base",
+    "forearm",
+    "gripper",
+    "upper_arm"
+   ]
+  },
+  {
+   "hash": "9fb5968d",
+   "time": "2026-10-31T11:57:15+00:00",
+   "subject": "E3 robot_arm DONE: design-reviewer round 9 PASS (359ef119bfeab419), eval PASS; STATUS, AUDIT",
+   "parts": []
+  },
+  {
+   "hash": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "subject": "re-reviews after bd486a2's catalog-only change: fpv_5in, pan_tilt, tvc_drone PASS; robot_arm FAIL (gripper stands on its wrist discs: new bed-contact check). bo",
+   "parts": []
+  },
+  {
+   "hash": "96796526",
+   "time": "2026-10-31T13:45:43+00:00",
+   "subject": "robot_arm: gripper stands on a 25 mm flat foot (was on the wrist discs' round bottoms; bed-contact check), teardrop horn/mast/hood/driver holes, DESIGN notes",
+   "parts": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "gripper",
+    "psu_hood",
+    "upper_arm"
+   ]
+  },
+  {
+   "hash": "44505ff4",
+   "time": "2026-10-31T14:43:20+00:00",
+   "subject": "robot_arm: review PASS at 3dea877d2f86fff3 (gripper flat foot); desk rule in DESIGN uses the grip servo's lowest corner",
+   "parts": []
+  },
+  {
+   "hash": "c3e2f857",
+   "time": "2026-10-31T22:04:42-04:00",
+   "subject": "Maker-facing reports: units and min/max on every check, device vs off-board mass, held_by/off_board with an unattached-item check, off-board section in ASSEMBLY",
+   "parts": []
+  },
+  {
+   "hash": "9a8f1fbe",
+   "time": "2026-10-31T22:57:28-04:00",
+   "subject": "BOM: every project purchase priced from a shop page; merged notes; biggest packs",
+   "parts": []
+  },
+  {
+   "hash": "7766baa3",
+   "time": "2026-11-01T03:31:42+00:00",
+   "subject": "Mechanical idiom library (kerf/idioms.py): boss, clevis, yoke_cheek, servo_cradle, cable_saddle, grip_pad; robot_arm yokes and links use it (identical geometry)",
+   "parts": [
+    "armlib",
+    "forearm",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "b51131a5",
+   "time": "2026-10-31T23:38:29-04:00",
+   "subject": "ASSEMBLY.md: bench sub-assemblies join at their parent's step, step 0 test-fit, servo centring, bring-up programs",
+   "parts": []
+  },
+  {
+   "hash": "ed1f9473",
+   "time": "2026-11-01T13:35:58-05:00",
+   "subject": "params state their unit (mm / \u00b0 / teeth) in the six finished projects; test",
+   "parts": []
+  },
+  {
+   "hash": "93f70357",
+   "time": "2026-11-01T13:41:17-05:00",
+   "subject": "Print package: per plate grams and print time, Bambu profile settings, orientation in words, settings in the 3MF",
+   "parts": []
+  },
+  {
+   "hash": "609d58d5",
+   "time": "2026-11-01T17:07:59-05:00",
+   "subject": "Sharp inside corner in a stressed zone (hot zone peak >= 0.5 of allowable) is now a problem unless declared with ctx.keep_sharp; fillet_inside builds its fillet",
+   "parts": [
+    "base",
+    "cable_mast",
+    "finger",
+    "forearm",
+    "gripper",
+    "psu_hood",
+    "retainer",
+    "turntable",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ]
+  },
+  {
+   "hash": "7747be30",
+   "time": "2026-11-01T17:50:47-05:00",
+   "subject": "robot_arm: style radii, Load -> section table, declared-corner notes",
+   "parts": []
+  },
+  {
+   "hash": "fbcb8cc3",
+   "time": "2026-11-01T21:00:25-05:00",
+   "subject": "Use story: project.yaml use_story turned into requirement checks (heat_limit, rain_cover, access_opening, impact_case, story_covered); accepted failures in ASSE",
+   "parts": []
+  },
+  {
+   "hash": "b8469087",
+   "time": "2026-11-01T21:39:03-05:00",
+   "subject": "Electronics as a circuit: pin-level netlist + SKiDL ERC from wiring, KiCad XT60 + Adafruit PCA9685 3D models",
+   "parts": []
+  },
+  {
+   "hash": "6353dbac",
+   "time": "2026-11-02T08:27:10-05:00",
+   "subject": "Motion simulated: robot_arm move_speed + grip_150g (MuJoCo, pass); rigid welds for locked joints, gentle grip close, stiff pad contact; weld test; PLAN checked ",
+   "parts": []
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "718d8fc3",
+   "time": "2026-10-31T00:40:56+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 12
+  },
+  {
+   "commit": "6de8d59e",
+   "time": "2026-10-31T01:46:57+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 7
+  },
+  {
+   "commit": "c8134eee",
+   "time": "2026-10-31T04:08:55+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 8
+  },
+  {
+   "commit": "7b72d266",
+   "time": "2026-10-31T08:37:06+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 6
+  },
+  {
+   "commit": "1eb5887e",
+   "time": "2026-10-31T09:16:47+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 6
+  },
+  {
+   "commit": "bb3def5f",
+   "time": "2026-10-31T10:17:20+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 9
+  },
+  {
+   "commit": "7c4e94ff",
+   "time": "2026-10-31T10:49:46+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 9
+  },
+  {
+   "commit": "27c2c507",
+   "time": "2026-10-31T11:28:16+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 10
+  },
+  {
+   "commit": "9fb5968d",
+   "time": "2026-10-31T11:57:15+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 10
+  },
+  {
+   "commit": "44505ff4",
+   "time": "2026-10-31T14:43:20+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 9
+  }
+ ],
+ "problems": [
+  {
+   "id": "robot_arm-1",
+   "source": "review",
+   "severity": "major",
+   "part": "base",
+   "issue": "The bore between the two 6001 seats is only 14 mm (bearing_seat through= with the default shaft_clear 1.0, so d/2+1 = 7 mm radius). A 6001 inner ring face reaches out to about 16.7 mm diameter (d1). retainer.py even says 'inner race land ~12-16.7 mm'. So the fixed printed shoulder at z=28 and z=45.3 touches the TURNING inner race of both bearings from r=7 to about r=8.35. When the retainer's M3 screw clamps the stack, part of that clamp force goes straight through the inner rings into the plastic shoulder instead of through the balls. The turntable then binds or scrapes against an MG996R that ",
+   "fix": "Pass shaft_clear so the through-bore is about 19-20 mm diameter: larger than inner-race d1 16.7 plus 1 mm, and well under outer-race D2 about 24.4, so the shoulder still carries the outer races. For example bearing_seat(..., shaft_clear=4.0) on the lower seat and keep through= as is. Do the same on the upper seat's 1 mm through-cut.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-2",
+   "source": "review",
+   "severity": "major",
+   "part": "turntable",
+   "issue": "There is no cable path (docs/ENGINEERING.md section 10: 'Cable path from base to wrist that survives the full motion range'). DESIGN.md only adds 15-20 cm extension leads to the BOM. Four servo leads (shoulder, elbow, wrist, grip) have to cross the +/-90 deg yaw joint. The spindle is solid, nothing on the turntable or base guides them, and the 36:24 gear mesh (z 53.9-61.9, behind the tower) is fully open right below the platform edge where the leads will hang. A lead caught in the mesh will stall the yaw servo or get cut. The elbow, wrist and grip leads have no clips or channels along the fork",
+   "fix": "Make the spindle hollow (for example 12 mm OD, 6 mm bore, still checked with FEA) or add a cable slot through the platform at the yaw axis. Run the leads down through the tower to a side exit in the base, or add a guarded cable loop at the back with a printed cover over the gear mesh. Add tie-wrap slots or clip bosses on the webs of each fork. Declare the paths as keep-outs or channel_clear and ch",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-3",
+   "source": "review",
+   "severity": "major",
+   "part": "turntable",
+   "issue": "turntable_fea does not test the real load. (1) The torque_nmm loads sit on the yoke foot screw sites (x = -29, -14, 10), but their axis is at x = 0. kerf/fea.py applies a torque as traction d x (x - o), so the screw sites, which are not centred on the axis, get a net force. The report shows applied_force_n z = +24.8 N (UP), when the case should be about 12.8 N DOWN, and applied moment 913 N*mm instead of 1280. (2) The tipping moment is underestimated. DESIGN.md uses 0.64 kg x 0.10 m = 0.63 N*m, but the distal arm plus payload alone gives 7.8 kg*cm about the shoulder plus about 0.45 kg x 2.5 cm",
+   "fix": "Model the load the way it really enters: either apply a resultant force and moment at the yoke feet as matching force pairs (+F/-F at the front and rear screws, plus the downward weight), or apply the torque about the screw-pattern centroid. Fix the turntable at the bearing seats with bearing_n loads on the spindle at each bearing, not as a rigid box over the whole spindle. Use the real 2x tipping",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-4",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke_r",
+   "issue": "Same torque-on-offset-sites effect: yoke_r_fea reports applied_force_n z = +21.3 N, but the spec is -5.9 N. The tab screws are centred 10 mm from the output axis. The real reaction of the servo case to a stall torque is a pure couple, with no net force on the screws. The result passes with a lot of margin, but the load case is not what the 'why' text says.",
+   "fix": "Apply the stall reaction as a couple about the tab-screw centroid (a couple acts the same about any point), plus the 5.9 N separately. Also worth an engine fix: report or remove the net force a torque_nmm load adds when the axis is not centred on its sites.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-5",
+   "source": "review",
+   "severity": "minor",
+   "part": "upper_arm",
+   "issue": "upper_arm_fea fixes BOTH plates rigidly at the shoulder. In reality plate B is pinned on the yoke_l pivot and passes its moment to plate A through the two 4 mm webs, so the load path through the webs is not tested. The applied load is also 19.2 N in total, against the intended 2 x 3.87 = 7.7 N (force_n per site x 4 sites). That is conservative, so it does not change the pass, but the load case is not the one described.",
+   "fix": "Fix only the shoulder horn screw sites, and hold plate B against radial movement at the pivot only. Divide the per-site forces by the number of sites.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-6",
+   "source": "review",
+   "severity": "minor",
+   "part": "upper_arm",
+   "issue": "All servo tab screws are thread-formed into PETG (kind='tap'). They carry the joint torque reaction, and the servos will come off at least once (DESIGN.md says to test-fit, and replacement is likely). ENGINEERING.md section 7 asks for heat-set inserts for parts that carry load or are taken apart more than once. Applies to yoke_r, upper_arm, forearm, gripper and base as well.",
+   "fix": "Either use heat-set inserts where the 1.6 mm catalog minimum wall to the window allows (it does for the DS32xx windows), or note in DESIGN.md why tapped holes are accepted here: the screws are loaded mainly in shear, and the build notes should say 'do not overtighten'.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-7",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "The grip is a single swinging finger against a fixed jaw. At 55 deg open, the gap measured square to the jaw at the tcp (45 mm from the pivot) is about 39.5 mm. A 40 mm object therefore fits only at the fingertips, and the swing pushes it along the jaw. The finger closes to a 0.5 mm gap, so holding any object means the MG996R sits at stall continuously.",
+   "fix": "Allow grip to about 65 deg, or move the fixed jaw outward by about 5 mm. In DESIGN.md, state the grip force at the tcp and that the controller must back off from stall once it has hold of an object.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-8",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "The fixed-jaw post stands along gripper +Y, which is print Z when printed with print_rot [90,0,0]. The 18.4 N jaw load bends it ACROSS layers, but gripper_fea judges it as xy with SF 2. The peak of 9.9 MPa is still under the 13 MPa z-allowable at SF 3, so it does not fail, but the declared direction is wrong for the weakest feature.",
+   "fix": "Use direction z with SF 3 for gripper_fea (it still passes), and add a fillet of at least 2 mm where the post meets the palm.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-9",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke_l",
+   "issue": "Inside corners on load paths are sharp: cheek-to-foot on both yokes, web-to-plate on upper_arm and forearm, spindle-to-collar on turntable. ENGINEERING.md section 5 asks for a fillet of at least 1 mm. No structural part declares load_axis (section 4).",
+   "fix": "Add 1-2 mm fillets at these joins and declare load_axis on every structural part.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-10",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke_l",
+   "issue": "The three pivots are fully threaded M3x14 screws turning in 3.35 mm printed holes. The threads will wear the hole into an oval over time, which adds play at each joint.",
+   "fix": "Specify ISO 7379 M4/M3 shoulder screws, or a 3 mm dowel or a brass tube sleeve in the free hole. At minimum, list partially threaded screws in the BOM.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-11",
+   "source": "review",
+   "severity": "minor",
+   "part": "yaw_gear",
+   "issue": "The 0.3 mm backlash at the 18 mm pitch radius of the 24 T gear gives about 0.95 deg of free play at the turntable, which is about 5 mm of side-to-side slop at the 290 mm tcp radius, before adding the MG996R's own deadband. The 24 T gear's lower face also turns only 0.6 mm above the fixed tower top.",
+   "fix": "Accept it and state it in DESIGN.md as the expected positioning accuracy, or reduce backlash, or spring-load the yaw servo against the mesh. Raise z_gear0 so the gap to the tower is at least 1 mm (ENGINEERING.md section 8 asks for at least 0.5 mm, and print/bearing tolerance eats into 0.6).",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "6de8d59e",
+   "resolved_time": "2026-10-31T01:46:57+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 66,
+   "active_minutes_est": 66,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yaw_gear",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-12",
+   "source": "review",
+   "severity": "minor",
+   "part": "upper_arm",
+   "issue": "Proportions: the forks nest inside each other, so the upper arm is 89.5 mm wide and the shoulder 117 mm wide, on an 85 mm link. The tcp ends up about 21 mm to the side of the yaw-axis plane, so the inverse kinematics must include that offset. The front desk holes at x=30 sit under the upper-arm plates at home, so the desk screws can only be reached with the arm swung to yaw +/-90.",
+   "fix": "Document the tcp side offset for IK and the desk-screw order (swing the arm to yaw 90 first). Optional: put the elbow and wrist servos on alternating sides to narrow the stack.",
+   "found_commit": "718d8fc3",
+   "found_time": "2026-10-31T00:40:56+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 2656 bytes",
+   "rounds_seen": [
+    "718d8fc3"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4a427",
+   "resolved_time": "2026-10-31T01:15:55+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 35,
+   "active_minutes_est": 35,
+   "parts_redrawn": [
+    "forearm",
+    "layout",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-13",
+   "source": "review",
+   "severity": "blocker",
+   "part": "yaw_gear",
+   "issue": "The yaw horn screws (yaw_horn group, 4 x M3x10, plain clearance holes) seat ON the yaw gear's top face at z 62.3 (report fasteners 'at' z 62.3, dir -Z), so the socket heads reach z 65.3. The turntable platform underside is z_plat0 = 62.8, only 0.5 mm above the gear top. At base_yaw = 0 the platform ends at x = -35 and misses the heads at x -40..-50, but it turns with the arm. I checked the yaw angles with the coupled yaw_drive rotation (-2/3) and the platform outline (x -35..15, y +/-58.7 in the turntable frame). It covers at least one screw head from |base_yaw| = 15 deg onward and covers the ",
+   "fix": "Counterbore the 4 horn screws into the yaw gear: iface.horn_mount(..., kind='counterbore') or bolt_pattern counterbore_depth >= head_h + 0.3 = 3.3 mm. That leaves 4.7 mm of gear under the head, and a shorter screw (M3x6 or M3x8, checked against the horn's thread depth and the spline) brings the head top below the gear face. The other option is to raise z_plat0 to >= 66.3 (gear top + 3 mm head + 1 ",
+   "found_commit": "6de8d59e",
+   "found_time": "2026-10-31T01:46:57+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 3172 bytes",
+   "rounds_seen": [
+    "6de8d59e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "8f4cffdf",
+   "resolved_time": "2026-10-31T02:04:36+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 18,
+   "active_minutes_est": 18,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "turntable"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-14",
+   "source": "review",
+   "severity": "major",
+   "part": "base",
+   "issue": "The cable path (round-1 major) is only partly fixed. (1) The service-loop anchor (tie slots on the guard's -Y side at about (-45, -30.3, 43.3)) is 54 mm from the yaw axis, inside the 68 mm radius the platform corners sweep. For base_yaw > about +40 deg the platform passes directly over the anchor and over the -Y guard arc. (2) The guard top is z_plat0 - 0.5 = 62.3, so the platform edge sweeps 0.5 mm over the guard's top edge. That makes a scissor at exactly the spot where the tied lead has to rise. (3) The guard is cut away for x > -25 (Rectangle 80 x 80 at -yaw_c + 60). Between each guard end",
+   "fix": "Put the loop anchor outside the platform's swept circle (r > 72 mm), for example tie slots on the rear clamp pad near x = -90. Take the leads from the back of yoke_r straight down outboard to that point. Close the mesh sides: extend each guard arc to meet the tower (or add a cover from the guard ends to the tower) so only the tooth passage stays open. Either keep the guard top at least 3 mm below ",
+   "found_commit": "6de8d59e",
+   "found_time": "2026-10-31T01:46:57+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 3172 bytes",
+   "rounds_seen": [
+    "6de8d59e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "8f4cffdf",
+   "resolved_time": "2026-10-31T02:04:36+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 18,
+   "active_minutes_est": 18,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "turntable"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-15",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke_r",
+   "issue": "yoke_r_fea: the hot spot in fea_yoke_r_fea.png is at the base of the cheek's inner face near the front foot screw and the foot's front end (x about 10-15, z about 71). That is where the cheek, which runs on to x = 44 past the foot's end at x = 14, cantilevers off the bolted foot. It is not 'at a tab-screw hole edge, where the load is applied' as DESIGN.md says (the tab screws are at z 95/105). The peak there is 17.5 MPa against the 13 MPa z-allowable, and the deflection is 0.494 mm against a 0.5 mm limit. It passes on p99.9 = 7.0 MPa, and most of that stress is in the cheek plane (along layers",
+   "fix": "Extend the foot (or add a third gusset) to the front end of the cheek with a 4th M3 into the platform, or at least fillet the vertical corner where the foot ends against the cheek (r >= 2). Correct the yoke_r_fea row in DESIGN.md.",
+   "found_commit": "6de8d59e",
+   "found_time": "2026-10-31T01:46:57+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 3172 bytes",
+   "rounds_seen": [
+    "6de8d59e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4f5e6b57",
+   "resolved_time": "2026-10-31T02:23:26+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "turntable",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-16",
+   "source": "review",
+   "severity": "minor",
+   "part": "turntable",
+   "issue": "turntable_fea is now a sound load case (pure couples, held at the bearing lands, render matches report). Two remaining gaps. The applied moment is 1.55 N*m, not the 1.7 N*m in the 'why' text, because the 12.8 N weight is put on the foot-screw centroid at x = -11 (behind the axis) while the real arm CG is ahead of it. Both the collar face and the bearing lands are held in both directions, so the collar face can pull, which the real joint cannot do beyond the retainer preload. The retainer M3 preload also puts the printed 12 mm spindle in tension across layers, and nothing limits how tight it is",
+   "fix": "Put the 12.8 N at the arm's real CG x (or raise the couple so the net My is 1.7 N*m). In DESIGN.md assembly step 3 say: tighten the retainer screw only snug (about 0.3 N*m), enough to remove axial play, no preload.",
+   "found_commit": "6de8d59e",
+   "found_time": "2026-10-31T01:46:57+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 3172 bytes",
+   "rounds_seen": [
+    "6de8d59e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "8f4cffdf",
+   "resolved_time": "2026-10-31T02:04:36+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 18,
+   "active_minutes_est": 18,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "turntable"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-17",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "The fixed-jaw post still meets the palm at a sharp inside corner (part_gripper sheet). Round 1 asked for a fillet of at least 2 mm there, and ENGINEERING.md section 5 asks for at least 1 mm on a load path. This is the across-layer critical section of gripper_fea (peak 9.9 MPa). load_axis is still not declared on gripper, finger, turntable or base (section 4: every structural part).",
+   "fix": "Add a 2 mm fillet at the post-to-palm and post-to-jaw inside corners. Declare load_axis on gripper, finger, turntable and base.",
+   "found_commit": "6de8d59e",
+   "found_time": "2026-10-31T01:46:57+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 3172 bytes",
+   "rounds_seen": [
+    "6de8d59e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "57d99f86",
+   "resolved_time": "2026-10-31T03:09:19+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 82,
+   "active_minutes_est": 82,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "gripper",
+    "turntable",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-18",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Desk mounting order: the front M4 holes at (30, +/-40) sit under the upper-arm plates at home, and DESIGN.md step 8 bolts the base down after the arm is built (step 7). Round 1 asked for this to be documented. The IK offset note was added, but the desk-screw note was not.",
+   "fix": "Move 'bolt/clamp the base to the desk' before step 3, or add 'swing the arm to yaw +/-90 to reach the front holes' to step 8.",
+   "found_commit": "6de8d59e",
+   "found_time": "2026-10-31T01:46:57+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 3172 bytes",
+   "rounds_seen": [
+    "6de8d59e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "8f4cffdf",
+   "resolved_time": "2026-10-31T02:04:36+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 18,
+   "active_minutes_est": 18,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "turntable"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-19",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke_l",
+   "issue": "The pivot-wear risk is accepted in DESIGN.md with a bearing-pressure estimate, which is fine. But the BOM still lists a generic 'M3 x 14 mm socket head screw (pivot)', so the buyer will get fully threaded screws.",
+   "fix": "In bom_extra / the pin spec, call for partially threaded M3x14 (DIN 912 with a plain shank of at least 8 mm) or ISO 7379 shoulder screws for the three pivots.",
+   "found_commit": "6de8d59e",
+   "found_time": "2026-10-31T01:46:57+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "11 real part files, median 3172 bytes",
+   "rounds_seen": [
+    "6de8d59e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4f5e6b57",
+   "resolved_time": "2026-10-31T02:23:26+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 36,
+   "active_minutes_est": 36,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "turntable",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-20",
+   "source": "review",
+   "severity": "major",
+   "part": "psu",
+   "issue": "The electrical system is not complete (ENGINEERING.md 10b: 'power connector, switch/fuse where needed'; Spencer's rule: every component needed to make it work). (1) The MEAN WELL LRS-100-5 has bare L/N/FG screw terminals (catalog 'terminals'), but there is no mains cord with a plug, no strain relief and no earth lead in the BOM or WIRING.md. The supply cannot be plugged in. (2) There is no power switch or e-stop, so the only way to stop a runaway arm is to pull the plug. (3) There is no fuse on the 5 V side. The LRS overload trips only at 110-150 % of rated power (about 20-27 A, catalog note),",
+   "fix": "Add catalog entries with sources and BOM rows for each part: a 3-core mains cord with a moulded plug (or an IEC C14 fused and switched inlet in a small printed terminal cover plus a C13 cord), a cable-gland or clamp strain relief on the PSU end, and a rocker switch on the mains side or a DC switch rated >= 15 A on the arm bus. Add an inline blade fuse (for example 10 A for the 4-servo arm branch a",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee"
+   ],
+   "status": "resolved",
+   "resolved_commit": "e5b8ec6c",
+   "resolved_time": "2026-10-31T07:08:50+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 180,
+   "active_minutes_est": 105,
+   "parts_redrawn": [
+    "psu_hood"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-21",
+   "source": "review",
+   "severity": "major",
+   "part": "wiring",
+   "issue": "WIRING.md contradicts the BOM and gives unsafe terminations. (1) psu_arm/psu_yaw say 'solder to psu', but the LRS output is a screw terminal. A solder-tinned stranded end in a screw clamp cold-flows and loosens, and this one carries the 10.5 A peak arm current. (2) Every servo run says 'solder to sh_servo / solder to driver' with separate red/brown and orange loose wires (5 m of AWG 22 red/brown, 2.3 m of orange and 29 heat-shrinks bought). Yet DESIGN.md, the project.yaml notes and bom_extra say to use each servo's own lead plus a 300 mm Pololu extension, split at the post. A builder cannot te",
+   "fix": "Choose one scheme and make the docs and BOM match it. Recommended: each servo lead plus an extension (a 500 mm extension for grip and wrist), cut 150 mm from the board end, red and brown into the WAGO, orange crimped into a 1-pin Dupont housing on the PCA9685 channel PWM pin. Remove the loose AWG 22 red/brown and orange wire and the servo-end heat-shrinks from wiring: (or mark those runs as part o",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee"
+   ],
+   "status": "resolved",
+   "resolved_commit": "e5b8ec6c",
+   "resolved_time": "2026-10-31T07:08:50+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 180,
+   "active_minutes_est": 105,
+   "parts_redrawn": [
+    "psu_hood"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-22",
+   "source": "review",
+   "severity": "major",
+   "part": "base",
+   "issue": "DESIGN.md assembly step 0 (new this round) says to bolt or clamp the base to the desk first. But step 1 presses the lower 6001 'from below', and step 3 fits the retainer and its M3x8 'from below'. The bearing bore (bearing_seat at z = 0, open at the bottom, depth z_blo + B) and the retainer screw (head at z 17, pointing +Z) are only reachable through the underside of the base plate, and the desk covers that once the base is mounted. The order as written cannot be done. The round-2 problem it was fixing is real (the front M4 holes at (30, +/-40) sit under the upper arm), but desk-first is the w",
+   "fix": "Reorder DESIGN.md: 1 bearings into the tower, 2 yaw servo + horn + gear, 3 turntable + retainer from below (base still loose), 4 'bolt/clamp the base to the desk now: the front M4 holes at x = 30 are still reachable because the platform ends at x = 15 and the yokes are not on yet', then yokes and the arm. Note that removing the turntable later means unbolting the base first.",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ac673bfe",
+   "resolved_time": "2026-10-31T07:21:13+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 192,
+   "active_minutes_est": 117,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "layout",
+    "psu_hood",
+    "turntable",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-23",
+   "source": "review",
+   "severity": "minor",
+   "part": "cable_mast",
+   "issue": "The mast is a 61 mm column 8 x 10 mm on a 28 x 10 x 5 mm foot, held by 2 M3 that both lie on the y = 0 line. A sideways (+/-Y) pull on the bundle is reacted only over the 5 mm half-width of the foot, so a 20 N snag at the top (61 mm) puts about 240 N of prying into one insert. At |yaw| near 90 the bundle tension acts exactly in that direction, because the base post is then off to the side of the turntable. The column-to-foot inside corner is sharp (ENGINEERING.md section 5: >= 1 mm fillet on a load path).",
+   "fix": "Widen the foot to about 22 mm in Y and use 3-4 screws spread in both X and Y (or move the two screws to (-10, +/-8)). Add a 2 mm fillet or a small gusset where the column meets the foot.",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ac673bfe",
+   "resolved_time": "2026-10-31T07:21:13+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 192,
+   "active_minutes_est": 117,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "layout",
+    "psu_hood",
+    "turntable",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-24",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "The cable post is a 126 mm upright cantilever (10 x 26 mm) printed with its layers across its bending direction. It has a sharp root at the plate and the PCA9685 is screwed to it. Stress from the bundle is low (about 1.5 MPa per 5 N), but a knock or a yank on the bundle bends it at the weakest across-layer section, a single sharp corner. DESIGN.md part list says the base is 88 g; report.json says 130.5 g (ENGINEERING.md section 11 requires the mass budget within 10 %).",
+   "fix": "Add a 3-4 mm root fillet or two small triangular gussets at the post foot (front and back). Update the part-list masses from report.json.",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ac673bfe",
+   "resolved_time": "2026-10-31T07:21:13+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 192,
+   "active_minutes_est": 117,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "layout",
+    "psu_hood",
+    "turntable",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-25",
+   "source": "review",
+   "severity": "minor",
+   "part": "nano",
+   "issue": "The Nano (bare board, pins down), the four WAGO splices and the 90 W supply are 'off the base, on the desk' as loose items with flying leads. A bare Nano on a desk next to 5 V/18 A lever connectors can short against them. The supply has M3 mounting holes that are not used.",
+   "fix": "Add a small printed tray on the base's rear pad, or a separate electronics plate, with the Nano on M1.6 posts or in a snap pocket and a clip for the WAGO splices. Or at least state in DESIGN.md to put the Nano in a case and screw the PSU to the desk or to a plate.",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee"
+   ],
+   "status": "resolved",
+   "resolved_commit": "e5b8ec6c",
+   "resolved_time": "2026-10-31T07:08:50+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 180,
+   "active_minutes_est": 105,
+   "parts_redrawn": [
+    "psu_hood"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-26",
+   "source": "review",
+   "severity": "minor",
+   "part": "yaw_gear",
+   "issue": "DESIGN.md is out of step with the geometry in places. Assembly step 2 says to bolt the yaw gear on with 4 x M3x10, but the counterbored joint is checked with M3x8 (report fasteners yaw_horn length_mm 8, grip 4.7). An M3x10 leaves only about 0.9 mm between the screw tips and the MG996R case top under the horn. Step 3 lists '3 + 3 yoke inserts and the spindle insert' but leaves out the 2 cable-mast inserts.",
+   "fix": "Change step 2 to M3x8 and step 3 to include the 2 mast inserts. List the insert count per part (turntable 9, links 1 each).",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee"
+   ],
+   "status": "resolved",
+   "resolved_commit": "e5b8ec6c",
+   "resolved_time": "2026-10-31T07:08:50+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 180,
+   "active_minutes_est": 105,
+   "parts_redrawn": [
+    "psu_hood"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-27",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke_r",
+   "issue": "Accepted, recorded for the record. yoke_r_fea volume peak is 15.0 MPa and gripper_fea is 14.56 MPa, both above the 13 MPa z-allowable. Both are local corner singularities, and p99.9 is 6.6 and 5.1 MPa. The FEA renders put the hot spots where the load paths say they should be: the cheek root where the foot ends, and the jaw root. DESIGN.md now describes them correctly. Pivot screws: a partly threaded M3x14 does not exist as DIN 912, and the reasoning is written up. Accepted.",
+   "fix": "None required. Re-check the corners on a test print of yoke_r together with the DS32xx tab-hole check DESIGN.md already asks for.",
+   "found_commit": "c8134eee",
+   "found_time": "2026-10-31T04:08:55+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "12 real part files, median 3482 bytes",
+   "rounds_seen": [
+    "c8134eee",
+    "7b72d266",
+    "1eb5887e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ac673bfe",
+   "resolved_time": "2026-10-31T07:21:13+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 192,
+   "active_minutes_est": 117,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "layout",
+    "psu_hood",
+    "turntable",
+    "upper_arm",
+    "yoke_l",
+    "yoke_r"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-28",
+   "source": "review",
+   "severity": "major",
+   "part": "psu_hood",
+   "issue": "The hood blocks the supply's output adjustment. The MEAN WELL LRS-100 drawing (datasheet page 4, the catalog's source_mech) puts SVR1 and the LED on the top face right beside terminal 7, about 4 mm from the terminal end and about 9 mm from the y = 0 side. That is hood frame (x about 4, y about -39.5), under the hood's solid top (x 0-20, full width, 2 mm above the case). WIRING.md step 21 and DESIGN assembly step 11 say to set the output to 5.3 V with a meter 'at its output terminals' after the hood is on. The pot and the +V/-V terminals are both inside the closed hood. To trim it, the builder ",
+   "fix": "Add the SVR1 and LED positions (datasheet: about x 4, y 9 from the terminal end / LED side) to catalog electronics.supplies.meanwell_lrs100_5 with the source. In psu_hood.py, cut an adjustment hole of about 5 mm in the top over SVR1, sized for an insulated trimmer screwdriver but too small for a finger (IEC test finger 12 mm), and a 3 mm light hole or light-pipe over the LED. Change step 21 / DESI",
+   "found_commit": "7b72d266",
+   "found_time": "2026-10-31T08:37:06+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7b72d266"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1eb5887e",
+   "resolved_time": "2026-10-31T09:16:47+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 40,
+   "active_minutes_est": 40,
+   "parts_redrawn": [
+    "base",
+    "psu_hood"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-29",
+   "source": "review",
+   "severity": "minor",
+   "part": "psu_hood",
+   "issue": "(1) The -Y sleeve wall bears flat on the supply's datasheet side face over x 0-42. The drawing's side view shows vent slots there at about x 15-25 (z about 9-13), so they are covered (the LRS cools by free air). (2) The DC tie slots go through the 2 mm floor, which sits flat on the desk. A tie looped through them runs under the floor and rocks the hood or lifts it about 1 mm, unless the hood is lifted every time the bundle is re-tied.",
+   "fix": "Cut matching vent openings in the -Y wall at the slot positions (or stand the wall off 1 mm with ribs and keep only the screw boss in contact). Make the tie anchor a bridge or loop standing on the floor (a 4 x 2 mm tunnel under a 2 mm strap), not a through-slot.",
+   "found_commit": "7b72d266",
+   "found_time": "2026-10-31T08:37:06+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7b72d266"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1eb5887e",
+   "resolved_time": "2026-10-31T09:16:47+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 40,
+   "active_minutes_est": 40,
+   "parts_redrawn": [
+    "base",
+    "psu_hood"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-30",
+   "source": "review",
+   "severity": "minor",
+   "part": "wiring",
+   "issue": "The IR-drop rows leave out resistances that are in the catalog or certain to be there. The 5 A ATO fuse has cold_resistance_ohm 0.01785 (about 45 mV at 2.5 A). Each servo lead also has the plug-to-extension contact (two 0.1 in contacts in the loop). The servo's own 300 mm lead is assumed to be 22 AWG, but the catalog has no gauge for any servo's lead (MG996R pigtails are often thinner). The wrist and grip peak rows (4.851 V against 4.8) have 51 mV of margin, which these effects use up. The rows are soft (stall transient), so this is not a failure, but the stated margin is optimistic.",
+   "fix": "Engine: add the fuse's cold_resistance_ohm, and the fuse holder's lead length at its 16 AWG gauge, to the run's loop resistance in electrical.py (the data is already in the catalog). Add a sourced lead gauge to the servo catalog entries, or treat the own-lead part as the thinner of 22/26 AWG. With 5.5 V available from the SVR, trimming to 5.4 V would restore the margin (all servos are rated to at ",
+   "found_commit": "7b72d266",
+   "found_time": "2026-10-31T08:37:06+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7b72d266",
+    "1eb5887e",
+    "bb3def5f",
+    "7c4e94ff",
+    "27c2c507",
+    "9fb5968d",
+    "123d4b1e",
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-31",
+   "source": "review",
+   "severity": "minor",
+   "part": "cable_mast",
+   "issue": "The docstring still says 'foot and column flush (10 mm) so it needs no support'. The foot is now 26 mm wide in Y with the 10 mm column centred on it, so lying on its side (print_rot [90,0,0]) the 61 mm column stands 8 mm off the bed along its whole length on support (12.6 % support surface). The support side of the column is left rough. DESIGN.md has the correct description.",
+   "fix": "Correct the docstring. Optionally, flush the column with one long side of the foot (shift X_COL's Y offset, foot y -5..21), or split the foot into a separate pad, so the column lies on the bed with no support.",
+   "found_commit": "7b72d266",
+   "found_time": "2026-10-31T08:37:06+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7b72d266",
+    "1eb5887e",
+    "bb3def5f",
+    "7c4e94ff",
+    "27c2c507",
+    "9fb5968d",
+    "123d4b1e",
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-32",
+   "source": "review",
+   "severity": "minor",
+   "part": "nano",
+   "issue": "Carried over and accepted: the Nano, the 4 WAGO splices and the 5 inline fuse holders are loose on the desk behind the base. DESIGN.md now tells the builder to case the Nano and screw the supply down. The supply's plan-view M3 holes are only 3 mm deep, so screwing it to a desk top needs a thin board or long screws from below.",
+   "fix": "None required. A small printed electronics tray on the rear pad (Nano posts, WAGO clips, fuse-holder slots) would make the desk layout tidy and short-proof.",
+   "found_commit": "7b72d266",
+   "found_time": "2026-10-31T08:37:06+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7b72d266",
+    "1eb5887e",
+    "bb3def5f",
+    "7c4e94ff",
+    "27c2c507",
+    "9fb5968d",
+    "123d4b1e",
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-33",
+   "source": "review",
+   "severity": "minor",
+   "part": "psu_hood",
+   "issue": "The SVR hole (d 8 at x 5.1, y 9.6) and the LED hole (d 3.5 at x 11.1, y 9.9) are 6.0 mm apart centre to centre. That leaves a 0.26 mm web between them (6.007 - 4 - 1.75), less than one 0.4 mm extrusion line. It will print as a ragged sliver or not at all, and the two holes merge into one 8 x 12 mm slot. This is still finger-safe (8 mm wide is less than the 12 mm IEC test finger) and the mains pins are 50 mm or more away, so it is cosmetic and robustness only.",
+   "fix": "Leave at least 1.2 mm web: cut the LED hole at 2.5 mm, or move it to x 12 (the LED still shows, given the \u00b11 mm case tolerance). Alternatively, cut one deliberate rounded slot over both.",
+   "found_commit": "1eb5887e",
+   "found_time": "2026-10-31T09:16:47+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "1eb5887e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "bb3def5f",
+   "resolved_time": "2026-10-31T10:17:20+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 61,
+   "active_minutes_est": 61,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-34",
+   "source": "review",
+   "severity": "minor",
+   "part": "psu_hood",
+   "issue": "The assembly order (project.yaml assembly_note, ASSEMBLY step 26) says to slide the hood on, feed the DC pairs out, then 'tie them to the floor bridge'. Once the hood is seated, the bridge (x -12, y -43.5..-37.5, z 2-7) is enclosed: the top covers x -65..20, the inlet fills the end window, and the only opening near it is the 10 mm DC exit 5 mm away. You cannot thread a tie through the X-direction tunnel through that hole. Separately, in the print orientation (standing on the end wall) the bridge block's -X face is a 6 x 5 mm flat overhang that sticks out 5 mm from a vertical wall. Report overh",
+   "fix": "Reword the note: feed the DC pairs out of the exit and tie them to the bridge with the hood held beside the supply, then lower or slide the hood on and fit the side screw. Optionally, chamfer the bridge block's -X underside at 45 degrees.",
+   "found_commit": "1eb5887e",
+   "found_time": "2026-10-31T09:16:47+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "1eb5887e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "bb3def5f",
+   "resolved_time": "2026-10-31T10:17:20+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 61,
+   "active_minutes_est": 61,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-35",
+   "source": "review",
+   "severity": "blocker",
+   "part": "base",
+   "issue": "The yaw lead exit faces the guard ring with almost no gap. I measured the base STL in world coordinates at z = 10, 20 and 50. Between the widened housing's -Y outer face (y = -26.0) and the guard ring's inner face (r 30 about (-45, 0)), the gap is 3.4 mm at x = -38, 2.4 mm at x = -34, 1.2 mm at x = -31 and 0.7 mm at x = -30. The exit box (x -38.4..-30.4, y -27..-21, z 6..14) opens straight into that wedge, and you can see it in part_base_top.png. The guard hole (x -51..-39) is offset in X from the exit, so the lead would have to leave the exit and turn 90 degrees inside a gap of 3 mm or less. ",
+   "fix": "Make the lead's path a straight line a plug can pass. Option A: put the exit coaxial with the guard hole. Run one straight -Y cut through the housing wall and the ring at about x = -43 (inside the guard hole's x -51..-39), at least 10 mm wide and 10 mm tall, from the pocket floor up. This may mean starting the widened pocket at x = -47 so the cut opens into it. Option B: make both the exit and the",
+   "found_commit": "bb3def5f",
+   "found_time": "2026-10-31T10:17:20+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "bb3def5f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7c4e94ff",
+   "resolved_time": "2026-10-31T10:49:46+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 32,
+   "active_minutes_est": 32,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-36",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "base.py hard-codes the cable boss protrusion as 6.6 mm (boss_x1 = xc + L/2 + 6.6 + 0.6). The catalog's servos.MG996R value is now cable_boss_protrusion 7.0, and its note lists 6.6 as a replaced value. The boss envelope reaches xc + 27.45 and the pocket ends at xc + 27.65, which leaves 0.2 mm instead of the intended 0.6. It still clears, but it goes against the rule that purchased-part dimensions come from the catalog.",
+   "fix": "Read d['cable_boss_protrusion'] (or the catalog key) instead of 6.6, keep the +0.6 clearance, and re-check.",
+   "found_commit": "bb3def5f",
+   "found_time": "2026-10-31T10:17:20+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "bb3def5f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7c4e94ff",
+   "resolved_time": "2026-10-31T10:49:46+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 32,
+   "active_minutes_est": 32,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-37",
+   "source": "review",
+   "severity": "minor",
+   "part": "wiring",
+   "issue": "The last two route points of pwr_yaw and sig_yaw are [-34.4, -12, 10] and then [-55.2, 0, 27.8], the servo body centre. The drawn lead passes through the MG996R case, which also makes ASSEMBLY.md step 11 misleading. The real lead leaves the boss at about (-28, 0, 9..17).",
+   "fix": "End the route at the cable boss (a 'lead' joint on the servo proxy at the boss), or add that point as the last waypoint.",
+   "found_commit": "bb3def5f",
+   "found_time": "2026-10-31T10:17:20+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "bb3def5f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7c4e94ff",
+   "resolved_time": "2026-10-31T10:49:46+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 32,
+   "active_minutes_est": 32,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-38",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "In the upright print, the shelf underside is the face the tab tops clamp against, and it is printed over support across the open pocket. The access ceiling at z_shelf - 0.5 (44 x 13 mm) is also supported. A rough supported face under the tabs can let the servo rock slightly once the screws are snug.",
+   "fix": "Use a support interface layer (or a PETG/PLA interface) under the shelf, and file the tab face flat before fitting the servo. Say so in DESIGN.md step 2.",
+   "found_commit": "bb3def5f",
+   "found_time": "2026-10-31T10:17:20+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "bb3def5f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7c4e94ff",
+   "resolved_time": "2026-10-31T10:49:46+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 32,
+   "active_minutes_est": 32,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-39",
+   "source": "review",
+   "severity": "minor",
+   "part": "psu_hood",
+   "issue": "Round-5 items verified. The pot hole is now 7 mm and the LED hole 2.5 mm (web 6.007 - 3.5 - 1.25 = 1.26 mm), and the two holes show separate in part_psu_hood_top.png. The note now says to tie the DC bundle to the bridge before seating the hood. The optional 45 degree chamfer on the bridge's -X underside was not done, so the 6 x 5 mm overhang will still sag slightly.",
+   "fix": "Optional: chamfer the bridge block's -X underside at 45 degrees.",
+   "found_commit": "bb3def5f",
+   "found_time": "2026-10-31T10:17:20+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "bb3def5f",
+    "7c4e94ff",
+    "27c2c507",
+    "9fb5968d",
+    "123d4b1e",
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-40",
+   "source": "review",
+   "severity": "minor",
+   "part": "upper_arm",
+   "issue": "For the record: at the new crash-case SF 3, upper_arm_stall_fea p99.9 is 13.42 MPa against a 16 MPa limit (a margin of 1.19). The peak of 18.76 MPa is a local singularity at the frame of the elbow servo window in plate A, which is on the load path in the render. It passes, but it is the thinnest margin on the arm. The DS32xx tab holes are still UNVERIFIED in the catalog.",
+   "fix": "None required. Test-print yoke_r and the upper arm and fit the real DS3225/DS3218 before printing the rest, as the Risks section of DESIGN.md says.",
+   "found_commit": "bb3def5f",
+   "found_time": "2026-10-31T10:17:20+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "bb3def5f",
+    "7c4e94ff",
+    "27c2c507",
+    "9fb5968d",
+    "123d4b1e",
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-41",
+   "source": "review",
+   "severity": "major",
+   "part": "upper_arm",
+   "issue": "The FEA load cases are no longer 2x the real static loads. After the ENG-6 perimeter-aware mass change, report.json and bom.md give upper_arm 64.8 g (was 47), forearm 55.4 (40), gripper 29.4 (22), finger 5.0 (4), base 175 (134), and arm_mass 791 g (DESIGN says 693). The upper_arm_fea 'why' says 3.87 N is everything beyond the elbow plus 150 g. With the current masses that is el_servo 60 + el_horn 3 + forearm 55.4 + wr_servo 55 + wr_horn 3 + gripper 29.4 + gr_servo 55 + gr_horn 3 + finger 5 + payload 150 = 418.8 g = 4.11 N. 2x is 8.21 N, but 7.74 N is applied. The elbow torque is 2 x 4.46 kg*cm",
+   "fix": "Recompute every hand-entered load in project.yaml from the current report masses. Use upper_arm_fea 2 x 4.11 N and 2 x 4.46 kg*cm = 875 N*mm, forearm 2 x 2.95 N and 2 x 1.91 kg*cm, the yoke and turntable weight from the current turntable-borne mass, and the tipping moment from the current shoulder torque. Better still, derive them in layout.py or an expression from the masses so they cannot go sta",
+   "found_commit": "7c4e94ff",
+   "found_time": "2026-10-31T10:49:46+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7c4e94ff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "27c2c507",
+   "resolved_time": "2026-10-31T11:28:16+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 38,
+   "active_minutes_est": 38,
+   "parts_redrawn": [
+    "base",
+    "forearm",
+    "gripper",
+    "upper_arm"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-42",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Stale cut. The old yaw-lead hole through the gear guard ring is still there: base.py lines 78-80, Box 12 x 6 x 10 at (-45, -31.25, z 6..16). I confirmed it in the STL at x -50..-38, and it is visible in part_base_sheet.png FRONT. Nothing uses it now. It is an open 12 x 10 mm hole into the guard, whose stated job is to keep cable loops out, and its comment describes a route that no longer exists.",
+   "fix": "Delete the guard-hole cut and its comment so the ring is closed at the bottom.",
+   "found_commit": "7c4e94ff",
+   "found_time": "2026-10-31T10:49:46+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7c4e94ff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "27c2c507",
+   "resolved_time": "2026-10-31T11:28:16+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 38,
+   "active_minutes_est": 38,
+   "parts_redrawn": [
+    "base",
+    "forearm",
+    "gripper",
+    "upper_arm"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-43",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "The yaw lead bends hard at the grommet. The pocket's +X end wall is at x -27.4 (STL), only 0.6 mm past the catalog's 7.0 mm cable-boss envelope (case end -35.0, envelope tip -28.0). The real MG996R wires leave the boss heading +X, so they must turn down against that wall almost at the grommet, and during the push-up from below they drag along it. The route still works because the pocket is open below and the wires are thin, but it is a kink point at the strain relief. Also, nothing holds the lead in the groove while the base is turned over onto the desk.",
+   "fix": "Give the end wall 2-3 mm more clearance at boss height, or chamfer the wall's lower inside edge. In DESIGN.md step 2, say to pre-bend the lead downward at the boss before pushing the servo up, and to hold the lead in the groove with a strip of tape while turning the base over.",
+   "found_commit": "7c4e94ff",
+   "found_time": "2026-10-31T10:49:46+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7c4e94ff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "27c2c507",
+   "resolved_time": "2026-10-31T11:28:16+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 38,
+   "active_minutes_est": 38,
+   "parts_redrawn": [
+    "base",
+    "forearm",
+    "gripper",
+    "upper_arm"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-44",
+   "source": "review",
+   "severity": "minor",
+   "part": "wiring",
+   "issue": "Round-6 route item, only partly fixed. pwr_yaw and sig_yaw now pass base.yaw_boss (-30.4, 0, 13), but the engine still adds the servo origin (-55.2, 0, 27.8) as the last point, so the drawn lead still ends inside the MG996R case (report.json electrical.wires points).",
+   "fix": "Engine: end a lead at the servo's cable-boss point (a 'lead' joint on the servo proxy) instead of its origin. This is general and would fix every project.",
+   "found_commit": "7c4e94ff",
+   "found_time": "2026-10-31T10:49:46+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3624 bytes",
+   "rounds_seen": [
+    "7c4e94ff",
+    "27c2c507",
+    "9fb5968d",
+    "123d4b1e",
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-45",
+   "source": "review",
+   "severity": "major",
+   "part": "base",
+   "issue": "base_fea applies about 80 % of its stated tipping-moment load. Both the why text and DESIGN.md (Architecture: 'two 6001 bearings 25 mm apart'; yaw-bearing hand check '~25 mm spacing'; Strength table '+-72 N bearing couple (2 x 0.90 N*m over the 25 mm seat spacing)'; base.py docstring) assume 25 mm between the bearings. layout.py actually gives z_blo = 20 and z_bhi = z_tt - B = 40.5. The bearing centres are at z 24 and 44.5, so they are 20.5 mm apart. The base_fea cylinders sit on exactly those seats. +-72 N x 20.5 mm = 1476 N*mm, and the report shows applied_moment_nmm My = 1463. The static mo",
+   "fix": "In base_fea set bearing_n to [91, -34, 0] on the upper seat and [-91, 0, 0] on the lower (1.86 N*m / 20.5 mm). Better, write it as an expression: 2 x the tipping moment / (z_bhi - z_blo). Correct the spacing to 20.5 mm in the why text, in DESIGN.md (Architecture, the hand check giving +-45 N static per bearing, the Strength table) and in the base.py docstring. Rebuild and update the base_fea row.",
+   "found_commit": "27c2c507",
+   "found_time": "2026-10-31T11:28:16+00:00",
+   "review_round": 8,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "27c2c507"
+   ],
+   "status": "resolved",
+   "resolved_commit": "9fb5968d",
+   "resolved_time": "2026-10-31T11:57:15+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 29,
+   "active_minutes_est": 29,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-46",
+   "source": "review",
+   "severity": "minor",
+   "part": "turntable",
+   "issue": "The tipping-moment arithmetic is slightly low, and its wording is wrong. The turntable_fea why says 'the arm weight 2.5 cm behind it', but the shoulder axis is 25 mm AHEAD of the yaw axis (x_sh = +25), which is why that term adds to the moment. DESIGN's hand check gives '8.2 kg*cm + 0.6 kg x 2.5 cm ~ 0.90 N*m', but that sum is 0.95 N*m. The correct figure (0.487 kg beyond the shoulder) is ~0.93 N*m. So 2x = 1.86 N*m, while the net applied moment is 1.805 N*m (report My), which is 1.94x. Not material at 3.9 vs 13 MPa.",
+   "fix": "Use 2 x 0.93 N*m: couples of ~1010 N*mm each, giving a net of ~1.86 N*m after the 13.8 N at x -11. Change 'behind' to 'ahead' and fix the DESIGN hand-check arithmetic. The same 0.93 N*m feeds the base_fea fix above.",
+   "found_commit": "27c2c507",
+   "found_time": "2026-10-31T11:28:16+00:00",
+   "review_round": 8,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "27c2c507"
+   ],
+   "status": "resolved",
+   "resolved_commit": "9fb5968d",
+   "resolved_time": "2026-10-31T11:57:15+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 29,
+   "active_minutes_est": 29,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-47",
+   "source": "review",
+   "severity": "minor",
+   "part": "upper_arm",
+   "issue": "The load 'why' texts leave out the servo body that hangs on each link's far end. The 'rounded up for leads/screws' margin silently absorbs it. Upper arm: 359 g beyond the elbow + the el_servo's 60 g on the upper arm's tabs = 418.8 g, so 2x = 8.22 N against 8.4 applied, which leaves ~18 g for leads and screws. Forearm: 245.4 g + wr_servo 55 g = 300.4 g, so 2x = 5.89 N against 6.0 applied, which leaves ~5 g, less than the wrist and grip leads that run beyond the wrist. Yokes: 486.6 g + the 60 g shoulder servo on yoke_r. Every case still covers 2x of the hardware plus the payload, but the stated ",
+   "fix": "Restate each why as (servo on the link + everything beyond the joint + payload) x 2 x g, plus an explicit lead allowance. Raise the forearm to 3.1 N per site (6.2 N) so that ~10 g of lead is covered.",
+   "found_commit": "27c2c507",
+   "found_time": "2026-10-31T11:28:16+00:00",
+   "review_round": 8,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "27c2c507"
+   ],
+   "status": "resolved",
+   "resolved_commit": "9fb5968d",
+   "resolved_time": "2026-10-31T11:57:15+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 29,
+   "active_minutes_est": 29,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-48",
+   "source": "review",
+   "severity": "minor",
+   "part": "upper_arm",
+   "issue": "Several holes print horizontally but are cut round without compensation (ENGINEERING.md s4: 'Horizontal holes print oval: use teardrop or add +0.2 mm'). upper_arm, forearm and gripper print on edge (print_rot [90,0,0]), so every hole along the link's Z axis is horizontal on the bed. The free pivot holes have teardrops, but the servo-tab self-tap pilots (servo_mount kind='tap', no teardrop) are the 2.6 mm vertical PETG pilot rather than the catalog's horizontal pilot, which is +0.18 mm. The heat-set pivot insert holes (pin_hole fit='heatset': sh_pivot in upper_arm, el_pivot in forearm, wr_pivot",
+   "fix": "Pass teardrop=<print-up direction> (iface.print_up_deg) to servo_mount and to the heat-set pin_hole calls in upper_arm.py, forearm.py and gripper.py, as yoke_r/yoke_l already do for their foot holes.",
+   "found_commit": "27c2c507",
+   "found_time": "2026-10-31T11:28:16+00:00",
+   "review_round": 8,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "27c2c507"
+   ],
+   "status": "resolved",
+   "resolved_commit": "9fb5968d",
+   "resolved_time": "2026-10-31T11:57:15+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 29,
+   "active_minutes_est": 29,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-49",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "DESIGN.md's Strength table gives base_fea deflection as 0.11 mm, but report.json has 0.129 mm. The turntable row says 0.23 mm against a report value of 0.239, which rounds to 0.24. Stale by a small amount. Both are still under the 0.3 mm limit.",
+   "fix": "Update the base_fea row to 0.13 mm and the turntable_fea row to 0.24 mm.",
+   "found_commit": "9fb5968d",
+   "found_time": "2026-10-31T11:57:15+00:00",
+   "review_round": 9,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "9fb5968d",
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "96796526",
+   "resolved_time": "2026-10-31T13:45:43+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 108,
+   "active_minutes_est": 105,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "gripper",
+    "psu_hood",
+    "upper_arm"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-50",
+   "source": "review",
+   "severity": "major",
+   "part": "gripper",
+   "issue": "In print orientation (print_rot [90,0,0], out/parts/gripper.stl) the lowest geometry is the bottom of the two r = link_h/2 = 17 mm wrist discs. The side-plate rectangles only reach y = -6 (Rectangle(x_end, 12.0)), so the plates' 80 mm lower edges and the palm start 11 mm above the bed. Bed contact is about 36 mm2 of tessellated cylinder: two line contacts on round 7 mm discs. The largest downward flat face (897 mm2, the plate lower edges) is printed entirely on support. The engine warns 'only 0 mm2 sits on the bed against a 1669 mm2 flat face'. The gripper.py docstring ('Printed standing on it",
+   "fix": "Give the side plates a flat lower edge at the disc tangent. In gripper.py, extend each plate profile down to y = -r (for example Rectangle from y = -r to +6 over at least the first ~25 mm), then rise at 45 degrees back to y = -6 so the rest of the edge is self-supporting. Alternatively take the full 80 mm down to y = -r if the mass budget allows (about +12 g; arm_mass is 791 of 900 g). Then re-run",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 10,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "96796526",
+   "resolved_time": "2026-10-31T13:45:43+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 15,
+   "active_minutes_est": 15,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "gripper",
+    "psu_hood",
+    "upper_arm"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-51",
+   "source": "review",
+   "severity": "minor",
+   "part": "upper_arm",
+   "issue": "Not seen in round 9 (engine check added after it): the horn clearance holes (sh_horn on upper_arm, el_horn on forearm, wr_horn on gripper) and the cable_mast and psu_side clearance holes print horizontal without a teardrop. These are 3.4 mm clearance holes for M3, so a 0.1-0.2 mm sag at the top still passes a screw.",
+   "fix": "Pass teardrop=iface.print_up_deg(ctx, loc) to those horn_mount/bolt_pattern calls, as already done for the tab pilots and pivot inserts. Otherwise, add a DESIGN.md note to run a 3.4 mm drill through them.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 10,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "96796526",
+   "resolved_time": "2026-10-31T13:45:43+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 15,
+   "active_minutes_est": 15,
+   "parts_redrawn": [
+    "base",
+    "cable_mast",
+    "forearm",
+    "gripper",
+    "psu_hood",
+    "upper_arm"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "robot_arm-52",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Not seen in round 9: the engine warns that base_fea's fixed boxes hold none of base's fastener sites. The four 12 x 12 mm boxes do sit on the underside around the four M4 desk holes, which is the real restraint. The warning fires because those holes are cut with iface.hole and not registered as sites. The FEA setup is right, but the warning stays.",
+   "fix": "Cut the desk holes with a site-registering call (bolt_pattern with group 'desk') so the check can see them, or note in DESIGN.md that the boxes are the M4 desk-screw footprints.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 10,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3807 bytes",
+   "rounds_seen": [
+    "123d4b1e",
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-53",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "DESIGN.md 'Use notes' tells the IK to reject poses whose tcp or wrist pivot is below z = 15 mm, assuming the jaws are about 12 mm below the tcp line. The grip MG996R hangs under the palm about 31 mm below the tcp. I checked a pose grid with shoulder/elbow in 20 degree steps and wrist at -75/0/75, keeping only poses that pass the documented rule. At shoulder -20 / elbow 0 / wrist 0 (tcp z = 25 mm) the grip servo's lowest point is at z = -6.4 mm, and at shoulder -60 / elbow 60 it is at -2.9 mm. So the rule as written lets the grip servo case hit the desk. The stall FEA covers the printed parts, ",
+   "fix": "In DESIGN.md Use notes, base the desk limit on the lowest point of the gripper and grip servo, not the tcp: reject any pose where the tcp is below about z = 45 mm with the wrist horizontal, or compute the grip servo's bottom corner in the IK and keep it above z = 10 mm.",
+   "found_commit": "44505ff4",
+   "found_time": "2026-10-31T14:43:20+00:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3874 bytes",
+   "rounds_seen": [
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robot_arm-54",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "11.1 % of the surface still prints on support: the palm underside (11 mm above the bed between the plates) and the fixed jaw. This is documented in DESIGN.md and the docstring, and it is the right trade-off for an on-edge print that keeps the plates' bending stress along the layers.",
+   "fix": "None required. Optionally chamfer the jaw's underside at 45 degrees to cut its support.",
+   "found_commit": "44505ff4",
+   "found_time": "2026-10-31T14:43:20+00:00",
+   "review_round": 11,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "13 real part files, median 3874 bytes",
+   "rounds_seen": [
+    "44505ff4"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 54,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 54
+  },
+  "open": 0,
+  "active_minutes_est": 2260,
+  "parts_redrawn": [
+   "base",
+   "cable_mast",
+   "forearm",
+   "gripper",
+   "layout",
+   "psu_hood",
+   "turntable",
+   "upper_arm",
+   "yaw_gear",
+   "yoke_l",
+   "yoke_r"
+  ],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}

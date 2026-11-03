@@ -114,7 +114,10 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
                 plates_.append(cur)
                 plate_mat.append(mat)
                 cur, x, y, row_h = [], gap, gap, 0.0
-            cur.append((iid, n, Pos(x + w / 2 - X / 2, y + h / 2 - Y / 2, 0) * s))
+            # whole 0.01 mm offsets: build123d's 3MF welds vertices by rounding to 1e-6 mm, so a plate copy then welds
+            # exactly like the part's own 3MF (validated in part_files); the bbox noise (~5e-7 mm) in w / h split
+            # near-coincident edge vertices into an invalid mesh (bionic_finger proximal, 2026-11-02)
+            cur.append((iid, n, Pos(round(x + w / 2 - X / 2, 2), round(y + h / 2 - Y / 2, 2), 0) * s))
             x += w + gap
             row_h = max(row_h, h)
         if cur:
@@ -142,7 +145,8 @@ def plates(proj, outdir, printer="Bambu Lab A2L", gap=6.0):
 
 def part_print_settings(spec) -> dict:
     """Slicer settings a printed part's numbers assume (mass estimate, FEA): infill and perimeters."""
-    return {"infill_pct": round(float(spec.get("infill", 0.25)) * 100), "walls": int(spec.get("walls", 2)),
+    infill, walls = checks.print_parameters(spec)
+    return {"infill_pct": round(infill * 100), "walls": walls,
             "material": spec.get("material", "PETG"), "print_rot": list(spec.get("print_rot", [0, 0, 0]))}
 
 
@@ -162,7 +166,15 @@ def print_settings_md(proj) -> str:
 def modifiers_md(proj) -> list[str]:
     """PRINT_SETTINGS.md section for project.yaml part `modifiers:` [{where, size, infill, walls, why}]: local slicer
     settings (a 100 % infill block round an insert, a servo pocket) the part's strength depends on."""
-    mods = [(iid, m) for iid, it in proj.printed.items() for m in it.spec.get("modifiers") or []]
+    mods = []
+    for iid, it in proj.printed.items():
+        entries = it.spec.get("modifiers", [])
+        if not isinstance(entries, list):
+            raise ValueError(f"{iid}.modifiers: must be a list of mappings")
+        for n, m in enumerate(entries):
+            if not isinstance(m, dict):
+                raise ValueError(f"{iid}.modifiers[{n}]: print settings must be a mapping")
+            mods.append((iid, m))
     if not mods:
         return []
     L = ["", "## Modifiers (local settings the strength depends on)", "",
@@ -170,8 +182,9 @@ def modifiers_md(proj) -> list[str]:
          "size and place it as below) and give it these settings; without them the part is weaker than its checks "
          "assume.", "", "| Part | Where | Size | Infill | Wall loops | Why |", "|---|---|---|---|---|---|"]
     for iid, m in mods:
-        L.append(f"| {iid} | {m['where']} | {m.get('size', '')} | {round(float(m.get('infill', 1.0)) * 100)} % | "
-                 f"{m.get('walls', '')} | {m.get('why', '')} |")
+        infill, walls = checks.print_parameters({**m, "infill": m.get("infill", 1.0)})
+        L.append(f"| {iid} | {m['where']} | {m.get('size', '')} | {round(infill * 100)} % | "
+                 f"{walls if 'walls' in m else ''} | {m.get('why', '')} |")
     return L
 
 
@@ -377,6 +390,10 @@ def bom(proj, fastener_joints, part_reports, outdir, pins=None, extra=None):
                          "spec": "ISO 4762", "note": f"hinge '{pj['group']}'; {lock_advice(pj['fixed_fit'])}"})
             if "heatset" in pj["fixed_fit"]:
                 rows.append({"type": "fastener", "item": f"{pj['pin']} heat-set insert", "qty": 1, "spec": "", "note": f"hinge '{pj['group']}'"})
+        elif pj.get("lock"):
+            rows.append({"type": "pin", "item": f"{g(pj['d_mm'])} mm quick-release pin, {g(pj['length_mm'])} mm grip", "qty": 1,
+                         "spec": pj["pin"], "link": catalog.get(pj["pin"]).get("buy", ""),
+                         "note": f"locks '{', '.join(pj['locks'])}' (pull it to move them); keep it on its lanyard"})
         else:
             rows.append({"type": "pin", "item": f"{g(pj['d_mm'])} x {g(pj['length_mm'])} mm steel dowel pin", "qty": 1,
                          "spec": f"ISO 8734 ({pj['pin']})", "note": f"hinge '{pj['group']}', pressed into {', '.join(pj['fixed_in'])}"})

@@ -21,6 +21,15 @@
             "timeout": 900
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 20,
+            "command": "[ -n \"$KERF_STUDIO_JOB\" ] && [ -f \"$CLAUDE_PROJECT_DIR/.cache/studio/steer/$KERF_STUDIO_JOB.json\" ] && python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/steer.py\"; exit 0"
+          }
+        ]
       }
     ],
     "Stop": [

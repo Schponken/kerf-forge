@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import re
 from pathlib import Path
 
@@ -117,6 +118,10 @@ def data(proj, asm, rep: dict, fea: dict | None = None, assembly_md: str | None 
         chain[iid] = list(reversed(js))  # root-most joint first
     if preview:   # the first look: the model now, click-to-edit and build steps when the checks finish
         attr, attr_error = {}, "click-to-edit is added when the checks finish"
+    elif os.environ.get("KERF_NO_ATTRIBUTION"):
+        # kerf verify and the tests: click-to-edit rebuilds every part traced and once per param (29 s on servo_link,
+        # 303 s on pan_tilt) and cannot change a result (its failures only show here), so those runs skip it
+        attr, attr_error = {}, "click-to-edit is not computed in kerf verify / tests; `kerf build` adds it"
     else:
       try:  # click-to-edit: which line and params made each face (kerf/attribution.py)
         attr, attr_error = attribution.compute(proj), None

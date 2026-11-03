@@ -112,8 +112,8 @@ def req(name, ids) -> int:
         _p(f"  {x['id']}: {req_line(x)}")
         if x.get("value") is None and x.get("detail"):
             _p(f"      {x['detail']}")
-        for t in x.get("advice") or []:
-            _p(f"      -> {t}")
+        for tip in x.get("advice") or []:
+            _p(f"      -> {tip}")
     for p in r["problems"]:
         _p(f"PROBLEM {p}")
     _p(f"{'ok' if r['ok'] else 'FAIL'}: {len(r['results'])} requirement(s) in {time.time() - t:.1f} s "
@@ -204,12 +204,19 @@ def _out_stale(proj, fp) -> str:
     return "" if ofp == fp else f"out/ is from fingerprint {ofp}, not {fp}: run kerf build"
 
 
+def _slowest_tests(stdout: str) -> list:
+    """pytest --durations lines ("12.34s call tests/test_x.py::test_y"), slowest first."""
+    import re
+    return [l.strip() for l in stdout.splitlines() if re.match(r"\s*\d+\.\d+s (call|setup|teardown) ", l)][:30]
+
+
 def _run_isolated(name, check_only=False, fast=False) -> dict:
     """Build one project in a child process so its OCC/mesh memory is returned to the OS before the next one
     (all projects in one process grew past 6 GB and was OOM-killed on a 7 GB machine, 2026-11-02)."""
     code = ("import json,sys; from kerf.pipeline import run; n,c,f=sys.argv[1],sys.argv[2]=='1',sys.argv[3]=='1'; "
             "r=run(n,mode='check') if c else run(n,sweeps=True,do_export=not f,do_render=not f); "
-            "print('KERF_RESULT '+json.dumps({'ok':bool(r['ok']),'problems':[str(p) for p in r['problems']]}))")
+            "print('KERF_RESULT '+json.dumps({'ok':bool(r['ok']),'problems':[str(p) for p in r['problems']],"
+            "'seconds':r.get('seconds')}))")
     r = subprocess.run([sys.executable, "-c", code, name, "1" if check_only else "0", "1" if fast else "0"], cwd=ROOT,
                        capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
     for line in reversed(r.stdout.splitlines()):
@@ -252,17 +259,19 @@ def verify(fast=False, all_failures=False) -> int:
     t0 = time.time()
     results, fails = {}, []
     os.environ["KERF_NO_CACHE"] = "1"      # the definition of done builds every part from scratch (kerf/partcache.py)
+    os.environ["KERF_NO_ATTRIBUTION"] = "1"   # viewer click-to-edit cannot change a verdict; minutes per project
     # tests read/write UTF-8 text without naming it; a C/POSIX locale (hooks, cron, nohup) would make that ASCII
     ck = _Checkpoint(fast, all_failures)
     if "tests" not in ck.done:
         r = subprocess.run([sys.executable, "-m", "pytest", "-q", *([] if all_failures else ["-x"]), "--no-header",
-                            "-p", "no:cacheprovider"], cwd=ROOT,
+                            "-p", "no:cacheprovider", "--durations=30"], cwd=ROOT,
                            capture_output=True, text=True, encoding="utf-8", env={**os.environ, "PYTHONUTF8": "1"})
         ck.save("tests", {"line": r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:],
-                          "ok": r.returncode == 0})
+                          "ok": r.returncode == 0, "slowest": _slowest_tests(r.stdout)})
     else:
         _p("tests: reusing this commit's finished result (an earlier run was cut off)")
     results["tests"] = ck.done["tests"]["line"]
+    results["slowest_tests"] = ck.done["tests"].get("slowest", [])   # where the next speed-up should look
     if not ck.done["tests"]["ok"]:
         fails.append(f"unit tests: {results['tests']}")
     from . import project as P
@@ -271,7 +280,7 @@ def verify(fast=False, all_failures=False) -> int:
         if name not in ck.done:
             ck.save(name, _run_isolated(name, check_only, fast))
         rep = ck.done[name]
-        results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6]}
+        results[name] = {"ok": rep["ok"], "problems": rep["problems"][:6], "seconds": rep.get("seconds")}
         if not rep["ok"]:
             fails.append(f"project {name}: {rep['problems'][:3]}")
         if check_only:
@@ -407,6 +416,13 @@ def main(argv=None) -> int:
     g = sub.add_parser("gallery", help='Create a gallery of built projects.', description='Create a gallery of built projects.'); g.add_argument("projects", nargs="*")
     sm = sub.add_parser("simulate", help="MuJoCo motion simulation of the URDF: servo limits, home hold, grip_hold / joint_speed / drop_impact")
     sm.add_argument("project")
+    ag = sub.add_parser("agent", help="Which AI runs Studio jobs: auto (Claude, Codex when Claude's usage is out), claude, or codex")
+    ag.add_argument("mode", nargs="?", choices=["auto", "claude", "codex"])
+    dy = sub.add_parser("diary", help="Learning Mode diary: problems found, the stage and the cost, rebuilt from git history (learning/diary/)")
+    dy.add_argument("project", nargs="?"); dy.add_argument("--all", action="store_true")
+    dy.add_argument("--log-session", nargs="?", const="auto", metavar="FILE", help="add a Claude Code session log's token usage to the project's diary (default: newest log)"); dy.add_argument("--label", default="")
+    lb = sub.add_parser("lookback", help="Learning Mode look-back: lessons from the diaries, grouped across projects (learning/LESSONS.md)")
+    lb.add_argument("project", nargs="?")
     fw = sub.add_parser("firmware-check", help="compile + simulate the project's servo bring-up program (kerf/fwcheck.py)")
     fw.add_argument("project")
     for parser in sub.choices.values():
@@ -443,6 +459,33 @@ def main(argv=None) -> int:
         r = optimise.run(a.project)
         _p(Path(r["file"]).read_text(encoding="utf-8"))
         return 0 if r["best_report"].get("ok") else 1
+    if a.cmd == "agent":
+        from . import agent as AG
+        if a.mode:
+            AG.set_mode(a.mode)
+        print(f"agent mode: {AG.mode()}  (Claude Code: {AG.claude_bin() or 'not installed'}; Codex: {AG.codex_bin() or 'not installed'}); "
+              f"next job runs on: {AG.pick() or 'nothing installed'}")
+        return 0
+    if a.cmd == "diary":
+        from . import diary
+        names = diary.all_projects() if a.all else [a.project] if a.project else []
+        if not names:
+            _p("usage: kerf diary <project> | --all [--log-session [FILE]]")
+            return 2
+        if a.log_session:
+            f = diary.newest_session_log() if a.log_session == "auto" else Path(a.log_session)
+            if not f or not f.exists() or a.all:
+                _p("--log-session needs one project and an existing session log")
+                return 2
+            _p("logged", json.dumps(diary.log_session(None, names[0], f, a.label)))
+        for n in names:
+            _p(str(diary.write(None, n)))
+        return 0
+    if a.cmd == "lookback":
+        from . import lessons
+        r = lessons.run(a.project)
+        _p(r["summary"])
+        return 0
     if a.cmd == "review-pack":
         from . import project as P, reviewpack
         proj = P.load(a.project)

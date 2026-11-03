@@ -7,13 +7,17 @@ import pytest
 from kerf import studio
 
 
-@pytest.mark.parametrize("outcome", ["stopped", "failed"])
-def test_stopping_job_holds_project_until_process_exits(tmp_path, monkeypatch, outcome):
+@pytest.mark.parametrize("outcome,usage", [("stopped", False), ("failed", False),
+                                           ("stopped", True), ("failed", True), ("paused", True)])
+def test_stopping_job_holds_project_until_process_exits(tmp_path, monkeypatch, outcome, usage):
     release = tmp_path / "release"
     script = tmp_path / "child.py"
     script.write_text("""import signal, sys, time
 from pathlib import Path
 signal.signal(signal.SIGTERM, lambda *_: print('terminating', flush=True))
+if sys.argv[3] == 'True':
+    print('{"type":"system","subtype":"init","session_id":"test-session"}', flush=True)
+    print('Claude AI usage limit reached|1893456000', flush=True)
 print('ready', flush=True)
 if sys.argv[2] == 'failed':
     print('Failed to authenticate: OAuth session expired and could not be refreshed', flush=True)
@@ -31,14 +35,21 @@ print('cleanup complete', flush=True)
         return studio._claude_lines(raw)
 
     monkeypatch.setattr(studio, "JOBS", {})
+    monkeypatch.setattr(studio, "USAGE", {"until": 0.0, "text": ""})
+    scheduled = []
+    def schedule(job):
+        assert job.proc.poll() == 0 and "cleanup complete" in job.lines
+        scheduled.append(job)
+    monkeypatch.setattr(studio, "schedule_resume", schedule)
     monkeypatch.setattr(studio, "on_finished", lambda job: finished.set())
-    job = studio.start_job("design", "demo", [sys.executable, str(script), str(release), outcome],
+    job = studio.start_job("design", "demo", [sys.executable, str(script), str(release), outcome, str(usage)],
                            "Design demo", parse=parse)
     try:
         assert ready.wait(5), "child did not start"
         if outcome == "stopped":
             job.stop()
-        assert terminating.wait(5), "child did not receive the stop signal"
+        if outcome != "paused":
+            assert terminating.wait(5), "child did not receive the stop signal"
         assert job.proc.poll() is None
         assert job.state == "running" and job.ended is None
         assert studio.busy()
@@ -47,12 +58,16 @@ print('cleanup complete', flush=True)
                 studio.start_job("trial", project, [], "Try again",
                                  prepare=lambda: pytest.fail("active trial overwritten"))
         studio.require_idle("another_project")
-        job.stop()  # Repeated stops must not replace an authentication failure with "stopped".
+        if outcome != "paused":
+            job.stop()  # Repeated stops must not replace an authentication failure with "stopped".
         release.touch()
         assert finished.wait(5), "child did not finish"
         assert job.state == outcome and job.ended is not None
         assert job.proc.returncode == 0  # Even a graceful exit must retain the requested outcome.
         assert "cleanup complete" in job.lines
+        assert scheduled == ([job] if outcome == "paused" else [])
+        if usage:
+            assert job.usage and job.session == "test-session"
         assert not studio.busy()
         studio.require_idle("demo")
         studio.require_idle("*")
@@ -61,3 +76,96 @@ print('cleanup complete', flush=True)
         if not finished.wait(5):
             job.proc.kill()
             job.proc.wait(timeout=5)
+
+
+@pytest.fixture
+def paused_job(monkeypatch):
+    job = object.__new__(studio.Job)
+    job.id, job.kind, job.project, job.label = "old", "design", "demo", "Design demo"
+    job.state, job._stop_state, job.session = "paused", None, "saved-session"
+    job.resumed_by, job.env, job.agent, job.lines = None, None, "claude", []
+    job.usage = {"until": 1893456000}
+    monkeypatch.setattr(studio, "JOBS", {job.id: job})
+    monkeypatch.setattr(studio, "USAGE", {"until": 0.0, "text": ""})
+    monkeypatch.setattr(studio, "settings", lambda: {"autoresume": True})
+    monkeypatch.setattr(studio, "budget_stop", lambda: "")
+    monkeypatch.setattr(studio.agent, "can_take_over", lambda: False)
+    return job
+
+
+def test_stop_cancels_already_started_resume_callback(monkeypatch, paused_job):
+    callbacks = []
+    class Timer:
+        def __init__(self, delay, callback):
+            callbacks.append(callback)
+        def start(self):
+            pass
+    monkeypatch.setattr(studio.threading, "Timer", Timer)
+    monkeypatch.setattr(studio, "agent_job", lambda *a, **k: pytest.fail("stopped job launched an agent"))
+    studio.schedule_resume(paused_job, delay=1)
+    assert len(callbacks) == 1
+    entered, release = threading.Event(), threading.Event()
+    def budget():
+        entered.set()
+        assert release.wait(5)
+        return ""
+    monkeypatch.setattr(studio, "budget_stop", budget)
+    callback = threading.Thread(target=callbacks[0])
+    callback.start()
+    try:
+        assert entered.wait(5)
+        paused_job.stop()
+    finally:
+        release.set()
+        callback.join(5)
+    assert not callback.is_alive() and paused_job.state == "stopped"
+    assert paused_job.resumed_by is None
+    with pytest.raises(ValueError, match="nothing to resume"):
+        studio.resume_job(paused_job.id)
+    with pytest.raises(ValueError, match="nothing to take over"):
+        studio.codex_takeover(paused_job)
+    monkeypatch.setattr(studio.agent, "can_take_over", lambda: True)
+    studio.schedule_resume(paused_job)
+    assert len(callbacks) == 1
+
+
+@pytest.mark.parametrize("handoff", ["resume", "codex"])
+def test_delayed_stop_reaches_successor_registered_during_launch(monkeypatch, paused_job, handoff):
+    entered, release, stopping = (threading.Event() for _ in range(3))
+    errors = []
+    class Successor:
+        id, state = "new", "running"
+        def stop(self):
+            with studio.JOB_LOCK:
+                self.state = "stopped"
+    successor = Successor()
+    def launch(*a, **k):
+        entered.set()
+        assert release.wait(5)
+        with studio.JOB_LOCK:  # start_job already re-enters this lock while registering the process.
+            studio.JOBS[successor.id] = successor
+        return successor
+    monkeypatch.setattr(studio, "agent_job", launch)
+    def resume():
+        try:
+            studio.resume_job(paused_job.id) if handoff == "resume" else studio.codex_takeover(paused_job)
+        except Exception as exc:
+            errors.append(exc)
+    def stop():
+        stopping.set()
+        paused_job.stop()
+    resumer = threading.Thread(target=resume)
+    stopper = threading.Thread(target=stop)
+    resumer.start()
+    try:
+        assert entered.wait(5)
+        stopper.start()
+        assert stopping.wait(5)
+    finally:
+        release.set()
+        resumer.join(5)
+        if stopper.ident is not None:
+            stopper.join(5)
+    assert not resumer.is_alive() and not stopper.is_alive() and not errors
+    assert paused_job.state == successor.state == "stopped"
+    assert paused_job.resumed_by == successor.id

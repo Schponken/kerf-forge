@@ -181,7 +181,14 @@ def mesh_gap(a, b, search: float = 1e4):
     wa, wb = ma.transform(_loc_matrix(a.location)), mb.transform(_loc_matrix(b.location))
     if (wa ^ wb).volume() > 0.0:
         return 0.0
-    return float(wa.min_gap(wb, search))
+    # min_gap visits every triangle pair within the search radius: a huge radius on two close, curved parts (a yoke
+    # around a bracket 0.9 mm away) took 3.7 s against 0.004 s at 1 mm, so widen the radius only until the gap is in it
+    r = min(1.0, search)
+    while True:
+        g = float(wa.min_gap(wb, r))
+        if g < r or r >= search:
+            return g
+        r = min(r * 4.0, search)
 
 
 def overlap(a, b) -> float:
