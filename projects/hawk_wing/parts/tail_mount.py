@@ -31,7 +31,7 @@ CORNER_R = 3.0        # upper body section corner radius
 INS_Y = 8.5           # stab screws at |y|: 2.4 mm wall to the boom bore, 4.5 (1.5 d) to the block side
 INS_FRAC = 0.30       # stab screws at the section's thickest point
 BLOCK_HW = 13.0       # insert block half width
-BLOCK_TOP = -22.0     # insert block top (insert depth 6.7 + 0.8 floor above the stab top)
+INS_ABOVE = 7.5       # insert block top above the stab's upper surface at the screws (insert depth 6.7 + 0.8 floor)
 BLADE_T, BLADE_H = 3.0, 10.0   # fin blade: thickness, height above the top
 SLOT_CLEAR = 0.15     # fin slot over the blade, per side (glued)
 FRONT = 2.5           # mount front ahead of the fin's leading edge (the fin root clears the front chamfer)
@@ -85,6 +85,11 @@ def ins_points(p):
     return x, p.htail_z0 + zu * c + te, p.htail_z0 + zl * c - te
 
 
+def block_top(p):
+    """Insert block top: INS_ABOVE over the stab's upper surface at the screws (follows htail_z0 and the airfoil)."""
+    return ins_points(p)[1] + INS_ABOVE
+
+
 def blade(p, grow=0.0):
     """Fin blade on the mount top (grow > 0: the fin's slot over it). Front end vertical, aft end leaning forward at
     45 deg and a 45 deg ridge on top, so neither the mount (standing on its aft face) nor the fin (standing on its
@@ -119,6 +124,7 @@ def build(ctx):
                                                     align=(Align.MIN, Align.CENTER, Align.MIN))
     body += ctx.add(seat, why="seat on the stabiliser's upper surface over its chord (spreads the stab load)", kind="seat")
     xi, zt, _ = ins_points(p)
+    BLOCK_TOP = block_top(p)
     blk = Plane.XZ * Polygon((xi - 10, p.htail_z0), (xi + 10 + (BLOCK_TOP - p.htail_z0), p.htail_z0), (xi + 10, BLOCK_TOP),
                              (xi - 10, BLOCK_TOP), align=None)
     blk = extrude(blk, amount=BLOCK_HW, both=True)

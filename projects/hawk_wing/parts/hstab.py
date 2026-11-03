@@ -13,6 +13,7 @@ no supports.
 from build123d import *
 import numpy as np
 from kerf import aero, iface
+from kerf.features import fillet_inside
 
 import importlib.util, pathlib
 _spec = importlib.util.spec_from_file_location("hw_layout", pathlib.Path(__file__).with_name("layout.py"))
@@ -44,6 +45,8 @@ def build(ctx):
     loc = Location(Plane(origin=(xi, 0, zb), x_dir=(1, 0, 0), z_dir=(0, 0, -1)))
     stab -= iface.bolt_pattern(ctx, "hstab", "M3", [(0, M.INS_Y), (0, -M.INS_Y)], loc, kind="clearance",
                                depth=zt - zb, teardrop="auto")
+    stab, failed = fillet_inside(ctx, stab, r=1.0)      # why: screw-hole teardrop seams (stress concentration)
+    ctx.notes += [f"inside corner left sharp at {c}" for c in failed]
     ctx.rigid("base", Location())
     d = (b - a) / np.linalg.norm(b - a)
     ctx.revolute("elevator", Axis(tuple(a), tuple(d)), range=(-p.elev_throw, p.elev_throw))
