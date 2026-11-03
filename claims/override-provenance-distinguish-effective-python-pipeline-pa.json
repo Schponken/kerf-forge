@@ -2,8 +2,9 @@
  "item": "Override provenance: distinguish effective Python/pipeline parameter variants from the on-disk design in report fingerprints while preserving default hashes, native value types and safe catalog dependency coverage.",
  "session": "codex-override-provenance",
  "since": 1793669732.633211,
- "heartbeat": 1793669732.633211,
+ "heartbeat": 1793670659.443161,
  "provider": "Codex",
  "thread_id": "01a19e35-36af-7000-955d-7cf26845e15b",
- "since_utc": "2026-11-03 01:35"
+ "since_utc": "2026-11-03 01:35",
+ "activity": "All63 focused override provenance/cache checks pass; preparing reviewed stacked PR"
 }
