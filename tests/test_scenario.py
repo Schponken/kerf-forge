@@ -139,6 +139,7 @@ def test_scenario_browser_compares_buy_and_adapt_without_fake_zero(server, saved
 await p.route('**/api/claude', r => r.fulfill({json: {ok:true}}));
 await p.click('#newbtn'); await p.selectOption('#i_request_kind', 'scenario');
 out.scenario = await p.isVisible('#scenario-fields'); out.direct = await p.isVisible('#nstart');
+await p.locator('.briefing-details summary').filter({hasText:'Build preferences'}).click();
 await p.fill('#nname', 'plants'); await p.evaluate(() => showQuote('plants')); await p.waitForSelector('.qopt');
 out.unknown = await p.locator('.qopt').first().innerText();
 out.buyButtons = await p.locator('.qopt').first().locator('button').count();
