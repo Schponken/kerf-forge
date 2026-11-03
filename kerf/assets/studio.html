@@ -108,7 +108,6 @@ a{color:var(--info)}
 .tab{border:none;background:none;border-radius:0;padding:11px 13px;color:var(--muted);font-weight:620}
 .tab:hover{color:var(--ink)}
 .tab.sel{color:var(--ink)}
-.uline{position:absolute;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 10px var(--glow);transition:left .3s cubic-bezier(.2,.8,.2,1),width .3s cubic-bezier(.2,.8,.2,1)}
 .body{padding:22px 30px 120px;animation:fadeIn .3s both}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .viewer{width:100%;height:calc(100vh - 260px);min-height:440px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
@@ -356,8 +355,47 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 /* calmer layout (2026-11-01): one primary action, the rest in a menu; facts as one quiet line */
 .titlerow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .titlerow h1{margin:0}
-.desc.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:920px;cursor:pointer}
-.desc.one.open{white-space:normal}
+.project-workspace{min-height:100%;display:flex;flex-direction:column}
+.project-workspace .head{padding:20px 24px 12px;animation:none;flex:none}
+.project-workspace .titlerow{gap:8px 16px;margin-bottom:8px;align-items:baseline}
+.project-workspace h1{font-size:24px;line-height:1.2;letter-spacing:0}
+.project-brief{max-width:76ch;margin:0 0 12px}
+.project-brief .desc{max-width:none;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.project-brief .desc.open{display:block;overflow:visible}
+.project-brief button{margin-top:4px;padding:2px 0;border:0;background:none;color:var(--accent);text-decoration:underline;text-underline-offset:3px;white-space:normal;text-align:left}
+.project-workspace .facts{margin:12px 0 0;gap:8px 20px;font-size:13px}
+.project-workspace .facts span{min-width:0;overflow-wrap:anywhere}
+.project-workspace .actions{margin:0;gap:8px}
+.project-build-group{display:inline-flex}
+.project-build-group>button{border-radius:8px 0 0 8px}
+.project-build-group>.more>button{border-radius:0 8px 8px 0;border-left:0;height:100%}
+.project-build-details>summary{cursor:pointer;list-style:none;padding:4px 0;border:0;border-radius:4px;background:none;color:var(--accent);font-size:13px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.project-build-details>summary::-webkit-details-marker{display:none}
+.project-build-details>summary:hover{color:var(--ink)}
+.project-build-details>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.project-build-details[open]>summary{color:var(--ink)}
+.project-context{position:absolute;right:24px;width:min(420px,calc(100% - 48px));margin-top:8px;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);z-index:9;animation:project-popover .14s ease-out;font-size:13px}
+.project-context p{margin:0;color:var(--muted)}
+.project-context .popover-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.project-context .popover-head button{padding:4px 8px}
+@keyframes project-popover{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.project-context{animation:none}}
+.project-workspace .tabs{padding:0 24px;gap:4px;overflow-x:auto}
+.project-workspace .tab{min-height:44px;flex:none;border-bottom:2px solid transparent}
+.project-workspace .tab.sel{border-bottom-color:var(--accent);font-weight:700}
+.project-workspace .tab:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+.project-workspace .body{padding:16px 24px 24px;animation:none}
+.project-workspace .model-pane{flex:1;display:flex;flex-direction:column;gap:12px;min-height:0}
+.project-workspace .viewer{display:block;flex:1 0 360px;height:0;min-height:360px;border-radius:10px}
+.project-workspace .model-pane>.livebar,.project-workspace .model-pane>.cmpbar{margin:0;flex:none}
+.project-workspace .model-pane>.empty{flex:1}
+@media(max-width:900px){
+  .project-workspace .head{padding:16px 16px 12px}
+  .project-workspace h1{font-size:22px}
+  .project-workspace .tabs{padding:0 16px}
+  .project-workspace .body{padding:12px 16px 20px}
+  .project-context{right:16px;width:calc(100% - 32px)}
+}
 .facts{color:var(--muted);font-size:13px;margin:-4px 0 14px;display:flex;gap:6px 14px;flex-wrap:wrap}
 .facts b{color:var(--ink);font-weight:620}
 .pill{font-size:12px;font-weight:650;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--muted)}
@@ -576,36 +614,52 @@ function statusPill(p) {
   if (!p.ok && p.stubs) return `<span class="pill info">✎ being designed: ${p.stubs} part${p.stubs == 1 ? "" : "s"} not modelled yet</span>`;
   return p.ok ? `<span class="pill ok">✓ checks pass</span>` : `<span class="pill bad">${p.problems} problem${p.problems == 1 ? "" : "s"} to fix</span>`;
 }
+function projectContext(d) {
+  if ((d.running || []).length) return {kind:"info", label:"Work in progress", text:"Work is still running. The model, checks and files may change as it finishes."};
+  if (d.stale) return {kind:"warn", label:"Build out of date", text:"This design changed after the last build. Its saved checks and files describe the earlier version; rebuild before relying on them."};
+  if (!d.built) return {kind:"", label:"Not built yet", text:"Build this design to create its model, run checks and prepare the print files."};
+  if (!d.ok) return {kind:"bad", label:d.stubs ? "Design incomplete" : d.problems ? `${d.problems} problem${d.problems === 1 ? "" : "s"} to review` : "Checks need attention", text:d.stubs ? "Some parts are still placeholders. Review the reported problems before preparing this design to make." : `${d.problems || "There are"} reported problem${d.problems === 1 ? "" : "s"}. Review what failed and why before making this design.`};
+  if (!(d.review && d.review.ok)) return {kind:"warn", label:"Review still needed", text:"The saved checks passed. A current design review is still missing; checks alone do not establish that the design is ready to make."};
+  return {kind:"ok", label:"Checks and review current", text:"The saved build has passing checks and a current design review. Read the checks and assembly guide before making it."};
+}
 function renderProject() {
   const d = S.detail; if (!d) return;
+  const context = projectContext(d), focused = document.activeElement.id, tabScroll = $("#tabs")?.scrollLeft || 0;
   const plates = d.files.some(f => f.startsWith("out/plates/") && f.endsWith(".3mf"));
   const tabs = [["model","3D model"],["tune","Tune"],["results","Checks"],["files","Files & guides"],["history","History"]];
   const n = d.summary_numbers, e = d.estimate || {};
   const facts = [];
   if (n && n.cost_usd != null) facts.push(`<span title="Priced shopping list per piece used; whole packs cost $${fmt(n.packs_usd)}"><b>$${fmt(n.cost_usd)}</b> parts${n.unpriced ? ` (+${n.unpriced} unpriced)` : ""}</span>`);
-  if (n && n.device_g != null) facts.push(`<span title="Everything mounted on the device"><b>${fmt(n.device_g)} g</b></span>`);
+  if (n && n.device_g != null) facts.push(`<span title="Everything mounted on the device"><b>${fmt(n.device_g)} g</b> device mass</span>`);
   if (n && n.print_s) facts.push(`<span title="${n.print_sliced ? "sliced by Bambu Studio / OrcaSlicer" : "lower bound; slice for the real time (PRINT_SETTINGS.md)"}"><b>${n.print_sliced ? "" : "≥ "}${n.print_s >= 3600 ? (n.print_s / 3600).toFixed(1) + " h" : Math.round(n.print_s / 60) + " min"}</b> printing on ${n.plates} plate${n.plates == 1 ? "" : "s"}</span>`);
-  if (d.built) facts.push(d.review && d.review.ok ? `<span>reviewed ✓</span>` : `<span title="${esc((d.review || {}).why || "")}">not reviewed yet</span>`);
-  if (d.stale) facts.push(`<span style="color:var(--warn)">changed since the last build</span>`);
   $("#main").innerHTML = `
+    <section class="project-workspace" aria-label="Project workspace">
     <div class="head">
-      <div class="titlerow"><h1>${esc(d.title)}</h1>${statusPill(d)}</div>
-      ${d.description ? `<p class="desc one" title="Click to show it all" onclick="this.classList.toggle('open')">${esc(d.description)}</p>` : ""}
+      <div class="titlerow"><h1>${esc(d.title)}</h1><span class="pill ${context.kind}">${context.label}</span>
+        <details class="project-build-details" id="project-build-details" ${S.buildDetailsOpen === d.name ? "open" : ""} ontoggle="if(this.isConnected)S.buildDetailsOpen=this.open?S.detail.name:null" onkeydown="if(event.key==='Escape'){event.preventDefault();closeBuildDetails(true)}">
+          <summary id="project-build-summary">Build details</summary>
+          <div class="project-context" role="region" aria-label="Build details"><div class="popover-head"><b>${d.stale ? "Previous build" : "Build details"}</b><button onclick="closeBuildDetails(true)">Close</button></div><p>${esc(context.text)}</p>
+            ${facts.length ? `<div class="facts" aria-label="${d.stale ? "Last build estimates" : "Build estimates"}">${facts.join("")}</div>` : ""}
+          </div>
+        </details>
+      </div>
+      ${d.description ? `<div class="project-brief"><p class="desc ${S.briefOpen === d.name ? "open" : ""}" id="project-description">${esc(d.description)}</p><button id="project-brief-toggle" aria-controls="project-description" aria-expanded="${S.briefOpen === d.name}" onclick="toggleProjectBrief()">${S.briefOpen === d.name ? "Show less" : "Show full description"}</button></div>` : ""}
       ${d.use_story ? `<p class="note story">Designed for: ${esc(d.use_story.who || "")}${(d.use_story.where || []).length ? ", " + esc(d.use_story.where.join(", ")) : ""}${d.use_story.how_often ? ", " + esc(d.use_story.how_often) : ""}${(d.use_story.hazards || []).length ? ` · checked against: ${esc(d.use_story.hazards.join(", "))}` : ""}${(d.use_story.accepted_failures || []).map(a => `<br>Accepted: ${esc(a.hazard)}: ${esc(a.consequence)}`).join("")}</p>` : ""}
-      ${facts.length ? `<div class="facts">${facts.join("<span>·</span>")}</div>` : ""}
       <div class="actions">
-        <button class="primary" onclick="runMode('kit')" title="Every check, then print plates, shopping list, assembly guide and the 3D viewer">⚙ Build kit${modeEst(d, "kit")}</button>
-        ${d.can_optimise ? `<button onclick="run('optimise')" title="Search the params project.yaml lists under optimise: for a lighter design that still passes every check; writes OPTIMISE.md (runs on this computer, no Claude usage)">⚖ Optimise</button>` : ""}
-        ${d.last_mode && !["kit", "ship"].includes(d.last_mode) ? `<button class="upgrade" onclick="runMode('kit')" title="Runs only what the ${esc(modeLabel(d, d.last_mode))} run did not: built parts and solved load cases are reused">⬆ Upgrade to Build kit</button>` : ""}
+        ${d.built ? `<button class="${!d.ok && !d.stale && !(d.running || []).length ? "primary" : ""}" onclick="setTab('results');$('#project-tab-results').focus()">${d.stale ? "Review last build’s checks" : "Review checks"}</button>` : ""}
+        <span class="project-build-group" role="group" aria-label="Build and options"><button id="project-build" class="${!d.built || d.stale ? "primary" : ""}" onclick="runMode('kit')" title="Every check, then print plates, shopping list, assembly guide and the 3D viewer">Build kit${modeEst(d, "kit")}</button>
         <span class="more"><button onclick="toggleMenu(event)" aria-haspopup="true" title="Run only as deep as you need">Depth ▾</button>
           <div class="menu modes" id="modemenu">
             ${(d.modes || []).filter(m => m.mode !== "ship").map(m => `<button onclick="runMode('${m.mode}')"><b>${esc(m.label)}</b>${m.estimate ? ` <small>${about(m.estimate)}</small>` : ""}<span class="sub">${esc(m.gives)}</span><span class="sub cost">${esc(m.cost)}</span></button>`).join("")}
             <hr>
             <button onclick="askShip()"><b>📦 Ship it…</b><span class="sub">${esc(((d.modes || []).find(m => m.mode === "ship") || {}).gives || "")}</span></button>
-          </div></span>
-        <button onclick="openEdit('', {})" title="Describe a change; Claude Code makes it, re-checks, rebuilds and gets it reviewed">✎ Change something</button>
+          </div></span></span>
+        <button onclick="openEdit('', {})" title="Describe a change to this design">Change something</button>
         <span class="more"><button onclick="toggleMenu(event)" aria-haspopup="true">More ▾</button>
           <div class="menu" id="moremenu">
+        ${d.can_optimise ? `<button onclick="run('optimise')" title="Search the params project.yaml lists under optimise: for a lighter design that still passes every check; writes OPTIMISE.md (runs on this computer, no Claude usage)">⚖ Optimise</button>` : ""}
+        ${d.last_mode && !["kit", "ship"].includes(d.last_mode) ? `<button class="upgrade" onclick="runMode('kit')" title="Runs only what the ${esc(modeLabel(d, d.last_mode))} run did not: built parts and solved load cases are reused">⬆ Upgrade to Build kit</button>` : ""}
+
             <button onclick="run('check')">✓ Check everything <span class="sub">no files${e.check ? " · " + about(e.check) : ""}</span></button>
             <button onclick="run('quick')">⚡ Quick check <span class="sub">no motion or strength</span></button>
             <button onclick="showDecided('${d.name}')">🧭 How Kerf decided <span class="sub">what it researched, the options it weighed and why it chose this one</span></button>
@@ -618,17 +672,52 @@ function renderProject() {
             <hr>
             <button onclick="openDuplicate()">⧉ Duplicate…</button>
           </div></span>
+
       </div>
     </div>
     ${S.settings.autofix ? '<p class="note" style="margin:0 16px 10px">Auto-fix is on: a failed build can use your Claude Code plan and change this design. Turn it off under More.</p>' : ''}
-    <nav class="tabs" id="tabs">${tabs.map(([k, l]) => `<button class="tab ${S.tab === k || (k === "files" && S.tab === "docs") ? "sel" : ""}" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}<span class="uline" id="uline"></span></nav>
-    <div class="body" id="tabbody"></div>`;
-  moveUline(); renderTab();
+    <div class="tabs" id="tabs" role="tablist" aria-label="Project views" onkeydown="projectTabKey(event)">${tabs.map(([k, l]) => `<button class="tab" id="project-tab-${k}" role="tab" aria-controls="tabbody" data-t="${k}" onclick="setTab('${k}')">${l}</button>`).join("")}</div>
+    <div class="body" id="tabbody" role="tabpanel" tabindex="0"></div></section>`;
+  updateProjectBrief(); setTab(S.tab);
+  $("#tabs").scrollLeft = tabScroll;
+  if (["project-brief-toggle", "project-build-summary"].includes(focused) || focused.startsWith("project-tab-")) document.getElementById(focused)?.focus({preventScroll:true});
 }
-function toggleMenu(ev) { ev.stopPropagation(); const m = ev.currentTarget.nextElementSibling; m.classList.toggle("open"); }
-addEventListener("click", () => document.querySelectorAll(".menu.open").forEach(m => m.classList.remove("open")));
-function moveUline() { const b = document.querySelector(`.tab[data-t="${S.tab === "docs" ? "files" : S.tab}"]`), u = $("#uline"); if (b && u) { u.style.left = b.offsetLeft + "px"; u.style.width = b.offsetWidth + "px"; } }
-function setTab(t) { S.tab = t; document.querySelectorAll(".tab").forEach(b => b.classList.toggle("sel", b.dataset.t === (t === "docs" ? "files" : t))); moveUline(); renderTab(); }
+function closeBuildDetails(focus = false) {
+  const details = $("#project-build-details"); if (!details) return;
+  details.open = false; S.buildDetailsOpen = null;
+  if (focus) $("#project-build-summary").focus();
+}
+function updateProjectBrief() {
+  const p = $("#project-description"), b = $("#project-brief-toggle");
+  if (p && b) b.hidden = !p.classList.contains("open") && p.scrollHeight <= p.clientHeight;
+}
+function toggleProjectBrief() {
+  const p = $("#project-description"), b = $("#project-brief-toggle"), open = !p.classList.contains("open");
+  S.briefOpen = open ? S.detail.name : null; p.classList.toggle("open", open);
+  b.setAttribute("aria-expanded", String(open)); b.textContent = open ? "Show less" : "Show full description";
+  updateProjectBrief();
+}
+function toggleMenu(ev) { ev.stopPropagation(); closeBuildDetails(); const m = ev.currentTarget.nextElementSibling; m.classList.toggle("open"); }
+addEventListener("click", e => {
+  document.querySelectorAll(".menu.open").forEach(m => m.classList.remove("open"));
+  if (!e.target.closest(".project-build-details")) closeBuildDetails();
+});
+function setTab(t) {
+  S.tab = t;
+  document.querySelectorAll("#tabs .tab").forEach(b => {
+    const selected = b.dataset.t === (t === "docs" ? "files" : t);
+    b.classList.toggle("sel", selected); b.setAttribute("aria-selected", String(selected)); b.tabIndex = selected ? 0 : -1;
+    if (selected) $("#tabbody").setAttribute("aria-labelledby", b.id);
+  });
+  renderTab();
+}
+function projectTabKey(e) {
+  const tabs = [...document.querySelectorAll("#tabs .tab")], i = tabs.indexOf(e.target);
+  if (i < 0 || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  e.preventDefault();
+  const next = e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+  setTab(tabs[next].dataset.t); tabs[next].focus();
+}
 
 function notBuilt(what) {
   return `<div class="card empty"><b>Not built yet</b>${what}<br><br><button class="primary" onclick="run('build')">⚙ Build now</button>
@@ -637,9 +726,10 @@ function notBuilt(what) {
 function renderTab() {
   const d = S.detail, el = $("#tabbody"), t = S.tab;
   if (!el) return;
+  el.classList.toggle("model-pane", t === "model");
   el.style.animation = "none"; el.offsetHeight; el.style.animation = "";
   if (t === "model" && liveOf(d).on) {
-    el.innerHTML = liveBar(d) + `<iframe class="viewer" id="mainviewer" onload="liveLoaded(this)" src="/live/${d.name}/viewer.html?t=${Date.now()}"></iframe>
+    el.innerHTML = liveBar(d) + `<iframe class="viewer" title="3D model of ${esc(d.title)}" id="mainviewer" onload="liveLoaded(this)" src="/live/${d.name}/viewer.html?t=${Date.now()}"></iframe>
       <div class="liveline" id="liveline">${liveLine(liveOf(d))}</div>`;
   } else if (t === "model") {
     const vers = (d.history || []).filter(h => h.geom && h.fingerprint !== (d.report || {}).fingerprint);
@@ -647,7 +737,7 @@ function renderTab() {
         <select id="cmpsel" onchange="compareWith(this.value)"><option value="">—</option>${vers.map(h => `<option value="${h.stamp}">${esc(new Date(h.time * 1000).toLocaleString())}${h.ok ? "" : " (had problems)"}</option>`).join("")}</select>
         <span class="note" id="cmpnote"></span></div>` : ""}
       ${(d.running || []).length ? `<div class="banner info" style="margin-bottom:10px">⟳ ${esc(d.running[0])}: still checking, making the print files and pictures in the background. This model is ready to look at; it refreshes with the full version when that finishes.</div>` : ""}
-      <iframe class="viewer" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>` : (d.running || []).length ? `<div class="card empty"><b>Building the 3D model…</b>It shows here first, as soon as the parts are made; the checks and files follow in the background.</div>` : notBuilt("The 3D model appears here after the first build.");
+      <iframe class="viewer" title="3D model of ${esc(d.title)}" id="mainviewer" onload="viewerLoaded(this)" src="${fileUrl(d.name, d.viewer)}?t=${Date.now()}"></iframe>` : (d.running || []).length ? `<div class="card empty"><b>Building the 3D model…</b>It shows here first, as soon as the parts are made; the checks and files follow in the background.</div>` : notBuilt("The 3D model appears here after the first build.");
     el.insertAdjacentHTML("afterbegin", liveBar(d));
   } else if (t === "tune") renderTune(el);
   else if (t === "results") renderResults(el, d.report);
@@ -809,18 +899,18 @@ function issueCards(iss, raw) {
 function renderResults(el, rep) {
   if (!rep) { el.innerHTML = notBuilt("Check results appear here."); return; }
   const P = rep.problems || [], W = rep.warnings || [], R = (rep.requirements || []).filter(r => !r.skipped);
-  const pass = R.filter(r => r.ok).length;
+  const pass = R.filter(r => r.ok).length, old = S.detail.stale;
   const tight = R.filter(r => { const m = margin(r); return m && r.ok && m.cls === "mid"; }).length;
   el.innerHTML = `
     <div class="summary card">${ring(pass, R.length)}
-      <div class="stat"><b>${rep.ok ? "Ready to print" : P.length + " to fix"}</b><span>${rep.ok ? "every check passes" : "problems block printing"}</span></div>
+      <div class="stat"><b>${old ? "Previous build" : rep.ok ? "Checks passed" : P.length + " to fix"}</b><span>${old ? "results do not cover current changes" : rep.ok ? "reported checks passed" : "problems block printing"}</span></div>
       <div class="stat"><b>${pass}</b><span>engineering checks pass</span></div>
       <div class="stat"><b>${tight}</b><span>with under 20 % margin</span></div>
       <div class="stat"><b>${W.length}</b><span>warnings to read</span></div></div>
     ${(rep.stubs || []).length ? `<div class="banner info">Still being designed: ${rep.stubs.length} part${rep.stubs.length == 1 ? " is a" : "s are"} placeholder${rep.stubs.length == 1 ? "" : "s"} (${esc(rep.stubs.join(", "))}). Collisions with them are expected and hidden until they are modelled; the list below is what is left besides them.</div>` : ""}
-    <div class="banner ${rep.ok ? "ok" : "bad"}">${rep.ok ? "Parts fit, nothing collides at any joint angle, every screw lines up and can be reached, and strength and the other requirements hold." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.${(rep.stubs || []).length || (S.detail.issues && S.detail.issues.work && S.detail.issues.work.state !== "idle") ? "" : ` <button class="primary" style="margin-left:10px" onclick="run('fix')" title="Claude Code fixes every problem at its cause, re-checks, rebuilds and commits">🔧 Fix these</button>`}`}</div>
+    <div class="banner ${old ? "warn" : rep.ok ? "ok" : "bad"}">${old ? "These checks describe the previous build. Rebuild the changed design to get current results; the saved results below are for reference." : rep.ok ? "The reported checks passed. Read the warnings and design review status before making this design." : `${P.length} problem${P.length == 1 ? "" : "s"} to fix before printing.${(rep.stubs || []).length || (S.detail.issues && S.detail.issues.work && S.detail.issues.work.state !== "idle") ? "" : ` <button class="primary" style="margin-left:10px" onclick="run('fix')" title="Claude Code fixes every problem at its cause, re-checks, rebuilds and commits">🔧 Fix these</button>`}`}</div>
     ${!rep.ok ? workBanner(S.detail.issues) : ""}
-    ${rep.ok ? certificate(S.detail) : ""}
+    ${rep.ok && !old ? certificate(S.detail) : ""}
     ${P.length ? issueCards(S.detail.issues, P) : ""}
     <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Engineering requirements</h3>${reqTable(rep.requirements)}</div>
     ${(rep.maker_notes || []).length ? `<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">For you, when you build it</h3><ul class="msgs">${rep.maker_notes.map(n => `<li>${esc(n).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")}</li>`).join("")}</ul></div>` : ""}
@@ -1112,24 +1202,24 @@ function stepper(items, key) {   // items: [{k,label,icon,state}] state: done|ac
     return `<div class="step ${it.state}${f}"><div class="node">${it.state === "done" ? "✓" : it.icon}</div><label>${esc(it.label)}</label></div>`; }).join("")}</div>`;
 }
 
-/* ready-to-print certificate: only for a current, passing build; says plainly when the independent review is still to come */
+/* Build check summary: recorded results, including whether an independent review is still to come. */
 function certificate(d) {
   const R = ((d.report || {}).requirements || []).filter(r => !r.skipped), n = d.summary_numbers || {}, m = (d.report || {}).mass || {};
   const plates = (d.files || []).filter(x => x.startsWith("out/plates/") && x.endsWith(".3mf")).length;
-  if (d.stale) return `<div class="banner warn">🏅 The ready-to-print certificate is out of date: the design changed after the last build. Build again to renew it.</div>`;
+  if (d.stale) return `<div class="banner warn">This build check summary is out of date: the design changed after the last build. Build again for current results.</div>`;
   const when = d.built_at ? new Date(d.built_at * 1000).toLocaleDateString() : "";
   const rows = [["Engineering checks passed", `${R.filter(r => r.ok).length} of ${R.length}`],
     ["Printed parts", n.print_parts != null ? String(n.print_parts) : "–"], ["Print plates", plates ? String(plates) : "–"],
     ["Filament", n.filament_g != null ? fmt(n.filament_g) + " g" : "–"], ["Finished weight", m.device_g != null ? fmt(m.device_g) + " g" : "–"],
     ["Independent review", d.review && d.review.ok ? "passed ✓" : "not done yet"]];
-  return `<div class="cert card" id="cert"><div class="seal">🏅</div><div style="flex:1"><div class="note">Kerf · ${esc(when)}</div><h3 style="margin:2px 0 6px">Ready to print: ${esc(d.title)}</h3>
-    <p class="note" style="margin:0 0 8px">Every part fits, nothing collides while it moves, every screw lines up and can be reached, and the strength and other numbers below hold.</p>
+  return `<div class="cert card" id="cert"><div style="flex:1"><div class="note">Kerf · ${esc(when)}</div><h3 style="margin:2px 0 6px">Build check summary: ${esc(d.title)}</h3>
+    <p class="note" style="margin:0 0 8px">Recorded results for this build. Read its warnings, design review status and assembly instructions before making it.</p>
     <table>${rows.map(([k, v]) => `<tr><td>${k}</td><td class="num"><b>${v}</b></td></tr>`).join("")}</table>
     <button style="margin-top:8px" onclick="printCert()">🖨 Print / save as PDF</button></div></div>`;
 }
 function printCert() {
   const w = window.open("", "_blank"); if (!w) return;
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>Ready to print</title><style>body{font:15px system-ui;margin:40px;color:#111}.seal{font-size:54px}table{border-collapse:collapse}td{padding:4px 18px 4px 0;border-bottom:1px solid #ddd}button{display:none}.note{color:#555}</style>${$("#cert").innerHTML}`);
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Build check summary</title><style>body{font:15px system-ui;margin:40px;color:#111}table{border-collapse:collapse}td{padding:4px 18px 4px 0;border-bottom:1px solid #ddd}button{display:none}.note{color:#555}</style>${$("#cert").innerHTML}`);
   w.document.close(); w.focus(); w.print();
 }
 
@@ -1139,13 +1229,13 @@ const TOUR = {
           ["#plist", "Your projects. The dot shows whether each one passes all its checks."],
           ["#nav_work", "See what Kerf is working on right now."], ["#jobs", "Running and recent jobs. Click one to watch it work."],
           ["#helpbtn", "Lost? Press ? on any page for a walk-through like this one."]],
-  head: [[".head h1", "The project you are looking at."], [".actions .primary", "Build kit: checks everything, then makes the print files, shopping list and assembly guide."],
+  head: [[".head h1", "The project you are looking at."], ["#project-build", "Build kit: checks everything, then makes the print files, shopping list and assembly guide."],
          ["#tabs", "Each tab shows one side of the design."]],
   model: [["#mainviewer", "The 3D model. Drag to spin it, scroll to zoom. Use the buttons on it to cut it open or colour the stress."]],
   tune: [[".param", "Move a slider to change a measurement. Under it: which parts and checks it changes."],
          [".grid2 .primary", "Try these values: Kerf rebuilds a copy and re-checks it, and your design stays untouched until you Save."]],
   results: [[".summary", "The score: how many engineering checks pass and how many are close to their limit."], [".issue", "Something to fix, explained: what is wrong, why it matters, what usually fixes it."],
-            [".cert", "This design passed everything: here is its certificate."], ["table", "Each row is a number the design must meet. The bar shows how much room is left. Hover a name for what it means."]],
+            [".cert", "This build’s recorded checks and review status. Read these before making the design."], ["table", "Each row is a number the design must meet. The bar shows how much room is left. Hover a name for what it means."]],
   files: [[".files h3", "Everything you need to make it. Print plates go straight to the printer."]],
   history: [[".hist", "Each build is saved with its numbers and picture, so you can compare and go back."]],
 };
@@ -1922,7 +2012,7 @@ function closedScreen(quit = false) {
   if (quit) setTimeout(() => window.close(), 400);
 }
 
-addEventListener("resize", moveUline);
+addEventListener("resize", updateProjectBrief);
 loadProjects(); pollJobs(); loadSettings();
 setInterval(loadProjects, 5000); setInterval(pollJobs, 3000); setInterval(pollQuotes, 15000); setTimeout(pollQuotes, 1500);
 </script>
