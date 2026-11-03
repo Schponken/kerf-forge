@@ -2,8 +2,9 @@
  "item": "Learning Mode phase 4, scorecards (Codex OK): each lesson / gate / strategy in learning/lessons.json tracks times applied, what it caught, work saved, times it blocked good work; strong ones promoted, dead or blocking ones flagged; Studio panel; tests",
  "session": "codex-learning-scorecards",
  "since": 1793682410.318495,
- "heartbeat": 1793682410.318495,
+ "heartbeat": 1793682674.990186,
  "provider": "Codex",
  "thread_id": "01a19fcc-9721-73c0-8aba-97f04bde0861",
- "since_utc": "2026-11-03 05:06"
+ "since_utc": "2026-11-03 05:06",
+ "activity": "Scorecard ledger, preservation, Studio panel and concurrency checks complete; existing Studio regressions reporting"
 }
