@@ -1484,3 +1484,20 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Saved options ask before replacing a distinct brief. Loading uses one response and ignores superseded choices or responses overtaken by newer typing, examples or a replacement screen. Existing exact-context and unanswered-question design gates remain.
 - Targeted browser fixture: tests/test_design_briefing.py — 1 passed in 17.46 s (four desktop/phone light/dark journeys), including navigation/reload, manual-name preservation, clarification recovery, declined discard/replacement, delayed response, latest selection and storage denial. Browser mark warning is pre-existing in this checkout.
 - One batched visual review plus confirmation; captures in /tmp/kerf-round2-briefing are labelled synthetic. Capture animation settling corrected in the fixture. Detector findings are incumbent styles outside this change. No live research/design jobs, builds, FEA, full suite, new dependencies, catalog/threshold changes or app installation.
+## 2026-11-02 — Viewer idle work and comparison resources (Codex, round2-viewer-perf)
+- Replaced perpetual frame polling with wakeups for scene changes, OrbitControls damping, joint playback and shared
+  tweens. Paused installation-only tweens now sleep; the coordinated one-line action-resume wakeup preserves their
+  pause clock. Live mesh updates and delayed glow removal still wake the viewer.
+- Coalesced hover picking to the latest pointer once per frame; leaving/dragging cancels pending hover. Comparison
+  replacement/clear now releases both surface and edge geometry/materials instead of only the surface geometry.
+- Deterministic Chromium/SwiftShader fixture, before → after: stationary callbacks 15 → 0 over 300 ms; one synchronous
+  80-event pointer burst 80 → 1 raycast; comparison resources disposed 1/4 → 4/4 on three replacement/clear cycles;
+  settled damping callbacks 12 → 0 over 200 ms. Final fixture also observes 0 paused-action callbacks over 150 ms,
+  preserved tool position and successful resume. These count lifecycle work; they do not measure end-to-end speed.
+- Final new regression: tests/test_viewer_performance.py, 1 PASS in 10.45 s. Existing placement, combined pose sweep,
+  and cut/stress/Build it/compare/snapshot browser regressions: 3 PASS in 23.37 s. Existing stage keyboard/disclosure
+  browser case also passed. An intermediate placement page generated before the action-resume wakeup timed out;
+  final-source rerun passed. PYTHONPATH explicitly selected this checkout; reused existing dependencies, doctor ALL OK.
+- Read-only current-template saved bionic_finger desktop/light and phone/dark captures inspected: no JavaScript errors
+  or document overflow. /tmp/kerf-viewer-perf-{desktop,phone}.png. Detector reports only the incumbent global type
+  hierarchy warning. No project source/output, catalog/check/review changes, full suite, stress job or installation.
