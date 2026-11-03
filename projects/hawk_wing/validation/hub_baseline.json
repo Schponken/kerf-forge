@@ -1,0 +1,128 @@
+{
+  "purpose": "Conservative baseline diagnostic; not flight-strength proof or a converged mesh study",
+  "source_snapshot": "5a98dc7",
+  "fingerprint": "adf3ad47a8d22d2d",
+  "runtime_base_sha": "4b73e2b2b710ea7fe0dc6fc52522b1edc85571a6",
+  "part": "hub_r",
+  "shape_from": "validated installed per-part cache matching installed source",
+  "load_basis": "1800 g at 6 g, outer panel approximately 35 N and 5.3 Nm about pivot; applying 5.3 Nm plus socket forces is intentionally conservative, not the exact distributed load",
+  "fixed": {
+    "any": [
+      {
+        "cylinder": {
+          "at": "bear_top",
+          "r": 8,
+          "tol": 0.4,
+          "span": [
+            0,
+            5
+          ]
+        }
+      },
+      {
+        "cylinder": {
+          "at": "bear_bot",
+          "r": 8,
+          "tol": 0.4,
+          "span": [
+            0,
+            5
+          ]
+        }
+      }
+    ]
+  },
+  "loads": [
+    {
+      "cylinder": {
+        "at": "main",
+        "r": 4.1,
+        "tol": 0.4
+      },
+      "bearing_n": [
+        0,
+        0,
+        25.55
+      ]
+    },
+    {
+      "cylinder": {
+        "at": "rear",
+        "r": 3.1,
+        "tol": 0.4
+      },
+      "bearing_n": [
+        0,
+        0,
+        9.45
+      ]
+    },
+    {
+      "any": [
+        {
+          "cylinder": {
+            "at": "main",
+            "r": 4.1,
+            "tol": 0.4
+          }
+        },
+        {
+          "cylinder": {
+            "at": "rear",
+            "r": 3.1,
+            "tol": 0.4
+          }
+        }
+      ],
+      "torque_nmm": 5300,
+      "axis": {
+        "at": [
+          0,
+          0,
+          0
+        ],
+        "dir": [
+          1,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "sf": 2,
+    "direction": "auto",
+    "max_disp_mm": 1,
+    "mesh_size": 4
+  },
+  "result": {
+    "ok": false,
+    "value": 24.04,
+    "limit": 24.0,
+    "sf_min": 2.0,
+    "applied_force_n": [
+      0.3823,
+      0.0189,
+      35.0
+    ],
+    "applied_moment_nmm": [
+      11435.358,
+      -4734.969,
+      -217.35
+    ],
+    "max_disp_mm": 11.925,
+    "max_disp_at": [
+      46.8,
+      195.0,
+      -1.0
+    ],
+    "work_nmm": 609.6056898103797,
+    "detail": "FEA hub_r: von Mises p99.9 (MPa) vs PETG auto strength / SF 2; peak 63.80 MPa at [222.6, 150.9, 4.7], deflection 11.925 mm (limit 1) at [46.8, 195.0, -1.0], 22606 elements; iterative solver stalled on a 4.00 mm mesh (196347 unknowns); solved exactly on a coarser mesh"
+  },
+  "limits": [
+    "Solid CAD analysis does not prove the declared 50% infill print.",
+    "Iterative solver stalled and used its built-in coarser exact solve; no mesh convergence study was performed.",
+    "The 1 mm displacement target is a diagnostic stiffness target, not an existing project acceptance value.",
+    "Geometry is the original 150 mm pivot baseline, not the later 135 mm packaging candidate."
+  ]
+}

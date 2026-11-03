@@ -1514,3 +1514,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Coordinated ownership: glove/hub only. Made the hub box taper relative to pivot_y so the integration
   worker's inward pivot move preserves the original section transition. Python compilation passed;
   CAD/normal-flight strength verification and actual weight reduction are still pending.
+- Baseline hub diagnostic completed: 24.04 MPa vs 24 MPa (SF2), 11.925 mm deflection vs a 1 mm diagnostic target,
+  under conservative 35 N socket lift + 5.3 N m torque. Solver fell back to a coarser mesh; not a convergence
+  proof and not proof of 50% infill. Full regions/results/limits saved in validation/hub_baseline.json.
+  Do not thin this hub: no demonstrated stiffness margin. Removed the unbuilt cavity candidate; geometry
+  remains the packaging taper fix only. Weight target and normal-flight structural proof remain unresolved.
