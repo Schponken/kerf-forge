@@ -997,3 +997,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Full batch remains HELD. No actual project rebuild or native app launch. The surface brief records limits;
   inherited small engineering text was the only mechanical design-detector warning. Combined shell validation
   belongs to the integration owner; this branch is frozen for that handoff.
+
+## 2026-11-03 — Object stage: integrated validation receipt (Codex)
+- Integration owner verified clean head d5148800dd26f9f4a1771b5b41001f1b18e4927b: 28 targeted cases passed
+  in 123.91 s, including all 12 new saved-viewer/helper/UI cases and both existing viewer regression nodes.
+  The viewer source matches frozen object-stage head 5c5be3a183254a10f0253d56b30c6afc0db4780d. Receipt:
+  studio-redesign-integration/.cache/redesign-integration/initial-output.log and initial-results.xml.
+  Twelve existing unregistered-browser-marker warnings remain; there were no test failures.
+- Read the output and viewer JUnit cases for this closeout; checked the existing PLAN item and marked PR #60
+  ready. This resolves the pending final validation in the earlier entry. No source edits, test reruns,
+  captures or project builds during closeout; full batch and FEA remain held. Integration owns any later changes.
