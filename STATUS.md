@@ -579,3 +579,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+
+### 2026-11-02 — Studio Codex command compatibility (Codex)
+- Parent's read-only installed-CLI probe (`codex-cli 0.166.0-alpha.5.1`) found that `--full-auto`
+  exits 2 as an unexpected argument before a job can start. Studio now uses `--sandbox workspace-write`,
+  matching the official [noninteractive recommendation](https://learn.chatgpt.com/docs/agent-approvals-security)
+  (opened 2026-11-02). The existing network config and skip-git flag remain; explicit KERF_CODEX_ARGS
+  still replaces defaults. No approval override, bypass flag or persistent configuration change.
+- Updated only current command documentation; historical STATUS entries remain intact. **11 targeted
+  test_agent tests pass in 3.36 s**, including new/resume default argument order and explicit override
+  preservation. Generated `agent.command` argv with its prompt replaced by `--help` exits 0 for both
+  exec and exec resume on the installed binary; no prompt or real session was submitted.
+- Doctor ALL OK using existing dependencies (optional Arduino/simavr unavailable). No actual agent,
+  auth/config mutation, model call, project build, full batch or stress run. Live job execution was
+  deliberately not exercised; the queued automatic-resume setting race is a separate task.

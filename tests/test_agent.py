@@ -55,11 +55,22 @@ def test_codex_command_rewrites_the_skill_and_keeps_prompt_last(bins):
     bins("codex")
     cmd = agent.command("codex", "/kerf a desk lamp\n\nProject folder name: projects/lamp.")
     assert cmd[1:3] == ["exec", "--json"] and agent.who_runs(cmd) == "codex"
-    assert "--full-auto" in cmd and "--dangerously-bypass-approvals-and-sandbox" not in cmd
+    assert cmd[3:-1] == ["--sandbox", "workspace-write", "-c", "sandbox_workspace_write.network_access=true", "--skip-git-repo-check"]
+    assert "--full-auto" not in cmd and "--dangerously-bypass-approvals-and-sandbox" not in cmd
     assert ".claude/skills/kerf/SKILL.md" in cmd[-1] and "a desk lamp" in cmd[-1] and "AGENTS.md" in cmd[-1]
     assert not cmd[-1].startswith("/kerf")
     r = agent.command("codex", "continue", resume="thread-123")
     assert r[r.index("resume") + 1] == "thread-123" and r[-1].startswith("continue")
+    assert r[3:r.index("resume")] == cmd[3:-1]
+
+
+@pytest.mark.parametrize("resume", [None, "thread-123"])
+def test_explicit_codex_args_still_replace_defaults(bins, monkeypatch, resume):
+    bins("codex")
+    monkeypatch.setenv("KERF_CODEX_ARGS", "--sandbox 'read-only'")
+    cmd = agent.command("codex", "inspect only", resume=resume)
+    assert cmd[3:-1] == ["--sandbox", "read-only", *(["resume", resume] if resume else [])]
+    assert cmd[-1].startswith("inspect only")
 
 
 def test_claude_command_unchanged(bins):
