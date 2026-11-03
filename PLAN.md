@@ -331,3 +331,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Build it site metadata: include catalog-backed screw-pivot heat-set insert locations once per physical site, with stable identities and exact part transforms; focused producer regressions.
 
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
+
+- [x] Studio Tune round 2: honest requirement comparisons and recover recorded try values into a validated draft; fixture browser tests
