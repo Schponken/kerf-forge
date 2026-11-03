@@ -936,3 +936,41 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   `.cache/work-job-dedup/`; inspected dark desktop and light phone. Existing tall phone sidebar is addressed by the
   separate mobile-shell PR #40. `kerf doctor`: **ALL OK**, existing optional firmware tools unavailable. No UI redesign,
   real chat/process, timer, project build, stress solve or full suite.
+
+## 2026-11-03 02:51 UTC — Project workspace: model space and evidence before decoration (Codex)
+- Reproduced the original header defects in an offline main fixture: the truncated description was an unfocusable
+  paragraph, and the tab underline made scrollHeight exceed clientHeight by 1px. The project now has an escaped
+  two-line brief with a keyboard disclosure, proper keyboard tabs/selection, stable refresh focus and horizontal
+  tab position, and a flex model pane with a usable 360px minimum. Desktop uses the actual remaining space; short
+  screens retain main scrolling. Existing build/depth/change/menu/export handlers and geometry remain intact.
+- Status and the primary next step remain visible: Review checks for a failed build, Build kit for unbuilt/stale
+  designs. The user's follow-up requested less persistent prose: saved cost/mass/print facts and advisory context
+  now live in a native Build details popover with click/tap/keyboard, Close/Escape/outside dismissal, refresh state,
+  and reduced motion. No essential state requires hover. Stale Checks explicitly describe the previous build;
+  the printable record is now Build check summary, keeping its fields/PDF action without unconditional readiness
+  promises. Help targets the stable Build kit control rather than relying on its contextual primary styling.
+- Final hierarchy correction groups Build kit/Depth as a split control, moves Optimise/Upgrade into More, and
+  places the lighter Build details text disclosure beside status. The action row has four groups rather than six
+  competing controls. The affected workspace node then **passed in 12.70 s**, overlapping the selections below;
+  it also verifies the moved action dispatches. A fixture click initially hit its still-open popover; explicit
+  Close before the next action corrected the test flow, with all interaction assertions retained.
+- Latest affected selection: **2 passed in 13.96 s** (new workspace browser + existing Depth/Ship confirmation).
+  Prior correction selection: **2 passed in 11.60 s** (same workspace + existing glossary/tour/summary), and the
+  original phone Tune/recovery node passed. These overlap: four distinct nodes, not summed repeated passes.
+  The new node covers 1512x982, 390x844 and 844x390, both themes, escaped/long text, all status branches, keyboard
+  and refresh, popover dismissal/containment/reduced motion, model bounds and harmless action dispatch. Initial
+  new-node failure came from my empty glossary fixture; a representative nonempty fixture fixed it without
+  changing production or weakening assertions. One expected browser-marker warning remains until PR #4 lands.
+- Final native WKWebView fixture (no visible app/server): both themes at widths 1512/390 passed tab overflow,
+  keyboard disclosure/selection and popover bounds/close checks. At 1512x982 the frame spans y280..958 (678px);
+  phone retains the 360px minimum and main scroll. Earlier fixture attempted to reassign a const URL helper;
+  fixture-only URL replacement corrected that setup error. No live app was launched or modified.
+- Visual evidence: `.cache/project-workspace/grouped/` contains closed/open-details and phone-model captures.
+  The saved FPV viewer, its matching report fingerprint and real-length description were read from an existing
+  output only; reported cost/mass/print facts are preserved. Mocked Studio APIs, no rebuild. Root and sibling
+  reviewed the first desktop/phone batch; sibling found no workspace-specific blocker. Current branch retains
+  the old global shell; manager owns combined shell/Work/project visual proof. Phone space is not declared solved.
+- `kerf doctor`: **ALL OK**, existing optional firmware tools absent. Budget/process checks preceded targeted
+  runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
+  No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
+  in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
