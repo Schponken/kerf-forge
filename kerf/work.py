@@ -199,11 +199,12 @@ def _join_active_job(job, source, session, observed):
     job["projects"] = _projects({"projects": job["projects"] + session["projects"]})
     job["source_label"] += " + " + session["source_label"]
     updated, started = number(observed.get("updated_at")), job["started_at"]
-    fresh = observed.get("live") is True and updated is not None and started is not None and updated >= started
+    # Codex reports whole seconds; ordering within the same second is unknowable.
+    fresh = observed.get("live") is True and updated is not None and started is not None and int(updated) >= int(started)
     attention = [job["attention"]] if job["attention"] else []
     boundary = next((e.get("k") for e in reversed(source.get("events") or []) if isinstance(e, dict)
                      and (e.get("k") in ("hint", "done") or (e.get("k") == "note" and plain(e.get("text"))))), None)
-    runtime_fresh = fresh and updated >= (job["updated_at"] or 0) and not attention and boundary not in ("hint", "done")
+    runtime_fresh = fresh and int(updated) >= int(job["updated_at"] or 0) and not attention and boundary not in ("hint", "done")
     if fresh:
         job["updated_at"] = max(job["updated_at"] or 0, updated)
         job["progress"], job["remaining"] = session["progress"], session["remaining"]

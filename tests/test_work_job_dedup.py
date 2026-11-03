@@ -157,15 +157,31 @@ def test_new_nonempty_note_supersedes_old_boundary_for_live_waiting(snapshot, mo
     assert item["attention"] == "This session is waiting for your input."
 
 
+@pytest.mark.parametrize("started,event_time,updated,expected", [
+    (NOW-0.2, None, NOW-1, "waiting"),
+    (NOW-100, NOW-0.2, NOW-1, "waiting"),
+    (NOW-0.2, None, NOW-2, "running"),
+    (NOW-100, NOW-0.2, NOW-2, "running"),
+])
+def test_whole_second_chat_time_compares_at_shared_precision(snapshot, monkeypatch, started, event_time, updated, expected):
+    observed = record(waiting=True, updated=updated)
+    assert type(observed["updated_at"]) is int  # app-server int64 seconds pass through _record unchanged.
+    observe(monkeypatch, observed)
+    events = [] if event_time is None else [{"k": "note", "text": NOTE, "t": event_time}]
+    item, = snapshot(job("j", agent="codex", session=THREAD, started=started, events=events))["items"]
+    assert item["state"] == expected
+    assert bool(item["attention"]) == (expected == "waiting")
+
+
 @pytest.mark.parametrize("boundary,expected", [({"k": "hint", "code": "auth"}, "Waiting for the process to stop."),
                                               ({"k": "done", "ok": True}, "Checks completed."),
                                               ({"k": "done", "ok": False}, "Checks found problems to fix.")])
 @pytest.mark.parametrize("cleanup", [False, True])
 def test_live_waiting_cannot_override_authoritative_job_boundary(snapshot, monkeypatch, boundary, expected, cleanup):
-    observe(monkeypatch, record(waiting=True), claims=[claim("old", stale=True)])
-    rows = [{"k": "note", "text": NOTE, "t": NOW-10}, {**boundary, "t": NOW-2}]
+    observe(monkeypatch, record(waiting=True, updated=NOW-1), claims=[claim("old", stale=True)])
+    rows = [{"k": "note", "text": NOTE, "t": NOW-10}, {**boundary, "t": NOW-0.4}]
     if cleanup:
-        rows += [{"k": "note", "text": " \n ", "t": NOW-1}, {"k": "tool", "phase": "check", "t": NOW-1}]
+        rows += [{"k": "note", "text": " \n ", "t": NOW-0.2}, {"k": "tool", "phase": "check", "t": NOW-0.2}]
     item, = snapshot(job("j", agent="codex", session=THREAD, events=rows))["items"]
     assert item["state"] == "running" and item["activity"] == expected and not item["action"]
     assert "waiting for your input" not in item["attention"]

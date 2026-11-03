@@ -709,8 +709,13 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Stacked on reviewed job-description PR #41 (`101003f`), itself based on #37; `_job` and frontend code are untouched.
   Validation: **98 passed, 2 browser nodes deselected in 0.14 s** (new dedup cases plus job states/activity/overview);
   dedicated discovery/refresh browser node **1 passed in 4.86 s**; two final note-precedence cases plus three docs
-  contract checks **5 passed in 2.16 s**. These selections do not overlap. Browser markers are explicit; this stack
-  retains the known marker-registration warning until pending fast-tests config lands.
+  contract checks **5 passed in 2.16 s**. These initial selections do not overlap. Browser markers are explicit; this
+  stack retains the known marker-registration warning until pending fast-tests config lands.
+- Final review caught timestamp precision: installed Codex app-server schema defines thread updatedAt as int64 Unix
+  seconds, while Studio start/events use fractional seconds. Same-second wait fixtures first produced **2 failed /
+  2 passed in 0.06 s**. Freshness now compares whole-second buckets; ordering within a second is explicitly unknown,
+  genuinely older seconds remain stale, and hint/done/attention still win. The affected dedup core file then had
+  **35 passed, 1 browser deselected in 0.05 s**, overlapping the earlier selection; not added as unique tests.
 - Browser fixtures use actual serialized data without agents: job-only to joined refresh keeps keyboard focus and
   open details, both controls, two owner scopes and full IDs at 1440/390 px in dark/light themes. Captures are in
   `.cache/work-job-dedup/`; inspected dark desktop and light phone. Existing tall phone sidebar is addressed by the
