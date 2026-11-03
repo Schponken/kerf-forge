@@ -193,9 +193,11 @@
    "outer_d": 16,
    "width": 5,
    "weight_g": 5,
-   "source": "https://www.im-tek.com/skf-625-z",
+   "source": "https://kramp.com/shop-de/en/p/deep-groove-ball-bearing-5x16x5mm-skf--7500625ZZ",
    "confidence": "datasheet",
-   "note": "SKF 625-Z."
+   "static_load_n": 380,
+   "dynamic_load_n": 1140,
+   "note": "SKF 625-Z/625-2Z family. Kramp SKF 7500625ZZ page (opened 2026-11-02) lists bore 5, OD 16, width 5 mm, basic static radial load 380 N, basic dynamic radial load 1140 N (the LOW end: other makers quote 670-675 N static / 1730 N dynamic for 625ZZ, e.g. Daiwa, NSK via qualitybearingsonline.ca, FAG 440 N / 1320 N). Earlier source https://www.im-tek.com/skf-625-z returned 403 to automated reading. Use C0 = 380 N for the pin couple check; a miniature bearing with a shield is not rated for large moment load, so the glove couple should be spread over the bearing spacing."
   },
   "688": {
    "bore": 8,
@@ -316,6 +318,233 @@
     40,
     50
    ]
+  },
+  "vslot_2040": {
+   "W": 20.0,
+   "H": 40.0,
+   "area_mm2": 292.7,
+   "mass_per_m_g": 790,
+   "mass_per_m_g_vendor_range": [
+    799,
+    900
+   ],
+   "Ix_mm4": 46935,
+   "Iy_mm4": 12132,
+   "axes": "Ix = 46935 mm4 (4.69 cm4) is bending about the horizontal axis with the 40 mm side as the DEPTH (rail standing tall, vertical load); Iy = 12132 mm4 (1.21 cm4) is bending about the vertical axis (sideways load, 20 mm side as the depth). Torsion J not computed.",
+   "alloy": "6063-T5 (OpenBuilds forum post) / 6060-T5 (Rat Rig, Electrokit)",
+   "E_GPa": 69,
+   "yield_MPa_min": 110,
+   "slot_positions": "Each 40 mm face has two slots centred 10 mm either side of the face centre (10 mm and 30 mm from either 20 mm end face); each 20 mm face has one slot at its centre. Six slots in total. Standing 40 mm tall, the upper slot of each 40 mm side face is centred 10 mm below the top face (30 mm above the base).",
+   "slot_opening_throat_mm": 6.25,
+   "slot_opening_vendor_mm": 6.0,
+   "v_groove": "90 deg included V (45 deg flanks). Face opening 9.16 mm wide at the surface, closing to the 6.25 mm throat after 1.455 mm of depth; throat neck 0.345 mm deep; T cavity 11.0 mm wide between 1.8 and 3.44 mm below the face, narrowing to 5.7 mm wide at 6.1 mm depth. Wheel runs on the two 45 deg flanks (each flank 2.06 mm long). Corner fillet 1.5 mm.",
+   "centre_hole_d": 4.2,
+   "centre_hole_note": "UNVERIFIED conflict: a MakerWorld rebuild of the OpenBuilds drawings says 4.2 mm for 20 mm series (M5 tap drill); bd_warehouse draws 4.6 mm (CAVITY_RADIUS 2.3). Makerstore says its 20-series ends are tapped M5x0.8, 10 mm deep. Plan on tapping M5 at 4.2 and test one end.",
+   "end_tap": "M5 x 0.8",
+   "stocked_lengths_mm": [
+    250,
+    280,
+    500,
+    1000,
+    1437,
+    1500,
+    2400
+   ],
+   "stocked_750": false,
+   "length_tolerance_mm": 0.25,
+   "price_usd": null,
+   "source": "https://bd-warehouse.readthedocs.io/en/latest/openbuilds.html ; https://ratrig.com/vslot-2040.html ; https://makerstore.cc/product-category/v-slot-linear-rail/ ; https://www.electrokit.com/en/v-slot-2040-natural-anodized-1000mm",
+   "confidence": "derived-from-drawing-model",
+   "note": "Section properties computed 2026-11-02 with build123d from bd_warehouse.open_builds.VSlotLinearRailProfile('20x40') (Apache-2.0, Gumyr; models the OpenBuilds drawing): area 292.74 mm2; Ix 46935, Iy 12132 mm4; 790.4 g/m at 2.70 g/cm3. Cross-check (search snippet, page NOT opened, returned 406): Systeal 1543 data sheet lists 296 mm2, 0.799 kg/m, 1.21 and 4.75 cm4. Other vendors differ (forum post 0.85 kg/m, Ix 1.28 / Iy 4.84 cm4; Hiyi-style 0.90 kg/m): use 0.80 kg/m for mass (vendor stated) and the drawing-derived inertias, then weigh a real piece. Mass of a 3 m rail = about 2.4 kg. Opened pages: Rat Rig (6060-T5, slot 6 mm, depth 6 mm, 250 and 1000 mm black or natural, EUR 2.76 shown for one option), Makerstore (LR-2040-S lengths 250/280/500/1000/1500/2400/1437 mm, price range 4.50-52.40 USD, no per-length price), Electrokit (6060-T5, 1000 mm +/-0.25, product no longer active, no price). 750 mm is NOT a stocked length at any vendor opened: buy 1000 mm pieces and cut to 750 (3 x 1000 gives 4 x 750 with 0 waste only if 4 x 750 = 3000: yes, 3 pieces give exactly four) or 2 x 1500 and cut each in half. E and yield are typical 6060/6063-T5 values (E 69 GPa, Rp0.2 >= 110 MPa per EN 755-2 for 6060 T5); no vendor page states them. openbuilds.com itself was unreachable from the research machine (DNS), so the OpenBuilds product page and drawing were not opened."
+  },
+  "vwheel_delrin_solid": {
+   "od": 23.9,
+   "width": 10.23,
+   "bearing_seat_bore": 16.0,
+   "bore": 5.0,
+   "bearings": "2 x 625-2RS (5x16x5), catalog bearings.625",
+   "shims": "2 x 5 mm precision shims (5 mm bore)",
+   "lock_nut": "1 x M5 nylon-insert lock nut",
+   "material": "Delrin (POM), black, Rockwell M80, compressive strength 63 MPa",
+   "eccentric_spacer": {
+    "cam_height_options_mm": [
+     6.0,
+     6.35
+    ],
+    "bore": 5.0,
+    "rim_od": 7.12,
+    "hex_af": 10.0,
+    "eccentric_offset": 0.79,
+    "adjust_range_mm": 1.5,
+    "plate_hole_d": 7.12,
+    "plate_hole_note": "eccentric hole in the plate = 7.12 mm (spacer rim); a normal hole = M5 clearance (about 5.2 mm); an OpenBuilds forum measurement from the STEP file says 7.11 mm; 'an occasional spacer needs persuading'",
+    "mass_g": 3.6
+   },
+   "wheel_centre_to_face": 10.0,
+   "wheel_centre_to_face_note": "OpenBuilds staff rule (forum thread 'solid v wheel spacing', read via search snippet, page not opened): centre-to-centre of two opposed solid V wheels = extrusion depth + 20.0 mm, so each axle sits 10.0 mm outside the rail face; for a 20 mm wide face (rail side faces of a standing 2040) the plate holes are 40.0 mm apart, with +/-0.75 mm eccentric trim. Mini V wheels use +12 mm (6 mm). Sanity check: wheel radius 11.95 - 10.0 = 1.95 mm of the wheel's V rim enters the groove; bd_warehouse XtremeSolidVWheel (same 23.9 mm OD, 10.2 mm wide) draws 2.15 mm 45 deg groove chamfers, and the rail V chamfer is 1.455 mm deep, so the contact lands on the flanks as intended. Rail-to-rail variation is real (users measured 40.13-40.49 mm for OpenRail vs 39.7 nominal): keep the eccentric.",
+   "mass_g": 3.5,
+   "mass_g_note": "3.5 g is the wheel alone (Makerstore listing, 0.0035 kg); kit with two 625-2RS bearings (about 5 g each, catalog), shims and nut is about 15 g.",
+   "load_rating_n": null,
+   "load_rating_note": "NONE published for the wheel or kit. Limit is the 625 bearing: catalog bearings.625 static 380 N / dynamic 1140 N radial (low end). With preload from the eccentric the wheel sees preload plus the sled's side load: size the number of wheels against 380 N per bearing with a >= 2 factor.",
+   "price_usd": 5.19,
+   "price_note": "5.19 USD per kit (search snippet of openbuildspartstore.com / us.openbuilds.com, page not opened); Rat Rig lists EUR 2.75 (sale EUR 1.00); Makerstore wheel only 3.00 USD.",
+   "source": "https://ratrig.com/solid-v-wheel-kit.html ; https://www.electrokit.com/en/solid-v-wheel-kit ; https://makerstore.cc/?p=4484 ; https://bd-warehouse.readthedocs.io/en/latest/openbuilds.html",
+   "confidence": "multiple-vendors",
+   "note": "OD 23.90, bearing-seat bore 16 (each 625 sits in a 16 mm counterbore; the wheel does not have a 16 mm through-bore), width 10.23: Rat Rig (opened) and Electrokit (opened) agree. Ratrig's other 'Dual' wheel lists 24.39 OD, a different product. Eccentric spacer numbers from bd_warehouse.open_builds.EccentricSpacer (Apache-2.0, V7: 6 mm or 1/4 in cam, 5 mm bore, rim fits a 7.12 mm hole, 10 mm across flats, 0.79 mm eccentric) plus a Grobotronics search snippet (6.35 mm, 5 mm bore, 7.12 mm) and Makerstore (8 mm hex 6 mm eccentric 3.6 g is a different mini-wheel spacer). The aluminium spacer (plain, 6 mm or 1/4 in) is sold separately. Screws sold separately: low-profile M5, 25 mm for 1/8 in plate or 30 mm for 1/4 in plate (Rat Rig). Our printed sled replaces the gantry plate: wheel stack on an M5 bolt = spacer(s) + shim + wheel (2 bearings, 10.23) + shim, bolt into the printed plate (heat-set or through bolt with eccentric in a 7.12 mm hole)."
+  },
+  "tnut_m5_vslot": {
+   "type": "drop-in (slide-in from the end or drop-in after the slot opening 6.2)",
+   "length": 10.0,
+   "width": 5.9,
+   "thickness": 4.0,
+   "depth_below_face": 4.0,
+   "mass_g": 2.0,
+   "thread": "M5 x 0.8",
+   "material": "nickel-plated low carbon steel",
+   "price_usd": 0.3,
+   "price_note": "10-pack 2.99 USD (OpenBuilds-branded M5 pack, Hackster listing, search snippet); 3D Printing Canada 10-pack 3.95 CAD.",
+   "screw_length_guidance": "M5 screw length = clamped part thickness + about 4 mm (the nut is 4 mm thick; slot throat/neck is 0.345 mm so the nut seats against the neck underside). Rule: the screw must reach at least 5 mm (one full thread diameter) into the nut; OpenBuilds sells 6, 8, 10, 15, 20 mm low-profile ISO 7380 / DIN 7984 M5. No vendor page opened gives guidance beyond that.",
+   "source": "https://bd-warehouse.readthedocs.io/en/latest/openbuilds.html ; https://grobotronics.com/openbuilds-tee-nut-m5.html ; https://3dprintingcanada.com/products/openbuilds-tee-nut-single-hole-m5-10-pack",
+   "confidence": "typical",
+   "note": "DIMENSIONS: no vendor page opened states length/width/thickness of the standard OpenBuilds M5 tee nut. 10 x 5.9 x 4.0 mm is read from the code of bd_warehouse.open_builds.TNut (Apache-2.0 model of the OpenBuilds part; 'M5 x 0.8, 5.9 mm wide, 10 mm long, mild steel'). A Grobotronics snippet gives mass 0.002 kg per nut and 'fits 10 mm slots on V-Slot'; a snippet lists the DROP-IN variant at 6 x 10 x 4.4 mm and the double tee nut at 10 x 37 x 1.5 mm. UNVERIFIED: measure one real nut before printing a T-nut-captured pocket. Slot throat is 6.25 mm so the 5.9 mm nut passes when rotated in from the end or dropped in; a 10 mm long drop-in must be rotated 90 deg through the throat, a plain (slide-in) nut must enter from the rail end."
+  },
+  "qr_pin_6mm": {
+   "d": 6.0,
+   "lengths": [15, 25, 30, 40, 50],
+   "lengths_note": "grip lengths (under the head to the balls) for kerf/pins.py lock pins: the vendor-listed ones in grip_lengths_mm without the hobby-only 20 mm",
+   "hole_d_min": 6.0,
+   "hole_d_max": 6.1,
+   "grip_lengths_mm": [
+    15,
+    20,
+    25,
+    30,
+    40,
+    50
+   ],
+   "grip_length_note": "usable length: 15, 30 (AFT Fasteners / Kipp K0364 6x30), 25, 40, 50 (McMaster narrow-grip) and 40 (Kipp K0363 6x40, total L 40); 20 mm seen on hobby listings only.",
+   "ball_d_extended": 6.85,
+   "head_d": 16.0,
+   "head_d_note": "Kipp K0363 push-button 'D3' = 16 mm collar/grip dimension; 'D' = 38 is the full length of the grip/handle form A (6x40)",
+   "head_height": 7.0,
+   "ring_d": null,
+   "mass_g": 33.9,
+   "mass_note": "Kipp K0363.3806040 6x40 with plastic grip; Carr Lane 6 mm pin: about 0.25 oz per inch of grip plus 1.75 oz handle (about 7 g/inch + 50 g) - a steel handle is heavier.",
+   "double_shear_n": 17800,
+   "double_shear_note": "Carr Lane 6 mm: 4000 lbf steel / 4400 lbf stainless calculated at safety factor 2:1 (= 17.8 kN / 19.6 kN, SF 2 included; 'pull-out strength' 230 lbf = 1.02 kN). Kipp: 22 kN theoretical double shear (DIN 50141); McMaster narrow-grip 17-4 PH: 7800 lbf (34.7 kN) breaking strength. Design on the lowest, 17.8 kN.",
+   "pull_out_n": 1020,
+   "price_usd": 35.62,
+   "price_note": "35.62 USD each, Kipp K0364.2306030 6x30 at AFT Fasteners (search snippet, page not opened). Cheap hobby / import pins are 3-6 USD each (eBay, bootsshop.at EUR 3.80) but their ball retention and tolerances were not verified. A 4-section rail needs 3 hinge pins + 1-2 other pins: price is an open question.",
+   "source": "https://www.carrlane.com/en-us/engineering-resources/technical-design-information/technical-information-ball-lock-pins ; https://www.fabory.com/en/p/58648060040 ; https://www.mcmaster.com/pins/narrow-grip-locking-quick-release-pins/ ; https://aftfasteners.com/kipp-ball-lock-pins-w-l-grip-d1-6-mm-l-30-mm-l1-6-8-mm-stainless-steel-qty-1-k0792-102606030",
+   "confidence": "datasheet",
+   "note": "Carr Lane (opened) gives the 6 mm recommended hole 6.00-6.10 mm; Kipp via Fabory (opened) gives receiving hole H11 6, D1 6, ball D2 6.85, D3 16, L1 7, L2 32.5, L 40, mass 33.9 g, 22 kN. McMaster narrow-grip page returned no readable content to the research tool, its figures (25/40/50 mm, 7 mm ball diameter, 7800 lbf) are from a search snippet. Print the pin hole 6.2-6.3 mm (fits table: fdm_holes) in a printed lug, or ream; better: put the pin through aluminium or steel bushes pressed into the printed hinge block, because the 17.8 kN pin is far stronger than PETG bearing stress (about 6 x 5 mm projected area x 40 MPa = 1.2 kN per lug)."
+  },
+  "latex_tubing": {
+   "reference_size": "3/16 in ID x 1/16 in wall (4.76 x 7.94 mm OD, 1.59 mm wall): the standard hi-start / surgical-tubing size, inside the 6-10 mm OD brief",
+   "id": 4.76,
+   "od": 7.94,
+   "wall": 1.59,
+   "area_mm2": 31.67,
+   "mass_per_m_g": 30,
+   "force_curve": [[1.0, 16.9], [2.0, 29.4], [3.0, 38.2], [4.0, 46.9]],
+   "force_curve_premium": [[1.0, 40], [2.0, 60], [3.0, 79], [4.0, 97]],
+   "efficiency": 0.7,
+   "curve_note": "[elongation fraction, N per strand] for kerf/req_launch.py: force_curve = force_per_strand_n_commodity (size strand counts and launch speeds on it), force_curve_premium = force_per_strand_n_premium (size structure on it); efficiency 0.7 = Novakovic 2014 catapult assumption (not measured). Replace both with a hand-scale measurement of the bought tubing.",
+   "mass_note": "DERIVED: area x specific gravity 0.95 (US Plastic natural latex tubing data sheet: SG 0.95, Shore A 35, tensile 3500 psi = 24 MPa, elongation at break 750%). A Thai slingshot tube measured at 9.2 g/m for 4 x 2 mm (area 9.42 mm2) gives SG 0.98.",
+   "force_per_strand_n_commodity": {
+    "100%": 16.9,
+    "200%": 29.4,
+    "300%": 38.2,
+    "400%": 46.9
+   },
+   "force_per_strand_n_commodity_status": "100% and 200%: VENDOR-CALCULATED (Latex-Tubing.com force table 3.8 and 6.6 lbf, extrapolated by the vendor from the manufacturer's 100% and 300% tests, capped at 200%). 300%: MEASURED-ISH, 'old data' posted by Tim Engel on the RCSE list for extruded surgical tubing, 8.59 lbf = 38.2 N at 300% (cross-section .049 sq in). 400%: DERIVED, 300% value x 1.23 (shape of the measured arXiv curve, SF5/SF4).",
+   "force_per_strand_n_premium": {
+    "100%": 40,
+    "200%": 60,
+    "300%": 79,
+    "400%": 97
+   },
+   "force_per_strand_n_premium_status": "MEASURED then SCALED: forward-draw force of Dankung 2040 slingshot tube (4 x 2 mm, area 9.42 mm2) read off Fig. 1 of arXiv 1604.00049 (+/-0.2 lbf): 2.7, 4.0, 5.3, 6.5 lbf at stretch factor 2, 3, 4, 5 (= 100/200/300/400% elongation) = engineering stress 1.27, 1.89, 2.50, 3.07 MPa, multiplied by 31.67 mm2. This is premium Thai slingshot rubber: about 2.1x stiffer than commodity surgical tubing at the same strain.",
+   "stress_mpa_commodity": {
+    "100%": 0.53,
+    "200%": 0.93,
+    "300%": 1.21,
+    "400%": 1.49
+   },
+   "stress_mpa_premium": {
+    "100%": 1.27,
+    "200%": 1.89,
+    "300%": 2.5,
+    "400%": 3.07
+   },
+   "force_scaling_rule": "force per strand = stress x cross-section (A = pi/4 (OD^2 - ID^2)); the RCSE data confirms it: lbf at 300% / area = 175 psi (1.2 MPa) for five extruded sizes (1/8x3/64: 4.43 lbf, 1/8x1/16: 6.44, 3/16x1/16: 8.59, 1/4x3/32: 17.17, 3/8x1/8: 34.36).",
+   "max_working_elongation_pct": 400,
+   "max_working_note": "Design stretch <= 300% for long life, 400% absolute (slingshot makers: best speed at stretch factor > 5, but bands wear out faster; 4.5-5.5 is the usual compromise, arXiv 1604.00049). Exercise vendor caps at 200% (Latex-Tubing.com, safety wording). Hi-start practice rates tubing at 300%. Elastic cords in catapult practice are used in the 20-80% band of rated elongation (Novakovic 2014).",
+   "break_elongation_pct": 750,
+   "break_strength_mpa": 24,
+   "efficiency_note": "Hysteresis is large: the force that pushes the sled (retraction) is well below the force needed to stretch it, and falls with the log of hold time; arXiv 1604.00049 Fig. 1-2 (reverse-draw curves). Catapult efficiency assumed 0.7 (Novakovic 2014, assumed not measured).",
+   "temperature": "Force at a given stretch is proportional to absolute temperature (arXiv 1604.00049, thermodynamic argument): +/-7% for 20 C. McMaster latex tubing service range 0 to 150 F (-18 to 66 C). NASA US6851647: -65 to 180 F, break 750%. Latex perishes with ozone, UV and flexing; sunlight-stored tubing is the first thing to fail (cycling forum, anecdotal).",
+   "design_uncertainty": "THE DOMINANT UNCERTAINTY: sources differ by 1.5-2.1x at the same strain (tube quality, batch, hold time). Size the strand count and anchor notches against the commodity curve, size every structural part against the premium curve, and calibrate the real tubing with a hand scale before printing the notch scale (diydrones catapult build does exactly this).",
+   "price_usd_per_m": 1.5,
+   "price_note": "UNVERIFIED: Latex-Tubing.com sells 3/16 x 1/16 by the foot, price page not opened. Order price should be re-checked.",
+   "source": "https://www.latex-tubing.com/Exercise.html ; https://groups.google.com/g/rcse/c/JtUN_Ya_kpU ; https://arxiv.org/pdf/1604.00049 ; https://scindeks-clanci.ceon.rs/data/pdf/1820-0206/2014/1820-02061404017N.pdf ; https://patents.google.com/patent/US6851647",
+   "confidence": "multiple-vendors",
+   "note": "See the status fields: commodity 300% is a forum-posted measurement, 100/200% vendor-calculated, 400% derived, premium curve measured on a different (4x2 mm Thai) tube and scaled by area. McMaster 'extruded surgical tubing' is the family in the RCSE table. Energy per strand over a stretch from L0 to (1+e) L0 is L0 x the integral of F de: for the commodity curve, trapezoid areas per strand give 8.5, 23.1, 33.8 and 42.5 N per 100% step (0-100, 100-200, 200-300, 300-400%), i.e. 8.4 / 31.6 / 65.4 / 107.9 J per metre of unstretched length cumulative at 100/200/300/400% (force row above times L0 in metres, forward-draw energy, before hysteresis)."
+  },
+  "shock_cord_6mm": {
+   "d": 6.35,
+   "d_stretched": 4.4,
+   "break_strength_n": 667,
+   "break_strength_lbf": 150,
+   "break_strength_note": "Atwood Rope 1/4 in tan 'tensile strength 150 lb' (opened). Other vendor claims: 185, 210 lbf; Home Depot SGT Knots working load limit 60 lbf; a table on an unrelated page lists 24-60 lbf working load and 120% +/-15% elongation (low confidence).",
+   "max_elongation_pct": 100,
+   "elongation_note": "US Cargo Control (opened): 'smooth, consistent stretch up to 100% of its original length'. Atwood: nothing. Another vendor: up to 120%. Use 100%.",
+   "mass_per_m_g": 21.6,
+   "mass_note": "Atwood: 1.44 lb (0.66 kg) per 100 ft = 21.6 g/m. US Cargo Control shows 2 lb per 50 ft (59 g/m), almost certainly shipping weight including spool and bag.",
+   "force_vs_elongation": null,
+   "force_note": "UNVERIFIED / NOT FOUND: no manufacturer or paper opened publishes a force-vs-elongation curve for 1/4 in shock cord (a Wisconsin rule requires one for bungee jump cords, not published for 6 mm). MIL-C-5651 cord spec is the place for it (everyspec download returned only a one-page notice). The brake must therefore be CALIBRATED on the real cord: measure force at 25/50/75/100% with a hand scale. Rough guide (derived, not sourced): 6.35 mm cord has about 32 mm2 gross section, about 45% of which is rubber core.",
+   "price_usd": 15.99,
+   "price_note": "15.99 USD, Atwood Rope 1/4 in tan, lengths 25/50/100 ft offered, the page does not say which length the price is for (opened); price is UNVERIFIED per length.",
+   "source": "https://atwoodrope.com/products/1-4-bungee-shock-cord-tan ; https://www.uscargocontrol.com/products/1-4-6mm-black-polyester-shock-cord-50-ft",
+   "confidence": "vendor-listing",
+   "note": "Stranded natural-rubber core, abrasion-resistant sheath, UV resistant (Atwood). Brake energy to remove: sled kinetic energy 0.5 m v^2, e.g. 0.4 kg at 15 m/s = 45 J; at a 0.2 m stop that is 225 N (50 lbf) average and the peak of a stiffening cord is higher: about the 60 lbf working-load figure (Home Depot SGT Knots) of ONE 1/4 in cord, so use two or more cords in parallel or a longer stop"
+  },
+  "braid_100lb": {
+   "d": 0.55,
+   "break_strength_n": 445,
+   "break_strength_lb": 100,
+   "construction": "4-strand PE braid (fishing line, 'Hercules' 100 lb / 45.4 kg / 0.55 mm)",
+   "heavier_alternative": {
+    "name": "Premium Ropes SK78 kite line, 8-strand hollow braid",
+    "d": 1.4,
+    "break_strength_kg": 340,
+    "mass_per_100m_kg": 0.2,
+    "price_eur_per_m": 0.78
+   },
+   "price_usd": null,
+   "source": "https://www.premiumropes.com/sk78-powerline-kite ; https://www.ypc.co.uk/product/hercules-super-strong-100m-109-yards-braided-fishing-line-100-lb-test-for-saltwater-freshwater-pe-braid-fish-lines-4-strands-multicolor-100lb-45-4kg-0-55mm/ ; https://kitesite.com.au/kiterecord/dyneema.html",
+   "confidence": "typical",
+   "note": "UNVERIFIED for the 100 lb line: the YPC page returned 403, the 0.55 mm / 45.4 kg figures are a search snippet; a second snippet (kitesite) lists a Dyneema SK75 line rated 100 kg at 0.81 mm. Premium Ropes SK78 (opened): 1.4 mm, 340 kg, 0.2 kg per 100 m, EUR 0.78 from, 8 strands. Nominal 'lb test' of fishing braid is the line's stated strength: knots lose 30-50%. Needed only if the sled is pulled by a line (the brief routes latex round a nose pulley, so the braid is a cord from the latex to the anchor / trigger, not load-bearing at 100 lb)."
+  },
+  "tent_stake_steel": {
+   "length": 228.6,
+   "length_in": 9,
+   "shank_d": 4.0,
+   "shank_d_note": "UNVERIFIED: no page opened gives the shank diameter of a 9 in steel stake. Treeline 10 in steel stake shaft is about 3/8 in (9.5 mm) per a search snippet; common 9 in wire/nail stakes are 4-5 mm; the IFAI/ARA staking study uses a 1 in steel stake. Measure the purchased stake.",
+   "head": "hooked or nail head",
+   "mass_g": 90,
+   "mass_note": "Eureka 9 in steel stake 3.168 oz = 90 g (search snippet, page returned empty).",
+   "pull_out_n": {
+    "low": 62,
+    "mid": 100,
+    "high": 142
+   },
+   "pull_out_note": "NO steel-stake test found. Far Out Guides (opened): 6-6.5 in stakes driven straight in, guy line at 30 deg, soil unspecified, five tests averaged: shepherd hook 14 +/-1 lbf (62 N), nail-type 20 +/-1 lbf (89 N), Y-stake 23 +/-4 lbf (102 N), V-stake 32 +/-4 lbf (142 N). A backpacking test with a 9 in tubular stake gave 12.2 lbf in loam, 8.4 lbf in sand (search snippet). Holding force rises with stake diameter and length; a 9 in steel stake is the same order, assume 60-100 N per stake in grass and dry soil.",
+   "price_usd": 1.49,
+   "price_note": "1.49 USD, Coghlan's 9 in plated steel tent stake, Farm and Fleet (opened).",
+   "source": "https://www.farmandfleet.com/products/1451316-coghlans-9-steel-tent-stake.html ; https://faroutguides.com/holding-strength-of-4-common-tent-stakes/ ; https://eurekacamping.johnsonoutdoors.com/us/shop/outlet/9-steel-stake",
+   "confidence": "typical",
+   "note": "Implication for the launcher (derived): while the sled accelerates, the rubber pulls the sled forward with tension T and the nose pulley plus anchor net T backward on the rail, so the ground (stake and foot) must hold a force equal to the strand tension on the sled, T = (m_sled + m_plane) x a: about 150 N for 4 commodity strands at 300% (4 x 38 N) and up to about 390 N for 4 premium strands at 400% (4 x 97 N). With 60-100 N per stake that is 2-6 stakes, or the rear foot must be loaded by weight/bipod friction; before release the trigger load is internal to the rail. Also check the brake: stopping the sled puts the same order of force back on the ground."
   }
  },
  "friction": {
@@ -514,6 +743,39 @@
    "source": "https://www.servocity.com/4mm-stainless-steel-precision-shafting/ ; https://robotshop.com/products/servocity-4mm-shaft-stainless-steel-150mm-length ; https://ondrives.com/z-4-300a",
    "confidence": "multiple-vendors",
    "note": "ServoCity 4 mm stainless steel precision shafting, stocked cut lengths 25/50/100/150/200/250 mm (SKU 2100-0004-0100 = 100 mm, $2.79; page opened 2026-10-31). RobotShop listing of the same shaft: Rockwell 83B (NOT hardened), 10 RMS finish, 25 mm piece weighs 0.09 oz (2.4 g). DIAMETER TOLERANCE NOT PUBLISHED by either page: size printed bores with a fit coupon / kerf calibrate and the real rod (Robo9 gripper prints a 6.0-6.3 mm test plate for the same reason). density 7.9 g/cm3: Ondrives Z-4-300A 4 mm hardened shaft lists 0.099 kg per metre -> 7.88 g/cm3; RobotShop 2.4 g / 25 mm -> ~7.6 (rounded weight). Hardened alternative with a published fit: Ondrives Z-4-300A, 4 mm h6 (0/-0.008), Cf53 62 HRC, 300 mm (cut to length with an abrasive disc). Use as a guide rod for printed sliding bushings or as a long pin (pin_dims reads od + lengths)."
+  },
+  "ss_rod_5": {
+   "od": 5.0,
+   "id": 0,
+   "density": 7.8,
+   "lengths": [
+    50,
+    100,
+    150,
+    200,
+    250,
+    300
+   ],
+   "buy": "https://www.servocity.com/5mm-stainless-steel-precision-shafting/",
+   "source": "https://www.servocity.com/5mm-stainless-steel-precision-shafting/",
+   "confidence": "vendor-listing",
+   "note": "ServoCity 5 mm stainless steel round (precision) shafting, stocked cut lengths 50/100/150/200/250/300 mm (SKUs 2100-0005-0050, 2100-0005-0100, 634280, 634282, 2100-0005-0250, 2100-0005-0300; page opened 2026-11-02). Listed weights: 50 mm 7.7 g, 150 mm 22.9 g, 200 mm 31 g, 250 mm 38 g, 300 mm 46 g -> 7.8 g/cm3 from the 300 mm piece (46 g / 5.89 cm3); the 100 mm 15 g is rounded. The page does NOT state a diameter tolerance, hardness or stainless grade (same gap as ss_rod_4, whose RobotShop listing gives Rockwell 83B, i.e. not hardened): size the 625 bearing bore fit and the hub press fit with a coupon on the real rod, and treat the pin as a soft stainless pin for bending/shear (do not assume hardened steel)."
+  },
+  "alu_tube_20x1_5": {
+   "od": 20.0,
+   "id": 17.0,
+   "density": 2.7,
+   "lengths": [
+    1000,
+    6000,
+    6100
+   ],
+   "mass_per_m_g": 235,
+   "buy": "https://www.ehorst.de/en/Aluminium-Rundrohr-gepresst-EN-AW-6060-20-0-x-1-5-mm-pressblank-EN-755-8-1747986.html",
+   "source": "https://www.ehorst.de/en/Aluminium-Rundrohr-gepresst-EN-AW-6060-20-0-x-1-5-mm-pressblank-EN-755-8-1747986.html ; https://uk.rs-online.com/web/p/products/9186383 ; https://speedymetals.com/p-4565-34-od-x-0065-wall-tube-6061-t6-aluminum.aspx",
+   "confidence": "vendor-listing",
+   "price_usd": 13.15,
+   "note": "ehorst.de (opened): 20.0 x 1.5 mm extruded EN AW-6060, 6.1 m trading length, 1.41 kg per length = 0.231 kg/m; calculated pi/4(20^2-17^2) x 2.70 = 235 g/m (area 87.2 mm2). Price on ehorst is login-only. RS PRO 20 mm OD tube is 3 mm wall (not this size). US near-equivalent: Speedy Metals 3/4 in OD x 0.065 in wall 6061-T6 (19.05 x 1.65 mm), 72 in length, 13.15 USD (search snippet, page not opened). 20 mm OD x 1.5 mm is a metric stock size, widely available as 1 m / 2 m cut lengths in EU DIY shops; in the US use 3/4 in x 0.058 or 0.065 in. Section for bending: I = pi/64 (20^4-17^4) = 4.1e3 mm4 (4.1 cm4), Z = 0.41 cm3; 6060-T5 yield 110 MPa min (EN 755-2, typical, not on the vendor page); 6061-T6 yield 276 MPa (typical)."
   }
  },
  "tripod_nut_1_4_20": {

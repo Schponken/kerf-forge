@@ -1,6 +1,7 @@
 """Print package (kerf/printpkg.py): per plate grams/time, per part slicer settings, orientation in words, slicer path."""
 import json
 import os
+import shlex
 import stat
 import sys
 import zipfile
@@ -58,7 +59,7 @@ def test_write_estimate_and_slicer_paths(tmp_path, monkeypatch):
     assert p["grams"] == 25.0 and p["sliced"] is None
     # 25 g / 1.25 g/cm3 = 20 cm3 = 20000 mm3 at 8 mm3/s (Bambu PETG Basic max flow) = 2500 s
     assert p["min_seconds"] == 2500
-    md = (tmp_path / "PRINT_SETTINGS.md").read_text()
+    md = (tmp_path / "PRINT_SETTINGS.md").read_text(encoding="utf-8")
     assert "at least 42 min" in md and "on its bottom (-Z) face" in md and "255 C" in md and "0.2 mm" in md
     cfg = zipfile.ZipFile(tmp_path / "plate_1.3mf").read("Metadata/model_settings.config").decode()
     assert 'key="layer_height" value="0.2"' in cfg and 'key="enable_support" value="0"' in cfg and 'key="wall_loops" value="4"' in cfg
@@ -69,7 +70,7 @@ def test_write_estimate_and_slicer_paths(tmp_path, monkeypatch):
                     "z = zipfile.ZipFile(out, 'w')\nz.writestr('Metadata/slice_info.config', "
                     "'<config><plate><metadata key=\"prediction\" value=\"7200\"/><metadata key=\"weight\" value=\"26.5\"/></plate></config>')\nz.close()\n")
     sh = tmp_path / "slicer"
-    sh.write_text(f"#!/bin/sh\nexec {sys.executable} {fake} \"$@\"\n")
+    sh.write_text(f"#!/bin/sh\nexec {shlex.quote(sys.executable)} {shlex.quote(str(fake))} \"$@\"\n")
     sh.chmod(sh.stat().st_mode | stat.S_IEXEC)
     for f in ("m.json", "p.json", "petg.json"):
         (tmp_path / f).write_text("{}")
@@ -79,7 +80,7 @@ def test_write_estimate_and_slicer_paths(tmp_path, monkeypatch):
     monkeypatch.setenv("KERF_BAMBU_CONFIG", str(cfg))
     r = printpkg.write(proj, rep, plates, tmp_path)
     assert r["slicer"] == str(sh) and r["plates"][0]["sliced"] == {"seconds": 7200.0, "grams": 26.5}
-    assert "2.0 h (sliced)" in (tmp_path / "PRINT_SETTINGS.md").read_text()
+    assert "2.0 h (sliced)" in (tmp_path / "PRINT_SETTINGS.md").read_text(encoding="utf-8")
     # a binary without the exported settings does not slice (the CLI needs full configs): estimate
     cfg.write_text(json.dumps({"slicer": {"bin": str(sh)}}))
     assert printpkg.write(proj, rep, plates, tmp_path)["plates"][0]["sliced"] is None

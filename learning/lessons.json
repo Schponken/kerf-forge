@@ -1,0 +1,5802 @@
+{
+ "rule": "1 project = note; 2+ projects = instruction; 2+ projects found at final review or costing redraws = proposed gate (never auto-enforced)",
+ "projects": [
+  "bionic_finger",
+  "check_shelf_bracket",
+  "drone_foldable_wings",
+  "fpv_5in",
+  "fpv_wing",
+  "pan_tilt",
+  "robot_arm",
+  "robotic_gripper_claw",
+  "robotic_gripper_desk",
+  "servo_link",
+  "tvc_drone"
+ ],
+ "lessons": [
+  {
+   "id": "strength-size-from-loads",
+   "kind": "strength",
+   "lesson": "Size load-carrying parts from their loads (section, material, safety factor) before detail drawing.",
+   "earliest_stage": "rough",
+   "catcher_type": "existing check run earlier",
+   "catcher": "the *_fea / fea_static / cantilever_stress requirements run on the rough parts (stress checks are paused in this repo, see PAUSED.json: until resumed, a hand check of the section in DESIGN.md)",
+   "level": "proposed gate",
+   "count": 82,
+   "projects": [
+    "bionic_finger",
+    "drone_foldable_wings",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "robotic_gripper_claw",
+    "robotic_gripper_desk",
+    "servo_link",
+    "tvc_drone"
+   ],
+   "late_by_stages": 2,
+   "cost_min": 3414,
+   "evidence": [
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-2",
+     "severity": "major",
+     "part": "fingerlib.pin_holes / all joints",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "The pivots are ISO 4762 M3 x 14 SHCS, which are fully threaded at that length (b = 18 mm). The moving part therefore turns on thread crests "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-9",
+     "severity": "minor",
+     "part": "proximal (FEA)",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "The FEA follows the brief's load case: hot spots at the pip load bore and the mcp fixed bore, where expected, with peak 12.4 MPa against a 2"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-17",
+     "severity": "minor",
+     "part": "proximal/middle/distal (child stop lug)",
+     "stage": "final review",
+     "cost_min": 108,
+     "redrawn": [
+      "base",
+      "distal",
+      "fingerlib",
+      "middle",
+      "proximal"
+     ],
+     "issue": "Cosmetic cusp where the pocket circle cuts the child's top-band lug (documented in DESIGN). It is not on the load path."
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-19",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "base_fea_line has a volume peak of 194 MPa and a surface peak of 61.8 MPa at [-4.3, -0.2, -3.6]. That point is the sharp corner where the sw"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-20",
+     "severity": "minor",
+     "part": "proximal",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "Under the 222 N line case plus the pin moment, proximal_fea_line shows 1.33 mm of deflection at the rim of the pip knuckle disc ([53, 0.9, -"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-27",
+     "severity": "major",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "All three pivots (mcp in base, pip in proximal, dip in middle; fingerlib.PIN = motion.shoulder_4_m3). The joints are single-shear laps. The "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-28",
+     "severity": "major",
+     "part": "distal",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Washer line stops. The last FEA run before the pause gave distal_fea_extensor = 25.01 MPa p99.9 against 24.0 allowed (FAIL), peaking at [9.0"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-30",
+     "severity": "minor",
+     "part": "proximal",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Stale and broken evidence in the review pack. Every out/renders/fea_*.png is from Oct 31 23:45, before the detail pass, the flat floor and t"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-2",
+     "severity": "minor",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "hub"
+     ],
+     "issue": "root fairing: structurally the cap is neutral, and the 25.8 -> 24.2 MPa hub_fea drop is not a strength gain. I compared the cached FEA field"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-4",
+     "severity": "minor",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "root fairing: what still faces the flow after the change. I re-measured the designer's own metric (planar B-rep faces within 30 deg of squar"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-5",
+     "severity": "blocker",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "hub_fea fails: p99.9 von Mises 24.2 MPa against 17.5 allowed (CF-PETG / SF 2), and 8.2 mm deflection at the root leading edge (14.7, 90) aga"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-6",
+     "severity": "blocker",
+     "part": "hub_l",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "hub_l is the mirror image of hub_r: same section, same 6 g load, same thin root trailing edge into a 20 mm boss. It has no FEA of its own, s"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-7",
+     "severity": "blocker",
+     "part": "spine",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "spine_fea fails: 53.6 MPa against 16 allowed (3.4 times over), and 2.1 mm deflection against 0.5. Each pin is in single shear at the arm: th"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-8",
+     "severity": "blocker",
+     "part": "aft_fuse",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "deck_fea did not run ('PLC Error: A segment and a facet intersect'), so the lower pivot plate (deck) has no strength proof. It carries the s"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-9",
+     "severity": "major",
+     "part": "aft_fuse",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "103 sharp inside corners (1281 mm of edge) are neither filleted nor declared, e.g. [226.4, 0, -15.5], [221, 0, -12.5], [218, +-26.2, -72.3],"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-14",
+     "severity": "minor",
+     "part": "pinion_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The 4 M3 horn-screw holes leave only 71 % of the ring material near the tooth roots (pinion_l the same). Lewis bending already runs at 13.6 "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-22",
+     "severity": "major",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Infill (pre-existing geometry; the engine check is new, kerf/infill.py). hub_r prints at 15 % infill, so its core is a lattice about 2 % as "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-24",
+     "severity": "major",
+     "part": "spine",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Infill (pre-existing geometry; the engine check is new). The spine prints at 15 % infill, and the FEA puts stress up to 39.2 times the latti"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-5",
+     "severity": "major",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "The camera is unprotected in a crash. The pivot is at x = 48 and the lens sits 13.9 mm ahead of it, about x = 60-62 depending on tilt. The n"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-6",
+     "severity": "major",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "The body has no fea_static requirement, although it carries all four arm moments and is the part the design says must outlive the arms (ENGI"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-8",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "The FEA render is inconsistent with the report. The render title says peak 13.93 MPa, but report.json says peak 24.77 MPa with p99.9 at 10.3"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-12",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Flight stiffness and heat are not verified. A hand calc gives the first arm bending mode at about 165 Hz (EI = 2460 x 2218 N mm^2, 36 g tip "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-14",
+     "severity": "major",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 17,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "The top plate has no strength verification, although it is a structural part (ENGINEERING.md section 3b: every structural part gets fea_stat"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-17",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 17,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "The yaw-key ridges (3 x 1.5 mm, 22 mm long, printed on the arm top) take side loads by bending and shear at their root, which is a layer int"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-35",
+     "severity": "minor",
+     "part": "vtx_ant",
+     "stage": "final review",
+     "cost_min": 4,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "The antenna head (x -83.5..-72.5, y -16..-5, z 48-68) and its tube bending up past the tab end (z about 43-48 at y -10.5) sit right where th"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-40",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "Some DESIGN.md numbers no longer match report.json. Printed mass is given as 145 g (report: 149.5 g). The FEA results are given as arm 9.8, "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-49",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 3,
+     "redrawn": [],
+     "issue": "DESIGN.md numbers are stale after this round. It says body FEA is 9.6 MPa, but report.json now gives 10.15 MPa (p99.9, limit 11.67) with the"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-53",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "FEA is judged on the engine's 99.9th-percentile stress. The body passes at 10.76 MPa against 11.67. The volume peak is 20.7 MPa and the surf"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-2",
+     "severity": "major",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The moment-carrying V sleeves are checked as solid PLA: the DESIGN.md hand check uses I = 7630 mm4 for a solid 20/8.2 tube (6.2 MPa), and th"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-14",
+     "severity": "minor",
+     "part": "fin_l",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The TPU fin (2 walls, 15 %, E about 26 MPa) is about 130x softer than PLA. A rough estimate at 5 deg sideslip and 150 km/h gives about 3 mm "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-29",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "26 inside corners are still sharp: 16 are declared (fillet would face down), 10 are not (vent slot corners at x 238, the shelf front at x -5"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-19",
+     "severity": "minor",
+     "part": "base/yoke",
+     "stage": "final review",
+     "cost_min": 97,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "Load axis Z runs across layers on all three parts. FEA proves SF 3 against the Z strength with large margin (peaks 1.6, 3.9 and 3.6 MPa agai"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-22",
+     "severity": "minor",
+     "part": "yoke",
+     "stage": "final review",
+     "cost_min": 19,
+     "redrawn": [],
+     "issue": "The 30 N knock at the camera was added to base_fea (F15), but the yoke has only the 5 N pivot load and the stall cases. A sideways 30 N at t"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-24",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 19,
+     "redrawn": [],
+     "issue": "The two tab-screw pilots sit about 2 mm from the deck slot edge (ring 79% material, as the edge-distance warning shows), leaving about 1.2 m"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-28",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 460,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The pan servo is held only by two M2 self-tap pilots with 3.6 mm engagement (6 mm screw minus 2.4 mm tab) in the bridged underside of the de"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-29",
+     "severity": "minor",
+     "part": "yoke",
+     "stage": "final review",
+     "cost_min": 460,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The knock cases are judged on p99.9. The local volume peaks are 22.6 MPa (knock_in, pivot-wall root fillet) and 16.8 MPa (knock_out) against"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-34",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "base_fea holds the whole bottom face fixed (engine warning: the fixed box holds no fastener site). It does rest on the tripod plate, so this"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-38",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The camera-rear trim box starts 0.01 mm in front of the plate face (bracket.py: `Pos(0, 0, -p.standoff + 0.01)`). It removes the inner 1.4 m"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-44",
+     "severity": "minor",
+     "part": "yoke",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Carried forward: the knock cases pass on p99.9 (9.71 / 9.15 of 13 MPa), but the volume peaks are 22.2 / 18.2 MPa and the surface peak is 14."
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-45",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "DESIGN.md has stale numbers after this pass. Section 5 says the camera standoffs are 'r 2.8' (now r 3.6). The section 7 table gives yoke_fea"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-3",
+     "severity": "major",
+     "part": "turntable",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "turntable_fea does not test the real load. (1) The torque_nmm loads sit on the yoke foot screw sites (x = -29, -14, 10), but their axis is a"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-4",
+     "severity": "minor",
+     "part": "yoke_r",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "Same torque-on-offset-sites effect: yoke_r_fea reports applied_force_n z = +21.3 N, but the spec is -5.9 N. The tab screws are centred 10 mm"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-5",
+     "severity": "minor",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "upper_arm_fea fixes BOTH plates rigidly at the shoulder. In reality plate B is pinned on the yoke_l pivot and passes its moment to plate A t"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-8",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The fixed-jaw post stands along gripper +Y, which is print Z when printed with print_rot [90,0,0]. The 18.4 N jaw load bends it ACROSS layer"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-9",
+     "severity": "minor",
+     "part": "yoke_l",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "Inside corners on load paths are sharp: cheek-to-foot on both yokes, web-to-plate on upper_arm and forearm, spindle-to-collar on turntable. "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-15",
+     "severity": "minor",
+     "part": "yoke_r",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "turntable",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "yoke_r_fea: the hot spot in fea_yoke_r_fea.png is at the base of the cheek's inner face near the front foot screw and the foot's front end ("
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-16",
+     "severity": "minor",
+     "part": "turntable",
+     "stage": "final review",
+     "cost_min": 18,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "turntable"
+     ],
+     "issue": "turntable_fea is now a sound load case (pure couples, held at the bearing lands, render matches report). Two remaining gaps. The applied mom"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-17",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": 82,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "gripper",
+      "turntable",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The fixed-jaw post still meets the palm at a sharp inside corner (part_gripper sheet). Round 1 asked for a fillet of at least 2 mm there, an"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-23",
+     "severity": "minor",
+     "part": "cable_mast",
+     "stage": "final review",
+     "cost_min": 117,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "layout",
+      "psu_hood",
+      "turntable",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The mast is a 61 mm column 8 x 10 mm on a 28 x 10 x 5 mm foot, held by 2 M3 that both lie on the y = 0 line. A sideways (+/-Y) pull on the b"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-24",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 117,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "layout",
+      "psu_hood",
+      "turntable",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The cable post is a 126 mm upright cantilever (10 x 26 mm) printed with its layers across its bending direction. It has a sharp root at the "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-25",
+     "severity": "minor",
+     "part": "nano",
+     "stage": "final review",
+     "cost_min": 105,
+     "redrawn": [
+      "psu_hood"
+     ],
+     "issue": "The Nano (bare board, pins down), the four WAGO splices and the 90 W supply are 'off the base, on the desk' as loose items with flying leads"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-27",
+     "severity": "minor",
+     "part": "yoke_r",
+     "stage": "final review",
+     "cost_min": 117,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "layout",
+      "psu_hood",
+      "turntable",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "Accepted, recorded for the record. yoke_r_fea volume peak is 15.0 MPa and gripper_fea is 14.56 MPa, both above the 13 MPa z-allowable. Both "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-40",
+     "severity": "minor",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "For the record: at the new crash-case SF 3, upper_arm_stall_fea p99.9 is 13.42 MPa against a 16 MPa limit (a margin of 1.19). The peak of 18"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-41",
+     "severity": "major",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": 38,
+     "redrawn": [
+      "base",
+      "forearm",
+      "gripper",
+      "upper_arm"
+     ],
+     "issue": "The FEA load cases are no longer 2x the real static loads. After the ENG-6 perimeter-aware mass change, report.json and bom.md give upper_ar"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-45",
+     "severity": "major",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 29,
+     "redrawn": [],
+     "issue": "base_fea applies about 80 % of its stated tipping-moment load. Both the why text and DESIGN.md (Architecture: 'two 6001 bearings 25 mm apart"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-46",
+     "severity": "minor",
+     "part": "turntable",
+     "stage": "final review",
+     "cost_min": 29,
+     "redrawn": [],
+     "issue": "The tipping-moment arithmetic is slightly low, and its wording is wrong. The turntable_fea why says 'the arm weight 2.5 cm behind it', but t"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-49",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 105,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "gripper",
+      "psu_hood",
+      "upper_arm"
+     ],
+     "issue": "DESIGN.md's Strength table gives base_fea deflection as 0.11 mm, but report.json has 0.129 mm. The turntable row says 0.23 mm against a repo"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robot_arm",
+     "problem": "robot_arm-52",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Not seen in round 9: the engine warns that base_fea's fixed boxes hold none of base's fastener sites. The four 12 x 12 mm boxes do sit on th"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-3",
+     "severity": "minor",
+     "part": "palm",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Three sharp inside corners remain (0, 2.8, 32.1), (23.5, 13.4, 3.5) and (19.1, 13.4, 9.0). The palm is also the part with the worst FEA stif"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-4",
+     "severity": "minor",
+     "part": "cover",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Two inside corners are r 0.5 instead of r 1, and one 9.7 mm corner at (34.3, 29.4, 19.7) is left sharp after a failed fillet (ValueError). T"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-7",
+     "severity": "minor",
+     "part": "finger_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Idler finger FEA fixes only the dowel bore (the gear teeth carry torque into the drive gear and are covered by the gears Lewis check at 14.4"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-2",
+     "severity": "minor",
+     "part": "jaw_l",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Same STL as jaw_r, so the guide-bore finding above applies equally. Jaw deflection use is 0.93 (0.47 of 0.5 mm) with no stiffness margin, an"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-4",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "78 sharp inside corners remain (19 in a stressed zone, e.g. [52, 21, -24.7], [72, -17.6, 63.7]). DESIGN.md explains why (cove run-outs, serv"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-7",
+     "severity": "minor",
+     "part": "stand",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The stand is not free-standing with the gripper on it (head and payload about 110 mm ahead of the base); it must be screwed or clamped befor"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-11",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The generated bring-up sketch maps joint degree 0 to 1500 us and allows 0..100 'deg' at 5.556 us/deg (1500-2056 us). The design defines grip"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-6",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "Inside corners on the load path have no fillets, contrary to ENGINEERING section 5: where the gussets meet the wall and the foot, and the fo"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-7",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "The bracket_fea load case understates the load and uses a lower safety factor than the rules require. Each +/-18.6 N load is spread over a b"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-16",
+     "severity": "minor",
+     "part": "arm",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The arm carries the payload but has no fea_static requirement, which ENGINEERING section 3b asks of every structural part. A hand check show"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-33",
+     "severity": "minor",
+     "part": "engine",
+     "stage": "rough",
+     "cost_min": 48,
+     "redrawn": [
+      "base",
+      "bracket"
+     ],
+     "issue": "The FEA pictures show a different peak from report.json. fea_bracket_fea.png says 0.65 MPa while the report says 0.88; fea_arm_fea.png says "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-43",
+     "severity": "minor",
+     "part": "bracket / arm",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The servo tab pilot holes and the arm's horn holes are under the 1.5 d edge distance (88 % ring material), because the purchased parts' hole"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-44",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "DESIGN.md 'Load -> section' says the bracket's moment peaks at 'wall bending at its root over the foot'. That is wrong for the design load c"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-45",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The overbuilt justification has the right conclusion but wrong support. (a) It says 'the 80 mm wall width'; wall_w is 88 mm (report params)."
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-47",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Gusset toe kept sharp (sharp_kept at [+/-40, 42.6, 6.0]). The stated reason is true: the hypotenuse rises 43.9 over 35.5 = 51 deg, so the op"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "servo_link",
+     "problem": "servo_link-48",
+     "severity": "minor",
+     "part": "arm",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Constant 18 x 6 mm section from hub to tip, although the DESIGN table itself says the moment runs from 0 at the tip to 922 N mm at the hub. "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-21",
+     "severity": "minor",
+     "part": "ring_low (lug_fea)",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "motor_plate",
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "lug_fea passes on p99.9 8.08 vs 13 MPa, but its volume peak is 21.70 MPa (1.7x the limit; surface peak 11.23) on a coarse 4935-element mesh "
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-24",
+     "severity": "minor",
+     "part": "motor_hub, gimbal_outer, all",
+     "stage": "final review",
+     "cost_min": 1,
+     "redrawn": [],
+     "issue": "Remaining s5 detail. ENGINEERING.md s5 says inside corners on any load path get r >= 1 mm and outside edges a 0.5-1 mm chamfer. It is a rule"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-26",
+     "severity": "minor",
+     "part": "leg_1..3",
+     "stage": "final review",
+     "cost_min": 95,
+     "redrawn": [],
+     "issue": "leg_fea deflection is 2.948 mm against its 3.0 mm limit (98 %) at the 790 g budget. Stress is fine (3.34 vs 16 MPa). If the build gains mass"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-27",
+     "severity": "minor",
+     "part": "lug_fea / leg_fea",
+     "stage": "final review",
+     "cost_min": 1,
+     "redrawn": [],
+     "issue": "Both peaks are at load or fixture patches, not geometry. lug_fea peaks at 10.97 MPa at [-42.6, 27.1, 75.4], which is the inner insert site o"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-31",
+     "severity": "minor",
+     "part": "ring_low (lug_fea)",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "FEA is run on a solid model, but ring_low now prints at 20 % infill (was 40 %). The 8 mm lug plate is roughly two 1 mm skins and 4 perimeter"
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-33",
+     "severity": "minor",
+     "part": "leg_1..3",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Carried over: leg_fea deflection is 2.966 vs 3.0 mm (99 %); accepted."
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-34",
+     "severity": "blocker",
+     "part": "all (out/ stale)",
+     "stage": "final review",
+     "cost_min": 20,
+     "redrawn": [],
+     "issue": "`kerf review-status tvc_drone` reports geometry 721479e716c80d8c, but out/report.json is 06bd0f2cab76ce9b; `kerf status` shows 'build PASS ("
+    },
+    {
+     "lesson": "strength-size-from-loads",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-35",
+     "severity": "minor",
+     "part": "ring_low (lug_fea)",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The FEA uses a solid model and the print is 30 % infill with 4 perimeters. lug_fea is 7.88 vs 13 MPa. I accept 30 % + 4 walls without a modi"
+    }
+   ]
+  },
+  {
+   "id": "process-docs-in-step",
+   "kind": "process",
+   "lesson": "Update DESIGN.md, ASSEMBLY notes and the BOM in the same commit as the decision they record.",
+   "earliest_stage": "detail",
+   "catcher_type": "planning step",
+   "catcher": "a planning step: DESIGN.md requirements table and part list re-read at each milestone",
+   "level": "proposed gate",
+   "count": 69,
+   "projects": [
+    "bionic_finger",
+    "drone_foldable_wings",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "robotic_gripper_desk",
+    "servo_link",
+    "tvc_drone"
+   ],
+   "late_by_stages": 1,
+   "cost_min": 3419,
+   "evidence": [
+    {
+     "lesson": "process-docs-in-step",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-21",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "DESIGN s9 step 1 says an insert left proud of the boss 'eats the 0.2 mm play and clamps the joint' and one sunk below 'leaves more play'. Th"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-31",
+     "severity": "minor",
+     "part": "distal",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "DESIGN.md is stale in several places since the detail pass and dd32cf9. s7 says the clear diameter across a joint is '0.4 gap + 2 x 0.9 groo"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-18",
+     "severity": "minor",
+     "part": "fwd_fuse",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "DESIGN.md is out of date. Its requirements table still says AUW <= 1150 g, wing loading <= 65 g/dm2, T/W >= 0.7, flight >= 25 min and hand l"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-19",
+     "severity": "minor",
+     "part": "aft_fuse",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Environment and export: the circuit check did not run (KiCad symbol libraries not found), and the URDF has joint/link name collisions (ail_l"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-31",
+     "severity": "major",
+     "part": "stack",
+     "stage": "final review",
+     "cost_min": 4,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "The `power` pass depends on a Betaflight setting that the build package never tells Spencer to make. On the mechanism itself: Betaflight `mo"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-32",
+     "severity": "minor",
+     "part": "stack",
+     "stage": "final review",
+     "cost_min": 4,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "The cap's current estimate is slightly optimistic, and the comment calls it conservative. project.yaml and DESIGN.md say 35.08 x 0.74^3 = 14"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-36",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 4,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "Stale and missing numbers in the documents. DESIGN.md line 30 still reads '-> 12.6 (requirement >= 6)'. Line 115 says '73 %' where everythin"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-37",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "The 8-10 mm heat-shrink note for the XT60 pigtail is in WIRING.md, ASSEMBLY.md and DESIGN.md, but the generated BOM still lists 'heat-shrink"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-39",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The generated ASSEMBLY.md never says to drop the 12 M3 nuts into the arm and stack nut pockets, or to tape the stack nuts, whose pockets ope"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-54",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "T/W is 6.02 against a 6.0 floor, on a 161 g printed-mass estimate and a 74 % output cap. DESIGN.md says 3 g of extra print mass fails it. Th"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-3",
+     "severity": "major",
+     "part": "motor",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Prop strike on every belly landing. The motor axis is at z = tail_z = -6 and the Gemfan 7040 radius is 89.2 mm, so the blade tip reaches z ="
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-10",
+     "severity": "major",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "No cooling path. The 60 A ESC (73 x 30 x 12, 48 A peak) and an 800 mW TX800 VTX sit in a sealed PLA box. The only openings are a 15 mm lens "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-17",
+     "severity": "minor",
+     "part": "motor_mount",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The mount_strength load case pulls the motor aft (+x) and says 'a nose-in crash throws the motor + prop aft'. On a pusher, thrust pushes the"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-24",
+     "severity": "major",
+     "part": "elevon_lo",
+     "stage": "final review",
+     "cost_min": 3,
+     "redrawn": [
+      "elevon",
+      "wing"
+     ],
+     "issue": "The outer elevon halves (60 % of the surface, the outboard and most flutter-prone part) are driven only through the 3 mm carbon joiner. It i"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-32",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "Still open from the last review: there is no TPU belly skid (brief: 'TPU where it lands'; the belly is PLA and only the nose is TPU). The RX"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-33",
+     "severity": "minor",
+     "part": "motor_mount",
+     "stage": "final review",
+     "cost_min": 3,
+     "redrawn": [
+      "elevon",
+      "wing"
+     ],
+     "issue": "Stale or inconsistent documents. The mount_strength 'why' in project.yaml still describes 'the pylon carries the raised motor ... 24 mm abov"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-35",
+     "severity": "major",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 11,
+     "redrawn": [
+      "elevon",
+      "motor_mount"
+     ],
+     "issue": "The fixes depend on things the builder must do, and the build outputs never tell them. (a) The servo torque limit is no longer checked by a "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-40",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 11,
+     "redrawn": [
+      "elevon",
+      "motor_mount"
+     ],
+     "issue": "DESIGN.md 'CG and balance' tells the builder to set the CG '10-13 % MAC ahead of the neutral point', but static_margin reports 9.2 % at bat_"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-42",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 5,
+     "redrawn": [
+      "elevon",
+      "splice"
+     ],
+     "issue": "ASSEMBLY.md step order contradicts its own notes. Step 21 fits the battery 'held by the strap', but the strap is only fitted in step 22, and"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-48",
+     "severity": "minor",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The new note (wing_l1/r1 assembly_note, ASSEMBLY.md lines 66-74) has the right idea: the pod becomes the alignment jig, no epoxy reaches the"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-3",
+     "severity": "minor",
+     "part": "yoke / base",
+     "stage": "final review",
+     "cost_min": 14,
+     "redrawn": [],
+     "issue": "No camera FPC or servo-lead routing. The camera FPC (~12-16 mm wide) hangs from the camera's lower edge. The only hole in the yoke plate is "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-6",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "Tripod screw engagement depends on A2 (screw protrusion). The nut top sits 7.24 mm above the base underside, so a 5-6 mm screw engages only "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-11",
+     "severity": "minor",
+     "part": "pan_tilt",
+     "stage": "final review",
+     "cost_min": 24,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "No electrical: block (kerf warning). Servo power and signal, the 5 V supply and bulk capacitor (A6), and the lead strain relief are describe"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-12",
+     "severity": "major",
+     "part": "pan_tilt",
+     "stage": "final review",
+     "cost_min": 28,
+     "redrawn": [],
+     "issue": "No `electrical:` / `wiring:` block (kerf warns). ENGINEERING.md 10b says every project that moves or powers anything must derive the whole e"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-21",
+     "severity": "major",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 19,
+     "redrawn": [],
+     "issue": "Zero vertical clearance for the slide-in pan servo. The servo bottom sits at servo_floor_z = 10.0 mm, which is exactly the top of the nut pl"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-23",
+     "severity": "minor",
+     "part": "DESIGN.md",
+     "stage": "final review",
+     "cost_min": 19,
+     "redrawn": [],
+     "issue": "Numbers have gone stale after the rework. DESIGN.md says 59.3 g complete and printed masses of base 14.2 g, yoke 12.8 g, bracket 6.0 g; repo"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-27",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 460,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The generated ASSEMBLY.md puts the shoulder-screw pivot (step 8) before the tilt servo goes in (step 9). It never tells the user to drive th"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-32",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 460,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The horn bolt circle, thread and hub height (catalog A3 estimates), the SG90 tab hole and output offset (scaled from a drawing) and the gear"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-35",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 370,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The camera M2 pilots in group 'cam_mount' have only 22 % of a 1.5 x d ring of material at worst, because the standoffs are trimmed on their "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-37",
+     "severity": "major",
+     "part": "yoke",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "out/ASSEMBLY.md step 6 says: fit tilt_servo onto the yoke, drive its 2 x M2 x 6 tab screws, then 'join the step-2 sub-assembly: fit tilt_hor"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-42",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Carried forward and still open: ASSEMBLY.md never mentions the 1/4-20 nut (step 1 just says 'Start with base'). The nut drops in through the"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-43",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Tilt-horn centre screw: the BOM says 'M2 horn centre screw, comes with the servo ... a drop of medium threadlocker: metal into metal'. The S"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-2",
+     "severity": "major",
+     "part": "turntable",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "There is no cable path (docs/ENGINEERING.md section 10: 'Cable path from base to wrist that survives the full motion range'). DESIGN.md only"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-7",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The grip is a single swinging finger against a fixed jaw. At 55 deg open, the gap measured square to the jaw at the tcp (45 mm from the pivo"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-18",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 18,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "turntable"
+     ],
+     "issue": "Desk mounting order: the front M4 holes at (30, +/-40) sit under the upper-arm plates at home, and DESIGN.md step 8 bolts the base down afte"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-19",
+     "severity": "minor",
+     "part": "yoke_l",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "turntable",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The pivot-wear risk is accepted in DESIGN.md with a bearing-pressure estimate, which is fine. But the BOM still lists a generic 'M3 x 14 mm "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-22",
+     "severity": "major",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 117,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "layout",
+      "psu_hood",
+      "turntable",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "DESIGN.md assembly step 0 (new this round) says to bolt or clamp the base to the desk first. But step 1 presses the lower 6001 'from below',"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-26",
+     "severity": "minor",
+     "part": "yaw_gear",
+     "stage": "final review",
+     "cost_min": 105,
+     "redrawn": [
+      "psu_hood"
+     ],
+     "issue": "DESIGN.md is out of step with the geometry in places. Assembly step 2 says to bolt the yaw gear on with 4 x M3x10, but the counterbored join"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-32",
+     "severity": "minor",
+     "part": "nano",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Carried over and accepted: the Nano, the 4 WAGO splices and the 5 inline fuse holders are loose on the desk behind the base. DESIGN.md now t"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-37",
+     "severity": "minor",
+     "part": "wiring",
+     "stage": "final review",
+     "cost_min": 32,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The last two route points of pwr_yaw and sig_yaw are [-34.4, -12, 10] and then [-55.2, 0, 27.8], the servo body centre. The drawn lead passe"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-43",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 38,
+     "redrawn": [
+      "base",
+      "forearm",
+      "gripper",
+      "upper_arm"
+     ],
+     "issue": "The yaw lead bends hard at the grommet. The pocket's +X end wall is at x -27.4 (STL), only 0.6 mm past the catalog's 7.0 mm cable-boss envel"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robot_arm",
+     "problem": "robot_arm-53",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "DESIGN.md 'Use notes' tells the IK to reject poses whose tcp or wrist pivot is below z = 15 mm, assuming the jaws are about 12 mm below the "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-1",
+     "severity": "major",
+     "part": "jaw_r",
+     "stage": "final review",
+     "cost_min": 90,
+     "redrawn": [],
+     "issue": "The claimed grip force ignores friction and tilt in the guide bores. In DESIGN.md 'Grip force' the pad force is 30.7 N per jaw at stall and "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-8",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": 90,
+     "redrawn": [],
+     "issue": "There is no mechanical stop at the closed end: if the servo is driven past 0 deg the pads meet at 7.6 deg below it and the servo stalls agai"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-9",
+     "severity": "major",
+     "part": "jaw_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The friction-corrected grip force in DESIGN.md 'Grip force' is still materially wrong, and the mandatory measures that now carry the payload"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-10",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Mass-budget change (130 -> 166 g, torque_wrist 0.30 -> 0.25 of stall). Re-deriving both caps from the real requirement ('no arm servo past h"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-8",
+     "severity": "minor",
+     "part": "arm",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "ENGINEERING section 8 calls for a second support for the servo output when the link is longer than about 60 mm, and this arm is 100 mm. DESI"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-10",
+     "severity": "minor",
+     "part": "base",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "The rig must be screwed down. Unclamped, it resists tipping about a base edge with only about 0.12 N*m (185 g x 63.8 mm), well below the MG9"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-13",
+     "severity": "minor",
+     "part": "arm",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The tip hole fixes the earlier major finding: a 3.5 mm hole at (0, -arm_len) with 5.25 mm of wall each side, confirmed in the geometry. The "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-14",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog. The same datasheet's top view hints that one end's ta"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-15",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The tab screws are now thread-forming M3 screws in 2.72 mm pilot holes, confirmed 7.2 mm deep. That removes the thin-web problem: the pilot-"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-23",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 44,
+     "redrawn": [
+      "arm"
+     ],
+     "issue": "Carried over: the tab hole pattern (49.5 x 10 mm, 4.2 mm) is still marked UNVERIFIED in the catalog, and so is the cable-boss geometry, whic"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-24",
+     "severity": "minor",
+     "part": "arm",
+     "stage": "rough",
+     "cost_min": 44,
+     "redrawn": [
+      "arm"
+     ],
+     "issue": "The comment in arm.py still says 'an M3 screw carries the 50 g weight', but DESIGN.md and the BOM now hang a calibration weight or sinker on"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-27",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 90,
+     "redrawn": [],
+     "issue": "New: DESIGN.md describes the old numbers. Sizing says '2.72 mm pilot holes', but the built PETG bracket uses the catalog's self_tap_pilot_pe"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-28",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 48,
+     "redrawn": [
+      "base",
+      "bracket"
+     ],
+     "issue": "DESIGN.md and project.yaml still quote the replaced catalog values. DESIGN.md line 29 says the lead-in is limited to 0.4 mm; the build now g"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-29",
+     "severity": "minor",
+     "part": "servo",
+     "stage": "rough",
+     "cost_min": 48,
+     "redrawn": [
+      "base",
+      "bracket"
+     ],
+     "issue": "The keyhole slots make the washers load-bearing, not optional. A DIN 125 M3 washer (7 mm OD) centred on a hole at x = 24.75 reaches x = 28.2"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-34",
+     "severity": "minor",
+     "part": "engine",
+     "stage": "final review",
+     "cost_min": 31,
+     "redrawn": [],
+     "issue": "The generated packages still give the wrong action words. WIRING.md and the Electrical section of ASSEMBLY.md say 'solder jack -> servo' and"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-39",
+     "severity": "minor",
+     "part": "project",
+     "stage": "final review",
+     "cost_min": 4,
+     "redrawn": [],
+     "issue": "The generated ASSEMBLY.md fits the electrics last (step 6, after the horn at step 4). The horn step says only 'fit horn' and does not say to"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-41",
+     "severity": "minor",
+     "part": "project",
+     "stage": "final review",
+     "cost_min": 153,
+     "redrawn": [],
+     "issue": "out/report.json (written 03:09:43) is newer than the build outputs (bom.md 03:09:00, renders and ASSEMBLY.md at 03:09:12). It holds 'seconds"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "servo_link",
+     "problem": "servo_link-46",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Outside edges are broken only in places, so the edge language claimed in DESIGN.md ('0.6-1.0 mm edge chamfers'; style edge_break 0.8) does n"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-3",
+     "severity": "major",
+     "part": "ring_low / gimbal_outer / motor_hub (assembly order)",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "DESIGN.md step 2 presses both dowels in first, then step 3 fits horn_roll on the roll servo and step 4 'slides gimbal_outer's -X pad onto th"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-7",
+     "severity": "minor",
+     "part": "bom (dowels)",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "The pin check sizes the dowels at 3 x 20 mm and the BOM lists them that way (twice), but bom_extra and DESIGN.md still list '3 x 16 mm harde"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-10",
+     "severity": "minor",
+     "part": "horn_roll / horn_pitch",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "Both horn mounts and the servo face positions depend on the 21T micro disc horn geometry, which is an estimate in the catalog, and on the MG"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-11",
+     "severity": "minor",
+     "part": "stack (drone.stacks.fc_20) / REFERENCES.md",
+     "stage": "final review",
+     "cost_min": 101,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "The ArduPilot facts the flight depends on are only cited in DESIGN.md prose. They are not in the catalog entry or REFERENCES.md: board suppo"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-12",
+     "severity": "minor",
+     "part": "out/ASSEMBLY.md",
+     "stage": "final review",
+     "cost_min": 101,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "The generated steps still say 'press the 3 x 20 mm dowel into ring_low / gimbal_outer' at the step where the part is fitted, without saying "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-13",
+     "severity": "minor",
+     "part": "wiring (roll and pitch pivot crossings)",
+     "stage": "final review",
+     "cost_min": 101,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "All the gimbal-bound conductors cross the roll pivot as a single short span of about 23 mm, roughly 20 mm off the axis: 2 x 3 x 18 AWG plus "
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-25",
+     "severity": "minor",
+     "part": "DESIGN.md (ring_low row)",
+     "stage": "final review",
+     "cost_min": 1,
+     "redrawn": [],
+     "issue": "The Parts table (DESIGN.md:95) still says 'bosses, webs and ribs on the bed'. The STL shows the webs and bosses at z 0 (1732 mm\u00b2) and the lu"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-30",
+     "severity": "minor",
+     "part": "DESIGN.md (edge distance)",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "The new holewall check warns that the MG90S tab taps (79 % material at 1.5 d, groups yoke_servo and ring_servo) and the motor M3 counterbore"
+    },
+    {
+     "lesson": "process-docs-in-step",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-37",
+     "severity": "minor",
+     "part": "gimbal_outer, ring_low (pitch_pin, roll_pin)",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "First recorded here (the warning comes from the ENG-7..20 engine and was already in the 12:42 report): the 20 mm motion.pin_3mm is 1.5 mm / "
+    }
+   ]
+  },
+  {
+   "id": "print-orientation-and-supports",
+   "kind": "print",
+   "lesson": "Choose print orientation, supports and plate layout when each part is drawn, from its load direction and overhangs.",
+   "earliest_stage": "detail",
+   "catcher_type": "existing check run earlier",
+   "catcher": "the print checks (overhang, bed fit, layer direction) in `kerf check`, read per part as it is drawn",
+   "level": "proposed gate",
+   "count": 29,
+   "projects": [
+    "drone_foldable_wings",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "robotic_gripper_claw",
+    "robotic_gripper_desk",
+    "servo_link",
+    "tvc_drone"
+   ],
+   "late_by_stages": 1,
+   "cost_min": 616,
+   "evidence": [
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-3",
+     "severity": "minor",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "hub"
+     ],
+     "issue": "root fairing: print and mass. (a) As printed (boss on the bed, airfoil floating above it on tree supports, 30.9 % of the surface supported),"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-17",
+     "severity": "minor",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Pre-existing print setup: the hub is printed boss-down, so the whole airfoil block floats about 15 mm above the bed on tree supports (30.9 %"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-7",
+     "severity": "major",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 6,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "There is no provision for a video transmitter, receiver or antenna mount. The brief's analog 19 mm micro camera is useless without a VTX, an"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-44",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 31,
+     "redrawn": [],
+     "issue": "The arm prints top-up, so the M3 counterbores (motor: 3.5 mm deep; arm root: 5 mm) open on the bed face. Each counterbore ceiling is an unsu"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-50",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 93,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Carried. The counterbore ceilings in the arms and top plate open on the bed face and print as mid-air rings. This is documented in DESIGN.md"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-11",
+     "severity": "major",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The print package puts every part on ONE plate (plate_1.3mf) in three materials: PLA, PETG and TPU, which need different bed temperatures (5"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-12",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Pod print: 310 mm tall, about 300 g, on a 48 x 50 mm foot (5 mm brim). The wing centre section's trailing edge (x = 250 + 0.27|y|) runs to x"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-13",
+     "severity": "minor",
+     "part": "wing_l2",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Outboard of the elevon (y 460-500), the TE stub is a ceiling about 30 mm deep over the elevon slot as printed standing (overhang_pct 1.14 %)"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-30",
+     "severity": "minor",
+     "part": "hatch",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "The hatch prints standing on its 1.7 mm edge (363 mm2 contact, flagged by the build), 218 mm long and 72 mm tall. Printed flat on its outer "
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-34",
+     "severity": "minor",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 3,
+     "redrawn": [
+      "elevon",
+      "wing"
+     ],
+     "issue": "The 100 % modifiers are now in project.yaml and PRINT_SETTINGS.md (fixed in substance), but they are not written into the plate 3MF as modif"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-37",
+     "severity": "minor",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 11,
+     "redrawn": [
+      "elevon",
+      "motor_mount"
+     ],
+     "issue": "Plate 3 still holds every tall, slender PLA part: 4 wing segments 220-230 mm tall on 1 wall, 4 elevon halves up to 189 mm tall on 40 x 5 mm "
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-44",
+     "severity": "minor",
+     "part": "hatch",
+     "stage": "final review",
+     "cost_min": 5,
+     "redrawn": [
+      "elevon",
+      "splice"
+     ],
+     "issue": "Carried over: 8.3 % of the surface needs support (the tongue and the rounded edges lift off the bed). The M3 x 6 heads stand about 3 mm prou"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-5",
+     "severity": "minor",
+     "part": "yoke / bracket",
+     "stage": "final review",
+     "cost_min": 14,
+     "redrawn": [],
+     "issue": "Moving clearance is thin: cam_clear min is 0.6 mm against a 0.5 mm limit and the pivot axial gap is 0.6 mm, both on printed PETG parts with "
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-9",
+     "severity": "minor",
+     "part": "yoke",
+     "stage": "final review",
+     "cost_min": 24,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The yoke needs support or bridging at the tilt-servo window, which has a 12.8 mm top bridge, plus the ledge slots and the FPC notch. The par"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-41",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "DESIGN.md section 4 calls the deck legs over the cavity 'short bridges'. They are not bridges. They are 4.7 mm ledges (cav_x 33.2 vs window "
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robot_arm",
+     "problem": "robot_arm-31",
+     "severity": "minor",
+     "part": "cable_mast",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The docstring still says 'foot and column flush (10 mm) so it needs no support'. The foot is now 26 mm wide in Y with the 10 mm column centr"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robot_arm",
+     "problem": "robot_arm-34",
+     "severity": "minor",
+     "part": "psu_hood",
+     "stage": "final review",
+     "cost_min": 61,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The assembly order (project.yaml assembly_note, ASSEMBLY step 26) says to slide the hood on, feed the DC pairs out, then 'tie them to the fl"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robot_arm",
+     "problem": "robot_arm-38",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 32,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "In the upright print, the shelf underside is the face the tab tops clamp against, and it is printed over support across the open pocket. The"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robot_arm",
+     "problem": "robot_arm-39",
+     "severity": "minor",
+     "part": "psu_hood",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Round-5 items verified. The pot hole is now 7 mm and the LED hole 2.5 mm (web 6.007 - 3.5 - 1.25 = 1.26 mm), and the two holes show separate"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robot_arm",
+     "problem": "robot_arm-50",
+     "severity": "major",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": 15,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "gripper",
+      "psu_hood",
+      "upper_arm"
+     ],
+     "issue": "In print orientation (print_rot [90,0,0], out/parts/gripper.stl) the lowest geometry is the bottom of the two r = link_h/2 = 17 mm wrist dis"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robot_arm",
+     "problem": "robot_arm-54",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "11.1 % of the surface still prints on support: the palm underside (11 mm above the bed between the plates) and the fixed jaw. This is docume"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-1",
+     "severity": "minor",
+     "part": "pad_l",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Payload hold rests on an assumed TPU 95A friction of 0.30. The servo needs 48 % of stall against a 50 % budget, with friction SF 2.09. Holdi"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-5",
+     "severity": "minor",
+     "part": "pinion",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The part docstring and DESIGN say the pinion prints flat on its horn (back) face, but print_rot [180, 0, 0] puts the front (tooth-chamfered)"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "servo_link",
+     "problem": "servo_link-21",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 44,
+     "redrawn": [
+      "arm"
+     ],
+     "issue": "The servo window has only 0.3 mm clearance per side, and the servo enters it from the back face, which is the first-layer face on the printe"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "servo_link",
+     "problem": "servo_link-50",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "out/plates/PRINT_SETTINGS.md labels the bracket orientation 'on its front (-Y) face', while DESIGN.md and the part docstring call the same f"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-8",
+     "severity": "minor",
+     "part": "ring_mid / motor_hub",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "ring_mid is printed top-up with its tube bosses hanging below, so the whole plate underside (29 % of the surface) needs support, and that is"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-18",
+     "severity": "minor",
+     "part": "ring_low",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "motor_plate",
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "DESIGN.md, STATUS.md and the ring_low docstring say the bosses, webs and lug ribs touch the bed. They do not. In print orientation only the "
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-28",
+     "severity": "minor",
+     "part": "gimbal_outer",
+     "stage": "final review",
+     "cost_min": 94,
+     "redrawn": [],
+     "issue": "14 of 38 first-layer edges could not be chamfered (build warning). They are at the -Y pin pad and the +X lug-to-ring junctions, e.g. (7.0, -"
+    },
+    {
+     "lesson": "print-orientation-and-supports",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-32",
+     "severity": "minor",
+     "part": "gimbal_outer",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Carried over: 14 first-layer edges cannot be chamfered (deburr warning)."
+    }
+   ]
+  },
+  {
+   "id": "process-review-early",
+   "kind": "process",
+   "lesson": "Review before the end: run the design reviewer (or at least its checks) on the contract and the rough parts, then again after detail, not only at the final review.",
+   "earliest_stage": "rough",
+   "catcher_type": "planning step",
+   "catcher": "a planning step: a design-reviewer pass on the DESIGN.md contract + rough assembly, and `kerf check` at every part-group milestone",
+   "level": "proposed gate",
+   "count": 9,
+   "projects": [
+    "bionic_finger",
+    "drone_foldable_wings",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "robotic_gripper_claw",
+    "robotic_gripper_desk",
+    "tvc_drone"
+   ],
+   "late_by_stages": 2,
+   "cost_min": 2826,
+   "evidence": [
+    {
+     "lesson": "process-review-early",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 333,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "9 problems (2 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 69,
+     "redrawn": [
+      "hub"
+     ],
+     "issue": "19 problems (8 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 542,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "12 problems (7 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 720,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "20 problems (11 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 130,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "6 problems (1 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "robot_arm",
+     "problem": "robot_arm-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 451,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yaw_gear",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "12 problems (3 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-review-round-1",
+     "severity": "minor",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 0,
+     "redrawn": [],
+     "issue": "7 problems (0 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 270,
+     "redrawn": [],
+     "issue": "8 problems (1 blocker/major) first seen in review round 1; no earlier review or check found any"
+    },
+    {
+     "lesson": "process-review-early",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-review-round-1",
+     "severity": "blocker",
+     "part": null,
+     "stage": "final review",
+     "cost_min": 311,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "10 problems (4 blocker/major) first seen in review round 1; no earlier review or check found any"
+    }
+   ]
+  },
+  {
+   "id": "access-tools-and-fasteners",
+   "kind": "access/fasteners",
+   "lesson": "Check a key or screwdriver can reach every screw, and every insert and nut is placed, when the fastener is first drawn.",
+   "earliest_stage": "detail",
+   "catcher_type": "existing check run earlier",
+   "catcher": "hex_key_reach, repair_access and connector_access run per part group; ball-end keys listed in ASSEMBLY.md",
+   "level": "proposed gate",
+   "count": 36,
+   "projects": [
+    "bionic_finger",
+    "drone_foldable_wings",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "servo_link",
+    "tvc_drone"
+   ],
+   "late_by_stages": 1,
+   "cost_min": 2251,
+   "evidence": [
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-3",
+     "severity": "minor",
+     "part": "base/proximal/middle (parent knuckle band)",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "Over the top ~1 mm of the heat-set bore (the gap face), the swept extensor groove comes to r ~ 2.5 mm from the pivot axis. Measured: a ring "
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-11",
+     "severity": "minor",
+     "part": "base/proximal/middle (insert mouth)",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The shoulder bottoms on the insert face and the joint only has 0.15 mm of head play. An insert left even ~0.15 mm proud of the gap face (nor"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-15",
+     "severity": "minor",
+     "part": "out/ASSEMBLY.md, bom (generated)",
+     "stage": "final review",
+     "cost_min": 18,
+     "redrawn": [],
+     "issue": "The owner-facing build sheet still has 'Tools: none', no insert heat-set step, no flush-to-low instruction, no torque limit (each pivot line"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-22",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "Tightening the shoulder screw until the shoulder bottoms preloads the screw, and that preload pulls the heat-set insert toward the face it w"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-15",
+     "severity": "minor",
+     "part": "aft_fuse",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The 4 sweep-servo screws on each side need a ball-end 2.5 mm key (a straight key hits the servo body), and the sweep_servo insert holes sit "
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-2",
+     "severity": "blocker",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 6,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "The XT60 cradle closes both ends of the connector. The front end wall (x = -40.35 to -38.45) is solid. The rear end wall (x = -63.55 to -61."
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-3",
+     "severity": "major",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Each arm is held against yaw only by two M3 screws in a line along the arm, 14 mm apart, in printed plastic. A side hit on a motor (the most"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-4",
+     "severity": "major",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Motor screws are M3 x 10 with a 7.0 mm grip, so 3.0 mm goes into the motor. That is exactly the catalog max_screw_depth of 3.0 mm, which is "
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-18",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 17,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "The VTX screw length does not match the hardware. The fastener check sizes M2 x 12 for an 8 mm grip because the TX800 proxy is an 8 mm solid"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-43",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 31,
+     "redrawn": [],
+     "issue": "The build documents never call for a thread-locker. The motor screws are steel into the motor's aluminium base and the arm screws use plain "
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-45",
+     "severity": "major",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 3,
+     "redrawn": [],
+     "issue": "The BOM buy links are for the wrong screw lengths. bom.md row 'M3 x 12 mm socket head screw' (8 off, the arm screws) links to Zoro SC2203008"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-56",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The motor-screw edge-distance warnings (88 % of the ring is material on the arm pad, 46-50 % at the top-plate insert and VTX pilot holes) ar"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-57",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "New since round 9 (engine check added in d3677bb): report.json warns that the bom_extra row 'M2 x 6 mm button head screw' duplicates the fas"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-7",
+     "severity": "major",
+     "part": "wing_l2",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The brief asks for 'bolted sections I can replace after a crash', and DESIGN.md says 'a crashed segment is reprinted alone'. But the outer s"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-27",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "Battery swap: the pack is reached only with the nose off (4 x M3 x 16 into inserts, every flight), and the strap's velcro sits 60-170 mm ins"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-10",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 24,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "Slicer warning: 3.5% of the surface needs support. The cause is the teardrop and 45-degree holes and the horizontal horn-key access holes (2"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-18",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 116,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "3.5% of the surface is flagged as needing support: the 45-degree and teardrop faces, plus the roofs of the 2.4 mm horizontal key-access hole"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-25",
+     "severity": "minor",
+     "part": "base/bracket",
+     "stage": "final review",
+     "cost_min": 19,
+     "redrawn": [],
+     "issue": "Putting in the pan servo screws is fiddly. They go up from below through 4.8 mm holes in the plinth and 13 mm of air to the tabs, with a 1.5"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-31",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 460,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The M3 heat-set insert hole (4.0 mm) sits in a knuckle of r 4.4 mm, leaving about 2.4 mm of wall, above the catalog minimum of 1.6 mm. The t"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-33",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 370,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The 4 M2 clearance holes of group 'bracket_tilt' (horn screws through the +Y arm) print horizontal but are cut round. iface.horn_mount is ca"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "robot_arm",
+     "problem": "robot_arm-6",
+     "severity": "minor",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "All servo tab screws are thread-formed into PETG (kind='tap'). They carry the joint torque reaction, and the servos will come off at least o"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "robot_arm",
+     "problem": "robot_arm-13",
+     "severity": "blocker",
+     "part": "yaw_gear",
+     "stage": "final review",
+     "cost_min": 18,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "turntable"
+     ],
+     "issue": "The yaw horn screws (yaw_horn group, 4 x M3x10, plain clearance holes) seat ON the yaw gear's top face at z 62.3 (report fasteners 'at' z 62"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "robot_arm",
+     "problem": "robot_arm-28",
+     "severity": "major",
+     "part": "psu_hood",
+     "stage": "final review",
+     "cost_min": 40,
+     "redrawn": [
+      "base",
+      "psu_hood"
+     ],
+     "issue": "The hood blocks the supply's output adjustment. The MEAN WELL LRS-100 drawing (datasheet page 4, the catalog's source_mech) puts SVR1 and th"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "robot_arm",
+     "problem": "robot_arm-48",
+     "severity": "minor",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": 29,
+     "redrawn": [],
+     "issue": "Several holes print horizontally but are cut round without compensation (ENGINEERING.md s4: 'Horizontal holes print oval: use teardrop or ad"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-2",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "The servo tab hole pattern (49.5 x 10 mm, 4.2 mm holes) is marked UNVERIFIED in the catalog and REFERENCES.md (it is copied from a DS3218 dr"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-3",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "The tab screws are sized for bare tabs: tab_t 2.5 mm plus M3x8 gives 5.5 mm of thread in the insert. The MG996R ships with rubber grommets a"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-4",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "Only 2.1 mm of plastic separates each tab-screw insert hole from the servo window: the hole edge is at x = 22.75 mm and the window edge at x"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-18",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The docs are stale after the switch to pilot holes. The bracket.py module docstring still says the tabs bolt to 'M3 heat-set inserts' and th"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-20",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 44,
+     "redrawn": [
+      "arm"
+     ],
+     "issue": "Hex-key access to the two tab screws on the cable end (x = +24.75, z = 78 and 88). These screws are now driven from behind, the side where t"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-25",
+     "severity": "minor",
+     "part": "engine",
+     "stage": "rough",
+     "cost_min": 96,
+     "redrawn": [],
+     "issue": "Still open from the last review (engine half): nothing in the engine checks assembly access. I re-probed the current assembly. A straight 3 "
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-30",
+     "severity": "minor",
+     "part": "engine",
+     "stage": "rough",
+     "cost_min": 48,
+     "redrawn": [
+      "base",
+      "bracket"
+     ],
+     "issue": "The servo's insertion path can't be proven by kerf check. access.insertion_paths moves the whole subtree, and assembly.order doesn't change "
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-37",
+     "severity": "minor",
+     "part": "servo",
+     "stage": "final review",
+     "cost_min": 189,
+     "redrawn": [],
+     "issue": "The two tab screws next to the cable boss need a ball-end driver. It is documented and now in the BOM as a tool."
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "servo_link",
+     "problem": "servo_link-49",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "A flat slab with holes. Every feature has a purpose (blind M3 inserts with a floor, which I verified by section, 7.6 mm M4 counterbores, r6 "
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-15",
+     "severity": "minor",
+     "part": "motor_hub / ring_low / legs",
+     "stage": "final review",
+     "cost_min": 101,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "The support warnings are unchanged: motor_hub 24 %, ring_low 17 %, gimbal_outer 18 %, legs 20 %. The two upper pitch-horn M2 screws still ne"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-17",
+     "severity": "major",
+     "part": "rod_1..3 / xt60 / mass",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "motor_plate",
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "report.json purchased mass_g is 0.0 for rod_1, rod_2, rod_3 and xt60. kerf/checks.py item_mass_g only reads weight_g/mass_g, and rods.cf_tub"
+    },
+    {
+     "lesson": "access-tools-and-fasteners",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-38",
+     "severity": "minor",
+     "part": "motor_hub (pitch_horn)",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Carried over and documented in DESIGN.md assembly step 6: a straight 1.5 mm key cannot reach the two upper M2 horn screws."
+    }
+   ]
+  },
+  {
+   "id": "fit-collision-clearance",
+   "kind": "fit/collision",
+   "lesson": "Run the collision and clearance checks on the rough assembly and after every part group; fix the part that owns the overlap.",
+   "earliest_stage": "rough",
+   "catcher_type": "existing check run earlier",
+   "catcher": "`kerf check` (interference, clearance_min, prop_clearance) after each part group instead of once at the end",
+   "level": "proposed gate",
+   "count": 13,
+   "projects": [
+    "bionic_finger",
+    "drone_foldable_wings",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "servo_link"
+   ],
+   "late_by_stages": 2,
+   "cost_min": 373,
+   "evidence": [
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-7",
+     "severity": "minor",
+     "part": "all (pin screws)",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "The screw heads (5.5 dia x 3 mm, on alternating sides) are not modelled as proxies, so they are not in any collision or envelope check. The "
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-23",
+     "severity": "major",
+     "part": "spine",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Zero running clearance to each hub boss (pre-existing geometry, found now; this change did not cause it). spine.py runs fillet_inside (r 2) "
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-1",
+     "severity": "blocker",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "The stack holes (15.25, 15.25) sit at r = 21.57 mm on the arm diagonals, inside the arm's rounded root (centre r = 31, radius 10, so solid f"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-10",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "The top-plate post counterbores (30, +/-12) sit right against the arm edges. The 5.5 mm screw head passes within about 0.05 mm of the arm ro"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-20",
+     "severity": "minor",
+     "part": "elevon_r",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The TE is 1.01 mm (2 perimeters), which is fragile on a hinged surface that gets handled. The URDF joint and link names collide (elevon_l / "
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-22",
+     "severity": "major",
+     "part": "hatch",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "The hatch's rear tongue covers the VTX antenna's exit hole. The tongue spans x 204-213 and |y| <= 30, 0.2 mm under the pod's top skin (hatch"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-38",
+     "severity": "minor",
+     "part": "hatch",
+     "stage": "final review",
+     "cost_min": 11,
+     "redrawn": [
+      "elevon",
+      "motor_mount"
+     ],
+     "issue": "Printed outer face down, only the flat centre band touches the bed. The rounded side edges (the pod's corner radius) and the rear of the pan"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-40",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The 'servo cavity: the SG90's square case and tabs slide along it' reason is right for the deck-underside corners over the tabs and the tab-"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "robot_arm",
+     "problem": "robot_arm-1",
+     "severity": "major",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The bore between the two 6001 seats is only 14 mm (bearing_seat through= with the default shaft_clear 1.0, so d/2+1 = 7 mm radius). A 6001 i"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "servo_link",
+     "problem": "servo_link-22",
+     "severity": "minor",
+     "part": "engine",
+     "stage": "rough",
+     "cost_min": 44,
+     "redrawn": [
+      "arm"
+     ],
+     "issue": "Three engine changes from this round have no test in tests/, which CLAUDE.md requires: (1) screw_spec(material=...) choosing self_tap_pilot_"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "servo_link",
+     "problem": "servo_link-31",
+     "severity": "minor",
+     "part": "horn",
+     "stage": "rough",
+     "cost_min": 48,
+     "redrawn": [
+      "base",
+      "bracket"
+     ],
+     "issue": "The horn proxy seats the hub bottom on top of the 6.3 mm spline, but a real 25T horn slides over the spline. That puts the modelled horn and"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "servo_link",
+     "problem": "servo_link-32",
+     "severity": "minor",
+     "part": "catalog",
+     "stage": "rough",
+     "cost_min": 48,
+     "redrawn": [
+      "base",
+      "bracket"
+     ],
+     "issue": "The servos.MG996R note is dated '2026-10-31', a day after this review. tab_z is still marked UNCONFIRMED. I checked that 26.5-30.2 causes no"
+    },
+    {
+     "lesson": "fit-collision-clearance",
+     "project": "servo_link",
+     "problem": "servo_link-36",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "tab_z is still unconfirmed (26.5-30.2). At 30.2 the 20 mm horn disc sits 0.5 mm inside the 20.56 mm window with about 0.28 mm to its top and"
+    }
+   ]
+  },
+  {
+   "id": "motion-stops-and-travel",
+   "kind": "motion/assembly",
+   "lesson": "Prove each moving part's full travel, its stop and its over-travel on the rough assembly (servo throw, horn, linkage), not after detail.",
+   "earliest_stage": "rough",
+   "catcher_type": "existing check run earlier",
+   "catcher": "the hard_stop and clearance_min requirements swept past the stop on the rough parts, with the servo's real travel in project.yaml",
+   "level": "proposed gate",
+   "count": 26,
+   "projects": [
+    "bionic_finger",
+    "drone_foldable_wings",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "servo_link"
+   ],
+   "late_by_stages": 2,
+   "cost_min": 653,
+   "evidence": [
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-1",
+     "severity": "blocker",
+     "part": "base/proximal/middle/distal (fingerlib.child_end, parent_end)",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "No hyperextension (straight) hard stop at any joint. Child positioned at negative flexion against its parent in assembly.step: intersection "
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-10",
+     "severity": "minor",
+     "part": "all joints (fingerlib W/GAP, shoulder length)",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "Axial play per joint is now 0.45 mm: the 0.3 lap gap plus 0.15 from the 8 mm shoulder over the 7.85 stack. Diametral play is ~0.35-0.38 (4.3"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-12",
+     "severity": "minor",
+     "part": "DESIGN.md",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "Section 2 'Side play' is stale. It still says the 7.85 mm lap faces and that the 0.3 mm gap is the only axial play. The bands are now 7.55 a"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-14",
+     "severity": "minor",
+     "part": "proximal/middle/distal (child stop lug, fingerlib.child_end)",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "In the child's top band the lug is cut by the r = RH circle. Where that circle meets the lug's lower edge (z = 7, x ~ 3.7) it leaves a sharp"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-33",
+     "severity": "minor",
+     "part": "proximal",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Concept lever left unused. The flexor runs 4.7 mm palmar of the axes while the extensor uses 6.15 mm (the same 1.75 mm skin would allow the "
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-34",
+     "severity": "minor",
+     "part": "distal",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Proportions and craft. All four parts are the same 15.6 x 18 mm box section with full-round ends. The fingertip is 18 mm deep, while an adul"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-1",
+     "severity": "major",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "hub"
+     ],
+     "issue": "root fairing: the new nose touches the spine ridge before the real spread stop does (hub_l is the mirror image and behaves the same). At ful"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-20",
+     "severity": "minor",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Root fairing (this change): nothing guards the new over-travel clearance. The nose-to-ridge gap (0.451 mm at -3 deg) is now right, but no re"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-25",
+     "severity": null,
+     "part": null,
+     "stage": "detail",
+     "cost_min": 65,
+     "redrawn": [],
+     "issue": "drone_foldable_wings: sweep servos get their real travel (0..113.1 / -113.1..0: the full sweep crashed at 97 deg past the proxy's default +-"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-6",
+     "severity": "major",
+     "part": "elevon_l",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Control linkage (both elevons): (1) The horn hole is only about 9.7 mm from the hinge (3.5 aft, 9 down). The servo axis sits about 9.4 mm ab"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-15",
+     "severity": "minor",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Brief: 'TPU where it lands'. A flying wing lands on its belly, and the belly here is the 2-wall PLA pod floor (which also carries the pack)."
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-23",
+     "severity": "major",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 3,
+     "redrawn": [
+      "elevon",
+      "wing"
+     ],
+     "issue": "At one end of the elevon throw the pushrod hits the servo pocket's aft edge. The servo pocket spans x 184.75-215.25 (tab span + 1, centred o"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-26",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "The ESC (73 mm long) cannot drop in from above. Between the sleeves the gap is only about 61 mm at y 0 and 60 mm at |y| 15 (main sleeve back"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-39",
+     "severity": "minor",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 11,
+     "redrawn": [
+      "elevon",
+      "motor_mount"
+     ],
+     "issue": "The pushrod is still not modelled. Its clearance through the new slot (about 0.5 mm at full up-throw with the 8 mm arm hole: rod at z -4.40 "
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-43",
+     "severity": "minor",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 5,
+     "redrawn": [
+      "elevon",
+      "splice"
+     ],
+     "issue": "Formatting slip in the new engine output. The item_notes writer splits assembly_note at its colons, so step 4 prints a bare 'Pushrod:' bulle"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-47",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Still open (tracked as its own PLAN item, not new): no TPU belly skid; consumables missing from the mass model (TWR 1.53 vs 1.5); slender-pa"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-1",
+     "severity": "blocker",
+     "part": "yoke / bracket / base (layout.py via catalog servo_horns.aluminum_micro_21T)",
+     "stage": "final review",
+     "cost_min": 14,
+     "redrawn": [],
+     "issue": "The horn does not engage the spline in the model. The catalog horn entry has hub_height 4.0 (hub bottom to disc top) but no spline_engage, s"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-2",
+     "severity": "minor",
+     "part": "project.yaml bom_extra",
+     "stage": "final review",
+     "cost_min": 14,
+     "redrawn": [],
+     "issue": "The BOM is inconsistent. bom_extra lists 'M3 x 10 SHCS + washer' for the pivot, while the fastener check picks M3 x 12 and the BOM also list"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-13",
+     "severity": "minor",
+     "part": "pan_tilt",
+     "stage": "final review",
+     "cost_min": 28,
+     "redrawn": [],
+     "issue": "The cam_clear margin (bracket to yoke) is 0.9 mm against a 0.8 mm limit, which equals the 0.9 mm pivot gap. FDM tolerance on both parts can "
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-15",
+     "severity": "minor",
+     "part": "bracket/yoke",
+     "stage": "final review",
+     "cost_min": 97,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The pivot axial gap is 0.9 mm against a 0.8 mm cam_clear requirement, so only 0.1 mm of margin. Shrinkage or elephant's foot on the yoke -Y "
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-26",
+     "severity": "minor",
+     "part": "horns/servos",
+     "stage": "final review",
+     "cost_min": 19,
+     "redrawn": [],
+     "issue": "The 21T horn bolt circle, thread and hub height are catalog estimates. The SG90 tab-hole and output-offset positions are scaled from a drawi"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "robot_arm",
+     "problem": "robot_arm-10",
+     "severity": "minor",
+     "part": "yoke_l",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The three pivots are fully threaded M3x14 screws turning in 3.35 mm printed holes. The threads will wear the hole into an oval over time, wh"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "robot_arm",
+     "problem": "robot_arm-11",
+     "severity": "minor",
+     "part": "yaw_gear",
+     "stage": "final review",
+     "cost_min": 66,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yaw_gear",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "The 0.3 mm backlash at the 18 mm pitch radius of the 24 T gear gives about 0.95 deg of free play at the turntable, which is about 5 mm of si"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "robot_arm",
+     "problem": "robot_arm-20",
+     "severity": "major",
+     "part": "psu",
+     "stage": "final review",
+     "cost_min": 105,
+     "redrawn": [
+      "psu_hood"
+     ],
+     "issue": "The electrical system is not complete (ENGINEERING.md 10b: 'power connector, switch/fuse where needed'; Spencer's rule: every component need"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "robot_arm",
+     "problem": "robot_arm-51",
+     "severity": "minor",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": 15,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "forearm",
+      "gripper",
+      "psu_hood",
+      "upper_arm"
+     ],
+     "issue": "Not seen in round 9 (engine check added after it): the horn clearance holes (sh_horn on upper_arm, el_horn on forearm, wr_horn on gripper) a"
+    },
+    {
+     "lesson": "motion-stops-and-travel",
+     "project": "servo_link",
+     "problem": "servo_link-19",
+     "severity": "minor",
+     "part": "servo",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The catalog source datasheet says the MG996R rotates 'approximately 120 degrees (60 in each direction)' with standard pulses. The project gi"
+    }
+   ]
+  },
+  {
+   "id": "wiring-lead-lengths",
+   "kind": "wiring",
+   "lesson": "Check every lead is long enough along its routed path (plus slack) when the route is first drawn.",
+   "earliest_stage": "detail",
+   "catcher_type": "existing check run earlier",
+   "catcher": "the wiring length check against the routed path, run when the routes are first declared",
+   "level": "proposed gate",
+   "count": 13,
+   "projects": [
+    "drone_foldable_wings",
+    "fpv_5in",
+    "pan_tilt",
+    "robot_arm",
+    "servo_link",
+    "tvc_drone"
+   ],
+   "late_by_stages": 1,
+   "cost_min": 956,
+   "evidence": [
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-10",
+     "severity": "major",
+     "part": "ail_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The aileron servo leads are too short: ail_r_pwr/sig and ail_l_pwr/sig are declared at 620 mm, but the routed path at full fold plus 15 % sl"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-25",
+     "severity": "major",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "The brief's graded line 'the BOM lists every wire, connector and electrical part with a buy link' is not met. All six silicone-wire rows (AW"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-26",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "XT60 retention against unplugging is friction only. The tie now wraps under the connector, which is correct, and holds it up. But nothing be"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-28",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "Phase-wire model. The runs are 18 AWG, 175 mm, 'the motor's own leads extended where needed', and the BOM buys 2.1 m of 18 AWG. The XING2's "
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-33",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 4,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "The XT60 pigtail has very little room to turn. The 12 AWG leads (3.6 mm OD, catalog wire.silicone) leave the cradle's front stops at x -44.5"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-16",
+     "severity": "minor",
+     "part": "wiring (project.yaml)",
+     "stage": "final review",
+     "cost_min": 97,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The WIRING steps say to cut and solder jack -> servo. An SG90 ships with its own 3-pin JR lead, and splitting power and signal as separate 2"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "robot_arm",
+     "problem": "robot_arm-21",
+     "severity": "major",
+     "part": "wiring",
+     "stage": "final review",
+     "cost_min": 105,
+     "redrawn": [
+      "psu_hood"
+     ],
+     "issue": "WIRING.md contradicts the BOM and gives unsafe terminations. (1) psu_arm/psu_yaw say 'solder to psu', but the LRS output is a screw terminal"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "robot_arm",
+     "problem": "robot_arm-30",
+     "severity": "minor",
+     "part": "wiring",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The IR-drop rows leave out resistances that are in the catalog or certain to be there. The 5 A ATO fuse has cold_resistance_ohm 0.01785 (abo"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "servo_link",
+     "problem": "servo_link-35",
+     "severity": "minor",
+     "part": "engine",
+     "stage": "final review",
+     "cost_min": 31,
+     "redrawn": [],
+     "issue": "Nothing checks voltage drop. Checked as AWG 24, the adapter cord drops about 0.42 V at the 2.5 A stall, so the servo would see about 4.5 V, "
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "servo_link",
+     "problem": "servo_link-40",
+     "severity": "minor",
+     "part": "catalog",
+     "stage": "final review",
+     "cost_min": 528,
+     "redrawn": [
+      "bracket"
+     ],
+     "issue": "The adapter's DC cord gauge is still assumed (now AWG 22, the thinnest gauge whose chassis ampacity covers the 6 A rating), not sourced. The"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-4",
+     "severity": "major",
+     "part": "ring_top (xt60 mount)",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "The XT60 is held by one cable tie plus a stop block that only resists pushing in. XT60 mating and unmating forces are tens of newtons. The c"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-5",
+     "severity": "minor",
+     "part": "wiring bat_lead",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "WIRING.md step 1 says to 'cut 2 x 100 mm AWG 12 and solder battery -> xt60', and the BOM buys 0.2 m of 12 AWG for it. The pack's own XT60 le"
+    },
+    {
+     "lesson": "wiring-lead-lengths",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-6",
+     "severity": "minor",
+     "part": "bom",
+     "stage": "final review",
+     "cost_min": 122,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "The brief asks for a buy link on every wire, connector and electrical part. The wire rows (AWG 12-28) and the cable ties have no link. The p"
+    }
+   ]
+  },
+  {
+   "id": "assembly-cannot-be-fitted",
+   "kind": "motion/assembly",
+   "lesson": "Walk the assembly order on the rough parts: every part must reach its place along a free path (insert paths, horn and servo order).",
+   "earliest_stage": "rough",
+   "catcher_type": "existing check run earlier",
+   "catcher": "insertion_paths / horn_paths (kerf/access.py) and the ASSEMBLY.md order run on the rough parts",
+   "level": "proposed gate",
+   "count": 9,
+   "projects": [
+    "bionic_finger",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robotic_gripper_claw",
+    "servo_link"
+   ],
+   "late_by_stages": 2,
+   "cost_min": 864,
+   "evidence": [
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-26",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "BOM and ASSEMBLY ordering. The shoulder screw and the M3 insert each still appear as three separate one-off rows (one per hinge) rather than"
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-13",
+     "severity": "major",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 17,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "The XT60 has no working retention, so round-1 blocker 2 is only half fixed. The plug end is now open, which is correct. But the DESIGN and t"
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-22",
+     "severity": "blocker",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "The battery strap cannot be fitted. The strap slots are 3 x 22 mm at x = +/-18. So the 20 mm strap has to come down one slot, run under the "
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-1",
+     "severity": "blocker",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The pod is a closed box with one way in: the front opening (y +-30, z -62.6 to +6). Above the shelf (top z -19.5) that leaves a 60 x 25.5 mm"
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-30",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 460,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "The 1/4-20 nut pocket is cut from the floor right up into the open cavity, so the nut is not captive until the pan servo is in. Before the s"
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-5",
+     "severity": "minor",
+     "part": "finger_l",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Two of the four horn-screw holes are within 4.5 mm of a free edge (worst ring 84 % material). This is forced by the 25T horn's 14 mm circle "
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "servo_link",
+     "problem": "servo_link-1",
+     "severity": "major",
+     "part": "arm",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "No way to attach the payload at the tip. DESIGN.md and requirement arm_torque are built around a 50 g test weight at arm.tip (100 mm from th"
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "servo_link",
+     "problem": "servo_link-9",
+     "severity": "minor",
+     "part": "horn",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "The arm screws (M3x8 through the 6 mm arm) engage only the 2 mm aluminium horn disc, about 4 threads. A socket screw tightened to its full r"
+    },
+    {
+     "lesson": "assembly-cannot-be-fitted",
+     "project": "servo_link",
+     "problem": "servo_link-12",
+     "severity": "blocker",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "The servo cannot be fitted. bracket.py puts the tabs on the wall's front face, so the 26.6 mm of case below the tabs has to pass through the"
+    }
+   ]
+  },
+  {
+   "id": "strength-infill-and-walls",
+   "kind": "strength",
+   "lesson": "Set infill, walls and minimum wall thickness for each part from its load when the part is first drawn, not at review.",
+   "earliest_stage": "rough",
+   "catcher_type": "existing check run earlier",
+   "catcher": "the infill check (kerf/infill.py) and the wall-thickness check run on the rough parts",
+   "level": "proposed gate",
+   "count": 8,
+   "projects": [
+    "drone_foldable_wings",
+    "fpv_wing",
+    "robotic_gripper_claw"
+   ],
+   "late_by_stages": 2,
+   "cost_min": 124,
+   "evidence": [
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-13",
+     "severity": "minor",
+     "part": "fwd_fuse",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Overbuilt parts in a mass-limited aircraft. fwd_fuse is 183.5 g of PLA working at 6 % of allowable with 100 % of its volume cold, tail_mount"
+    },
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-16",
+     "severity": "minor",
+     "part": "elevator",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Thin walls below 1.2 mm: elevator 0.93, rudder 0.86, ail_r/l 1.02-1.03, hatch 1.01, tail_mount 1.12 mm."
+    },
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-5",
+     "severity": "major",
+     "part": "elevon_l",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Printability: each elevon stands 314 mm tall on a 102 mm2 foot (the build warns about it). That is a 40 mm x ~5 mm, 1-wall, 5 % infill blade"
+    },
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-8",
+     "severity": "major",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The root heat-set inserts (2 per side) and the servo pocket are cut into a 1-wall, 3 % infill part. Around the 4 mm insert hole the slicer m"
+    },
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-18",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Balance: req_balance puts each printed part's mass at its solid centroid. For 1-wall, 3 % wing skins the mass sits further aft (perimeter ce"
+    },
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-25",
+     "severity": "major",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "Plates are now one material each (fixed), but plate_2.3mf puts every PLA part in one job: the 310 mm pod, 4 wing segments standing 220-230 m"
+    },
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-28",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "Mass margin is thin: TWR 1.54 against 1.5 allows only about 33 g of growth (1389 g). The 1356 g estimate (printed 726 + on-board 562 + wirin"
+    },
+    {
+     "lesson": "strength-infill-and-walls",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-6",
+     "severity": "minor",
+     "part": "wrist_stand",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The stand is flagged overbuilt (18 % peak utilisation, 100 % of volume below 15 %). It is 54.6 g solid and prints with 4.7 % support on a 95"
+    }
+   ]
+  },
+  {
+   "id": "wiring-routes-through-solid",
+   "kind": "wiring",
+   "lesson": "Route every wire through holes and channels that exist; check the routes as soon as the parts they cross are real.",
+   "earliest_stage": "detail",
+   "catcher_type": "existing check run earlier",
+   "catcher": "the wiring route check in `kerf check` run after each part group is drawn, not after all of them",
+   "level": "proposed gate",
+   "count": 3,
+   "projects": [
+    "drone_foldable_wings",
+    "fpv_5in"
+   ],
+   "late_by_stages": 1,
+   "cost_min": 48,
+   "evidence": [
+    {
+     "lesson": "wiring-routes-through-solid",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-11",
+     "severity": "major",
+     "part": "fwd_fuse",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "About 45 wiring routes pass through solid parts instead of holes or channels. The main lead and the phase wires go through fwd_fuse, motor_m"
+    },
+    {
+     "lesson": "wiring-routes-through-solid",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-19",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 17,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "Wire path: the rear post pair (x = -31.5, y = +/-5, 9 mm dia with a 1 mm gap, z 7-45) stands directly between the XT60 solder cups (x = -40."
+    },
+    {
+     "lesson": "wiring-routes-through-solid",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-42",
+     "severity": "major",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 31,
+     "redrawn": [],
+     "issue": "The motor phase wires rest on the arm screw tips. Each arm's two M3 x 14 screws seat at z -6 (arm counterbore) and end at z +8. The nut pock"
+    }
+   ]
+  },
+  {
+   "id": "other-unclassified",
+   "kind": "other",
+   "lesson": "No rule matched these problems; read them in the diaries.",
+   "earliest_stage": null,
+   "catcher_type": null,
+   "catcher": null,
+   "level": "note",
+   "count": 82,
+   "projects": [
+    "bionic_finger",
+    "drone_foldable_wings",
+    "fpv_5in",
+    "fpv_wing",
+    "pan_tilt",
+    "robot_arm",
+    "robotic_gripper_claw",
+    "robotic_gripper_desk",
+    "servo_link",
+    "tvc_drone"
+   ],
+   "late_by_stages": 0,
+   "cost_min": 4273,
+   "evidence": [
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-4",
+     "severity": "minor",
+     "part": "fingerlib.crossing_cuts",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "The knuckle-face tendon grooves are a union of straight tubes at 10 deg steps. The part renders (proximal/base/distal top views) show a serr"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-5",
+     "severity": "minor",
+     "part": "distal",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "Line termination: 3 mm knot pockets behind a 2.2 mm channel. A single stopper knot in 0.5 mm braid is ~1.5-2 mm and can pull into the channe"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-6",
+     "severity": "minor",
+     "part": "all (tendon geometry)",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "The flexor moment arm is only 4 mm (inside the 7.5 mm knuckle disc), so tendon tension is 22.5x the tip force at a straight finger. The 445 "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-8",
+     "severity": "minor",
+     "part": "middle, distal",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "fingerlib"
+     ],
+     "issue": "Wall check warns of 1.14-1.15 mm walls (below the 1.2 mm reliable minimum), at the tendon grooves and knot pockets."
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-13",
+     "severity": "minor",
+     "part": "bom (motion.shoulder_4_m3)",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "In report.json the shoulder-screw BOM rows have an empty buy link and no price. It is the one non-commodity part, and the owner needs the ex"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-16",
+     "severity": "minor",
+     "part": "all joints",
+     "stage": "final review",
+     "cost_min": 108,
+     "redrawn": [
+      "base",
+      "distal",
+      "fingerlib",
+      "middle",
+      "proximal"
+     ],
+     "issue": "Side play is unchanged in geometry: 0.45 mm axial, ~1.7 deg tilt per joint, a few mm of fingertip wobble. It is now documented in DESIGN s2 "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-18",
+     "severity": "minor",
+     "part": "out/ASSEMBLY.md step 4 (distal assembly_note)",
+     "stage": "final review",
+     "cost_min": 90,
+     "redrawn": [
+      "base",
+      "distal",
+      "fingerlib",
+      "middle",
+      "proximal"
+     ],
+     "issue": "Order and practicality of the tendon step. The note is nested under 'Fit distal' and says 'After the dip pivot screw below', so it reads bef"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-23",
+     "severity": "minor",
+     "part": "middle",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "The p2 wall is 1.27 mm, below the 1.6 mm structural-part guideline in ENGINEERING.md s5. It sits at the grooves on the short top band. The c"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-24",
+     "severity": "minor",
+     "part": "distal",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "Tendon threading. The swept fan grooves at each knuckle open out to the disc rim, as the part renders show. A CA-stiffened line pushed from "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-25",
+     "severity": "minor",
+     "part": "distal",
+     "stage": "final review",
+     "cost_min": 281,
+     "redrawn": [
+      "base",
+      "distal",
+      "middle",
+      "proximal"
+     ],
+     "issue": "DESIGN s7 says the two stop slots are '1.6 mm apart with >= 1.6 mm skin'. From the code (r 2.7 at z -3.8 and +4.0) the gap between the slots"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-29",
+     "severity": "minor",
+     "part": "middle",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The report's '4 sharp inside corners' on middle and '2' on distal come from an engine frame bug, not missing design work. kerf/pipeline.py:2"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "bionic_finger",
+     "problem": "bionic_finger-32",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Tendon exits. Both lines leave the base's back face through plain 2.2 mm holes with a sharp edge. There is no flare and no seat for a Bowden"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-12",
+     "severity": "minor",
+     "part": "spine",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Aerodynamics at full spread: the ridge's front is a vertical face about 28 mm wide and 17 mm tall, chamfered only on its top edge. It sits s"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "drone_foldable_wings",
+     "problem": "drone_foldable_wings-21",
+     "severity": "minor",
+     "part": "hub_r",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Root fairing (this change): the nose has a wave in plan view (top render). I measured its reach inboard of the root face: 10.0 mm at x 35-65"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-9",
+     "severity": "minor",
+     "part": "arm_1",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Each arm has only one motor-wire tie slot (the loop iterates over a single x), but the BOM and DESIGN say 2 per arm. With one tie, the motor"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-11",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 53,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Camera M2 x 5 pivot screws pass through 3 mm of cheek plus a 0.5 mm gap, leaving about 1.5 mm (0.75 d) of thread in the camera housing. That"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-15",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 50,
+     "redrawn": [
+      "body",
+      "top_plate"
+     ],
+     "issue": "Camera screw engagement was not actually improved. The cheeks were thickened from 3 to 4 mm while the screw grew from M2 x 5 to M2 x 6, so e"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-16",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 50,
+     "redrawn": [
+      "body",
+      "top_plate"
+     ],
+     "issue": "The lens is protected front-on but not from above. The cheek tops slope from z = 25 (x <= 56) down to 18 at x = 68 to clear the props. At ho"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-20",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 50,
+     "redrawn": [
+      "body",
+      "top_plate"
+     ],
+     "issue": "Assembly convenience: the stack nut pockets open on the underside, so the 4 nuts fall out while the M3 x 30 screws are started from the top."
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-21",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 17,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "Not graded on mechanics here, but missing for the brief's 'Complete electronics' section, which depends on the wiring engine another session"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-23",
+     "severity": "major",
+     "part": "xt60",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "Engine change kerf/electrical.py connector_burst_limit: I judge this a loosened check, not sound engineering. (1) It fits one thermal time c"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-24",
+     "severity": "major",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "Neither antenna can reach where it is modelled or described. VTX: the catalog Foxeer Lollipop 4 Plus is 60 mm from connector to tip, includi"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-27",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Camera field of view (estimate, Phoenix 2 at 155 deg diagonal on 4:3, roughly 124 x 93 deg). At 0 deg tilt the cheek tips (x 62-68, |y| 10) "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-29",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "Flight time is reported as 13.08 min at hover, from momentum theory with FM 0.5 and eta 0.75 (93.5 W for 558 g). Thrust tables for 2207/5.1-"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-30",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 9,
+     "redrawn": [
+      "top_plate"
+     ],
+     "issue": "Small craft issues. (1) The XT60 cradle walls run to x = -63.55 but the rear tab ends at -62, so 1.55 mm of each 1.6 mm wall starts in mid-a"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-34",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 149,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "The single battery strap sits 14.5 mm ahead of the pack's centre (band x 4.5..24.5 on a pack spanning x -41..41), because the VTX takes up x"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-38",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Nothing positively stops the XT60 from pulling out rearward. The front stops take the plugging-in force, but against the 20-40 N it takes to"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-41",
+     "severity": "minor",
+     "part": "stack",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [
+      "arm",
+      "body"
+     ],
+     "issue": "Carried, now handled in the documents: the 14.22 A per motor under the cap is a central propeller-law estimate. With rpm falling by less tha"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-46",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": 93,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Round-6 major, now resolved. The only remaining exposure: each arm nut now sits at the bottom of an open 1 mm deep hex well (about 5.8 mm ac"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-47",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Thread engagement in the sunk nut is near the minimum. The tip is only 0.3 mm past the nut top. The M3 x 12 length tolerance is +/-0.35 mm ("
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-48",
+     "severity": "minor",
+     "part": "stack",
+     "stage": "final review",
+     "cost_min": 3,
+     "redrawn": [],
+     "issue": "WIRING.md shows the camera supply at 4.988-4.99 V against the catalog's 5.0 V minimum ('sags'), because 28 AWG over 110 mm sits on the 5 V r"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-51",
+     "severity": "minor",
+     "part": "stack",
+     "stage": "final review",
+     "cost_min": 90,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "Carried. The XT60 has no weight_g (it counts as 0 g in the mass budget), and the XING2 motor lead and CNHL pack lead gauge and length are no"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-52",
+     "severity": "minor",
+     "part": "top_plate",
+     "stage": "final review",
+     "cost_min": 90,
+     "redrawn": [
+      "arm",
+      "body",
+      "top_plate"
+     ],
+     "issue": "New, documentation only. The new screw:M2x12:socket price entry is a third-party Walmart listing ('Unique Bargains', 20 pcs). Its note names"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_5in",
+     "problem": "fpv_5in-55",
+     "severity": "minor",
+     "part": "body",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The 14.22 A per motor at the 74 % limit is a propeller-law estimate, not a firmware limit. BLHeli_S has no current limit, and peak 57.5 A si"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-4",
+     "severity": "major",
+     "part": "motor",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The twr requirement passes on thrust from a different prop. The catalog motor note gives 2319 g with the HQ 7x4x3 and 2058 g with the Gemfan"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-9",
+     "severity": "major",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Battery retention: there are no strap slots and no stops, only 'a strip of anti-slip pad', which breaks ENGINEERING.md s9 ('strap slots for "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-16",
+     "severity": "minor",
+     "part": "pod",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "Wiring: the 12 AWG main lead (49.5 A peak) is routed 'over the GPS'. The QMC5883 compass is right under it, and the catalog note says to kee"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-19",
+     "severity": "minor",
+     "part": "nose",
+     "stage": "final review",
+     "cost_min": 36,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "horn",
+      "layout",
+      "nose",
+      "pod",
+      "splice"
+     ],
+     "issue": "The 15 mm lens hole is in a 2.4 mm wall in front of a 155 deg lens, so the window edge limits the view to about +-68 deg and the image corne"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-21",
+     "severity": "major",
+     "part": "hatch",
+     "stage": "final review",
+     "cost_min": 8,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "pod",
+      "wing"
+     ],
+     "issue": "The hatch (x -5 to 205, 72 mm wide, 1.7 mm PLA) is held only at its ends: 2 x M3 at x 4 and a tongue under the skin at x 205-213. Along its "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-31",
+     "severity": "minor",
+     "part": "splice_l",
+     "stage": "final review",
+     "cost_min": 104,
+     "redrawn": [
+      "elevon",
+      "hatch",
+      "motor_mount",
+      "pod",
+      "splice",
+      "wing"
+     ],
+     "issue": "The splice plate is a 30 x 50 mm block standing about 3.5-5 mm proud of the lower skin, with exposed socket heads. It sits in the belly-land"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-36",
+     "severity": "minor",
+     "part": "elevon_lo",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The aft joiner bore leaves only about 0.80-0.85 mm of PLA each side. I sliced out/parts/elevon_lo.stl and elevon_l.stl: the minimum is 0.80 "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-41",
+     "severity": "minor",
+     "part": "motor_mount",
+     "stage": "final review",
+     "cost_min": 11,
+     "redrawn": [
+      "elevon",
+      "motor_mount"
+     ],
+     "issue": "The plate's outer edges still have no edge break, and report.maker_notes is still empty. The mount_strength why and the M3 x 5 / x 6 conflic"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-45",
+     "severity": "blocker",
+     "part": "splice_l",
+     "stage": "final review",
+     "cost_min": 24,
+     "redrawn": [],
+     "issue": "splice_l and splice_r have no M3 clearance holes. Evidence: out/parts/splice_l.stl and splice_r.stl have Euler number 2 (genus 0, so no thro"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "fpv_wing",
+     "problem": "fpv_wing-46",
+     "severity": "minor",
+     "part": "wing_l1",
+     "stage": "final review",
+     "cost_min": 24,
+     "redrawn": [],
+     "issue": "The new epoxy step (wing_l1/r1 assembly_note) says to butter the tube, slide the segment back on and bolt the root, then 'wipe off any epoxy"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-4",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 37,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "Servo pocket is only 0.3 mm per side (23.2 x 12.8 for a 22.6 x 12.2 case) and 15.6 mm deep. With FDM hole shrinkage and the SG90 body-width "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-7",
+     "severity": "minor",
+     "part": "yoke",
+     "stage": "final review",
+     "cost_min": 24,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "Pan-horn screws are M2 x 8 through the 6 mm plate, so they engage only 2.0 mm in a horn disc that the catalog lists as an UNVERIFIED 2.0 mm "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-8",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 24,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "Tilt horn screws are M2 x 6 through the 3.5 mm arm, giving 2.5 mm into the same estimated 2 mm disc. The tips protrude about 0.5 mm toward t"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-14",
+     "severity": "minor",
+     "part": "pan_servo/tilt_servo/horns",
+     "stage": "final review",
+     "cost_min": 97,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The 21T aluminium horn bolt circle (12 mm), M2 thread and 4 mm hub depth are catalog ESTIMATES (A3). The SG90 tab-hole position and shaft of"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-17",
+     "severity": "minor",
+     "part": "electrics",
+     "stage": "final review",
+     "cost_min": 97,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The Pi's 3.3 V GPIO drives the SG90 signal pin directly. This usually works, but there is no series resistor, and the common GND between the"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-20",
+     "severity": "minor",
+     "part": "BOM",
+     "stage": "final review",
+     "cost_min": 97,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "Several items are unpriced (servos, PSU, jack, Pi, camera, FPC, capacitor, USB supply). The horn price is $14.98 each, close to half the bui"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-36",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": 370,
+     "redrawn": [
+      "base",
+      "bracket",
+      "yoke"
+     ],
+     "issue": "Catalog bd486a2 changed motion.shoulder_4_m3.buy from 97505A139 to 97505A106, the correct 4 x 8 part its buy_note already named. The current"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "pan_tilt",
+     "problem": "pan_tilt-39",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Outside edges are not broken on the bracket or most of the yoke. ENGINEERING.md s5 asks for a 0.5-1 mm chamfer or fillet, and project.yaml d"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-12",
+     "severity": "minor",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": 35,
+     "redrawn": [
+      "forearm",
+      "layout",
+      "upper_arm",
+      "yoke_l",
+      "yoke_r"
+     ],
+     "issue": "Proportions: the forks nest inside each other, so the upper arm is 89.5 mm wide and the shoulder 117 mm wide, on an 85 mm link. The tcp ends"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-14",
+     "severity": "major",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 18,
+     "redrawn": [
+      "base",
+      "cable_mast",
+      "turntable"
+     ],
+     "issue": "The cable path (round-1 major) is only partly fixed. (1) The service-loop anchor (tie slots on the guard's -Y side at about (-45, -30.3, 43."
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-29",
+     "severity": "minor",
+     "part": "psu_hood",
+     "stage": "final review",
+     "cost_min": 40,
+     "redrawn": [
+      "base",
+      "psu_hood"
+     ],
+     "issue": "(1) The -Y sleeve wall bears flat on the supply's datasheet side face over x 0-42. The drawing's side view shows vent slots there at about x"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-33",
+     "severity": "minor",
+     "part": "psu_hood",
+     "stage": "final review",
+     "cost_min": 61,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The SVR hole (d 8 at x 5.1, y 9.6) and the LED hole (d 3.5 at x 11.1, y 9.9) are 6.0 mm apart centre to centre. That leaves a 0.26 mm web be"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-35",
+     "severity": "blocker",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 32,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "The yaw lead exit faces the guard ring with almost no gap. I measured the base STL in world coordinates at z = 10, 20 and 50. Between the wi"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-36",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 32,
+     "redrawn": [
+      "base"
+     ],
+     "issue": "base.py hard-codes the cable boss protrusion as 6.6 mm (boss_x1 = xc + L/2 + 6.6 + 0.6). The catalog's servos.MG996R value is now cable_boss"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-42",
+     "severity": "minor",
+     "part": "base",
+     "stage": "final review",
+     "cost_min": 38,
+     "redrawn": [
+      "base",
+      "forearm",
+      "gripper",
+      "upper_arm"
+     ],
+     "issue": "Stale cut. The old yaw-lead hole through the gear guard ring is still there: base.py lines 78-80, Box 12 x 6 x 10 at (-45, -31.25, z 6..16)."
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-44",
+     "severity": "minor",
+     "part": "wiring",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Round-6 route item, only partly fixed. pwr_yaw and sig_yaw now pass base.yaw_boss (-30.4, 0, 13), but the engine still adds the servo origin"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robot_arm",
+     "problem": "robot_arm-47",
+     "severity": "minor",
+     "part": "upper_arm",
+     "stage": "final review",
+     "cost_min": 29,
+     "redrawn": [],
+     "issue": "The load 'why' texts leave out the servo body that hangs on each link's far end. The 'rounded up for leads/screws' margin silently absorbs i"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robotic_gripper_claw",
+     "problem": "robotic_gripper_claw-2",
+     "severity": "minor",
+     "part": "palm",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "claw_mass is 126.9 g against a 130 g cap (3 g margin). The arm-budget numbers (shoulder 41 %, reach 249 mm) are hand-derived. robot_arm's ow"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-3",
+     "severity": "minor",
+     "part": "gripper",
+     "stage": "final review",
+     "cost_min": 90,
+     "redrawn": [],
+     "issue": "Margins of the swap on the real arm are thin and only hand-checked: gripper_mass passes at 162.5 of 166 g (3.5 g spare, slicer estimate), th"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "robotic_gripper_desk",
+     "problem": "robotic_gripper_desk-6",
+     "severity": "minor",
+     "part": "rod_keeper",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "A plain 3 mm bar: it has no locating feature, and the rods sit 0.86 mm below the cheek face, so it only stops a rod after it has backed out "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "servo_link",
+     "problem": "servo_link-5",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "When printed on its back, the foot stands vertical, so the 4 M3 clearance holes in the foot print as horizontal holes. Their tops will sag, "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "servo_link",
+     "problem": "servo_link-11",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 26,
+     "redrawn": [
+      "base",
+      "bracket",
+      "layout"
+     ],
+     "issue": "Nothing is provided for the servo cable. Its exit position on the case is not in the catalog, so it is unverified whether the cable exit or "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "servo_link",
+     "problem": "servo_link-17",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 9,
+     "redrawn": [],
+     "issue": "bracket.py wraps the gusset-root fillet in try/except and appends to ctx.notes, with the comment 'reviewer sees the corners in the renders'."
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "servo_link",
+     "problem": "servo_link-26",
+     "severity": "minor",
+     "part": "bracket",
+     "stage": "rough",
+     "cost_min": 6,
+     "redrawn": [],
+     "issue": "New: the lead-in chamfer thins the wall between the window and the tab pilot holes at the back face. The pilot holes are 2.60 mm at x = +/-2"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "servo_link",
+     "problem": "servo_link-38",
+     "severity": "minor",
+     "part": "project",
+     "stage": "final review",
+     "cost_min": 31,
+     "redrawn": [],
+     "issue": "Some BOM rows have no buy link or price: the mains cord, the Mini-B cable, the header, the AWG 22 wire, the adapter, the jack and the Nano. "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "servo_link",
+     "problem": "servo_link-42",
+     "severity": "minor",
+     "part": "jack",
+     "stage": "final review",
+     "cost_min": 371,
+     "redrawn": [
+      "bracket"
+     ],
+     "issue": "The catalog entry electronics.connectors.dc_jack_5521_screw has no weight_g (kerf warning). The jack sits on the desk, not on the rig, so it"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "servo_link",
+     "problem": "servo_link-51",
+     "severity": "minor",
+     "part": "jack / catalog",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "Carried over: dc_jack_5521_screw has no weight_g (it sits on the desk, so no effect on rig_mass or stand). The adapter cord is assumed to be"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-1",
+     "severity": "blocker",
+     "part": "wiring (project.yaml) / ring_low / motor_hub / gimbal_outer",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "The routes for ph_top, ph_bottom, servo_pitch_pwr/sig (and servo_roll at gimbal tilt) cannot be built. ph_top runs (26.8,15.5,80) -> (12,8,4"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-2",
+     "severity": "major",
+     "part": "stack (drone.stacks.fc_20) / electrical",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "The design says the SpeedyBee F405 Mini drives both gimbal servos from 'FC servo output S1/S2 (Betaflight servo_tilt / custom mixer)'. Nothi"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-9",
+     "severity": "minor",
+     "part": "ring_low / ring_mid / ring_top (tube locks)",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [],
+     "issue": "Radial M3 set screws bear directly on a pultruded 5x3 CF tube with a 1 mm wall. Overtightening crushes or splits the tube."
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-14",
+     "severity": "minor",
+     "part": "wiring bat_lead / ring_top",
+     "stage": "final review",
+     "cost_min": 101,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "The pack's own XT60 lead must be at least 110 mm long, but CNHL does not publish its length. The mated XT60 pair also hangs free past the ri"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-16",
+     "severity": "minor",
+     "part": "horn_roll / horn_pitch / servos",
+     "stage": "final review",
+     "cost_min": 101,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "ring_low",
+      "ring_mid"
+     ],
+     "issue": "The micro 21T disc horn geometry is still an estimate, and the MG90S tab height has a 2.5 mm spread between sources. Both set the horn-face "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-19",
+     "severity": "minor",
+     "part": "ring_mid, ring_top, leg_1..3",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "motor_plate",
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "A-5 is only partly done. The radial M3 lock taps in ring_mid and ring_top are plain cylinders, horizontal in print with no teardrop (ring_lo"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-20",
+     "severity": "minor",
+     "part": "motor_hub, gimbal_outer, ring_low, all",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "motor_plate",
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "A-11 is only partly done. The leg root fillet is there. The hub fork/arm-to-disc roots, gimbal_outer pad-to-ring corners and ring_low gusset"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-22",
+     "severity": "minor",
+     "part": "ring_low, ring_mid, ring_top / rods",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "motor_plate",
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "The 5x3 pultruded CF tubes (1 mm wall) are held only by 9 cup-point set screws on filed flats. A point load on a 1 mm pultruded wall cracks "
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-23",
+     "severity": "minor",
+     "part": "DESIGN.md",
+     "stage": "final review",
+     "cost_min": 23,
+     "redrawn": [
+      "gimbal_outer",
+      "leg",
+      "motor_hub",
+      "motor_plate",
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "Stale numbers remain. The XT60 row says 'hover 11.8 A, peak 36.6 A' (report: 12.2 / 43.8 A). The mass row says 745 g, which leaves out the u"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-29",
+     "severity": "major",
+     "part": "plates (engine kerf/export.py)",
+     "stage": "final review",
+     "cost_min": 21,
+     "redrawn": [
+      "ring_low",
+      "ring_mid",
+      "ring_top"
+     ],
+     "issue": "Metadata/model_settings.config is missing objects. plate_1 has gimbal_outer but not leg_1 (its object tag is at byte 641575). plate_2 has le"
+    },
+    {
+     "lesson": "other-unclassified",
+     "project": "tvc_drone",
+     "problem": "tvc_drone-36",
+     "severity": "minor",
+     "part": "ring_low, gimbal_outer (M2 servo-tab taps)",
+     "stage": "final review",
+     "cost_min": null,
+     "redrawn": [],
+     "issue": "The teardropped servo-tab taps now use the horizontal pilot tap_h = 2.10 mm, which is larger than the M2 major diameter (2.0). The Bambu tab"
+    }
+   ]
+  }
+ ],
+ "by_problem": {
+  "bionic_finger-1": "motion-stops-and-travel",
+  "bionic_finger-2": "strength-size-from-loads",
+  "bionic_finger-3": "access-tools-and-fasteners",
+  "bionic_finger-4": "other-unclassified",
+  "bionic_finger-5": "other-unclassified",
+  "bionic_finger-6": "other-unclassified",
+  "bionic_finger-7": "fit-collision-clearance",
+  "bionic_finger-8": "other-unclassified",
+  "bionic_finger-9": "strength-size-from-loads",
+  "bionic_finger-10": "motion-stops-and-travel",
+  "bionic_finger-11": "access-tools-and-fasteners",
+  "bionic_finger-12": "motion-stops-and-travel",
+  "bionic_finger-13": "other-unclassified",
+  "bionic_finger-14": "motion-stops-and-travel",
+  "bionic_finger-15": "access-tools-and-fasteners",
+  "bionic_finger-16": "other-unclassified",
+  "bionic_finger-17": "strength-size-from-loads",
+  "bionic_finger-18": "other-unclassified",
+  "bionic_finger-19": "strength-size-from-loads",
+  "bionic_finger-20": "strength-size-from-loads",
+  "bionic_finger-21": "process-docs-in-step",
+  "bionic_finger-22": "access-tools-and-fasteners",
+  "bionic_finger-23": "other-unclassified",
+  "bionic_finger-24": "other-unclassified",
+  "bionic_finger-25": "other-unclassified",
+  "bionic_finger-26": "assembly-cannot-be-fitted",
+  "bionic_finger-27": "strength-size-from-loads",
+  "bionic_finger-28": "strength-size-from-loads",
+  "bionic_finger-29": "other-unclassified",
+  "bionic_finger-30": "strength-size-from-loads",
+  "bionic_finger-31": "process-docs-in-step",
+  "bionic_finger-32": "other-unclassified",
+  "bionic_finger-33": "motion-stops-and-travel",
+  "bionic_finger-34": "motion-stops-and-travel",
+  "bionic_finger-review-round-1": "process-review-early",
+  "drone_foldable_wings-1": "motion-stops-and-travel",
+  "drone_foldable_wings-2": "strength-size-from-loads",
+  "drone_foldable_wings-3": "print-orientation-and-supports",
+  "drone_foldable_wings-4": "strength-size-from-loads",
+  "drone_foldable_wings-5": "strength-size-from-loads",
+  "drone_foldable_wings-6": "strength-size-from-loads",
+  "drone_foldable_wings-7": "strength-size-from-loads",
+  "drone_foldable_wings-8": "strength-size-from-loads",
+  "drone_foldable_wings-9": "strength-size-from-loads",
+  "drone_foldable_wings-10": "wiring-lead-lengths",
+  "drone_foldable_wings-11": "wiring-routes-through-solid",
+  "drone_foldable_wings-12": "other-unclassified",
+  "drone_foldable_wings-13": "strength-infill-and-walls",
+  "drone_foldable_wings-14": "strength-size-from-loads",
+  "drone_foldable_wings-15": "access-tools-and-fasteners",
+  "drone_foldable_wings-16": "strength-infill-and-walls",
+  "drone_foldable_wings-17": "print-orientation-and-supports",
+  "drone_foldable_wings-18": "process-docs-in-step",
+  "drone_foldable_wings-19": "process-docs-in-step",
+  "drone_foldable_wings-20": "motion-stops-and-travel",
+  "drone_foldable_wings-21": "other-unclassified",
+  "drone_foldable_wings-22": "strength-size-from-loads",
+  "drone_foldable_wings-23": "fit-collision-clearance",
+  "drone_foldable_wings-24": "strength-size-from-loads",
+  "drone_foldable_wings-25": "motion-stops-and-travel",
+  "drone_foldable_wings-review-round-1": "process-review-early",
+  "fpv_5in-1": "fit-collision-clearance",
+  "fpv_5in-2": "access-tools-and-fasteners",
+  "fpv_5in-3": "access-tools-and-fasteners",
+  "fpv_5in-4": "access-tools-and-fasteners",
+  "fpv_5in-5": "strength-size-from-loads",
+  "fpv_5in-6": "strength-size-from-loads",
+  "fpv_5in-7": "print-orientation-and-supports",
+  "fpv_5in-8": "strength-size-from-loads",
+  "fpv_5in-9": "other-unclassified",
+  "fpv_5in-10": "fit-collision-clearance",
+  "fpv_5in-11": "other-unclassified",
+  "fpv_5in-12": "strength-size-from-loads",
+  "fpv_5in-13": "assembly-cannot-be-fitted",
+  "fpv_5in-14": "strength-size-from-loads",
+  "fpv_5in-15": "other-unclassified",
+  "fpv_5in-16": "other-unclassified",
+  "fpv_5in-17": "strength-size-from-loads",
+  "fpv_5in-18": "access-tools-and-fasteners",
+  "fpv_5in-19": "wiring-routes-through-solid",
+  "fpv_5in-20": "other-unclassified",
+  "fpv_5in-21": "other-unclassified",
+  "fpv_5in-22": "assembly-cannot-be-fitted",
+  "fpv_5in-23": "other-unclassified",
+  "fpv_5in-24": "other-unclassified",
+  "fpv_5in-25": "wiring-lead-lengths",
+  "fpv_5in-26": "wiring-lead-lengths",
+  "fpv_5in-27": "other-unclassified",
+  "fpv_5in-28": "wiring-lead-lengths",
+  "fpv_5in-29": "other-unclassified",
+  "fpv_5in-30": "other-unclassified",
+  "fpv_5in-31": "process-docs-in-step",
+  "fpv_5in-32": "process-docs-in-step",
+  "fpv_5in-33": "wiring-lead-lengths",
+  "fpv_5in-34": "other-unclassified",
+  "fpv_5in-35": "strength-size-from-loads",
+  "fpv_5in-36": "process-docs-in-step",
+  "fpv_5in-37": "process-docs-in-step",
+  "fpv_5in-38": "other-unclassified",
+  "fpv_5in-39": "process-docs-in-step",
+  "fpv_5in-40": "strength-size-from-loads",
+  "fpv_5in-41": "other-unclassified",
+  "fpv_5in-42": "wiring-routes-through-solid",
+  "fpv_5in-43": "access-tools-and-fasteners",
+  "fpv_5in-44": "print-orientation-and-supports",
+  "fpv_5in-45": "access-tools-and-fasteners",
+  "fpv_5in-46": "other-unclassified",
+  "fpv_5in-47": "other-unclassified",
+  "fpv_5in-48": "other-unclassified",
+  "fpv_5in-49": "strength-size-from-loads",
+  "fpv_5in-50": "print-orientation-and-supports",
+  "fpv_5in-51": "other-unclassified",
+  "fpv_5in-52": "other-unclassified",
+  "fpv_5in-53": "strength-size-from-loads",
+  "fpv_5in-54": "process-docs-in-step",
+  "fpv_5in-55": "other-unclassified",
+  "fpv_5in-56": "access-tools-and-fasteners",
+  "fpv_5in-57": "access-tools-and-fasteners",
+  "fpv_5in-review-round-1": "process-review-early",
+  "fpv_wing-1": "assembly-cannot-be-fitted",
+  "fpv_wing-2": "strength-size-from-loads",
+  "fpv_wing-3": "process-docs-in-step",
+  "fpv_wing-4": "other-unclassified",
+  "fpv_wing-5": "strength-infill-and-walls",
+  "fpv_wing-6": "motion-stops-and-travel",
+  "fpv_wing-7": "access-tools-and-fasteners",
+  "fpv_wing-8": "strength-infill-and-walls",
+  "fpv_wing-9": "other-unclassified",
+  "fpv_wing-10": "process-docs-in-step",
+  "fpv_wing-11": "print-orientation-and-supports",
+  "fpv_wing-12": "print-orientation-and-supports",
+  "fpv_wing-13": "print-orientation-and-supports",
+  "fpv_wing-14": "strength-size-from-loads",
+  "fpv_wing-15": "motion-stops-and-travel",
+  "fpv_wing-16": "other-unclassified",
+  "fpv_wing-17": "process-docs-in-step",
+  "fpv_wing-18": "strength-infill-and-walls",
+  "fpv_wing-19": "other-unclassified",
+  "fpv_wing-20": "fit-collision-clearance",
+  "fpv_wing-21": "other-unclassified",
+  "fpv_wing-22": "fit-collision-clearance",
+  "fpv_wing-23": "motion-stops-and-travel",
+  "fpv_wing-24": "process-docs-in-step",
+  "fpv_wing-25": "strength-infill-and-walls",
+  "fpv_wing-26": "motion-stops-and-travel",
+  "fpv_wing-27": "access-tools-and-fasteners",
+  "fpv_wing-28": "strength-infill-and-walls",
+  "fpv_wing-29": "strength-size-from-loads",
+  "fpv_wing-30": "print-orientation-and-supports",
+  "fpv_wing-31": "other-unclassified",
+  "fpv_wing-32": "process-docs-in-step",
+  "fpv_wing-33": "process-docs-in-step",
+  "fpv_wing-34": "print-orientation-and-supports",
+  "fpv_wing-35": "process-docs-in-step",
+  "fpv_wing-36": "other-unclassified",
+  "fpv_wing-37": "print-orientation-and-supports",
+  "fpv_wing-38": "fit-collision-clearance",
+  "fpv_wing-39": "motion-stops-and-travel",
+  "fpv_wing-40": "process-docs-in-step",
+  "fpv_wing-41": "other-unclassified",
+  "fpv_wing-42": "process-docs-in-step",
+  "fpv_wing-43": "motion-stops-and-travel",
+  "fpv_wing-44": "print-orientation-and-supports",
+  "fpv_wing-45": "other-unclassified",
+  "fpv_wing-46": "other-unclassified",
+  "fpv_wing-47": "motion-stops-and-travel",
+  "fpv_wing-48": "process-docs-in-step",
+  "fpv_wing-review-round-1": "process-review-early",
+  "pan_tilt-1": "motion-stops-and-travel",
+  "pan_tilt-2": "motion-stops-and-travel",
+  "pan_tilt-3": "process-docs-in-step",
+  "pan_tilt-4": "other-unclassified",
+  "pan_tilt-5": "print-orientation-and-supports",
+  "pan_tilt-6": "process-docs-in-step",
+  "pan_tilt-7": "other-unclassified",
+  "pan_tilt-8": "other-unclassified",
+  "pan_tilt-9": "print-orientation-and-supports",
+  "pan_tilt-10": "access-tools-and-fasteners",
+  "pan_tilt-11": "process-docs-in-step",
+  "pan_tilt-12": "process-docs-in-step",
+  "pan_tilt-13": "motion-stops-and-travel",
+  "pan_tilt-14": "other-unclassified",
+  "pan_tilt-15": "motion-stops-and-travel",
+  "pan_tilt-16": "wiring-lead-lengths",
+  "pan_tilt-17": "other-unclassified",
+  "pan_tilt-18": "access-tools-and-fasteners",
+  "pan_tilt-19": "strength-size-from-loads",
+  "pan_tilt-20": "other-unclassified",
+  "pan_tilt-21": "process-docs-in-step",
+  "pan_tilt-22": "strength-size-from-loads",
+  "pan_tilt-23": "process-docs-in-step",
+  "pan_tilt-24": "strength-size-from-loads",
+  "pan_tilt-25": "access-tools-and-fasteners",
+  "pan_tilt-26": "motion-stops-and-travel",
+  "pan_tilt-27": "process-docs-in-step",
+  "pan_tilt-28": "strength-size-from-loads",
+  "pan_tilt-29": "strength-size-from-loads",
+  "pan_tilt-30": "assembly-cannot-be-fitted",
+  "pan_tilt-31": "access-tools-and-fasteners",
+  "pan_tilt-32": "process-docs-in-step",
+  "pan_tilt-33": "access-tools-and-fasteners",
+  "pan_tilt-34": "strength-size-from-loads",
+  "pan_tilt-35": "process-docs-in-step",
+  "pan_tilt-36": "other-unclassified",
+  "pan_tilt-37": "process-docs-in-step",
+  "pan_tilt-38": "strength-size-from-loads",
+  "pan_tilt-39": "other-unclassified",
+  "pan_tilt-40": "fit-collision-clearance",
+  "pan_tilt-41": "print-orientation-and-supports",
+  "pan_tilt-42": "process-docs-in-step",
+  "pan_tilt-43": "process-docs-in-step",
+  "pan_tilt-44": "strength-size-from-loads",
+  "pan_tilt-45": "strength-size-from-loads",
+  "pan_tilt-review-round-1": "process-review-early",
+  "robot_arm-1": "fit-collision-clearance",
+  "robot_arm-2": "process-docs-in-step",
+  "robot_arm-3": "strength-size-from-loads",
+  "robot_arm-4": "strength-size-from-loads",
+  "robot_arm-5": "strength-size-from-loads",
+  "robot_arm-6": "access-tools-and-fasteners",
+  "robot_arm-7": "process-docs-in-step",
+  "robot_arm-8": "strength-size-from-loads",
+  "robot_arm-9": "strength-size-from-loads",
+  "robot_arm-10": "motion-stops-and-travel",
+  "robot_arm-11": "motion-stops-and-travel",
+  "robot_arm-12": "other-unclassified",
+  "robot_arm-13": "access-tools-and-fasteners",
+  "robot_arm-14": "other-unclassified",
+  "robot_arm-15": "strength-size-from-loads",
+  "robot_arm-16": "strength-size-from-loads",
+  "robot_arm-17": "strength-size-from-loads",
+  "robot_arm-18": "process-docs-in-step",
+  "robot_arm-19": "process-docs-in-step",
+  "robot_arm-20": "motion-stops-and-travel",
+  "robot_arm-21": "wiring-lead-lengths",
+  "robot_arm-22": "process-docs-in-step",
+  "robot_arm-23": "strength-size-from-loads",
+  "robot_arm-24": "strength-size-from-loads",
+  "robot_arm-25": "strength-size-from-loads",
+  "robot_arm-26": "process-docs-in-step",
+  "robot_arm-27": "strength-size-from-loads",
+  "robot_arm-28": "access-tools-and-fasteners",
+  "robot_arm-29": "other-unclassified",
+  "robot_arm-30": "wiring-lead-lengths",
+  "robot_arm-31": "print-orientation-and-supports",
+  "robot_arm-32": "process-docs-in-step",
+  "robot_arm-33": "other-unclassified",
+  "robot_arm-34": "print-orientation-and-supports",
+  "robot_arm-35": "other-unclassified",
+  "robot_arm-36": "other-unclassified",
+  "robot_arm-37": "process-docs-in-step",
+  "robot_arm-38": "print-orientation-and-supports",
+  "robot_arm-39": "print-orientation-and-supports",
+  "robot_arm-40": "strength-size-from-loads",
+  "robot_arm-41": "strength-size-from-loads",
+  "robot_arm-42": "other-unclassified",
+  "robot_arm-43": "process-docs-in-step",
+  "robot_arm-44": "other-unclassified",
+  "robot_arm-45": "strength-size-from-loads",
+  "robot_arm-46": "strength-size-from-loads",
+  "robot_arm-47": "other-unclassified",
+  "robot_arm-48": "access-tools-and-fasteners",
+  "robot_arm-49": "strength-size-from-loads",
+  "robot_arm-50": "print-orientation-and-supports",
+  "robot_arm-51": "motion-stops-and-travel",
+  "robot_arm-52": "strength-size-from-loads",
+  "robot_arm-53": "process-docs-in-step",
+  "robot_arm-54": "print-orientation-and-supports",
+  "robot_arm-review-round-1": "process-review-early",
+  "robotic_gripper_claw-1": "print-orientation-and-supports",
+  "robotic_gripper_claw-2": "other-unclassified",
+  "robotic_gripper_claw-3": "strength-size-from-loads",
+  "robotic_gripper_claw-4": "strength-size-from-loads",
+  "robotic_gripper_claw-5": "assembly-cannot-be-fitted",
+  "robotic_gripper_claw-6": "strength-infill-and-walls",
+  "robotic_gripper_claw-7": "strength-size-from-loads",
+  "robotic_gripper_claw-review-round-1": "process-review-early",
+  "robotic_gripper_desk-1": "process-docs-in-step",
+  "robotic_gripper_desk-2": "strength-size-from-loads",
+  "robotic_gripper_desk-3": "other-unclassified",
+  "robotic_gripper_desk-4": "strength-size-from-loads",
+  "robotic_gripper_desk-5": "print-orientation-and-supports",
+  "robotic_gripper_desk-6": "other-unclassified",
+  "robotic_gripper_desk-7": "strength-size-from-loads",
+  "robotic_gripper_desk-8": "process-docs-in-step",
+  "robotic_gripper_desk-9": "process-docs-in-step",
+  "robotic_gripper_desk-10": "process-docs-in-step",
+  "robotic_gripper_desk-11": "strength-size-from-loads",
+  "robotic_gripper_desk-review-round-1": "process-review-early",
+  "servo_link-1": "assembly-cannot-be-fitted",
+  "servo_link-2": "access-tools-and-fasteners",
+  "servo_link-3": "access-tools-and-fasteners",
+  "servo_link-4": "access-tools-and-fasteners",
+  "servo_link-5": "other-unclassified",
+  "servo_link-6": "strength-size-from-loads",
+  "servo_link-7": "strength-size-from-loads",
+  "servo_link-8": "process-docs-in-step",
+  "servo_link-9": "assembly-cannot-be-fitted",
+  "servo_link-10": "process-docs-in-step",
+  "servo_link-11": "other-unclassified",
+  "servo_link-12": "assembly-cannot-be-fitted",
+  "servo_link-13": "process-docs-in-step",
+  "servo_link-14": "process-docs-in-step",
+  "servo_link-15": "process-docs-in-step",
+  "servo_link-16": "strength-size-from-loads",
+  "servo_link-17": "other-unclassified",
+  "servo_link-18": "access-tools-and-fasteners",
+  "servo_link-19": "motion-stops-and-travel",
+  "servo_link-20": "access-tools-and-fasteners",
+  "servo_link-21": "print-orientation-and-supports",
+  "servo_link-22": "fit-collision-clearance",
+  "servo_link-23": "process-docs-in-step",
+  "servo_link-24": "process-docs-in-step",
+  "servo_link-25": "access-tools-and-fasteners",
+  "servo_link-26": "other-unclassified",
+  "servo_link-27": "process-docs-in-step",
+  "servo_link-28": "process-docs-in-step",
+  "servo_link-29": "process-docs-in-step",
+  "servo_link-30": "access-tools-and-fasteners",
+  "servo_link-31": "fit-collision-clearance",
+  "servo_link-32": "fit-collision-clearance",
+  "servo_link-33": "strength-size-from-loads",
+  "servo_link-34": "process-docs-in-step",
+  "servo_link-35": "wiring-lead-lengths",
+  "servo_link-36": "fit-collision-clearance",
+  "servo_link-37": "access-tools-and-fasteners",
+  "servo_link-38": "other-unclassified",
+  "servo_link-39": "process-docs-in-step",
+  "servo_link-40": "wiring-lead-lengths",
+  "servo_link-41": "process-docs-in-step",
+  "servo_link-42": "other-unclassified",
+  "servo_link-43": "strength-size-from-loads",
+  "servo_link-44": "strength-size-from-loads",
+  "servo_link-45": "strength-size-from-loads",
+  "servo_link-46": "process-docs-in-step",
+  "servo_link-47": "strength-size-from-loads",
+  "servo_link-48": "strength-size-from-loads",
+  "servo_link-49": "access-tools-and-fasteners",
+  "servo_link-50": "print-orientation-and-supports",
+  "servo_link-51": "other-unclassified",
+  "tvc_drone-1": "other-unclassified",
+  "tvc_drone-2": "other-unclassified",
+  "tvc_drone-3": "process-docs-in-step",
+  "tvc_drone-4": "wiring-lead-lengths",
+  "tvc_drone-5": "wiring-lead-lengths",
+  "tvc_drone-6": "wiring-lead-lengths",
+  "tvc_drone-7": "process-docs-in-step",
+  "tvc_drone-8": "print-orientation-and-supports",
+  "tvc_drone-9": "other-unclassified",
+  "tvc_drone-10": "process-docs-in-step",
+  "tvc_drone-11": "process-docs-in-step",
+  "tvc_drone-12": "process-docs-in-step",
+  "tvc_drone-13": "process-docs-in-step",
+  "tvc_drone-14": "other-unclassified",
+  "tvc_drone-15": "access-tools-and-fasteners",
+  "tvc_drone-16": "other-unclassified",
+  "tvc_drone-17": "access-tools-and-fasteners",
+  "tvc_drone-18": "print-orientation-and-supports",
+  "tvc_drone-19": "other-unclassified",
+  "tvc_drone-20": "other-unclassified",
+  "tvc_drone-21": "strength-size-from-loads",
+  "tvc_drone-22": "other-unclassified",
+  "tvc_drone-23": "other-unclassified",
+  "tvc_drone-24": "strength-size-from-loads",
+  "tvc_drone-25": "process-docs-in-step",
+  "tvc_drone-26": "strength-size-from-loads",
+  "tvc_drone-27": "strength-size-from-loads",
+  "tvc_drone-28": "print-orientation-and-supports",
+  "tvc_drone-29": "other-unclassified",
+  "tvc_drone-30": "process-docs-in-step",
+  "tvc_drone-31": "strength-size-from-loads",
+  "tvc_drone-32": "print-orientation-and-supports",
+  "tvc_drone-33": "strength-size-from-loads",
+  "tvc_drone-34": "strength-size-from-loads",
+  "tvc_drone-35": "strength-size-from-loads",
+  "tvc_drone-36": "other-unclassified",
+  "tvc_drone-37": "process-docs-in-step",
+  "tvc_drone-38": "access-tools-and-fasteners",
+  "tvc_drone-review-round-1": "process-review-early"
+ }
+}

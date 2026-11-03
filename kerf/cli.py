@@ -112,8 +112,8 @@ def req(name, ids) -> int:
         _p(f"  {x['id']}: {req_line(x)}")
         if x.get("value") is None and x.get("detail"):
             _p(f"      {x['detail']}")
-        for t in x.get("advice") or []:
-            _p(f"      -> {t}")
+        for tip in x.get("advice") or []:
+            _p(f"      -> {tip}")
     for p in r["problems"]:
         _p(f"PROBLEM {p}")
     _p(f"{'ok' if r['ok'] else 'FAIL'}: {len(r['results'])} requirement(s) in {time.time() - t:.1f} s "
@@ -416,6 +416,13 @@ def main(argv=None) -> int:
     g = sub.add_parser("gallery", help='Create a gallery of built projects.', description='Create a gallery of built projects.'); g.add_argument("projects", nargs="*")
     sm = sub.add_parser("simulate", help="MuJoCo motion simulation of the URDF: servo limits, home hold, grip_hold / joint_speed / drop_impact")
     sm.add_argument("project")
+    ag = sub.add_parser("agent", help="Which AI runs Studio jobs: auto (Claude, Codex when Claude's usage is out), claude, or codex")
+    ag.add_argument("mode", nargs="?", choices=["auto", "claude", "codex"])
+    dy = sub.add_parser("diary", help="Learning Mode diary: problems found, the stage and the cost, rebuilt from git history (learning/diary/)")
+    dy.add_argument("project", nargs="?"); dy.add_argument("--all", action="store_true")
+    dy.add_argument("--log-session", nargs="?", const="auto", metavar="FILE", help="add a Claude Code session log's token usage to the project's diary (default: newest log)"); dy.add_argument("--label", default="")
+    lb = sub.add_parser("lookback", help="Learning Mode look-back: lessons from the diaries, grouped across projects (learning/LESSONS.md)")
+    lb.add_argument("project", nargs="?")
     fw = sub.add_parser("firmware-check", help="compile + simulate the project's servo bring-up program (kerf/fwcheck.py)")
     fw.add_argument("project")
     for parser in sub.choices.values():
@@ -452,6 +459,33 @@ def main(argv=None) -> int:
         r = optimise.run(a.project)
         _p(Path(r["file"]).read_text(encoding="utf-8"))
         return 0 if r["best_report"].get("ok") else 1
+    if a.cmd == "agent":
+        from . import agent as AG
+        if a.mode:
+            AG.set_mode(a.mode)
+        print(f"agent mode: {AG.mode()}  (Claude Code: {AG.claude_bin() or 'not installed'}; Codex: {AG.codex_bin() or 'not installed'}); "
+              f"next job runs on: {AG.pick() or 'nothing installed'}")
+        return 0
+    if a.cmd == "diary":
+        from . import diary
+        names = diary.all_projects() if a.all else [a.project] if a.project else []
+        if not names:
+            _p("usage: kerf diary <project> | --all [--log-session [FILE]]")
+            return 2
+        if a.log_session:
+            f = diary.newest_session_log() if a.log_session == "auto" else Path(a.log_session)
+            if not f or not f.exists() or a.all:
+                _p("--log-session needs one project and an existing session log")
+                return 2
+            _p("logged", json.dumps(diary.log_session(None, names[0], f, a.label)))
+        for n in names:
+            _p(str(diary.write(None, n)))
+        return 0
+    if a.cmd == "lookback":
+        from . import lessons
+        r = lessons.run(a.project)
+        _p(r["summary"])
+        return 0
     if a.cmd == "review-pack":
         from . import project as P, reviewpack
         proj = P.load(a.project)
