@@ -210,6 +210,7 @@ def _join_active_job(job, source, session, observed):
         job["progress"], job["remaining"] = session["progress"], session["remaining"]
         if job["activity"] == "Starting the job; waiting for its first update.":
             job["activity"], job["action"] = session["activity"], session["action"]
+            job["activity_source"] = session["activity_source"]
         if runtime_fresh and session["state"] == "waiting":
             job["state"], job["status_label"] = "waiting", session["status_label"]
             job["action"] = ""

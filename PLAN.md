@@ -333,3 +333,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
 
 - [x] Work ownership evidence: correlate claims only with unambiguous chat identities and label owner updates separately from observed session activity; focused fixtures.
+
+- [x] Work joined-activity provenance: preserve owner-update source exactly when a joined session fills a job’s missing activity; focused helper regression.

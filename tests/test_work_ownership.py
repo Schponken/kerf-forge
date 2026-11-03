@@ -57,6 +57,21 @@ def test_saved_chat_overlay_labels_the_activitys_own_source_and_timestamp():
     assert not item["action"] and item["eta"] is None and item["progress"] is None
 
 
+@pytest.mark.parametrize("local_note", [None, "Recorded local job update."])
+def test_joined_job_preserves_the_source_of_the_activity_it_actually_displays(local_note):
+    # Exercise the join boundary with normalized ownership context and fresh runtime evidence separately.
+    session, = work.overview({"cards": [claim()]}, sessions=[
+        {"id": "chat", "thread_id": "chat", "state": "idle", "live": False}], now=1000)["items"]
+    assert session["activity_source"] == "claim"
+    source = {"id": "job", "kind": "edit", "agent": "codex", "state": "running", "started": 900,
+              "events": [{"k": "note", "text": local_note, "t": 990}] if local_note else []}
+    job = work._job(source, 1000)
+    work._join_active_job(job, source, session, {"live": True, "updated_at": 995})
+    assert job["activity"] == (local_note or claim()["activity"])
+    assert job["activity_source"] == ("job" if local_note else "claim")
+    assert job["state"] == "running" and job["job_id"] == "job"
+
+
 @pytest.mark.browser
 def test_owner_update_cues_and_unknown_time_remain_clear_on_desktop_and_phone(tmp_path):
     root = Path(__file__).resolve().parents[1]
