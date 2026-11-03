@@ -214,12 +214,18 @@ def explain_requirement(r: dict) -> dict:
         target = {"max": "at most ", "min": "at least "}.get(bound, "") + num(lim) + unit
     what = f"It is {num(val)}{unit}; it needs to be {target}." if val is not None and lim is not None else (r.get("detail") or "")
     from kerf.requirements import miss_scale
-    sc = miss_scale(r)
+    unproven = r.get("status") == "unproven"
+    if unproven:
+        what = r.get("detail") or "Evidence needed to judge this target is missing."
+    sc = "" if unproven else miss_scale(r)
     if sc:
         what += f" ({sc[0].upper()}{sc[1:]}.)"
     tips = r.get("advice") or []
-    return {"title": f"{name}: target missed", "part": None, "why": " ".join(x for x in (what, r.get("why") or "") if x),
-            "fix": tips[0] if tips else "Change the design or its parts until it meets the target.", "fixes": tips[1:],
+    outcome = "not yet verified" if unproven else "target missed"
+    default_fix = ("Complete the missing verification before treating this design as ready." if unproven
+                   else "Change the design or its parts until it meets the target.")
+    return {"title": f"{name}: {outcome}", "part": None, "why": " ".join(x for x in (what, r.get("why") or "") if x),
+            "fix": tips[0] if tips else default_fix, "fixes": tips[1:],
             "kind": "engineering",
             "kind_label": KIND_LABEL["engineering"], "detail": f"requirement '{r.get('id')}' ({r.get('check')}): {r.get('detail') or ''}".strip()}
 

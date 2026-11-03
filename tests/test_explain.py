@@ -69,3 +69,19 @@ def test_studio_detail_and_page_use_it(tmp_path, monkeypatch):
     assert out["cards"][0]["title"] == "Its print file has a hole in the surface" and out["work"]["state"] in ("idle", "claimed")
     html = (studio.Path(studio.__file__).parent / "assets" / "studio.html").read_text(encoding="utf-8")
     assert "issueCards(S.detail.issues" in html and "workBanner(S.detail.issues)" in html and "nobody on it" in html
+
+
+def test_unproven_requirement_remains_blocking_without_claiming_a_measured_miss():
+    row = {"id": "recovery", "check": "recovery", "ok": False, "status": "unproven",
+           "value": 3, "limit": 2, "bound": "min", "detail": "Structure evidence is missing."}
+    cards = explain.cards({"requirements": [row], "problems": ["requirement 'recovery' failed: unknown"]})
+    assert len(cards) == 1
+    assert cards[0]["title"] == "recovery: not yet verified"
+    assert cards[0]["why"] == row["detail"]
+    assert "missing verification" in cards[0]["fix"]
+    assert row["detail"] in cards[0]["detail"]
+    missing = explain.explain_requirement({**row, "detail": "", "value": None})
+    assert "Evidence needed" in missing["why"]
+    failed = explain.explain_requirement({**row, "status": "fail", "value": 1})
+    assert failed["title"] == "recovery: target missed"
+    assert "It is 1" in failed["why"]
