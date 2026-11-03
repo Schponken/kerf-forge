@@ -22,6 +22,7 @@ import numpy as np
 from . import assembly as A
 from . import attribution
 from . import geom
+from . import glossary
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 PALETTE = ["#4C78A8", "#F58518", "#54A24B", "#B279A2", "#E45756", "#72B7B2", "#EECA3B", "#9D755D", "#FF9DA6", "#BAB0AC"]
@@ -206,6 +207,10 @@ def html(d: dict) -> str:
     # str.replace takes the replacement literally; each placeholder occurs once in the template
     page = page.replace("{{TITLE}}", title)
     page = page.replace("/*DATA*/", js, 1)
+    terms = {key: glossary.TERMS[key] for key in (
+        "revolute", "sweep", "keep-out", "stress", "safety factor", "infill", "overhang",
+        "PLA", "PETG", "ASA", "PA-CF", "TPU")}
+    page = page.replace("/*TERMS*/", json.dumps(terms, separators=(",", ":")).replace("</", "<\\/"), 1)
     return page.replace("/*KV3*/", lib.replace("</script", "<\\/script"), 1)
 
 

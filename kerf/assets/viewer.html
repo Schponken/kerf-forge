@@ -149,6 +149,9 @@ aside:not([hidden]){animation:tray-in .2s cubic-bezier(.16,1,.3,1)}
 @media(max-width:1100px){.legend{display:none}}
 @media(max-width:760px){header{padding:10px 16px;gap:8px}header .meta{width:100%}main{min-height:360px}.tool-dock{left:12px;right:12px;bottom:12px;transform:none;max-width:none;gap:1px;padding:5px;overflow-x:auto;scrollbar-width:thin;border-radius:12px}.tool-dock button{padding:7px 9px;font-size:12px}.tool-dock .tabs:before{margin:0 2px}.vwrap{position:static}.vmenu{position:fixed;left:12px;bottom:76px}.stage-caption{top:16px;left:16px;font-size:11px}.stage-caption b{font-size:13px}#notice{left:16px;top:60px;font-size:11px}main.has-tool #stage canvas{width:100%;height:calc(44% - 76px)}aside{top:auto;left:12px;right:12px;bottom:76px;width:auto;max-width:none;max-height:56%;min-height:190px}.pane{padding:12px 14px}#cutp,#slegend,#clegend{left:12px;bottom:76px;max-width:calc(100% - 24px);max-height:55%}#abar{bottom:auto;top:110px;max-width:calc(100% - 24px);padding:5px;gap:3px}#abar button{font-size:12px;padding:5px 7px}#abar .t{font-size:11px;max-width:90px}.float{font-size:12px}#help{right:14px;top:14px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.word{border-bottom:1px dotted var(--accent);cursor:help}.word:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.word-popup{position:fixed;z-index:100;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;box-sizing:border-box;background:var(--panel);color:var(--ink);border-radius:14px;padding:18px;box-shadow:0 16px 48px #10182024;font-size:14px;line-height:1.5}
+.word-popup .word-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}.word-popup h2{font-size:17px;margin:0;flex:1}.word-popup button{min-height:44px}.word-popup p{margin:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -173,7 +176,7 @@ Responsive: a lower phone tray preserves visible geometry; reduced motion is res
         <span class="vmenu" id="vmenu"><button data-view="iso">Iso</button><button data-view="front">Front</button><button data-view="right">Right</button>
           <button data-view="top">Top</button><button data-view="fit" class="wide">Fit to window</button><hr>
           <button id="edges" class="wide" aria-pressed="false" title="Outline edges">Edges</button>
-          <button id="part-colors" class="wide" aria-pressed="false">Part colors</button><button id="grid-toggle" class="wide" aria-pressed="false">Ground grid</button><button id="keep" aria-pressed="false" class="wide" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button></span></span>
+          <button id="part-colors" class="wide" aria-pressed="false">Part colors</button><button id="grid-toggle" class="wide" aria-pressed="false">Ground grid</button><button id="keep" aria-pressed="false" class="wide" title="Show keep-out volumes (prop discs, camera view, wire paths)">Space to keep clear</button></span></span>
       <button id="cutb" aria-pressed="false" aria-controls="cutp" title="Cut the model open to see inside (walls, channels, inserts)">Cut</button>
       <button id="stressb" aria-pressed="false" aria-controls="slegend" title="Colour each strength-checked part by how hard its material works" hidden>Stress</button>
     </div>
@@ -207,12 +210,70 @@ Responsive: a lower phone tray preserves visible geometry; reduced motion is res
 </main>
 <script>/*KV3*/</script>
 <script type="application/json" id="kerf-data">/*DATA*/</script>
+<script type="application/json" id="kerf-terms">/*TERMS*/</script>
 <script>
 (() => {
 const T = window.KV3, D = JSON.parse(document.getElementById('kerf-data').textContent);
 if (window.parent !== window) document.documentElement.classList.add('embedded');
 const R = D.report, $ = id => document.getElementById(id), esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// Only explicit technical labels use the shared glossary; exported viewers need no network.
+const WORDS = JSON.parse($('kerf-terms').textContent);
+function word(key, label = key) {
+  return Object.hasOwn(WORDS, key) ? `<span class="word" data-word="${esc(key)}" role="button" tabindex="0" aria-label="Explain ${esc(label)}" aria-haspopup="dialog">${esc(label)}</span>` : esc(label);
+}
+let wordGuide = null, wordTimer, wordRestoring = false;
+function closeWord(restore = false) {
+  clearTimeout(wordTimer);
+  if (!wordGuide) return;
+  const {anchor, panel} = wordGuide, returnFocus = panel.contains(document.activeElement);
+  wordGuide = null; panel.remove(); anchor.removeAttribute('aria-describedby'); anchor.setAttribute('aria-expanded', 'false');
+  if (restore && returnFocus && anchor.isConnected) { wordRestoring = true; anchor.focus({preventScroll:true}); wordRestoring = false; }
+}
+function placeWord() {
+  if (!wordGuide) return;
+  const {anchor, panel} = wordGuide;
+  if (!anchor.isConnected || !anchor.getClientRects().length) { closeWord(); return; }
+  const r = anchor.getBoundingClientRect(), b = panel.getBoundingClientRect(), gap = 12;
+  panel.style.left = `${Math.max(gap, Math.min(r.left, innerWidth - b.width - gap))}px`;
+  const top = r.bottom + gap + b.height <= innerHeight - gap ? r.bottom + gap : r.top - b.height - gap;
+  panel.style.top = `${Math.max(gap, Math.min(top, innerHeight - b.height - gap))}px`;
+}
+function showWord(anchor, focus = false) {
+  clearTimeout(wordTimer);
+  if (wordGuide?.anchor !== anchor) {
+    closeWord();
+    const panel = document.createElement('section'); panel.className = 'word-popup'; panel.id = 'word-popup';
+    panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-labelledby', 'word-title'); panel.setAttribute('aria-describedby', 'word-meaning');
+    panel.innerHTML = `<div class="word-head"><h2 id="word-title">${esc(anchor.textContent)}</h2><button aria-label="Close definition">Close</button></div><p id="word-meaning">${esc(WORDS[anchor.dataset.word])}</p>`;
+    document.body.appendChild(panel); wordGuide = {anchor, panel};
+    anchor.setAttribute('aria-controls', panel.id); anchor.setAttribute('aria-expanded', 'true'); anchor.setAttribute('aria-describedby', 'word-meaning');
+    panel.querySelector('button').onclick = () => closeWord(true); placeWord();
+  }
+  if (focus) wordGuide.panel.querySelector('button').focus({preventScroll:true});
+}
+function leaveWord() {
+  clearTimeout(wordTimer);
+  // Keep the definition readable while the pointer crosses the gap into it.
+  wordTimer = setTimeout(() => {
+    if (wordGuide && !wordGuide.anchor.matches(':hover,:focus') && !wordGuide.panel.matches(':hover,:focus-within')) closeWord();
+  }, 250);
+}
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch') return;
+  const anchor = e.target.closest('[data-word]');
+  if (anchor) showWord(anchor); else if (wordGuide?.panel.contains(e.target)) clearTimeout(wordTimer);
+});
+document.addEventListener('focusin', e => { const anchor = e.target.closest('[data-word]'); if (anchor && !wordRestoring) showWord(anchor); });
+for (const event of ['pointerout', 'focusout']) document.addEventListener(event, e => { if (e.target.closest('[data-word]') || wordGuide?.panel.contains(e.target)) leaveWord(); });
+document.addEventListener('click', e => { const anchor = e.target.closest('[data-word]'); if (anchor) { e.preventDefault(); e.stopPropagation(); showWord(anchor, true); } }, true);
+document.addEventListener('pointerdown', e => { if (wordGuide && !wordGuide.anchor.contains(e.target) && !wordGuide.panel.contains(e.target)) closeWord(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && wordGuide) { e.preventDefault(); e.stopPropagation(); closeWord(true); }
+  else if (['Enter', ' '].includes(e.key) && e.target.closest('[data-word]')) { e.preventDefault(); e.stopPropagation(); showWord(e.target.closest('[data-word]'), true); }
+}, true);
+window.addEventListener('resize', placeWord); document.addEventListener('scroll', placeWord, true);
+
 // Inside Kerf Studio (same origin) the page can hand an edit request straight to Claude Code ("Do it").
 const HOST = (() => { try { return window.parent !== window && window.parent.kerfStudio && window.parent.kerfStudio.edit ? window.parent.kerfStudio : null; } catch (e) { return null; } })();
 const ICON = {
@@ -559,8 +620,8 @@ function renderMotion() {
     const sw = (R.assembly?.sweeps || []).find(s => s.joint === j.name);
     h += `<div class="ctl"><div class="row"><span class="name">${esc(j.name)}</span><span class="val" id="v_${esc(j.name)}">${fmt(val.get(j.name))}${unit(j)}</span></div>
       <input type="range" aria-label="${esc(j.name)}" data-j="${esc(j.name)}" min="${j.range[0]}" max="${j.range[1]}" step="${(j.range[1] - j.range[0]) / 360}" value="${val.get(j.name)}">
-      <div class="sub"><span>${fmt(j.range[0])} to ${fmt(j.range[1])}${unit(j)} · ${esc(j.kind)} · moves ${j.moves.length} item${j.moves.length > 1 ? 's' : ''}${sw ? ` · sweep ${sw.clear ? 'clear' : 'COLLIDES'}` : ''}</span>
-      <span><button data-home="${esc(j.name)}">Home</button> <button data-play="${esc(j.name)}">Sweep</button></span></div></div>`;
+      <div class="sub"><span>${fmt(j.range[0])} to ${fmt(j.range[1])}${unit(j)} · ${j.kind === 'revolute' ? word('revolute', 'rotating joint') : j.kind === 'linear' ? 'sliding joint' : esc(j.kind)} · moves ${j.moves.length} item${j.moves.length > 1 ? 's' : ''}${sw ? ` · ${word('sweep', 'motion check')} ${sw.clear ? 'clear' : 'COLLIDES'}` : ''}</span>
+      <span><button data-home="${esc(j.name)}">Home</button> <button data-play="${esc(j.name)}">Move through range</button></span></div></div>`;
   }
   $('motion').innerHTML = h;
   $('ex').oninput = e => { explode = +e.target.value; $('exv').textContent = `${explode} mm`; pose(); };
@@ -580,8 +641,8 @@ function renderParts() {
   const keepOn = $('keep').classList.contains('on');
   const row = it => {
     const pr = (R.parts || {})[it.id], pu = (R.purchased || {})[it.id];
-    const d = pr ? `${fmt(pr.mass_est_g)} g · ${esc(pr.material || '')} · ${pr.size_mm ? pr.size_mm.map(x => fmt(x)).join(' × ') + ' mm' : ''}`
-      : pu ? `${esc(pu.catalog || '')} · ${fmt(pu.mass_g)} g${pu.qty > 1 ? ` × ${pu.qty}` : ''}` : esc(it.catalog || 'clearance volume, not a part');
+    const d = pr ? `${fmt(pr.mass_est_g)} g · ${word(pr.material || '')} · ${pr.size_mm ? pr.size_mm.map(x => fmt(x)).join(' × ') + ' mm' : ''}`
+      : pu ? `${esc(pu.catalog || '')} · ${fmt(pu.mass_g)} g${pu.qty > 1 ? ` × ${pu.qty}` : ''}` : esc(it.catalog || 'space to keep clear, not a part');
     const vis = it.role === 'keepout' ? keepOn && !hidden.has(it.id) : !hidden.has(it.id);
     return `<div class="part" data-sel="${esc(it.id)}"><input aria-label="Show ${esc(it.id)}" type="checkbox" data-vis="${esc(it.id)}" ${vis ? 'checked' : ''} title="Show/hide">
       <span class="sw" style="background:${esc(it.color)}${it.role === 'keepout' ? ';opacity:.4' : ''}"></span>
@@ -590,7 +651,7 @@ function renderParts() {
   };
   let h = '<h2>Printed</h2>' + (printed.map(row).join('') || '<p class="empty">None.</p>') + '<h2>Purchased</h2>' + (bought.map(row).join('') || '<p class="empty">None.</p>');
   const ko = D.items.filter(i => i.role === 'keepout');
-  if (ko.length) h += '<h2>Keep-out volumes</h2>' + ko.map(row).join('');
+  if (ko.length) h += `<h2>${word('keep-out', 'Space to keep clear')}</h2>` + ko.map(row).join('');
   h += `<p style="margin-top:12px"><button id="showall">Show all</button> <button id="isolate" ${selected ? '' : 'disabled'}>Isolate selected</button> <button id="inspect-part" ${selected ? '' : 'disabled'}>Inspect selected</button></p>`;
   $('parts').innerHTML = h;
   $('parts').querySelectorAll('[data-vis]').forEach(c => c.onclick = e => { e.stopPropagation(); const id = c.dataset.vis; c.checked ? hidden.delete(id) : hidden.add(id); applyVis(); });
@@ -616,11 +677,11 @@ function renderPrint() {
   for (const id of ids) {
     const p = P[id];
     h += `<h2>${esc(id)}</h2><table>
-      <tr><td>Material</td><td class="n">${esc(p.material)} · ${fmt((p.infill || 0) * 100, 0)}% infill</td></tr>
+      <tr><td>Material</td><td class="n">${word(p.material)} · ${fmt((p.infill || 0) * 100, 0)}% ${word('infill')}</td></tr>
       <tr><td>Size</td><td class="n">${(p.size_mm || []).map(x => fmt(x)).join(' × ')} mm</td></tr>
       <tr><td>Fits the printer</td><td class="n">${p.fits ? 'yes' : 'NO'}</td></tr>
       <tr><td>Estimated mass</td><td class="n">${fmt(p.mass_est_g)} g</td></tr>
-      <tr><td>Overhang area</td><td class="n">${fmt(p.overhang_pct, 2)}%</td></tr>
+      <tr><td>${word('overhang', 'Overhang area')}</td><td class="n">${fmt(p.overhang_pct, 2)}%</td></tr>
       <tr><td>Thinnest wall (2nd pct.)</td><td class="n">${fmt(p.wall_p02_mm, 2)} mm</td></tr>
       <tr><td>One solid, watertight</td><td class="n">${p.solids === 1 && p.watertight ? 'yes' : 'NO'}</td></tr></table>`;
     const F = p.features || [];
@@ -777,9 +838,9 @@ function focusPart(id) { if (selected !== id) select(id); const g = groups.get(i
 function renderStressLegend() {
   const grad = RAMP.map(([k, c]) => `#${c.clone().convertLinearToSRGB().getHexString()} ${k * 100}%`).join(',');
   const none = printed.filter(i => !i.stress);
-  $('slegend').innerHTML = `<h3>Stress: share of the allowed stress used</h3><div class="ramp" style="background:linear-gradient(90deg,${grad})"></div>
+  $('slegend').innerHTML = `<h3>${word('stress', 'Stress')}: share of the allowed stress used</h3><div class="ramp" style="background:linear-gradient(90deg,${grad})"></div>
     <div class="rampl"><span>0 %</span><span>50 %</span><span>100 % = at its limit</span></div>
-    <p class="pd" style="margin:6px 0">Allowed stress = the material's strength ÷ the safety factor. Worst load case per point. Hover the model for the value there.</p>
+    <p class="pd" style="margin:6px 0">Allowed stress = the material's strength ÷ the ${word('safety factor')}. Worst load case per point. Hover the model for the value there.</p>
     ${STRESS.map(i => { const w = Math.max(...i.stress.cases.map(c => c.use || 0)); return `<div class="prow" data-f="${esc(i.id)}"><b>${esc(i.id)}</b><span class="v">peak ${fmt(w * 100, 0)} % · ${i.stress.cases.map(c => esc(c.id)).join(', ')}</span></div>`; }).join('')}
     ${none.length ? `<p class="pd" style="margin:6px 0 0">No strength check (shown faded): ${none.map(i => esc(i.id)).join(', ')}</p>` : ''}`;
   $('slegend').querySelectorAll('[data-f]').forEach(r => r.onclick = () => focusPart(r.dataset.f));
