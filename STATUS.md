@@ -1575,3 +1575,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 — Distinguish missing evidence from measured failure (Codex)
 - Explicitly unproven requirement cards now say not yet verified, retain the evidence detail and ask for missing verification. They stay blocking and deduplicate normally; numeric estimates no longer imply a measured miss. Ordinary failed targets retain existing wording and advice.
 - Focused tests/test_explain.py passed. No threshold, engineering result, geometry or review changed. Hawk draft PR81 closed out at25e3d6d with17 focused tests passing and63 full-check findings; installation remains unchanged for Hawk. Preserve40% remaining weekly reserve.
+
+### 2026-11-03 — Codex Learning Mode phase 1 backend
+- Added explicit new-project stage marker, applicable strength/motion/wiring/rough-review gates, evidence freshness including layout/engine inputs, and an export boundary. Rough checks remain available; legacy projects remain grandfathered.
+- Targeted stage/redesign tests pass; root integration owns CLI/Studio enrollment and generation guidance. Rough-review identity is attributed local evidence, not cryptographic independence; no review.json writes or approval generator.
+- Full batch remains held and its prior pass is unknown. This backend result does not establish production readiness or activate gates on existing projects.
+## 2026-11-03 — Learning Mode phase 4 scorecards (Codex)
+- Added an evidence-backed application ledger and scorecards for lessons, gates and strategies: applications, catches, reported savings with required source, blocked good work, review flags and promotion proposals. Historical failures never count as applications or saved work; unknown savings remain unknown and no gate is automatically enforced.
+- Diary look-back preserves ledgers, including older lessons absent from rebuilt diaries. A shared file lock covers records and rebuilds; atomic JSON writes avoid partial reads. Stable event IDs deduplicate retries and reject changed evidence under the same ID.
+- Studio Learning reads real records, shows uncertainty and application evidence, escapes text and supports narrow screens. Fixed a disclosure-toggle focus race exposed by navigation: delayed autofocus no longer steals focus from an interaction inside the project picker.
+- Validation: scorecards, lessons and existing shell tests 18 PASS, including concurrent records/rebuilds and desktop/mobile browser fixture. An attempted broader tests/test_studio.py selection exited 141 before summary and is incomplete; no full suite, real jobs, CAD builds or engineering gates run. Existing detector findings are outside the changed Learning surface. Application installation and independent integration remain with the manager.
+
+## 2026-11-03 — Learning Mode integration checkpoint (Codex)
+- Read the signed-in agreed artifact; latest user authorizes work now down to30% remaining. Phase4 scorecards delivered and52 combined focused tests pass; concurrent diary/record preservation and disclosure-focus regression covered. Unknown savings stayunknown; promotion is a proposal only.
+- Installed only scorecards, lessons, Studio backend/template with dated backup and exact-base hash guards. Effective next app restart; no live jobs/schedules launched.
+- Phase1 backend/CLI enrollment/export gate foundations tested but main checkbox remains open: Studio enrollment, detail-job enforcement and first full-batch proof remain. Phases5–8 remain open. No ready autonomous Learning Mode claim. See docs/status/LEARNING_IMPLEMENTATION.md.

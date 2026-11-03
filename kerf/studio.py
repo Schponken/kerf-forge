@@ -1840,6 +1840,9 @@ class Handler(BaseHTTPRequestHandler):
             if len(parts) == 2 and parts[0] == "ui" and re.fullmatch(r"[\w-]+\.(js|css)", parts[1]) and (ASSETS / parts[1]).exists():
                 return self._send(200, (ASSETS / parts[1]).read_bytes(),
                                   "text/javascript; charset=utf-8" if parts[1].endswith(".js") else "text/css; charset=utf-8")
+            if parts == ["api", "scorecards"]:
+                from . import scorecards
+                return self._json(scorecards.read(ROOT))
             if parts == ["api", "projects"]:
                 return self._json({"projects": [summary(n) for n in project_names()], "claude": bool(claude_bin()), "codex": bool(agent.codex_bin()),
                                    "agent": agent.mode(),
