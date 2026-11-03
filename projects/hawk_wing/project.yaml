@@ -95,7 +95,7 @@ params:
   htail_tip_chord: {value: 100, unit: mm, min: 80, max: 120, step: 5, label: Horizontal tail tip chord}
   htail_sweep_le_deg: {value: 3.0, unit: "°", min: 0, max: 15, step: 0.5, label: Horizontal tail LE sweep}
   htail_x_le0: {value: 650, unit: mm, min: 600, max: 700, step: 5, label: Horizontal tail LE at the centreline}
-  htail_z0: {value: -25, unit: mm, min: -35, max: -15, step: 1, label: Horizontal tail chord plane height}
+  htail_z0: {value: -35, unit: mm, min: -45, max: -25, step: 1, label: Horizontal tail chord plane height}
   elev_hinge_frac: {value: 0.65, unit: "", min: 0.6, max: 0.75, step: 0.01, label: Elevator hinge line (fraction of chord)}
   elev_throw: {value: 22, unit: "°", min: 15, max: 28, step: 1, label: Elevator throw each way}
   fin_h: {value: 130, unit: mm, min: 100, max: 160, step: 5, label: Fin height (above the boom top)}
@@ -273,23 +273,23 @@ requirements:
 - id: sm_half
   check: static_margin_tail
   min: 0.05
-  max: 0.8
+  max: 0.82
   halves: {right: hub_r, left: hub_l}
   root_y: pivot_y
   pose: {fold_r: 32.5, fold_l: 32.5}
-  why: 'half swept (fast passes, 80-110 km/h): stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim at the slowest speed it is flown half swept (DESIGN.md "Trim limits")'
+  why: 'half swept (fast passes, 80-110 km/h): stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim at 70 km/h, the slowest it is flown half swept: eta_t 0.9 x V_h 0.47 x a_t 3.23 x tau 0.55 x 22 deg / CL 0.35 = 0.82 (DESIGN.md "Trim limits")'
 - id: sm_folded
   check: static_margin_tail
   min: 0.05
-  max: 1.5
+  max: 1.36
   halves: {right: hub_r, left: hub_l}
   root_y: pivot_y
   pose: {fold_r: 65, fold_l: 65}
-  why: 'folded for the dive: stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim at the slowest speed it is flown folded (DESIGN.md "Trim limits")'
+  why: 'folded for the dive: stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim at 90 km/h, the slowest it is flown folded: 0.289 / CL 0.21 = 1.36 (DESIGN.md "Trim limits")'
 - id: sm_asym
   check: static_margin_tail
   min: 0.05
-  max: 0.8
+  max: 0.82
   halves: {right: hub_r, left: hub_l}
   root_y: pivot_y
   pose: {fold_r: 65, fold_l: 0}

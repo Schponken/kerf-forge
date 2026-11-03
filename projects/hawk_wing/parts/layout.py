@@ -243,3 +243,26 @@ def lead_root(p, side):
     pf = planform(p)
     y = p.hub_y1
     return aero.spar_point(pf, y, (LEAD_ROOT_X - pf.x_le(y)) / pf.chord(y)) * (1, side, 1)
+
+
+# ---------------------------------------------------------------- shared fastener / keep-out positions (DESIGN.md)
+NOTCH_R = DISC_R + 1.0        # glove trailing-edge corner cut round each pin (the hub's elbow disc turns in it)
+POD_OPEN_R = DISC_R + 0.5     # pod roof opening round each pin: the 21 T sector (r 23) passes through it when the
+                              # panel is lifted off / put on
+CAP_SCREWS = [(-12.0, -31.0), (12.0, -31.0)]    # (dx, dy) from the pin, RIGHT side (left: dy -> -dy): 2 x M3 from
+                              # the cap's top, through the glove, into heat-set inserts in the pod roof (group cap_r/l)
+POD_SCREWS = [(162.0, -20.0), (195.0, -24.0)]   # (x, dy from pivot_y), RIGHT side: 2 x M3 from below through the
+                              # pod's front flange into heat-set inserts in the glove's lower skin (group pod_r/l)
+GLOVE_SCREWS = [(30.0, 24.0), (30.0, -24.0), (200.0, 18.0), (200.0, -18.0)]   # (x, y): 4 x M3 from the glove top
+                              # (counterbored) into heat-set inserts in the fuselage's saddle rim (group glove)
+POD_PAD_Z = POD_ROOF_Z        # glove underside is flat at this z over each pod's footprint (the pod bolts to it)
+LEAD_EXIT_D = (-14.0, 3.0)    # (dx, dy) from the pin, right side: aileron lead leaves the hub's top here (r 14.3),
+                              # up into the hollow cap where its plug meets the glove-side extension
+
+
+def cap_screw_xy(p, side):
+    return [(p.pivot_x + dx, side * (p.pivot_y + dy)) for dx, dy in CAP_SCREWS]
+
+
+def pod_screw_xy(p, side):
+    return [(x, side * (p.pivot_y + dy)) for x, dy in POD_SCREWS]
