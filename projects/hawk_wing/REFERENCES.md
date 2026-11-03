@@ -202,3 +202,53 @@ RTH`, with a landing fallback; the wing must be spread before RTH (the plane gli
 - Whether `Override RC Channel` takes effect during INAV failsafe (docs silent); bench-test with props off.
 - Elevator trim weight per degree of sweep: tune in flight.
 - 625 load figures differ by maker (380 vs 675 N static); which bearing you actually receive is unknown.
+
+## Folding-wing gliders (Spencer's note, 2026-11-02)
+
+Spencer asked to look at folding-wing gliders and to take inspiration from real-world folding-wing jets and drones.
+About 10 pages opened. Honest finding: no open RC folding-wing glider with published pivot dimensions, mass and span
+turned up; what exists is patents, one paper, and printable toys. Search snippets are marked "(snippet)".
+
+| Source | URL | Licence | What it establishes |
+|---|---|---|---|
+| US 9,975,622 B2, Snook / Blue Bear, 'Morphing foil or wing' | https://patents.google.com/patent/US9975622 | Active patent (to 2034, Google's assumption); ideas only | Servo-driven sweep with a main pivot on upper and lower race bearings (acetal shells). The servo arm is spring-biased toward both end positions; an elastic element pulls the tip toward extended (more tension when tucked); nylon-cord limiters stop over-extension. No separate latch. No dimensions or mass (ratios only). |
+| US 4,836,817 'Folding wing toy glider' (expired) and Sling Wing (MakerWorld 385029, printable, built on it) | https://patents.google.com/patent/US4836817 , https://makerworld.com/models/385029 | Patent expired; model licence not read (page blocked, 403 on Printables mirror) | Chordwise tape hinge on the centreline; a rubber band pulls the wings open to 12-40 deg sweep (12-18 preferred), 1-3 deg dihedral per panel; launched folded, the band opens them when speed drops. Elastic-to-spread works at toy scale. |
+| ICAS 2010-423, MiMo-UAV variable-sweep mini-UAV | https://icas.org/ICAS_ARCHIVE/ICAS2010/PAPERS/423.PDF | Paper, (c) authors; reference only | 3.67 kg, 1.6 m, AR 6, 8-10 kg/m2, two outboard pivots, servo, up to 40 deg sweep. Datcom at 40 deg: Cm_alpha doubles (-0.0177 -> -0.0333), Cl_beta jumps about 23x, lift falls and drag rises. Pivot load concentration and left/right sync named as the hard parts. |
+| Model Aviation / outerzone / UC 'Intro to R/C gliders' (thermal reference points) | https://library.modelaviation.com/article/zephyr , https://outerzone.co.uk/plan_details.asp?ID=6020 , https://www.mat.uc.pt/~pedro/ncientificos/artigos/intro_rc_glider.html | Articles; numbers only | (snippet) a hand-launch glider built to 4 oz/ft2 (= 12 g/dm2) at 10 oz; Stylus 40 in span, 344 in2 (AR 4.6, derived); Alcyone 2M 8.5 oz/ft2 (= 26 g/dm2), Thermal Modi 12.4 oz/ft2 (= 38 g/dm2) (snippet); hand-launch class up to 1.5 m span (read). The UC page gives no numeric loading or AR. |
+| XB-70 drooping wingtips (VT presentation via search; Cranfield 'in-flight folding wingtip system') | https://dspace.lib.cranfield.ac.uk/handle/1826/13881 | Paper; ideas only | (snippet) Outer panels hinged down 25 deg in flight (hydraulic) for subsonic flight: more vertical area and less aft wing area to offset the aft lift shift. Chordwise fold hinge, a different axis from our vertical pivot. |
+| Prior in this file: LisEagle / LisHawk, Luckring 2016 (outboard pivot on a glove), Archer pin and bushings | see sections above | see INDEX.md | Already cover the actuator rule (1.5 x folded drag) and pivot layout. |
+
+### Ideas and decisions for hawk_wing
+
+1. **Adopt: a spring that biases both panels toward SPREAD** (Snook patent spring-biased arm; US4836817 elastic open;
+   MiMo needs a servo to hold the sweep). Sized so the spring beats pivot friction plus the panel's aerodynamic hinge
+   moment at dive speed, but the servo (MG996R, stalls against it) still holds the swept position. This turns
+   "spread on signal loss" from an INAV logic-condition trick (decision 4 above) into hardware that also works on a
+   dead servo or brown-out. Spring torque is a number to calculate; none is published.
+2. **Adopt: hard stops at 0 and 65 deg plus nylon-cord or printed travel limiters**, so the servo does not carry the
+   end-of-travel shock (Snook limiters; consistent with decision 3). Keep the upper-and-lower bearing pair (Snook,
+   Archer).
+3. **Reject: chordwise fold hinge** (US4836817, Sling Wing, XB-70 tips): it folds the panel up or down, which does not
+   give sweep for a straight dive and puts the hinge bending on one printed knuckle. Also reject a tape hinge.
+   Keep the vertical pivot.
+4. **Context, derived:** hawk_wing at 85 g/dm2 (8.5 kg/m2) matches MiMo-UAV (8-10 kg/m2) but is 2.2-3.3x the 26-38 g/dm2 of
+   2 m thermal models and 7x a 12 g/dm2 hand-launch floater. Sink rate scales with the square root of loading, so it
+   will sink about 1.8x (vs 26 g/dm2) to 2.6x (vs 12 g/dm2) faster at its best glide speed: it is a motor-assisted
+   cruiser that can glide, not a thermal soarer. Sell the spread mode as slow, stable and soft landing, not thermalling,
+   or move the target loading down (a lower-mass or bigger-area redesign).
+5. **Plan the spread CG:** MiMo Datcom shows sweeping adds pitch stability and a big dihedral effect (Cl_beta x23),
+   so a plane trimmed for the swept case may be roll-sluggish and the spread case is the critical one for CG and tail
+   volume (matches decision 6). Expect aileron-roll authority to fall as sweep rises.
+6. **Real-world inspiration kept:** F-14 and the other variable-sweep jets use the outboard fixed pivot on a glove
+   (Luckring); XB-70 shows the tips-down fold as a stability aid (not for us); tube-launched drones use a spring to
+   open the wings fast (spring housing + torque tube, from the patents list seen in search) - the same spring-to-spread
+   idea as bullet 1.
+
+### Open questions
+
+- Spring torque and rate needed at the pivot: needs the hinge moment at CL max and dive q (not in any source read).
+- Does a spring that opens the wings fight the MG996R hold (current, heat) at 65 deg? Over-centre detent instead?
+- Sling Wing's actual licence and fold geometry (page blocked) - read it in a browser.
+- No source gives a published flown pivot size (pin diameter, bearing spacing) for a ~1 m sweep model: our 5 mm pin and
+  2x 625 stay Kerf's calculation, not a proven design.
+- Real thermal-capable 1 m span loading: sources read give only 2 m-class numbers; check a 1 m F5J or hand-launch kit spec.
