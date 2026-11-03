@@ -1266,3 +1266,16 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Full batch remains HELD. No actual project rebuild or native app launch. The surface brief records limits;
   inherited small engineering text was the only mechanical design-detector warning. Combined shell validation
   belongs to the integration owner; this branch is frozen for that handoff.
+
+## 2026-11-03 03:24 UTC — Bounded Codex response reader avoids repeated copying and scanning (Codex)
+- `_Reader.call` now accumulates bytes in a bytearray and resumes newline searches at the unread suffix. JSON
+  decoding, notification/request matching, read-only methods, deadline and 4 MiB buffer limit retain their behavior.
+- Validation completed before the worker's effort-setting restart: **40 passed in 0.47 s** across
+  `tests/test_codex_reader.py` and `tests/test_codex_work.py`, with this checkout on PYTHONPATH. New cases cover
+  fragmented UTF-8, notifications, buffered next responses, exact/over-limit payloads, protocol failures and fences.
+- Bounded synthetic comparison against `994258e`: 64 KiB reads, one warmup per version, 11 alternating measured
+  pairs. Median local reader time: approximately 37 KB **0.063 → 0.054 ms**, 2.97 MB **4.679 → 2.006 ms (2.33×)**.
+  Outputs were equal; large-response traced peak memory stayed approximately **9.48 MB**. This measures local parsing,
+  not subprocess startup, network latency or end-to-end Studio refresh. Harness: `/tmp/kerf_measure_codex_reader.py`.
+- No extra dependencies, real Codex jobs, browser changes, geometry, review artifacts, stress runs or full suite.
+  Full batch remains held. Tests and measurements were not repeated after the documentation-only completion step.

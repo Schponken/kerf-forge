@@ -28,7 +28,7 @@ _LOCK = threading.Lock()
 class _Reader:
     """One bounded, read-only JSON-lines connection; notifications are ignored."""
     def __init__(self, command: list[str], deadline: float):
-        self.deadline, self.buffer, self.seq = deadline, b"", 0
+        self.deadline, self.buffer, self.seq = deadline, bytearray(), 0
         self.proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                      stderr=subprocess.DEVNULL, bufsize=0)
         self.selector = selectors.DefaultSelector()
@@ -39,20 +39,24 @@ class _Reader:
             raise ValueError("Work viewer only reads session metadata")
         self.seq += 1
         self.proc.stdin.write((json.dumps({"id": self.seq, "method": method, "params": params}) + "\n").encode())
+        scanned = 0
         while time.monotonic() < self.deadline:
-            while b"\n" in self.buffer:
-                line, self.buffer = self.buffer.split(b"\n", 1)
+            while (end := self.buffer.find(b"\n", scanned)) >= 0:
+                line = self.buffer[:end]
+                del self.buffer[:end + 1]
+                scanned = 0
                 message = json.loads(line)
                 if message.get("id") != self.seq:
                     continue
                 if "error" in message:
                     raise RuntimeError("Codex could not read session metadata")
                 return message.get("result") or {}
+            scanned = len(self.buffer)  # Only newly received bytes can contain the next newline.
             if self.selector.select(max(0, self.deadline - time.monotonic())):
                 chunk = os.read(self.proc.stdout.fileno(), 65536)
                 if not chunk:
                     raise RuntimeError("Codex session reader is unavailable")
-                self.buffer += chunk
+                self.buffer.extend(chunk)
                 if len(self.buffer) > 4 * 1024 * 1024:
                     raise RuntimeError("Codex session response exceeds the viewer limit")
         raise TimeoutError("Codex session reader timed out")
