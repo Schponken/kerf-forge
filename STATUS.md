@@ -579,3 +579,12 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+## 2026-11-02 — Ignore-policy regression is portable across developer worktrees (Codex)
+- Reproduced git check-ignore exit 128 when approved symlinked tools/render/node_modules made the test
+  path a.js "beyond a symbolic link": exact node failed (1 test in 0.04 s). The ignore policy itself was
+  correct; the assertion was accidentally testing this worktree's installed filesystem.
+- The test now copies the exact .gitignore bytes into a temporary Git repository with no template files
+  and disables user excludes for that command. All ignored/kept path arrays and both assertions remain
+  unchanged. No .gitignore rule, shared exclude, installed symlink or product behavior changed.
+- PASS: all 4 repo-hygiene tests in 0.17 s. No full suite, CAD build or solver run.
