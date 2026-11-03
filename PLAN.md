@@ -341,3 +341,8 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Resume strength simulations (Spencer, 2026-11-02): restore enabled policy, preserve unrelated holds, verify runtime and saved strength provenance with focused tests and one bounded real FEA solve.
 
 - [x] Work joined-activity provenance: preserve owner-update source exactly when a joined session fills a job’s missing activity; focused helper regression.
+- [x] Studio round 2 export handoff: integrate declared-source and contained-output fixes, close remaining download gaps with fixture coverage
+
+  - [x] Complete Studio source exports: preserve declared imported assets and nested design dependencies in downloaded project archives; reject missing or escaping sources without exporting caches or stale review approval.
+
+  - [x] Maker download containment: refuse linked or special generated output files so a project ZIP contains only regular files within its own output tree; preserve valid nested maker outputs and explain invalid exports.

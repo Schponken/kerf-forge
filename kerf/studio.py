@@ -378,24 +378,64 @@ EXPORT_DIRS = ("plates", "parts", "drawings", "firmware", "assembly_steps")
 EXPORT_FILES = ("assembly.step", "bom.csv", "bom.md", "ASSEMBLY.md", "WIRING.md", "wiring.svg", "viewer.html")
 
 
+def _maker_files(project_dir: Path) -> dict[str, Path]:
+    """Validate selected generated files before archiving; never traverse links or read special files."""
+    import stat
+    from .sources import inside
+
+    out = inside(project_dir, "out")
+    if not out.exists():
+        return {}
+    if not stat.S_ISDIR(out.lstat().st_mode):
+        raise ValueError("Expected maker output directory: out")
+    selected = {}
+    def checked(path, directory=False):
+        relative = path.relative_to(project_dir).as_posix()
+        inside(project_dir, relative)
+        mode = path.lstat().st_mode
+        if not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)):
+            kind = "directory" if directory else "regular file"
+            raise ValueError(f"Expected maker output {kind}: {relative}")
+    def unreadable(error):
+        raise error
+    for relative in EXPORT_DIRS:
+        folder = inside(out, relative)
+        if not folder.exists():
+            continue
+        checked(folder, directory=True)
+        for directory, dirs, files in os.walk(folder, followlinks=False, onerror=unreadable):
+            for child in dirs:
+                checked(Path(directory) / child, directory=True)
+            for child in files:
+                path = Path(directory) / child
+                checked(path)
+                if path.suffix != ".glb":
+                    selected[path.relative_to(out).as_posix()] = path
+    for relative in (*EXPORT_FILES, f"{project_dir.name}_urdf.zip"):
+        path = inside(out, relative)
+        if path.exists():
+            checked(path)
+            selected[relative] = path
+    return dict(sorted(selected.items()))
+
+
 def export_zip(name: str) -> bytes:
     """Everything a maker needs in one zip: print plates and parts, STEP, BOM, guides, drawings, bring-up program,
     plus the design files (project.yaml, DESIGN.md, part sources)."""
     import io
     import zipfile
-    d = PROJECTS / name
+    from .sources import design_files, inside
+    if not NAME_RE.fullmatch(name):
+        raise ValueError("no such project")
+    d = inside(PROJECTS, name)
+    sources = design_files(d)  # Validate every declared input before starting an archive.
+    maker_files = _maker_files(d)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        for rel in EXPORT_DIRS:
-            for f in sorted((d / "out" / rel).rglob("*")) if (d / "out" / rel).exists() else []:
-                if f.is_file() and f.suffix != ".glb":
-                    z.write(f, f"{name}/{f.relative_to(d / 'out')}")
-        for rel in EXPORT_FILES:
-            if (d / "out" / rel).exists():
-                z.write(d / "out" / rel, f"{name}/{rel}")
-        for f in ["project.yaml", "DESIGN.md", "REFERENCES.md", *[str(x.relative_to(d)) for x in sorted((d / "parts").glob("*.py"))]]:
-            if (d / f).exists():
-                z.write(d / f, f"{name}/design/{f}")
+        for relative, f in maker_files.items():
+            z.write(f, f"{name}/{relative}")
+        for relative, f in sources.items():
+            z.write(f, f"{name}/design/{relative}")
     return buf.getvalue()
 
 
@@ -1754,6 +1794,17 @@ def _safe(base: Path, rel: str) -> Path | None:
     return p if p.is_file() and (p == base.resolve() or base.resolve() in p.parents) else None
 
 
+def _project_file(root: Path, name: str, relative: str) -> Path | None:
+    """Contain the project segment as well as the requested file."""
+    from .sources import inside
+    if not NAME_RE.fullmatch(name):
+        return None
+    try:
+        return _safe(inside(root, name), relative)
+    except ValueError:
+        return None
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "KerfStudio/1"
 
@@ -1863,7 +1914,10 @@ class Handler(BaseHTTPRequestHandler):
                 nm = parts[1][:-4]
                 if nm not in project_names():
                     return self._err("no such project", 404)
-                body = export_zip(nm)
+                try:
+                    body = export_zip(nm)
+                except (ValueError, OSError) as e:
+                    return self._err(f"Couldn't export project: {e}")
                 try:
                     self.send_response(200)
                     self.send_header("Content-Type", "application/zip")
@@ -1875,11 +1929,11 @@ class Handler(BaseHTTPRequestHandler):
                     pass
                 return
             if parts[0] == "history" and len(parts) == 4 and parts[3] == "thumb.png":
-                f = _safe(HISTORY / parts[1], f"{parts[2]}/thumb.png")
+                f = _project_file(HISTORY, parts[1], f"{parts[2]}/thumb.png")
                 return self._send(200, f.read_bytes(), "image/png") if f else self._err("not found", 404)
             if parts[0] in ("files", "trial") and len(parts) >= 3:
-                base = (PROJECTS if parts[0] == "files" else TRIALS) / parts[1]
-                f = _safe(base, "/".join(parts[2:]))
+                root = PROJECTS if parts[0] == "files" else TRIALS
+                f = _project_file(root, parts[1], "/".join(parts[2:]))
                 if f is None:
                     return self._err("not found", 404)
                 ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
