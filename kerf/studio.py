@@ -1649,6 +1649,8 @@ def work() -> dict:
     codex = codex_work.snapshot(ROOT)
     now = time.time()
     timings = _times()
+    auto_resume = settings().get("autoresume", True)
+    retry_blocked = bool(budget_stop())
     jobs = []
     with JOB_LOCK:
         for j in list(JOBS.values()):
@@ -1660,6 +1662,11 @@ def work() -> dict:
             # A last report may be a quick check, so only recorded comparable runs support a countdown.
             jobs.append({"id": j.id, "kind": j.kind, "project": j.project, "label": j.label,
                          "state": j.state, "started": j.started, "mode": j.mode, "events": list(j.events),
+                         "ended": j.ended, "agent": getattr(j, "agent", "claude"),
+                         "usage": getattr(j, "usage", None), "resumed_by": getattr(j, "resumed_by", None),
+                         "resumable": bool(j.state == "paused" and getattr(j, "session", None)
+                                           and not getattr(j, "resumed_by", None)),
+                         "auto_resume": auto_resume, "retry_blocked": retry_blocked,
                          "estimate_seconds": estimate(j.project, kind) if comparable else None})
     sources = [{"name": "Shared claims", "state": "partial" if LIVE["fetch_error"] or not LIVE["last_fetch"] else "ok",
                 "detail": "Last fetched repository state; claim updates show ownership, not live execution.",

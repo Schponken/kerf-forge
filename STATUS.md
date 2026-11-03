@@ -646,3 +646,29 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+## 2026-11-03 01:52 UTC — Work reflects agent jobs, usage pauses and continuations (Codex)
+- Reproduced through `studio.work()` with in-memory jobs: a Codex edit appeared as Claude, while a usage-paused
+  design became idle/Not running and still said it was designing a part. The Work serialization now carries the
+  known agent, ended timestamp, usage/resume metadata and current retry/budget policy. No Job lifecycle, timer,
+  resume, cancellation or agent-selection code changed; `Job.info` did not need modification.
+- Work labels paused runs explicitly, groups them for attention without claiming user input is required, and
+  separates the reported usage reset from finish ETA. Pause details say whether retry is enabled/off/budget-blocked
+  or a resumable session is missing; enabled policy never promises a queued timer. A prior run with `resumed_by`
+  becomes Continued, not Finished, and shows an observed successor's provider/state with Watch continuing job;
+  unobserved successors get no dead navigation. Previous-run activity remains accessible. Historical missing or
+  invalid agent metadata retains Claude fallback; known non-agent jobs stay Studio. Claim/session behavior is unchanged.
+- Validation: **81 passed in 18.79 s** (`tests/test_work_job_states.py`, `tests/test_work_job_page.py`,
+  `tests/test_work_overview.py`, `tests/test_work_page.py`, `tests/test_codex_work.py`, plus docs requirement/YAML/
+  engineering-contract nodes). Initial 75 pass / 3 browser failures came from old fixture routes returning `{}`
+  for main's new `/api/quotes` poll; corrected all three to the actual empty `{quotes: []}` schema, keeping every
+  assertion. One browser-marker registration warning remains until the pending fast-tests configuration lands;
+  the new browser node is explicitly marked. Known agent docs-map failures are covered by PR #34, not repeated here.
+- The actual serialization-to-DOM fixture verifies provider labels, pause/active/recent filters, reset-vs-ETA,
+  escaping, unknown successors, keyboard navigation/focus and no overflow at 1440/390 px in dark/light themes.
+  Viewed `.cache/work-job-states/work-job-{paused,continuation}-{light,dark}-{1440,390}.png`; existing tall phone
+  app-shell height remains unchanged. Impeccable's one mechanical scan found 13 existing issues outside edited
+  Work selectors. `kerf doctor`: **ALL OK**, existing optional firmware tools unavailable.
+- Based on PR #31 and current main, preserving both STATUS sides of their additive conflict. Budget off and
+  batch/duplicate-process status checked before focused runs. No real agent process/chat, timer, physical project,
+  stress solve, full suite or full batch. Exact observed session/job dedup is a separate pending investigation.

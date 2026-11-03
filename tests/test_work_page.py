@@ -56,6 +56,7 @@ try {
    if(u.pathname==='/') return route.fulfill({contentType:'text/html',body:html});
    if(u.pathname==='/api/work') return route.fulfill(fail ? {status:503,json:{error:'Connection interrupted'}} : {json:work});
    if(u.pathname==='/api/projects') return route.fulfill({json:{projects:[],claude:false}});
+   if(u.pathname==='/api/quotes') return route.fulfill({json:{quotes:[]}});
    if(u.pathname==='/api/jobs') return route.fulfill({json:{jobs:[],sessions:[]}});
    if(u.pathname.startsWith('/api/')) return route.fulfill({json:{}});
    return route.fulfill({contentType:'text/javascript',body:''});
@@ -207,6 +208,7 @@ try {
    if(path==='/') return route.fulfill({contentType:'text/html',body:html});
    if(path==='/api/work') return route.fulfill({json:data});
    if(path==='/api/projects') return route.fulfill({json:{projects:[],claude:false}});
+   if(path==='/api/quotes') return route.fulfill({json:{quotes:[]}});
    if(path==='/api/jobs') return route.fulfill({json:{jobs:[],sessions:[]}});
    return route.fulfill({contentType:'text/javascript',body:path.startsWith('/api/') ? '{}' : ''});
   });

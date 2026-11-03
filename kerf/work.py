@@ -7,8 +7,9 @@ import time
 
 from .progress import STAGES
 
-STATES = {"running", "claimed", "waiting", "failed", "done", "stopped", "stale", "idle"}
+STATES = {"running", "claimed", "waiting", "paused", "continued", "failed", "done", "stopped", "stale", "idle"}
 LABELS = {"running": "Working", "claimed": "Claimed", "waiting": "Needs your input", "failed": "Failed",
+          "paused": "Paused", "continued": "Continued in another job",
           "done": "Finished", "stopped": "Stopped", "stale": "No recent update", "idle": "Not running"}
 PHASES = {"research": "Researching options", "plan": "Planning the design", "contract": "Defining requirements",
           "parts": "Designing parts", "check": "Checking the design", "build": "Building the kit",
@@ -116,10 +117,12 @@ def _job(source, now):
     kind = source.get("kind")
     is_agent = kind in ("design", "edit", "fix", "quote")
     state = source.get("state", "idle")
+    provider = source.get("agent") if source.get("agent") in ("codex", "claude") else "claude"
     item = _item({**source, "title": source.get("label"), "started_at": source.get("started"),
-                  "provider": "claude" if is_agent else "studio"}, "job", now)
+                  "provider": provider if is_agent else "studio"}, "job", now)
     item["job_id"] = source.get("id")
-    item["updated_at"] = max([number(source.get("started"), 0)] + [number(e.get("t"), 0) for e in events]) or None
+    item["updated_at"] = max([number(source.get("started"), 0), number(source.get("ended"), 0)] +
+                             [number(e.get("t"), 0) for e in events]) or None
     latest = next((e for e in reversed(events) if e.get("k") in ("note", "stage", "tool", "hint", "done")), {})
     if latest.get("k") == "note":
         item["activity"] = plain(latest.get("text"), 400)
@@ -129,13 +132,34 @@ def _job(source, now):
         item["activity"] = PHASES.get(latest.get("phase"), "Working on the task")
     elif latest.get("k") == "hint":
         item["activity"] = "Waiting for the process to stop."
-        item["attention"] = {"auth": "Claude needs you to sign in again.",
-                             "trust": "Claude needs this project folder to be trusted."}.get(
+        item["attention"] = {"auth": f"{item['provider']} needs you to sign in again.",
+                             "trust": f"{item['provider']} needs this project folder to be trusted."}.get(
                                  latest.get("code"), "The session reported a setup problem.")
     elif latest.get("k") == "done":
         item["activity"] = "Checks completed." if latest.get("ok") else "Checks found problems to fix."
     elif state == "running":
         item["activity"] = "Starting the job; waiting for its first update."
+    if state == "paused":
+        usage = source.get("usage") if isinstance(source.get("usage"), dict) else {}
+        item["status_label"] = "Paused · usage limit" if usage else "Paused"
+        item["activity"] = "Usage limit reached; this run is paused." if usage else "This run is paused."
+        item["action"] = None
+        if source.get("retry_blocked") is True:
+            retry = "The budget switch currently blocks automatic retries."
+        elif source.get("auto_resume") is False:
+            retry = "Automatic retry is off. Open the job to review resume options."
+        elif source.get("auto_resume") is True:
+            retry = ("Automatic retry is enabled; retry timing is unavailable."
+                     if source.get("resumable") else
+                     "Automatic retry is enabled, but no resumable session is reported.")
+        else:
+            retry = "Automatic retry status is not reported. Open the job for details."
+        item["attention"] = retry
+        item["pause"] = {"reset_at": number(usage.get("until")) or None}
+        resumed_by = source.get("resumed_by")
+        if isinstance(resumed_by, str) and resumed_by and resumed_by != item["job_id"]:
+            item.update(continued_by=resumed_by, state="continued", status_label=LABELS["continued"],
+                        attention=None, pause=None)
     start = next((e for e in reversed(events) if e.get("k") == "start"), {})
     stages = list(dict.fromkeys(str(s) for s in start.get("stages", [])))
     reached = [e.get("stage") for e in events if e.get("k") == "stage" and e.get("stage") in stages]
@@ -208,12 +232,24 @@ def overview(data: dict, sessions=(), jobs=(), sources=(), now=None) -> dict:
                 item["progress"] = {"done": sum(c["progress"]["done"] for c in scopes),
                                     "total": sum(c["progress"]["total"] for c in scopes), "label": "claimed task steps"}
                 item["remaining"] = [f"{c['title']}: {step}" for c in scopes for step in c["remaining"]]
-    items += [_job(j, now) for j in jobs if isinstance(j, dict)]
-    order = {"waiting": 0, "failed": 1, "running": 2, "claimed": 3, "stale": 4, "idle": 5, "done": 6, "stopped": 7}
+    job_items = [_job(j, now) for j in jobs if isinstance(j, dict)]
+    by_job = {i["job_id"]: i for i in job_items}
+    for item in job_items:
+        if target_id := item.get("continued_by"):
+            target = by_job.get(target_id)
+            item["activity"] = (f"{target['provider']} continued this task in another job."
+                                if target else "This task continued in another job; its current state is not reported.")
+            item["continuation"] = {"job_id": target_id, "observed": bool(target),
+                                    "provider": target["provider"] if target else None,
+                                    "status_label": target["status_label"] if target else None}
+    items += job_items
+    order = {"waiting": 0, "paused": 1, "failed": 2, "running": 3, "claimed": 4, "stale": 5,
+             "idle": 6, "continued": 7, "done": 8, "stopped": 9}
     items.sort(key=lambda i: (order[i["state"]], -(i["updated_at"] or 0), i["title"]))
     return {**data, "items": items, "updated_at": now, "sources": list(sources),
             "counts": {"running": sum(i["state"] == "running" for i in items),
                        "claimed": sum(i["state"] == "claimed" for i in items),
                        "waiting": sum(i["state"] == "waiting" for i in items),
+                       "paused": sum(i["state"] == "paused" for i in items),
                        "attention": sum(bool(i["attention"]) for i in items),
                        "done": sum(i["state"] == "done" for i in items), "total": len(items)}}

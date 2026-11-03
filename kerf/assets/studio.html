@@ -325,7 +325,7 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .work-owner{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:7px}.work-owner b{color:var(--ink);font-weight:600}
 .work-state{flex:none;display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:600;line-height:1.4;padding:4px 8px;border-radius:6px;background:var(--soft);color:var(--muted)}
 .work-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}.work-state.running,.work-state.working{background:var(--info-bg);color:var(--info)}
-.work-state.waiting,.work-state.blocked,.work-state.stale{background:var(--warn-bg);color:var(--work-warn)}.work-state.failed{background:var(--bad-bg);color:var(--bad)}.work-state.done{background:var(--ok-bg);color:var(--work-ok)}
+.work-state.waiting,.work-state.blocked,.work-state.stale,.work-state.paused{background:var(--warn-bg);color:var(--work-warn)}.work-state.failed{background:var(--bad-bg);color:var(--bad)}.work-state.done{background:var(--ok-bg);color:var(--work-ok)}
 .work-activity{font-size:14px;line-height:1.55;margin:15px 0 10px;max-width:72ch}.work-activity.empty{color:var(--muted)}
 .work-action{font-size:12px;line-height:1.5;color:var(--muted);margin:-3px 0 12px;overflow-wrap:anywhere}
 .work-attention{margin:10px 0 12px;color:var(--work-warn);font-size:13px;line-height:1.5}.work-attention strong{font-weight:600}
@@ -1707,7 +1707,7 @@ async function loadWork() {
   finally { S.workLoading = false; if (S.work) renderWork(); }
 }
 setInterval(() => { if (S.work) loadWork(); }, 15000);
-const WORK_STATES = {running:"Working",working:"Working",claimed:"Claimed",waiting:"Waiting for input",blocked:"Blocked",failed:"Failed",done:"Finished",stopped:"Stopped",stale:"Update overdue",idle:"Not running"};
+const WORK_STATES = {running:"Working",working:"Working",claimed:"Claimed",waiting:"Waiting for input",paused:"Paused",continued:"Continued in another job",blocked:"Blocked",failed:"Failed",done:"Finished",stopped:"Stopped",stale:"Update overdue",idle:"Not running"};
 function workItems(w) {
   if (Array.isArray(w.items)) return w.items;
   return (w.cards || []).map((c,i) => ({id:c.session || `claim-${i}`,session:c.session,provider:"Session",title:c.item,
@@ -1716,14 +1716,14 @@ function workItems(w) {
 }
 function workClaims(item) { return Array.isArray(item.claimed_tasks) ? item.claimed_tasks.filter(c=>c && typeof c === "object") : []; }
 function workGroup(item) {
-  if (item.attention || workClaims(item).some(c=>c.attention || c.state==="stale") || ["waiting","blocked","failed","stale"].includes(item.state)) return "attention";
+  if (item.attention || workClaims(item).some(c=>c.attention || c.state==="stale") || ["waiting","paused","blocked","failed","stale"].includes(item.state)) return "attention";
   if (["working","running","claimed"].includes(item.state)) return "active";
   return "recent";
 }
 function workMatchesGroup(item, group) {
   const state = Object.hasOwn(WORK_STATES,item.state) ? item.state : "idle";
   if (group === "active") return ["working","running","claimed"].includes(state);
-  if (group === "recent") return ["done","stopped","idle"].includes(state);
+  if (group === "recent") return ["done","stopped","idle","continued"].includes(state);
   return group === "all" || workGroup(item) === group;
 }
 function workFilter(value) { S.workFilter = value; renderWork(); }
@@ -1743,9 +1743,15 @@ function workLink(value) {
 function workAge(value) {
   return Number.isFinite(Number(value)) && Number(value)>0 ? ago(Math.max(0,Date.now()/1000 - Number(value))) : "time unavailable";
 }
+function workReset(value) {
+  const date = new Date(Number(value)*1000);
+  if (!Number.isFinite(value) || value<=0 || !Number.isFinite(date.getTime())) return "Usage reset time is not reported.";
+  return `${value>Date.now()/1000 ? "Usage resets" : "Reported usage reset:"} ${date.toLocaleString()}. This is not a finish estimate.`;
+}
 function workAction(index, action, projectIndex=0) {
   const item = S.workRendered[index]; if (!item) return;
   if (action === "job" && item.job_id) return watch(item.job_id);
+  if (action === "continue" && item.continuation?.observed) return watch(item.continuation.job_id);
   const project = (item.projects || [])[projectIndex];
   if (!project) return;
   if (action === "live") return openLive(project.name);
@@ -1775,28 +1781,31 @@ function workTask(item,index) {
   const claimRemaining = claims[0]?.remaining || [];
   const chatSteps = claims.length===1 && (known || remaining.length) && (progress?.done !== claims[0].progress?.done ||
     progress?.total !== claims[0].progress?.total || remaining.length !== claimRemaining.length || remaining.some((step,i)=>step!==claimRemaining[i]));
-  const completed = ["done","stopped"].includes(state), detailId = String(item.id || index), focusId = `work-item-${encodeURIComponent(detailId)}`;
+  const completed = ["done","stopped","continued"].includes(state), detailId = String(item.id || index), focusId = `work-item-${encodeURIComponent(detailId)}`;
   return `<article class="work-item" data-work-item="${esc(detailId)}">
     <div class="work-item-top"><div class="work-item-title"><h2>${esc(item.title || "Untitled work")}</h2>
       <div class="work-owner"><b>${esc(item.provider || "Session")}</b>${item.session ? `<span title="${esc(item.session)}">Session ${esc(String(item.session).slice(0,8))}</span>` : ""}<span>${esc(projects.map(p=>p.title || p.name).join(" · ") || "Kerf Studio")}</span></div></div>
       <span class="work-state ${state}">${esc(item.status_label || WORK_STATES[state])}</span></div>
     <p class="work-activity ${item.activity ? "" : "empty"}">${esc(item.activity || "No activity update has been reported for this task yet.")}</p>
     ${item.action && item.action !== item.activity ? `<p class="work-action">${esc(item.action)}</p>` : ""}
-    ${item.attention ? `<p class="work-attention"><strong>Needs attention:</strong> ${esc(item.attention)}</p>` : ""}
+    ${item.attention ? `<p class="work-attention"><strong>${state === "paused" ? "Pause details:" : "Needs attention:"}</strong> ${esc(item.attention)}</p>` : ""}
+    ${item.pause ? `<p class="work-action">${esc(workReset(item.pause.reset_at))}</p>` : ""}
+    ${item.continuation?.observed ? `<p class="work-action">Continuing job: ${esc(item.continuation.provider)} · ${esc(item.continuation.status_label)}</p>` : ""}
     <div class="work-measures">
-      <div class="work-progress">${known ? `<b>${progress.done} of ${progress.total} ${esc(chatSteps ? "chat steps complete" : progress.label || "steps complete")}</b><progress max="${progress.total}" value="${progress.done}" aria-label="${esc(chatSteps ? "Reported chat progress" : progress.label || "Reported task progress")}"></progress>` : `<b>${completed ? "Run ended" : claims.length>1 ? "No combined progress" : "Progress not reported"}</b><span>${completed ? "See the latest result above" : claims.length>1 ? "Some claimed tasks have no checklist" : "An active session is not a completion percentage"}</span>`}</div>
+      <div class="work-progress">${known ? `<b>${progress.done} of ${progress.total} ${esc(chatSteps ? "chat steps complete" : progress.label || "steps complete")}</b><progress max="${progress.total}" value="${progress.done}" aria-label="${esc(chatSteps ? "Reported chat progress" : progress.label || "Reported task progress")}"></progress>` : `<b>${completed ? "Run ended" : claims.length>1 ? "No combined progress" : "Progress not reported"}</b><span>${completed ? state === "continued" ? "Follow the continuing job for current progress" : "See the latest result above" : claims.length>1 ? "Some claimed tasks have no checklist" : "An active session is not a completion percentage"}</span>`}</div>
       <div><b>${completed ? "" : timed ? `About ${Math.max(1,Math.ceil(eta.seconds/60))} min left` : "No time estimate yet"}</b><span>${completed ? "" : timed ? esc(eta.basis || "Based on previous runs") : "Shown when this work has a reliable estimate"}</span></div>
     </div>
     <div class="work-item-footer"><div class="work-actions">
       ${link ? `<a id="${focusId}-chat" class="btn" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open chat</a>` : ""}
-      ${item.job_id ? `<button id="${focusId}-job" onclick="workAction(${index},'job')">Watch job</button>` : ""}
+      ${item.job_id ? `<button id="${focusId}-job" onclick="workAction(${index},'job')">${state === "continued" ? "View previous run" : "Watch job"}</button>` : ""}
+      ${item.continuation?.observed ? `<button id="${focusId}-continue" onclick="workAction(${index},'continue')">Watch continuing job</button>` : ""}
       ${projects.map((p,j)=>`<button id="${focusId}-project-${j}" onclick="workAction(${index},'project',${j})">${projects.length>1 ? esc(p.title || p.name) : "View project"}</button>`).join("")}
       ${projects.length===1 && ["running","working","claimed"].includes(state) ? `<button id="${focusId}-live" onclick="workAction(${index},'live')">Follow 3D</button>` : ""}
     </div><span class="work-stamp">Updated ${workAge(item.updated_at)}</span></div>
     <details class="work-detail" data-work-id="${esc(detailId)}" ${S.workOpen?.has(detailId) ? "open" : ""}><summary id="${focusId}-scope">Scope &amp; next steps${claims.length ? ` · ${claims.length} claim${claims.length===1 ? "" : "s"}` : remaining.length ? ` · ${remaining.length} remaining` : ""}</summary>
       ${claims.length ? `<h3>Claimed tasks</h3><ul class="work-claims">${claims.map(workClaim).join("")}</ul>` : `
       ${description && description !== item.activity ? `<p>${esc(description)}</p>` : ""}
-      <h3>${completed ? "Remaining work reported" : "Still to do"}</h3>${remaining.length ? `<ul>${remaining.map(step=>`<li>${esc(step)}</li>`).join("")}</ul>` : `<p>${state === "done" ? "No further steps were reported. Completion applies to this run, not the whole project." : "No checklist has been reported. The session may still be deciding the next step."}</p>`}`}
+      <h3>${completed ? "Remaining work reported" : "Still to do"}</h3>${remaining.length ? `<ul>${remaining.map(step=>`<li>${esc(step)}</li>`).join("")}</ul>` : `<p>${state === "done" ? "No further steps were reported. Completion applies to this run, not the whole project." : state === "continued" ? "Follow the continuing job for remaining work; this run does not imply the task is complete." : "No checklist has been reported. The session may still be deciding the next step."}</p>`}`}
       ${chatSteps ? `<section class="work-chat-steps"><h3>Chat’s reported next steps</h3>${remaining.length ? `<ul>${remaining.map(step=>`<li>${esc(step)}</li>`).join("")}</ul>` : `<p>${known && progress.done === progress.total ? "All reported chat steps are complete." : "Remaining chat steps not reported."}</p>`}</section>` : ""}
       <dl>${item.started_at ? `<dt>Started</dt><dd>${esc(new Date(item.started_at*1000).toLocaleString())}</dd>` : ""}<dt>Source</dt><dd>${esc(item.source_label || item.source || "Reported session state")}</dd>${item.chat_id ? `<dt>Chat ID</dt><dd>${esc(item.chat_id)}</dd>` : ""}${item.chat_title && item.chat_title !== item.title ? `<dt>Chat</dt><dd>${esc(item.chat_title)}</dd>` : ""}${item.branch ? `<dt>Branch</dt><dd>${esc(item.branch)}</dd>` : ""}</dl>
       ${item.source_detail ? `<p>${esc(item.source_detail)}</p>` : ""}${typeof item.picture === "string" && /^\/(files|thumb)\//.test(item.picture) ? `<img class="work-preview" src="${esc(item.picture)}" alt="Latest saved project preview" loading="lazy">` : ""}
