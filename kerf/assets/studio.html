@@ -461,6 +461,27 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
   .menu.modes button {min-width:0;white-space:normal}
 }
 
+/* History inherits the Studio palette; its sequence is made from real saved builds. */
+.history-story{max-width:1160px;margin:0 auto;padding:6px 0 24px}.history-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:22px}
+.history-heading h2,.history-empty h2{font-size:24px;line-height:1.2;letter-spacing:-.025em;margin:0 0 8px;max-width:28ch}.history-heading p{margin:0}.history-order{color:var(--muted);font-size:12px;white-space:nowrap}
+.history-strip{overflow-x:auto;margin:0 -2px 30px;padding:2px 2px 12px;scrollbar-width:thin}.history-strip ol{display:flex;gap:12px;list-style:none;margin:0;padding:0}.history-strip li{flex:0 0 174px}
+.history-story button{box-shadow:none;transform:none;white-space:normal}.history-moment{width:100%;display:grid;gap:8px;text-align:left;padding:8px;border-radius:8px;background:transparent;border:1px solid var(--line)}
+.history-moment[aria-pressed=true]{border-color:var(--accent);background:var(--panel2)}.history-moment-image{height:96px;background:var(--soft);display:grid;place-items:center;border-radius:6px;overflow:hidden;color:var(--muted);font-size:12px;text-align:center}
+.history-moment-image img{width:100%;height:96px;object-fit:contain}.history-moment-image [hidden]{display:none}.history-moment-date{font-size:12px;font-weight:650;line-height:1.4}.history-moment-result{font-size:11px;line-height:1.45;color:var(--muted)}
+.history-story .history-failed{color:var(--bad)}.history-record{display:grid;grid-template-columns:minmax(200px,1fr) minmax(280px,1.25fr);gap:36px;margin-bottom:30px;align-items:start}.history-picture{background:var(--soft);min-height:230px;display:grid;place-items:center;border-radius:12px;color:var(--muted)}
+.history-record-text{display:block}.history-record-text .history-picture{display:none}.history-moment-image.history-no-picture{height:auto;min-height:28px;background:transparent;place-items:start;text-align:left}.history-picture>p{padding:32px;text-align:center;max-width:26ch}.history-picture [hidden]{display:none}.history-picture-button{width:100%;padding:0;border:0;background:transparent;border-radius:12px;overflow:hidden;display:grid}
+.history-picture-button img{height:250px;width:100%;object-fit:contain}.history-picture-button span{padding:10px;font-size:12px;border-top:1px solid var(--line);color:var(--ink)}
+.history-story h3{font-size:20px;letter-spacing:-.02em;line-height:1.25;margin:0}.history-date{color:var(--muted);margin:8px 0 20px;font-size:13px}.history-verdict{font-weight:650;margin:0 0 20px}.history-facts{display:flex;gap:32px;margin:0 0 18px;flex-wrap:wrap}.history-facts dt{font-size:12px;color:var(--muted)}.history-facts dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:17px}
+.history-record-copy>.note{max-width:54ch}.history-comparison{border-top:1px solid var(--line);padding-top:26px}.history-comparison-heading{display:flex;align-items:center;justify-content:space-between;gap:20px}.history-compare-label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.history-compare-label select{width:auto;max-width:240px;color:var(--ink)}
+.history-outcomes{display:flex;flex-wrap:wrap;gap:20px 36px;margin:22px 0}.history-outcomes p{margin:0;max-width:60ch;overflow-wrap:anywhere}.history-outcomes b,.history-outcomes span{display:block}.history-outcomes span{font-size:13px;margin-top:5px}
+.history-disclosure{border-top:1px solid var(--line);margin-top:12px}.history-disclosure>summary{cursor:pointer;padding:15px 0;font-weight:600;min-height:48px}.history-disclosure>div{padding-bottom:14px}.history-disclosure p{max-width:70ch;overflow-wrap:anywhere}.history-disclosure::details-content{interpolate-size:allow-keywords;block-size:0;overflow:hidden;transition:block-size .22s ease-out,content-visibility .22s;transition-behavior:allow-discrete}.history-disclosure[open]::details-content{block-size:auto}
+.history-table-wrap{max-width:100%;overflow:auto;margin:12px 0}.history-table{width:100%;min-width:340px;border-collapse:collapse;table-layout:fixed;font-size:13px}.history-table caption{text-align:left;color:var(--muted);font-size:12px;margin-bottom:8px}.history-table th,.history-table td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.history-table th:first-child{padding-left:0;width:40%}.history-table thead th{font-size:12px;color:var(--muted);font-weight:500}.history-table tbody th{text-transform:none;letter-spacing:normal;color:var(--ink);font-weight:600}.history-table td{font-variant-numeric:tabular-nums}.history-table small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:4px}
+.history-restore{margin-top:28px}.history-restore button{margin-top:6px}.history-story :is(button,summary,select,.history-table-wrap):focus-visible,.history-empty button:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.history-picture-dialog{max-width:min(900px,94vw);max-height:90vh;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:16px}.history-picture-dialog::backdrop{background:rgba(0,0,0,.7)}.history-picture-dialog form{text-align:right;margin:0 0 12px}.history-picture-dialog img{display:block;max-width:100%;max-height:72vh;object-fit:contain;margin:auto}
+.history-empty{max-width:560px;margin:40px auto;padding:20px}.history-empty p{max-width:60ch;line-height:1.65}.history-empty button{margin-top:12px}
+@media(max-width:700px){.history-heading{display:block;margin-bottom:16px}.history-order{display:block;margin-top:12px}.history-heading h2{font-size:23px}.history-strip{margin-bottom:24px}.history-strip li{flex-basis:148px}.history-record{grid-template-columns:1fr;gap:20px}.history-picture{min-height:170px}.history-picture-button img{height:190px}.history-comparison-heading{align-items:start;flex-direction:column;gap:12px}.history-comparison-heading h3{font-size:19px}.history-compare-label{width:100%}.history-compare-label select{flex:1;max-width:none}.history-outcomes{gap:18px}.history-story{padding-top:0}.history-empty{margin:16px 0;padding:0}}
+@media(prefers-reduced-motion:reduce){.history-disclosure::details-content{transition:none}}
+
 </style>
 </head>
 <body>
@@ -686,7 +707,7 @@ function renderProject() {
     <div class="body" id="tabbody" role="tabpanel" tabindex="0"></div></section>`;
   updateProjectBrief(); setTab(S.tab);
   $("#tabs").scrollLeft = tabScroll;
-  if (["project-brief-toggle", "project-build-summary"].includes(focused) || focused.startsWith("project-tab-")) document.getElementById(focused)?.focus({preventScroll:true});
+  if (["project-brief-toggle", "project-build-summary"].includes(focused) || focused.startsWith("project-tab-") || focused.startsWith("history-")) document.getElementById(focused)?.focus({preventScroll:true});
 }
 function closeBuildDetails(focus = false) {
   const details = $("#project-build-details"); if (!details) return;
@@ -830,31 +851,112 @@ function welcome() {
     <button class="primary" onclick="showNew()">+ New design</button></div></div>`;
 }
 
-/* ---------- history: one entry per build from Studio, with what changed */
+/* ---------- History: a saved-build story, never inferred design intent. */
+function historyState() {
+  if (S.historyView?.project !== S.sel) S.historyView = {project:S.sel, stamp:null, compare:"previous", open:{}};
+  return S.historyView;
+}
+const historyDate = h => Number.isFinite(h.time) ? new Date(h.time * 1000).toLocaleString([], {month:"short", day:"numeric", year:"numeric", hour:"numeric", minute:"2-digit"}) : "Date not recorded";
+const historyNumber = v => typeof v === "number" && Number.isFinite(v);
+const historyValue = (v, unit = "") => v == null ? "Not recorded" : `${esc(String(v))}${unit ? " " + esc(unit) : ""}`;
+function historyDifferent(a, b) {
+  return a !== b;
+}
+function historyChanges(a, b) {
+  return [...new Set([...Object.keys(a || {}), ...Object.keys(b || {})])].filter(k => historyDifferent(a?.[k], b?.[k]));
+}
+function historyStatus(h) {
+  return h.ok === true ? "Recorded checks passed" : h.ok === false ? `${Number.isFinite(h.problems) ? h.problems + " recorded problem" + (h.problems === 1 ? "" : "s") : "Recorded checks failed"}` : "Check result not recorded";
+}
+function historyDisclosure(id, label, content) {
+  return `<details class="history-disclosure" ${historyState().open[id] ? "open" : ""} ontoggle="historyState().open['${id}']=this.open"><summary id="history-${id}">${label}</summary><div>${content}</div></details>`;
+}
+function historyTable(caption, headings, rows) {
+  if (!rows.length) return `<p class="note">${esc(caption)}: not recorded.</p>`;
+  return `<div class="history-table-wrap" tabindex="0" role="region" aria-label="${esc(caption)}"><table class="history-table"><caption>${esc(caption)}</caption><thead><tr>${headings.map(h => `<th scope="col">${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+}
+function historyParamRows(keys, before, after) {
+  return keys.map(k => {
+    const p = (S.detail.params || []).find(p => p.key === k);
+    return `<tr><th scope="row">${esc(p?.label || k)}${p?.label && p.label !== k ? `<small>${esc(k)}</small>` : ""}</th><td>${historyValue(before?.[k])}</td><td>${historyValue(after?.[k])}</td></tr>`;
+  });
+}
 function renderHistory(el) {
-  const d = S.detail, H = d.history || [];
-  if (!H.length) { el.innerHTML = `<div class="card empty"><b>No versions yet</b>Every build from Studio saves a version here: its values, results, cost and picture, so you can compare and go back.</div>`; return; }
-  const cur = d.report || {}, curReq = Object.fromEntries((cur.requirements || []).map(r => [r.id, r]));
-  const curParams = Object.fromEntries(d.params.map(p => [p.key, p.value]));
-  el.innerHTML = H.map((h, i) => {
-    const pch = Object.entries(h.params || {}).filter(([k, v]) => k in curParams && Math.abs(curParams[k] - v) > 1e-9);
-    const rch = Object.entries(h.requirements || {}).filter(([k, r]) => curReq[k] && typeof r.value === "number" && typeof curReq[k].value === "number" && Math.abs(curReq[k].value - r.value) > 1e-6 * Math.max(1, Math.abs(r.value)));
-    return `<div class="card hist" style="margin-bottom:12px;display:flex;gap:14px">
-      ${h.thumb ? `<img src="/history/${d.name}/${h.stamp}/thumb.png" alt="" style="width:150px;height:112px;object-fit:cover;border-radius:8px" onclick="zoom(this.src)">` : ""}
-      <div style="flex:1"><b>${new Date(h.time * 1000).toLocaleString()}</b> <span class="chip ${h.ok ? "ok" : "bad"}">${h.ok ? "checks pass" : h.problems + " problems"}</span>
-        <span class="note">commit ${esc(h.commit || "?")}${h.dirty ? " + uncommitted edits" : ""}${i === 0 ? " · latest" : ""}</span>
-        <div class="note">${h.cost != null ? "$" + fmt(h.cost) + " · " : ""}${h.mass && h.mass.device_g != null ? fmt(h.mass.device_g) + " g device" : ""}</div>
-        <div>${pch.length ? `<b>Values that differ from now:</b> ${pch.map(([k, v]) => `${esc(k)} ${fmt(v)} (now ${fmt(curParams[k])})`).join(", ")}` : `<span class="note">Same values as now.</span>`}</div>
-        ${rch.length ? `<div><b>Results then vs now:</b> ${rch.slice(0, 8).map(([k, r]) => `${esc(k)} ${fmt(r.value)} → ${fmt(curReq[k].value)}${r.unit ? " " + esc(r.unit) : ""}`).join(", ")}</div>` : ""}
-        ${pch.length ? `<button style="margin-top:8px" onclick="restoreVersion('${h.stamp}')">↶ Restore these values</button>` : ""}
-      </div></div>`;
-  }).join("");
+  const d = S.detail, H = (d.history || []).filter(h => /^\d{8}-\d{6}$/.test(h.stamp)), state = historyState();
+  if (!H.length) {
+    el.innerHTML = `<section class="history-empty"><h2>A design’s story starts with a saved build.</h2><p>Studio saves build snapshots here: the parameter values, recorded checks and any picture available at the time.</p><p class="note">There are no saved snapshots for this project yet.</p><button onclick="setTab('model')">Back to the design</button></section>`;
+    return;
+  }
+  const i = Math.max(0, H.findIndex(h => h.stamp === state.stamp)), h = H[i]; state.stamp = h.stamp;
+  const previous = H[i + 1], currentParams = Object.fromEntries((d.params || []).map(p => [p.key,p.value]));
+  const restoreKeys = Object.keys(h.params || {}).filter(k => k in currentParams && historyDifferent(h.params[k],currentParams[k]));
+  const unavailable = Object.keys(h.params || {}).filter(k => !(k in currentParams));
+  const drafts = Object.keys(S.edits || {}).length + Object.keys(S.medits || {}).length + (S.tune?.edits === S.edits ? Object.keys(S.tune?.invalid || {}).length : 0);
+  const report = d.report, canCompareCurrent = !!report;
+  if (state.compare === "current" && !canCompareCurrent) state.compare = "previous";
+  const compareCurrent = state.compare === "current";
+  const before = compareCurrent ? h : previous;
+  const after = compareCurrent ? {...report, cost:report.files?.ship?.bom?.total_usd, requirements:Object.fromEntries((report.requirements || []).filter(r => !r.skipped).map(r => [r.id,r]))} : h;
+  const picture = `/history/${encodeURIComponent(d.name)}/${h.stamp}/thumb.png`;
+  el.innerHTML = `<section class="history-story hist" aria-labelledby="history-title" onkeydown="if(event.key==='Escape'){const d=event.target.closest('details[open]');if(d){d.open=false;d.querySelector('summary').focus();event.stopPropagation();}}">
+    <div class="history-heading"><div><h2 id="history-title">How this design changed.</h2><p class="note">${H.length} saved build${H.length === 1 ? "" : "s"}${H.length === 30 ? " · most recent 30" : ""}. Choose a moment to see what changed.</p></div><span class="history-order">Earlier to latest</span></div>
+    <nav class="history-strip" aria-label="Saved builds"><ol>${[...H].reverse().map(v => `<li><button id="history-build-${v.stamp}" class="history-moment" aria-pressed="${v.stamp === h.stamp}" onclick="selectHistory('${v.stamp}')">
+      <span class="history-moment-image ${v.thumb ? "" : "history-no-picture"}">${v.thumb ? `<img src="/history/${encodeURIComponent(d.name)}/${v.stamp}/thumb.png" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>Picture unavailable</span>` : `<span>No saved picture</span>`}</span>
+      <span class="history-moment-date">${esc(historyDate(v))}</span><span class="history-moment-result ${v.ok === false ? "history-failed" : ""}">${v.ok === true ? "Checks passed" : v.ok === false ? "Checks need attention" : "Checks not recorded"}${v === H[0] ? " · latest" : ""}</span></button></li>`).join("")}</ol></nav>
+    <article class="history-record ${h.thumb ? "" : "history-record-text"}" aria-labelledby="history-record-title">
+      <div class="history-picture">${h.thumb ? `<button id="history-picture-button" class="history-picture-button" aria-label="Enlarge saved build picture" onclick="document.getElementById('history-picture-dialog').showModal()"><img src="${picture}" alt="Saved picture of ${esc(d.title)} from ${esc(historyDate(h))}" onerror="this.parentElement.hidden=true;this.parentElement.nextElementSibling.hidden=false"><span>Enlarge picture</span></button><p hidden>Saved picture unavailable.</p>` : `<p>No picture was saved for this build.</p>`}</div>
+      <div class="history-record-copy"><h3 id="history-record-title">${i === 0 ? "Latest saved build" : "Earlier saved build"}</h3><p class="history-date">${esc(historyDate(h))}</p><p class="history-verdict ${h.ok === false ? "history-failed" : ""}">${esc(historyStatus(h))}</p>
+        <dl class="history-facts"><div><dt>Device mass</dt><dd>${historyValue(h.mass?.device_g,"g")}</dd></div><div><dt>Parts cost</dt><dd>${historyNumber(h.cost) ? "$" + historyValue(h.cost) : "Not recorded"}</dd></div></dl>
+        <p class="note">Saved checks describe this build. They do not establish that a later edit is ready to make.</p>
+        ${historyDisclosure("saved", "All saved values and checks", historyTable("Saved parameter values", ["Parameter", "Value"], Object.entries(h.params || {}).map(([key,value]) => `<tr><th scope="row">${esc(key)}</th><td>${historyValue(value)}</td></tr>`)) + historyTable("Saved check results", ["Check", "Value", "Result"], Object.entries(h.requirements || {}).map(([key,r]) => `<tr><th scope="row">${esc(key)}</th><td>${historyValue(r.value,r.unit)}</td><td>${r.ok === true ? "Passed" : r.ok === false ? "Failed" : "Not recorded"}</td></tr>`)))}
+        ${historyDisclosure("source", "Build source", `<p>Commit <code>${esc(h.commit || "not recorded")}</code>${h.dirty ? " + uncommitted project edits" : ""}</p><p class="note">${h.geom ? "3D comparison data saved." : "No 3D comparison data saved."} Design reasons and review approval are not recorded in this snapshot.</p>`)}
+      </div>
+    </article>
+    <section class="history-comparison" aria-labelledby="history-changes-title"><div class="history-comparison-heading"><h3 id="history-changes-title">${compareCurrent ? "From this build to the current build" : "What changed in this build"}</h3>
+      ${canCompareCurrent ? `<label class="history-compare-label">Compare<select id="history-compare" onchange="historyState().compare=this.value;renderHistory(document.getElementById('tabbody'));document.getElementById('history-compare').focus()"><option value="previous" ${!compareCurrent ? "selected" : ""}>With previous saved build</option><option value="current" ${compareCurrent ? "selected" : ""}>With current build</option></select></label>` : ""}</div>
+      ${before ? `<p class="note">${compareCurrent ? `Selected build → current build${d.stale ? "; current design has newer, unbuilt edits" : ""}` : `Compared with ${esc(historyDate(previous))}`}. Only recorded values and results are compared.</p>${renderHistoryComparison(before,after,compareCurrent)}` : `<p class="note">This is the earliest saved build available here. There is no earlier snapshot to compare.</p>`}
+    </section>
+    <section class="history-restore" aria-label="Restore parameter values">${restoreKeys.length ? historyDisclosure("restore", `Use this build’s parameter values…`, `<p>This would replace ${restoreKeys.length} current parameter value${restoreKeys.length === 1 ? "" : "s"}. Part code and materials stay as they are; build again to update the model and checks.</p>${drafts ? `<p class="note">You also have unsaved Tune edits. They will remain separate; review them before saving.</p>` : ""}${historyTable("Values that would be replaced",["Parameter","Current project value","Saved value"],historyParamRows(restoreKeys,currentParams,h.params))}${unavailable.length ? `<p class="note">${unavailable.length} saved parameter${unavailable.length === 1 ? " is" : "s are"} no longer in this design and will be skipped.</p>` : ""}<button id="history-restore-button" onclick="restoreVersion('${h.stamp}')">Restore ${restoreKeys.length} parameter value${restoreKeys.length === 1 ? "" : "s"}…</button>`) : `<p class="note">${Object.keys(h.params || {}).length ? (Object.keys(h.params || {}).some(k => k in currentParams) ? "This build’s available parameter values match the current design." : "None of this build’s parameter values are available in the current design.") : "No parameter values were saved for this build."}</p>`}</section>
+    ${h.thumb ? `<dialog class="history-picture-dialog" id="history-picture-dialog" aria-label="Saved build picture"><form method="dialog"><button autofocus>Close picture</button></form><img src="${picture}" alt="Saved picture of ${esc(d.title)} from ${esc(historyDate(h))}"></dialog>` : ""}
+  </section>`;
+  const strip = el.querySelector(".history-strip"); strip.scrollLeft = state.scroll ?? strip.scrollWidth;
+  strip.onscroll = () => {state.scroll = strip.scrollLeft;};
+}
+function renderHistoryComparison(before, after, current) {
+  const keys = historyChanges(before.params,after.params), reqKeys = [...new Set([...Object.keys(before.requirements || {}),...Object.keys(after.requirements || {})])];
+  const improved = [], failed = [], changed = [];
+  for (const k of reqKeys) {
+    const a = before.requirements?.[k], b = after.requirements?.[k];
+    if (a?.ok === false && b?.ok === true) improved.push(k);
+    if (a?.ok === true && b?.ok === false) failed.push(k);
+    if (!a || !b || a.ok !== b.ok || a.unit !== b.unit || historyDifferent(a.value,b.value)) changed.push(k);
+  }
+  const from = current ? "Selected build" : "Previous build", to = current ? "Current build" : "This build";
+  const result = r => !r ? "Not recorded" : r.ok === true ? "Passed" : r.ok === false ? "Failed" : "Not recorded";
+  const reqRows = changed.map(k => {
+    const a = before.requirements?.[k], b = after.requirements?.[k];
+    return `<tr><th scope="row">${esc(k)}</th><td>${historyValue(a?.value,a?.unit)}<small>${result(a)}</small></td><td>${historyValue(b?.value,b?.unit)}<small>${result(b)}</small></td></tr>`;
+  });
+  const totals = [["Device mass",before.mass?.device_g,after.mass?.device_g,"g"],["Parts cost",before.cost,after.cost,"USD"]].filter(([,a,b]) => historyNumber(a) && historyNumber(b) && historyDifferent(a,b));
+  const summary = [...(improved.length ? [`<p><b>${improved.length} check${improved.length === 1 ? " now passes" : "s now pass"}</b><span>${improved.map(esc).join(", ")}</span></p>`] : []),...(failed.length ? [`<p class="history-failed"><b>${failed.length} check${failed.length === 1 ? " now fails" : "s now fail"}</b><span>${failed.map(esc).join(", ")}</span></p>`] : [])].join("");
+  return `${summary ? `<div class="history-outcomes">${summary}</div>` : `<p>No recorded pass/fail transitions${changed.length ? "; other results changed below" : ""}.</p>`}
+    ${totals.length ? historyTable("Build totals",["Measurement",from,to],totals.map(([name,a,b,unit]) => `<tr><th scope="row">${name}</th><td>${historyValue(a,unit)}</td><td>${historyValue(b,unit)}</td></tr>`)) : ""}
+    ${keys.length ? historyDisclosure("params", `${keys.length} parameter value${keys.length === 1 ? " changed" : "s changed"}`,historyTable("Recorded parameter changes",["Parameter",from,to],historyParamRows(keys,before.params,after.params))) : `<p class="note">${Object.keys(before.params || {}).length || Object.keys(after.params || {}).length ? "No recorded parameter values changed. Part code or materials may still differ." : "Parameter values were not recorded in either build."}</p>`}
+    ${changed.length ? historyDisclosure("checks", `${changed.length} check result${changed.length === 1 ? " changed" : "s changed"}`,historyTable("Recorded check changes",["Check",from,to],reqRows)+`<p class="note">A missing result means it was not recorded in that snapshot. A changed measurement alone does not mean the design improved.</p>`) : ""}`;
+}
+function selectHistory(stamp) {
+  const state = historyState(); state.stamp = stamp; state.open = {};
+  renderHistory($("#tabbody")); const b = document.getElementById("history-build-" + stamp); b?.focus({preventScroll:true}); b?.scrollIntoView({block:"nearest",inline:"nearest"});
 }
 async function restoreVersion(stamp) {
-  if (!confirm("Write this version's parameter values back into project.yaml? Part code is not changed. Build again afterwards.")) return;
-  try { const r = await apiChange("/api/restore", {project: S.sel, stamp}); await refreshDetail(); setTab("history");
-        toast("Restored", r.changed.length ? `Changed: ${r.changed.join(", ")}. Build to update the files.` : "Nothing to change.", "ok"); }
+  const name = S.sel, h = (S.detail.history || []).find(h => h.stamp === stamp);
+  if (!h || !confirm(`Replace current parameter values with those saved on ${historyDate(h)}? Part code and materials are not changed. Build again afterwards.`)) return;
+  const button = $("#history-restore-button"); if (button) button.disabled = true;
+  try { const r = await apiChange("/api/restore", {project:name, stamp});
+    if (S.sel === name) await refreshDetail();
+    toast("Parameters restored", r.changed.length ? `Changed: ${r.changed.join(", ")}. Build to update the files.` : "Nothing to change.", "ok"); }
   catch (e) { toast("Not restored", e.message, "bad"); }
+  finally { if (button?.isConnected) button.disabled = false; }
 }
 
 function reqTable(reqs) {
@@ -1225,7 +1327,28 @@ function certificate(d) {
 }
 function printCert() {
   const w = window.open("", "_blank"); if (!w) return;
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>Build check summary</title><style>body{font:15px system-ui;margin:40px;color:#111}table{border-collapse:collapse}td{padding:4px 18px 4px 0;border-bottom:1px solid #ddd}button{display:none}.note{color:#555}</style>${$("#cert").innerHTML}`);
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Build check summary</title><style>body{font:15px system-ui;margin:40px;color:#111}table{border-collapse:collapse}td{padding:4px 18px 4px 0;border-bottom:1px solid #ddd}button{display:none}.note{color:#555}/* History inherits the Studio palette; its sequence is made from real saved builds. */
+.history-story{max-width:1160px;margin:0 auto;padding:6px 0 24px}.history-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:22px}
+.history-heading h2,.history-empty h2{font-size:24px;line-height:1.2;letter-spacing:-.025em;margin:0 0 8px;max-width:28ch}.history-heading p{margin:0}.history-order{color:var(--muted);font-size:12px;white-space:nowrap}
+.history-strip{overflow-x:auto;margin:0 -2px 30px;padding:2px 2px 12px;scrollbar-width:thin}.history-strip ol{display:flex;gap:12px;list-style:none;margin:0;padding:0}.history-strip li{flex:0 0 174px}
+.history-story button{box-shadow:none;transform:none;white-space:normal}.history-moment{width:100%;display:grid;gap:8px;text-align:left;padding:8px;border-radius:8px;background:transparent;border:1px solid var(--line)}
+.history-moment[aria-pressed=true]{border-color:var(--accent);background:var(--panel2)}.history-moment-image{height:96px;background:var(--soft);display:grid;place-items:center;border-radius:6px;overflow:hidden;color:var(--muted);font-size:12px;text-align:center}
+.history-moment-image img{width:100%;height:96px;object-fit:contain}.history-moment-image [hidden]{display:none}.history-moment-date{font-size:12px;font-weight:650;line-height:1.4}.history-moment-result{font-size:11px;line-height:1.45;color:var(--muted)}
+.history-story .history-failed{color:var(--bad)}.history-record{display:grid;grid-template-columns:minmax(200px,1fr) minmax(280px,1.25fr);gap:36px;margin-bottom:30px;align-items:start}.history-picture{background:var(--soft);min-height:230px;display:grid;place-items:center;border-radius:12px;color:var(--muted)}
+.history-record-text{display:block}.history-record-text .history-picture{display:none}.history-moment-image.history-no-picture{height:auto;min-height:28px;background:transparent;place-items:start;text-align:left}.history-picture>p{padding:32px;text-align:center;max-width:26ch}.history-picture [hidden]{display:none}.history-picture-button{width:100%;padding:0;border:0;background:transparent;border-radius:12px;overflow:hidden;display:grid}
+.history-picture-button img{height:250px;width:100%;object-fit:contain}.history-picture-button span{padding:10px;font-size:12px;border-top:1px solid var(--line);color:var(--ink)}
+.history-story h3{font-size:20px;letter-spacing:-.02em;line-height:1.25;margin:0}.history-date{color:var(--muted);margin:8px 0 20px;font-size:13px}.history-verdict{font-weight:650;margin:0 0 20px}.history-facts{display:flex;gap:32px;margin:0 0 18px;flex-wrap:wrap}.history-facts dt{font-size:12px;color:var(--muted)}.history-facts dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:17px}
+.history-record-copy>.note{max-width:54ch}.history-comparison{border-top:1px solid var(--line);padding-top:26px}.history-comparison-heading{display:flex;align-items:center;justify-content:space-between;gap:20px}.history-compare-label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.history-compare-label select{width:auto;max-width:240px;color:var(--ink)}
+.history-outcomes{display:flex;flex-wrap:wrap;gap:20px 36px;margin:22px 0}.history-outcomes p{margin:0;max-width:60ch;overflow-wrap:anywhere}.history-outcomes b,.history-outcomes span{display:block}.history-outcomes span{font-size:13px;margin-top:5px}
+.history-disclosure{border-top:1px solid var(--line);margin-top:12px}.history-disclosure>summary{cursor:pointer;padding:15px 0;font-weight:600;min-height:48px}.history-disclosure>div{padding-bottom:14px}.history-disclosure p{max-width:70ch;overflow-wrap:anywhere}.history-disclosure::details-content{interpolate-size:allow-keywords;block-size:0;overflow:hidden;transition:block-size .22s ease-out,content-visibility .22s;transition-behavior:allow-discrete}.history-disclosure[open]::details-content{block-size:auto}
+.history-table-wrap{max-width:100%;overflow:auto;margin:12px 0}.history-table{width:100%;min-width:340px;border-collapse:collapse;table-layout:fixed;font-size:13px}.history-table caption{text-align:left;color:var(--muted);font-size:12px;margin-bottom:8px}.history-table th,.history-table td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.history-table th:first-child{padding-left:0;width:40%}.history-table thead th{font-size:12px;color:var(--muted);font-weight:500}.history-table tbody th{text-transform:none;letter-spacing:normal;color:var(--ink);font-weight:600}.history-table td{font-variant-numeric:tabular-nums}.history-table small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:4px}
+.history-restore{margin-top:28px}.history-restore button{margin-top:6px}.history-story :is(button,summary,select,.history-table-wrap):focus-visible,.history-empty button:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.history-picture-dialog{max-width:min(900px,94vw);max-height:90vh;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:16px}.history-picture-dialog::backdrop{background:rgba(0,0,0,.7)}.history-picture-dialog form{text-align:right;margin:0 0 12px}.history-picture-dialog img{display:block;max-width:100%;max-height:72vh;object-fit:contain;margin:auto}
+.history-empty{max-width:560px;margin:40px auto;padding:20px}.history-empty p{max-width:60ch;line-height:1.65}.history-empty button{margin-top:12px}
+@media(max-width:700px){.history-heading{display:block;margin-bottom:16px}.history-order{display:block;margin-top:12px}.history-heading h2{font-size:23px}.history-strip{margin-bottom:24px}.history-strip li{flex-basis:148px}.history-record{grid-template-columns:1fr;gap:20px}.history-picture{min-height:170px}.history-picture-button img{height:190px}.history-comparison-heading{align-items:start;flex-direction:column;gap:12px}.history-comparison-heading h3{font-size:19px}.history-compare-label{width:100%}.history-compare-label select{flex:1;max-width:none}.history-outcomes{gap:18px}.history-story{padding-top:0}.history-empty{margin:16px 0;padding:0}}
+@media(prefers-reduced-motion:reduce){.history-disclosure::details-content{transition:none}}
+
+</style>${$("#cert").innerHTML}`);
   w.document.close(); w.focus(); w.print();
 }
 
@@ -1243,7 +1366,7 @@ const TOUR = {
   results: [[".summary", "The score: how many engineering checks pass and how many are close to their limit."], [".issue", "Something to fix, explained: what is wrong, why it matters, what usually fixes it."],
             [".cert", "This build’s recorded checks and review status. Read these before making the design."], ["table", "Each row is a number the design must meet. The bar shows how much room is left. Hover a name for what it means."]],
   files: [[".files h3", "Everything you need to make it. Print plates go straight to the printer."]],
-  history: [[".hist", "Each build is saved with its numbers and picture, so you can compare and go back."]],
+  history: [[".hist", "Choose a saved build to compare recorded values and checks, or preview restoring its parameter values."]],
 };
 function explainPage() {
   const steps = S.detail && document.querySelector(".head h1") ? [...TOUR.head, ...(TOUR[S.tab] || [])] : TOUR.start;
