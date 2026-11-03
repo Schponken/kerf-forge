@@ -1,0 +1,1410 @@
+{
+ "project": "tvc_drone",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "5aa82aad",
+   "time": "2026-10-30T23:55:57+00:00",
+   "subject": "tvc_drone research: REFERENCES.md, micro 21T horn catalog entry (estimate, flagged), coax efficiency source in INDEX",
+   "parts": []
+  },
+  {
+   "hash": "4ea24878",
+   "time": "2026-10-31T00:20:39+00:00",
+   "subject": "tvc_drone: project contract + all parts (quick check PASS); prop_clearance screens with sampled surfaces (136 s -> 19 s on tvc_drone)",
+   "parts": [
+    "gimbal_outer",
+    "layout",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ]
+  },
+  {
+   "hash": "9a9dc027",
+   "time": "2026-10-31T00:27:34+00:00",
+   "subject": "tvc_drone: stiffer roll ring + ribbed yoke, FEA on hub/ring/yoke/leg; engine: region 'any' unions, FEA direct-solve fallback when AMG stalls (tests)",
+   "parts": [
+    "gimbal_outer",
+    "ring_low"
+   ]
+  },
+  {
+   "hash": "46565fb2",
+   "time": "2026-10-31T00:30:58+00:00",
+   "subject": "tvc_drone: DESIGN.md, build PASS with renders; status",
+   "parts": []
+  },
+  {
+   "hash": "cc9d3a88",
+   "time": "2026-10-31T01:39:32+00:00",
+   "subject": "tvc_drone: complete electronics (XT60 under ring_top, UBEC + receiver under ring_mid, strap item across the pack with relocated slots), electrical/wiring with a",
+   "parts": [
+    "ring_mid",
+    "ring_top"
+   ]
+  },
+  {
+   "hash": "27f7bfff",
+   "time": "2026-10-31T02:08:25+00:00",
+   "subject": "Electrical engine: route_check (tube along every run vs parts and prop discs at home, joint extremes and sweep poses; cut length from the worst pose), {item, at",
+   "parts": [
+    "ring_low",
+    "ring_top"
+   ]
+  },
+  {
+   "hash": "52a2157e",
+   "time": "2026-10-31T02:22:46+00:00",
+   "subject": "tvc_drone: yoke-side wire points follow the 21T horn spline-engagement change (servo 3.2 mm inboard)",
+   "parts": []
+  },
+  {
+   "hash": "4e8d44f7",
+   "time": "2026-10-31T02:29:51+00:00",
+   "subject": "E4 tvc_drone done: review PASS (616ec954), acceptance PASS; REFERENCES firmware/wire sources, builder follow-ups; PLAN, STATUS",
+   "parts": []
+  },
+  {
+   "hash": "f3b4bef1",
+   "time": "2026-10-31T02:40:03+00:00",
+   "subject": "tvc_drone: catalog_deps.json from the full build",
+   "parts": []
+  },
+  {
+   "hash": "e19a384a",
+   "time": "2026-10-31T02:40:55+00:00",
+   "subject": "tvc_drone review re-confirmed at the per-project catalog fingerprint (00af8263); STATUS",
+   "parts": []
+  },
+  {
+   "hash": "66cc0383",
+   "time": "2026-10-31T07:26:02+00:00",
+   "subject": "tvc_drone audit fixes: leg inserts off the lug edge (A-1 blocker), lug_fea, flat-on-bed legs/hub/ring, teardrops, grommets + inserts, SF 3; engine: cg counts wi",
+   "parts": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ]
+  },
+  {
+   "hash": "cef68c23",
+   "time": "2026-10-31T08:28:44+00:00",
+   "subject": "tvc_drone review round 1: real tube/XT60 mass (engine: rod mass from density, massless-item warning), 790 g budget from twr, disc corner fillets, teardrop lock ",
+   "parts": [
+    "leg",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ]
+  },
+  {
+   "hash": "394d78d8",
+   "time": "2026-10-31T08:52:13+00:00",
+   "subject": "tvc_drone review round 2 minors: s5 fillets (motor_hub arm roots, gimbal_outer pads), 0.5 mm first-layer chamfer on every part (new features.bed_edges/bed_chamf",
+   "parts": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ]
+  },
+  {
+   "hash": "a237a77a",
+   "time": "2026-10-31T08:53:33+00:00",
+   "subject": "PLAN: tvc_drone audit fixes done (review round 3 PASS); AUDIT.md resolution entries (tvc_drone, ENG-3, ENG-4/7 partly)",
+   "parts": []
+  },
+  {
+   "hash": "ecdd2844",
+   "time": "2026-10-31T10:20:20+00:00",
+   "subject": "ENG-4: thrust_to_weight from catalog motors (thrust_test_v sourced from the iFlight test reports), test; tvc_drone uses it, 4-wall shells with 20-25 % infill ke",
+   "parts": []
+  },
+  {
+   "hash": "1106a30f",
+   "time": "2026-10-31T10:27:39+00:00",
+   "subject": "export: per-object settings for every object in the plate 3MF (scanned only the first 200 kB before; reviewer round 4), test with a > 300 kB model",
+   "parts": []
+  },
+  {
+   "hash": "ae5ac79f",
+   "time": "2026-10-31T10:46:23+00:00",
+   "subject": "tvc_drone round 4 fixes: ring_low infill 30 % (lug_fea margin), edge-distance note, numbers (781 g, T/W 2.08 / 1.86)",
+   "parts": []
+  },
+  {
+   "hash": "6de303b4",
+   "time": "2026-10-31T10:48:18+00:00",
+   "subject": "tvc_drone: ring lock taps use the horizontal self-tap pilot (tap_h); review round 5 record",
+   "parts": [
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ]
+  },
+  {
+   "hash": "f80593f1",
+   "time": "2026-10-31T11:06:53+00:00",
+   "subject": "tvc_drone DESIGN numbers after the tap_h rebuild",
+   "parts": []
+  },
+  {
+   "hash": "3d0ef07e",
+   "time": "2026-10-31T11:08:15+00:00",
+   "subject": "PLAN: engine majors ENG-1..6 done; tvc_drone review round 6 PASS; AUDIT/STATUS notes for fpv + bionic follow-ups",
+   "parts": []
+  },
+  {
+   "hash": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "subject": "re-reviews after bd486a2's catalog-only change: fpv_5in, pan_tilt, tvc_drone PASS; robot_arm FAIL (gripper stands on its wrist discs: new bed-contact check). bo",
+   "parts": []
+  },
+  {
+   "hash": "c3e2f857",
+   "time": "2026-10-31T22:04:42-04:00",
+   "subject": "Maker-facing reports: units and min/max on every check, device vs off-board mass, held_by/off_board with an unattached-item check, off-board section in ASSEMBLY",
+   "parts": []
+  },
+  {
+   "hash": "9a8f1fbe",
+   "time": "2026-10-31T22:57:28-04:00",
+   "subject": "BOM: every project purchase priced from a shop page; merged notes; biggest packs",
+   "parts": []
+  },
+  {
+   "hash": "b51131a5",
+   "time": "2026-10-31T23:38:29-04:00",
+   "subject": "ASSEMBLY.md: bench sub-assemblies join at their parent's step, step 0 test-fit, servo centring, bring-up programs",
+   "parts": []
+  },
+  {
+   "hash": "ed1f9473",
+   "time": "2026-11-01T13:35:58-05:00",
+   "subject": "params state their unit (mm / \u00b0 / teeth) in the six finished projects; test",
+   "parts": []
+  },
+  {
+   "hash": "95663b7f",
+   "time": "2026-11-01T16:57:09-05:00",
+   "subject": "fillet_inside: bisect fillets that break the FEA mesh, add the fillet's material as a solid where OCC refuses a corner (any angle, checked to sit in the corner ",
+   "parts": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ]
+  },
+  {
+   "hash": "29c3eea6",
+   "time": "2026-11-01T17:49:31-05:00",
+   "subject": "tvc_drone: style radii, Load -> section table, inside-corner and overbuilt notes",
+   "parts": []
+  },
+  {
+   "hash": "e8f3fa74",
+   "time": "2026-11-01T20:04:27-05:00",
+   "subject": "bionic_finger, fpv_5in, tvc_drone: detail pass uses OCC's fillet first (it ran on these bodies before), coves for the rest",
+   "parts": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ]
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "27f7bfff",
+   "time": "2026-10-31T02:08:25+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 10
+  },
+  {
+   "commit": "4e8d44f7",
+   "time": "2026-10-31T02:29:51+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "e19a384a",
+   "time": "2026-10-31T02:40:55+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "cef68c23",
+   "time": "2026-10-31T08:28:44+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 7
+  },
+  {
+   "commit": "394d78d8",
+   "time": "2026-10-31T08:52:13+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 4
+  },
+  {
+   "commit": "a237a77a",
+   "time": "2026-10-31T08:53:33+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 2
+  },
+  {
+   "commit": "1106a30f",
+   "time": "2026-10-31T10:27:39+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 5
+  },
+  {
+   "commit": "6de303b4",
+   "time": "2026-10-31T10:48:18+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 4
+  },
+  {
+   "commit": "3d0ef07e",
+   "time": "2026-10-31T11:08:15+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 4
+  },
+  {
+   "commit": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 6
+  }
+ ],
+ "problems": [
+  {
+   "id": "tvc_drone-1",
+   "source": "review",
+   "severity": "blocker",
+   "part": "wiring (project.yaml) / ring_low / motor_hub / gimbal_outer",
+   "issue": "The routes for ph_top, ph_bottom, servo_pitch_pwr/sig (and servo_roll at gimbal tilt) cannot be built. ph_top runs (26.8,15.5,80) -> (12,8,40) -> (0,0,24.3): it goes down the axis through prop_top (disc at z 32.5, r 65.9) and the top motor's spinning bell. ph_bottom runs straight down at (12,-8) from z 30 to -10, which is r 14.4, inside the 14.54 mm bell radius of the top motor and through the solid motor_hub/motor_plate. servo_pitch is at r ~53 when it crosses z 32.5, inside the prop disc. All four drop from z 80 at r ~31 straight through ring_low's solid 8 mm plate, which has only an r 10 ce",
+   "fix": "Re-route every gimbal-bound run as described: mast, then ring_low yoke bridge, then down the -X (or +X) yoke arm outside r 66, then a roll-pivot service loop, along the ring, then a pitch-pivot service loop, along the hub -Y arm. Add cable-tie slots or wire clips on ring_low's yoke arm and bridge, on gimbal_outer next to both pivots, and on the hub -Y arm. Declare the routes with real waypoints an",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-2",
+   "source": "review",
+   "severity": "major",
+   "part": "stack (drone.stacks.fc_20) / electrical",
+   "issue": "The design says the SpeedyBee F405 Mini drives both gimbal servos from 'FC servo output S1/S2 (Betaflight servo_tilt / custom mixer)'. Nothing in the catalog entry or REFERENCES.md shows that this FC has two free PWM outputs on a timer that is not shared with the DShot motor outputs. Betaflight's servo_tilt is camera stabilisation, not a control output. Servo support in Betaflight is an optional cloud-build feature, and only some mixer types support it. fd.iwth and Mistral both run custom firmware. If the outputs or the firmware path don't exist, the drone cannot steer, and the brief explicitl",
+   "fix": "Pick the firmware and prove it. Record in the catalog, with a source: the FC's resource/timer map, which pads become the servo outputs (for example M3/M4 or LED on a separate timer), and the firmware. INAV's multirotor mixer with servo rules plus per-timer output mode is the usual path; if you use INAV, its equivalent of the 80 % cap is max_throttle. Write the exact CLI (mixer/smix or INAV mixer r",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-3",
+   "source": "review",
+   "severity": "major",
+   "part": "ring_low / gimbal_outer / motor_hub (assembly order)",
+   "issue": "DESIGN.md step 2 presses both dowels in first, then step 3 fits horn_roll on the roll servo and step 4 'slides gimbal_outer's -X pad onto the roll dowel'. That cannot be done. To engage the 20 mm dowel the ring has to start about 11 mm toward +X and move -X, but then its +X lug overlaps horn_roll and the servo, which are already fitted. The pitch axis has the same problem: the hub's +Y lug would overlap horn_pitch. ASSEMBLY.md says 'press the dowel into ring_low' without saying when or from which side. The press holes are through holes, so a workable order exists, but it is not the one written",
+   "fix": "Rewrite the order. Fit the servo and horn, bolt the ring or hub to the horn while it is aligned with the pivot, and only then press the dowel in from outside: through ring_low's -X plate into gimbal_outer, and through gimbal_outer's -Y pad into the hub. Back up the yoke arm or pad in a vise while pressing. Add an assembly `insert` direction for the pins so the engine checks this.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-4",
+   "source": "review",
+   "severity": "major",
+   "part": "ring_top (xt60 mount)",
+   "issue": "The XT60 is held by one cable tie plus a stop block that only resists pushing in. XT60 mating and unmating forces are tens of newtons. The connector's outer end sits at r 37.65, inside the 39 mm plate edge, so you can't hold the drone-side connector while you unplug. Every battery removal pulls the male XT60 outward through the tie, and the 14 AWG solder cups take the load.",
+   "fix": "Capture the connector in both directions. Use a printed U-cradle or pocket with a lip in front of the XT60 body's shoulder (or a second stop on the outer side plus a clamp strap), or move the connector out so its body protrudes past the plate edge and can be gripped. Strain-relieve the main lead to the plate with the tie.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-5",
+   "source": "review",
+   "severity": "minor",
+   "part": "wiring bat_lead",
+   "issue": "WIRING.md step 1 says to 'cut 2 x 100 mm AWG 12 and solder battery -> xt60', and the BOM buys 0.2 m of 12 AWG for it. The pack's own XT60 lead plugs into the drone's XT60; nobody should be soldering to a LiPo. Also, the pack's lead length (not in the catalog) has to reach the 97 mm minimum cut over the ring_top edge.",
+   "fix": "Mark bat_lead as the pack's existing lead (no cut, no solder, no BOM wire). Add the CNHL lead length to the catalog with a source and check it against the routed length.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-6",
+   "source": "review",
+   "severity": "minor",
+   "part": "bom",
+   "issue": "The brief asks for a buy link on every wire, connector and electrical part. The wire rows (AWG 12-28) and the cable ties have no link. The power path also has no battery anti-slip pad (ENGINEERING 10b lists 'strap + pad') and no low-ESR input capacitor at the ESC pads, even though the UBEC on those pads has only 0.8 V of headroom (26 V max vs 25.2 V) before regen spikes.",
+   "fix": "Add catalog wire entries with sources and links. Add a silicone battery pad and a 35 V low-ESR capacitor (if the stack doesn't ship one) as catalog items.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff",
+    "4e8d44f7",
+    "e19a384a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "66cc0383",
+   "resolved_time": "2026-10-31T07:26:02+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 318,
+   "active_minutes_est": 122,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-7",
+   "source": "review",
+   "severity": "minor",
+   "part": "bom (dowels)",
+   "issue": "The pin check sizes the dowels at 3 x 20 mm and the BOM lists them that way (twice), but bom_extra and DESIGN.md still list '3 x 16 mm hardened steel dowel' x 2. The buyer gets two conflicting rows.",
+   "fix": "Remove the bom_extra dowel row and change DESIGN.md to 3 x 20 mm.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-8",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_mid / motor_hub",
+   "issue": "ring_mid is printed top-up with its tube bosses hanging below, so the whole plate underside (29 % of the surface) needs support, and that is the face the UBEC and receiver tie against. motor_hub (24 %) has the same problem: the disc overhangs the arm roots.",
+   "fix": "Print ring_mid at [180,0,0] (plate on the bed, bosses up). Check whether flipping motor_hub, or chamfering its arm roots to 45 deg, removes most of its support.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-9",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_low / ring_mid / ring_top (tube locks)",
+   "issue": "Radial M3 set screws bear directly on a pultruded 5x3 CF tube with a 1 mm wall. Overtightening crushes or splits the tube.",
+   "fix": "Specify a torque or 'snug only' and a dot of CA, or use a printed split-clamp boss with a cross screw instead of a point load.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-10",
+   "source": "review",
+   "severity": "minor",
+   "part": "horn_roll / horn_pitch",
+   "issue": "Both horn mounts and the servo face positions depend on the 21T micro disc horn geometry, which is an estimate in the catalog, and on the MG90S tab height (18.5 vs 21 mm spread). DESIGN.md already flags this.",
+   "fix": "Buy and measure the horn and servo before printing gimbal_outer, motor_hub and ring_low, update the catalog, and re-run kerf check.",
+   "found_commit": "27f7bfff",
+   "found_time": "2026-10-31T02:08:25+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "27f7bfff"
+   ],
+   "status": "resolved",
+   "resolved_commit": "4e8d44f7",
+   "resolved_time": "2026-10-31T02:29:51+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-11",
+   "source": "review",
+   "severity": "minor",
+   "part": "stack (drone.stacks.fc_20) / REFERENCES.md",
+   "issue": "The ArduPilot facts the flight depends on are only cited in DESIGN.md prose. They are not in the catalog entry or REFERENCES.md: board support, the PWM timer groups (1-2 / 3-4 / 5), CoaxCopter flap output functions 33/34 and motors 37/38, and MOT_SPIN_MAX. Whether the CoaxCopter flap mixer (which scales flap authority with throttle) steers a gimbal well is still unproven; it is correctly flagged as a risk.",
+   "fix": "Add an `ardupilot` block to drone.stacks.fc_20 with the hwdef/board-page URL and the timer groups. Add the CoaxCopter page to REFERENCES.md. Write the exact SERVOn_FUNCTION values (1=37, 2=38, 3/4=33/34 or as bench-verified) into WIRING.md.",
+   "found_commit": "4e8d44f7",
+   "found_time": "2026-10-31T02:29:51+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "4e8d44f7",
+    "e19a384a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "66cc0383",
+   "resolved_time": "2026-10-31T07:26:02+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 296,
+   "active_minutes_est": 101,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-12",
+   "source": "review",
+   "severity": "minor",
+   "part": "out/ASSEMBLY.md",
+   "issue": "The generated steps still say 'press the 3 x 20 mm dowel into ring_low / gimbal_outer' at the step where the part is fitted, without saying it goes in last and from outside. DESIGN.md steps 3 and 6 are correct, but a builder following ASSEMBLY.md alone could press the pin first and then be unable to hang the ring or hub.",
+   "fix": "Give pin sites an insert direction or order flag so ASSEMBLY.md says 'after the horn screws, press the dowel in from outside through <part>'. As a stopgap, add a note to the two steps.",
+   "found_commit": "4e8d44f7",
+   "found_time": "2026-10-31T02:29:51+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "4e8d44f7",
+    "e19a384a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "66cc0383",
+   "resolved_time": "2026-10-31T07:26:02+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 296,
+   "active_minutes_est": 101,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-13",
+   "source": "review",
+   "severity": "minor",
+   "part": "wiring (roll and pitch pivot crossings)",
+   "issue": "All the gimbal-bound conductors cross the roll pivot as a single short span of about 23 mm, roughly 20 mm off the axis: 2 x 3 x 18 AWG plus the pitch servo leads, a bundle of about 8 mm. This span flexes every control cycle and adds torque that the 1.8 kg cm MG90S has to overcome. The cut length covers the stretch, but no geometry forces a real service loop.",
+   "fix": "After wiring, measure servo current (or check free movement by hand) at the four corners, as DESIGN.md already says. Make the crossing a U-loop of 30-40 mm hanging outside the yoke, tied on both sides, so the flex is spread out. Twist the motor triplets.",
+   "found_commit": "4e8d44f7",
+   "found_time": "2026-10-31T02:29:51+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "4e8d44f7",
+    "e19a384a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "66cc0383",
+   "resolved_time": "2026-10-31T07:26:02+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 296,
+   "active_minutes_est": 101,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-14",
+   "source": "review",
+   "severity": "minor",
+   "part": "wiring bat_lead / ring_top",
+   "issue": "The pack's own XT60 lead must be at least 110 mm long, but CNHL does not publish its length. The mated XT60 pair also hangs free past the ring_top edge on a 14 AWG pigtail, so it will flop in flight and in a tip-over.",
+   "fix": "Measure the pack lead on arrival and record it in the catalog. Once plugged in, tuck the mated pair under the battery strap or tie it to the battery lead.",
+   "found_commit": "4e8d44f7",
+   "found_time": "2026-10-31T02:29:51+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "4e8d44f7",
+    "e19a384a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "66cc0383",
+   "resolved_time": "2026-10-31T07:26:02+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 296,
+   "active_minutes_est": 101,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-15",
+   "source": "review",
+   "severity": "minor",
+   "part": "motor_hub / ring_low / legs",
+   "issue": "The support warnings are unchanged: motor_hub 24 %, ring_low 17 %, gimbal_outer 18 %, legs 20 %. The two upper pitch-horn M2 screws still need a ball-end key.",
+   "fix": "Optional: add 45 deg chamfers under motor_hub's disc where it meets the arm roots, and under the leg feet, to cut support. Keep the ball-end key note in step 6.",
+   "found_commit": "4e8d44f7",
+   "found_time": "2026-10-31T02:29:51+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "4e8d44f7",
+    "e19a384a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "66cc0383",
+   "resolved_time": "2026-10-31T07:26:02+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 296,
+   "active_minutes_est": 101,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-16",
+   "source": "review",
+   "severity": "minor",
+   "part": "horn_roll / horn_pitch / servos",
+   "issue": "The micro 21T disc horn geometry is still an estimate, and the MG90S tab height has a 2.5 mm spread between sources. Both set the horn-face positions on gimbal_outer, motor_hub and ring_low.",
+   "fix": "Buy and measure the horn and servo before printing the three gimbal parts, update the catalog, and re-run kerf check.",
+   "found_commit": "4e8d44f7",
+   "found_time": "2026-10-31T02:29:51+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2594 bytes",
+   "rounds_seen": [
+    "4e8d44f7",
+    "e19a384a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "66cc0383",
+   "resolved_time": "2026-10-31T07:26:02+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 296,
+   "active_minutes_est": 101,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "ring_low",
+    "ring_mid"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-17",
+   "source": "review",
+   "severity": "major",
+   "part": "rod_1..3 / xt60 / mass",
+   "issue": "report.json purchased mass_g is 0.0 for rod_1, rod_2, rod_3 and xt60. kerf/checks.py item_mass_g only reads weight_g/mass_g, and rods.cf_tube_5x3 has only od/id/density: 3 x pi/4 x (5^2 - 3^2) x 228 mm x 1.5 g/cm3 = 12.9 g. The XT60 has no weight. Fasteners (about 30 screws, 13 heat-set inserts, 2 dowels, 9 set screws) are not counted either. 745.4 g (683.3 parts + 62.1 wiring) is really about 765-770 g, over the 750 g mass_max that the twr 'why' says it is sized at. twr then falls to about 2.11 and twr_sag to about 1.89, both still above their limits. leg_fea and lug_fea use 729 g.",
+   "fix": "Engine (would hit every rod project): in item_mass_g, compute rod mass from catalog density x annulus area x the item's length, and add a test. Add a sourced weight_g to drone.connectors.XT60. Optionally add fastener mass from the fastener report. Then either trim mass or raise mass_max with the twr margin as the reason, and re-run cg/tip_over/twr/flight_time and the leg/lug load cases at the real",
+   "found_commit": "cef68c23",
+   "found_time": "2026-10-31T08:28:44+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2827 bytes",
+   "rounds_seen": [
+    "cef68c23"
+   ],
+   "status": "resolved",
+   "resolved_commit": "394d78d8",
+   "resolved_time": "2026-10-31T08:52:13+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 23,
+   "active_minutes_est": 23,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-18",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_low",
+   "issue": "DESIGN.md, STATUS.md and the ring_low docstring say the bosses, webs and lug ribs touch the bed. They do not. In print orientation only the four 4 mm yoke-bridge webs (18 tall) reach z 0: STL bed contact is 1464 mm\u00b2. The tube-boss ends float 4 mm up (14 tall) and the lug ribs 8 mm up (10 tall), and the 7222 mm\u00b2 plate face is 18 mm up on supports. A 124 g, 111 mm tall part standing on four thin strips is acceptable on textured PEI with supports, but marginal, and the documentation is wrong.",
+   "fix": "Make the bed-contact features one height. Trim the bridge webs to 14 mm (flush with the bosses, then re-run yoke_fea) or raise the bosses to 18 mm (longer tube engagement). Do not raise the 30-degree rib to 18 mm: the ph_top/servo route point [26.8, 20, 100] passes about 4 mm from that rib's centre line at z 100. Correct the text.",
+   "found_commit": "cef68c23",
+   "found_time": "2026-10-31T08:28:44+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2827 bytes",
+   "rounds_seen": [
+    "cef68c23"
+   ],
+   "status": "resolved",
+   "resolved_commit": "394d78d8",
+   "resolved_time": "2026-10-31T08:52:13+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 23,
+   "active_minutes_est": 23,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "tvc_drone-19",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_mid, ring_top, leg_1..3",
+   "issue": "A-5 is only partly done. The radial M3 lock taps in ring_mid and ring_top are plain cylinders, horizontal in print with no teardrop (ring_low's have teardrops). The leg's two M3 clearance holes are horizontal in the on-its-side print (bolt_pattern without teardrop).",
+   "fix": "Use iface.hole(..., teardrop=iface.print_up_deg(ctx, loc)) for the ring_mid/ring_top lock taps, and pass teardrop= to the leg bolt_pattern.",
+   "found_commit": "cef68c23",
+   "found_time": "2026-10-31T08:28:44+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2827 bytes",
+   "rounds_seen": [
+    "cef68c23"
+   ],
+   "status": "resolved",
+   "resolved_commit": "394d78d8",
+   "resolved_time": "2026-10-31T08:52:13+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 23,
+   "active_minutes_est": 23,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-20",
+   "source": "review",
+   "severity": "minor",
+   "part": "motor_hub, gimbal_outer, ring_low, all",
+   "issue": "A-11 is only partly done. The leg root fillet is there. The hub fork/arm-to-disc roots, gimbal_outer pad-to-ring corners and ring_low gusset/lug roots have no fillets, and no part has outside-edge chamfers (ENGINEERING.md s5).",
+   "fix": "Add 1.5-2 mm fillets at the hub arm and fork roots and the lug and bridge roots, plus 0.6 mm bed-edge chamfers (elephant foot).",
+   "found_commit": "cef68c23",
+   "found_time": "2026-10-31T08:28:44+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2827 bytes",
+   "rounds_seen": [
+    "cef68c23"
+   ],
+   "status": "resolved",
+   "resolved_commit": "394d78d8",
+   "resolved_time": "2026-10-31T08:52:13+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 23,
+   "active_minutes_est": 23,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-21",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_low (lug_fea)",
+   "issue": "lug_fea passes on p99.9 8.08 vs 13 MPa, but its volume peak is 21.70 MPa (1.7x the limit; surface peak 11.23) on a coarse 4935-element mesh of a 194 mm part. The peak location is not reported. In the render the hot zone is the disc and lug roots near the wire pass, which is the expected load path.",
+   "fix": "Refine the mesh (or have the engine report peak_at like max_disp_at) and confirm the 21.7 MPa peak is a load-patch singularity, not the lug-to-disc root. Fillet that root (see above).",
+   "found_commit": "cef68c23",
+   "found_time": "2026-10-31T08:28:44+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2827 bytes",
+   "rounds_seen": [
+    "cef68c23"
+   ],
+   "status": "resolved",
+   "resolved_commit": "394d78d8",
+   "resolved_time": "2026-10-31T08:52:13+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 23,
+   "active_minutes_est": 23,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-22",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_low, ring_mid, ring_top / rods",
+   "issue": "The 5x3 pultruded CF tubes (1 mm wall) are held only by 9 cup-point set screws on filed flats. A point load on a 1 mm pultruded wall cracks it lengthwise, and 'stop at first contact + 1/8 turn' leaves the mast relying on that friction in a crash.",
+   "fix": "Bond the tubes with epoxy in the bores (keep the set screws only for alignment while it cures), or use nylon-tip set screws as the default rather than the alternative.",
+   "found_commit": "cef68c23",
+   "found_time": "2026-10-31T08:28:44+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2827 bytes",
+   "rounds_seen": [
+    "cef68c23"
+   ],
+   "status": "resolved",
+   "resolved_commit": "394d78d8",
+   "resolved_time": "2026-10-31T08:52:13+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 23,
+   "active_minutes_est": 23,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-23",
+   "source": "review",
+   "severity": "minor",
+   "part": "DESIGN.md",
+   "issue": "Stale numbers remain. The XT60 row says 'hover 11.8 A, peak 36.6 A' (report: 12.2 / 43.8 A). The mass row says 745 g, which leaves out the uncounted tubes and fasteners (see the major finding).",
+   "fix": "Refresh from report.json after the mass fix.",
+   "found_commit": "cef68c23",
+   "found_time": "2026-10-31T08:28:44+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2827 bytes",
+   "rounds_seen": [
+    "cef68c23"
+   ],
+   "status": "resolved",
+   "resolved_commit": "394d78d8",
+   "resolved_time": "2026-10-31T08:52:13+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 23,
+   "active_minutes_est": 23,
+   "parts_redrawn": [
+    "gimbal_outer",
+    "leg",
+    "motor_hub",
+    "motor_plate",
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-24",
+   "source": "review",
+   "severity": "minor",
+   "part": "motor_hub, gimbal_outer, all",
+   "issue": "Remaining s5 detail. ENGINEERING.md s5 says inside corners on any load path get r >= 1 mm and outside edges a 0.5-1 mm chamfer. It is a rule, not a margin-dependent option. The motor_hub fork, arm and lug roots carry all of the thrust, and the gimbal_outer pad-to-ring corners carry it too; neither has a fillet, and no part has bed-edge chamfers. The static FEA margins (>= 3.6x on top of SF 3; the hub and ring peaks sit at the dowel bore and servo pad, not the roots) make this low risk. That is why it stays minor, but it does not waive the rule on a part that sees motor vibration.",
+   "fix": "Add 1-1.5 mm fillets at the hub fork, arm and lug-to-disc vertical inside edges and at the gimbal_outer pad-to-ring inside corners (features.safe_fillet, same pattern as the ring_low disc corners), plus 0.5 mm bed-edge chamfers. Re-run gimbal_fea and outer_fea.",
+   "found_commit": "394d78d8",
+   "found_time": "2026-10-31T08:52:13+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "394d78d8"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a237a77a",
+   "resolved_time": "2026-10-31T08:53:33+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 1,
+   "active_minutes_est": 1,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-25",
+   "source": "review",
+   "severity": "minor",
+   "part": "DESIGN.md (ring_low row)",
+   "issue": "The Parts table (DESIGN.md:95) still says 'bosses, webs and ribs on the bed'. The STL shows the webs and bosses at z 0 (1732 mm\u00b2) and the lug ribs 8 mm up on supports, as the ring_low docstring now says correctly.",
+   "fix": "Change the row to 'bosses and webs (18 mm) on the bed; plate and 10 mm lug ribs on supports'.",
+   "found_commit": "394d78d8",
+   "found_time": "2026-10-31T08:52:13+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "394d78d8"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a237a77a",
+   "resolved_time": "2026-10-31T08:53:33+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 1,
+   "active_minutes_est": 1,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-26",
+   "source": "review",
+   "severity": "minor",
+   "part": "leg_1..3",
+   "issue": "leg_fea deflection is 2.948 mm against its 3.0 mm limit (98 %) at the 790 g budget. Stress is fine (3.34 vs 16 MPa). If the build gains mass or the foot load case grows, this is the first check to fail.",
+   "fix": "Either accept it as is (it is elastic, at a 3 g two-leg landing), or deepen the strut slightly (e.g. a top profile of 20 instead of 18 mm) for headroom.",
+   "found_commit": "394d78d8",
+   "found_time": "2026-10-31T08:52:13+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "394d78d8",
+    "a237a77a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1106a30f",
+   "resolved_time": "2026-10-31T10:27:39+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 95,
+   "active_minutes_est": 95,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-27",
+   "source": "review",
+   "severity": "minor",
+   "part": "lug_fea / leg_fea",
+   "issue": "Both peaks are at load or fixture patches, not geometry. lug_fea peaks at 10.97 MPa at [-42.6, 27.1, 75.4], which is the inner insert site of leg_2 (r 50, 150 deg) on the lug underside. leg_fea peaks at [8.9, 5.5, -4.3], the edge of the pad bearing box. Both are fine, but the coarse 5785-element ring_low mesh means the insert-site stress is only indicative.",
+   "fix": "None required. Optionally refine the mesh locally at the insert sites.",
+   "found_commit": "394d78d8",
+   "found_time": "2026-10-31T08:52:13+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "394d78d8"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a237a77a",
+   "resolved_time": "2026-10-31T08:53:33+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 1,
+   "active_minutes_est": 1,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-28",
+   "source": "review",
+   "severity": "minor",
+   "part": "gimbal_outer",
+   "issue": "14 of 38 first-layer edges could not be chamfered (build warning). They are at the -Y pin pad and the +X lug-to-ring junctions, e.g. (7.0, -71.6, -8.5) and (70.0, 0.0, -8.5). Elephant's foot there could make the pad faces slightly proud where the hub arm end (1.5 mm gap) and the roll horn seat.",
+   "fix": "Deburr those edges after printing (as the warning says), or lower the first-layer flow / turn on elephant-foot compensation in the slicer. No geometry change needed.",
+   "found_commit": "a237a77a",
+   "found_time": "2026-10-31T08:53:33+00:00",
+   "review_round": 6,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "a237a77a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "1106a30f",
+   "resolved_time": "2026-10-31T10:27:39+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 94,
+   "active_minutes_est": 94,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-29",
+   "source": "review",
+   "severity": "major",
+   "part": "plates (engine kerf/export.py)",
+   "issue": "Metadata/model_settings.config is missing objects. plate_1 has gimbal_outer but not leg_1 (its object tag is at byte 641575). plate_2 has leg_2, leg_3 and ring_low but not motor_hub (byte 1329357). plate_3 has ring_top but not ring_mid (byte 407916) or motor_plate (byte 1417221). Cause: `head = files[model][:200000]` in _write_part_settings only regex-scans the first 200 kB of the model XML, so any object after a large mesh is skipped. As a result motor_hub (all thrust, 3 M3 inserts; meant to be 50 % / 4 walls) and leg_1 (crash-loaded; 25 % / 4 walls) slice at the printer defaults (typically 1",
+   "fix": "Scan the whole model XML for object tags (drop the 200 kB cap, or stream it with iterparse and stop at <build>), or take the object ids from the mesher that writes the plate. Add a test with a multi-object plate whose second object starts past 200 kB, and assert that every object id gets an entry. Rebuild.",
+   "found_commit": "1106a30f",
+   "found_time": "2026-10-31T10:27:39+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "1106a30f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "6de303b4",
+   "resolved_time": "2026-10-31T10:48:18+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-30",
+   "source": "review",
+   "severity": "minor",
+   "part": "DESIGN.md (edge distance)",
+   "issue": "The new holewall check warns that the MG90S tab taps (79 % material at 1.5 d, groups yoke_servo and ring_servo) and the motor M3 counterbores on the 16 mm bolt circle (88 %, groups hub_motor_top and plate_motor_bottom) are under the s7 edge distance. The warning asks for this to be stated in DESIGN.md, and it is not.",
+   "fix": "Add one line: the edge distance is set by the purchased MG90S tab and 2207 16 x 16 hole patterns. The tabs have 2.4 mm of wall plus 4 perimeters; the motor holes are under 3 mm clamp with a 2 mm motor-base engagement.",
+   "found_commit": "1106a30f",
+   "found_time": "2026-10-31T10:27:39+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "1106a30f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "6de303b4",
+   "resolved_time": "2026-10-31T10:48:18+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-31",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_low (lug_fea)",
+   "issue": "FEA is run on a solid model, but ring_low now prints at 20 % infill (was 40 %). The 8 mm lug plate is roughly two 1 mm skins and 4 perimeters around a 20 % core, so its bending stiffness and strength are well under solid. lug_fea, the tightest case at 7.88 vs 13 MPa (z), could lose most of its SF 3 margin in reality. Same caveat for gimbal_outer at 20 %.",
+   "fix": "Add a slicer modifier (100 % or >= 50 % infill) over the three leg lugs and ribs, or print ring_low at 40 % (about +10 g, within the 790 g budget). Note it in PRINT_SETTINGS / DESIGN.",
+   "found_commit": "1106a30f",
+   "found_time": "2026-10-31T10:27:39+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "1106a30f"
+   ],
+   "status": "resolved",
+   "resolved_commit": "6de303b4",
+   "resolved_time": "2026-10-31T10:48:18+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [
+    "ring_low",
+    "ring_mid",
+    "ring_top"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-32",
+   "source": "review",
+   "severity": "minor",
+   "part": "gimbal_outer",
+   "issue": "Carried over: 14 first-layer edges cannot be chamfered (deburr warning).",
+   "fix": "Deburr after printing, or use slicer elephant-foot compensation.",
+   "found_commit": "1106a30f",
+   "found_time": "2026-10-31T10:27:39+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "1106a30f",
+    "6de303b4",
+    "3d0ef07e",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-33",
+   "source": "review",
+   "severity": "minor",
+   "part": "leg_1..3",
+   "issue": "Carried over: leg_fea deflection is 2.966 vs 3.0 mm (99 %); accepted.",
+   "fix": "None required.",
+   "found_commit": "1106a30f",
+   "found_time": "2026-10-31T10:27:39+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2943 bytes",
+   "rounds_seen": [
+    "1106a30f",
+    "6de303b4",
+    "3d0ef07e",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-34",
+   "source": "review",
+   "severity": "blocker",
+   "part": "all (out/ stale)",
+   "issue": "`kerf review-status tvc_drone` reports geometry 721479e716c80d8c, but out/report.json is 06bd0f2cab76ce9b; `kerf status` shows 'build PASS (stale)' and 'eval FAIL'. The difference is the catalog/iface horizontal self-tap pilot from f118ac0: the teardrop M2 taps (yoke_servo in ring_low, ring_servo in gimbal_outer) change size. The current geometry has no check, renders or FEA.",
+   "fix": "Run `.venv/bin/kerf build tvc_drone` on the current tree and confirm the M2 tab taps still pass the fastener and holewall checks. Then re-review. I expect a PASS if nothing else moves. Note: the ring_low/ring_mid/ring_top lock taps use features.teardrop_hole with screw_spec('M3')['tap'], not the new 'tap_h', so they do not get the horizontal pilot. Decide whether they should, for consistency.",
+   "found_commit": "6de303b4",
+   "found_time": "2026-10-31T10:48:18+00:00",
+   "review_round": 8,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2979 bytes",
+   "rounds_seen": [
+    "6de303b4"
+   ],
+   "status": "resolved",
+   "resolved_commit": "3d0ef07e",
+   "resolved_time": "2026-10-31T11:08:15+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 20,
+   "active_minutes_est": 20,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-35",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_low (lug_fea)",
+   "issue": "The FEA uses a solid model and the print is 30 % infill with 4 perimeters. lug_fea is 7.88 vs 13 MPa. I accept 30 % + 4 walls without a modifier, given the SF 3 load case.",
+   "fix": "Optional: add a PRINT_SETTINGS / DESIGN note to use a >= 50 % infill modifier on the three leg lugs if there is filament to spare.",
+   "found_commit": "6de303b4",
+   "found_time": "2026-10-31T10:48:18+00:00",
+   "review_round": 8,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2979 bytes",
+   "rounds_seen": [
+    "6de303b4",
+    "3d0ef07e",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-36",
+   "source": "review",
+   "severity": "minor",
+   "part": "ring_low, gimbal_outer (M2 servo-tab taps)",
+   "issue": "The teardropped servo-tab taps now use the horizontal pilot tap_h = 2.10 mm, which is larger than the M2 major diameter (2.0). The Bambu table's larger horizontal value makes up for the drooping top of a round horizontal hole. A teardrop already removes that droop, so applying both may leave the thread-forming tab screws with little bite. The ring lock taps (M3 PETG tap_h 2.78, for set screws) are fine.",
+   "fix": "Print a pin/tap coupon (`kerf calibrate`) with a teardropped M2 hole before the full parts. If the screws spin, set a negative tap calibration offset for the printer. Engine follow-up: decide whether tap_h should apply to teardrop holes or only to plain round horizontal ones.",
+   "found_commit": "3d0ef07e",
+   "found_time": "2026-10-31T11:08:15+00:00",
+   "review_round": 9,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2979 bytes",
+   "rounds_seen": [
+    "3d0ef07e",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-37",
+   "source": "review",
+   "severity": "minor",
+   "part": "gimbal_outer, ring_low (pitch_pin, roll_pin)",
+   "issue": "First recorded here (the warning comes from the ENG-7..20 engine and was already in the 12:42 report): the 20 mm motion.pin_3mm is 1.5 mm / 1.0 mm shorter than the 21.5 / 21.0 mm span. The pin is a press fit in one side (DESIGN.md interface table), so it is retained, but the free-side bore is only partly filled.",
+   "fix": "Press each pin flush with the outer face of its press side so the whole shortfall sits at the press-side end and the free bearing bore is fully engaged. Optional: lengthen the span to a stocked length or add a note to DESIGN.md.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 10,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2979 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "tvc_drone-38",
+   "source": "review",
+   "severity": "minor",
+   "part": "motor_hub (pitch_horn)",
+   "issue": "Carried over and documented in DESIGN.md assembly step 6: a straight 1.5 mm key cannot reach the two upper M2 horn screws.",
+   "fix": "Use a ball-end 1.5 mm key as the DESIGN says. List it in the tools section of the BOM if it isn't there already.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 10,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "8 real part files, median 2979 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 38,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 38
+  },
+  "open": 0,
+  "active_minutes_est": 1353,
+  "parts_redrawn": [
+   "gimbal_outer",
+   "leg",
+   "motor_hub",
+   "motor_plate",
+   "ring_low",
+   "ring_mid",
+   "ring_top"
+  ],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}

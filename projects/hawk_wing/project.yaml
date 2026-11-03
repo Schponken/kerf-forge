@@ -1,0 +1,463 @@
+name: Hawk-wing swing-wing FPV plane
+description: >-
+  A 1.0 m printed FPV plane whose outer wing panels sweep back in flight like a hawk's: spread for slow, efficient
+  cruise and soft landings, half swept for speed, folded 65 deg for a straight, stable dive, one side more than the
+  other for extra roll. The inner wing is a fixed glove (F-14 style outboard pivot), so sweeping moves the lift far
+  less than a root pivot. Each panel turns on a 5 mm steel pin in two ball bearings, driven by an MG996R through a
+  13/21 T gear in a nacelle under the glove; it comes off with two M3 screws and one servo plug. Tractor 2806.5 on
+  6S, conventional tail on an unpluggable carbon boom, F405-WMO (INAV) with GPS, nose FPV camera.
+printer: Bambu Lab A2L
+layout: parts/layout.py
+style: {radii: [1.0, 2.0, 3.0], edge_break: 0.6}
+use_story:
+  who: 'Spencer, flying it FPV himself: hand or bungee launch, slow cruise and thermal passes spread, fast passes half swept, dives folded with a pull-out, belly landing on grass'
+  where:
+  - outdoor
+  - field
+  how_often: weekend sessions, 3-5 flights of ~12 min
+  goes_wrong:
+  - hazard: heat
+    max_c: 45
+    why: 'summer sun at the field and a car ride there (PETG HDT ~70 C; not left on a dashboard)'
+  - hazard: crash
+    speed_m_s: 15
+    survive: false
+    consequence: 'a nose-in or cartwheel at pull-out speed: the prop, the nose cap (camera fairing), the wingtip skids and the tail surfaces are the cheap parts that break first; reprint them (the pivots, gears and glove sit aft of the nose and inside the wing, out of the first impact)'
+  - hazard: other
+    what: hand / bungee launch with the wings spread and a belly landing on grass
+    covered_by:
+    - stall_speed
+    - twr
+    - wing_loading
+  - hazard: other
+    what: 'wings swept in a fast dive must still open under air load, and stay where the servos put them in a pull-out; on signal loss they go to spread'
+    covered_by:
+    - fold_pull_r
+    - fold_pull_l
+    - fold_dive_r
+    - fold_dive_l
+    - sweep_gears
+    - stop_spread_r
+    - stop_spread_l
+  - hazard: other
+    what: 'forgiving and predictable in every shape: pitch-stable spread, half swept, folded and swept unevenly, every one trimmable with the elevator'
+    covered_by:
+    - sm_spread
+    - sm_half
+    - sm_folded
+    - sm_asym
+  - hazard: other
+    what: wings and tail off for a backpack case (about 500 x 330 x 220 mm inside)
+    covered_by:
+    - case_fit
+  field_repair:
+  - cap_r
+  - cap_l
+  - boom_clamp
+  - nose
+  carry_by: the fuselage under the glove, wings off or folded
+electrical:
+  battery: battery
+  burst_s: 10
+  cruise:
+    speed_kmh: 55
+    l_over_d: 8
+    eta: 0.45
+    why: 'spread-wing cruise at 55 km/h; L/D 8 (A 5 wing, pod fuselage, boom, tail, two pivot nacelles) and eta 0.45 (a 7 in 3-blade FPV prop is inefficient at 55 km/h), the sibling drone_foldable_wings values: DESIGN.md'
+  draw:
+    fc:
+      avg_a: 0.25
+      peak_a: 0.3
+      why: Matek publishes no own draw for the F405-WMO; an F405 + gyro + OSD board draws ~0.15-0.25 A at 5 V (same bound as fpv_wing, UNVERIFIED)
+params:
+  wing_span: {value: 1000, unit: mm, min: 900, max: 1100, step: 10, label: Wing span spread (tip to tip)}
+  wing_root_chord: {value: 260, unit: mm, min: 230, max: 290, step: 5, label: Root chord (at the centreline)}
+  wing_tip_chord: {value: 140, unit: mm, min: 110, max: 160, step: 5, label: Tip chord}
+  wing_sweep_le_deg: {value: 13.5, unit: "°", min: 0, max: 20, step: 0.1, label: Leading-edge sweep (spread; 13.5 = straight trailing edge)}
+  wing_twist_tip_deg: {value: -2.5, unit: "°", min: -4, max: 0, step: 0.5, label: Washout at the tip (nose down)}
+  pivot_y: {value: 150, unit: mm, min: 120, max: 180, step: 5, label: Sweep pivot / glove end off the centreline}
+  pivot_back: {value: 24, unit: mm, min: 20, max: 40, step: 1, label: Sweep pivot ahead of the trailing edge}
+  fold_max: {value: 65, unit: "°", min: 50, max: 70, step: 1, label: Full fold (sweep back)}
+  hub_y1: {value: 195, unit: mm, min: 180, max: 220, step: 5, label: Root hub outer face (inner skin segment starts here)}
+  seg_split_y: {value: 345, unit: mm, min: 320, max: 370, step: 5, label: Inner / outer skin segment joint}
+  spar_y0: {value: 156, unit: mm, min: 152, max: 170, step: 1, label: Spar tubes' inner ends (in the hub's sockets)}
+  spar_main_frac: {value: 0.28, unit: "", min: 0.22, max: 0.33, step: 0.01, label: Main spar position (fraction of chord)}
+  spar_main_y1: {value: 470, unit: mm, min: 420, max: 480, step: 5, label: Main spar outer end}
+  spar_rear_frac: {value: 0.6, unit: "", min: 0.5, max: 0.65, step: 0.01, label: Rear spar position (fraction of chord)}
+  spar_rear_y1: {value: 420, unit: mm, min: 360, max: 460, step: 5, label: Rear spar outer end}
+  ail_hinge_frac: {value: 0.74, unit: "", min: 0.68, max: 0.8, step: 0.01, label: Aileron hinge line (fraction of chord)}
+  ail_y0: {value: 360, unit: mm, min: 350, max: 380, step: 5, label: Aileron inner end}
+  ail_y1: {value: 485, unit: mm, min: 460, max: 490, step: 5, label: Aileron outer end}
+  ail_gap_deg: {value: 32, unit: "°", min: 26, max: 40, step: 1, label: Aileron top V gap}
+  ail_throw: {value: 20, unit: "°", min: 12, max: 25, step: 1, label: Aileron throw each way}
+  htail_span: {value: 320, unit: mm, min: 280, max: 330, step: 10, label: Horizontal tail span}
+  htail_root_chord: {value: 120, unit: mm, min: 100, max: 140, step: 5, label: Horizontal tail root chord}
+  htail_tip_chord: {value: 100, unit: mm, min: 80, max: 120, step: 5, label: Horizontal tail tip chord}
+  htail_sweep_le_deg: {value: 3.0, unit: "°", min: 0, max: 15, step: 0.5, label: Horizontal tail LE sweep}
+  htail_x_le0: {value: 650, unit: mm, min: 600, max: 700, step: 5, label: Horizontal tail LE at the centreline}
+  htail_z0: {value: -37, unit: mm, min: -45, max: -25, step: 1, label: Horizontal tail chord plane height}
+  elev_hinge_frac: {value: 0.65, unit: "", min: 0.6, max: 0.75, step: 0.01, label: Elevator hinge line (fraction of chord)}
+  elev_throw: {value: 22, unit: "°", min: 15, max: 28, step: 1, label: Elevator throw each way}
+  fin_h: {value: 130, unit: mm, min: 100, max: 160, step: 5, label: Fin height (above the boom top)}
+  fin_root: {value: 120, unit: mm, min: 90, max: 140, step: 5, label: Fin root chord}
+  fin_tip: {value: 70, unit: mm, min: 50, max: 90, step: 5, label: Fin tip chord}
+  fin_sweep_deg: {value: 30, unit: "°", min: 15, max: 40, step: 1, label: Fin leading-edge sweep}
+  rud_hinge_frac: {value: 0.64, unit: "", min: 0.55, max: 0.72, step: 0.01, label: Rudder hinge line (fraction of fin chord)}
+  rud_throw: {value: 25, unit: "°", min: 15, max: 30, step: 1, label: Rudder throw each way}
+  boom_x0: {value: 215, unit: mm, min: 200, max: 240, step: 1, label: Tail boom front end (in the fuselage socket)}
+  boom_x1: {value: 790, unit: mm, min: 740, max: 820, step: 5, label: Tail boom rear end (in the tail mount)}
+  boom_z: {value: -25, unit: mm, min: -35, max: -15, step: 1, label: Tail boom axis height}
+  nose_x0: {value: -175, unit: mm, min: -190, max: -160, step: 1, label: Nose face (motor mount plate's aft face)}
+  nose_x1: {value: -120, unit: mm, min: -130, max: -100, step: 1, label: Nose cap / fuselage joint (front bulkhead)}
+  fuse_x1: {value: 300, unit: mm, min: 280, max: 320, step: 2, label: Fuselage tail end (boom socket)}
+  fuse_top: {value: 14, unit: mm, min: 8, max: 20, step: 1, label: Fuselage top (hatch) ahead of the glove}
+  fuse_bottom: {value: -70, unit: mm, min: -76, max: -64, step: 1, label: Fuselage bottom}
+  fuse_hw: {value: 34, unit: mm, min: 33, max: 40, step: 1, label: Fuselage half width (battery bay)}
+  motor_z: {value: -20, unit: mm, min: -30, max: -5, step: 1, label: Motor (thrust line) height}
+  bat_x: {value: -45, unit: mm, min: -70, max: 10, step: 1, label: Battery centre x (sets the CG)}
+parts:
+  fuselage: {file: parts/fuselage.py, material: PETG, print_rot: [0, -90, 0], infill: 0.15, walls: 3, load_axis: [X, Z]}
+  nose: {file: parts/nose.py, material: PETG, print_rot: [0, -90, 0], infill: 0.1, walls: 2}
+  motor_mount: {file: parts/motor_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.4, walls: 4, load_axis: X}
+  hatch: {file: parts/hatch.py, material: PETG, print_rot: [180, 0, 0], infill: 0.15, walls: 2}
+  boom_clamp: {file: parts/boom_clamp.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4}
+  glove: {file: parts/glove.py, material: PETG, print_rot: [0, -90, 0], infill: 0.1, walls: 3, load_axis: [Y, Z], supports: needed,
+          modifiers: [{where: "each pod pad: x 156..260, |y| 112..149.5, skin to skin", size: "the pad footprint", infill: 1.0, why: "the pod screws, cap screws and the pin couple (196 N each way at 6 g) enter the glove here: a solid block instead of the ribs the CAD does not model"},
+                      {where: "round each of the 4 glove screws (x 30 |y| 24, x 200 |y| 18), skin to skin", size: "a 16 mm square column", infill: 1.0, why: "the fuselage hangs on these screws; the counterbore floor must not crush into sparse infill"},
+                      {where: "a 20 mm wide spanwise band at x 95..115 (the thickest point), y -149.5..149.5", size: "20 x 299 mm, skin to skin", infill: 0.4, why: "a printed spar web: carries the two panels' moments across the centreline (DESIGN Load -> section)"}]}
+  pod_r: {file: parts/pod.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
+  pod_l: {file: parts/pod.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, walls: 4, load_axis: [X, Y], supports: needed}
+  cap_r: {file: parts/cap.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, walls: 4, load_axis: [X, Y]}
+  cap_l: {file: parts/cap.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, walls: 4, load_axis: [X, Y]}
+  hub_r: {file: parts/hub.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4, load_axis: [X, Y], supports: needed}
+  hub_l: {file: parts/hub.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, walls: 4, load_axis: [X, Y], supports: needed}
+  pinion_r: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
+  pinion_l: {file: parts/pinion.py, material: PETG, print_rot: [0, 0, 0], infill: 1.0, walls: 4, load_axis: [X, Y]}
+  wing_r1: {file: parts/wing.py, material: PETG, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
+  wing_l1: {file: parts/wing.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45}
+  wing_r2: {file: parts/wing.py, material: PETG, print_rot: [90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed}
+  wing_l2: {file: parts/wing.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.03, walls: 1, airfoil: mh45, supports: needed}
+  ail_r: {file: parts/aileron.py, material: PETG, print_rot: [90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45}
+  ail_l: {file: parts/aileron.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.05, walls: 1, airfoil: mh45}
+  skid_r: {file: parts/skid.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2}
+  skid_l: {file: parts/skid.py, material: PETG, print_rot: [0, 0, 0], infill: 0.15, walls: 2}
+  tail_mount: {file: parts/tail_mount.py, material: PETG, print_rot: [0, 90, 0], infill: 0.3, walls: 4, load_axis: [Z, Y]}  # stab lift Z, fin side force Y; X (drag) is small and the stab/fin seats spread it
+  hstab: {file: parts/hstab.py, material: PETG, print_rot: [0, 120, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+  elevator: {file: parts/elevator.py, material: PETG, print_rot: [0, -90, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+  fin: {file: parts/fin.py, material: PETG, print_rot: [0, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+  rudder: {file: parts/rudder.py, material: PETG, print_rot: [0, 0, 0], infill: 0.05, walls: 1, airfoil: naca0009}
+purchased:
+  motor: {catalog: drone.motors.2806_5_1300kv_7in, proxy: motor, groups: {mount: motor}}
+  battery: {catalog: drone.batteries.6S_1800, proxy: box, color: "#c8a400",
+            held_by: "a 20 mm strap round the pack and the bay floor's strap slots, on the anti-slip pad"}
+  pad: {catalog: electronics.pads.battery_pad, proxy: box, size: [87, 50, 3], color: "#303030", held_by: "self-adhesive on the bay floor, cut to the pack's footprint"}
+  strap: {catalog: electronics.straps.strap_20x250, proxy: box, size: [20, 58, 1.8], color: "#404040", held_by: "through the two floor slots and over the pack (Velcro)"}
+  xt60: {catalog: drone.connectors.XT60, proxy: box, color: "#d8b000", held_by: "on the pack's lead, lying on the bay floor ahead of the pack, reached through the hatch"}
+  esc: {catalog: drone.escs.skywalker_60a_v2, proxy: box, color: "#2050a0", held_by: "double-sided foam tape on the shelf plus one cable tie round the shelf"}
+  fc: {catalog: drone.fcs.f405_wmo, proxy: box, color: "#204080", held_by: "double-sided foam tape (soft-mounts the gyro) on the shelf, arrow forward"}
+  receiver: {catalog: electronics.receivers.elrs_nano, proxy: box, color: "#205020", held_by: "double-sided tape on the shelf beside the FC; T antenna out along the fuselage side"}
+  vtx: {catalog: drone.vtx.tx800, proxy: box, size: [28, 28, 8], color: "#1a1a1a", held_by: "double-sided foam tape on the fuselage floor under the glove's trailing edge, heatsink up"}
+  vtx_ant: {catalog: electronics.antennas.lollipop4p_mmcx_95, proxy: box, size: [11, 11, 95], color: "#20a0a0", held_by: "MMCX on the VTX, standing up through the glove's antenna hole"}
+  gps: {catalog: drone.gps.m9n_5883, proxy: box, color: "#303030", held_by: "double-sided foam tape in the glove's GPS pocket under the top skin, arrow forward (plastic only above it)"}
+  camera: {catalog: drone.cameras.micro_19mm, proxy: box, size: [19, 19, 19], held_by: "2 x M2 x 6 through the nose cap's cheeks into its side holes"}
+  sweep_servo_r: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_r}, range: [0, 105.0]}
+  sweep_servo_l: {catalog: servos.MG996R, proxy: servo, groups: {tabs: sweep_servo_l}, range: [-105.0, 0]}
+  sweep_horn_r: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_r}}
+  sweep_horn_l: {catalog: servo_horns.aluminum_25T, proxy: horn, groups: {holes: pinion_l}}
+  pin_r: {catalog: rods.ss_rod_5, proxy: rod, length: 50, held_by: "pressed into the pod's floor plate; slip fit in the pivot cap"}
+  pin_l: {catalog: rods.ss_rod_5, proxy: rod, length: 50, held_by: "pressed into the pod's floor plate; slip fit in the pivot cap"}
+  bear_rt: {catalog: bearings.625, proxy: bearing, held_by: "pressed into the top of the right hub's boss"}
+  bear_rb: {catalog: bearings.625, proxy: bearing, held_by: "pressed into the bottom of the right hub's boss"}
+  bear_lt: {catalog: bearings.625, proxy: bearing, held_by: "pressed into the top of the left hub's boss"}
+  bear_lb: {catalog: bearings.625, proxy: bearing, held_by: "pressed into the bottom of the left hub's boss"}
+  ail_servo_r: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+                held_by: "glued by its aluminium case into the outer segment's pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
+  ail_servo_l: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+                held_by: "glued by its aluminium case into the outer segment's pocket (servo tape round the case, a drop of hot glue at each tab), pocket closed with clear tape"}
+  elev_servo: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+               held_by: "glued by its case into the tail mount's pocket (servo tape + a drop of hot glue at each tab)"}
+  rud_servo: {catalog: servos.KST_X08_Plus, proxy: servo, range: [-60, 60],
+              held_by: "glued by its case into the tail mount's pocket (servo tape + a drop of hot glue at each tab)"}
+  main_r: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the hub socket and both skin segments' bores"}
+  main_l: {catalog: rods.cf_tube_8x6, proxy: rod, length: main_len, held_by: "epoxied into the hub socket and both skin segments' bores"}
+  rear_r: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the hub socket and both skin segments' bores"}
+  rear_l: {catalog: rods.cf_tube_6x4, proxy: rod, length: rear_len, held_by: "epoxied into the hub socket and both skin segments' bores"}
+  boom: {catalog: rods.cf_tube_8x6, proxy: rod, length: boom_len, held_by: "epoxied into the tail mount; slides dry into the fuselage socket, clamped by the boom clamp's one M3"}
+keepouts:
+  prop: {catalog: drone.props.hq_7x4x3, proxy: prop_disc, owner: motor, h: 8}
+  camera_view: {proxy: view_cone, length: 300, hfov_deg: 120, vfov_deg: 40, aperture: [12, 12], owner: camera}
+assembly:
+  root: fuselage
+  joints:
+    - {parent: fuselage.nose, child: nose.base}
+    - {parent: fuselage.motor_mount, child: motor_mount.base}
+    - {parent: motor_mount.motor, child: motor.base}
+    - {parent: motor.prop, child: prop.hub}
+    - {parent: fuselage.hatch, child: hatch.base}
+    - {parent: fuselage.glove, child: glove.base}
+    - {parent: fuselage.boom, child: boom.end_a}
+    - {parent: fuselage.boom_clamp, child: boom_clamp.base}
+    - {parent: fuselage.tail, child: tail_mount.base}
+    - {parent: glove.pod_r, child: pod_r.base}
+    - {parent: glove.pod_l, child: pod_l.base}
+    - {parent: glove.cap_r, child: cap_r.base}
+    - {parent: glove.cap_l, child: cap_l.base}
+    - {parent: pod_r.pivot, child: hub_r.pivot, name: fold_r, range: [0, 65], home: 0}
+    - {parent: pod_l.pivot, child: hub_l.pivot, name: fold_l, range: [0, 65], home: 0}
+    - {parent: pod_r.pin, child: pin_r.end_a}
+    - {parent: pod_l.pin, child: pin_l.end_a}
+    - {parent: pod_r.servo, child: sweep_servo_r.tabs}
+    - {parent: pod_l.servo, child: sweep_servo_l.tabs}
+    - {parent: sweep_servo_r.output, child: sweep_horn_r.spline, name: sweep_srv_r, range: [0, 105.0], home: 0}
+    - {parent: sweep_servo_l.output, child: sweep_horn_l.spline, name: sweep_srv_l, range: [-105.0, 0], home: 0}
+    - {parent: sweep_horn_r.face, child: pinion_r.horn}
+    - {parent: sweep_horn_l.face, child: pinion_l.horn}
+    - {parent: hub_r.bear_top, child: bear_rt.face}
+    - {parent: hub_r.bear_bot, child: bear_rb.face}
+    - {parent: hub_l.bear_top, child: bear_lt.face}
+    - {parent: hub_l.bear_bot, child: bear_lb.face}
+    - {parent: hub_r.wing, child: wing_r1.root}
+    - {parent: hub_l.wing, child: wing_l1.root}
+    - {parent: wing_r1.root, child: wing_r2.joint}
+    - {parent: wing_l1.root, child: wing_l2.joint}
+    - {parent: wing_r2.aileron, child: ail_r.hinge, name: ail_r, home: 0}
+    - {parent: wing_l2.aileron, child: ail_l.hinge, name: ail_l, home: 0}
+    - {parent: wing_r2.servo, child: ail_servo_r.tabs}
+    - {parent: wing_l2.servo, child: ail_servo_l.tabs}
+    - {parent: wing_r2.skid, child: skid_r.base}
+    - {parent: wing_l2.skid, child: skid_l.base}
+    - {parent: hub_r.main, child: main_r.end_a}
+    - {parent: hub_l.main, child: main_l.end_a}
+    - {parent: hub_r.rear, child: rear_r.end_a}
+    - {parent: hub_l.rear, child: rear_l.end_a}
+    - {parent: tail_mount.hstab, child: hstab.base}
+    - {parent: hstab.elevator, child: elevator.hinge, name: elevator, home: 0}
+    - {parent: tail_mount.fin, child: fin.base}
+    - {parent: fin.rudder, child: rudder.hinge, name: rudder, home: 0}
+    - {parent: tail_mount.elev_servo, child: elev_servo.tabs}
+    - {parent: tail_mount.rud_servo, child: rud_servo.tabs}
+    - {parent: fuselage.battery, child: battery.bottom}
+    - {parent: fuselage.pad, child: pad.bottom}
+    - {parent: fuselage.strap, child: strap.bottom}
+    - {parent: fuselage.xt60, child: xt60.bottom}
+    - {parent: fuselage.esc, child: esc.bottom}
+    - {parent: fuselage.fc, child: fc.bottom}
+    - {parent: fuselage.rx, child: receiver.bottom}
+    - {parent: fuselage.vtx, child: vtx.bottom}
+    - {parent: fuselage.vtx_ant, child: vtx_ant.bottom}
+    - {parent: glove.gps, child: gps.bottom}
+    - {parent: nose.camera, child: camera.bottom}
+    - {parent: nose.lens, child: camera_view.bottom}
+  order: [fuselage, motor_mount, motor, nose, camera, [esc, fc, receiver, vtx, vtx_ant], gps, glove,
+          [sweep_servo_r, sweep_servo_l], [sweep_horn_r, sweep_horn_l], [pinion_r, pinion_l], [pod_r, pod_l],
+          [pin_r, pin_l], [main_r, main_l, rear_r, rear_l], [bear_rt, bear_rb, bear_lt, bear_lb], [hub_r, hub_l],
+          [wing_r1, wing_l1], [ail_servo_r, ail_servo_l], [wing_r2, wing_l2], [ail_r, ail_l], [skid_r, skid_l],
+          [cap_r, cap_l], boom, tail_mount, [elev_servo, rud_servo], hstab, elevator, fin, rudder, boom_clamp,
+          pad, xt60, battery, strap, hatch]
+  key_access:
+    - {group: motor, before: [motor_mount], why: "the motor is screwed to its mount on the bench before the mount goes on the fuselage"}
+  sweeps:
+    - {joint: fold_r, samples: 14}
+    - {joint: fold_l, samples: 14}
+    - {joint: sweep_srv_r, follows: fold_r, ratio: 1.6154}
+    - {joint: sweep_srv_l, follows: fold_l, ratio: -1.6154}
+    - {joint: ail_r, samples: 7}
+    - {joint: ail_l, samples: 7}
+    - {joint: elevator, samples: 7}
+    - {joint: rudder, samples: 7}
+requirements:
+- id: sm_spread
+  check: static_margin_tail
+  min: 0.08
+  max: 0.2
+  halves: {right: hub_r, left: hub_l}
+  root_y: pivot_y
+  why: 'wings spread (launch, cruise, landing): stable but not nose-heavy, 8-20 % MAC between the CG and the wing + tail neutral point; the glove (|y| < pivot_y) never moves (DESIGN.md)'
+- id: sm_half
+  check: static_margin_tail
+  min: 0.05
+  max: 0.82
+  halves: {right: hub_r, left: hub_l}
+  root_y: pivot_y
+  pose: {fold_r: 32.5, fold_l: 32.5}
+  why: 'half swept (fast passes, 80-110 km/h): stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim at 70 km/h, the slowest it is flown half swept: eta_t 0.9 x V_h 0.47 x a_t 3.23 x tau 0.55 x 22 deg / CL 0.35 = 0.82 (DESIGN.md "Trim limits")'
+- id: sm_folded
+  check: static_margin_tail
+  min: 0.05
+  max: 1.36
+  halves: {right: hub_r, left: hub_l}
+  root_y: pivot_y
+  pose: {fold_r: 65, fold_l: 65}
+  why: 'folded for the dive: stable (>= 5 % MAC); upper bound = the most margin full up elevator can trim at 90 km/h, the slowest it is flown folded: 0.289 / CL 0.21 = 1.36 (DESIGN.md "Trim limits")'
+- id: sm_asym
+  check: static_margin_tail
+  min: 0.05
+  max: 0.82
+  halves: {right: hub_r, left: hub_l}
+  root_y: pivot_y
+  pose: {fold_r: 65, fold_l: 0}
+  why: 'one side folded, the other spread (the most uneven roll input): stable in pitch (>= 5 % MAC), trimmable as sm_half (DESIGN.md)'
+- id: wing_loading
+  check: wing_loading
+  max_g_dm2: 95
+  why: 'the 1.0 m span the brief asks for, with PETG, a 6S pack, FPV gear and two pivot drives: a sport-FPV loading, capped at the class of flown swing-wing models (XFly F-14 115 g/dm2, REFERENCES.md); floating in gentle thermals would need ~55-65 g/dm2 (DESIGN.md "Assumptions")'
+- id: stall_speed
+  check: stall_speed
+  max_kmh: 45
+  re: 200000
+  why: 'spread-wing belly-landing speed on grass after a hand / bungee launch: <= 45 km/h (fpv_wing and drone_foldable_wings limit; Darkwing-1 50 km/h); MH 45 at Re 200 000'
+- id: spar_bending
+  check: spar_bending
+  tubes: [rods.cf_tube_8x6, rods.cf_tube_6x4]
+  y_root: 195
+  load_factor: 6
+  sf: 1.5
+  why: 6 g pull-out on an elliptical lift distribution where the tubes leave the hub (y 195 = hub_y1); SF 1.5 on the low tensile strength figure
+- id: fold_pull_r
+  check: fold_hinge_moment
+  joint: fold_r
+  item: hub_r
+  side: right
+  speed_kmh: 84
+  cd: -0.08
+  actuator: sweep_servo_r
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: pivot_y
+  extra_nmm: 20
+  why: '4 g pull at the manoeuvring speed (84 km/h = stall 42 x sqrt 4) at CL ~1.0, alpha ~11 deg: net chordwise force cd cos a - cl sin a = 0.11 x 0.98 - 1.0 x 0.19 = -0.08 (forward; cd 0.03 profile + 0.08 induced, A 5); 20 N mm ball-bearing and gear-mesh friction (DESIGN.md); MG996R stall x 21/13 x 50 %'
+- id: fold_pull_l
+  check: fold_hinge_moment
+  joint: fold_l
+  item: hub_l
+  side: left
+  speed_kmh: 84
+  cd: -0.08
+  actuator: sweep_servo_l
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: pivot_y
+  extra_nmm: 20
+  why: mirror of fold_pull_r
+- id: fold_dive_r
+  check: fold_hinge_moment
+  joint: fold_r
+  item: hub_r
+  side: right
+  speed_kmh: 150
+  cd: 0.015
+  cl: 0.05
+  actuator: sweep_servo_r
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: pivot_y
+  extra_nmm: 20
+  why: 'opening the folded wing in a 150 km/h dive (about the prop''s pitch speed on 6S, DESIGN.md): CL 0.05, cd 0.015 (aft, resists opening) + 20 N mm friction; the 50 % fraction is 2x the 1.5x-drag rule LisEagle sized its fold actuator by (REFERENCES.md)'
+- id: fold_dive_l
+  check: fold_hinge_moment
+  joint: fold_l
+  item: hub_l
+  side: left
+  speed_kmh: 150
+  cd: 0.015
+  cl: 0.05
+  actuator: sweep_servo_l
+  ratio: 1.6154
+  max_fraction: 0.5
+  root_y: pivot_y
+  extra_nmm: 20
+  why: mirror of fold_dive_r
+- id: sweep_gears
+  check: gear_bending
+  module: 2
+  z_driver: 13
+  z_driven: 21
+  width: 10
+  torque_nmm: 921.8
+  material: PETG
+  sf: 3.0
+  why: Lewis bending at the MG996R's stall (9.4 kg cm = 921.8 N mm) on the PETG pinion's 10 mm engaged width, SF 3 (a stalled servo drives the teeth repeatedly)
+- id: stop_spread_r
+  check: hard_stop
+  joint: fold_r
+  beyond: -3
+  why: 'spread is a real stop (the forward pull at high lift and the failsafe both drive the panel onto it): 3 deg past 0 the hub''s sector hits the pod''s stop post'
+- id: stop_spread_l
+  check: hard_stop
+  joint: fold_l
+  beyond: -3
+  why: mirror of stop_spread_r
+- id: stop_fold_r
+  check: hard_stop
+  joint: fold_r
+  beyond: 68
+  why: 'the folded end is a real stop: 3 deg past 65 the sector hits the pod''s other stop post'
+- id: stop_fold_l
+  check: hard_stop
+  joint: fold_l
+  beyond: 68
+  why: mirror of stop_fold_r
+- id: fold_tail_clear_r
+  check: clearance_min
+  a: wing_r2
+  b: hstab
+  min_mm: 15
+  joints: [fold_r]
+  samples: 14
+  why: the folded right panel passes the tail with >= 15 mm (flex, gusts)
+- id: fold_tail_clear_l
+  check: clearance_min
+  a: wing_l2
+  b: hstab
+  min_mm: 15
+  joints: [fold_l]
+  samples: 14
+  why: mirror
+- id: view_clear_r
+  check: clearance_min
+  a: wing_r2
+  b: camera_view
+  min_mm: 10
+  joints: [fold_r]
+  samples: 8
+  why: 'the brief''s promise: folded panels never enter the FPV view (the view cone is the camera''s useful 120 x 40 deg forward field, DESIGN.md)'
+- id: view_clear_l
+  check: clearance_min
+  a: wing_l2
+  b: camera_view
+  min_mm: 10
+  joints: [fold_l]
+  samples: 8
+  why: mirror
+- id: twr
+  check: thrust_to_weight
+  motors: [motor]
+  min_ratio: 0.8
+  why: 'hand launch with a confident climb: T/W >= 1/(L/D) 0.125 + climb gradient 0.3 (4.5 m/s at 15 m/s) = 0.43, x ~1.35 for a 7 in FPV prop''s static-to-flight thrust drop = 0.58, rounded up to 0.8 for a hand launch without the bungee'
+- id: flight_time
+  check: flight_time
+  min_min: 20
+  why: '12+ min of MIXED flying (the brief): level cruise at 55 km/h must last >= 20 min on 80 % of the pack; the mix 40 % cruise, 25 % half swept at 2x cruise power, 15 % climbs at ~4x, 20 % dives at idle averages ~1.65x cruise power, so 20 min of cruise = ~12 min mixed (DESIGN.md "Flight time")'
+- id: power
+  check: power_budget
+  why: pack C rating, FC current sensor, ESC, both BECs, XT60 and every wire inside their ratings in cruise and at full throttle
+- id: prop_clear
+  check: prop_clearance
+  min_mm: 5
+  joints: [fold_r, fold_l]
+  why: the 7 in prop clears every part by 5 mm at every sweep angle
+- id: auw
+  check: mass_max
+  max_g: 1800
+  why: 'all-up mass <= 1800 g: keeps the spread loading under 95 g/dm2 and the stall under 45 km/h on the 20 dm2 wing (DESIGN.md mass budget)'
+- id: case_fit
+  check: size_max
+  max_mm: [500, 330, 220]
+  include: [fuselage, nose, motor_mount, motor, hatch, glove, pod_r, pod_l, cap_r, cap_l, sweep_servo_r, sweep_servo_l, sweep_horn_r, sweep_horn_l, pinion_r, pinion_l, pin_r, pin_l, battery, pad, strap, xt60, esc, fc, receiver, vtx, gps, camera, boom_clamp]
+  why: 'wings, tail and boom off, prop and VTX antenna unscrewed: the body (fuselage, glove, nacelles, nose, motor) fits a backpack case of about 500 x 330 x 220 mm inside (the panels, boom + tail go beside it)'
+- id: xt60_plug
+  check: connector_access
+  item: xt60
+  direction: [0, 0, 1]
+  length_mm: 25
+  why: with the hatch off, the pack's XT60 plugs in from above, ahead of the pack

@@ -1,9 +1,0 @@
-{
- "item": "Maker download containment: refuse linked or special generated output files so a project ZIP contains only regular files within its own output tree; preserve valid nested maker outputs and explain invalid exports.",
- "session": "codex-maker-export-safety",
- "since": 1793660839.7234309,
- "heartbeat": 1793660839.7234309,
- "provider": "Codex",
- "thread_id": "01a19e35-36af-7000-955d-7cf26845e15b",
- "since_utc": "2026-11-02 23:07"
-}

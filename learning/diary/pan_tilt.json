@@ -1,0 +1,1511 @@
+{
+ "project": "pan_tilt",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "e4ca145e",
+   "time": "2026-10-31T01:28:17+00:00",
+   "subject": "pan_tilt WIP: contract + base, yoke, bracket; check/build pass; catalog: CM3 FOV + rear clearance",
+   "parts": [
+    "base",
+    "bracket",
+    "layout",
+    "yoke"
+   ]
+  },
+  {
+   "hash": "2c6539fa",
+   "time": "2026-10-31T01:43:24+00:00",
+   "subject": "pan_tilt: FEA, clearances, CG, DESIGN.md + REFERENCES.md, print details (teardrops, fillets, stiffer yoke plate)",
+   "parts": [
+    "bracket",
+    "yoke"
+   ]
+  },
+  {
+   "hash": "c0627290",
+   "time": "2026-10-31T02:10:34+00:00",
+   "subject": "pan_tilt review round 1 fixes: horn spline engagement (catalog spline_engage for the 21T micro horn), FPC notch, roomier servo pocket + lead slot, 0.9 mm pivot ",
+   "parts": [
+    "base",
+    "bracket",
+    "yoke"
+   ]
+  },
+  {
+   "hash": "d68e6ef4",
+   "time": "2026-10-31T02:16:42+00:00",
+   "subject": "pan_tilt: tilt axis +1.5 mm so the camera clears the pan-horn screw heads now modelled by kerf (heads.py)",
+   "parts": []
+  },
+  {
+   "hash": "7ba81224",
+   "time": "2026-10-31T02:24:11+00:00",
+   "subject": "pan_tilt: design-reviewer round 2 PASS (fingerprint c035849619be1e50, 7 minor findings)",
+   "parts": []
+  },
+  {
+   "hash": "d97ab0b2",
+   "time": "2026-10-31T02:48:00+00:00",
+   "subject": "pan_tilt: electrical system (5 V adapter, barrel-jack terminals, Pi Zero 2 W, routed servo runs, power_budget) per ENGINEERING.md 10b; review round 3 record",
+   "parts": [
+    "base"
+   ]
+  },
+  {
+   "hash": "1d79f40d",
+   "time": "2026-10-31T03:04:29+00:00",
+   "subject": "Electrical/assembly-doc follow-ups: power_budget voltage drop (avg must hold, peak sag reported; tests by hand), wire-end verbs (ends:/catalog terminal: solder|",
+   "parts": []
+  },
+  {
+   "hash": "25528dc3",
+   "time": "2026-10-31T03:12:14+00:00",
+   "subject": "pan_tilt: catalog_deps.json (per-project catalog fingerprint)",
+   "parts": []
+  },
+  {
+   "hash": "6a808abf",
+   "time": "2026-10-31T03:16:21+00:00",
+   "subject": "pan_tilt: design-reviewer round 4 PASS (fingerprint 27adc6f9dbb40dd8, minors only); STATUS",
+   "parts": []
+  },
+  {
+   "hash": "b6d71a9f",
+   "time": "2026-10-31T03:20:55+00:00",
+   "subject": "pan_tilt: catalog_deps.json after rebuild on the new engine",
+   "parts": []
+  },
+  {
+   "hash": "10e312f6",
+   "time": "2026-10-31T03:23:00+00:00",
+   "subject": "pan_tilt: design-reviewer round 5 re-confirm PASS at fingerprint 1dc98e4ae7048aca (engine/catalog-only change)",
+   "parts": []
+  },
+  {
+   "hash": "c7c4993c",
+   "time": "2026-10-31T10:16:42+00:00",
+   "subject": "E6 stumbles #8/#19/#20: SG90 gear boss + lead-exit envelope (flex), servo_mount lead clearance, stock SG90 arm horns, insert onto placed children, horn centre-s",
+   "parts": [
+    "base"
+   ]
+  },
+  {
+   "hash": "f118ac07",
+   "time": "2026-10-31T10:36:01+00:00",
+   "subject": "pan_tilt audit F11-F18: shoulder-screw pivot in a heat-set insert, horizontal tap pilots (engine, test), wall/standoff edge distance, camera-knock base FEA + pa",
+   "parts": [
+    "bracket",
+    "yoke"
+   ]
+  },
+  {
+   "hash": "f2445eeb",
+   "time": "2026-10-31T10:57:13+00:00",
+   "subject": "pan_tilt: review round 1 (audit) fixes \u2014 base cavity 1 mm below the servo for the tab-height spread, yoke knock FEA cases, DESIGN numbers/notes",
+   "parts": [
+    "base"
+   ]
+  },
+  {
+   "hash": "852611aa",
+   "time": "2026-10-31T11:16:24+00:00",
+   "subject": "pan_tilt: audit re-review PASS (b13fdb08322fb884)",
+   "parts": []
+  },
+  {
+   "hash": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "subject": "re-reviews after bd486a2's catalog-only change: fpv_5in, pan_tilt, tvc_drone PASS; robot_arm FAIL (gripper stands on its wrist discs: new bed-contact check). bo",
+   "parts": []
+  },
+  {
+   "hash": "c3e2f857",
+   "time": "2026-10-31T22:04:42-04:00",
+   "subject": "Maker-facing reports: units and min/max on every check, device vs off-board mass, held_by/off_board with an unattached-item check, off-board section in ASSEMBLY",
+   "parts": []
+  },
+  {
+   "hash": "9a8f1fbe",
+   "time": "2026-10-31T22:57:28-04:00",
+   "subject": "BOM: every project purchase priced from a shop page; merged notes; biggest packs",
+   "parts": []
+  },
+  {
+   "hash": "b51131a5",
+   "time": "2026-10-31T23:38:29-04:00",
+   "subject": "ASSEMBLY.md: bench sub-assemblies join at their parent's step, step 0 test-fit, servo centring, bring-up programs",
+   "parts": []
+  },
+  {
+   "hash": "a9ba5861",
+   "time": "2026-10-31T23:44:21-04:00",
+   "subject": "WIRING: routes by landmarks, controller pins with header pin numbers, every electrical extra fitted",
+   "parts": []
+  },
+  {
+   "hash": "ed1f9473",
+   "time": "2026-11-01T13:35:58-05:00",
+   "subject": "params state their unit (mm / \u00b0 / teeth) in the six finished projects; test",
+   "parts": []
+  },
+  {
+   "hash": "a2cd3fee",
+   "time": "2026-11-01T15:32:49-05:00",
+   "subject": "Inside-corner detail pass: kerf.features.fillet_inside (rounds every corner kerf.edges reports, drops a pass gmsh cannot mesh) and ctx.keep_sharp for mating cor",
+   "parts": [
+    "base",
+    "bracket",
+    "yoke"
+   ]
+  },
+  {
+   "hash": "b41ff102",
+   "time": "2026-11-01T17:33:31-05:00",
+   "subject": "fillet_inside: where kerf.coves refuses a corner because a face is interrupted at an end, a cove that stops 1.5 mm short of both ends (fillet run-outs); pan_til",
+   "parts": [
+    "yoke"
+   ]
+  },
+  {
+   "hash": "24226679",
+   "time": "2026-11-01T17:51:01-05:00",
+   "subject": "pan_tilt DESIGN: declared yoke corners",
+   "parts": []
+  },
+  {
+   "hash": "d65a9355",
+   "time": "2026-11-01T19:35:06-05:00",
+   "subject": "fillet_inside(occ=True): OCC's real fillet first where it is known to work (it blends where a cove must stop short: a cove's end stub on the pan_tilt yoke's ser",
+   "parts": [
+    "base",
+    "bracket",
+    "yoke"
+   ]
+  },
+  {
+   "hash": "e6ce4e64",
+   "time": "2026-11-01T20:00:19-05:00",
+   "subject": "pan_tilt: yoke FPC notch now goes through the plate (it was a 3 mm pocket from below); OCC-first detail pass, refreshed FEA numbers",
+   "parts": [
+    "yoke"
+   ]
+  },
+  {
+   "hash": "43428835",
+   "time": "2026-11-01T20:24:42-05:00",
+   "subject": "Modes: kerf run <p> --mode sketch|print|check|simulate|kit|ship (kerf/modes.py switches pipeline stages; deeper modes reuse the part and FEA caches; ship refuse",
+   "parts": []
+  },
+  {
+   "hash": "04890bea",
+   "time": "2026-11-01T20:34:30-05:00",
+   "subject": "Studio depth picker (Sketch / Print it / Check it / Simulate it / Build kit, each with usual time and cost; Upgrade to Build kit; Ship it behind its own confirm",
+   "parts": []
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "c0627290",
+   "time": "2026-10-31T02:10:34+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 6
+  },
+  {
+   "commit": "7ba81224",
+   "time": "2026-10-31T02:24:11+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "d97ab0b2",
+   "time": "2026-10-31T02:48:00+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 7
+  },
+  {
+   "commit": "6a808abf",
+   "time": "2026-10-31T03:16:21+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "10e312f6",
+   "time": "2026-10-31T03:23:00+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "f2445eeb",
+   "time": "2026-10-31T10:57:13+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 6
+  },
+  {
+   "commit": "852611aa",
+   "time": "2026-10-31T11:16:24+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 6
+  },
+  {
+   "commit": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 10
+  },
+  {
+   "commit": "43428835",
+   "time": "2026-11-01T20:24:42-05:00",
+   "date": "2026-11-01",
+   "verdict": "FAIL",
+   "findings": 10
+  }
+ ],
+ "problems": [
+  {
+   "id": "pan_tilt-1",
+   "source": "review",
+   "severity": "blocker",
+   "part": "yoke / bracket / base (layout.py via catalog servo_horns.aluminum_micro_21T)",
+   "issue": "The horn does not engage the spline in the model. The catalog horn entry has hub_height 4.0 (hub bottom to disc top) but no spline_engage, so iface.horn_dims gives hub_h = 4.0 - 0 = 4.0 and the horn proxy sits with its hub bottom exactly at the spline top (y = 21.0 for the tilt horn, spline occupying 21.0..24.2). A real horn slides ~3.2 mm (the SG90 spline length in servos.SG90.shaft_h note) down over the spline, so its disc face is only ~0.8 mm above the spline top. The catalog's own aluminum_25T note records exactly this bug ('before 2026-10-31 it sat on top of it, 4 mm too far out'). Conseq",
+   "fix": "Add spline_engage (about 3.2, cite the SG90 spline length / Tinytronics already quoted in servos.SG90) to catalog servo_horns.aluminum_micro_21T, keep confidence 'estimate' with a measure-your-horn note, then rebuild: hub_h becomes 0.8 and horn_face_z, wall_out, wall_in, horn_y and the pivot span all follow. Re-run kerf check and re-confirm the pivot screw length/thread engagement (kerf pins), piv",
+   "found_commit": "c0627290",
+   "found_time": "2026-10-31T02:10:34+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "c0627290"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7ba81224",
+   "resolved_time": "2026-10-31T02:24:11+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 14,
+   "active_minutes_est": 14,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-2",
+   "source": "review",
+   "severity": "minor",
+   "part": "project.yaml bom_extra",
+   "issue": "The BOM is inconsistent. bom_extra lists 'M3 x 10 SHCS + washer' for the pivot, while the fastener check picks M3 x 12 and the BOM also lists an 'M3 x 12 (pivot)' row, so the pivot appears twice with different lengths. M3 x 10 would leave only ~4.4 mm of thread in the knuckle.",
+   "fix": "Delete or correct the bom_extra M3 x 10 entry. Keep one M3 x 12 (length re-checked after the horn fix) plus one M3 washer.",
+   "found_commit": "c0627290",
+   "found_time": "2026-10-31T02:10:34+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "c0627290"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7ba81224",
+   "resolved_time": "2026-10-31T02:24:11+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 14,
+   "active_minutes_est": 14,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-3",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke / base",
+   "issue": "No camera FPC or servo-lead routing. The camera FPC (~12-16 mm wide) hangs from the camera's lower edge. The only hole in the yoke plate is the ~4 mm horn centre-screw access, and there is no strain relief or clip. With +-90 deg pan it will be dragged across the base and the tilted bracket. Only the tilt servo lead has a tie point. kerf also warns about the missing electrical section.",
+   "fix": "Add a cable-tie or FPC clip slot on the yoke plate near the pan axis (or a slot through the plate) and an electrical: block in project.yaml. State a minimum FPC loop length in DESIGN.md.",
+   "found_commit": "c0627290",
+   "found_time": "2026-10-31T02:10:34+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "c0627290"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7ba81224",
+   "resolved_time": "2026-10-31T02:24:11+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 14,
+   "active_minutes_est": 14,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-4",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Servo pocket is only 0.3 mm per side (23.2 x 12.8 for a 22.6 x 12.2 case) and 15.6 mm deep. With FDM hole shrinkage and the SG90 body-width spread in the catalog (11.8-12.2), a drop-in fit is marginal. The servo-lead slot starts 12 mm up and is only 3.6 mm wide for a flat 3-wire lead.",
+   "fix": "Raise the pocket clearance to ~0.5 mm per side (or add a calibration note to print the base first, as DESIGN section 9 already suggests) and widen the lead slot to ~5 mm.",
+   "found_commit": "c0627290",
+   "found_time": "2026-10-31T02:10:34+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "c0627290",
+    "7ba81224",
+    "d97ab0b2"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d97ab0b2",
+   "resolved_time": "2026-10-31T02:48:00+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-5",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke / bracket",
+   "issue": "Moving clearance is thin: cam_clear min is 0.6 mm against a 0.5 mm limit and the pivot axial gap is 0.6 mm, both on printed PETG parts with 0.1-0.2 mm dimensional error. The bracket also has only 3.5% overhang area, mostly 45-deg roofs and teardrops of the small horizontal holes. These should print, but the 2.4 mm key holes are marginal.",
+   "fix": "After the horn fix, give cam_clear >= 0.8 mm if the geometry allows. Print the bracket first as a fit test.",
+   "found_commit": "c0627290",
+   "found_time": "2026-10-31T02:10:34+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "c0627290"
+   ],
+   "status": "resolved",
+   "resolved_commit": "7ba81224",
+   "resolved_time": "2026-10-31T02:24:11+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 14,
+   "active_minutes_est": 14,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-6",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Tripod screw engagement depends on A2 (screw protrusion). The nut top sits 7.24 mm above the base underside, so a 5-6 mm screw engages only ~3-4 threads beyond the 1.5 mm floor. Fine for 60 g, but there is no stop and a >8 mm screw hits the pan servo at z = 10.",
+   "fix": "State the supported protrusion range (about 5.5-8 mm) in DESIGN.md and the assembly notes.",
+   "found_commit": "c0627290",
+   "found_time": "2026-10-31T02:10:34+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "c0627290",
+    "7ba81224",
+    "d97ab0b2"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d97ab0b2",
+   "resolved_time": "2026-10-31T02:48:00+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-7",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke",
+   "issue": "Pan-horn screws are M2 x 8 through the 6 mm plate, so they engage only 2.0 mm in a horn disc that the catalog lists as an UNVERIFIED 2.0 mm estimate. That is 1 d of thread in aluminium and the tip ends flush. If the real disc is thinner, the thread is short.",
+   "fix": "Measure the purchased horn. Keep the M2 x 8 only if the disc is at least 2 mm thick; otherwise reduce yoke_t to 5 or add a thin shim, then update the catalog value.",
+   "found_commit": "7ba81224",
+   "found_time": "2026-10-31T02:24:11+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "7ba81224",
+    "d97ab0b2"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d97ab0b2",
+   "resolved_time": "2026-10-31T02:48:00+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 24,
+   "active_minutes_est": 24,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-8",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Tilt horn screws are M2 x 6 through the 3.5 mm arm, giving 2.5 mm into the same estimated 2 mm disc. The tips protrude about 0.5 mm toward the servo boss. Clearance is fine in the model, but it depends on the estimated hub depth.",
+   "fix": "Verify with the real horn. If the hub is shallower than assumed, use M2 x 5 or recheck the clearance to the servo boss.",
+   "found_commit": "7ba81224",
+   "found_time": "2026-10-31T02:24:11+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "7ba81224"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d97ab0b2",
+   "resolved_time": "2026-10-31T02:48:00+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 24,
+   "active_minutes_est": 24,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-9",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke",
+   "issue": "The yoke needs support or bridging at the tilt-servo window, which has a 12.8 mm top bridge, plus the ledge slots and the FPC notch. The part sheet shows ragged window edges at the top of the +Y wall. The overhang is flagged only as 1.9%, but the bridge quality decides how the servo case seats.",
+   "fix": "Check the sliced preview of the window. Add a 0.2 mm sacrificial layer or enable bridge-flow tuning, and ream the window to size if it sags.",
+   "found_commit": "7ba81224",
+   "found_time": "2026-10-31T02:24:11+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "7ba81224",
+    "d97ab0b2"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d97ab0b2",
+   "resolved_time": "2026-10-31T02:48:00+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 24,
+   "active_minutes_est": 24,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-10",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Slicer warning: 3.5% of the surface needs support. The cause is the teardrop and 45-degree holes and the horizontal horn-key access holes (2.4 mm). The small 2.4 mm teardrop holes may close up or leave strings, so the 1.5 mm key may not pass cleanly.",
+   "fix": "Ream the 2.4 mm key-access holes with a 2.5 mm drill after printing, and say so in ASSEMBLY.md.",
+   "found_commit": "7ba81224",
+   "found_time": "2026-10-31T02:24:11+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "7ba81224",
+    "d97ab0b2"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d97ab0b2",
+   "resolved_time": "2026-10-31T02:48:00+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 24,
+   "active_minutes_est": 24,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-11",
+   "source": "review",
+   "severity": "minor",
+   "part": "pan_tilt",
+   "issue": "No electrical: block (kerf warning). Servo power and signal, the 5 V supply and bulk capacitor (A6), and the lead strain relief are described in prose only. The tilt servo lead is tied to the yoke and then dangles to the base without a strain relief at the pan axis; with +/-90 deg pan it twists around the horn.",
+   "fix": "Add the electrical block (servo pair 5 V >= 1 A, 470-1000 uF). Specify a loose lead loop at the pan axis of at least 60 mm, like the FPC, in ASSEMBLY.md.",
+   "found_commit": "7ba81224",
+   "found_time": "2026-10-31T02:24:11+00:00",
+   "review_round": 2,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "7ba81224"
+   ],
+   "status": "resolved",
+   "resolved_commit": "d97ab0b2",
+   "resolved_time": "2026-10-31T02:48:00+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 24,
+   "active_minutes_est": 24,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-12",
+   "source": "review",
+   "severity": "major",
+   "part": "pan_tilt",
+   "issue": "No `electrical:` / `wiring:` block (kerf warns). ENGINEERING.md 10b says every project that moves or powers anything must derive the whole electrical system: servo supply/BEC as a catalog item, power_budget, run_time, and each run declared in `wiring:` with gauge and cut length >= routed length + 15 %. DESIGN.md A6 only gives 5 V >= 1 A and 470-1000 uF in prose, and the review history says 'not done'. Nothing proves the supply can feed two SG90s (stall about 0.65 A each), and nothing defines the servo-lead and FPC runs that must survive pan +/-90 deg and tilt -35..+65. The tilt servo lead is o",
+   "fix": "Add an `electrical:` block with a catalog-sourced 5 V supply or BEC and a controller or PCA9685 (catalog entries exist), a power_budget at the 2 x stall peak and a run_time. Add `wiring:` for the two servo leads (Pololu 300 mm servo lead is in the catalog), with cut lengths from the worst pose and the >= 60 mm slack loop at the pan axis. Mention the 470-1000 uF capacitor in the BOM. Re-run kerf ch",
+   "found_commit": "d97ab0b2",
+   "found_time": "2026-10-31T02:48:00+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "d97ab0b2"
+   ],
+   "status": "resolved",
+   "resolved_commit": "6a808abf",
+   "resolved_time": "2026-10-31T03:16:21+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 28,
+   "active_minutes_est": 28,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-13",
+   "source": "review",
+   "severity": "minor",
+   "part": "pan_tilt",
+   "issue": "The cam_clear margin (bracket to yoke) is 0.9 mm against a 0.8 mm limit, which equals the 0.9 mm pivot gap. FDM tolerance on both parts can consume that margin, and the M3 screw head is told to be backed off only 1/8 turn.",
+   "fix": "Check the pivot rotation freely after assembly. Use a shoulder screw, or increase pivot_gap to 1.0 (the param max) if it binds.",
+   "found_commit": "d97ab0b2",
+   "found_time": "2026-10-31T02:48:00+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "d97ab0b2"
+   ],
+   "status": "resolved",
+   "resolved_commit": "6a808abf",
+   "resolved_time": "2026-10-31T03:16:21+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 28,
+   "active_minutes_est": 28,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-14",
+   "source": "review",
+   "severity": "minor",
+   "part": "pan_servo/tilt_servo/horns",
+   "issue": "The 21T aluminium horn bolt circle (12 mm), M2 thread and 4 mm hub depth are catalog ESTIMATES (A3). The SG90 tab-hole position and shaft offset were scaled from a drawing. A wrong horn puts four bolt holes in the bracket and yoke in the wrong place.",
+   "fix": "Measure the purchased horns and servos before printing. Print the base first as a test-fit coupon, and print the bracket's horn plate before the full part. Update the catalog if the numbers differ.",
+   "found_commit": "6a808abf",
+   "found_time": "2026-10-31T03:16:21+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "6a808abf",
+    "10e312f6"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4993c",
+   "resolved_time": "2026-10-31T10:16:42+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 420,
+   "active_minutes_est": 97,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-15",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket/yoke",
+   "issue": "The pivot axial gap is 0.9 mm against a 0.8 mm cam_clear requirement, so only 0.1 mm of margin. Shrinkage or elephant's foot on the yoke -Y wall and the knuckle could bind the tilt, and the pivot screw is meant to be backed off 1/8 turn.",
+   "fix": "After the first print, check the tilt by hand. If it is tight, face the knuckle or wall with a 0.2 mm shim or sand the faces. Consider 1.0 mm (the param max) as the default.",
+   "found_commit": "6a808abf",
+   "found_time": "2026-10-31T03:16:21+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "6a808abf",
+    "10e312f6"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4993c",
+   "resolved_time": "2026-10-31T10:16:42+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 420,
+   "active_minutes_est": 97,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-16",
+   "source": "review",
+   "severity": "minor",
+   "part": "wiring (project.yaml)",
+   "issue": "The WIRING steps say to cut and solder jack -> servo. An SG90 ships with its own 3-pin JR lead, and splitting power and signal as separate 2-conductor runs implies cutting that lead. Nothing specifies the connector for the 300 mm servo extensions, or that power and signal rejoin into one 3-pin plug. Wire mass is not counted in the 59.3 g head mass either (about 1 g, negligible).",
+   "fix": "State in WIRING/BOM that the runs are two 300 mm 3-pin servo extensions with their pins split at the supply end (red/brown to the jack, orange to the Pi GPIO). Add the 3-pin extension cable to bom_extra.",
+   "found_commit": "6a808abf",
+   "found_time": "2026-10-31T03:16:21+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "6a808abf",
+    "10e312f6"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4993c",
+   "resolved_time": "2026-10-31T10:16:42+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 420,
+   "active_minutes_est": 97,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-17",
+   "source": "review",
+   "severity": "minor",
+   "part": "electrics",
+   "issue": "The Pi's 3.3 V GPIO drives the SG90 signal pin directly. This usually works, but there is no series resistor, and the common GND between the Pi USB supply and the servo supply is only a note. A missed ground tie gives twitching servos.",
+   "fix": "Add a 330 ohm to 1 kohm series resistor on each signal line and a bolded common-ground step to ASSEMBLY/WIRING. Keep the 470-1000 uF cap at the jack as already specified.",
+   "found_commit": "6a808abf",
+   "found_time": "2026-10-31T03:16:21+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "6a808abf",
+    "10e312f6"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4993c",
+   "resolved_time": "2026-10-31T10:16:42+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 420,
+   "active_minutes_est": 97,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-18",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "3.5% of the surface is flagged as needing support: the 45-degree and teardrop faces, plus the roofs of the 2.4 mm horizontal key-access holes and the M3 knuckle pilot. The key-access holes are tiny and are likely to print with sag.",
+   "fix": "Check the sliced preview for the key-access holes and clean them with a 2.4 mm drill if needed. No geometry change required.",
+   "found_commit": "6a808abf",
+   "found_time": "2026-10-31T03:16:21+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "6a808abf",
+    "10e312f6"
+   ],
+   "status": "resolved",
+   "resolved_commit": "f118ac07",
+   "resolved_time": "2026-10-31T10:36:01+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 440,
+   "active_minutes_est": 116,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-19",
+   "source": "review",
+   "severity": "minor",
+   "part": "base/yoke",
+   "issue": "Load axis Z runs across layers on all three parts. FEA proves SF 3 against the Z strength with large margin (peaks 1.6, 3.9 and 3.6 MPa against 13 MPa). The yoke wall roots and the tilt tab pilots still have the weakest layer orientation, and the printed M2 pilots wear (already noted in section 10).",
+   "fix": "Print at 100% on the yoke walls, or at 5+ perimeters. Treat the tab screws as service-limited and re-tap or fit M2 heat-set inserts if they wear.",
+   "found_commit": "6a808abf",
+   "found_time": "2026-10-31T03:16:21+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "6a808abf",
+    "10e312f6"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4993c",
+   "resolved_time": "2026-10-31T10:16:42+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 420,
+   "active_minutes_est": 97,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-20",
+   "source": "review",
+   "severity": "minor",
+   "part": "BOM",
+   "issue": "Several items are unpriced (servos, PSU, jack, Pi, camera, FPC, capacitor, USB supply). The horn price is $14.98 each, close to half the build cost, for parts whose geometry is estimated.",
+   "fix": "Add prices, and confirm the horn geometry before buying two of them.",
+   "found_commit": "6a808abf",
+   "found_time": "2026-10-31T03:16:21+00:00",
+   "review_round": 4,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4544 bytes",
+   "rounds_seen": [
+    "6a808abf",
+    "10e312f6"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c7c4993c",
+   "resolved_time": "2026-10-31T10:16:42+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 420,
+   "active_minutes_est": 97,
+   "parts_redrawn": [
+    "base"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-21",
+   "source": "review",
+   "severity": "major",
+   "part": "base",
+   "issue": "Zero vertical clearance for the slide-in pan servo. The servo bottom sits at servo_floor_z = 10.0 mm, which is exactly the top of the nut plinth, because the cavity box starts at z = servo_floor_z. The tab tops sit exactly on the deck underside (deck_z = tab_z + tab_t). Horizontal CLEAR is 0.5 mm per side, but the vertical stack has none. catalog SG90 note: tab underside is 15.6 mm (baud-dance) to ~16 mm (TowerPro drawings), a 0.4 mm spread. At 16.0 the servo bottom would be 0.4 mm below the plinth top, so it cannot slide in from -Y. At the low end the tab leaves a gap under the deck and the M",
+   "fix": "Lower the cavity floor so the servo hangs from the deck on its tabs with a gap above the plinth. For example, start the cavity 1.0 mm below servo_floor_z (or add a vertical CLEAR term to the cavity), keeping the 8 mm tripod-screw tip room. The servo then hangs from the tab tops, as DESIGN.md says, and tolerates 15.6-16.0 mm. Update the tab-seat/tab_z maths and re-run the insertion check.",
+   "found_commit": "f2445eeb",
+   "found_time": "2026-10-31T10:57:13+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "f2445eeb"
+   ],
+   "status": "resolved",
+   "resolved_commit": "852611aa",
+   "resolved_time": "2026-10-31T11:16:24+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 19,
+   "active_minutes_est": 19,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-22",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke",
+   "issue": "The 30 N knock at the camera was added to base_fea (F15), but the yoke has only the 5 N pivot load and the stall cases. A sideways 30 N at the tilt axis (29.5 mm above the plate) puts about 0.9 N*m at the wall root. A hand estimate for a bare 30 x 5 mm wall section gives about 7 MPa across layers against the 13 MPa allowable. The gussets should lower this, but it is not proven.",
+   "fix": "Add a yoke FEA case with a 30 N knock along Y at the tilt axis, and reacted at the pan-horn screws. Or add a cantilever_stress hand check.",
+   "found_commit": "f2445eeb",
+   "found_time": "2026-10-31T10:57:13+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "f2445eeb"
+   ],
+   "status": "resolved",
+   "resolved_commit": "852611aa",
+   "resolved_time": "2026-10-31T11:16:24+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 19,
+   "active_minutes_est": 19,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-23",
+   "source": "review",
+   "severity": "minor",
+   "part": "DESIGN.md",
+   "issue": "Numbers have gone stale after the rework. DESIGN.md says 59.3 g complete and printed masses of base 14.2 g, yoke 12.8 g, bracket 6.0 g; report.json says 67.6 g, with perimeter-aware estimates of 18.0, 16.0 and 7.6 g. Envelopes are also off (yoke 30 x 72.9 x 43.1 in the report, 40.6 high in DESIGN.md).",
+   "fix": "Refresh sections 3-4 and 7 from report.json.",
+   "found_commit": "f2445eeb",
+   "found_time": "2026-10-31T10:57:13+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "f2445eeb"
+   ],
+   "status": "resolved",
+   "resolved_commit": "852611aa",
+   "resolved_time": "2026-10-31T11:16:24+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 19,
+   "active_minutes_est": 19,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-24",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "The two tab-screw pilots sit about 2 mm from the deck slot edge (ring 79% material, as the edge-distance warning shows), leaving about 1.2 mm of thread ligament. The FEA peak (9.1 MPa, pilot at the slot corner) is the highest stress in the project. The pilots start in a bridged deck underside.",
+   "fix": "Print the base first as a coupon. If the pilots strip, fit M2 heat-set inserts or widen the ledge. Say in DESIGN.md that the pattern forces this edge distance, as the warning asks.",
+   "found_commit": "f2445eeb",
+   "found_time": "2026-10-31T10:57:13+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "f2445eeb"
+   ],
+   "status": "resolved",
+   "resolved_commit": "852611aa",
+   "resolved_time": "2026-10-31T11:16:24+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 19,
+   "active_minutes_est": 19,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-25",
+   "source": "review",
+   "severity": "minor",
+   "part": "base/bracket",
+   "issue": "Putting in the pan servo screws is fiddly. They go up from below through 4.8 mm holes in the plinth and 13 mm of air to the tabs, with a 1.5 mm key that must be at least 25 mm long. Overhang on the bracket is 3.5% (roofs of 2-3 mm horizontal holes).",
+   "fix": "Say in ASSEMBLY that a magnetic or long hex driver and a ball-end key are needed. Check the slice preview of the bracket holes.",
+   "found_commit": "f2445eeb",
+   "found_time": "2026-10-31T10:57:13+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "f2445eeb"
+   ],
+   "status": "resolved",
+   "resolved_commit": "852611aa",
+   "resolved_time": "2026-10-31T11:16:24+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 19,
+   "active_minutes_est": 19,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-26",
+   "source": "review",
+   "severity": "minor",
+   "part": "horns/servos",
+   "issue": "The 21T horn bolt circle, thread and hub height are catalog estimates. The SG90 tab-hole and output-offset positions are scaled from a drawing. The pivot gap (0.9) against cam_clear (0.8) leaves 0.1 mm of margin.",
+   "fix": "Measure the purchased horns and servos before printing the full set. Print the base and the bracket horn plate as test pieces. Hand-check the tilt, and shim or sand the knuckle if it binds.",
+   "found_commit": "f2445eeb",
+   "found_time": "2026-10-31T10:57:13+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "f2445eeb"
+   ],
+   "status": "resolved",
+   "resolved_commit": "852611aa",
+   "resolved_time": "2026-10-31T11:16:24+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 19,
+   "active_minutes_est": 19,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-27",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The generated ASSEMBLY.md puts the shoulder-screw pivot (step 8) before the tilt servo goes in (step 9). It never tells the user to drive the two horn centre screws. DESIGN.md section 8 has the right order: servo in, centre screw through the pivot hole and the 2.4 mm knuckle hole, then the shoulder screw. A user who follows ASSEMBLY.md ends up with the -Y access path to the tilt-horn centre screw blocked by the shoulder screw. The hex_keys check lists that screw as 'straight' only because it is evaluated at the bench stage (step 5, no servo, no yoke).",
+   "fix": "Make the generated assembly text match DESIGN.md section 8. Split the pivot out of the yoke step and place it after tilt_servo. Add explicit 'drive the horn centre screw' lines for both horns. Or add a note in project.yaml assembly_note for tilt_servo: 'drive the tilt horn centre screw through the -Y pivot hole BEFORE the shoulder screw'.",
+   "found_commit": "852611aa",
+   "found_time": "2026-10-31T11:16:24+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "852611aa",
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1996,
+   "active_minutes_est": 460,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-28",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "The pan servo is held only by two M2 self-tap pilots with 3.6 mm engagement (6 mm screw minus 2.4 mm tab) in the bridged underside of the deck. The 30 N camera knock puts about 1260 N\u00b7mm on the tab contact. That is roughly 45 N pull-out on the far screw, which is only about 3x the typical PETG pull-out for M2. The FEA peak (9.2 MPa) is at those pilots, but pull-out is not checked. The pilots also sit 2.1 mm from the window edge (the hole pattern forces this; the DESIGN.md risk list already says so).",
+   "fix": "Print the base first and pull-test the tab screws. If they are marginal, go to M2 x 8 (needs a taller deck, deck_t 6.5) or M2 heat-set inserts. Say in DESIGN.md that the M2 pull-out under the knock moment was not computed.",
+   "found_commit": "852611aa",
+   "found_time": "2026-10-31T11:16:24+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "852611aa",
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1996,
+   "active_minutes_est": 460,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-29",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke",
+   "issue": "The knock cases are judged on p99.9. The local volume peaks are 22.6 MPa (knock_in, pivot-wall root fillet) and 16.8 MPa (knock_out) against 39 MPa across layers, which is SF 1.7 and 2.3 locally. They sit at wall-root corners and are likely mesh singularities. The elastic travel of 1.3-1.7 mm is accepted by a relaxed 2.0 mm limit. In the render the +Y window edge near the upper tab pilots looks ragged (the pilots break into the window edge).",
+   "fix": "Optionally enlarge the root fillets from 1.5 mm to 2.5 mm, or add a gusset at the pivot-wall root. Check the +Y window pilots in the slicer preview. Keep the note that this is a handling transient.",
+   "found_commit": "852611aa",
+   "found_time": "2026-10-31T11:16:24+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "852611aa",
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1996,
+   "active_minutes_est": 460,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-30",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "The 1/4-20 nut pocket is cut from the floor right up into the open cavity, so the nut is not captive until the pan servo is in. Before the servo is fitted, and any time it is removed, the nut can fall out of the open -Y side. The tripod screw tip needs 5.5-8 mm protrusion (A2) and clears the servo bottom by about 2 mm only for 8 mm or shorter screws.",
+   "fix": "Keep the assembly order nut, then servo. Add a line to ASSEMBLY.md and the base note: 'nut is captive only once the pan servo is in'. Put the 8 mm maximum tripod screw protrusion on a label or in the assembly notes.",
+   "found_commit": "852611aa",
+   "found_time": "2026-10-31T11:16:24+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "852611aa",
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1996,
+   "active_minutes_est": 460,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-31",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The M3 heat-set insert hole (4.0 mm) sits in a knuckle of r 4.4 mm, leaving about 2.4 mm of wall, above the catalog minimum of 1.6 mm. The teardrop point adds material below. The knuckle hole depth is 8 mm for a 5.7 mm insert, which is fine. The shoulder screw's 4.5 mm thread against the 5.7 mm insert is fine. Heat-set into a teardrop prism is a one-shot job: a crooked press cannot be fixed.",
+   "fix": "No geometry change needed. Add a press-in jig note: press with the screw loosely threaded as a guide, flush to just below the -Y face.",
+   "found_commit": "852611aa",
+   "found_time": "2026-10-31T11:16:24+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "852611aa",
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1996,
+   "active_minutes_est": 460,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-32",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The horn bolt circle, thread and hub height (catalog A3 estimates), the SG90 tab hole and output offset (scaled from a drawing) and the gear-boss relief are unmeasured. The bracket and yoke fit all depend on them. DESIGN.md section 10 already lists these.",
+   "fix": "Measure the actual horns and servos before printing the bracket and yoke. Print the base first as a test fit, as DESIGN.md says.",
+   "found_commit": "852611aa",
+   "found_time": "2026-10-31T11:16:24+00:00",
+   "review_round": 7,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "852611aa",
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1996,
+   "active_minutes_est": 460,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-33",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The 4 M2 clearance holes of group 'bracket_tilt' (horn screws through the +Y arm) print horizontal but are cut round. iface.horn_mount is called without teardrop, so these holes and the centre-screw access cut get no 45-degree roof (ENGINEERING.md s4; engine warning added in d3677bb, after the previous review). The 2.4 mm ISO 273 medium clearance leaves 0.4 mm over the 2.0 mm screw, so a small sag still passes. The -Y arm key holes and the knuckle are already teardrops.",
+   "fix": "In bracket.py pass teardrop=iface.print_up_deg(ctx, hm) to iface.horn_mount. Then the separate centre-hole roof cut that follows becomes redundant and can stay or go.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1862,
+   "active_minutes_est": 370,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-34",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "base_fea holds the whole bottom face fixed (engine warning: the fixed box holds no fastener site). It does rest on the tripod plate, so this support is real. A fully bonded face also resists tension on the knock's uplift side, which the real joint only gets from the 1/4-20 screw. The hot spot is still in the right place (the deck pilots at the tab screws, 6.16 MPa p99.9 / 9.17 peak vs 13), and that is where the load enters.",
+   "fix": "Optionally fix only the compression side plus the tripod-nut floor ring (or add a second case with that support) to confirm the deck result does not depend on a bonded bottom face.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "123d4b1e",
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-35",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The camera M2 pilots in group 'cam_mount' have only 22 % of a 1.5 x d ring of material at worst, because the standoffs are trimmed on their inner side by the camera rear-parts keep-out. The load is a 4 g camera, so strength is not a concern, but the pilots can split when the self-tapping screws are driven.",
+   "fix": "Drive the camera screws gently by hand, or go to r 3.0 standoffs where the keep-out allows. Note it in DESIGN.md next to the existing edge-distance note.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1862,
+   "active_minutes_est": 370,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-36",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Catalog bd486a2 changed motion.shoulder_4_m3.buy from 97505A139 to 97505A106, the correct 4 x 8 part its buy_note already named. The current out/bom.csv and bom.md were written before that change and still hold the old link next to the right note.",
+   "fix": "Run kerf build pan_tilt so the BOM picks up the 97505A106 link. No geometry change.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 4988 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a2cd3fee",
+   "resolved_time": "2026-11-01T15:32:49-05:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 1862,
+   "active_minutes_est": 370,
+   "parts_redrawn": [
+    "base",
+    "bracket",
+    "yoke"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "pan_tilt-37",
+   "source": "review",
+   "severity": "major",
+   "part": "yoke",
+   "issue": "out/ASSEMBLY.md step 6 says: fit tilt_servo onto the yoke, drive its 2 x M2 x 6 tab screws, then 'join the step-2 sub-assembly: fit tilt_horn onto tilt_servo ... set the driven parts to 15 deg, then fit it'. step_06_iso.png draws the bracket coming in along -Y through the pivot wall. That cannot be done. The horn has to slide 3.2 mm (catalog spline_engage) toward +Y onto the spline, but the knuckle has only pivot_gap 0.9 mm to the -Y wall (layout: pin_wall_in = -(horn_y + pivot_gap)). DESIGN.md section 8 step 6 says so itself: 'the bracket has only 0.6 mm of axial room: it could not be slid on",
+   "fix": "In project.yaml, give tilt_servo `insert: {direction: [0, -1, 0], distance: 30}` (it goes in from outside the +Y wall, moving -Y) so kerf checks that path. Also give it an assembly_note: 'FIRST hold the bracket + tilt horn between the yoke walls at +15 deg (camera tipped up, mid-travel), horn toward the +Y wall; then push the servo in from outside, case top through the window, spline into the horn",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-38",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "The camera-rear trim box starts 0.01 mm in front of the plate face (bracket.py: `Pos(0, 0, -p.standoff + 0.01)`). It removes the inner 1.4 mm of each r 3.6 boss but leaves a 0.01 mm skin of the boss footprint on the plate face. That skin, and the steps it makes, are the stray vertical lines and C-shaped steps on each boss in part_bracket_right/iso. A slicer ignores it, but it is degenerate geometry that the edge, fillet and FEA meshing tools then have to handle.",
+   "fix": "Subtract the keep-out zone from each standoff before `body += so` (so the trim never touches the plate), or start the trim box exactly at the plate face (xf).",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-39",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Outside edges are not broken on the bracket or most of the yoke. ENGINEERING.md s5 asks for a 0.5-1 mm chamfer or fillet, and project.yaml declares `style: edge_break: 0.5`, but only the base applies it (r 4 plan corners, 0.6/0.8 chamfers). The bracket has a 0.4 mm bed chamfer and nothing else: the camera-plate and arm top edges, the front vertical edges and the boss rims are knife-sharp. On the yoke, the plate top edges, the wall vertical edges, the pivot-wall sides and the gusset edges are sharp. The product's edge language is not consistent.",
+   "fix": "After the booleans, chamfer or fillet the remaining convex edges at 0.5 mm (a features helper that breaks every convex edge except mating faces would serve every project). Raise the bracket bed chamfer to 0.5.",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-40",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "The 'servo cavity: the SG90's square case and tabs slide along it' reason is right for the deck-underside corners over the tabs and the tab-level walls. It is wrong for the cavity FLOOR corners (sharp_kept at [0, 6.6, 9.0] len 33.2 and [+-16.6, -3.2, 9.0] len 19.7). The servo sits CAV_DROP = 1 mm above that floor and 0.5 mm off the walls, so an r 1 cove there never touches it. These corners are cold (96 % of the base is cold), so this is about craft, not strength.",
+   "fix": "Narrow the `mating` keep in base.py to z >= cav_z + 0.5 so the floor corners get the style r 1 (or r 0.5).",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-41",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "DESIGN.md section 4 calls the deck legs over the cavity 'short bridges'. They are not bridges. They are 4.7 mm ledges (cav_x 33.2 vs window 23.8) anchored on the end wall and the back wall (two adjacent sides) with free edges on the window and open -Y sides, so they are cantilever overhangs. Their underside is exactly the seat for the pan servo's tab tops, and the M2 pilots start there. In PETG they will droop at the free corners, so the servo can sit tilted.",
+   "fix": "Paint supports (or a tree support) under the two deck ledges inside the cavity in the plate 3MF and the base print note ('supports: allowed' is already set), or check the droop in the slicer preview when you print the base first. Correct the wording in DESIGN.md section 4.",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-42",
+   "source": "review",
+   "severity": "minor",
+   "part": "base",
+   "issue": "Carried forward and still open: ASSEMBLY.md never mentions the 1/4-20 nut (step 1 just says 'Start with base'). The nut drops in through the open -Y side across the cavity floor. Once the pan servo is in, the gap between the cavity floor and the servo bottom is only 1 mm, so a user who follows ASSEMBLY.md has to unscrew the servo to fit the nut. The 8 mm maximum tripod-screw protrusion (A2) is also only in DESIGN.md.",
+   "fix": "Add an assembly_note on pan_servo (or on base): 'drop the 1/4-20 nut into its floor pocket (flats across Y) BEFORE the servo; tripod screw protrusion 5.5-8 mm max'.",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-43",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "Tilt-horn centre screw: the BOM says 'M2 horn centre screw, comes with the servo ... a drop of medium threadlocker: metal into metal'. The SG90's output gear is plastic (nylon). The stock screw is a Phillips self-tapper going into plastic, not metal into metal, and anaerobic threadlocker can stress-crack plastics. DESIGN.md section 8 step 7 says the screw is driven 'with a 1.5 mm key' through the 4 mm pivot hole and the 2.4 mm knuckle hole. A 1.5 mm key does not drive the stock Phillips screw, and a PH00 driver needs a shaft of 2.4 mm or less and about 40 mm of reach.",
+   "fix": "Either buy an M2 socket-head centre screw (length from the horn hub plus spline depth) and list it in bom_extra, or state 'PH00 driver, 2 mm shaft, 40 mm or more' in the note. Drop the threadlocker advice for plastic-gear servos: the engine note should follow the servo's gear material.",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-44",
+   "source": "review",
+   "severity": "minor",
+   "part": "yoke",
+   "issue": "Carried forward: the knock cases pass on p99.9 (9.71 / 9.15 of 13 MPa), but the volume peaks are 22.2 / 18.2 MPa and the surface peak is 14.4 MPa (hot zone [3.3, -11.2, 6.1] at 1.11 x the allowable). The peaks sit at the fixed pan-horn screw holes and the pivot-wall root, so they are partly support singularities. The case is also conservative, since all 30 N goes into one wall where the real bracket shares it with both. Elastic travel of 1.3-1.6 mm is accepted by the relaxed 2.0 mm limit. The +Y servo window edge looks ragged where the 14 mm gear-boss relief bites about 0.7 mm into each side o",
+   "fix": "Optionally go to r 2.5 at the pivot-wall root or put a gusset on the inside of the pivot wall below the bracket swing. Optionally make the gear-boss relief clear of the window sides (a counterbore that stops short of the window), so the window edges stay straight.",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "pan_tilt-45",
+   "source": "review",
+   "severity": "minor",
+   "part": "bracket",
+   "issue": "DESIGN.md has stale numbers after this pass. Section 5 says the camera standoffs are 'r 2.8' (now r 3.6). The section 7 table gives yoke_fea peak 4.0 (now 4.81) and knock 9.55 / 9.31 p99.9 with peaks 17.8 / 22.0 (now 9.15 / 9.71 with 18.19 / 22.20). Sections 4 and 10 give bracket overhang 3.5 % / 1.2 % (now 0.44 %). The section 3 masses (yoke 16.0, bracket 7.6) are now 15.9 / 7.8. Also carried forward: horn, bolt circle and SG90 tab dimensions are catalog estimates; measure them before printing the bracket and yoke.",
+   "fix": "Refresh those numbers from report.json.",
+   "found_commit": "43428835",
+   "found_time": "2026-11-01T20:24:42-05:00",
+   "review_round": 9,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "4 real part files, median 5809 bytes",
+   "rounds_seen": [
+    "43428835"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 45,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 45
+  },
+  "open": 10,
+  "active_minutes_est": 4988,
+  "parts_redrawn": [
+   "base",
+   "bracket",
+   "yoke"
+  ],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}
