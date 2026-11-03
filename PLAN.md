@@ -305,3 +305,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project
 
 - [x] Viewer stage redesign: put real geometry center stage with compact contextual tools, accessible disclosures, optional part colors and grid, and current-template delivery for compatible saved viewers; preserve inspection, motion, cut, stress, assembly and engineering warnings; targeted browser tests.
+
+- [x] Viewer direct definitions: selected technical terms reveal existing glossary meanings on hover, focus or one tap in offline saved viewers.
