@@ -95,3 +95,43 @@ out.rows = await p.$$eval('#quotesready .qrow b', e => e.map(x => x.textContent)
     assert out["errs"] == [], out
     assert "launcher" in out["badge"] and "Resume now" in out["card"] and "Paused" in out["card"] and out["target"] == "job:j1"
     assert out["rows"] == ["launcher"]
+
+
+def test_design_this_needs_no_typing(server, tmp_path, monkeypatch):  # noqa: F811
+    import json
+    qd = tmp_path / "quotes"; qd.mkdir()
+    monkeypatch.setattr(studio, "QUOTES", qd)
+    good = {"title": "A", "summary": "s", "parts_printed": 5, "cost_usd": 21.5, "print_hours": 6, "risks": []}
+    (qd / "launcher_x.json").write_text(json.dumps({"request": "a reusable drone launcher", "options": [good, good | {"title": "B"}], "recommended": 0}))
+    seen = {}
+    def fake_new(name, description, intake=None, option=None, option_index=None):
+        seen.update(name=name, description=description, option=option if option is not None else option_index)
+        return type("J", (), {"id": "j1"})()
+    monkeypatch.setattr(studio, "new_design", fake_new)
+    out = _browser(server + "/", """
+await p.waitForFunction(() => typeof openQuote === 'function');
+await p.evaluate(() => openQuote('launcher_x')); await p.waitForSelector('.qopt button.primary');
+await p.evaluate(() => { $('#ndesc').value = ''; window.watch = () => {}; });   // the box emptied: still starts
+await p.click('.qopt button.primary');
+await p.waitForTimeout(800);
+out.toasts = await p.$$eval('.toast b', e => e.map(x => x.textContent));""", tmp_path)
+    assert out["errs"] == [], out
+    assert seen.get("name") == "launcher_x" and seen.get("description") == "a reusable drone launcher" and seen["option"], (seen, out)
+    assert "Design started" in out["toasts"], out
+
+
+def test_server_uses_the_options_request_when_none_is_sent(monkeypatch, tmp_path):
+    import json
+    import pytest
+    monkeypatch.setattr(studio, "QUOTES", tmp_path)
+    good = {"title": "A", "summary": "s", "parts_printed": 5, "cost_usd": 21.5, "print_hours": 6, "risks": []}
+    (tmp_path / "hawk_q.json").write_text(json.dumps({"options": [good, good | {"title": "B"}], "recommended": 0}))
+    (tmp_path / "hawk_q.request.json").write_text(json.dumps({"description": "a folding hawk drone", "intake": {}}))
+    got = {}
+    def stop(n, d):
+        got.update(n=n, d=d)
+        raise ValueError("stop")
+    monkeypatch.setattr(studio, "_check_new", stop)
+    with pytest.raises(ValueError, match="stop"):
+        studio.new_design("hawk_q", "", {}, None, 0)
+    assert got == {"n": "hawk_q", "d": "a folding hawk drone"}

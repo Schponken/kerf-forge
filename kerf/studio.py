@@ -1042,6 +1042,10 @@ def new_design(name: str, description: str, intake: dict | None = None, option: 
         if type(option_index) is not int or not 0 <= option_index < len(q["options"]):
             raise ValueError("choose one of the quoted options")
         context = q.get("context")
+        if not (description or "").strip():      # "Design this" with an empty box: the options' own request is the brief
+            description = (context or {}).get("description") or q.get("request") or ""
+            if context:
+                intake = _intake(context.get("intake"))
         if context and context != {"description": description.strip(), "intake": intake}:
             raise ValueError("your request changed; compare options again before designing")
         if q.get("questions"):

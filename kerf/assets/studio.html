@@ -1555,8 +1555,13 @@ async function showQuote(name) {
 }
 async function startNew(opt) {
   const option = typeof opt === "number" && S.quote ? S.quote.options[opt] : null;
+  // choosing an option needs no typing: an empty box falls back to the request these options were made for
+  const q = option ? S.quote : null;
+  const desc = $("#ndesc").value.trim() || (q && ((q.context && q.context.description) || q.request)) || "";
+  if (q && !$("#ndesc").value.trim()) $("#ndesc").value = desc;
+  if (q && !slugName($("#nname").value) && S.quoteName) $("#nname").value = S.quoteName;
   const r = await fetch("/api/new", {method: "POST", headers: {"Content-Type": "application/json"},
-                                     body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: $("#ndesc").value, intake: intake(), option, option_index: typeof opt === "number" ? opt : null})});
+                                     body: JSON.stringify({name: ($("#nname").value = slugName($("#nname").value)), description: desc, intake: intake(), option, option_index: typeof opt === "number" ? opt : null})});
   const j = await r.json().catch(() => ({error: "bad response"}));
   if (r.ok && j.job) { watch(j.job); toast("Design started", "Claude Code is researching. Watch it work in the panel.", "ok"); return; }
   if (j.setup) { showReady({ok: false, code: j.setup, why: j.error}); return; }
