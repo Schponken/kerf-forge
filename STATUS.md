@@ -1530,3 +1530,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   proof and not proof of 50% infill. Full regions/results/limits saved in validation/hub_baseline.json.
   Do not thin this hub: no demonstrated stiffness margin. Removed the unbuilt cavity candidate; geometry
   remains the packaging taper fix only. Weight target and normal-flight structural proof remain unresolved.
+
+## 2026-11-02 — Hawk print envelope and dive guidance limitations (Codex)
+- Cached CAD transform at fuselage print_rot[0,-40,40] measures287.48 x297.52 x253.99 mm, fitting the printer; supports are required. Sliced supports, access for their removal and actual print stability are unverified. The tail cable hole follows the chosen print-up direction.
+- Marked original operating speeds and controller settings as unvalidated design targets, withdrew the draft pilot-speed advice, and deferred safe deployment/pull-out claims to explicit dynamic-pressure and structural checks.

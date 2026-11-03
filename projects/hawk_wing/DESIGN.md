@@ -66,7 +66,9 @@ slides out of the fuselage after one more M3 (the boom clamp) and two servo plug
 | Wings off: body in a backpack case | <= 500 x 330 x 220 mm | `case_fit` |
 | Field repair | caps, boom clamp, nose off with a hex key on the finished plane | `story_field_repair` |
 
-## Operating envelope
+## Original intended operating points — not validated
+
+The original speed ranges and controller settings below are design targets, not cleared flight limits. Loaded wing deployment, pull-out authority, and structural recovery have not been demonstrated. They must not be used as safe-flight instructions.
 
 | Wing | Use | Speed |
 |---|---|---|
@@ -74,7 +76,7 @@ slides out of the fuselage after one more M3 (the boom clamp) and two servo plug
 | half 25-40 deg | fast passes; uneven sweep adds roll | 65-110 km/h (elevator trims it down to ~49 km/h) |
 | folded 55-65 deg | dive, motor low; pull out by opening to half, then spread below ~80 km/h | 75-150 km/h (elevator holds 1 g down to ~75 km/h folded) |
 
-Rule for the pilot (also in ASSEMBLY): fold only above ~90 km/h; to pull out of a dive, open to half sweep first.
+The original fold/open speed advice is withdrawn pending the dynamic-pressure, actuator and structural recovery analysis in DIVE_RECOVERY.md. High altitude changes true airspeed and recovery distance at the same aerodynamic load; ground speed alone cannot define deployment limits.
 
 ## Architecture and why
 
