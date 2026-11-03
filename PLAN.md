@@ -332,7 +332,7 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
 
-- [ ] Studio round 2 export handoff: integrate declared-source and contained-output fixes, close remaining download gaps with fixture coverage
+- [x] Studio round 2 export handoff: integrate declared-source and contained-output fixes, close remaining download gaps with fixture coverage
 
   - [x] Complete Studio source exports: preserve declared imported assets and nested design dependencies in downloaded project archives; reject missing or escaping sources without exporting caches or stale review approval.
 

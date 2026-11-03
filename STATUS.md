@@ -1409,3 +1409,16 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   reads, wrong types, traversal errors, useful HTTP400, regular outputs and source-export rebuild compatibility.
   Independent parent review approved. Stacked on source-export PR22; no full batch, actual project build, FEA,
   printer action or real private data access. The earlier saved maker-output containment follow-up is resolved.
+
+## 2026-11-02 — Studio round 2 complete and contained downloads (Codex)
+- Integrated absent prior source-export heads 3a9088f/47aba1b and maker-output safety b7e1ece into assembly-guide
+  base 06cbf88, preserving the existing source manifest, module helper and regular-output validation. No remote merge.
+- Fixed two remaining defects: Download everything omitted the saved URDF package; files/trial/history routes
+  validated only the tail, so a traversal or linked project segment escaped their intended root. Saved simulation
+  bytes now travel with the ZIP and all three routes validate the project segment through the shared helper.
+- New fixtures reproduced 8 failures plus 1 valid pass before the new fixes. Clean tested code
+  65964a655acec95d9e28332e35be50e0d3f2d7c8: 60 focused fixture cases PASS in 3.67 s, including extracted source
+  rebuild, source/output refusal and valid download byte preservation. Receipt: .cache/round2-export/; written
+  review and command: docs/usability/ROUND2_EXPORT_REVIEW.md. Doctor ALL OK using existing dependencies; no install.
+- Documentation/PLAN completion follows the tested code with no source changes. Batch HELD; no UI changes/captures,
+  actual project builds, jobs, FEA, full suite, app update, geometry/report/catalog edits or readiness claim.

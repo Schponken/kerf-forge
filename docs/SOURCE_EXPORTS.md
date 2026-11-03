@@ -38,3 +38,9 @@ no partial ZIP is returned. Remove the invalid output and regenerate the expecte
 Missing optional output files/folders remain okay, so a project can still export its design before its first build.
 Valid nested maker paths are preserved; generated `.glb` previews remain excluded. Supplier files and generated
 reports continue to follow Studio's additive output lists.
+
+The saved `<project>_urdf.zip` simulation package is included when present, under its original filename, with the
+same containment and regular-file validation. Exporting does not run a simulator or regenerate its meshes.
+
+Individual project, trial and history-thumbnail routes also validate the project-name segment before resolving
+the requested file. A traversal name or linked project folder returns 404; valid contained files retain their bytes.
