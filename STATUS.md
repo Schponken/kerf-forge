@@ -516,3 +516,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   the local tree, author unknown..." (`git stash list`; restore with `git stash pop` on that entry). If finished, note
   kerf/coves.py:86 and features.py:367/414 still call sharp_inside directly, which may need the same own-frame treatment.
 - The quote itself (.cache/studio/quotes/portable_launcher_gets.json, bungee rail recommended) is untracked by design.
+
+## 2026-11-02 — hawk_wing (Studio request, option 0 picked): swing-wing FPV plane, IN PROGRESS (Claude)
+- Claimed PLAN item `hawk_wing`. Done: research (REFERENCES.md incl. Spencer's two notes: folding-wing gliders, what
+  breaks on these aircraft), catalog `rods.ss_rod_5` + sourced `bearings.625` (C0 380 N) + prices, DESIGN.md,
+  project.yaml contract, parts/layout.py (every shared interface position), copied sibling wing/tail/pinion parts.
+- Concept numbers on stubs (kerf req): static margin 11 % spread / 41 % half / 94 % folded / 40 % uneven, all inside
+  the elevator's trim limits; sweep servo at 43 % of half its stall (4 g pull), gears 13.6 of 16 MPa; spar 0.37.
+  Mass on stubs 2.4 kg (stubs are solid blocks); finished estimate ~1.65 kg.
+- Engine: `size_max include:` (items subset, test), `kerf req` advice loop no longer shadows its timer (TypeError).
+- Next: part-designers on pod/cap/hub, glove, body, wings, tail (running); then wiring routes, kerf check PASS, build,
+  renders, design-reviewer. FEA is PAUSED: pivot strength is designed by load path + hand checks, unproven.
