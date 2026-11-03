@@ -835,7 +835,7 @@ def miss_scale(r: dict) -> str:
 REDESIGN_TIER = {
     **dict.fromkeys(("mass_max", "size_max", "thrust_to_weight", "flight_time", "run_time", "power_budget", "cg",
                      "static_margin", "static_margin_tail", "wing_loading", "stall_speed", "tip_over", "static_torque",
-                     "joint_speed", "grip_hold", "prop_ground"), 0),
+                     "joint_speed", "grip_hold", "prop_ground", "bungee_launch"), 0),
     **dict.fromkeys(("fea_static", "impact_fea", "drop_impact", "spar_bending", "fold_hinge_moment", "gear_bending",
                      "planetary_bending", "worm_drive", "cantilever_stress", "flex_strain", "creep_limit",
                      "natural_freq", "stop_impact"), 1),
@@ -966,3 +966,4 @@ from . import req_motion  # noqa: E402,F401  (grip_hold, joint_speed, drop_impac
 from . import failure  # noqa: E402,F401  (weak_link)
 from . import req_life  # noqa: E402,F401  (flex_strain, creep_limit, screw_locking)
 from . import req_human  # noqa: E402,F401  (repair_access)
+from . import req_launch  # noqa: E402,F401  (bungee_launch)
