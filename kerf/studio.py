@@ -1663,6 +1663,7 @@ def work() -> dict:
             jobs.append({"id": j.id, "kind": j.kind, "project": j.project, "label": j.label,
                          "state": j.state, "started": j.started, "mode": j.mode, "events": list(j.events),
                          "ended": j.ended, "agent": getattr(j, "agent", "claude"),
+                         "session": getattr(j, "session", None),
                          "usage": getattr(j, "usage", None), "resumed_by": getattr(j, "resumed_by", None),
                          "resumable": bool(j.state == "paused" and getattr(j, "session", None)
                                            and not getattr(j, "resumed_by", None)),
