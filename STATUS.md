@@ -974,3 +974,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+## 2026-11-02 — Studio saved-build History (Codex, design-history)
+- Replaced repeated snapshot cards with a real chronological saved-build selector and one readable record. Existing
+  thumbnails only; absent pictures/measurements/checks remain explicit. Full saved values and build source disclose
+  on demand, including the earliest/only available snapshot; no invented design reasons, approval or older versions.
+- Comparisons separate adjacent saved builds from the current built report and flag newer unbuilt edits. Exact
+  parameter values, recorded pass/fail transitions and added/missing check results are visible; numeric movement
+  alone never implies improvement. Restore previews exact current project/saved values, warns about separate Tune
+  drafts and preserves native confirmation plus existing ownership/job guards and numeric-parameter-only API.
+- Selection, disclosures, scroll and focus survive refresh; keyboard Escape and the native picture dialog work;
+  late restore completion preserves the tab selected while it was pending. No history writes or schema changes.
+- Validation checkpoint: saved-history/restore + geometry regression selection 3 passed (2.19s); initial isolated
+  browser selection 1 passed, four desktop/phone light/dark combinations (6.99s). One correction/confirmation round
+  pending. Full batch HELD; no real project changes/builds, stress/FEA, installs or provider jobs. Scope and evidence
+  limits: docs/usability/2026-11-02/history-story.md. Captures outside git: /tmp/kerf-history-captures.
