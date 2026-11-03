@@ -2,9 +2,9 @@
  "item": "Studio agent executable discovery: reuse the Work reader's verified bundled Codex helper when PATH has no executable; preserve PATH preference and fallback, with fake-bundle command tests only.",
  "session": "codex-agent-bundle-discovery",
  "since": 1793671670.8513641,
- "heartbeat": 1793671765.7526689,
+ "heartbeat": 1793671852.021611,
  "provider": "Codex",
  "thread_id": "01a19e35-0207-7ea0-8c58-7686af06fa03",
  "since_utc": "2026-11-03 02:07",
- "activity": "Preserving dependency merge unchanged; validating actual discovery into command generation next"
+ "activity": "Validated actual shared discovery into new and resumed commands; 36 focused tests pass"
 }
