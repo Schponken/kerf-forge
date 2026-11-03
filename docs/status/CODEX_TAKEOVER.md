@@ -24,7 +24,8 @@ Snapshot of where Claude left off, the priority list, and the prompts to start C
 2. Known failures on main (BOARD.md "Known failures") if their PRs don't fix them.
 3. hawk_wing: de-stub the 8 parts above, one part per commit, `kerf check hawk_wing --quick` after each.
 4. portable_launcher_gets: DESIGN.md -> project.yaml contract -> parts (kerf skill workflow).
-5. Free PLAN items not PAUSED and not needing Claude-only tools (`tools/claims.py next`).
+5. Learning Mode phases 1, 4-8 (PLAN "Learning Mode"; spec: https://claude.ai/artifact/XvvyTbvfankNwgmmjXCL8n, decisions there are final; phases 2-3 are done: kerf/diary.py, kerf/lessons.py). Spencer moved the start up: build now with Codex.
+6. Free PLAN items not PAUSED and not needing Claude-only tools (`tools/claims.py next`).
 
 ## Prompts (one Codex task each, in the kerf-forge environment)
 
@@ -53,3 +54,8 @@ parts, `kerf check` to PASS, `kerf build`. PRs as you go; design-reviewer left f
 ### Worker (any number)
 Work on Schponken/kerf-forge. Read AGENTS.md and docs/status/CODEX_TAKEOVER.md, then `tools/claims.py next` (skip
 PAUSED and Claude-only items) and finish that item as one PR with tests. Release, then take the next.
+
+## Automatic takeover in Studio (kerf/agent.py)
+`kerf agent` shows the mode (auto default). In auto, Studio's new designs / quotes / edits / fixes run on Claude Code, and on
+ChatGPT Codex (`codex exec --json --full-auto`, network on) when Claude's usage is out; a Claude job cut off mid-way is
+continued by Codex at once. `kerf agent codex` forces Codex. Needs the `codex` CLI on the Mac's PATH, signed in.

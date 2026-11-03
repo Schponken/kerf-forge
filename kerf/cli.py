@@ -416,6 +416,8 @@ def main(argv=None) -> int:
     g = sub.add_parser("gallery", help='Create a gallery of built projects.', description='Create a gallery of built projects.'); g.add_argument("projects", nargs="*")
     sm = sub.add_parser("simulate", help="MuJoCo motion simulation of the URDF: servo limits, home hold, grip_hold / joint_speed / drop_impact")
     sm.add_argument("project")
+    ag = sub.add_parser("agent", help="Which AI runs Studio jobs: auto (Claude, Codex when Claude's usage is out), claude, or codex")
+    ag.add_argument("mode", nargs="?", choices=["auto", "claude", "codex"])
     dy = sub.add_parser("diary", help="Learning Mode diary: problems found, the stage and the cost, rebuilt from git history (learning/diary/)")
     dy.add_argument("project", nargs="?"); dy.add_argument("--all", action="store_true")
     dy.add_argument("--log-session", nargs="?", const="auto", metavar="FILE", help="add a Claude Code session log's token usage to the project's diary (default: newest log)"); dy.add_argument("--label", default="")
@@ -457,6 +459,13 @@ def main(argv=None) -> int:
         r = optimise.run(a.project)
         _p(Path(r["file"]).read_text(encoding="utf-8"))
         return 0 if r["best_report"].get("ok") else 1
+    if a.cmd == "agent":
+        from . import agent as AG
+        if a.mode:
+            AG.set_mode(a.mode)
+        print(f"agent mode: {AG.mode()}  (Claude Code: {AG.claude_bin() or 'not installed'}; Codex: {AG.codex_bin() or 'not installed'}); "
+              f"next job runs on: {AG.pick() or 'nothing installed'}")
+        return 0
     if a.cmd == "diary":
         from . import diary
         names = diary.all_projects() if a.all else [a.project] if a.project else []

@@ -574,3 +574,8 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   curve); fold joints = two QR pins per joint 44 mm out (outside the sled wheels) with lugs top and bottom so each joint
   holds bending both ways; rear-foot pivot on the rail centre line (launch recoil bends nothing).
 - Next: integrate parts, strength hand checks (FEA paused), build, renders, design-reviewer.
+## 2026-11-02 20:25 UTC-5 — Codex runs Studio jobs when Claude is out (session 01S68R6S)
+- kerf/agent.py + `kerf agent [auto|claude|codex]`: Studio design / quote / edit / fix jobs pick Claude Code or Codex;
+  auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
+  tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
+  already fails on main (not this change).

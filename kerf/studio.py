@@ -38,6 +38,8 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 import yaml
 
+from . import agent
+
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 TRIALS = ROOT / ".cache" / "studio"
@@ -281,8 +283,7 @@ def fix_job(name: str) -> Job:
               f"renders, get a design-reviewer pass, append a dated STATUS.md entry, commit and push. Before editing, run "
               f"`.venv/bin/python tools/claims.py list`: if another session holds this project's claim and pushed in the last "
               f"90 minutes, stop and say so instead of editing its files. Do not start other PLAN work.")
-    return start_job("fix", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"],
-                     f"Fix {name}: {len(probs)} problem(s)", parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
+    return agent_job("fix", name, prompt, f"Fix {name}: {len(probs)} problem(s)", env={"KERF_STUDIO_JOB": name})
 
 
 def auto_fix(job) -> Job | None:
@@ -290,11 +291,11 @@ def auto_fix(job) -> Job | None:
     once per design state, so a failed Build goes straight to fixing instead of a list to read."""
     if job.kind not in ("build", "check") or job.project in ("*", None) or not settings().get("autofix"):
         return None
-    if usage_blocked() or budget_stop():
-        return None                       # out of Claude usage (or the budget switch is on): don't start a fix now
+    if budget_stop() or not pick_agent() or (pick_agent() == "claude" and usage_blocked()):
+        return None                       # budget switch on, or no agent can run now (Claude out of usage, no Codex)
     rep = _report(PROJECTS / job.project)
     ok, _ = fixable(job.project)
-    if not ok or not claude_bin():
+    if not ok:
         return None
     fp = (rep or {}).get("fingerprint")
     if fp and AUTOFIXED.get(job.project) == fp:
@@ -439,12 +440,15 @@ def start_job(*a, **k) -> Job:
     kind = a[0] if a else k["kind"]
     cmd = a[2] if len(a) > 2 else k.get("cmd")
     if kind in CLAUDE_KINDS:
-        why = usage_blocked()
+        who = agent.who_runs(cmd or [])
+        why = usage_blocked() if who == "claude" else ""
         if why:
             raise ValueError(f"{why}. Kerf waits instead of starting work that would be cut off; try again then "
-                             f"(a paused job resumes by itself).")
-        if cmd and len(cmd) > 2 and cmd[1] == "-p" and CUTOFF_NOTE not in cmd[2]:
+                             f"(a paused job resumes by itself), or install ChatGPT Codex so it takes over.")
+        if cmd and who == "claude" and len(cmd) > 2 and cmd[1] == "-p" and CUTOFF_NOTE not in cmd[2]:
             cmd[2] = cmd[2] + CUTOFF_NOTE
+        elif cmd and who == "codex" and CUTOFF_NOTE not in cmd[-1]:
+            cmd[-1] = cmd[-1] + CUTOFF_NOTE
     with JOB_LOCK:
         require_idle(project)
         if prepare:
@@ -471,14 +475,61 @@ def resume_job(jid: str, auto: bool = False) -> Job:
     USAGE["until"] = 0.0                       # the person (or the reset timer) says usage is back: let it try
     msg = ("You were cut off by the Claude usage limit. Continue exactly where you left off: look at `git status`, the last "
            "commits and STATUS.md, finish the task you were given, then check, commit and push.")
-    j = start_job(old.kind, old.project, [claude_bin(), "-p", msg, "--resume", old.session, "--output-format", "stream-json",
-                                          "--verbose"], f"{old.label} (resumed)", parse=_claude_lines, env=old.env)
+    if getattr(old, "agent", "claude") == "claude" and usage_blocked() and agent.can_take_over():
+        j = codex_takeover(old)              # Claude still out: Codex continues the same task from git
+    else:
+        j = agent_job(old.kind, old.project, msg, f"{old.label} (resumed)", env=old.env, resume=old.session,
+                      who=getattr(old, "agent", "claude"))
+    old.resumed_by = j.id
+    return j
+
+
+def agent_job(kind: str, name: str, prompt: str, label: str, resume: str | None = None, who: str | None = None,
+              **k) -> Job:
+    """Start an AI job with whichever agent can run now (kerf/agent.py: Claude Code, or ChatGPT Codex when Claude's
+    usage is out or Spencer picked Codex). `resume` continues that agent's own session."""
+    who = who or pick_agent()
+    if not who:
+        raise ValueError("No AI agent can run: install Claude Code or ChatGPT Codex (or wait for Claude's usage to reset).")
+    j = start_job(kind, name, agent.command(who, prompt, resume, claude_exe=claude_bin()), label,
+                  parse=agent.codex_lines if who == "codex" else _claude_lines, **k)
+    try:
+        j.agent = who
+    except AttributeError:                   # a stand-in job (tests) without attributes
+        pass
+    return j
+
+
+def pick_agent() -> str | None:
+    """Claude Code or ChatGPT Codex for the next AI job (kerf/agent.py)."""
+    return agent.pick(usage_blocked(), has_claude=bool(claude_bin()))
+
+
+def codex_takeover(old) -> Job:
+    """A Claude job the usage limit paused, continued by Codex (a new session: it picks up from git, not from Claude's
+    conversation). Spencer, 2026-11-02: Codex takes over when Claude runs out."""
+    msg = (f"Claude Code was working on this Kerf Studio task and ran out of usage: \"{old.label}\" (projects/{old.project}). "
+           f"Take over and finish it. Look at `git status`, `git log --oneline -15`, the newest STATUS.md entries, "
+           f"`.venv/bin/python tools/claims.py list` and the project's DESIGN.md first; keep Claude's work and continue from it.")
+    request = getattr(old, "request", None)
+    if request:
+        msg += f"\nThe original request: {request}"
+    j = agent_job(old.kind, old.project, msg, f"{old.label} (Codex took over)", env=old.env, who="codex")
     old.resumed_by = j.id
     return j
 
 
 def schedule_resume(job, delay: float | None = None):
-    """When usage comes back, resume the paused job by itself (not if the budget switch is on, or it was resumed)."""
+    """When usage comes back, resume the paused job by itself (not if the budget switch is on, or it was resumed).
+    With Codex installed (auto mode) Codex takes over at once instead of waiting for Claude's reset."""
+    if settings().get("autoresume", True) and getattr(job, "agent", "claude") == "claude" and agent.can_take_over() \
+            and not budget_stop() and not job.resumed_by:
+        try:
+            codex_takeover(job)
+            job.lines.append("(Codex took over: Claude's usage ran out)")
+            return
+        except Exception as e:  # noqa: BLE001 - fall back to waiting for Claude
+            job.lines.append(f"(Codex couldn't take over: {e})")
     if not settings().get("autoresume", True) or not job.session:
         return
     wait = delay if delay is not None else max(60.0, float((job.usage or {}).get("until") or 0) - time.time() + 120)
@@ -892,7 +943,9 @@ def _claude_config() -> Path:
 def claude_ready() -> dict:
     """Check, before a design starts, everything that would make Claude Code fail or run without Kerf's settings:
     installed, this folder trusted (otherwise it ignores .claude/settings.json: permissions AND the quality hooks),
-    signed in. Free: no model call."""
+    signed in. Free: no model call. When Codex will run the job instead (kerf/agent.py), Codex being installed is enough."""
+    if pick_agent() == "codex":
+        return {"ok": True, "code": None, "why": "ready (ChatGPT Codex will run it)", "agent": "codex"}
     exe = claude_bin()
     if not exe:
         return {"ok": False, "code": "missing", "why": "Claude Code isn't installed on this computer."}
@@ -1054,12 +1107,11 @@ def new_design(name: str, description: str, intake: dict | None = None, option: 
     if option and option.get("route") == "buy":
         raise ValueError("this is a buy-only option: follow its sources and next steps; no design is needed")
     _check_new(name, description)
-    exe = claude_bin()
     prompt = (f"/kerf {brief(description, intake, option)}\n\nProject folder name: projects/{name}. Spencer started this from "
               f"Kerf Studio and is not watching the terminal: work autonomously to a finished, built and reviewed project.")
-    j = start_job("design", name, [exe, "-p", prompt, "--output-format", "stream-json", "--verbose"],
-                  f"New design: {description.strip()[:60]}", parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
-    j.request = description.strip()          # the whole request, for "How Kerf decided" (the label is cut at 60)
+    j = agent_job("design", name, prompt, f"New design: {description.strip()[:60]}", env={"KERF_STUDIO_JOB": name})
+    if j is not None:
+        j.request = description.strip()          # the whole request, for "How Kerf decided" (the label is cut at 60)
     return j
 
 
@@ -1083,8 +1135,7 @@ def quote(name: str, description: str, intake: dict | None = None) -> Job:
         out.unlink(missing_ok=True)
         (QUOTES / f"{name}.request.json").write_text(
             json.dumps({"description": description.strip(), "intake": intake}), encoding="utf-8")
-    return start_job("quote", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"],
-                     f"Options for: {description.strip()[:60]}", parse=_claude_lines, prepare=prepare)
+    return agent_job("quote", name, prompt, f"Options for: {description.strip()[:60]}", prepare=prepare)
 
 
 def list_quotes() -> list[dict]:
@@ -1230,8 +1281,7 @@ def edit_job(name: str, request: str, title: str = "") -> Job:
               f"design-reviewer pass, append a dated STATUS.md entry, commit and push. Do not start other PLAN work. "
               f"If the change can't be made without breaking a check, say why and leave the design as it was.")
     label = f"Change {name}: {(title or request).strip().splitlines()[0][:60]}"
-    return start_job("edit", name, [claude_bin(), "-p", prompt, "--output-format", "stream-json", "--verbose"], label,
-                     parse=_claude_lines, env={"KERF_STUDIO_JOB": name})
+    return agent_job("edit", name, prompt, label, env={"KERF_STUDIO_JOB": name})
 
 
 # ---------------------------------------------------------------- duplicate / remix
@@ -1693,7 +1743,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, (ASSETS / parts[1]).read_bytes(),
                                   "text/javascript; charset=utf-8" if parts[1].endswith(".js") else "text/css; charset=utf-8")
             if parts == ["api", "projects"]:
-                return self._json({"projects": [summary(n) for n in project_names()], "claude": bool(claude_bin()),
+                return self._json({"projects": [summary(n) for n in project_names()], "claude": bool(claude_bin()), "codex": bool(agent.codex_bin()),
+                                   "agent": agent.mode(),
                                    "platform": platform.system()})
             if parts[:2] == ["api", "project"] and len(parts) == 3:
                 if parts[2] not in project_names():
@@ -1701,6 +1752,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(detail(parts[2]))
             if parts == ["api", "claude"]:
                 return self._json(claude_ready())
+            if parts == ["api", "agent"]:
+                return self._json({"mode": agent.mode(), "claude": bool(claude_bin()), "codex": bool(agent.codex_bin()),
+                                   "next": pick_agent(), "claude_blocked": usage_blocked()})
             if parts == ["api", "inventory"]:
                 from .ship import load_inventory
                 return self._json({"items": load_inventory(), "keys": inventory_keys()})
@@ -1829,6 +1883,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(claude_setup())
             if u.path == "/api/settings":
                 return self._json(save_settings(body))
+            if u.path == "/api/agent":                 # which AI runs jobs: auto / claude / codex (kerf/agent.py)
+                return self._json({"mode": agent.set_mode(str(body.get("mode", "")))})
             if u.path == "/api/printer":
                 try:
                     return self._json(printer_setup(str(body.get("host", "")), str(body.get("code", "")), body.get("serial")))
