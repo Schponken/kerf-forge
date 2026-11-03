@@ -784,3 +784,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - `kerf doctor`: **ALL OK**, with existing optional firmware-tool warnings. Batch remains HELD; duplicate-process
   checks and the shared two-suite browser coordinator preceded runs. No real jobs, geometry/project builds,
   stress solve, full suite, new review.json or native app run. This shell is a scoped PR, not a finished whole-UI claim.
+
+## 2026-11-03 — Activity count describes its evidence (Codex integration)
+- The shell Activity count includes both running local jobs and fresh assignments. Its accessible name now says “running jobs or claimed assignments”; freshness does not establish execution. Count, rendering and controls are unchanged.
+- This exact source wording was exercised in the clean combined redesign at d514880: 28 targeted tests passed in 123.91s, including shell controls and Work. A sibling independently recommended this wording. No new logic or additional full test run.
