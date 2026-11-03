@@ -756,3 +756,23 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - No backend data schema, global shell/tokens, project header/viewer, real user data, live agent, model call, geometry,
   stress solve or full suite. Browser marker registration still awaits pending test configuration. Root will validate
   the final creative shell/project/Work integration separately; this PR is a scoped Work feature, not an aggregate.
+
+## 2026-11-03 — Work makes source limits visible beside its counts (Codex)
+- Follow-through on #49 found two consequential gaps: partial/unavailable source details were below the work list
+  on phones while summary counts looked complete; project shortcuts retained unrelated state/assistant filters.
+  A compact Partial view disclosure now qualifies those counts, keeps diagnostics behind keyboard/tap expansion,
+  preserves expansion/focus through refresh, and disappears on recovery. Empty limited views explicitly say no
+  work is visible from available sources. Healthy local jobs remain counted. Project shortcuts clear conflicting
+  filters and focus the populated search. No speculative worker capacity, progress or finish times were added.
+- Eight focused nodes pass across the final selections: six passed in the first integrated run, then the two
+  corrected test nodes passed in 11.41 s. The first integrated run was 6 passed / 2 failed in 36.62 s: one old empty
+  label assertion required the new exact wording; one new late-response test raced New's unrelated readiness fetch.
+  It now verifies navigation to All projects; the shared navigation owner covers New. An earlier 3-node attempt
+  imported main's older package through the shared venv; explicit PYTHONPATH fixed the harness, with no product change.
+- Viewed all four 1440/390 px light/dark source captures under `.cache/work-observation/round1/`. Tests cover omitted
+  sessions, partial/loading/unavailable sources, healthy local counts, escaped diagnostics, recovery, native keyboard
+  disclosure, refresh state/focus, project filtering and late-response navigation. The frozen integration HTML was
+  used only for the two env-aware fixtures, replacing its Work blocks; all other nodes read this branch directly.
+  Impeccable's single detector scan found 13 incumbent issues outside edited Work selectors. No visual correction
+  was needed. No global shell/token edits, backend changes, live jobs/chats, geometry, stress solve or full suite;
+  shared batch remains HELD. Doctor ALL OK; existing optional firmware tools and browser-marker warning remain.

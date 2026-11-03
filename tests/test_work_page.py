@@ -138,7 +138,8 @@ try {
   await p.screenshot({path:CAPTURE+`/work-action-${theme}-${width}.png`,fullPage:true});
   work={...fixture,items:[],feed:[],sources:[{name:'Codex',state:'unavailable',detail:'Codex is not installed on this computer.'}]};
   await p.evaluate(()=>loadWork());
-  assert.match(await p.locator('.work-empty').innerText(),/No work is being reported/);
+  assert.equal(await p.locator('.work-empty h2').innerText(),'No work visible from available sources');
+  assert.equal(await p.locator('#work-coverage-summary').innerText(),'Partial view · 1 source limited');
   assert.match(await p.locator('.work-rail').innerText(),/not installed/);
   work={...fixture,items:[{...fixture.items[0],title:'<img src=x onerror="window.__unsafe=1">',activity:'<script>unsafe()</script>',action:'<img src=x onerror="window.__unsafe=1">',chat_id:'<img src=x onerror="window.__unsafe=1">'}]};
   await p.evaluate(()=>loadWork());
