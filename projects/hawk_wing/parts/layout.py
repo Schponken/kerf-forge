@@ -37,7 +37,7 @@ SWEEP_HORN = "servo_horns.aluminum_25T"
 SURF_SERVO = "servos.KST_X08_Plus"
 MOTOR = "drone.motors.2806_5_1300kv_7in"
 BATTERY = "drone.batteries.6S_1800"
-TE_MIN = 1.0                  # printed trailing edge: two perimeters + margin
+TE_MIN = 1.2                  # printed trailing edge: three 0.4 mm lines (>= 1.2 mm walls print reliably)
 
 GEAR_M, Z_PINION, Z_SECTOR, GEAR_W = 2.0, 13, 21, 10.0      # 21/13 = 1.615: 65 deg of sweep = 105 deg of the servo
 PINION_W = 11.0               # pinion wider than the sector so the mesh keeps full width over the axial play
@@ -66,7 +66,7 @@ def planform(p):
 def tail_planform(p):
     return aero.Planform(span=p.htail_span, root_chord=p.htail_root_chord, tip_chord=p.htail_tip_chord,
                          sweep_le_deg=p.htail_sweep_le_deg, root_airfoil=TAIL_AIRFOIL, x_le0=p.htail_x_le0,
-                         z0=p.htail_z0, te_min=0.8)
+                         z0=p.htail_z0, te_min=1.2)
 
 
 def layout(p, cat):

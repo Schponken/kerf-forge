@@ -95,7 +95,7 @@ params:
   htail_tip_chord: {value: 100, unit: mm, min: 80, max: 120, step: 5, label: Horizontal tail tip chord}
   htail_sweep_le_deg: {value: 3.0, unit: "°", min: 0, max: 15, step: 0.5, label: Horizontal tail LE sweep}
   htail_x_le0: {value: 650, unit: mm, min: 600, max: 700, step: 5, label: Horizontal tail LE at the centreline}
-  htail_z0: {value: -35, unit: mm, min: -45, max: -25, step: 1, label: Horizontal tail chord plane height}
+  htail_z0: {value: -37, unit: mm, min: -45, max: -25, step: 1, label: Horizontal tail chord plane height}
   elev_hinge_frac: {value: 0.65, unit: "", min: 0.6, max: 0.75, step: 0.01, label: Elevator hinge line (fraction of chord)}
   elev_throw: {value: 22, unit: "°", min: 15, max: 28, step: 1, label: Elevator throw each way}
   fin_h: {value: 130, unit: mm, min: 100, max: 160, step: 5, label: Fin height (above the boom top)}

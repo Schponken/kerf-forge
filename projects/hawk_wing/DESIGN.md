@@ -294,7 +294,7 @@ walls; skid_r/l: a wingtip skid on the underside of the rounded tip (glued, 2 wa
 Lead channel ends at L.lead_root on the inner segment's root face (the hub takes it on).
 
 ### Tail (tail_mount.py, hstab.py, elevator.py, fin.py, rudder.py exist from the sibling) - one designer
-Boom rods.cf_tube_8x6 from boom_x0 215 to boom_x1 790 at z boom_z -25; hstab chord plane htail_z0 -35 under the boom
+Boom rods.cf_tube_8x6 from boom_x0 215 to boom_x1 790 at z boom_z -25; hstab chord plane htail_z0 -37 under the boom (2.5 mm wall under the boom bore at the 120 mm root chord)
 (the sibling's offset); adapt tail_mount (BLOCK_TOP and every hard-coded z to the new boom height), PETG, keep the
 two-M3 stab seat and servo pockets.
 
