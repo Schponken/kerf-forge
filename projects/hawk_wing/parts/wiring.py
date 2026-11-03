@@ -3,6 +3,8 @@ import importlib.util
 from pathlib import Path
 
 from kerf import aero, iface
+from build123d import FilletPolyline, GeomType
+import numpy as np
 
 
 def _module(name):
@@ -50,7 +52,18 @@ def route_params(p):
         hub = [(x, s * y, z) for x, y, z in H._lead_pts(p)]
         paths["ail_hub_" + suffix] = list(reversed(hub))
         _, sv = W.servo_frame(p, s)
-        paths["ail_wing_" + suffix] = list(reversed(W.lead_path(p, s, sv)))
+        wing_points = W.lead_path(p, s, sv)
+        a, b = np.asarray(wing_points[-2]), np.asarray(wing_points[-1])
+        wing_points[-1] = tuple(b + (b - a) / np.linalg.norm(b - a) * 1.5)
+        rail = FilletPolyline(*wing_points, radius=W.LEAD_BEND_R)
+        rounded = []
+        for edge in rail.order_edges():
+            count = 8 if edge.geom_type == GeomType.CIRCLE else 1
+            samples = [tuple(edge.position_at(i / count)) for i in range(count + 1)]
+            if rounded and np.linalg.norm(np.asarray(rounded[-1]) - samples[-1]) < 1e-5:
+                samples.reverse()
+            rounded.extend(samples if not rounded else samples[1:])
+        paths["ail_wing_" + suffix] = list(reversed(rounded))
     td = T.dims(p)
     for which, sign in (("elev", 1), ("rud", -1)):
         # Leave via the side service opening; the boom's cross-screw blocks an internal lead route.

@@ -1551,3 +1551,10 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Added an analytic `dive_recovery` requirement: real assembled mass + catalog CLmax give lift capacity at EAS; NASA density ratio gives altitude/TAS and conditional pullout radius. Unknown structural limit is typed `unproven`, yields no verified radius and cannot pass; the check cannot be advisory. Hawk uses the user-selected provisional100 km/h dive target, existing80 km/h reopening reference and a gentler2 g proposal. Existing4 g/6 g sizing limits are untouched.
 - New DIVE_RECOVERY.md separates pressure-gated, position-confirmed wing deployment from unverified flight-control implementation and documents drag/structural/height limitations. No aerodynamic geometry, CFD, FEA, autonomous flight or hardware commands.
 - Focused tests and exact analytic examples completed; final integrated Hawk check/build owned by hawk_flight_fix. Snapshot2240.92g gives2.889g lift at80EAS, versus4g needing94.13EAS. At3000m illustration, 80EAS=92.84TAS and a conditional2g recovery radius67.82m, excluding deployment/deceleration/delay/reserve. The project requirement remainsUNPROVEN; no safe flight/height claim.
+## 2026-11-02 — Hawk wiring route fidelity and fixture tests (Codex)
+- Sampled the existing wing channel's FilletPolyline arcs (8 chords per arc) instead of routing through its sharp
+  construction vertices; kept the panel-attached coordinates and original physical geometry. No project build here.
+- Six focused no-CAD fixtures pass: complete feeds, separated rails, unique outputs, unchanged stock lead failure
+  and 20-minute target, finite/dynamic route points, transport parameter changes and sourced connector quantities.
+  Initial tuning fixture reused derived parameters and correctly tripped layout's collision guard; reloaded the
+  project contract as the real tuning flow does. CAD route clearance remains the flight lead's integrated gate.

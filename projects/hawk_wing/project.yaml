@@ -329,7 +329,19 @@ wiring:
          {item: wing_r2, at: [wire_ail_wing_r_0_x, wire_ail_wing_r_0_y, wire_ail_wing_r_0_z]}, {item: wing_r2, at: [
              wire_ail_wing_r_1_x, wire_ail_wing_r_1_y, wire_ail_wing_r_1_z]}, {item: wing_r2, at: [wire_ail_wing_r_2_x,
              wire_ail_wing_r_2_y, wire_ail_wing_r_2_z]}, {item: wing_r2, at: [wire_ail_wing_r_3_x, wire_ail_wing_r_3_y,
-             wire_ail_wing_r_3_z]}]}
+             wire_ail_wing_r_3_z]}, {item: wing_r2, at: [wire_ail_wing_r_4_x, wire_ail_wing_r_4_y, wire_ail_wing_r_4_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_5_x, wire_ail_wing_r_5_y, wire_ail_wing_r_5_z]}, {item: wing_r2, at: [
+             wire_ail_wing_r_6_x, wire_ail_wing_r_6_y, wire_ail_wing_r_6_z]}, {item: wing_r2, at: [wire_ail_wing_r_7_x,
+             wire_ail_wing_r_7_y, wire_ail_wing_r_7_z]}, {item: wing_r2, at: [wire_ail_wing_r_8_x, wire_ail_wing_r_8_y,
+             wire_ail_wing_r_8_z]}, {item: wing_r2, at: [wire_ail_wing_r_9_x, wire_ail_wing_r_9_y, wire_ail_wing_r_9_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_10_x, wire_ail_wing_r_10_y, wire_ail_wing_r_10_z]}, {item: wing_r2,
+           at: [wire_ail_wing_r_11_x, wire_ail_wing_r_11_y, wire_ail_wing_r_11_z]}, {item: wing_r2, at: [wire_ail_wing_r_12_x,
+             wire_ail_wing_r_12_y, wire_ail_wing_r_12_z]}, {item: wing_r2, at: [wire_ail_wing_r_13_x, wire_ail_wing_r_13_y,
+             wire_ail_wing_r_13_z]}, {item: wing_r2, at: [wire_ail_wing_r_14_x, wire_ail_wing_r_14_y, wire_ail_wing_r_14_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_15_x, wire_ail_wing_r_15_y, wire_ail_wing_r_15_z]}, {item: wing_r2,
+           at: [wire_ail_wing_r_16_x, wire_ail_wing_r_16_y, wire_ail_wing_r_16_z]}, {item: wing_r2, at: [wire_ail_wing_r_17_x,
+             wire_ail_wing_r_17_y, wire_ail_wing_r_17_z]}, {item: wing_r2, at: [wire_ail_wing_r_18_x, wire_ail_wing_r_18_y,
+             wire_ail_wing_r_18_z]}, {item: wing_r2, at: [wire_ail_wing_r_19_x, wire_ail_wing_r_19_y, wire_ail_wing_r_19_z]}]}
   - {id: ail_r_sig, from: fc, to: ail_servo_r, kind: signal, gauge: 28, color: orange, length_mm: 1000, pin: S5,
       ends: {from: solder, to: plug}, note: Same 3-pin extension and route as power; secure strain relief without
         restricting 65-degree sweep.,
@@ -344,7 +356,19 @@ wiring:
          {item: wing_r2, at: [wire_ail_wing_r_0_x, wire_ail_wing_r_0_y, wire_ail_wing_r_0_z]}, {item: wing_r2, at: [
              wire_ail_wing_r_1_x, wire_ail_wing_r_1_y, wire_ail_wing_r_1_z]}, {item: wing_r2, at: [wire_ail_wing_r_2_x,
              wire_ail_wing_r_2_y, wire_ail_wing_r_2_z]}, {item: wing_r2, at: [wire_ail_wing_r_3_x, wire_ail_wing_r_3_y,
-             wire_ail_wing_r_3_z]}]}
+             wire_ail_wing_r_3_z]}, {item: wing_r2, at: [wire_ail_wing_r_4_x, wire_ail_wing_r_4_y, wire_ail_wing_r_4_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_5_x, wire_ail_wing_r_5_y, wire_ail_wing_r_5_z]}, {item: wing_r2, at: [
+             wire_ail_wing_r_6_x, wire_ail_wing_r_6_y, wire_ail_wing_r_6_z]}, {item: wing_r2, at: [wire_ail_wing_r_7_x,
+             wire_ail_wing_r_7_y, wire_ail_wing_r_7_z]}, {item: wing_r2, at: [wire_ail_wing_r_8_x, wire_ail_wing_r_8_y,
+             wire_ail_wing_r_8_z]}, {item: wing_r2, at: [wire_ail_wing_r_9_x, wire_ail_wing_r_9_y, wire_ail_wing_r_9_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_10_x, wire_ail_wing_r_10_y, wire_ail_wing_r_10_z]}, {item: wing_r2,
+           at: [wire_ail_wing_r_11_x, wire_ail_wing_r_11_y, wire_ail_wing_r_11_z]}, {item: wing_r2, at: [wire_ail_wing_r_12_x,
+             wire_ail_wing_r_12_y, wire_ail_wing_r_12_z]}, {item: wing_r2, at: [wire_ail_wing_r_13_x, wire_ail_wing_r_13_y,
+             wire_ail_wing_r_13_z]}, {item: wing_r2, at: [wire_ail_wing_r_14_x, wire_ail_wing_r_14_y, wire_ail_wing_r_14_z]},
+         {item: wing_r2, at: [wire_ail_wing_r_15_x, wire_ail_wing_r_15_y, wire_ail_wing_r_15_z]}, {item: wing_r2,
+           at: [wire_ail_wing_r_16_x, wire_ail_wing_r_16_y, wire_ail_wing_r_16_z]}, {item: wing_r2, at: [wire_ail_wing_r_17_x,
+             wire_ail_wing_r_17_y, wire_ail_wing_r_17_z]}, {item: wing_r2, at: [wire_ail_wing_r_18_x, wire_ail_wing_r_18_y,
+             wire_ail_wing_r_18_z]}, {item: wing_r2, at: [wire_ail_wing_r_19_x, wire_ail_wing_r_19_y, wire_ail_wing_r_19_z]}]}
   - {id: sweep_l_pwr, from: esc.5v, to: sweep_servo_l, kind: power, v: 5, gauge: 24, color: red/black, length_mm: 650,
       ends: {from: solder, to: plug}, note: Separate ESC 5 V BEC rail only. Retain stock servo plug; solder extension
         to ESC 5V/GND and fit male connector at servo end. Do not join positive rail to FC Vx.,
@@ -375,7 +399,19 @@ wiring:
          {item: wing_l2, at: [wire_ail_wing_l_0_x, wire_ail_wing_l_0_y, wire_ail_wing_l_0_z]}, {item: wing_l2, at: [
              wire_ail_wing_l_1_x, wire_ail_wing_l_1_y, wire_ail_wing_l_1_z]}, {item: wing_l2, at: [wire_ail_wing_l_2_x,
              wire_ail_wing_l_2_y, wire_ail_wing_l_2_z]}, {item: wing_l2, at: [wire_ail_wing_l_3_x, wire_ail_wing_l_3_y,
-             wire_ail_wing_l_3_z]}]}
+             wire_ail_wing_l_3_z]}, {item: wing_l2, at: [wire_ail_wing_l_4_x, wire_ail_wing_l_4_y, wire_ail_wing_l_4_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_5_x, wire_ail_wing_l_5_y, wire_ail_wing_l_5_z]}, {item: wing_l2, at: [
+             wire_ail_wing_l_6_x, wire_ail_wing_l_6_y, wire_ail_wing_l_6_z]}, {item: wing_l2, at: [wire_ail_wing_l_7_x,
+             wire_ail_wing_l_7_y, wire_ail_wing_l_7_z]}, {item: wing_l2, at: [wire_ail_wing_l_8_x, wire_ail_wing_l_8_y,
+             wire_ail_wing_l_8_z]}, {item: wing_l2, at: [wire_ail_wing_l_9_x, wire_ail_wing_l_9_y, wire_ail_wing_l_9_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_10_x, wire_ail_wing_l_10_y, wire_ail_wing_l_10_z]}, {item: wing_l2,
+           at: [wire_ail_wing_l_11_x, wire_ail_wing_l_11_y, wire_ail_wing_l_11_z]}, {item: wing_l2, at: [wire_ail_wing_l_12_x,
+             wire_ail_wing_l_12_y, wire_ail_wing_l_12_z]}, {item: wing_l2, at: [wire_ail_wing_l_13_x, wire_ail_wing_l_13_y,
+             wire_ail_wing_l_13_z]}, {item: wing_l2, at: [wire_ail_wing_l_14_x, wire_ail_wing_l_14_y, wire_ail_wing_l_14_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_15_x, wire_ail_wing_l_15_y, wire_ail_wing_l_15_z]}, {item: wing_l2,
+           at: [wire_ail_wing_l_16_x, wire_ail_wing_l_16_y, wire_ail_wing_l_16_z]}, {item: wing_l2, at: [wire_ail_wing_l_17_x,
+             wire_ail_wing_l_17_y, wire_ail_wing_l_17_z]}, {item: wing_l2, at: [wire_ail_wing_l_18_x, wire_ail_wing_l_18_y,
+             wire_ail_wing_l_18_z]}, {item: wing_l2, at: [wire_ail_wing_l_19_x, wire_ail_wing_l_19_y, wire_ail_wing_l_19_z]}]}
   - {id: ail_l_sig, from: fc, to: ail_servo_l, kind: signal, gauge: 28, color: orange, length_mm: 1000, pin: S6,
       ends: {from: solder, to: plug}, note: Same 3-pin extension and route as power; secure strain relief without
         restricting 65-degree sweep.,
@@ -390,7 +426,19 @@ wiring:
          {item: wing_l2, at: [wire_ail_wing_l_0_x, wire_ail_wing_l_0_y, wire_ail_wing_l_0_z]}, {item: wing_l2, at: [
              wire_ail_wing_l_1_x, wire_ail_wing_l_1_y, wire_ail_wing_l_1_z]}, {item: wing_l2, at: [wire_ail_wing_l_2_x,
              wire_ail_wing_l_2_y, wire_ail_wing_l_2_z]}, {item: wing_l2, at: [wire_ail_wing_l_3_x, wire_ail_wing_l_3_y,
-             wire_ail_wing_l_3_z]}]}
+             wire_ail_wing_l_3_z]}, {item: wing_l2, at: [wire_ail_wing_l_4_x, wire_ail_wing_l_4_y, wire_ail_wing_l_4_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_5_x, wire_ail_wing_l_5_y, wire_ail_wing_l_5_z]}, {item: wing_l2, at: [
+             wire_ail_wing_l_6_x, wire_ail_wing_l_6_y, wire_ail_wing_l_6_z]}, {item: wing_l2, at: [wire_ail_wing_l_7_x,
+             wire_ail_wing_l_7_y, wire_ail_wing_l_7_z]}, {item: wing_l2, at: [wire_ail_wing_l_8_x, wire_ail_wing_l_8_y,
+             wire_ail_wing_l_8_z]}, {item: wing_l2, at: [wire_ail_wing_l_9_x, wire_ail_wing_l_9_y, wire_ail_wing_l_9_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_10_x, wire_ail_wing_l_10_y, wire_ail_wing_l_10_z]}, {item: wing_l2,
+           at: [wire_ail_wing_l_11_x, wire_ail_wing_l_11_y, wire_ail_wing_l_11_z]}, {item: wing_l2, at: [wire_ail_wing_l_12_x,
+             wire_ail_wing_l_12_y, wire_ail_wing_l_12_z]}, {item: wing_l2, at: [wire_ail_wing_l_13_x, wire_ail_wing_l_13_y,
+             wire_ail_wing_l_13_z]}, {item: wing_l2, at: [wire_ail_wing_l_14_x, wire_ail_wing_l_14_y, wire_ail_wing_l_14_z]},
+         {item: wing_l2, at: [wire_ail_wing_l_15_x, wire_ail_wing_l_15_y, wire_ail_wing_l_15_z]}, {item: wing_l2,
+           at: [wire_ail_wing_l_16_x, wire_ail_wing_l_16_y, wire_ail_wing_l_16_z]}, {item: wing_l2, at: [wire_ail_wing_l_17_x,
+             wire_ail_wing_l_17_y, wire_ail_wing_l_17_z]}, {item: wing_l2, at: [wire_ail_wing_l_18_x, wire_ail_wing_l_18_y,
+             wire_ail_wing_l_18_z]}, {item: wing_l2, at: [wire_ail_wing_l_19_x, wire_ail_wing_l_19_y, wire_ail_wing_l_19_z]}]}
   - {id: elev_pwr, from: fc.vx, to: elev_servo, kind: power, v: 6, gauge: 28, color: red/black, length_mm: 1200,
       ends: {from: solder, to: plug}, note: '6 V surface rail, through side opening then EXTERNALLY along boom
         underside; no lead passes through the boom clamp cross-screw. Separate removable 3-pin tail plug.',
