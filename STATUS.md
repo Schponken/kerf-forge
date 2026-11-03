@@ -746,3 +746,14 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   captures are saved alongside them. One mechanical scan found 13 pre-existing patterns outside the edited rules.
   `kerf doctor`: **ALL OK**, existing optional firmware tooling unavailable. Budget/batch/process checks made;
   no real live-follow request, native app interaction, geometry/build, stress solve, full suite or batch run.
+
+## 2026-11-03 — Studio shell accessibility and visual baseline checkpoint (Codex, WIP)
+- Checkpointed neutral tokens, readable contrast, native keyboard project/Activity buttons, explicit utility labels,
+  and removal of decorative shared-shell gradients/glows. This is an intermediate design, not a finished PLAN item.
+- Loaded synthetic gallery/Work captures use existing saved thumbnails/reports with an explicit fixture caption;
+  no physical checks, real app interaction or new build ran. The focused shell browser test passes (1 in 17.07s);
+  shell plus strict short-screen scroll regression passed (2 in 25.25s). Initial checks exposed asynchronous fixture
+  timing and real 1.125px focus clipping; condition waits and 6px scroll padding resolved them without weakened assertions.
+- The user rejected the conventional permanent sidebar composition after review. Next: replace it with an object-first
+  full-width stage and on-demand project/activity trays, preserving the verified access and color improvements.
+  The current desktop/mobile captures are baseline evidence, not acceptance of the final direction.
