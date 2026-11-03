@@ -1517,3 +1517,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Electrical-only analysis at a simulated 1800 g: 18.15 min vs unchanged 20 min target. Stock 18 AWG phase path gives
   227.054 K rise over unchanged 10 s burst vs 60 K allowed. These are actual remaining failures, not readiness.
   YAML/catalog syntax and route parameter evaluation pass. Targeted tests and integration check pending; no CAD/FEA run.
+
+## 2026-11-02 — Hawk wiring route fidelity and fixture tests (Codex)
+- Sampled the existing wing channel's FilletPolyline arcs (8 chords per arc) instead of routing through its sharp
+  construction vertices; kept the panel-attached coordinates and original physical geometry. No project build here.
+- Six focused no-CAD fixtures pass: complete feeds, separated rails, unique outputs, unchanged stock lead failure
+  and 20-minute target, finite/dynamic route points, transport parameter changes and sourced connector quantities.
+  Initial tuning fixture reused derived parameters and correctly tripped layout's collision guard; reloaded the
+  project contract as the real tuning flow does. CAD route clearance remains the flight lead's integrated gate.
