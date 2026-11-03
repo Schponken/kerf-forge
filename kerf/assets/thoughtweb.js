@@ -15,7 +15,7 @@
 .twv .twnow{display:flex;gap:9px;align-items:flex-start;padding:9px 12px;border-radius:10px;background:var(--tw-bg);border:1px solid var(--tw-line);margin-bottom:10px}
 .twv .dot{width:9px;height:9px;border-radius:50%;background:var(--tw-info);flex:none;margin-top:5px}
 .twv.live .dot{box-shadow:0 0 0 0 var(--tw-info);animation:twbeat 2s ease-out infinite}
-.twv.over .dot{background:var(--tw-ok)}
+.twv.over .dot{background:var(--tw-muted)}
 .twv .scroll{flex:1;min-height:0;overflow:auto;padding-right:4px}
 .twv ol.trail{list-style:none;margin:0;padding:0}
 .twv .st{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;position:relative;padding-bottom:16px}
@@ -61,6 +61,20 @@
 .twv.strip .sl{flex:1;min-width:0}.twv.strip .l1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .twv.strip .l2{font-size:12px;color:var(--tw-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .twv.strip button{flex:none;font-size:12.5px;padding:5px 11px}
+.twv{font-family:inherit;line-height:1.5}.twv .twnow{border:0;border-radius:0;background:none;padding:8px 0 16px;margin:0;gap:10px}
+.twv.live .dot{animation:none}.twv .scroll{padding-right:6px}.twv .st{grid-template-columns:20px minmax(0,1fr);gap:12px;padding:16px 0;border-top:1px solid var(--tw-line)}
+.twv .st::before{display:none}.twv .num{width:20px;height:24px;border:0;border-radius:0;background:none;font-size:12px;color:var(--tw-muted)}
+.twv .st.done .num{color:var(--tw-muted)}.twv .st.next{opacity:1}.twv h4{font-size:15px;line-height:1.4;margin:0;font-weight:600}
+.twv .section>summary{cursor:pointer;padding:0 0 4px;list-style:revert}.twv .section>summary h4{display:inline}.twv .section[open]>summary{margin-bottom:12px}
+.twv .twc{padding:12px 0;margin:0;border:0;border-bottom:1px solid var(--tw-line);border-radius:0;background:none}.twv .twc:last-child{border-bottom:0}
+.twv .twc.s-set_aside,.twv .opt.aside{opacity:1}.twv .opt{border-left:0}.twv .badge{border:0;border-radius:0;padding:0;font-size:11px}
+.twv .src{font-size:12px;border-radius:6px;white-space:normal;overflow-wrap:anywhere;padding:5px 8px}.twv .why{font-size:13px;line-height:1.5}.twv .fups{border-left:1px solid var(--tw-line)}
+.twv .tellbox{border-top:1px solid var(--tw-line);margin-top:14px;padding-top:16px}.twv .tellbox label{display:block;font-size:13px;font-weight:600}.twv .tell input{border-radius:8px;font-size:13px}
+.twv .receipts{font-size:12px;margin-top:10px}.twv .receipt{margin:6px 0;overflow-wrap:anywhere}.twv .receipt span{color:var(--tw-muted)}
+.twv .steer button{min-height:32px;border-radius:8px}.twv .from button{font:inherit;color:var(--tw-info);padding:0;border:0;background:none;text-align:left;text-decoration:underline}
+.twv .load-error{font-size:13px;color:var(--bad);margin:0 0 10px}.twv .load-error[hidden]{display:none}
+.twv.strip{border:0;border-radius:8px;background:var(--tw-bg);padding:10px 12px;align-items:flex-start}.twv.strip .l1,.twv.strip .l2{white-space:normal;overflow-wrap:anywhere}.twv.strip .l2{margin-top:3px}.twv.strip .open{border:0;background:none;padding:0;color:var(--tw-info);min-height:30px}
+@media(max-width:600px){.twv.strip{flex-wrap:wrap}.twv.strip .sl{flex-basis:calc(100% - 24px)}.twv.strip .open{margin-left:19px}.twv .tell{flex-wrap:wrap}.twv .tell input{flex-basis:100%}.twv h4 .cnt{display:block;margin:4px 0 0}.twv .st{gap:8px}.twv .src{max-width:100%}}
 @keyframes twin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes twbeat{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--tw-info) 60%,transparent)}100%{box-shadow:0 0 0 9px transparent}}
 @media (prefers-reduced-motion:reduce){.twv .new,.twv.live .dot{animation:none}}`;
@@ -90,7 +104,7 @@
     const options = nodes.filter(n => n.kind === "option").sort((a, b) => (b.state === "chosen") - (a.state === "chosen") || a.t - b.t);
     const trunk = nodes.find(n => n.kind === "trunk"), builds = trunk ? of(trunk.id, "build") : [];
     const nsrc = nodes.filter(n => n.kind === "source").length;
-    const stage = !d.live ? "over" : builds.length || trunk ? "build" : decision ? "decide" : "research";
+    const stage = builds.length || trunk ? "build" : decision ? "decide" : "research";
     const last = [...nodes].filter(n => n.kind !== "core").sort((a, b) => b.touched - a.touched || b.t - a.t)[0];
     const finding = [...nodes].filter(n => (n.notes || []).length).sort((a, b) => b.touched - a.touched)[0];
     return {nodes, by, of, core, known, questions, decision, options, trunk, builds, nsrc, stage, last, finding};
@@ -99,31 +113,31 @@
 
   function mount(el, url, opt = {}) {
     const strip = opt.mode === "strip";
-    el.innerHTML = strip ? `<div class="twv strip" title="See how Kerf is researching and deciding"><span class="dot"></span><div class="sl"><div class="l1">Getting ready…</div><div class="l2"></div></div><button class="open">How it's deciding ⤢</button></div>`
-      : `<div class="twv full"><div class="twnow"><span class="dot"></span><div class="nowt">Loading…</div></div><div class="scroll"><ol class="trail"></ol>
-         <div class="tellbox" hidden><div class="tell"><input maxlength="500" placeholder="Tell Kerf something, e.g. “keep it under 200 g” or “look at folding-wing gliders”"><button class="send">Send</button></div>
-         <div class="foot"><span>Kerf reads it at its next step. It doesn't pause, restart or cost an extra turn.</span></div></div>
-         <div class="foot"><span>Built only from what Kerf did and wrote down (searches, pages, its notes and its plan), not hidden thinking.</span><span class="rp" hidden><button class="play">▶ Replay</button></span></div></div></div>`;
+    el.innerHTML = strip ? `<div class="twv strip" title="See how Kerf is researching and deciding"><span class="dot"></span><div class="sl"><div class="l1">Getting ready…</div><div class="l2"></div></div><button class="open">View decision trail</button></div>`
+      : `<div class="twv full"><div class="twnow"><span class="dot"></span><div class="nowt" role="status">Loading the recorded work…</div></div><p class="load-error" role="status" hidden></p><div class="scroll"><ol class="trail"></ol>
+         <div class="tellbox" hidden><label for="tw-note">Guide the next step</label><div class="tell"><input id="tw-note" maxlength="500" placeholder="For example, keep it under 200 g"><button class="send">Send</button></div>
+         <div class="foot"><span>Your note is queued for the next supported step. Receipt is shown below.</span></div></div>
+         <div class="receipts" aria-live="polite"></div><div class="foot"><span>Built only from what Kerf did and wrote down (searches, pages, its notes and its plan), not hidden thinking.</span><span class="rp" hidden><button class="play">▶ Replay</button></span></div></div></div>`;
     const root = el.querySelector(".twv");
     let data = {nodes: [], steps: 0}, sig = "", stopped = false, timer = null, limit = Infinity, researched = false;
-    const seen = new Set(), open = new Set();
+    const seen = new Set(), open = new Set(), sections = new Map();
     let first = true;
 
     function steerOf(id) { const e = (data.steer || []).filter(x => x.node === id && x.action !== "note").pop(); return e; }
     function steerUi(n) {
       if (!data.steerable) return "";
-      const e = steerOf(n.id), st = e ? `<span class="sd">You: ${e.action === "focus" ? "focus on this" : "skip this"} · ${e.delivered ? "Kerf has it ✓" : "it reads this at its next step"}</span>` : "";
-      return `<div class="steer"><button data-steer="focus" data-node="${n.id}" class="${e && e.action === "focus" ? "on" : ""}">Focus on this</button>` +
-        `<button data-steer="skip" data-node="${n.id}" class="${e && e.action === "skip" ? "on" : ""}">Skip this</button>${st}</div>`;
+      const e = steerOf(n.id), st = e ? `<span class="sd">You: ${e.action === "focus" ? "focus on this" : "skip this"} · ${e.delivered ? "received by Kerf" : "waiting for receipt"}</span>` : "";
+      return `<div class="steer"><button data-key="focus-${n.id}" data-steer="focus" aria-pressed="${!!e && e.action === 'focus'}" data-node="${n.id}" class="${e && e.action === "focus" ? "on" : ""}">Focus on this</button>` +
+        `<button data-key="skip-${n.id}" data-steer="skip" aria-pressed="${!!e && e.action === 'skip'}" data-node="${n.id}" class="${e && e.action === "skip" ? "on" : ""}">Skip this</button>${st}</div>`;
     }
     const nw = n => { const f = !first && !seen.has(n.id); seen.add(n.id); return f ? " new" : ""; };
     function srcs(list, key) {
       if (!list.length) return "";
       const all = open.has(key), shown = all ? list : list.slice(0, SHOW_SRC);
       return `<div class="srcs">${shown.map(s => /^https?:\/\//.test(s.url || "") ?
-        `<a class="src${nw(s)}" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.url)}">${esc(s.label)}</a>` :
+        `<a data-key="source-${s.id}" class="src${nw(s)}" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.url)}">${esc(s.label)}</a>` :
         `<span class="src${nw(s)}" title="${esc(s.label)}">${esc(s.label)}</span>`).join("")}` +
-        (list.length > SHOW_SRC ? `<button class="more" data-more="${key}">${all ? "show fewer" : `+${list.length - SHOW_SRC} more`}</button>` : "") + `</div>`;
+        (list.length > SHOW_SRC ? `<button data-key="more-${key}" class="more" data-more="${key}">${all ? "show fewer" : `+${list.length - SHOW_SRC} more`}</button>` : "") + `</div>`;
     }
     let cur = null;   // the one question it is on right now; other recent ones read "looked at"
     const st = n => n.state === "active" && !(data.live && n.id === cur) ? "explored" : n.state;
@@ -145,9 +159,9 @@
       const ideas = m.nodes.filter(n => n.kind === "idea" && n.label !== KNOWN).sort((a, b) => b.touched - a.touched || b.t - a.t);
       cur = live && m.stage === "research" && ideas[0] ? ideas[0].id : null;
       const nowt = live ? (m.last ? `<b>Now · ${VERB[m.last.kind] || "Working on"}:</b> ${esc(m.last.label)}` : "<b>Starting…</b>")
-        : `<b>How this design was decided.</b> Read it top to bottom: what you asked, what it researched, what it chose and why, what it built.`;
+        : `<b>${esc({done:"Job finished",failed:"Job failed",stopped:"Job stopped",paused:"Work paused"}[data.state] || "Recorded design work")}.</b> Explore the evidence below. Activity does not mean the design passed its checks.`;
       if (strip) {
-        const word = {research: "Researching", decide: "Deciding", build: "Building", over: "Finished"}[m.stage];
+        const word = live ? {research: "Researching", decide: "Deciding", build: "Building"}[m.stage] : ({done:"Finished",failed:"Failed",stopped:"Stopped",paused:"Paused"}[data.state] || "Recorded");
         root.querySelector(".l1").innerHTML = `<b>${word}</b> · ${esc(m.last ? m.last.label : "starting")}`;
         root.querySelector(".l1").title = m.last ? m.last.label : "";
         const chosen = m.options.find(o => o.state === "chosen");
@@ -156,13 +170,13 @@
         return;
       }
       root.querySelector(".nowt").innerHTML = nowt;
-      const cls = k => { const order = ["research", "decide", "build", "over"], i = order.indexOf(m.stage), j = order.indexOf(k);
-        return i === 3 || j < i ? "done" : j === i ? "cur" : "next"; };
+      const cls = k => live && m.stage === k ? "cur" : "recorded";
+      const section = (key, title, content) => `<details class="section" data-section="${key}"${(sections.has(key) ? sections.get(key) : key === m.stage) ? " open" : ""}><summary data-key="section-${key}">${title}</summary>${content}</details>`;
       const opts = m.options.map(o => {
         const from = o.based_on && m.by.get(o.based_on);
         return `<div class="twc opt ${o.state === "chosen" ? "chosen" : "aside"}${nw(o)}"><div class="qh">${o.state === "chosen" ? `<span class="badge b-chosen">✓ Chosen</span>` : `<span class="badge">Set aside</span>`}<span class="qt">${esc(o.label)}</span></div>` +
           (o.reason ? `<div class="why">${o.state === "chosen" ? "Why: " : "Why not: "}${esc(o.reason)}</div>` : "") +
-          (from ? `<div class="from">Came out of: <a data-goto="${from.id}">${esc(from.label)}</a></div>` : "") + `</div>`;
+          (from ? `<div class="from">Came out of: <button data-key="goto-${o.id}" data-goto="${from.id}">${esc(from.label)}</button></div>` : "") + `</div>`;
       }).join("");
       const research = m.questions.map(x => question(x, m)).join("") +
         (m.known ? `<div class="twc q${nw(m.known)}" data-id="${m.known.id}"><div class="qh"><span class="qt">Checked what Kerf already knows</span><span class="badge">${plural(m.of(m.known.id, "source").length, "source")}</span></div>` +
@@ -170,22 +184,22 @@
       const lastB = m.builds[m.builds.length - 1], groups = [];   // parts drawn one after another read as one step
       for (const b of m.builds) { const part = /^Drawing the /.test(b.label), g = groups[groups.length - 1];
         if (part && g && g.parts) g.items.push(b); else groups.push({parts: part, items: [b]}); }
-      const stepLi = g => { const act = live && g.items.includes(lastB), ic = `<span class="ic">${act ? "●" : "✓"}</span>`;
+      const stepLi = g => { const act = live && g.items.includes(lastB), ic = `<span class="ic">${act ? "●" : "·"}</span>`;
         if (!g.parts) return `<li class="${act ? "active" : ""}${nw(g.items[0])}">${ic}<span>${esc(g.items[0].label)}</span></li>`;
         g.items.forEach(nw);
-        return `<li class="${act ? "active" : ""}">${ic}<span>${act ? "Drawing" : "Drew"} ${plural(g.items.length, "part")}<div class="srcs">${g.items.map(b =>
+        return `<li class="${act ? "active" : ""}">${ic}<span>Drawing ${plural(g.items.length, "part")} recorded<div class="srcs">${g.items.map(b =>
           `<span class="src">${esc(b.label.replace(/^Drawing the /, ""))}</span>`).join("")}</div></span></li>`; };
+      const focus = document.activeElement?.dataset.key;
       root.querySelector(".trail").innerHTML = `
-        <li class="st done"><div class="num">1</div><div><h4>You asked</h4><p class="ask">${esc((m.core ? m.core.detail || m.core.label : data.label || "").replace(/^New design:\s*/, ""))}</p></div></li>
-        <li class="st ${cls("research")}"><div class="num">2</div><div><h4>What it looked into<span class="cnt">${plural(m.questions.length, "question")} · ${plural(m.nsrc, "source")}</span></h4>
-          <p class="hint">Each card is one question it researched: what it found, and the pages and past builds it read.${data.steerable && !m.decision ? " Steer it with Focus / Skip while it is still researching." : ""}</p>
-          ${research || `<p class="pending">${live ? "Starting the research…" : "No research was recorded for this design."}</p>`}</div></li>
-        <li class="st ${cls("decide")}"><div class="num">3</div><div><h4>What it decided${m.options.length ? `<span class="cnt">${plural(m.options.length, "option")} weighed</span>` : ""}</h4>
-          ${opts || (m.decision ? `<p class="pending">It wrote its plan (DESIGN.md) without listing alternatives.</p>` :
-            `<p class="pending">Comes after the research: it weighs a few ways to build it and says why it picks one.</p>`)}</div></li>
-        <li class="st ${cls("build")}"><div class="num">4</div><div><h4>What it's building${groups.length ? `<span class="cnt">${plural(groups.length, "step")}</span>` : ""}</h4>
-          ${m.builds.length ? `<ul class="steps">${groups.map(stepLi).join("")}</ul>`
-            : `<p class="pending">Comes after the plan: it draws each part, then tests that everything fits, moves and holds.</p>`}</div></li>`;
+        <li class="st"><div class="num">1</div><div>${section("asked", "<h4>You asked</h4>", `<p class="ask">${esc((m.core ? m.core.detail || m.core.label : data.label || "").replace(/^New design:\s*/, ""))}</p>`)}</div></li>
+        <li class="st ${cls("research")}"><div class="num">2</div><div>${section("research", `<h4>What it looked into<span class="cnt">${plural(m.questions.length, "question")} · ${plural(m.nsrc, "source")}</span></h4>`,
+          research || `<p class="pending">${live ? "Waiting for the first research update." : "No research was recorded."}</p>`)}</div></li>
+        <li class="st ${cls("decide")}"><div class="num">3</div><div>${section("decide", `<h4>What it decided${m.options.length ? `<span class="cnt">${plural(m.options.length, "option")} recorded</span>` : ""}</h4>`,
+          opts || `<p class="pending">${m.decision ? "A plan was recorded without listed alternatives." : "No decision has been recorded yet."}</p>`)}</div></li>
+        <li class="st ${cls("build")}"><div class="num">4</div><div>${section("build", `<h4>What it's building${groups.length ? `<span class="cnt">${plural(groups.length, "step")} recorded</span>` : ""}</h4>`,
+          m.builds.length ? `<ul class="steps">${groups.map(stepLi).join("")}</ul>` : `<p class="pending">No build activity has been recorded yet.</p>`)}</div></li>`;
+      if (focus) [...root.querySelectorAll("[data-key]")].find(e => e.dataset.key === focus)?.focus({preventScroll:true});
+      root.querySelector(".receipts").innerHTML = (data.steer || []).filter(e => e.action === "note").map(e => `<p class="receipt">${esc(e.text)} <span>· ${e.delivered ? "Received by Kerf" : "Waiting for receipt"}</span></p>`).join("");
       root.querySelector(".tellbox").hidden = !data.steerable;
       root.querySelector(".rp").hidden = live || !(data.steps > 1);
     }
@@ -200,31 +214,34 @@
     async function load() {
       try {
         const r = await fetch(url), d = await r.json();
-        if (d.error) throw new Error(d.error);
+        if (!r.ok || d.error) throw new Error(d.error || "The update could not be loaded.");
+        if (stopped) return;
+        const error = root.querySelector(".load-error"); if (error) error.hidden = true;
         data = d; draw();
         if (d.live && !stopped) timer = setTimeout(load, strip ? 2500 : 1500);
-      } catch (e) { if (!stopped) timer = setTimeout(load, 4000); }
+      } catch (e) { if (!stopped) { const error = root.querySelector(".load-error"); if (error) { error.hidden = false; error.textContent = "Couldn’t refresh the trail. Keeping the last recorded update; retrying…"; } else root.querySelector(".l2").textContent = "Updates interrupted; retrying…"; timer = setTimeout(load, 4000); } }
     }
     async function steer(body) {
       try {
         const r = await fetch("/api/steer", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({job: opt.job, ...body})});
-        const d = await r.json(); if (d.error) throw new Error(d.error);
+        const d = await r.json(); if (!r.ok || d.error) throw new Error(d.error || "Your note was not sent.");
         clearTimeout(timer); load(); return true;
       } catch (e) { (window.toast || alert)("Couldn't steer", e.message, "bad"); return false; }
     }
     root.addEventListener("click", ev => {
-      const b = ev.target.closest("button, a[data-goto]");
+      const b = ev.target.closest("button, summary[data-key]");
       if (strip) { if (opt.onOpen) opt.onOpen(); return; }
       if (!b) return;
-      if (b.dataset.more) { open.has(b.dataset.more) ? open.delete(b.dataset.more) : open.add(b.dataset.more); draw(true); }
+      if (b.closest("details.section") && b.tagName === "SUMMARY") { const d = b.closest("details"); sections.set(d.dataset.section, !d.open); }
+      else if (b.dataset.more) { open.has(b.dataset.more) ? open.delete(b.dataset.more) : open.add(b.dataset.more); draw(true); }
       else if (b.dataset.steer) { const n = data.nodes.find(x => x.id === b.dataset.node); if (n) steer({action: b.dataset.steer, node: n.id, label: n.label}); }
-      else if (b.dataset.goto) { const c = root.querySelector(`[data-id="${b.dataset.goto}"]`); if (c) { c.scrollIntoView({block: "center", behavior: "smooth"}); c.classList.add("flash"); setTimeout(() => c.classList.remove("flash"), 1400); } }
+      else if (b.dataset.goto) { const c = root.querySelector(`[data-id="${b.dataset.goto}"]`); if (c) { const d = c.closest("details.section"); d.open = true; sections.set(d.dataset.section, true); c.scrollIntoView({block: "center", behavior: "smooth"}); c.classList.add("flash"); setTimeout(() => c.classList.remove("flash"), 1400); } }
       else if (b.classList.contains("send")) sendNote();
       else if (b.classList.contains("play")) replay();
     });
     async function sendNote() {
       const i = root.querySelector(".tell input"), t = i.value.trim(); if (!t) return;
-      if (await steer({action: "note", text: t})) { i.value = ""; (window.toast || (() => {}))("Sent to Kerf", "It reads this at its next step.", "ok"); }
+      if (await steer({action: "note", text: t})) { i.value = ""; (window.toast || (() => {}))("Sent to Kerf", "Waiting for receipt at the next supported step.", "ok"); }
     }
     if (!strip) root.querySelector(".tell input").addEventListener("keydown", e => { if (e.key === "Enter") sendNote(); });
     function replay() {   // grow the finished story again, one recorded step at a time

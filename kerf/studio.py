@@ -132,7 +132,7 @@ class Job:
         end = self.ended or time.time()
         return {"id": self.id, "kind": self.kind, "project": self.project, "label": self.label, "state": self.state,
                 "usage": self.usage, "resumable": bool(self.state == "paused" and self.session and not self.resumed_by),
-                "resumed_by": self.resumed_by,
+                "resumed_by": self.resumed_by, "agent": getattr(self, "agent", "claude"),
                 "started": self.started, "seconds": round(end - self.started, 1), "lines": self.lines[since:],
                 "n": len(self.lines), "events": self.events[esince:], "ne": len(self.events)}
 
@@ -1804,7 +1804,7 @@ class Handler(BaseHTTPRequestHandler):
                     j = JOBS[jid]
                     from . import steer
                     live = j.state == "running"
-                    return self._json({**thoughtweb.from_events(j.events, getattr(j, "request", "") or j.label), "live": live, "label": j.label,
+                    return self._json({**thoughtweb.from_events(j.events, getattr(j, "request", "") or j.label), "live": live, "state": j.state, "label": j.label,
                                        "steerable": live and j.kind in STEERABLE, "steer": steer.read(j.project) if j.kind in STEERABLE else []})
                 if nm in project_names():
                     return self._json({**thoughtweb.from_project(PROJECTS / nm), "live": False, "label": nm})
