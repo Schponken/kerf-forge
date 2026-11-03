@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import platform
 import re
 import selectors
 import shutil
@@ -19,6 +20,7 @@ from urllib.parse import quote, urlparse
 
 REFRESH_SECONDS = 30
 MAX_SESSIONS = 20
+_MACOS_BUNDLE_EXECUTABLE = Path("/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex")
 _CACHE: dict[str, dict] = {}
 _LOCK = threading.Lock()
 
@@ -153,11 +155,21 @@ def _record(thread: dict, turn: dict, live: bool) -> dict:
             "steps": steps, "live": live, "source": "Codex live session" if live else "Codex saved history"}
 
 
-def _collect(root: Path) -> dict:
+def _executable() -> str | None:
     exe = shutil.which("codex")
+    if exe:
+        return exe
+    # shortcut: only this verified app layout; custom installations must be on PATH.
+    if platform.system() == "Darwin" and _MACOS_BUNDLE_EXECUTABLE.is_file() and os.access(_MACOS_BUNDLE_EXECUTABLE, os.X_OK):
+        return str(_MACOS_BUNDLE_EXECUTABLE)
+    return None
+
+
+def _collect(root: Path) -> dict:
+    exe = _executable()
     if not exe:
         return {"sessions": [], "source": {"name": "Codex", "state": "unavailable",
-                "detail": "Codex CLI is not available on this computer. Shared Codex claims still appear."}}
+                "detail": "No runnable Codex executable was found. Custom installations must be on PATH. Shared Codex claims still appear."}}
     deadline, reader, is_live = time.monotonic() + 8, None, True
     try:
         try:
