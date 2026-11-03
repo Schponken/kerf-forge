@@ -394,7 +394,7 @@ def _maker_files(project_dir: Path) -> dict[str, Path]:
                 checked(path)
                 if path.suffix != ".glb":
                     selected[path.relative_to(out).as_posix()] = path
-    for relative in EXPORT_FILES:
+    for relative in (*EXPORT_FILES, f"{project_dir.name}_urdf.zip"):
         path = inside(out, relative)
         if path.exists():
             checked(path)
@@ -1777,6 +1777,17 @@ def _safe(base: Path, rel: str) -> Path | None:
     return p if p.is_file() and (p == base.resolve() or base.resolve() in p.parents) else None
 
 
+def _project_file(root: Path, name: str, relative: str) -> Path | None:
+    """Contain the project segment as well as the requested file."""
+    from .sources import inside
+    if not NAME_RE.fullmatch(name):
+        return None
+    try:
+        return _safe(inside(root, name), relative)
+    except ValueError:
+        return None
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "KerfStudio/1"
 
@@ -1901,11 +1912,11 @@ class Handler(BaseHTTPRequestHandler):
                     pass
                 return
             if parts[0] == "history" and len(parts) == 4 and parts[3] == "thumb.png":
-                f = _safe(HISTORY / parts[1], f"{parts[2]}/thumb.png")
+                f = _project_file(HISTORY, parts[1], f"{parts[2]}/thumb.png")
                 return self._send(200, f.read_bytes(), "image/png") if f else self._err("not found", 404)
             if parts[0] in ("files", "trial") and len(parts) >= 3:
-                base = (PROJECTS if parts[0] == "files" else TRIALS) / parts[1]
-                f = _safe(base, "/".join(parts[2:]))
+                root = PROJECTS if parts[0] == "files" else TRIALS
+                f = _project_file(root, parts[1], "/".join(parts[2:]))
                 if f is None:
                     return self._err("not found", 404)
                 ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
