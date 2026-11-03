@@ -1523,3 +1523,10 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 ## 2026-11-02 — Hawk balance candidate before integrated checks (Codex)
 - The battery moves23 mm forward and the ESC10 mm forward; XT60 moves above the pack through the existing shelf window so the pack can move without colliding with a connector ahead of it. FC/receiver retain their shelf positions. Nominal pack-to-bulkhead clearance0.5 mm, connector-to-pack vertical clearance1 mm.
 - No added ballast or reduced acceptance threshold. Candidate awaits one integrated wiring, geometry and engineering check; current known structural and mass failures remain open.
+
+## 2026-11-03 — Hawk hub diagnostic preserved (Codex weight worker)
+- Baseline hub diagnostic completed: 24.04 MPa vs 24 MPa (SF2), 11.925 mm deflection vs a 1 mm diagnostic target,
+  under conservative 35 N socket lift + 5.3 N m torque. Solver fell back to a coarser mesh; not a convergence
+  proof and not proof of 50% infill. Full regions/results/limits saved in validation/hub_baseline.json.
+  Do not thin this hub: no demonstrated stiffness margin. Removed the unbuilt cavity candidate; geometry
+  remains the packaging taper fix only. Weight target and normal-flight structural proof remain unresolved.

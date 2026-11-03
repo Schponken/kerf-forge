@@ -31,3 +31,29 @@ was explicitly resumed by Spencer for this task. No flight-strength or completed
 Candidate hub relief preserves the outer section, socket walls, bearing boss, raised aft box, gear and
 wire channel, with ribs at its ends and mid-span. It remains a candidate until geometry mass and strength
 are measured. Even this and an explicitly hollow glove may be insufficient for 1800 g once wiring is counted.
+
+## Baseline structural diagnostic — failed
+
+`validation/hub_baseline.json` records the reproducible boundary regions, loads, solver settings and result.
+The original hub was fixed at the two 625 bearing seats and loaded at its two spar sockets with 35 N total
+(73/27% split) plus 5300 N mm torque. This deliberately conservative test adds the socket-force lever
+moment to the 5.3 N m panel moment; the total about the original pivot is approximately 6.19 N m.
+It is an overtest, not an exact distribution of the new layout's 6 g lift.
+
+Result: **24.04 MPa p99.9 stress versus 24 MPa at SF 2**, **11.925 mm maximum deflection** versus a
+1 mm diagnostic stiffness target. The peak stress was 63.8 MPa near the bearing/raised-box transition.
+The solver used a coarser exact solve after its iterative solver stalled (22,606 elements in the final solve).
+This is not a converged proof, and the solid CAD model does not prove the 50% infill print. It demonstrates
+no established stiffness margin for weight reduction; simply correcting the conservative load does not
+explain away an order-of-magnitude displacement shortfall.
+
+**Decision: defer hub hollowing.** An unbuilt cavity candidate was removed before any change to load-bearing
+geometry was committed. Preserve the current hub while the torque path is redesigned and verified.
+The glove also needs explicit reinforcement geometry: current text-only modifiers are ignored by both
+mass accounting and local-infill analysis. Its current mass is not a complete reinforced print estimate.
+
+A source review found no credible local 331 g-plus-wiring saving after the packaging change: the fuselage
+main shell is already 1.6 mm, wing and tail skins already use one wall, and hollowing must retain the hub
+boss, gear and aft torque path. A smaller battery would trade away the endurance requirement.
+No all-up-mass PASS or flight-readiness claim is justified. Revisit after a deeper/shorter hub torque path
+and a center-wing structure with explicit load-bearing ribs or spars have been validated.
