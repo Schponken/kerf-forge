@@ -264,6 +264,7 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [ ] Learning Mode phase 8, the switch (Codex OK): Studio corner switch (budget in tokens / runs per week, overnight 1-7 am ET, steps aside when other Kerf jobs run, what it's doing now, weekly report card whose claims match the diary, undo, off); `kerf learn run` is the local runner Studio starts, using kerf/agent.py (Claude, or Codex when Claude's usage is out); fences enforced in code: never edits checks / thresholds / catalog values / tests / review.json, no purchases or prints; tests
 
 ## Phase 5 — final audit
+- [x] Work integration validation: combine reviewed Work, shared-claims, discovery and job-lifecycle branches only in a local proof; test affected readers, serialization and browser flows without merging GitHub PRs or launching real agents.
 - [x] Work ownership breakdown: show each linked claim owner, activity, freshness and remaining steps within a shared Codex chat; preserve truthful live state, attention filters, search and responsive details.
 - [x] Work activity descriptions: preserve Codex public progress messages alongside separate bounded tool-action labels; keep live/saved distinctions, claim replacement, search and responsive rendering truthful.
 - [x] Work chat navigation: link observed Codex sessions to the documented existing-chat route and show their full chat IDs; reject unsafe routes and verify keyboard/phone behavior without opening production chats.
