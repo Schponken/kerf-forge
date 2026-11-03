@@ -1,0 +1,9 @@
+{
+ "item": "Focused test workflow: bind pytest imports to the active worktree and provide a read-only checkout/test preflight plus exact-head review receipts; preserve all existing test selection and coordination rules.",
+ "session": "codex-process-optimization",
+ "since": 1793676171.2204869,
+ "heartbeat": 1793676171.2204869,
+ "provider": "Codex",
+ "thread_id": "01a19f6d-0139-79d0-ab58-73255e776e64",
+ "since_utc": "2026-11-03 03:22"
+}
