@@ -535,3 +535,29 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Impeccable incumbent refinement: 13 preexisting mechanical findings, none in changed Work selectors.
   Doctor ALL OK with reused dependencies (optional Arduino/simavr unavailable). Existing phone shell
   height is unchanged. No real Codex session connection, full batch, stress run, geometry or review edits.
+
+
+### 2026-11-02 — Work links identify real observed Codex chats (Codex; stacked on PR #29)
+- Found that only hand-written browser fixtures supplied chat URLs: the actual Codex reader did not,
+  so real sessions had no Open chat action. Verified the existing-chat route in the official
+  [desktop app Commands reference](https://learn.chatgpt.com/docs/app/commands#deep-links), which documents
+  `codex://threads/<thread-id>` separately from the new-chat route. Local Info.plist confirms scheme
+  registration; no route was inferred from registration alone. One targeted official source lookup.
+- The reader now supplies the documented link from the full observed technical ID, percent-encoded as
+  a single path segment. Invalid/non-string/control/reserved IDs get no link. Work accepts only existing
+  chat routes for codex links (no new/settings route, credentials, port, query, fragment or decoded
+  path separator); HTTPS handling remains. Open chat uses target=_blank plus noopener/noreferrer,
+  reusing the native shell's existing external-window delegate without changing Swift or the launcher.
+- Full observed Chat ID is escaped and wrapped in Scope & next steps. Shared claims alone cannot
+  supply that observed identity. No clipboard flow, synthetic URLs or automatic navigation was added.
+- Validation: **52 focused tests pass in 16.25 s** (Codex reader, Work overview, browser, docs).
+  Final full-ID escaping/capture browser selection: **2 pass in 13.70 s**, overlapping the earlier run.
+  The browser fixture goes through actual `_record` → overview → DOM, asserts full href/ID/target/rel,
+  intercepts keyboard activation before navigation, and preserves focus through refresh. Invalid route,
+  escaping, 1440/390 px, light/dark, no-overflow and existing Work filtering checks pass. Full-ID and top
+  captures in `.cache/work-chat-links/` visually reviewed. Mechanical audit: 13 incumbent findings,
+  none in changed Work selectors. Doctor ALL OK; existing optional Arduino/simavr unavailable.
+- No production chat, native app, real session connection, full batch or stress run. The native external
+  handoff is verified by source path and DOM attributes, not a live app launch. Opening a documented
+  link still depends on an installed app handler and the chat existing on that computer. Phone shell
+  height remains the previously accepted separate limitation.

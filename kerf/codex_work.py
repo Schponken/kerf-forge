@@ -15,7 +15,7 @@ import threading
 import time
 from functools import lru_cache
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 REFRESH_SECONDS = 30
 MAX_SESSIONS = 20
@@ -105,6 +105,14 @@ def _text(value, limit=450) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()[:limit]
 
 
+def _chat_url(thread_id) -> str | None:
+    # https://learn.chatgpt.com/docs/app/commands#deep-links — existing local chats only.
+    if (not isinstance(thread_id, str) or not thread_id or thread_id.strip() != thread_id
+            or thread_id.lower() in {"new", ".", ".."} or re.search(r"[\x00-\x1f\x7f/\\]", thread_id)):
+        return None
+    return "codex://threads/" + quote(thread_id, safe="")
+
+
 def _record(thread: dict, turn: dict, live: bool) -> dict:
     status = thread.get("status") or {}
     kind, flags = status.get("type"), status.get("activeFlags") or []
@@ -137,7 +145,7 @@ def _record(thread: dict, turn: dict, live: bool) -> dict:
                     "failed": "Last turn failed", "inProgress": "Last saved turn is in progress"}.get(turn_status, "No activity summary yet")
     if live and kind == "idle" and turn_status == "failed":
         state, label = "blocked", "Last turn failed"
-    return {"id": thread["id"], "thread_id": thread["id"], "provider": "Codex",
+    return {"id": thread["id"], "thread_id": thread["id"], "url": _chat_url(thread["id"]), "provider": "Codex",
             "title": thread.get("name") or _text(thread.get("preview"), 120) or "Codex session",
             "description": _text(thread.get("preview")), "state": state, "status_label": label,
             "activity": activity, "action": action, "started_at": turn.get("startedAt") or thread.get("createdAt"),
