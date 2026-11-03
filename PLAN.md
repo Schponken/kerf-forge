@@ -339,3 +339,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Work ownership evidence: correlate claims only with unambiguous chat identities and label owner updates separately from observed session activity; focused fixtures.
 - [x] Studio Tune round 2: honest requirement comparisons and recover recorded try values into a validated draft; fixture browser tests
 - [x] Resume strength simulations (Spencer, 2026-11-02): restore enabled policy, preserve unrelated holds, verify runtime and saved strength provenance with focused tests and one bounded real FEA solve.
+
+- [x] Work joined-activity provenance: preserve owner-update source exactly when a joined session fills a job’s missing activity; focused helper regression.

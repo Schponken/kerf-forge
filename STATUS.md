@@ -1435,3 +1435,7 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Focused activation/pause/freshness/lesson regressions: **24 passed in 1.85 s**. One actual enabled, cache-disabled axial PETG bar FEA: **PASS**, 420 tets, 0.266 s, bulk 1.00022 MPa vs 1 MPa theory, displacement 0.027 mm vs 0.027397 mm theory. Clamp-local p99.9 remains 1.10 MPa against 24 MPa allowed. Solver slot serialized with project-strength work.
 - Current strength improvement scope is normal flight and operating loads; existing crash/impact checks are preserved without making crash optimization the objective.
 - Receipt: docs/status/STRENGTH_RESUME.md. Resource review kept the existing gmsh/scikit-fem solver and improved evidence freshness; no external tool was justified. No project geometry, thresholds/catalog, review.json, installed app or full-suite run changed.
+
+## 2026-11-02 — Joined Work activity provenance bridge (Codex, round2-work)
+- The exact existing fallback that copies a session's activity into a job now copies activity_source with it. A real job note keeps its own provenance; no freshness or lifecycle policy changed.
+- New helper-boundary regression uses normalized claim-supplied activity with separately observed runtime evidence. The missing source transfer failed before the one-line fix; local-note preservation passed. Final focused ownership/job-dedup backend selection: 45 passed, 2 browser tests deselected in 0.06 s. Existing browser-mark warnings remain. No UI changes, extra visual pass, actual sessions/jobs, full suite, CAD/FEA or install.
