@@ -17,7 +17,7 @@ def test_stress_advice_sizes_the_section_and_names_stronger_materials():
 
 def test_frequency_servo_tip_balance_and_flight_time_advice():
     nf = advice.advise({"check": "natural_freq", "ok": False, "value": 186.0, "limit": [170.0, 510.0]}, {"separation": 0.2}, None)
-    assert "204 Hz" in nf[0] and "20 % more stiffness" in nf[0]                            # (204 / 186)^2 = 1.20
+    assert "213 Hz" in nf[0] and "31 % more stiffness" in nf[0]                            # (213 / 186)^2 = 1.31
     sv = advice.advise({"check": "static_torque", "ok": False, "value": 6.0}, {"max_fraction": 0.5}, None)
     assert "12.0 kg·cm" in sv[0] and "DS3218" in sv[1] and "MG996R" not in sv[1]
     tip = advice.advise({"check": "tip_over", "ok": False, "value": 10.0, "limit": 15.0}, {}, None)
@@ -64,3 +64,74 @@ def test_wiring_errors_get_their_own_fix_not_see_the_details():
                      ("circuit: something odd", "wiring:")]:
         c = explain.explain(m)
         assert words in c["fix"] and c["fix"] != "See the details.", (m, c)
+
+
+def _frequency_gate(monkeypatch, frequency, excitations, **settings):
+    """Exercise the real frequency check without meshing or solving; 1 kg makes k set f_n exactly."""
+    import math
+    from kerf import req_dynamic
+    monkeypatch.setattr(req_dynamic, "_solve", lambda *a, **kw: ({}, 1, (2 * math.pi * frequency) ** 2 / 1000))
+    monkeypatch.setattr(req_dynamic, "rotor_hz", lambda *a, **kw: excitations)
+    monkeypatch.setattr("kerf.checks.item_mass_g", lambda item: 0)
+    return req_dynamic.natural_freq(NS(items={"arm": NS()}), None, part="arm", fixed={}, loads=[],
+                                    carried_g=1000, excitation={"motor": "motor"}, **settings)
+
+
+def test_resonance_advice_targets_clear_every_actual_excitation(monkeypatch):
+    import re
+    for fn, excitations, sep in [(185, [200.2, 600.5], .2), (186, [170, 510], .2),
+                                  (200, [170, 200, 230], .2), (200, [230, 170, 200], .2),
+                                  (100, [100], .95)]:
+        row = _frequency_gate(monkeypatch, fn, excitations, separation=sep)
+        assert not row["ok"]
+        tips = advice.advise({"check": "natural_freq", **row}, {"separation": sep})
+        targets = [float(v) for v in re.findall(r"to at (?:least|most) ([\d.]+) Hz", " ".join(tips))]
+        assert len(targets) == 2
+        for target in targets:
+            assert _frequency_gate(monkeypatch, target, excitations, separation=sep)["ok"], (target, tips)
+        if fn == 185:
+            assert targets == [251, 166]        # nearest safe integer targets: 200.2/.8 and 200.2/1.2
+        if fn == 200:
+            assert targets == [288, 141]        # clear the overlapping bands of all three excitations
+
+
+def test_resonance_boundaries_preserve_real_gate_strictness(monkeypatch):
+    # The check includes equality; advice rounds outward instead of rounding a boundary into the unsafe band.
+    assert _frequency_gate(monkeypatch, 256, [192], separation=.25)["ok"]  # exactly representable equality
+    assert _frequency_gate(monkeypatch, 256, [320], separation=.25)["ok"]
+    assert _frequency_gate(monkeypatch, 250 + 1e-6, [200], separation=.2)["ok"]
+    assert not _frequency_gate(monkeypatch, 250 - 1e-6, [200], separation=.2)["ok"]
+    low = 200 / 1.2
+    assert _frequency_gate(monkeypatch, low - 1e-6, [200], separation=.2)["ok"]
+    assert not _frequency_gate(monkeypatch, low + 1e-6, [200], separation=.2)["ok"]
+    tips = advice.advise({"check": "natural_freq", "value": 200, "limit": [200]}, {"separation": .2})
+    assert "at least 251 Hz" in tips[0] and "at most 166 Hz" in tips[1]
+
+
+def test_frequency_ratio_advice_uses_highest_excitation_and_branch_precedence(monkeypatch):
+    row = _frequency_gate(monkeypatch, 186, [170, 510], min_ratio=1.5, separation=.2)
+    assert not row["ok"]
+    tips = advice.advise({"check": "natural_freq", **row}, {"min_ratio": 1.5, "separation": .2})
+    assert "at least 766 Hz" in tips[0] and not any("at most" in t for t in tips)
+    assert _frequency_gate(monkeypatch, 766, [170, 510], min_ratio=1.5, separation=.2)["ok"]
+    assert not _frequency_gate(monkeypatch, 765 - 1e-6, [170, 510], min_ratio=1.5)["ok"]
+    assert _frequency_gate(monkeypatch, 765, [170, 510], min_ratio=1.5)["ok"]
+
+
+def test_resonance_large_separation_has_only_a_lower_solution(monkeypatch):
+    for sep, target in [(1, 49), (2, 33)]:
+        row = _frequency_gate(monkeypatch, 100, [100], separation=sep)
+        tips = advice.advise({"check": "natural_freq", **row}, {"separation": sep})
+        assert len(tips) == 1 and f"at most {target} Hz" in tips[0]
+        assert _frequency_gate(monkeypatch, target, [100], separation=sep)["ok"]
+
+
+def test_resonance_advice_rejects_invalid_numbers_and_respects_zero():
+    row = {"check": "natural_freq", "value": 100, "limit": [100]}
+    for settings in [{"separation": 0}, {"separation": -1}, {"separation": float("nan")},
+                     {"separation": float("inf")}, {"min_ratio": 0}]:
+        assert advice.advise(row, settings) == []
+    for bad in [0, -1, float("nan"), float("inf")]:
+        assert advice.advise({**row, "value": bad}, {"separation": .2}) == []
+    assert advice.advise({**row, "limit": [float("nan")]}, {"separation": .2}) == []
+    assert advice.advise({**row, "limit": [0]}, {"separation": 2}) == []  # no positive frequency can clear it

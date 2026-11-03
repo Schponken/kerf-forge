@@ -82,20 +82,48 @@ def _stress(row, req, proj) -> list[str]:
 
 def _natural_freq(row, req, proj) -> list[str]:
     fn, ex = row.get("value"), row.get("limit") or []
-    sep = float(req.get("separation") or 0.2)
-    if not _num(fn) or not ex:
+    if not _num(fn) or not math.isfinite(fn) or fn <= 0 or not ex:
+        return []
+    if any(not _num(e) or not math.isfinite(e) or e < 0 for e in ex):
         return []
     near = min(ex, key=lambda e: abs(e - fn))
-    up, down = near * (1 + sep), near * (1 - sep)
-    k_up = (up / fn) ** 2
-    t_up = k_up ** (1 / 3)
-    tips = [f"Its natural wobble ({fn:.0f} Hz) is too close to the {near:.0f} Hz shaking. To move it above {up:.0f} Hz it "
-            f"needs {_pct(k_up)} more stiffness: about {_pct(t_up)} more depth in the direction it flexes (stiffness goes "
-            f"with depth cubed), a shorter span, or a rib along it."]
-    if down > 0 and fn > down:
-        tips.append(f"Or move it below {down:.0f} Hz instead: {_pct((down / fn) ** 2)} less stiffness or "
-                    f"{_pct((fn / down) ** 2)} more mass at the tip; usually the worse choice for a frame arm.")
-    tips.append("Lighter things at the tip (motor, camera) raise the frequency too: frequency goes as sqrt(stiffness / mass).")
+    up, down = None, None
+    if req.get("min_ratio") is not None:       # the check gives this branch precedence over separation
+        ratio = float(req["min_ratio"])
+        if not math.isfinite(ratio) or ratio <= 0 or max(ex) <= 0:
+            return []
+        up = max(math.floor(fn) + 1, math.ceil(math.nextafter(max(ex) * ratio, math.inf)))
+        why = f"Its natural wobble ({fn:g} Hz) is below the required ratio to the highest shaking frequency."
+    else:
+        sep = float(req["separation"])
+        if not math.isfinite(sep) or sep <= 0:
+            return []
+        # |excitation - fn| / fn >= sep: boundaries are e/(1+sep) and e/(1-sep), not e*(1 +/- sep).
+        # Round outward to whole Hz and walk every forbidden band, so a target never lands near another excitation.
+        if sep < 1:
+            up = math.floor(fn) + 1
+            for e in sorted(ex):
+                if abs(e - up) / up < sep:
+                    up = math.floor(math.nextafter(e / (1 - sep), math.inf)) + 1
+        down = math.ceil(fn) - 1
+        for e in sorted(ex, reverse=True):
+            if down <= 0:
+                break
+            if abs(e - down) / down < sep:
+                down = math.ceil(math.nextafter(e / (1 + sep), -math.inf)) - 1
+        why = f"Its natural wobble ({fn:g} Hz) is too close to the {near:g} Hz shaking."
+    tips = []
+    if up is not None:
+        k_up = (up / fn) ** 2
+        tips.append(f"{why} To move it to at least {up:g} Hz it needs about {_pct(k_up)} more stiffness: about "
+                    f"{_pct(k_up ** (1 / 3))} more depth in the direction it flexes (stiffness goes with depth cubed), "
+                    "a shorter span, or a rib along it.")
+    if down is not None and down > 0:
+        tips.append(f"{'Or move it' if tips else why + ' Move it'} to at most {down:g} Hz instead: "
+                    f"{_pct((down / fn) ** 2)} less stiffness or {_pct((fn / down) ** 2)} more mass at the tip; "
+                    "usually the worse choice for a frame arm.")
+    if up is not None:
+        tips.append("Lighter things at the tip (motor, camera) raise the frequency too: frequency goes as sqrt(stiffness / mass).")
     return tips
 
 
