@@ -48,3 +48,7 @@ While this section is present:
 
 **Ending it (for the first Claude session back):** delete this section, set CLAUDE.md's manager role back, and add a
 STATUS.md entry listing what Codex merged (`git log --merges --since=2026-11-02`).
+
+## Resource review
+
+- Assembly demonstrations (2026-11-02): reviewed; keep the existing viewer and catalog-backed interface coordinates. Procedural tool illustrations preserve exact alignment and replay without adding an asset pipeline. Revisit only if the guide needs tool shapes or hand motions that the current viewer cannot explain clearly. No external resource lookup or installation was needed.

@@ -1373,3 +1373,11 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   desktop/phone/iron inspection and drone step 2 (10 sites) contact/navigation smoke test had no JS errors.
   Screenshots: /tmp/kerf-placement-{desktop,phone,iron}.png. Detector reports only the incumbent global
   font-size hierarchy warning. Full batch remains HELD; no full suite, geometry rebuild or FEA run.
+
+## 2026-11-02 — Assembly guide integration and installed update (Codex)
+- Combined producer bf3c3e5 (PR #64) and viewer 7ad8095 (PR #65) locally at 7a97024; both source PRs remain open for independent review. No remote PR merge.
+- Final combined targeted selection: 14 passed in 16.91 s (insert/pivot producer, placement interactions, existing Build it, step payload and later-part fastener order). Receipt: .cache/assembly-guide-integration/results.xml and tests.log. No full suite or FEA; batch remains explicitly held.
+- Installed four tested application files into /Users/spencergross/kerf-forge with a dated backup and manifest. Refreshed only bionic_finger saved steps: three exact insert and three shoulder-screw sites. Before refresh, fingerprint matched and a temporary CAD-only recovery reproduced all four saved vertex/triangle arrays exactly. Every other saved payload field was verified unchanged.
+- Restarted Kerf Studio with no running jobs. Native UI verified insert location, Replay installation, step navigation and the second step's M3 shoulder-screw location. Installed source hashes and all 20 pre-existing modified project files still match after restart.
+- Desktop/phone captures reviewed in one correction pass plus confirmation: clearer local replay, reduced duplicate copy, moved label off tool contact and phone step controls away from target. These are schematic installation demonstrations, not physical assembly validation. Unknown unrecorded pin seats remain explicitly unavailable; older projects gain new missing metadata on future builds.
+- Backup: ~/Library/Application Support/KerfStudio/backups/20261102-230847-assembly-guide. Integration proof and recovery/install manifests: .cache/assembly-guide-integration/.
