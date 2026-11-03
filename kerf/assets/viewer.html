@@ -129,6 +129,9 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 #asm .opt{display:flex;gap:6px;align-items:center;color:var(--mute);font-size:12px;margin:4px 0}
 #asm .donebox{display:flex;gap:8px;align-items:center;margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--soft);cursor:pointer}
 #asm .donebox.on{background:var(--goodbg);color:var(--good)}
+#asm .sites{margin:14px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+#asm .sites h4{margin:0 0 8px;font-size:14px}#asm .sites select{width:100%;padding:8px;white-space:normal}#asm .sites .ctrls{margin:8px 0}#asm .site-detail{margin:8px 0;font-size:13px;overflow-wrap:anywhere}
+.site-leader{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.site-leader line{stroke:var(--accent);stroke-width:1.5}.lab.target{white-space:normal;max-width:220px;transform:translate(0,-50%)}
 #asm .fin{font-size:15px;font-weight:650;color:var(--good)}
 /* The object owns the stage; every tool is a deliberate, dismissible visit. */
 .tool-dock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;max-width:calc(100% - 36px);padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 32px #10182024;z-index:6}
@@ -147,7 +150,7 @@ button:disabled{opacity:.5;cursor:default}.pane{overscroll-behavior:contain}.pan
 aside:not([hidden]){animation:tray-in .2s cubic-bezier(.16,1,.3,1)}
 @keyframes tray-in{from{transform:translateY(10px);opacity:.7}to{transform:translateY(0);opacity:1}}
 @media(max-width:1100px){.legend{display:none}}
-@media(max-width:760px){header{padding:10px 16px;gap:8px}header .meta{width:100%}main{min-height:360px}.tool-dock{left:12px;right:12px;bottom:12px;transform:none;max-width:none;gap:1px;padding:5px;overflow-x:auto;scrollbar-width:thin;border-radius:12px}.tool-dock button{padding:7px 9px;font-size:12px}.tool-dock .tabs:before{margin:0 2px}.vwrap{position:static}.vmenu{position:fixed;left:12px;bottom:76px}.stage-caption{top:16px;left:16px;font-size:11px}.stage-caption b{font-size:13px}#notice{left:16px;top:60px;font-size:11px}main.has-tool #stage canvas{width:100%;height:calc(44% - 76px)}aside{top:auto;left:12px;right:12px;bottom:76px;width:auto;max-width:none;max-height:56%;min-height:190px}.pane{padding:12px 14px}#cutp,#slegend,#clegend{left:12px;bottom:76px;max-width:calc(100% - 24px);max-height:55%}#abar{bottom:auto;top:110px;max-width:calc(100% - 24px);padding:5px;gap:3px}#abar button{font-size:12px;padding:5px 7px}#abar .t{font-size:11px;max-width:90px}.float{font-size:12px}#help{right:14px;top:14px}}
+@media(max-width:760px){header{padding:10px 16px;gap:8px}header .meta{width:100%}main{min-height:360px}.tool-dock{left:12px;right:12px;bottom:12px;transform:none;max-width:none;gap:1px;padding:5px;overflow-x:auto;scrollbar-width:thin;border-radius:12px}.tool-dock button{padding:7px 9px;font-size:12px}.tool-dock .tabs:before{margin:0 2px}.vwrap{position:static}.vmenu{position:fixed;left:12px;bottom:76px}.stage-caption{top:16px;left:16px;font-size:11px}.stage-caption b{font-size:13px}#notice{left:16px;top:60px;font-size:11px}main.has-tool #stage canvas{width:100%;height:calc(44% - 76px)}aside{top:auto;left:12px;right:12px;bottom:76px;width:auto;max-width:none;max-height:56%;min-height:190px}.pane{padding:12px 14px}#cutp,#slegend,#clegend{left:12px;bottom:76px;max-width:calc(100% - 24px);max-height:55%}#abar{bottom:auto;top:calc(44% - 112px);max-width:calc(100% - 24px);padding:5px;gap:3px}#abar button{font-size:12px;padding:5px 7px}#abar .t{font-size:11px;max-width:90px}.float{font-size:12px}#help{right:14px;top:14px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .word{border-bottom:1px dotted var(--accent);cursor:help}.word:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .word-popup{position:fixed;z-index:100;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;box-sizing:border-box;background:var(--panel);color:var(--ink);border-radius:14px;padding:18px;box-shadow:0 16px 48px #10182024;font-size:14px;line-height:1.5}
@@ -725,6 +728,10 @@ function cancelTweens() { for (const t of TW.splice(0)) t.res(); }
 function stepTweens(now) {
   if (!TW.length) return;
   for (const t of [...TW]) {
+    if (t.actionDemo && AS.demo) {
+      if (AS.demo.paused) { t.pausedAt ??= now; continue; }
+      if (t.pausedAt != null) { t.t0 += now - t.pausedAt; delete t.pausedAt; }
+    }
     const p = Math.min(1, (now - t.t0) / t.dur);
     try { t.fn(t.ease(p), p); } catch (e) { console.error(e); }
     if (p >= 1) { TW.splice(TW.indexOf(t), 1); t.res(); }
@@ -923,7 +930,7 @@ function snapshot(w = 480, h = 360) {
 }
 
 // ---------- build it, step by step (data: kerf/viewer.py assembly_steps, text: ASSEMBLY.md)
-const SD = D.steps, AS = { on: false, i: 0, tok: 0, cards: [], vis: new Set(), future: new Set(), ctx: new Set(), ghostOn: true, playing: false, userCam: false, glyphs: [], labels: [], done: new Set() };
+const SD = D.steps, AS = { on: false, i: 0, tok: 0, cards: [], vis: new Set(), future: new Set(), ctx: new Set(), ghostOn: true, playing: false, userCam: false, glyphs: [], labels: [], site: 0, target: null, demo: null, done: new Set() };
 const DKEY = `kerf-done:${D.project_dir}:${R.fingerprint || ''}`;
 try { AS.done = new Set(JSON.parse(localStorage.getItem(DKEY) || '[]')); } catch (e) {}
 const saveDone = () => { try { localStorage.setItem(DKEY, JSON.stringify([...AS.done])); } catch (e) {} };
@@ -977,8 +984,16 @@ function insertGlyph(x) {
 }
 function placeInsert(g, out) { g.position.copy(g.userData.at).addScaledVector(g.userData.dir, -out); }
 function addGlyph(parentId, obj) { (groups.get(parentId) || scene).add(obj); AS.glyphs.push(obj); return obj; }
-function clearGlyphs() { for (const o of AS.glyphs) o.parent && o.parent.remove(o); AS.glyphs = []; for (const L of AS.labels) L.el.remove(); AS.labels = []; }
-function label(html, cls, at, box) { const el = document.createElement('div'); el.className = 'lab ' + (cls || ''); el.innerHTML = html; $('labels').appendChild(el); const L = { el, at, box, kill() { el.remove(); const k = AS.labels.indexOf(L); if (k >= 0) AS.labels.splice(k, 1); } }; AS.labels.push(L); return L; }
+function removeGlyph(o) {
+  const k = AS.glyphs.indexOf(o); if (k < 0) return;
+  AS.glyphs.splice(k, 1); if (o.parent) o.parent.remove(o);
+  const geometries = new Set(), materials = new Set();
+  o.traverse(c => { if (c.geometry) geometries.add(c.geometry); for (const m of c.material ? (Array.isArray(c.material) ? c.material : [c.material]) : []) if (![STEEL, DARK, BRASS].includes(m)) materials.add(m); });
+  for (const g of geometries) g.dispose(); for (const m of materials) m.dispose();
+}
+function actionTween(ms, fn) { const p = tween(ms, fn, lin); TW[TW.length - 1].actionDemo = true; return p; }
+function clearGlyphs() { AS.target = null; AS.demo = null; for (const o of [...AS.glyphs]) removeGlyph(o); for (const L of [...AS.labels]) L.kill(); }
+function label(html, cls, at, box) { const el = document.createElement('div'); el.className = 'lab ' + (cls || ''); el.innerHTML = html; $('labels').appendChild(el); const L = { el, at, box, kill() { el.remove(); if (L.leader) L.leader.remove(); const k = AS.labels.indexOf(L); if (k >= 0) AS.labels.splice(k, 1); } }; AS.labels.push(L); return L; }
 const centreOf = id => () => { const g = groups.get(id); if (!g || !g.visible) return null; return g.userData.box.getCenter(new T.Vector3()).applyMatrix4(g.matrix); };
 const boxIn = id => () => { const g = groups.get(id); if (!g || !g.visible) return null; return g.userData.box.clone().applyMatrix4(g.matrix); };
 const worldOf = (obj) => () => obj.parent ? obj.getWorldPosition(new T.Vector3()) : null;
@@ -1003,7 +1018,7 @@ function updLabels() {
     const r = b && screenRect(b);
     if (r) {
       const lw = (L.el.offsetWidth || 120) + 18, lh0 = L.el.offsetHeight || 22;
-      if (r.x1 < 0 || r.x0 > w || r.y1 < 0 || r.y0 > h) { L.el.style.opacity = 0; continue; }
+      if (r.x1 < 0 || r.x0 > w || r.y1 < 0 || r.y0 > h) { L.el.style.opacity = 0; if (L.leader) L.leader.style.opacity = 0; continue; }
       // right of the part, else left, else above, else below; the first that fits on screen
       const cy = Math.min(Math.max((r.y0 + r.y1) / 2, lh0), h - lh0), cx = Math.min(Math.max((r.x0 + r.x1) / 2 - lw / 2, 6), w - lw);
       const opts = [[r.x1 + 4, cy, r.x1 + 4 + lw <= w], [r.x0 - lw - 6, cy, r.x0 - lw - 6 >= 0],
@@ -1011,9 +1026,9 @@ function updLabels() {
       const o = opts.find(q => q[2]) || [Math.min(Math.max(r.x1 + 4, 6), w - lw), cy];
       x = o[0]; y = o[1];
     } else {
-      const p = L.at(); if (!p) { L.el.style.opacity = 0; continue; }
+      const p = L.at(); if (!p) { L.el.style.opacity = 0; if (L.leader) L.leader.style.opacity = 0; continue; }
       const v = p.project(cam);
-      if (!(v.z < 1 && Math.abs(v.x) < 1.02 && Math.abs(v.y) < 1.02)) { L.el.style.opacity = 0; continue; }
+      if (!(v.z < 1 && Math.abs(v.x) < 1.02 && Math.abs(v.y) < 1.02)) { L.el.style.opacity = 0; if (L.leader) L.leader.style.opacity = 0; continue; }
       x = (v.x + 1) / 2 * w + 8; y = (1 - v.y) / 2 * h;
     }
     const lh = (L.el.offsetHeight || 22) + 4, lw = (L.el.offsetWidth || 120) + 10;
@@ -1023,7 +1038,13 @@ function updLabels() {
       y = hit.y + lh;
     }
     placed.push({ x, y, w: lw });
+    if (L.leader) { x = Math.max(8, Math.min(x + 38, w - lw - 8)); y = Math.max(lh, Math.min(y - lh * 1.3, h - lh)); }
     L.el.style.opacity = 1; L.el.style.left = x + 'px'; L.el.style.top = y + 'px';
+    if (L.leader) {
+      const p = L.at().project(cam), line = L.leader.firstChild;
+      line.setAttribute('x1', (p.x + 1) / 2 * w); line.setAttribute('y1', (1 - p.y) / 2 * h);
+      line.setAttribute('x2', x); line.setAttribute('y2', y); L.leader.style.opacity = 1;
+    }
   }
 }
 function pathLine(a, b) {
@@ -1048,7 +1069,7 @@ function viewFor(s, box) {
   const pts = [];   // [point, blockers]: the new parts against the parts already on; screws and inserts against everything
   for (const id of nu) { const b = groups.get(id).userData.box, c = b.getCenter(new T.Vector3()); pts.push([c, before]);
     for (const sx of [0.3, 0.7]) for (const sz of [0.3, 0.7]) pts.push([new T.Vector3(b.min.x + (b.max.x - b.min.x) * sx, (b.min.y + b.max.y) / 2, b.min.z + (b.max.z - b.min.z) * sz), before]); }
-  for (const x of [...s.screws, ...s.inserts]) pts.push([new T.Vector3(...x.at).addScaledVector(new T.Vector3(...x.dir), -(x.len * 0.5 + 3)), all]);
+  for (const x of installationSites(s)) pts.push([new T.Vector3(...x.at).addScaledVector(new T.Vector3(...x.dir), -(x.len * 0.5 + 3)), all]);
   const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 8), d = r / Math.sin(Math.atan(Math.tan(cam.fov * Math.PI / 360) * Math.min(1, cam.aspect))) * 1.12;
   const cur = cam.position.clone().sub(ctl.target).normalize();
   const nuDims = nu.map(id => groups.get(id) && groups.get(id).userData.box.getSize(new T.Vector3())).filter(Boolean);
@@ -1082,7 +1103,7 @@ function focusBox(s, offs) {
   const big = Math.max(...nu.map(size)), c0 = ctr(nu[0]);
   const near = nu.filter(id => ctr(id).distanceTo(c0) < Math.max(4 * big, 60));
   const nb = boxOf(near).union(boxOf(near, offs));
-  for (const x of [...s.screws, ...s.inserts]) { const p = new T.Vector3(...x.at); if (p.distanceTo(c0) < Math.max(4 * big, 60)) nb.expandByPoint(p); }
+  for (const x of installationSites(s)) { const p = new T.Vector3(...x.at); if (p.distanceTo(c0) < Math.max(4 * big, 60)) nb.expandByPoint(p); }
   const nd = nb.getSize(new T.Vector3()).length(), wd = whole.getSize(new T.Vector3()).length();
   if (near.length === nu.length && nd > 0.4 * wd) return whole;
   const ctx = Math.max(nd * 0.6, 25);          // enough of the build round it to see where it goes
@@ -1095,7 +1116,7 @@ async function demoJoint(name, tok) {
   const u = j.kind === 'revolute' ? '°' : ' mm', c = groups.get(j.child) ? centreOf(j.child) : null;
   const L = label(`<b>${esc(name)}</b> <span>moves freely ${fmt(j.range[0])} to ${fmt(j.range[1])}${u}</span>`, 'move', c || (() => ctl.target.clone()));
   const a = j.home, lo_ = j.range[0], hi_ = j.range[1];
-  await tween(3200, k => { const s = Math.sin(k * Math.PI * 2); setJ(name, s >= 0 ? a + (hi_ - a) * s : a + (a - lo_) * s); }, lin);
+  await tween(3200, k => { if (tok !== AS.tok) return; const s = Math.sin(k * Math.PI * 2); setJ(name, s >= 0 ? a + (hi_ - a) * s : a + (a - lo_) * s); }, lin);
   if (tok !== AS.tok) return; setJ(name, a);
   setTimeout(() => L.kill(), 400);
 }
@@ -1114,27 +1135,144 @@ async function flyIn(grp, tok, k) {   // parts appear back along the way they go
     tween(500, t => { for (const l of lines) l.material.opacity = 0.9 * (1 - t); }, lin);
   };
 }
-async function driveScrews(list, tok, label_) {
-  if (!list.length) return;
-  const gs = list.map(sc => { const g = addGlyph(AS.vis.has(sc.female) ? sc.female : sc.male, screwGlyph(sc)); placeScrew(g, g.userData.back, 0); g.userData.mat.transparent = true; g.userData.mat.opacity = 0; return g; });
-  const cnt = {}; for (const sc of list) { const k = `${sc.screw} × ${fmt(sc.len)} mm ${sc.head === 'countersink' ? 'flat head' : 'socket head'}`; cnt[k] = (cnt[k] || 0) + 1; }
-  label(Object.entries(cnt).map(([k, n]) => `<b>${n} × ${esc(k)}</b>`).join('<br>') + (label_ ? `<br><span>${esc(label_)}</span>` : ''), 'screw', worldOf(gs[0]));
-  await tween(250, t => { for (const g of gs) g.userData.mat.opacity = t; }, lin);
-  for (const g of gs) { g.userData.mat.transparent = false; g.userData.mat.emissive.set(0xc63d2f); }
-  await Promise.all(gs.map((g, i) => wait(i * 90).then(() => tween(1300, t => { placeScrew(g, g.userData.back * (1 - t), 4 * t); g.userData.mat.emissiveIntensity = 0.5 * (1 - t); }))));
+async function driveScrews(list, tok) {
+  for (const sc of list) {
+    if (tok !== AS.tok) return;
+    const x = { ...sc, item: sc.female, kind: 'screw' };
+    if (!sizedSite(x) || !validLocation(x)) continue;
+    const g = addGlyph(x.item, screwGlyph(x)); placeScrew(g, 0, 0);
+    const s = AS.cards[AS.i].s, k = installationSites(s).findIndex(y => y.kind === 'screw' && y.item === x.item && y.at.every((v, i) => v === x.at[i]));
+    if (k >= 0) showInstallation(s, k);
+    await hardwareDemo(x, g, tok);
+  }
+}
+async function seatPins(list, tok) {
+  for (const row of list) {
+    if (tok !== AS.tok) return;
+    const x = { ...row, pinKind: row.kind, kind: 'pin' }, s = AS.cards[AS.i].s, sites = installationSites(s), k = sites.findIndex(y => y.kind === 'pin' && y.id === x.id);
+    if (k < 0 || !sizedSite(x)) continue;
+    const g = addGlyph(x.item, pinGlyph(x)); placeInsert(g, 0); showInstallation(s, k); await hardwareDemo(x, g, tok);
+  }
 }
 async function pressInserts(list, tok) {
-  if (!list.length) return;
-  const gs = list.map(x => { const g = addGlyph(x.item, insertGlyph(x)); placeInsert(g, x.len + 8); g.userData.mat.emissive.set(0xff5a00); g.userData.mat.emissiveIntensity = 1; return g; });
-  const by = {}; for (const x of list) by[x.screw] = (by[x.screw] || 0) + 1;
-  label(Object.entries(by).map(([s, n]) => `<b>${n} × ${esc(s)} heat-set insert${n > 1 ? 's' : ''}</b>`).join('<br>') + '<br><span>hot iron, press flush, hold flat while it cools</span>', 'ins', worldOf(gs[0]));
-  const L = list.map(x => x.len + 8);
-  await Promise.all(gs.map((g, i) => wait(i * 70).then(() => tween(800, t => { placeInsert(g, L[i] * (1 - t)); }))));
-  await tween(700, t => { for (const g of gs) g.userData.mat.emissiveIntensity = 1 - t; }, lin);
+  for (const [k, x] of list.entries()) {
+    if (tok !== AS.tok) return;
+    if (!sizedSite({ ...x, kind: 'insert' }) || !validLocation(x)) continue;
+    const g = addGlyph(x.item, insertGlyph(x)); placeInsert(g, 0);
+    showInstallation(AS.cards[AS.i].s, k);
+    await hardwareDemo({...x, kind: 'insert'}, g, tok);
+  }
 }
-async function showCard(i, animate = true) {
+// Hardware locations are engineering coordinates in the receiving part's home frame; never infer them from prose.
+const validLocation = x => groups.has(x.item) && ['at', 'dir'].every(k => Array.isArray(x[k]) && x[k].length === 3 && x[k].every(Number.isFinite)) && new T.Vector3(...x.dir).lengthSq() > 0;
+function installationSites(s) {
+  return [...s.inserts.map(x => ({ ...x, kind: 'insert' })), ...s.screws.map(x => ({ ...x, item: x.female, kind: 'screw' })), ...(s.pins || []).map(x => ({ ...x, pinKind: x.kind, kind: 'pin' }))].filter(validLocation);
+}
+const sizedSite = x => Number.isFinite(x.len) && x.len > 0 && (x.kind === 'screw' || (Number.isFinite(x.od) && x.od > 0));
+const hardwareName = x => x.kind === 'insert' ? `${x.screw} heat-set insert` : x.kind === 'screw' ? `${x.screw} screw` : `${x.screw || x.pin} ${x.pinKind === 'shoulder' ? 'shoulder screw' : 'pin'}`;
+const siteName = x => `${hardwareName(x)} → ${x.item}`;
+function showInstallation(s, k) {
+  const sites = installationSites(s), x = sites[k]; if (!x) return;
+  AS.site = k;
+  if (AS.target) { removeGlyph(AS.target.marker); removeGlyph(AS.target.arrow); }
+  for (const L of [...AS.labels]) L.kill();
+  const receiver = groups.get(x.item), at = new T.Vector3(...x.at), dir = new T.Vector3(...x.dir).normalize();
+  receiver.updateMatrixWorld(true);
+  const p = receiver.localToWorld(at.clone()), inward = dir.clone().transformDirection(receiver.matrixWorld);
+  const radius = Math.max((x.od || 3) * 0.85, 2.5), reach = Math.max((x.len || 0) * 2, radius * 5, 14);
+  const marker = new T.Mesh(new T.TorusGeometry(radius, radius * 0.1, 8, 48), new T.MeshBasicMaterial({color: css('--accent'), depthTest: false, depthWrite: false}));
+  marker.position.copy(at); marker.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), dir); marker.renderOrder = 10; addGlyph(x.item, marker);
+  const arrow = new T.ArrowHelper(dir, at.clone().addScaledVector(dir, -reach), reach - radius * 0.5, css('--accent'), radius * 1.8, radius);
+  arrow.traverse(o => { if (o.material) { o.material.depthTest = false; o.material.depthWrite = false; o.renderOrder = 10; } }); addGlyph(x.item, arrow);
+  AS.target = { item: x.item, at: x.at, dir: x.dir, marker, arrow };
+  const L = label(`<b>Site ${k + 1}: ${esc(hardwareName(x))}</b><br><span>Into ${esc(x.item)} · arrow shows insertion direction</span>`, 'target', worldOf(marker));
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.classList.add('site-leader');
+  svg.appendChild(document.createElementNS(svg.namespaceURI, 'line')); $('labels').prepend(svg); L.leader = svg;
+  // A local crop keeps the receiving surface and surrounding geometry, instead of fitting all hardware at once.
+  const extent = Math.max(reach * 1.5, Math.min(receiver.userData.box.getSize(new T.Vector3()).length() * 0.35, 55), 22);
+  const box = new T.Box3(p.clone().addScalar(-extent), p.clone().addScalar(extent));
+  const side = new T.Vector3(...VIEWS.iso).addScaledVector(inward, -new T.Vector3(...VIEWS.iso).dot(inward));
+  if (side.lengthSq() < 0.01) side.set(1, 0, 0).cross(inward);
+  const eye = inward.clone().negate().multiplyScalar(1.3).add(side.normalize().multiplyScalar(0.8)).normalize();
+  renderAsm(); frameBox(box, eye, 0); setGlow(x.item, 0.6); redraw();
+}
+// Schematic tool and smoke explain the action; their display scale is not engineering or temperature data.
+async function hardwareDemo(x, hardware, tok) {
+  if (reduced || !sizedSite(x)) return;
+  const heated = x.kind === 'insert', rotating = x.kind === 'screw' || (x.kind === 'pin' && ['shoulder', 'screw'].includes(x.pinKind));
+  const scale = Math.max(x.od || parseFloat(String(x.screw).replace(/[^\d.]/g, '')), 4) / 4, tool = new T.Group(), smoke = new T.Group();
+  const metal = new T.MeshStandardMaterial({color: 0xa5acb3, metalness: 0.7, roughness: 0.35});
+  const grip = new T.MeshStandardMaterial({color: 0x293c4c, roughness: 0.8});
+  const tip = new T.Mesh(heated ? new T.ConeGeometry(1.8, 9, 16) : new T.CylinderGeometry(0.8, 0.8, 9, 6), metal); tip.position.y = -4.5; tool.add(tip);
+  const shaft = new T.Mesh(new T.CylinderGeometry(1.8, 1.8, 10, 16), metal); shaft.position.y = -14; tool.add(shaft);
+  const handle = new T.Mesh(new T.CylinderGeometry(heated ? 3.6 : 4.5, heated ? 4 : 4.5, 20, 16), grip); handle.position.y = -29; tool.add(handle);
+  tool.scale.setScalar(scale); tool.quaternion.setFromUnitVectors(Y, hardware.userData.dir);
+  tool.visible = heated || rotating; addGlyph(x.item, tool);
+  if (heated) {
+    for (let i = 0; i < 5; i++) smoke.add(new T.Mesh(new T.SphereGeometry(1, 8, 6), new T.MeshBasicMaterial({color: 0xaab2b7, transparent: true, opacity: 0, depthWrite: false})));
+    addGlyph(x.item, smoke);
+  }
+  AS.demo = { tool, smoke, hardware, contact: false, phase: 'approach', paused: false, kind: heated ? 'iron' : rotating ? 'driver' : 'pin' }; syncActionControl();
+  const p = hardware.parent.localToWorld(hardware.userData.at.clone()), inward = hardware.userData.dir.clone().transformDirection(hardware.parent.matrixWorld);
+  const context = new T.Box3(p.clone().addScalar(-22), p.clone().addScalar(22));
+  context.expandByPoint(p.clone().addScaledVector(inward, -(x.len + 8 + 63 * scale))).expandByScalar(6);
+  frameBox(context, cam.position.clone().sub(ctl.target), 0);
+  const demo = AS.demo, out = hardware.userData.back || x.len + 8, dir = hardware.userData.dir;
+  const headOffset = heated ? 0 : x.kind === 'pin' ? (x.head_h || 0) : parseFloat(String(x.screw).replace(/[^\d.]/g, '')) || 0;
+  await actionTween(3200, t => {
+    if (tok !== AS.tok) return;
+    const press = Math.max(0, Math.min(1, (t - 0.25) / 0.45)), gap = t < 0.25 ? (1 - t / 0.25) * 24 * scale : Math.max(0, (t - 0.7) / 0.3) * 28 * scale;
+    if (x.kind === 'screw') placeScrew(hardware, out * (1 - press), 4 * press);
+    else { placeInsert(hardware, out * (1 - press)); if (rotating) hardware.quaternion.setFromUnitVectors(Y, dir).multiply(new T.Quaternion().setFromAxisAngle(Y, press * 8 * Math.PI)); }
+    tool.position.copy(hardware.position).addScaledVector(dir, -gap - headOffset);
+    if (rotating) tool.quaternion.copy(hardware.quaternion);
+    demo.contact = t >= 0.25 && t <= 0.7; demo.phase = t < 0.25 ? 'approach' : t <= 0.7 ? 'press' : 'withdraw';
+    for (const [i, w] of smoke.children.entries()) {
+      const age = ((t - 0.25) * 2 + i / 5) % 1;
+      w.position.copy(hardware.position).addScaledVector(dir, -age * 10 * scale).add(new T.Vector3(Math.sin(i * 2 + age * 3) * age * 3, 0, age * 7).multiplyScalar(scale));
+      w.scale.set(0.7 + age * 1.7, 0.7 + age * 1.7, 1 + age * 3); w.material.opacity = demo.contact ? 0.2 * (1 - age) : 0;
+    }
+    redraw();
+  });
+  if (tok !== AS.tok) return;
+  if (x.kind === 'screw') placeScrew(hardware, 0, 4); else placeInsert(hardware, 0);
+  removeGlyph(tool); removeGlyph(smoke); AS.demo = null; syncActionControl(); redraw();
+}
+function syncActionControl() {
+  const b = $('a_pause'); if (b) { b.disabled = !AS.demo; b.textContent = AS.demo && AS.demo.paused ? 'Resume action' : 'Pause action'; }
+}
+function pinGlyph(x) {
+  const g = new T.Group(), mat = STEEL.clone();
+  const cylinder = (d, len, offset) => { const m = new T.Mesh(new T.CylinderGeometry(d / 2, d / 2, len, 24), mat); m.position.y = offset + len / 2; g.add(m); };
+  if (x.shoulder_len > 0 && x.thread_len > 0 && x.thread_d > 0) { cylinder(x.od, x.shoulder_len, 0); cylinder(x.thread_d, x.thread_len, x.shoulder_len); }
+  else cylinder(x.od, x.len, 0);
+  if (x.head_d > 0 && x.head_h > 0) cylinder(x.head_d, x.head_h, -x.head_h);
+  g.userData = { mat, at: new T.Vector3(...x.at), dir: new T.Vector3(...x.dir).normalize(), back: x.len + 8 };
+  g.quaternion.setFromUnitVectors(Y, g.userData.dir); return g;
+}
+function incomingGuide(s) {
+  for (const grp of s.groups) for (const id of grp.items) {
+    const g = groups.get(id), off = new T.Vector3(...grp.off); if (!g || off.lengthSq() < 0.01) continue;
+    const ghost = new T.Mesh(g.userData.mesh.geometry.clone(), g.userData.mesh.material.clone());
+    ghost.material.transparent = true; ghost.material.opacity = 0.12; ghost.material.depthWrite = false;
+    ghost.applyMatrix4(g.matrix); ghost.position.add(off); ghost.userData.before = true; ghost.visible = AS.ghostOn; scene.add(ghost); AS.glyphs.push(ghost);
+    const c = g.userData.box.getCenter(new T.Vector3()).applyMatrix4(g.matrix); const path = pathLine(c.clone().add(off), c); path.userData.before = true; path.visible = AS.ghostOn;
+  }
+}
+function replayInstallation() {
+  const c = AS.cards[AS.i];
+  if (c.kind !== 'step' || !installationSites(c.s).length) return showCard(AS.i);
+  AS.playing = false; showCard(AS.i, false, AS.site).then(async () => {
+    if (AS.i !== AS.cards.indexOf(c)) return;
+    const tok = AS.tok, x = installationSites(c.s)[AS.site], g = AS.glyphs.find(o => o.userData.siteIndex === AS.site);
+    if (!g || reduced) return;
+    return hardwareDemo(x, g, tok);
+  });
+}
+async function showCard(i, animate = true, site = null) {
   const tok = ++AS.tok; cancelTweens(); clearGlyphs();
   for (const id of solidIds) setGlow(id, 0);
+  AS.site = site ?? (i === AS.i ? AS.site : 0);
   AS.i = Math.max(0, Math.min(AS.cards.length - 1, i)); AS.userCam = false;
   resetPose(); renderAsm();
   const c = AS.cards[AS.i];
@@ -1159,14 +1297,21 @@ async function showCard(i, animate = true) {
   for (const t of SD.steps) {
     if (t.n >= s.n || (t.bench_for && t.bench_for > s.n && !s.bench_for)) continue;
     for (const sc of t.screws) if (s.present.includes(sc.male) && s.present.includes(sc.female)) placeScrew(addGlyph(sc.female, screwGlyph(sc)), 0, 0);
-    for (const x of t.inserts) if (s.present.includes(x.item)) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
+    for (const x of t.inserts) if (s.present.includes(x.item) && validLocation(x) && sizedSite({...x, kind: 'insert'})) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
   }
+  for (const t of SD.steps) if (t.n < s.n) for (const x of (t.pins || [])) if (s.present.includes(x.item) && installationSites({...t, inserts: [], screws: [], pins: [x]}).length && sizedSite({...x, kind: 'pin'})) placeInsert(addGlyph(x.item, pinGlyph(x)), 0);
   const offs = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)])));
   const box = focusBox(s, offs);
-  if (!animate) {
+  if (!animate || (installationSites(s).length && !AS.playing)) {
     setSets(s.present, future, benchCtx);
-    for (const sc of s.screws) placeScrew(addGlyph(AS.vis.has(sc.female) ? sc.female : sc.male, screwGlyph(sc)), 0, 0);
-    for (const x of s.inserts) placeInsert(addGlyph(x.item, insertGlyph(x)), 0);
+    const sites = installationSites(s);
+    for (const [k, x] of sites.entries()) {
+      if (!sizedSite(x) || !validLocation(x)) continue;
+      const g = addGlyph(x.item, x.kind === 'insert' ? insertGlyph(x) : x.kind === 'pin' ? pinGlyph(x) : screwGlyph(x)); g.userData.siteIndex = k;
+      if (x.kind === 'screw') placeScrew(g, 0, 0); else placeInsert(g, 0);
+    }
+    incomingGuide(s);
+    if (sites.length) { showInstallation(s, AS.site); return; }
     return frameBox(box, viewFor(s, box), 0);
   }
   const cam_ = frameBox(box, viewFor(s, box), 900);
@@ -1177,12 +1322,16 @@ async function showCard(i, animate = true) {
   await pressInserts(s.inserts, tok); if (tok !== AS.tok) return;
   await Promise.all(slides1.map(f => f())); if (tok !== AS.tok) return;
   await wait(300); if (tok !== AS.tok) return;
-  await driveScrews(s.screws.filter(x => x.phase === 1), tok, 'snug, then stop'); if (tok !== AS.tok) return;
+  await driveScrews(s.screws.filter(x => x.phase === 1), tok); if (tok !== AS.tok) return;
+  await seatPins((s.pins || []).filter(x => x.phase === 1), tok); if (tok !== AS.tok) return;
   for (const g of p2) { const f = await flyIn(g, tok); if (tok !== AS.tok) return; await f(); if (tok !== AS.tok) return; }
-  await driveScrews(s.screws.filter(x => x.phase === 2), tok, 'snug, then stop'); if (tok !== AS.tok) return;
+  await driveScrews(s.screws.filter(x => x.phase === 2), tok); if (tok !== AS.tok) return;
+  await seatPins((s.pins || []).filter(x => x.phase === 2), tok); if (tok !== AS.tok) return;
   for (const n of s.demos) { await demoJoint(n, tok); if (tok !== AS.tok) return; }
   await tween(600, t => { for (const id of nu) setGlow(id, 1 - t); }, lin);
   if (tok !== AS.tok) return;
+  incomingGuide(s);
+  if (installationSites(s).length) showInstallation(s, AS.site);
   if (AS.playing) { await wait(1300); if (tok === AS.tok && AS.playing) showCard(AS.i + 1); }
 }
 async function turntable(tok) {
@@ -1216,6 +1365,18 @@ function chipsFor(s) {
   h += s.demos.map(n => `<span class="chip move"><span class="sw"></span>${esc(n)} must move freely</span>`).join('');
   return h;
 }
+function siteControls(s) {
+  const sites = installationSites(s);
+  const unknown = (s.pins || []).filter(x => !installationSites({...s, inserts: [], screws: [], pins: [x]}).length);
+  const warning = unknown.length ? `<p class="note warn" role="status">${unknown.map(x => `${esc(x.pin)} (${esc((x.items || [x.item]).join(', '))}): ${esc(x.warning || 'Exact installation location unavailable.')}`).join('<br>')}</p>` : '';
+  if (!sites.length) return /insert|screw|shoulder.?pin/i.test([s.title, ...s.lines].join(' ')) ? warning || '<p class="note warn" role="status">Exact installation locations are unavailable in this saved guide. Follow the written part references; rebuild the guide to add verified location markers.</p>' : warning;
+  const x = sites[AS.site] || sites[0], it = groups.get(x.item).userData.it;
+  return `${warning}<div class="sites"><h4>Where to install it</h4><label for="a_site" class="pd">Installation site</label>
+    <select id="a_site">${sites.map((x, k) => `<option value="${k}" ${k === AS.site ? 'selected' : ''}>${k + 1} of ${sites.length} · ${esc(siteName(x))}</option>`).join('')}</select>
+    <p class="site-detail" role="status"><b>Into ${esc(x.item)}</b>${it.label ? ` · ${esc(it.label)}` : ''}<br>${esc(hardwareName(x))}. ${sizedSite(x) ? '' : 'Hardware dimensions unavailable; location marker only. '}${esc(x.warning || '')} The ring marks the opening; the arrow points into it.</p>
+    <div class="ctrls"><button id="a_site_prev" ${AS.site === 0 ? 'disabled' : ''}>Previous site</button><button id="a_site_next" ${AS.site >= sites.length - 1 ? 'disabled' : ''}>Next site</button><button id="a_locate">Show location</button><button id="a_install_re">Replay installation</button><button id="a_overview">Assembly overview</button><button id="a_pause" disabled>Pause action</button></div>
+    <p class="pd">Drag to look around. Show location returns to this opening.</p></div>`;
+}
 function renderBar() {
   const c = AS.cards[AS.i], n = SD.steps.length;
   $('ab_t').innerHTML = c.kind === 'intro' ? '<b>Before you start</b>' : c.kind === 'finish' ? '<b>Finished</b>' : `<b>Step ${c.s.n}/${n}</b> · ${esc(c.s.title)}`;
@@ -1228,7 +1389,7 @@ function renderAsm() {
   let h = `<div class="tl">${AS.cards.map((x, k) => `<button data-go="${k}" class="${k === AS.i ? 'cur' : ''} ${x.kind === 'step' && AS.done.has(x.s.n) ? 'done' : ''}" title="${x.kind === 'step' ? `Step ${x.s.n}: ${esc(x.s.title)}` : x.kind === 'intro' ? 'Before you start' : 'Finished'}"></button>`).join('')}</div>`;
   if (c.kind === 'intro') {
     h += `<div class="ah"><h3>Build it, step by step</h3></div>
-      <p class="pd" style="margin-top:0">${printed.length} printed part${printed.length === 1 ? '' : 's'}, ${bought.length} bought part${bought.length === 1 ? '' : 's'}, ${n} step${n === 1 ? '' : 's'}. Each step flies the new parts in the way they go on, drives the screws and shows any joint that must move freely.</p>`;
+      <p class="pd" style="margin-top:0">${printed.length} printed part${printed.length === 1 ? '' : 's'}, ${bought.length} bought part${bought.length === 1 ? '' : 's'}, ${n} step${n === 1 ? '' : 's'}. Choose an installation site to see its receiving part, exact opening and insertion direction. Look around at your own pace; Replay shows how it goes in.</p>`;
     h += `<div class="txt">${SD.intro.map(x => `<h4>${esc(x.title)}</h4>${mdLite(x.lines)}`).join('')}</div>`;
   } else if (c.kind === 'finish') {
     const k = SD.steps.filter(x => AS.done.has(x.n)).length;
@@ -1238,24 +1399,34 @@ function renderAsm() {
   } else {
     const s = c.s;
     h += `<div class="ah"><span class="n">Step ${s.n} of ${n}</span>${s.bench_for ? `<span class="tag">on the bench · joins in step ${s.bench_for}</span>` : ''}</div><h3>${esc(s.title)}</h3>
-      <div class="chips">${chipsFor(s)}</div><div class="txt">${mdLite(s.lines)}</div>
+      <div class="chips">${chipsFor(s)}</div>${siteControls(s)}<div class="txt">${mdLite(s.lines)}</div>
+      <p class="pd">Compare the installed parts with the written instructions before marking this step done.</p>${s.demos.map(name => `<button data-demo="${esc(name)}">Check ${esc(name)} movement</button>`).join(' ')}
       <div class="donebox ${AS.done.has(s.n) ? 'on' : ''}" id="dbx">${AS.done.has(s.n) ? '✓ Done' : '☐ Mark this step done'}</div>`;
   }
   h += `<div class="ctrls"><button id="a_prev" ${AS.i === 0 ? 'disabled' : ''}>◀ Back</button><button id="a_re">↻ Replay</button>
       <button id="a_next" class="on" ${AS.i === AS.cards.length - 1 ? 'disabled' : ''}>Next ▶</button><span class="sp"></span>
       <button id="a_play">${AS.playing ? '❚❚ Pause' : '▶ Play all'}</button></div>
-    <div class="opt"><label><input type="checkbox" id="a_ghost" ${AS.ghostOn ? 'checked' : ''}> show parts still to come (faint)</label></div>
+    <div class="opt"><label><input type="checkbox" id="a_ghost" ${AS.ghostOn ? 'checked' : ''}> show incoming positions and parts still to come (faint)</label></div>
     <div class="opt">Speed <select id="a_speed">${[0.5, 1, 2].map(v => `<option value="${v}" ${v === speed ? 'selected' : ''}>${v}×</option>`).join('')}</select>
       <span class="pd">· keys: ← → space R</span></div>`;
   const el = $('asm'); el.innerHTML = h;
   el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { AS.playing = false; showCard(+b.dataset.go); });
-  $('a_prev').onclick = () => go(-1); $('a_next').onclick = () => go(1); $('a_re').onclick = () => showCard(AS.i);
+  $('a_prev').onclick = () => go(-1); $('a_next').onclick = () => go(1); $('a_re').onclick = replayInstallation;
+  if ($('a_site')) {
+    const choose = k => { AS.playing = false; showCard(AS.i, false, k); };
+    $('a_site').onchange = e => choose(+e.target.value);
+    $('a_site_prev').onclick = () => choose(AS.site - 1); $('a_site_next').onclick = () => choose(AS.site + 1);
+    $('a_locate').onclick = () => choose(AS.site); $('a_install_re').onclick = replayInstallation;
+    $('a_overview').onclick = () => { if (AS.demo) { AS.demo.paused = true; syncActionControl(); } const s = c.s, off = new Map(s.groups.flatMap(g => g.items.map(id => [id, new T.Vector3(...g.off)]))); frameBox(boxOf(s.present).union(boxOf(s.groups.flatMap(g => g.items), off)), new T.Vector3(...VIEWS.iso), 0); };
+    $('a_pause').onclick = () => { if (AS.demo) { AS.demo.paused = !AS.demo.paused; syncActionControl(); } };
+  }
   $('a_play').onclick = togglePlay;
-  $('a_ghost').onchange = e => { AS.ghostOn = e.target.checked; for (const id of solidIds) itemLook(id); applyVis(); };
+  $('a_ghost').onchange = e => { AS.ghostOn = e.target.checked; for (const id of solidIds) itemLook(id); for (const g of AS.glyphs) if (g.userData.before) g.visible = AS.ghostOn; applyVis(); redraw(); };
   $('a_speed').onchange = e => { speed = +e.target.value; };
+  el.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => { AS.playing = false; const i = AS.i, site = AS.site; showCard(i, false, site).then(() => { if (AS.i === i && !reduced) demoJoint(b.dataset.demo, AS.tok); }); });
   if ($('dbx')) $('dbx').onclick = () => { const k = c.s.n; AS.done.has(k) ? AS.done.delete(k) : AS.done.add(k); saveDone(); renderAsm(); };
   el.querySelectorAll('[data-hl]').forEach(x => { x.onmouseenter = () => setGlow(x.dataset.hl, 1); x.onmouseleave = () => setGlow(x.dataset.hl, 0); });
-  renderBar();
+  syncActionControl(); renderBar();
 }
 function go(d) { AS.playing = false; if (AS.i + d >= 0 && AS.i + d < AS.cards.length) showCard(AS.i + d); }
 function togglePlay() { AS.playing = !AS.playing; if (AS.playing) showCard(AS.i === AS.cards.length - 1 || AS.cards[AS.i].kind === 'intro' ? 1 : AS.i); else renderAsm(); }
@@ -1271,12 +1442,12 @@ function asmExit() {
   resetPose(); applyVis(); $('abar').hidden = true; $('hint').style.display = '';
   renderMotion(); paint();
 }
-$('ab_prev').onclick = () => go(-1); $('ab_next').onclick = () => go(1); $('ab_re').onclick = () => showCard(AS.i); $('ab_play').onclick = togglePlay;
+$('ab_prev').onclick = () => go(-1); $('ab_next').onclick = () => go(1); $('ab_re').onclick = replayInstallation; $('ab_play').onclick = togglePlay;
 ctl.addEventListener('start', () => { AS.userCam = true; });
 document.addEventListener('keydown', e => {
   if (!AS.on || /input|textarea|select/i.test(e.target.tagName)) return;
   if (e.key === 'ArrowRight') { go(1); e.preventDefault(); } else if (e.key === 'ArrowLeft') { go(-1); e.preventDefault(); }
-  else if (e.key === ' ') { togglePlay(); e.preventDefault(); } else if (e.key === 'r' || e.key === 'R') showCard(AS.i);
+  else if (e.key === ' ') { togglePlay(); e.preventDefault(); } else if (e.key === 'r' || e.key === 'R') replayInstallation();
 });
 
 // ---------- go ----------
@@ -1298,7 +1469,7 @@ window.__kerf = { D, setJ, pose, groups, view, fit, inspect, faceOf, camera: cam
   snapshot, liveSwap, compare, clearCompare, paint, restyle, get colorMode() { return colorMode; }, set colorMode(m) { colorMode = m; paint(); },
   cut(on, ax = 'y', t = null, flip = null) { CUT.on = on; CUT.ax = ax; if (on) cutDefaults(); if (t != null) CUT.t = t; if (flip != null) CUT.flip = flip; applyCut(); },
   asm: { get on() { return AS.on; }, get i() { return AS.i; }, cards: AS.cards, show: showCard, go, get busy() { return TW.length > 0; }, set speed(v) { speed = v; },
-         focusBox, screenRect, get ctx() { return [...AS.ctx]; }, get vis() { return [...AS.vis]; },
+         focusBox, screenRect, get site() { return AS.site; }, get demo() { return AS.demo; }, get target() { return AS.target; }, get ctx() { return [...AS.ctx]; }, get vis() { return [...AS.vis]; },
          labels() { return AS.labels.map(L => ({ id: L.id, el: L.el.getBoundingClientRect(), opacity: +L.el.style.opacity })); } } };
 })();
 </script>

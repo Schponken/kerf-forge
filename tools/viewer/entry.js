@@ -3,5 +3,5 @@ export { WebGLRenderer, Scene, PerspectiveCamera, OrthographicCamera, Group, Mes
   BufferAttribute, EdgesGeometry, MeshStandardMaterial, LineBasicMaterial, HemisphereLight, DirectionalLight,
   AmbientLight, GridHelper, AxesHelper, Box3, Vector3, Quaternion, Matrix4, Color, DoubleSide, Raycaster, Vector2,
   SRGBColorSpace, Plane, PlaneGeometry, CylinderGeometry, ConeGeometry, Line, LineDashedMaterial, MeshBasicMaterial,
-  Float32BufferAttribute, MathUtils, Sphere } from 'three';
+  Float32BufferAttribute, MathUtils, Sphere, TorusGeometry, SphereGeometry, ArrowHelper } from 'three';
 export { OrbitControls } from 'three/addons/controls/OrbitControls.js';
