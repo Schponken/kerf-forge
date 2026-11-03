@@ -287,3 +287,4 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
   - [x] Audit fixes: engine majors ENG-1..ENG-6 (each with a test), re-check every project
   - [x] Audit fixes: engine minors ENG-7..ENG-20 (each fixed with a test or justified in AUDIT.md)
 - [x] STATUS.md final summary for Spencer: what was built, results, known limits, how to print each eval project
+  - [x] Activity count wording: distinguish fresh claimed assignments from observed running jobs in its accessible label.
