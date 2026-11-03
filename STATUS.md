@@ -1544,3 +1544,6 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Electrical-only analysis at a simulated 1800 g: 18.15 min vs unchanged 20 min target. Stock 18 AWG phase path gives
   227.054 K rise over unchanged 10 s burst vs 60 K allowed. These are actual remaining failures, not readiness.
   YAML/catalog syntax and route parameter evaluation pass. Targeted tests and integration check pending; no CAD/FEA run.
+
+## 2026-11-02 — User-revised Hawk dive target (Codex)
+- Changed the two low-lift dive sweep-actuator inputs from150 to100 km/h following the user's explicit lower-speed choice. The4 g/84 km/h pull requirement and all acceptance margins stay unchanged. The revised target is provisional and does not prove deployment or safe recovery.

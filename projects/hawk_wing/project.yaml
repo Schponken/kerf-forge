@@ -525,7 +525,7 @@ requirements:
   joint: fold_r
   item: hub_r
   side: right
-  speed_kmh: 150
+  speed_kmh: 100
   cd: 0.015
   cl: 0.05
   actuator: sweep_servo_r
@@ -539,7 +539,7 @@ requirements:
   joint: fold_l
   item: hub_l
   side: left
-  speed_kmh: 150
+  speed_kmh: 100
   cd: 0.015
   cl: 0.05
   actuator: sweep_servo_l
