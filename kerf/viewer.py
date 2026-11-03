@@ -385,6 +385,55 @@ def _insert_sites(iid, item) -> list[dict]:
     return out
 
 
+def _pin_sites(asm, joints, phase) -> list[dict]:
+    """Locate a headed pivot from its actual threaded seat; unrecorded pin seats stay unknown."""
+    from .catalog import CatalogError
+    from .iface import pin_dims, screw_spec
+    from .pins import ANG_TOL_DEG, OFF_TOL, SHOULDER_PLAY, _collect
+
+    groups = _collect(asm)
+    out = []
+    for j in joints:
+        sites = [site for site in groups.get(j["group"], []) if site[1].pin == j["pin"]]
+        items = list(dict.fromkeys(j.get("fixed_in", []) + j.get("free_in", [])))
+        row = {"id": f"pin:{j['group']}", "group": j["group"], "pin": j["pin"], "items": items,
+               "item": items[0] if items else None, "at": None, "dir": None, "len": j.get("length_mm"),
+               "od": j.get("d_mm"), "kind": "lock" if j.get("lock") else "dowel", "phase": phase}
+        try:
+            pd = pin_dims(j["pin"])
+        except CatalogError:
+            pd = {}
+        if pd.get("screw"):
+            row["kind"] = "shoulder" if pd.get("shoulder") else "screw"
+            row["od"] = pd["d"]
+            fixed = [(iid, site, o, z) for iid, site, o, z in sites if site.fit in ("heatset", "tap")]
+            free = [(iid, site, o, z) for iid, site, o, z in sites if site.fit == "free"]
+            length = j.get("length_mm")
+            if len(fixed) == 1 and free and length in pd.get("lengths", []) and length > 0:
+                _, _, seat, axis = fixed[0]
+                ends = [(float(np.dot(o - seat, axis)), float(np.dot(o - seat, axis) - site.depth * np.dot(z, axis)), iid)
+                        for iid, site, o, z in free]
+                head = max((max(a, b), iid) for a, b, iid in ends)
+                aligned = all(abs(float(np.dot(z, axis))) >= np.cos(np.radians(ANG_TOL_DEG))
+                              and np.linalg.norm((o - seat) - np.dot(o - seat, axis) * axis) <= OFF_TOL
+                              for _, _, o, z in free)
+                shoulder_fits = not pd.get("shoulder") or 0 <= float(length) - head[0] <= SHOULDER_PLAY + 1e-3
+                if aligned and head[0] > 0 and shoulder_fits:
+                    distance = float(length) if pd.get("shoulder") else head[0]
+                    row.update(item=head[1], at=_pt(seat + axis * distance), dir=_pt(-axis))
+                    thread = pd.get("thread", j["pin"])
+                    sp = screw_spec(thread)
+                    row.update(screw=thread, head_d=pd.get("head_d") or sp.get("head_d"),
+                               head_h=pd.get("head_h") or sp.get("head_h"))
+                    if pd.get("shoulder"):
+                        row.update(shoulder_len=float(length), thread_len=pd["thread_len"], thread_d=sp["d"],
+                                   len=float(length) + pd["thread_len"])
+        if row["at"] is None:
+            row["warning"] = "Exact axial seat and insertion direction are not recorded for this pin."
+        out.append(row)
+    return out
+
+
 def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
     """The ASSEMBLY.md build order as data for the viewer's step-by-step mode: per step the parts already on, the
     part(s) going on with the direction they come from (same rule as the step pictures: kerf/ship.py), the heat-set
@@ -431,6 +480,7 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
         sec = by_step.get(k)
         out.append({"n": k, "title": sec["title"].split(" — ", 1)[1] if sec and " — " in sec["title"] else ", ".join(s["items"]),
                     "items": list(s["items"]), "present": present, "groups": groups, "screws": screws, "inserts": inserts,
+                    "pins": _pin_sites(asm, s["pins"], 1) + _pin_sites(asm, s["pins_after"], 2),
                     "demos": list(dict.fromkeys(demos)), "bench_for": s["bench_for"],
                     "lines": sec["lines"] if sec else []})
     return {"steps": out, "intro": intro, "outro": outro}

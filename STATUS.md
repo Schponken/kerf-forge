@@ -1341,3 +1341,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Actual saved bionic_finger report fingerprint matches current design inputs. A cache-only metadata recovery refused
   a missing valid cache entry without rebuilding or writing project outputs. Parent integration task owns a bounded
   source-matching CAD-only refresh and saved viewer verification. No full batch, FEA, review.json or hardware changes.
+
+## 2026-11-02 — Build it directed pivot placement (Codex, assembly-sites)
+- Shoulder and ordinary screw pivots now accompany the step where their joined parts connect. Real pin sites supply
+  axes/entry surfaces, the report supplies selected length, and catalog data supplies shoulder/thread/head dimensions.
+  Shoulder heads sit at the fixed-hole entry plus the selected shoulder length; ordinary screw heads use the outer
+  free-hole face. Group, owning head-side part, joined parts, stable ID and connection phase remain inspectable.
+- Missing/unstocked lengths, missing/off-axis sites and unrecorded dowel/lock-pin axial seats stay explicitly unknown.
+  No invented pin positions or hardware dimensions. Existing pin-check alignment/play constants are reused.
+- Focused producer selection above: 12 passed (adds shoulder/screw seats, phase, missing length/sites, off-axis data,
+  dowel unknowns and unstocked lengths). Batch HELD; no full suite, FEA or physical build claim.
+- A CAD-only rebuild of a temporary bionic_finger source copy, cache writes disabled, reproduced every saved vertex
+  and triangle exactly for all four parts and retained fingerprint 69c05ed7665e2c58. Preview steps in /tmp identify
+  three inserts and three shoulder pivots. Actual project, report, review and output files were not written here;
+  parent integration owns backing up and refreshing only the saved viewer's step data.

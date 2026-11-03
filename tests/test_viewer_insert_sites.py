@@ -86,3 +86,61 @@ def test_unknown_screw_catalog_entry_does_not_invent_insert_dimensions(project):
     assert row['screw'] == 'M99'
     assert row['od'] is None and row['len'] is None
     assert 'unknown' in row['warning'].lower()
+
+
+def _pivot(project, pin='motion.shoulder_4_m3', length=8):
+    project.items['base'].shape.kerf_pins = [
+        PinSite('pivot', pin, 'heatset', Location((30, 20, 10), (0, 90, 0)), 7, 4),
+    ]
+    project.items['arm'].shape.kerf_pins = [
+        PinSite('pivot', pin, 'free', Location((0, 0, 8)), 8, 4),
+    ]
+    report = {'assembly': {'pins': [{'group': 'pivot', 'pin': pin, 'length_mm': length, 'd_mm': 4,
+                                   'fixed_in': ['base'], 'free_in': ['arm']}]}}
+    return viewer.assembly_steps(project, A.plan(project), report, None)['steps']
+
+
+def test_shoulder_pivot_has_exact_head_seat_and_catalog_thread(project):
+    from kerf.iface import pin_dims
+    steps = _pivot(project)
+    assert steps[0]['pins'] == []
+    (row,) = steps[1]['pins']
+    pd = pin_dims('motion.shoulder_4_m3')
+    assert row['kind'] == 'shoulder' and row['group'] == 'pivot'
+    assert row['items'] == ['base', 'arm'] and row['item'] == 'arm'
+    assert row['phase'] == 1
+    assert row['at'] == pytest.approx([38, 20, 10])
+    assert row['dir'] == pytest.approx([-1, 0, 0])
+    assert row['shoulder_len'] == 8 and row['thread_len'] == pd['thread_len']
+    assert row['len'] == 8 + pd['thread_len'] and row['od'] == pd['d']
+    assert row['thread_d'] == 3 and row['screw'] == 'M3'
+    assert row['head_d'] == pd['head_d'] and row['head_h'] == pd['head_h']
+    assert 'warning' not in row
+
+
+def test_regular_screw_pivot_uses_free_outer_face_and_reported_length(project):
+    (row,) = _pivot(project, pin='M3', length=12)[1]['pins']
+    assert row['kind'] == 'screw' and row['len'] == 12 and row['od'] == 3
+    assert row['at'] == pytest.approx([38, 20, 10])
+    assert row['dir'] == pytest.approx([-1, 0, 0])
+    assert 'shoulder_len' not in row
+
+
+@pytest.mark.parametrize('problem', ['missing_length', 'unstocked_length', 'missing_site', 'off_axis', 'dowel'])
+def test_pivot_without_verified_seat_is_explicitly_unknown(project, problem):
+    if problem == 'dowel':
+        _pivot(project, pin='motion.pin_3mm')
+        project.items['base'].shape.kerf_pins[0].fit = 'press'
+    else:
+        _pivot(project)
+    if problem == 'missing_site':
+        project.items['arm'].shape.kerf_pins = []
+    if problem == 'off_axis':
+        project.items['arm'].shape.kerf_pins[0].loc = Location((3, 0, 8))
+    asm = A.plan(project)
+    A.solve(asm)
+    row = viewer._pin_sites(asm, [{'group': 'pivot', 'pin': 'motion.pin_3mm' if problem == 'dowel' else 'motion.shoulder_4_m3',
+                                  'length_mm': None if problem == 'missing_length' else 999 if problem == 'unstocked_length' else 8,
+                                  'd_mm': 4, 'fixed_in': ['base'], 'free_in': ['arm']}], 2)[0]
+    assert row['at'] is None and row['dir'] is None
+    assert row['phase'] == 2 and 'not recorded' in row['warning']
