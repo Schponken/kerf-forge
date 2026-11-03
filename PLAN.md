@@ -160,6 +160,7 @@ workflow. Each item below: implement, test, update docs, then re-check the proje
 - [x] "How Kerf decided" readable and steerable (Spencer, 2026-11-02: "difficult to follow, shaking violently, labels unreadable"): replace the force-directed web with a calm, fixed-layout decision trail (your request -> questions it researched, each with what it found and its sources -> options weighed with chosen / set aside and why -> what it is building), labels always readable, no motion except new items fading in; opens by itself as a compact strip the moment a design job starts researching, expands to the full trail; steer by marking a question or option "focus" / "skip" (saved for the job to read at its next stage change, no extra model turns, never interrupts it); tests (layout stable, labels not overlapping, auto-open, steer file)
 
 ## Studio + viewer features (Spencer's picks, 2026-11-01)
+- [x] Studio journey reliability: keep navigation current during delayed project, inventory and guide requests; show recoverable loading failures; cover mocked desktop/mobile journeys.
 
 - [x] Project workspace redesign: readable keyboard-accessible descriptions, contained keyboard tabs, a responsive model workspace, and truthful build/check context with clear next steps; preserve existing project actions and verify desktop/mobile fixtures.
 - [x] Viewer cut-away: a slider slices the model on X / Y / Z (flip side), cut faces drawn solid so walls, channels and inserts read as a section; works with explode, joints and every other mode

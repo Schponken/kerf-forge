@@ -974,3 +974,10 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+
+## 2026-11-03 — Studio journey reliability (Codex)
+- Delayed project loads and refreshes now respect the current project visit. My parts provides loading, failure and keyboard retry states; its late load/save replies cannot replace another screen. Empty project polling preserves explicit Work and All projects navigation.
+- Guides show loading and recoverable HTTP failures, mark the selected guide, and ignore responses whose original panel has been replaced. The approved Tune exit guard counts invalid drafts as well as valid edits, deduplicates a parameter, and preserves route/draft state when any global exit is canceled.
+- Final focused browser node: **1 passed in 10.34 s**, four contexts (1512x982 and 390x844, dark/light), including stale successes/failures, retries, invalid blank/whitespace and zero drafts, all global exits, openSession cancellation, and no unexpected mutation requests. Prior run was the same node before final exit coverage, not an additional distinct test. Captures: `.cache/journey-quality/final/`; inspected phone inventory and desktop guide recovery states.
+- `kerf doctor`: **ALL OK** with existing optional firmware-tool warnings. Existing unregistered browser-marker warning remains. No real jobs, geometry, FEA, review.json, full suite or native-app changes. Combined shell/Tune/Files journeys remain assigned to the integration task.
