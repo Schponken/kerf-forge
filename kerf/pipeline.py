@@ -270,10 +270,11 @@ def run(name: str, *, sweeps=True, do_export=False, do_render=False, overrides=N
     P.build(proj)
     printer = proj.data.get("printer", "Bambu Lab A2L")
     supports = proj.data.get("supports", "allowed")
-    rep = {"project": proj.name, "dir": proj.dir.name, "fingerprint": proj.fingerprint(), "printer": printer,
+    rep = {"project": proj.name, "dir": proj.dir.name, "fingerprint": None, "printer": printer,
            "params": proj.params, "parts": {}, "purchased": {}, "assembly": {}, "requirements": [],
            "problems": [], "warnings": [], "mode": mode, "stages": sorted(stg),
            "cached_parts": [k for k, it in proj.printed.items() if it.cached]}   # kerf/partcache.py hits
+    _fingerprint(proj, rep)
     for iid, it in proj.items.items():
         if it.error:
             rep["problems"].append(f"{iid} failed to build: {it.error}")
@@ -596,10 +597,20 @@ def _redesign_first(proj, rep, quick=False):
         return None
 
 
+def _fingerprint(proj, rep):
+    """Invalid inputs keep a failed report and its build diagnostics, never a current proof token."""
+    try:
+        rep["fingerprint"] = proj.fingerprint()
+    except P.ProjectError as e:
+        rep["fingerprint"] = None
+        if str(e) not in rep["problems"]:
+            rep["problems"].append(str(e))
+
+
 def _finish(proj, rep, stg, t0, overrides):
     if not overrides:           # record what this build read from the catalog, then the fingerprint that depends on it
         P.record_deps(proj)
-        rep["fingerprint"] = proj.fingerprint()
+        _fingerprint(proj, rep)
     rep["maker_notes"] = maker_notes(rep["warnings"])
     _fold_stubs(proj, rep)
     rep["ok"] = not rep["problems"]

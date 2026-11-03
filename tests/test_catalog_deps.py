@@ -138,5 +138,5 @@ def test_local_design_inputs_still_invalidate(tmp_path, monkeypatch):
     for path in paths:
         before = proj.fingerprint()
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes((path.read_bytes() if path.exists() else b'') + b'\nchanged')
+        path.write_bytes((path.read_bytes() if path.exists() else b'') + b'\n# changed')
         assert proj.fingerprint() != before, path

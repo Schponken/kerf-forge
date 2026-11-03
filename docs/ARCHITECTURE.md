@@ -17,7 +17,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/drives.py` | Printed spur-gear pairs (py_gearworks, FDM backlash, standard centre distance) and GT2 belt maths (length, tooth count, centre for a stock belt, wrap) + belt keep-out solid |
 | `kerf/proxies.py` | Purchased parts and keep-outs built from the catalog, with their joints and fastener sites |
 | `kerf/catalog.py` | Loads `catalog/hardware.json` (every entry has a `source`) |
-| `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item |
+| `kerf/project.py` | Loads project.yaml, evaluates params/derived, builds every item; fingerprints declared local design inputs, used catalog entries and calibration for review freshness. Tests: tests/test_review_inputs.py, tests/test_catalog_deps.py. |
 | `kerf/modules.py` | Reusable assembly library (`catalog/modules.yaml`): source contract, interfaces, parameters, inherited checks and live review status; makes independent editable project copies with historical evidence in `module.json`, never copied approval |
 | `kerf/assembly.py` | Joint tree, solve poses, interference, motion sweeps, coupled poses, fastener alignment + screw lengths |
 | `kerf/features.py` | Detailed-modeling helpers: swept channels, uniform shell, gussets, teardrop holes, printed ISO threads (bd_warehouse, phase-matched rod/hole), gear pairs (= drives.spur_pair), snap hooks + living hinges with a strain check, text labels, lightening pockets with a minimum web, `safe_fillet` (applies edge groups one by one, reports failures); `fillet_inside(ctx, body, r, keep=)`: rounds every corner kerf.edges reports with kerf.coves prisms (r, then r/2; no OCC fillet, which can crash; coves gmsh cannot mesh are dropped; corners under a ceiling stay square), keep(at) -> reason declares the mating ones |
@@ -40,7 +40,7 @@ description ──► DESIGN.md ──► project.yaml ──► parts/*.py ─�
 | `kerf/heads.py` | Socket screw heads as solids fixed to the part they seat on (catalog head_d x head_h), so interference and every sweep check a head standing proud of a moving part; countersunk heads are skipped |
 | `kerf/shanks.py` | Screw bodies: after fastener sizing, each screw (head seat to tip, 0.8 d cylinder) must not run into any item but the two it joins (a tip poking out of a nut into a neighbour, a screw reaching a prop disc) |
 | `kerf/electrical.py` | Complete electrical system from `electrical:` + `wiring:`: power tree, current per item and run (avg + peak), hover power (momentum theory), ratings (battery C, BEC/ESC outputs, connectors, wire ampacity + burst heating, input voltage), routed wire lengths |
-| `kerf/sources.py` | Declared design source selection for Studio ZIP downloads: recursive Python helpers, contract assets and explicit `source_files`; missing/unsafe/private selections fail before archiving. Shared containment helper also protects module source paths. Tests: tests/test_source_export.py, tests/test_modules.py; policy: docs/SOURCE_EXPORTS.md. |
+| `kerf/sources.py` | Declared geometry inputs for review fingerprints and Studio ZIP sources: recursive Python helpers, contract assets and explicit `source_files` (also build-cache dependencies). Optional design/research notes are archive-only. Missing/unsafe/private selections fail closed. Shared containment helper also protects module paths. Tests: tests/test_source_export.py, tests/test_review_inputs.py, tests/test_modules.py; policy: docs/SOURCE_EXPORTS.md. |
 | `kerf/explain.py` | Plain-language problem explanations for Studio, CLI and review packs. |
 | `kerf/circuit.py` | Electronics as a circuit: `wiring:` -> pin-level KiCad netlist (pins from catalog/pins.json: KiCad symbols from kicad-symbols or sourced pin tables), SKiDL ERC as a check (two outputs on one net, a power input with no source, unwired pins), conductor/terminal-capacity checks; out/kicad/<p>.net / .kicad_sch / erc.txt and out/schematic.svg / .pdf. Tests: tests/test_circuit.py |
 | `kerf/req_electrical.py` | Electrical requirements `power_budget`, `flight_time`, `run_time`, `connector_access` |
@@ -421,8 +421,17 @@ slides along it) with the pin held on one side only, and a stocked length that r
 1.5 d). Screw pivots get a threadlocker warning; pins, pivot screws and inserts go into the BOM.
 
 ## Fingerprint and catalog_deps.json
-`kerf review-status` ties a review to the project's fingerprint: project.yaml, parts/*.py, meshes, the printer
-calibration profile, and the catalog entries the project reads. Every check/build records the catalog paths it read
+`kerf review-status` ties a review to the project's fingerprint: project.yaml, recursive parts/**/*.py, declared
+part/layout/import/Meshy files and `source_files`, the printer calibration profile, and the catalog entries the
+project reads. Legacy top-level meshes/imports stay covered too. New inputs include their relative path and bytes;
+previously covered valid inputs retain their old hash stream. Editing, renaming or removing a nested helper makes
+its review stale. Missing, unsafe or unreadable declared inputs cannot produce a current fingerprint: review-status
+explains the input error, pipeline reports retain their diagnostics with a null fingerprint, and Studio/gallery
+never treat null as current proof. Generated outputs, cache files and review approval are excluded; DESIGN/REFERENCES
+are archive-only notes unless explicitly listed in `source_files`. The manifest is declared dependency coverage,
+not static discovery of arbitrary Python reads. Declared extras also invalidate printed-part cache entries.
+
+Every check/build records the catalog paths it read
 into `projects/<p>/catalog_deps.json` (a growing union; commit it), so an edit to a catalog entry the project does
 not use leaves its review current, and an edit to one it uses makes it stale. Without that file the whole catalog
 file is hashed. An unreadable or malformed dependency file also falls back to the whole catalog until the next

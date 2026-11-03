@@ -174,9 +174,12 @@ def intent_scores(review: dict, printed: list[str]) -> str | None:
 
 def review_status(name) -> dict:
     from . import project as P
-    proj = P.load(name)
+    try:
+        proj = P.load(name)
+        fp = proj.fingerprint()
+    except (OSError, ValueError) as e:
+        return {"ok": False, "why": str(e), "fingerprint": None}
     f = proj.dir / "review.json"
-    fp = proj.fingerprint()
     if not f.exists():
         return {"ok": False, "why": f"no review.json (fingerprint {fp})", "fingerprint": fp}
     r = json.loads(f.read_text(encoding="utf-8"))

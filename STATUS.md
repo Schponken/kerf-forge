@@ -495,3 +495,22 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Separate saved follow-up: existing maker-output loops can follow output symlinks; their containment repair is
   assigned separately. This change validates design inputs and intentionally leaves maker-output behavior intact.
 - Completion is the source-export child only; the broader Fresh-eyes usability task remains open.
+
+## 2026-11-02 — Review proof follows declared design inputs (Codex)
+- Synthetic probes confirmed six edits were invisible to review fingerprints: nested helper, custom part,
+  custom layout, nested imported model, custom Meshy asset and explicit extra data. Fingerprints now reuse
+  the source-export geometry selection, preserving the old stream for already-covered valid inputs and
+  appending newly covered relative paths/bytes once. Used catalog entries and external calibration retain
+  their existing behavior; generated outputs, caches and review approval stay excluded. DESIGN/REFERENCES
+  are archive notes unless explicitly declared as geometry inputs. No real review.json was authored.
+- source_files now explicitly participates in each printed part's cache key as well as archive/review
+  inputs. This remains declared dependency coverage, not discovery of arbitrary Python file reads.
+- Missing/unsafe/unreadable inputs fail closed: review-status explains the error, pipeline keeps its failed
+  report and per-part diagnostics with no fingerprint, and gallery/Studio never treat null as current proof.
+  The existing post-build diagnostic order is preserved.
+- PASS: 63 focused tests in 3.19 s, covering synthetic review comparisons, legacy hash compatibility,
+  declared CSV cache invalidation (warm hit, edit, recomputed volume 12 to 24, warm hit), invalid-input/report
+  paths, source archive rebuilds, used/unrelated catalog behavior, existing cache specificity and review
+  out-staleness. Earlier fixture corrections are included in that final count, not added to it.
+- Stacked on source-export PR #22. No actual project build, real review edit, browser run, stress solver,
+  full suite or benchmark. The full batch remains reserved.
