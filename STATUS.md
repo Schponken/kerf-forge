@@ -1527,3 +1527,10 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   raised cap fairing with unchanged pin/bearing stack. Built hub/cap are valid single solids, 103.32 / 21.31 g.
   This is not a meaningful aircraft weight reduction; exact-load stiffness and sweep clearance remain pending.
   Taller fairing increases frontal projected area; no aerodynamic improvement is claimed. Do not install yet.
+- Candidate evaluation finished: 4.053 mm leading-edge-corner displacement and 16.92 MPa p99.9 stress under
+  34.9866 N / ~5.30 N m about the pivot (integrated target 5.312 N m). Solver coarsened; no convergence proof.
+  The 1 mm target is diagnostic, not an existing acceptance limit; socket rotation was not extracted.
+  Candidate ea82e3c is NOT accepted for ready integration: essentially no mass saving, increased fairing area,
+  and socket-roof wall / printed stiffness / sweep questions remain. Preserve it as WIP; keep the baseline
+  hub/cap in the ready branch. JSON fixture and final interpretation saved in validation/hub_candidate.json.
+  Root and flight coordinator notified; CAD slot released. No mass, strength, or flight-readiness PASS claimed.
