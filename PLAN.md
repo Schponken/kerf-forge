@@ -334,7 +334,8 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
 
-- [ ] Round two integration: combine ten autonomous Studio/engineering improvements, verify shared behavior, and install tested application updates with preserved project edits.
+- [x] Round two integration: combine ten autonomous Studio/engineering improvements, verify shared behavior, and install tested application updates with preserved project edits.
+  - Hawk flight redesign remains a separate open project task in draft PR81; no failing project geometry or reports installed.
 - [x] Build cache write efficiency: serialize exact part geometry once while preserving read-back validation, atomic writes, dependency provenance and cache failure fallback; focused regression tests.
 - [x] Studio background-job recovery round 2: preserve Stop, retry failed auto-fix launches, and reap jobs after output processing fails; mocked regression tests.
 - [x] Work ownership evidence: correlate claims only with unambiguous chat identities and label owner updates separately from observed session activity; focused fixtures.
