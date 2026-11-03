@@ -154,9 +154,6 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 .issue details{margin-top:6px}.issue summary{cursor:pointer;color:var(--muted);font-size:12px}
 .issue code{display:block;white-space:pre-wrap;font-size:12px;color:var(--muted);margin-top:4px}
 .workst{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.files h3{font-size:11px;margin:20px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
-.files a.f{display:inline-flex;gap:6px;align-items:center;margin:0 8px 8px 0;padding:7px 11px;border:1px solid var(--line);border-radius:9px;text-decoration:none;color:var(--ink);background:var(--panel);font-size:13px;transition:border-color .15s,transform .15s}
-.files a.f:hover{border-color:var(--accent);transform:translateY(-1px)}
 .renders{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
 .renders img{width:100%;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:zoom-in;transition:transform .2s;animation:fadeUp .4s both}
 .renders img:hover{transform:scale(1.03)}
@@ -200,7 +197,6 @@ ul.msgs{margin:0;padding-left:18px}ul.msgs li{margin:4px 0}
 @keyframes sbob{50%{transform:translateY(-4px)}}@keyframes swork{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(14deg) translateY(3px)}}
 @media (prefers-reduced-motion:reduce){.scene .who,.scene .tool{animation:none}}
 .cert{display:flex;gap:16px;margin-bottom:14px;border:1px solid rgba(60,200,120,.4);background:linear-gradient(135deg,rgba(60,200,120,.10),transparent)}.cert .seal{font-size:46px;line-height:1}
-.fsay{margin:-4px 0 8px}
 .tourlay{position:fixed;inset:0;z-index:90}.tourlay .spot{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.55);border:2px solid var(--accent,#f80);transition:all .25s;pointer-events:none}
 .tourlay .bub{position:fixed;width:340px;background:var(--card,#1b1d22);color:inherit;border:1px solid rgba(255,140,40,.4);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .job.sess .lab small{color:var(--muted)}.dot.claimed{background:#5aa9ff;box-shadow:0 0 0 3px rgba(90,169,255,.18)}
@@ -507,6 +503,52 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 }
 
 @media(max-width:360px){.brand b{font-size:14px}.brand{gap:6px}.logo{width:24px;height:24px}#side{padding-inline:12px}.sidenav button{font-size:11px;padding-inline:6px}#activitytray>summary{font-size:11px}.shell-disclosure>summary{gap:4px}#activitycount{min-width:14px;padding-inline:2px}}
+
+
+/* ---------- making handoff: guides first, formats second */
+.files-handoff{max-width:1120px;margin:0 auto;color:var(--ink)}
+.handoff-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px}
+.handoff-heading h2{font-size:22px;line-height:1.2;font-weight:600;margin:0;letter-spacing:-.02em}
+.handoff-bundle{flex:none}
+.handoff-state{padding:0 0 22px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.handoff-state strong{font-size:14px}.handoff-state p{max-width:72ch;margin:5px 0 12px;color:var(--muted);font-size:14px}
+.handoff-state.bad strong{color:var(--bad)}.handoff-state.warn strong,.handoff-unproven{color:var(--warn)}
+.handoff-state p.handoff-unproven{color:var(--warn);font-weight:600}
+.handoff-state button{font-size:13px;background:none}
+.handoff-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:48px}
+.files-handoff h3{margin:0 0 12px;font-size:16px;font-weight:650}
+.handoff-guides ul,.handoff-file-list{list-style:none;padding:0;margin:0}
+.handoff-guides li{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:15px 0;border-top:1px solid var(--line)}
+.handoff-guides li>div{min-width:0}.handoff-guides p,.handoff-reveal>p{font-size:13px;line-height:1.5;margin:4px 0 0;color:var(--muted)}
+.handoff-read{min-height:32px;padding:0;border:0;background:none;border-radius:0;text-align:left;font-size:15px;font-weight:600;white-space:normal;overflow-wrap:anywhere;color:var(--info);text-decoration:underline;text-underline-offset:4px}
+.handoff-read:hover{text-decoration:underline;text-underline-offset:4px;background:none}
+.handoff-download{font-size:12px;flex:none;min-height:32px;display:inline-flex;align-items:center;text-underline-offset:4px;color:var(--info)}
+.handoff-guides .handoff-missing,.handoff-guides .handoff-purchased{margin-top:18px}
+.handoff-missing{color:var(--warn)!important}
+.handoff-group{border-top:1px solid var(--line)}
+.handoff-group summary,.handoff-provenance summary{cursor:pointer;min-height:50px;padding:15px 0;font-size:14px;font-weight:600;list-style:none;display:flex;align-items:center;gap:10px}
+.handoff-group summary::-webkit-details-marker,.handoff-provenance summary::-webkit-details-marker{display:none}
+.handoff-group summary:after,.handoff-provenance summary:after{content:'';border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;width:6px;height:6px;transform:rotate(45deg);margin-left:auto;margin-right:3px;transition:transform .16s ease-out}
+.handoff-group[open]>summary:after,.handoff-provenance[open]>summary:after{transform:rotate(225deg)}
+.handoff-count{font-size:12px;font-weight:400;color:var(--muted);white-space:nowrap}
+.handoff-reveal{padding-bottom:18px}
+.handoff-reveal>p{margin:0 0 12px;max-width:72ch}
+.handoff-file-list li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
+.handoff-filename{font-size:13px;font-weight:550;min-width:0;overflow-wrap:anywhere}
+.handoff-filename small{display:block;font-weight:400;font-size:11px;color:var(--muted);margin-top:3px}
+.handoff-file-origin{font-size:12px;color:var(--muted);margin:-3px 0 14px;max-width:65ch}
+.handoff-empty{font-size:14px;color:var(--muted);margin:12px 0;max-width:65ch}
+.handoff-provenance{border-top:1px solid var(--line);margin-top:28px}
+.handoff-provenance+.handoff-provenance{margin-top:0}
+.handoff-provenance dl{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 18px;font-size:13px;max-width:760px;margin:14px 0 0}
+.handoff-provenance dt{color:var(--muted)}.handoff-provenance dd{margin:0;overflow-wrap:anywhere}
+.handoff-provenance h4{margin:20px 0 8px}.handoff-provenance ul{padding-left:20px;font-size:13px;color:var(--muted)}
+.files-handoff :is(button,a,summary):focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@supports(interpolate-size:allow-keywords){.files-handoff details{interpolate-size:allow-keywords}.files-handoff details::details-content{height:0;overflow:clip;transition:height .16s ease-out,content-visibility .16s;transition-behavior:allow-discrete}.files-handoff details[open]::details-content{height:auto}}
+@media(max-width:1000px){.handoff-layout{gap:28px}}
+@media(max-width:720px){.handoff-heading{align-items:flex-start;flex-direction:column;gap:14px}.handoff-heading h2{font-size:20px}.handoff-layout{grid-template-columns:minmax(0,1fr);gap:32px}.handoff-state{margin-bottom:24px}.handoff-read,.handoff-download{min-height:44px}.handoff-provenance dl{grid-template-columns:minmax(0,1fr);gap:4px}.handoff-provenance dd+dt{margin-top:8px}}
+@media(prefers-reduced-motion:reduce){.files-handoff details::details-content{transition:none!important}.handoff-group summary:after,.handoff-provenance summary:after{transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -767,7 +809,7 @@ function renderProject() {
     <div class="body" id="tabbody" role="tabpanel" tabindex="0"></div></section>`;
   updateProjectBrief(); setTab(S.tab);
   $("#tabs").scrollLeft = tabScroll;
-  if (["project-brief-toggle", "project-build-summary"].includes(focused) || focused.startsWith("project-tab-")) document.getElementById(focused)?.focus({preventScroll:true});
+  if (["project-brief-toggle", "project-build-summary"].includes(focused) || focused.startsWith("project-tab-") || focused.startsWith("handoff-")) document.getElementById(focused)?.focus({preventScroll:true});
 }
 function closeBuildDetails(focus = false) {
   const details = $("#project-build-details"); if (!details) return;
@@ -1116,28 +1158,70 @@ function massRow(d, tr) {
   return `<p class="note" style="margin:6px 0">Printed plastic: ${fmt(a)} g saved → ${fmt(b)} g tried${Math.abs(dl) > 0.05 ? ` (${dl > 0 ? "+" : ""}${fmt(dl)} g)` : ""}</p>`;
 }
 
+const HANDOFF_GUIDES = {
+  "out/ASSEMBLY.md": ["Assembly guide", "Order of assembly and how the parts fit together."],
+  "out/bom.md": ["Shopping list", "Purchased parts, quantities and available supplier sources."],
+  "out/plates/PRINT_SETTINGS.md": ["Print settings", "Materials, orientation, supports and slicer settings."],
+  "out/manufacturing/ORDER.md": ["Manufacturing guide", "Files and specifications for parts made by a supplier."],
+  "out/WIRING.md": ["Wiring guide", "Connections to check before applying power."],
+  "out/firmware/BRINGUP.md": ["First power-up", "Read the setup procedure before using the bring-up program."],
+  "DESIGN.md": ["Design notes", "Design decisions, requirements and assumptions."],
+  "REFERENCES.md": ["References", "Research, original designs and supplier sources."],
+  "out/OPTIMISE.md": ["Optimiser results", "Recorded alternatives and their trade-offs."],
+  "OPTIMISE.md": ["Optimiser results", "Recorded alternatives and their trade-offs."]
+};
+function openHandoffDoc(path) { S.doc = path; setTab('docs'); }
 function renderFiles(el) {
-  const d = S.detail, f = d.files;
-  if (!f.length) { el.innerHTML = notBuilt("Print plates, STL/3MF parts, drawings, STEP and BOM appear here."); return; }
-  const FILE_SAY = {"Print plates (open in Bambu Studio)": "Everything laid out on the printer bed. Open one in Bambu Studio and press print.",
-    "Single parts": "One part per file, for reprinting a broken part or printing in another slicer.",
-    "Engineering drawings (PDF)": "Flat drawings with measurements, handy for checking a print with calipers.",
-    "CAD + shopping list": "The shopping list of parts to buy, and the full 3D model for other CAD programs.",
-    "Simulation (URDF + meshes, for PyBullet / MuJoCo / Gazebo)": "For trying the design in a physics simulator (optional)."};
-  const group = (title, pred, icon) => { const g = f.filter(pred); return g.length ? `<h3>${title}</h3>${FILE_SAY[title] ? `<p class="note fsay">${FILE_SAY[title]}</p>` : ""}${g.map(x => `<a class="f" href="${fileUrl(d.name, x)}" download>${icon} ${esc(x.split("/").pop())}</a>`).join("")}` : ""; };
-  const DOCN = {"out/OPTIMISE.md": "Optimiser results", "OPTIMISE.md": "Optimiser results", "DESIGN.md": "Design notes", "REFERENCES.md": "References", "out/ASSEMBLY.md": "Assembly guide", "out/WIRING.md": "Wiring",
-                "out/firmware/BRINGUP.md": "First power-up", "out/bom.md": "Shopping list", "out/plates/PRINT_SETTINGS.md": "Print settings"};
-  el.innerHTML = `<div class="files">
-    ${d.docs.length ? `<h3>Guides (read here)</h3>${d.docs.map(x => `<a class="f" href="#" onclick="S.doc='${x}';setTab('docs');return false">☰ ${DOCN[x] || x}</a>`).join("")}` : ""}
-    ${group("Print plates (open in Bambu Studio)", x => x.startsWith("out/plates/") && x.endsWith(".3mf"), "▦")}
-    ${group("Single parts", x => x.startsWith("out/parts/"), "◧")}
-    ${group("Engineering drawings (PDF)", x => x.startsWith("out/drawings/") && x.endsWith(".pdf"), "📐")}
-    ${group("CAD + shopping list", x => /assembly\.step|bom\.(csv|md)$/.test(x), "▤")}
-    ${group("Simulation (URDF + meshes, for PyBullet / MuJoCo / Gazebo)", x => x.endsWith("_urdf.zip"), "⚙")}
-    ${group("Guides", x => /(ASSEMBLY|WIRING|PRINT_SETTINGS)\.md$/.test(x), "☰")}
-    ${group("Bring-up program (upload before fitting servo horns)", x => x.startsWith("out/firmware/"), "⌁")}
-    ${d.renders.length ? `<h3>Renders</h3><div class="renders">${d.renders.map((r, i) => `<img loading="lazy" style="animation-delay:${i * 30}ms" src="${fileUrl(d.name, r)}" alt="${esc(r)}" onclick="zoom(this.src)">`).join("")}</div>` : ""}
-  </div>`;
+  const d = S.detail, f = [...new Set(d.files || [])], docs = [...new Set(d.docs || [])], rep = d.report || {};
+  const context = projectContext(d), running = (d.running || []).length > 0;
+  const paused = (rep.requirements || []).some(r => r.paused), skipped = (rep.requirements || []).some(r => r.skipped);
+  const docOrder = Object.keys(HANDOFF_GUIDES);
+  docs.sort((a,b) => (docOrder.includes(a) ? docOrder.indexOf(a) : docOrder.length) - (docOrder.includes(b) ? docOrder.indexOf(b) : docOrder.length));
+  const used = new Set(docs), basename = x => x.split('/').pop();
+  if (S.handoffProject !== d.name) { S.handoffProject = d.name; S.handoffOpen = {}; }
+  const opened = (id, fallback=false) => (S.handoffOpen[id] ?? fallback) ? 'open' : '';
+  const download = x => `<a class="handoff-download" id="handoff-download-${encodeURIComponent(x)}" href="${fileUrl(d.name,x)}" download aria-label="Download ${esc(x)}">Download</a>`;
+  const rows = paths => `<ul class="handoff-file-list">${paths.map(x => `<li><span class="handoff-filename">${esc(basename(x))}<small>${esc(x)}</small></span>${download(x)}</li>`).join('')}</ul>`;
+  const group = (id, title, description, pred, open=false) => {
+    const paths = f.filter(x => !used.has(x) && pred(x)); paths.forEach(x => used.add(x));
+    return paths.length ? `<details class="handoff-group" id="handoff-${id}" ${opened(id,open)}><summary id="handoff-summary-${id}"><span>${title}</span><span class="handoff-count">${paths.length} file${paths.length === 1 ? '' : 's'}</span></summary><div class="handoff-reveal"><p>${description}</p>${rows(paths)}</div></details>` : '';
+  };
+  const guideRows = paths => `<ul>${paths.map(x => { const g = HANDOFF_GUIDES[x] || [basename(x),'Project document.']; return `<li><div><button class="handoff-read" id="handoff-read-${encodeURIComponent(x)}" data-doc="${esc(x)}">${esc(g[0])}</button><p>${esc(g[1])}</p></div>${download(x)}</li>`; }).join('')}</ul>`;
+  const firstGuides = docs.filter(x => ['out/ASSEMBLY.md','out/bom.md','out/plates/PRINT_SETTINGS.md'].includes(x));
+  const moreGuides = docs.filter(x => !firstGuides.includes(x));
+  const groups = [
+    group('plates', 'Print plates', 'Open a 3MF in your slicer. Review the print settings and sliced preview before printing.', x => x.startsWith('out/plates/') && x.endsWith('.3mf'), true),
+    group('parts', 'Individual parts', 'STL and 3MF models for individual parts. Set their material, orientation and supports in your slicer.', x => x.startsWith('out/parts/')),
+    group('manufacturing', 'Parts to order', 'Manufacturing files for a supplier; read the manufacturing guide for specifications.', x => x.startsWith('out/manufacturing/')),
+    group('shopping', 'Shopping list files', 'Purchased components are separate from the printed parts. Use these quantities and supplier references when sourcing them.', x => /bom\.(csv|md)$/.test(x)),
+    group('drawings', 'Measured drawings', 'PDF dimensions for inspecting parts and checking their fit.', x => x.startsWith('out/drawings/') && x.endsWith('.pdf')),
+    group('cad', 'CAD & 3D viewer', 'STEP geometry for CAD tools and the saved interactive model.', x => /assembly\.step$|viewer\.html$/.test(x)),
+    group('firmware', 'Bring-up program', 'Read First power-up before using these files. A program being present does not prove hardware operation.', x => x.startsWith('out/firmware/')),
+    group('simulation', 'Simulation files', 'Models for compatible simulators. These files alone do not establish tested physical performance.', x => x.endsWith('_urdf.zip')),
+    group('other', 'Other saved files', 'Additional files reported by this project.', () => true)
+  ].join('');
+  el.innerHTML = `<section class="files-handoff" aria-label="Making files and guides">
+    <div class="handoff-heading"><h2>${f.length ? 'Prepare to make' : 'No build files yet'}</h2><a class="btn handoff-bundle" id="handoff-bundle" href="/export/${encodeURIComponent(d.name)}.zip" download>Download project ZIP</a></div>
+    <div class="handoff-state ${context.kind}"><strong>${esc(context.label)}</strong><p>${esc(context.text)}</p>${paused ? '<p class="handoff-unproven">Stress checks are paused. Strength is unproven.</p>' : skipped ? '<p class="handoff-unproven">Some checks were not run. Review their limits before making this design.</p>' : ''}
+      ${d.built ? `<button id="handoff-checks" onclick="setTab('results')">${d.stale ? 'Review previous checks' : 'Review checks'}</button>` : !running ? `<button id="handoff-build" onclick="runMode('kit')">Build kit</button>` : ''}
+    </div>
+    <div class="handoff-layout"><section class="handoff-guides" aria-labelledby="handoff-read"><h3 id="handoff-read">Read before making</h3>
+      ${docs.length ? guideRows(firstGuides.length ? firstGuides : docs) : '<p class="handoff-empty">No guides have been saved yet.</p>'}
+      ${firstGuides.length && moreGuides.length ? `<details class="handoff-provenance" id="handoff-guides-extra" ${opened('guides-extra')}><summary id="handoff-summary-guides-extra">More guides & sources <span class="handoff-count">${moreGuides.length}</span></summary><div class="handoff-reveal">${guideRows(moreGuides)}</div></details>` : ''}
+      ${!docs.includes('out/ASSEMBLY.md') && !f.includes('out/ASSEMBLY.md') ? '<p class="handoff-missing">Assembly guide unavailable. The saved files do not include assembly instructions.</p>' : ''}
+      ${f.some(x => x.startsWith('out/plates/') && x.endsWith('.3mf')) && !docs.includes('out/plates/PRINT_SETTINGS.md') && !f.includes('out/plates/PRINT_SETTINGS.md') ? '<p class="handoff-missing">Print settings unavailable. Check material, orientation and supports in your slicer.</p>' : ''}
+      ${!docs.includes('out/bom.md') && !f.some(x => /bom\.(csv|md)$/.test(x)) ? '<p class="handoff-missing">Shopping list unavailable. Purchased parts and quantities are not confirmed here.</p>' : '<p class="handoff-purchased">Printed parts are only part of the build. Check the shopping list for components to buy or supply.</p>'}
+    </section><section class="handoff-downloads" aria-labelledby="handoff-choose"><h3 id="handoff-choose">Choose your files</h3>${f.length ? '<p class="handoff-file-origin">Saved outputs; individual file versions are not verified here.</p>' : ''}${groups || '<p class="handoff-empty">No downloadable build files are listed yet. Build kit prepares the available outputs.</p>'}
+    </section></div>
+    <details class="handoff-provenance" id="handoff-provenance" ${opened('provenance')}><summary id="handoff-summary-provenance">About these files</summary><div class="handoff-reveal"><p>The ZIP contains design sources and saved outputs. Individual downloads above keep their original filenames. A saved file is not a print-readiness or safety approval.</p><dl><dt>Saved check record</dt><dd>${d.built_at ? esc(new Date(d.built_at * 1000).toLocaleString()) : 'No build time recorded'}</dd><dt>Build fingerprint</dt><dd>${esc(rep.fingerprint || d.fingerprint || 'Not recorded')}</dd><dt>File matching</dt><dd>${d.stale ? 'The design changed after the saved build; regenerate outputs before making it.' : 'This list does not verify a build fingerprint for each file. Check the saved build and review status before use.'}</dd></dl>${(rep.warnings || []).length ? `<h4>Saved build warnings</h4><ul>${rep.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : ''}</div></details>
+    ${(d.renders || []).length ? `<details class="handoff-provenance" id="handoff-renders" ${opened('renders')}><summary id="handoff-summary-renders">Saved renders <span class="handoff-count">${d.renders.length} image${d.renders.length === 1 ? '' : 's'}</span></summary><div class="handoff-reveal renders">${d.renders.map(r => `<a href="${fileUrl(d.name,r)}" target="_blank" rel="noopener" onclick="zoom(this.href);return false"><img loading="lazy" src="${fileUrl(d.name,r)}" alt="${esc(basename(r))}"></a>`).join('')}</div></details>` : ''}
+  </section>`;
+  el.querySelectorAll('.files-handoff details').forEach(node => node.addEventListener('toggle', () => { if (node.isConnected) S.handoffOpen[node.id.slice(8)] = node.open; }));
+  el.querySelector('.files-handoff').addEventListener('keydown', e => {
+    const detail = e.target.closest('details[open]');
+    if (e.key === 'Escape' && detail) { detail.open = false; detail.querySelector('summary').focus(); e.preventDefault(); }
+  });
+  el.querySelectorAll('[data-doc]').forEach(b => b.addEventListener('click', () => openHandoffDoc(b.dataset.doc)));
 }
 function zoom(src) { $("#lbimg").src = src; $("#lb").style.display = "grid"; }
 
@@ -1307,7 +1391,52 @@ function certificate(d) {
 }
 function printCert() {
   const w = window.open("", "_blank"); if (!w) return;
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>Build check summary</title><style>body{font:15px system-ui;margin:40px;color:#111}table{border-collapse:collapse}td{padding:4px 18px 4px 0;border-bottom:1px solid #ddd}button{display:none}.note{color:#555}</style>${$("#cert").innerHTML}`);
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Build check summary</title><style>body{font:15px system-ui;margin:40px;color:#111}table{border-collapse:collapse}td{padding:4px 18px 4px 0;border-bottom:1px solid #ddd}button{display:none}.note{color:#555}
+/* ---------- making handoff: guides first, formats second */
+.files-handoff{max-width:1120px;margin:0 auto;color:var(--ink)}
+.handoff-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px}
+.handoff-heading h2{font-size:22px;line-height:1.2;font-weight:600;margin:0;letter-spacing:-.02em}
+.handoff-bundle{flex:none}
+.handoff-state{padding:0 0 22px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.handoff-state strong{font-size:14px}.handoff-state p{max-width:72ch;margin:5px 0 12px;color:var(--muted);font-size:14px}
+.handoff-state.bad strong{color:var(--bad)}.handoff-state.warn strong,.handoff-unproven{color:var(--warn)}
+.handoff-state p.handoff-unproven{color:var(--warn);font-weight:600}
+.handoff-state button{font-size:13px;background:none}
+.handoff-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:48px}
+.files-handoff h3{margin:0 0 12px;font-size:16px;font-weight:650}
+.handoff-guides ul,.handoff-file-list{list-style:none;padding:0;margin:0}
+.handoff-guides li{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:15px 0;border-top:1px solid var(--line)}
+.handoff-guides li>div{min-width:0}.handoff-guides p,.handoff-reveal>p{font-size:13px;line-height:1.5;margin:4px 0 0;color:var(--muted)}
+.handoff-read{min-height:32px;padding:0;border:0;background:none;border-radius:0;text-align:left;font-size:15px;font-weight:600;white-space:normal;overflow-wrap:anywhere;color:var(--info);text-decoration:underline;text-underline-offset:4px}
+.handoff-read:hover{text-decoration:underline;text-underline-offset:4px;background:none}
+.handoff-download{font-size:12px;flex:none;min-height:32px;display:inline-flex;align-items:center;text-underline-offset:4px;color:var(--info)}
+.handoff-guides .handoff-missing,.handoff-guides .handoff-purchased{margin-top:18px}
+.handoff-missing{color:var(--warn)!important}
+.handoff-group{border-top:1px solid var(--line)}
+.handoff-group summary,.handoff-provenance summary{cursor:pointer;min-height:50px;padding:15px 0;font-size:14px;font-weight:600;list-style:none;display:flex;align-items:center;gap:10px}
+.handoff-group summary::-webkit-details-marker,.handoff-provenance summary::-webkit-details-marker{display:none}
+.handoff-group summary:after,.handoff-provenance summary:after{content:'';border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;width:6px;height:6px;transform:rotate(45deg);margin-left:auto;margin-right:3px;transition:transform .16s ease-out}
+.handoff-group[open]>summary:after,.handoff-provenance[open]>summary:after{transform:rotate(225deg)}
+.handoff-count{font-size:12px;font-weight:400;color:var(--muted);white-space:nowrap}
+.handoff-reveal{padding-bottom:18px}
+.handoff-reveal>p{margin:0 0 12px;max-width:72ch}
+.handoff-file-list li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
+.handoff-filename{font-size:13px;font-weight:550;min-width:0;overflow-wrap:anywhere}
+.handoff-filename small{display:block;font-weight:400;font-size:11px;color:var(--muted);margin-top:3px}
+.handoff-file-origin{font-size:12px;color:var(--muted);margin:-3px 0 14px;max-width:65ch}
+.handoff-empty{font-size:14px;color:var(--muted);margin:12px 0;max-width:65ch}
+.handoff-provenance{border-top:1px solid var(--line);margin-top:28px}
+.handoff-provenance+.handoff-provenance{margin-top:0}
+.handoff-provenance dl{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 18px;font-size:13px;max-width:760px;margin:14px 0 0}
+.handoff-provenance dt{color:var(--muted)}.handoff-provenance dd{margin:0;overflow-wrap:anywhere}
+.handoff-provenance h4{margin:20px 0 8px}.handoff-provenance ul{padding-left:20px;font-size:13px;color:var(--muted)}
+.files-handoff :is(button,a,summary):focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@supports(interpolate-size:allow-keywords){.files-handoff details{interpolate-size:allow-keywords}.files-handoff details::details-content{height:0;overflow:clip;transition:height .16s ease-out,content-visibility .16s;transition-behavior:allow-discrete}.files-handoff details[open]::details-content{height:auto}}
+@media(max-width:1000px){.handoff-layout{gap:28px}}
+@media(max-width:720px){.handoff-heading{align-items:flex-start;flex-direction:column;gap:14px}.handoff-heading h2{font-size:20px}.handoff-layout{grid-template-columns:minmax(0,1fr);gap:32px}.handoff-state{margin-bottom:24px}.handoff-read,.handoff-download{min-height:44px}.handoff-provenance dl{grid-template-columns:minmax(0,1fr);gap:4px}.handoff-provenance dd+dt{margin-top:8px}}
+@media(prefers-reduced-motion:reduce){.files-handoff details::details-content{transition:none!important}.handoff-group summary:after,.handoff-provenance summary:after{transition:none!important}}
+
+</style>${$("#cert").innerHTML}`);
   w.document.close(); w.focus(); w.print();
 }
 
@@ -1324,7 +1453,7 @@ const TOUR = {
          [".grid2 .primary", "Try these values: Kerf rebuilds a copy and re-checks it, and your design stays untouched until you Save."]],
   results: [[".summary", "The score: how many engineering checks pass and how many are close to their limit."], [".issue", "Something to fix, explained: what is wrong, why it matters, what usually fixes it."],
             [".cert", "This build’s recorded checks and review status. Read these before making the design."], ["table", "Each row is a number the design must meet. The bar shows how much room is left. Hover a name for what it means."]],
-  files: [[".files h3", "Everything you need to make it. Print plates go straight to the printer."]],
+  files: [[".handoff-guides", "Read the assembly guide, shopping list and print settings before making the design."], [".handoff-downloads", "Choose saved files here. Review the build status and sliced preview before printing."]],
   history: [[".hist", "Each build is saved with its numbers and picture, so you can compare and go back."]],
 };
 function explainPage() {
