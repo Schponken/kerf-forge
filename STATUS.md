@@ -974,3 +974,29 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   runs; full batch and stress remain on hold. One Impeccable scan reported 12 existing patterns outside this scope.
   No geometry/check thresholds, catalog, review.json, backend or paid-agent launch. Surface decisions/limits are
   in docs/usability/PROJECT_WORKSPACE.md. New tests reuse the reviewed browser helper byte-for-byte.
+
+## 2026-11-03 03:26 UTC — Files & guides making handoff (Codex)
+- Six scoped improvements turn the format list into a making handoff: essential assembly/shopping/print guides
+  first, purchased-component guidance, task-based file groups, saved-build context, keyboard disclosures and
+  inspectable provenance. Every API-listed file/document remains downloadable, including unknown future formats;
+  guide-only projects keep their source docs. The existing project ZIP, render lightbox and source links remain.
+- Stale, failed, incomplete, running and paused evidence stays explicit. Individual file versions are not proven by
+  this API and are labelled unverified; no print-readiness, safety or physical-performance promise is added.
+  No export backend, hardware action, geometry, check threshold, catalog or review.json change. Files help-tour
+  targets/claims now match the surface. One scoped renderProject predicate preserves focused handoff controls.
+- Validation: new mocked browser node passed in **7.30 s** after final corrections; existing project_workspace
+  node passed in the immediately preceding two-node selection (**1 pass / 1 fail in 13.01 s**, not re-run).
+  Earlier new-node pass was 6.36 s; these overlap and are not summed. Coverage includes 1512×982 / 390×844,
+  both themes, all listed outputs/docs, unknown/escaped/long filenames, guide routes, source-only and missing
+  outputs, stale/failed/running/paused/skipped states, keyboard opening/closing, refresh focus, render inspection,
+  reduced motion and no horizontal overflow. All network requests are mocked GETs; Build kit dispatch is stubbed.
+- Initial meaningful fixture failure found refresh losing focus; fixed the caller, retaining the assertion.
+  Final reduced-motion assertion found the existing global !important 0.01ms transition rule overriding local
+  none; scoped handoff override now ensures actual zero (assertion retained). Known browser-marker warnings
+  remain until the pending registration PR lands. `kerf doctor`: ALL OK, existing optional firmware tools absent.
+- Viewed the first desktop/phone batch, then one confirmation batch: `.cache/making-handoff/{first,final}/`
+  holds eight images per batch (dark/light, desktop/phone, top/files). Read links now have persistent affordance;
+  phone targets are 44px. Impeccable scan: 13 existing global patterns plus the deliberately short intrinsic-size
+  native disclosure transition, reduced-motion disabled. Shared shell integration owns final combined visuals.
+  Budget off; full batch HELD and stress paused. No real build/app/provider/printer, full suite or batch run.
+  Scope and decisions are saved in docs/usability/MAKING_HANDOFF.md.
