@@ -14,6 +14,13 @@ from kerf import studio
 FAKE = Path(__file__).resolve().parent / "fixtures" / "fake_claude_usage.py"
 
 
+@pytest.fixture(autouse=True)
+def claude_only_usage(monkeypatch):
+    # This suite tests waiting for Claude; fake-binary handoff is covered in test_agent.
+    monkeypatch.setenv("KERF_AGENT", "claude")
+    monkeypatch.setattr(studio.agent, "codex_bin", lambda: None)
+
+
 def test_reset_times_are_read_from_the_message():
     assert studio.usage_reset("Claude AI usage limit reached|1762126800") == 1762126800.0
     now = time.mktime((2026, 11, 2, 18, 0, 0, 0, 0, -1))
