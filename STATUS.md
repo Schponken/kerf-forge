@@ -1322,3 +1322,10 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   One Impeccable scan reported only the existing global type hierarchy warning. No broad viewer suite repeated,
   geometry regeneration, FEA, live jobs or installation. Full batch is held. For integrated real-model proof,
   hover a material in Parts or rotating joint in Move on an existing saved viewer; no rebuild is needed.
+
+## 2026-11-03 — Combined Studio redesign checkpoint (Codex)
+- Integrated the individually reviewed redesign features in isolated `codex/studio-redesign-integration`; no remote merge or installed-app update. Full-width shell, object-stage model, Work ownership, briefing, Tune, History, making guides, job narration and direct definitions now share one working interface.
+- Exact clean source d514880: 28 focused cases passed in 123.91s. Final viewer-definition source ff242e6: 5 affected cases passed in 21.16s (three repeat, two new). No broad/full-suite repeat. Existing browser marker warnings remain; batch/FEA holds respected.
+- Independent source pass and bounded desktop/phone visual review found no new blocker. Final composed capture shows a direct PLA definition beside the real saved FPV model; APIs are mocked and no project rebuilt. Evidence/provenance and feature queue are in docs/usability/STUDIO_REDESIGN_REVIEW.md.
+- Resolved overlapping changes by preserving both behaviors, removed inert duplicated print-summary CSS and exact duplicate PLAN lines, and kept Activity assignments distinct from observed running jobs. Original source changes stay in focused PRs.
+- The owner redeemed the single reset manually, requested conservation and High-effort workers, and deferred the next ten-worker optimization/motion/debug round until the design settles. No further reset or background round was started.
