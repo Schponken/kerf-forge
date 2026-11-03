@@ -725,3 +725,24 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   `kerf doctor`: **ALL OK**, existing optional firmware tooling unavailable. One Impeccable mechanical scan
   found 13 existing patterns outside the changed selector. Budget/batch/process checks preceded runs; no real
   project, agent, physical check, full suite or batch run. Stacked on PR #40; no self-merge.
+
+## 2026-11-03 — Follow live label overlap fixed in native WebKit (Codex)
+- Reproduced the user's two desktop screenshots in an isolated system WKWebView fixture using Studio's actual
+  CSS/liveBar function. The global input width of 100% made the checkbox 80.55px wide at a 1440px viewport;
+  label text occupied x412.55–483.08 while the adjacent helper began at x414.55. Chromium's native checkbox
+  stayed 13px and did not reproduce this overlap, so Chromium alone would have missed the reported defect.
+- Four scoped CSS rules give the checkbox its intrinsic width, prevent label shrinking, let the control row wrap,
+  and wrap long status/error messages within the row. Native after: checkbox 12px, text x344–414.53 contained
+  in its label, helper begins x426.55 (12px gap). No markup, wording, polling, API, project or global input change.
+- Validation: **2 browser tests passed in 4.89s** (`tests/test_follow_live_layout.py` and the existing
+  `tests/test_usability.py::test_phone_tune_and_connection_recovery`), with one expected browser-marker warning
+  until the pending marker registration lands. New coverage uses 1440/1024/390/320px, both themes, on/off/long
+  unbroken error text, label click, focused Space-key toggle, exact mocked API calls and nonoverlapping bounds.
+  The interrupted tool call completed successfully in the background; its final log and no remaining process
+  were verified on resume, without repeating the completed selection.
+- Temporary native WKWebView harness assertions also pass 18 width/theme/state combinations (1440/390/320px,
+  dark/light, off/on/error). This uses the installed system engine, not the running Kerf app; no toolchain install.
+  Viewed `.cache/follow-live-layout/follow-off-dark-1440.png` and `follow-error-light-390.png`; other browser
+  captures are saved alongside them. One mechanical scan found 13 pre-existing patterns outside the edited rules.
+  `kerf doctor`: **ALL OK**, existing optional firmware tooling unavailable. Budget/batch/process checks made;
+  no real live-follow request, native app interaction, geometry/build, stress solve, full suite or batch run.

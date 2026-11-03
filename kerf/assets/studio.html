@@ -303,8 +303,10 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .pcard .meta b{display:block;font-size:15px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard .meta span{font-size:12px;color:var(--muted)}
 /* follow live + Work tab */
-.livebar{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.livetog{display:flex;align-items:center;gap:6px;font-weight:620;cursor:pointer;white-space:nowrap}
+.livebar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-bottom:8px}
+.livetog{display:flex;align-items:center;flex:none;gap:6px;font-weight:620;cursor:pointer;white-space:nowrap}
+.livetog input{width:auto;flex:none} /* native WebKit checkboxes otherwise inherit the text fields' full width */
+.livebar>span{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .liveline{margin-top:6px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .liveline b{color:var(--ink);font-family:var(--mono);font-weight:600;margin-right:6px}
 /* Work is an operating view: tasks first, evidence and uncertainty alongside each owner. */
