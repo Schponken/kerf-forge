@@ -1,0 +1,1957 @@
+{
+ "project": "fpv_5in",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "881322a7",
+   "time": "2026-10-30T23:52:01+00:00",
+   "subject": "fpv_5in: project, body/arm/top_plate parts passing kerf check (FEA arm 10.4/11.7 MPa); motor_mount counterbore_depth, stack proxy board size; tests",
+   "parts": [
+    "arm",
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "a3c5a893",
+   "time": "2026-10-31T00:01:19+00:00",
+   "subject": "fpv_5in: DESIGN/REFERENCES, posts clear the arms for a straight key; access check honours assembly.order (screw driven when its later part goes on) + test, docs",
+   "parts": [
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "37e54362",
+   "time": "2026-10-31T00:39:01+00:00",
+   "subject": "fpv_5in review fixes (stack screw tips, XT60 plug access, arm keys, motor grip, camera cage, body FEA, VTX) + engine: screw shank check, blind-thread length tol",
+   "parts": [
+    "arm",
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "151f9906",
+   "time": "2026-10-31T00:44:56+00:00",
+   "subject": "fpv_5in: receiver, battery pad and strap as catalog items, receiver tie point",
+   "parts": [
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "2baea6ca",
+   "time": "2026-10-31T01:31:39+00:00",
+   "subject": "fpv_5in review round 2 fixes: XT60 tie wraps under the connector, top-plate FEA + filled post pillars, camera roof, recessed camera screws, wider arm keys, VTX ",
+   "parts": [
+    "arm",
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "85483f81",
+   "time": "2026-10-31T01:48:39+00:00",
+   "subject": "fpv_5in complete electronics: wiring (12 runs), power_budget, flight_time, XT60 plug access, VTX antenna item; catalog: F405 V4 stack BEC/ESC ratings, TX800 + P",
+   "parts": [
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "fedf03cc",
+   "time": "2026-10-31T02:21:56+00:00",
+   "subject": "fpv_5in review round 3 fixes: width-wise strap loop (keep-outs) clear of the relocated VTX, 95 mm antenna routing, receiver antenna V, tab under the cradle, Bet",
+   "parts": [
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "0c53c1ee",
+   "time": "2026-10-31T02:30:32+00:00",
+   "subject": "fpv_5in: real wire routes (pass route_check), XT60 back to x -59 so its leads turn before the rear pillar, output limit 74 %, battery lead supplied",
+   "parts": [
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "7ea3894a",
+   "time": "2026-10-31T02:55:02+00:00",
+   "subject": "electrical limits become build instructions (WIRING.md section + ASSEMBLY step, capped Loads peak; test); fpv_5in round 4: antenna to +y, XT60 heat-shrink note,",
+   "parts": [
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "b18b8b6f",
+   "time": "2026-10-31T02:58:58+00:00",
+   "subject": "fpv_5in: round 5 PASS review; doc/docstring numbers, XT60 handling notes",
+   "parts": [
+    "arm",
+    "body"
+   ]
+  },
+  {
+   "hash": "4fb3a330",
+   "time": "2026-10-31T03:02:31+00:00",
+   "subject": "fpv_5in: catalog_deps.json (per-project catalog fingerprint)",
+   "parts": []
+  },
+  {
+   "hash": "c9589790",
+   "time": "2026-10-31T03:20:16+00:00",
+   "subject": "engine: nut_trap nut_recess; wire route check covers screw shanks and heads (tests). fpv_5in round 6: arm nuts sunk 1 mm, M3 x 12 tips clear of the phase leads;",
+   "parts": [
+    "arm",
+    "body"
+   ]
+  },
+  {
+   "hash": "5f1fd4aa",
+   "time": "2026-10-31T03:51:27+00:00",
+   "subject": "BOM flags size-only price fallbacks (test); exact M3x12 / M2x12 screw prices; fpv_5in: camera on the 9 V pad, DESIGN numbers",
+   "parts": []
+  },
+  {
+   "hash": "da5b23aa",
+   "time": "2026-10-31T03:54:03+00:00",
+   "subject": "E2 fpv_5in done: review round 8 PASS, acceptance PASS",
+   "parts": []
+  },
+  {
+   "hash": "ba084a4e",
+   "time": "2026-10-31T12:16:00+00:00",
+   "subject": "fpv_5in audit F1-F10: pillar/rib fillets, groove + bed chamfers, nuts sunk 0.5, arm taper + body/top windows (T/W 6.02 on 4-wall mass), body_strength_3, arm def",
+   "parts": [
+    "arm",
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "f31da762",
+   "time": "2026-10-31T12:36:36+00:00",
+   "subject": "fpv_5in: audit B review round 9 PASS (0fffc865b90f4c37); PLAN box, AUDIT rows, STATUS",
+   "parts": []
+  },
+  {
+   "hash": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "subject": "re-reviews after bd486a2's catalog-only change: fpv_5in, pan_tilt, tvc_drone PASS; robot_arm FAIL (gripper stands on its wrist discs: new bed-contact check). bo",
+   "parts": []
+  },
+  {
+   "hash": "c3e2f857",
+   "time": "2026-10-31T22:04:42-04:00",
+   "subject": "Maker-facing reports: units and min/max on every check, device vs off-board mass, held_by/off_board with an unattached-item check, off-board section in ASSEMBLY",
+   "parts": []
+  },
+  {
+   "hash": "9a8f1fbe",
+   "time": "2026-10-31T22:57:28-04:00",
+   "subject": "BOM: every project purchase priced from a shop page; merged notes; biggest packs",
+   "parts": []
+  },
+  {
+   "hash": "a9ba5861",
+   "time": "2026-10-31T23:44:21-04:00",
+   "subject": "WIRING: routes by landmarks, controller pins with header pin numbers, every electrical extra fitted",
+   "parts": []
+  },
+  {
+   "hash": "ed1f9473",
+   "time": "2026-11-01T13:35:58-05:00",
+   "subject": "params state their unit (mm / \u00b0 / teeth) in the six finished projects; test",
+   "parts": []
+  },
+  {
+   "hash": "238771e9",
+   "time": "2026-11-01T14:56:15-05:00",
+   "subject": "fpv_5in arm rework: motor wires in a covered channel on the arm top (rails + tie slots through the rail feet, no mid-depth slots), 0.5 mm key-ridge root fillets",
+   "parts": [
+    "arm"
+   ]
+  },
+  {
+   "hash": "821d7026",
+   "time": "2026-11-01T16:09:42-05:00",
+   "subject": "fillet_inside leaves corners under a ceiling square (a fillet there would overhang) and declares them; detail pass on bionic_finger and fpv_5in (body, top plate",
+   "parts": [
+    "arm",
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "43bebb88",
+   "time": "2026-11-01T17:49:57-05:00",
+   "subject": "fpv_5in: style radii, Load -> section table, declared-corner notes",
+   "parts": []
+  },
+  {
+   "hash": "be817dc2",
+   "time": "2026-11-01T19:31:58-05:00",
+   "subject": "fpv_5in top plate: battery strap notch corners declared (the strap lies in them)",
+   "parts": [
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "e8f3fa74",
+   "time": "2026-11-01T20:04:27-05:00",
+   "subject": "bionic_finger, fpv_5in, tvc_drone: detail pass uses OCC's fillet first (it ran on these bodies before), coves for the rest",
+   "parts": [
+    "arm",
+    "body",
+    "top_plate"
+   ]
+  },
+  {
+   "hash": "fbcb8cc3",
+   "time": "2026-11-01T21:00:25-05:00",
+   "subject": "Use story: project.yaml use_story turned into requirement checks (heat_limit, rain_cover, access_opening, impact_case, story_covered); accepted failures in ASSE",
+   "parts": []
+  },
+  {
+   "hash": "1ce8883c",
+   "time": "2026-11-01T21:13:22-05:00",
+   "subject": "Simulate it moving: impact_fea, stop_impact and natural_freq from one FEA solve's stiffness (fea reports f.u), hand-checked tests; fpv_5in arm_resonance require",
+   "parts": []
+  },
+  {
+   "hash": "9d7fb6ab",
+   "time": "2026-11-01T21:19:12-05:00",
+   "subject": "Failure modes: per-part failure table (report, ASSEMBLY.md, review pack) and weak_link requirement; fpv_5in arm_breaks_first (fails on a real finding: the body ",
+   "parts": []
+  },
+  {
+   "hash": "fa17101d",
+   "time": "2026-11-01T21:19:52-05:00",
+   "subject": "fpv_5in catalog deps (6S 1100 pack, motor kv, prop blades)",
+   "parts": []
+  },
+  {
+   "hash": "fff15e2b",
+   "time": "2026-11-01T21:24:35-05:00",
+   "subject": "Design for life: flex_strain (snap / hinge), creep_limit (documented creep rupture), screw_locking (vibrating projects; ASSEMBLY.md lock list); sourced CF elong",
+   "parts": []
+  },
+  {
+   "hash": "fe2ac80a",
+   "time": "2026-11-01T21:30:29-05:00",
+   "subject": "Docs: requirement table rows for the use-story / dynamic / failure / life checks, kerf optimise; fpv_5in body crash couple written from the arm screw radii (sam",
+   "parts": []
+  },
+  {
+   "hash": "6e6d751c",
+   "time": "2026-11-01T21:33:48-05:00",
+   "subject": "Human factors: repair_access (field-repair parts off the finished device), use-story handles and field_repair, ASSEMBLY.md carrying and field repair notes; fpv_",
+   "parts": []
+  },
+  {
+   "hash": "b8469087",
+   "time": "2026-11-01T21:39:03-05:00",
+   "subject": "Electronics as a circuit: pin-level netlist + SKiDL ERC from wiring, KiCad XT60 + Adafruit PCA9685 3D models",
+   "parts": []
+  },
+  {
+   "hash": "fb33db62",
+   "time": "2026-11-02T08:13:14-05:00",
+   "subject": "fpv_5in optimise run 2 settings (wider steps); STATUS: optimiser run 1 and test state",
+   "parts": []
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "37e54362",
+   "time": "2026-10-31T00:39:01+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 12
+  },
+  {
+   "commit": "2baea6ca",
+   "time": "2026-10-31T01:31:39+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 10
+  },
+  {
+   "commit": "fedf03cc",
+   "time": "2026-10-31T02:21:56+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 10
+  },
+  {
+   "commit": "7ea3894a",
+   "time": "2026-10-31T02:55:02+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 8
+  },
+  {
+   "commit": "b18b8b6f",
+   "time": "2026-10-31T02:58:58+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 8
+  },
+  {
+   "commit": "c9589790",
+   "time": "2026-10-31T03:20:16+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 11
+  },
+  {
+   "commit": "5f1fd4aa",
+   "time": "2026-10-31T03:51:27+00:00",
+   "date": "2026-10-31",
+   "verdict": "FAIL",
+   "findings": 12
+  },
+  {
+   "commit": "da5b23aa",
+   "time": "2026-10-31T03:54:03+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 11
+  },
+  {
+   "commit": "f31da762",
+   "time": "2026-10-31T12:36:36+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 7
+  },
+  {
+   "commit": "123d4b1e",
+   "time": "2026-10-31T13:30:42+00:00",
+   "date": "2026-10-31",
+   "verdict": "PASS",
+   "findings": 8
+  }
+ ],
+ "problems": [
+  {
+   "id": "fpv_5in-1",
+   "source": "review",
+   "severity": "blocker",
+   "part": "arm_1",
+   "issue": "The stack holes (15.25, 15.25) sit at r = 21.57 mm on the arm diagonals, inside the arm's rounded root (centre r = 31, radius 10, so solid from r = 21.0). The M3 x 30 stack screw (22 mm stack + 5 mm body = 27 mm) sticks out 3 mm below the body bottom straight into the arm top. A probe confirms arm material on the screw axis at z = -0.5 to -2.9 and 15.3 mm^3 of overlap with the screw tip. Arms go on before the stack (DESIGN step 3 before step 5), so the stack screws hit the arm before they clamp. M3 x 25 would only catch about 0.4 mm of the nut. Same on all four arms. The interference check mis",
+   "fix": "Move the arm root clear of the stack nuts: arm_r0 >= 35 (root edge at r >= 25, beyond the nut pocket at r = 24.9) and re-run the arm FEA. Alternatively, cut a 4 mm dia x 4 mm deep relief in each arm root top at x = 21.57. Separately, the engine should check the protruding screw tip against neighbouring items.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-2",
+   "source": "review",
+   "severity": "blocker",
+   "part": "top_plate",
+   "issue": "The XT60 cradle closes both ends of the connector. The front end wall (x = -40.35 to -38.45) is solid. The rear end wall (x = -63.55 to -61.95) has only a 6.1 mm slot (|y| < 3.05) for an 8.1 mm wide connector, confirmed by point probes at the cradle mid-height. An XT60 mates along its length, so the battery lead's plug cannot reach the mating face from either end. The solder-cup side is also walled off, so the leads can only leave through the open bottom.",
+   "fix": "Open the mating end of the cradle fully (no end wall across the 8.1 x 16 face). Hold the connector against unplugging pull with a full-width stop behind its housing shoulder, or with the cable tie plus a rear lip that sits only above or below the housing. Leave the solder-cup end open toward the ESC. Then add a check (insert path or keep-out box) for the mating plug's approach along -x.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "151f9906",
+   "resolved_time": "2026-10-31T00:44:56+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 6,
+   "active_minutes_est": 6,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-3",
+   "source": "review",
+   "severity": "major",
+   "part": "body",
+   "issue": "Each arm is held against yaw only by two M3 screws in a line along the arm, 14 mm apart, in printed plastic. A side hit on a motor (the most common freestyle crash: a gate, branch or pole) puts about F x 68 / 14 = 4.9 F of bearing load on each screw. That load goes into the 5 mm body hole and nut pocket, with only 2.3 mm of plastic under the nut. Bearing in that hole crushes at roughly 100 N side load. Friction from screws clamped into plastic drops as the PETG creeps. The damage lands in the body, the part that is not meant to be replaceable, instead of in the arm.",
+   "fix": "Key each arm root into the body: a 1.5-2 mm deep pocket in the body underside shaped like the arm root (or two printed ribs either side), so side loads go into a shoulder and not the screws. If space allows, also spread the screws across the arm (two side by side plus one on the axis) rather than in a line.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-4",
+   "source": "review",
+   "severity": "major",
+   "part": "arm_1",
+   "issue": "Motor screws are M3 x 10 with a 7.0 mm grip, so 3.0 mm goes into the motor. That is exactly the catalog max_screw_depth of 3.0 mm, which is itself only 'typical' (unpublished). There is zero margin for screw length tolerance (ISO 4762 L = 10 is +/-0.29 mm), the printed counterbore floor tolerance, or a slightly shallower flange. A screw touching the stator windings shorts a phase and kills the motor or ESC. Applies to all four arms.",
+   "fix": "Sink the heads 0.5 mm deeper (counterbore_depth = t - 7.5, so 2.5 mm into the motor, matching iFlight's stock M3 x 8 on 5-6 mm arms), or keep 7 mm and specify M3 x 9. Also make the fastener check reject engagement above max_screw_depth minus a tolerance margin.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-5",
+   "source": "review",
+   "severity": "major",
+   "part": "body",
+   "issue": "The camera is unprotected in a crash. The pivot is at x = 48 and the lens sits 13.9 mm ahead of it, about x = 60-62 depending on tilt. The nose and cheeks end at x = 55, so the lens is the first thing to hit in a frontal crash. The cheeks are 3 x 14 mm walls, 18 mm tall, printed upright with no root fillet. A frontal hit bends them across the layer lines (z strength ~29 MPa, no SF check), right at the body-to-cheek layer seam.",
+   "fix": "Extend the cheeks (or a separate bumper) at least 3 mm past the lens front over the whole 0-40 deg range. Thicken the cheeks to 4 mm with r >= 2 mm root fillets into the body, or make the camera cage a separate TPU part, as Source One does.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-6",
+   "source": "review",
+   "severity": "major",
+   "part": "body",
+   "issue": "The body has no fea_static requirement, although it carries all four arm moments and is the part the design says must outlive the arms (ENGINEERING.md section 3b: every structural part). Hand checks show it is no better off than the arm. At the inner arm screw (r = 38), the section across the diagonal is about 40 x 5 mm net (Z ~ 167 mm^3), giving about 33 N x 75 mm / 167 = 15 MPa if the body carries the moment alone, against an allowable of 35/3 = 11.7 MPa. Composite action with the arm reduces that, but nothing proves it. The outer arm screw at r = 52 is 5.5 mm from the body corner, below the",
+   "fix": "Add an fea_static requirement on the body: arm_1 crash moment entering at the arm_1 bolt sites, fixed or balanced at the opposite arm or posts, SF 3. Move arm_hole_2 inward to <= 49, or raise body_half to 46, so the outer screw has >= 6 mm edge distance. The arm should be the weakest link by margin.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-7",
+   "source": "review",
+   "severity": "major",
+   "part": "top_plate",
+   "issue": "There is no provision for a video transmitter, receiver or antenna mount. The brief's analog 19 mm micro camera is useless without a VTX, and a real build needs a VTX (usually a 20x20 M2 or 30.5 stack layer, 4-6 mm) plus an SMA/U.FL antenna holder at the rear and a receiver and antenna tubes. The space under the top plate cannot take a VTX on the stack: stack top at z = 27, M3 heads to ~30, strap under the plate at ~30.5, plate underside at 32.",
+   "fix": "Budget a VTX (catalog entry plus proxy) as a stack layer or a 20x20 mount on the top-plate underside, with raised post_h if needed. Props clear the plate by radius, so height costs no prop margin. Add a rear antenna mount (SMA bulkhead or printed antenna tube holder) and a receiver pocket and cable path.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "151f9906",
+   "resolved_time": "2026-10-31T00:44:56+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 6,
+   "active_minutes_est": 6,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-8",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "The FEA render is inconsistent with the report. The render title says peak 13.93 MPa, but report.json says peak 24.77 MPa with p99.9 at 10.39 MPa against 11.67, an 11% margin. Magenta over-limit spots show at the outer bolt seat. Either the render is stale or the two come from different runs.",
+   "fix": "Regenerate the render from the same solve. After the arm_r0 change, re-check the margin; the outer-screw fulcrum load is not modelled (see the body finding).",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-9",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "Each arm has only one motor-wire tie slot (the loop iterates over a single x), but the BOM and DESIGN say 2 per arm. With one tie, the motor leads flap near the prop over the outer ~45 mm of the arm.",
+   "fix": "Add a second tie slot near the motor pad (e.g. r = motor_r - 20), or correct the BOM to match.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-10",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "The top-plate post counterbores (30, +/-12) sit right against the arm edges. The 5.5 mm screw head passes within about 0.05 mm of the arm root side, and the counterbore (r = 3.05) overlaps the arm footprint by about 0.35 mm, so the arm edge forms part of the counterbore wall. Putting in or swapping these screws with the arms fitted will be fiddly.",
+   "fix": "Move the posts to |y| = 11 or |x| = 28 (both still clear the 45.6 mm ESC) so the head clears the arm by >= 1 mm.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-11",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "Camera M2 x 5 pivot screws pass through 3 mm of cheek plus a 0.5 mm gap, leaving about 1.5 mm (0.75 d) of thread in the camera housing. That is thin for a joint that has to hold tilt through crashes.",
+   "fix": "Use M2 x 6 (about 2.5 mm engagement; confirm the camera's thread depth), or reduce the side gap and use thinner cheek bosses at the screw.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-12",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "Flight stiffness and heat are not verified. A hand calc gives the first arm bending mode at about 165 Hz (EI = 2460 x 2218 N mm^2, 36 g tip mass, 75 mm free length), before allowing for clamp compliance. That sits in the gyro noise band. PETG-CF softens around 70-80 C, close to the temperature of a hard-run 2207 motor sitting directly on the pad.",
+   "fix": "Note it in the build notes (DESIGN already asks for a hover test and Blackbox check). Consider a 1 mm air gap or standoff ring under the motor base, and a stiffer arm section (taller I or rib) if Blackbox shows a resonance around 150 Hz.",
+   "found_commit": "37e54362",
+   "found_time": "2026-10-31T00:39:01+00:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 3462 bytes",
+   "rounds_seen": [
+    "37e54362",
+    "2baea6ca",
+    "fedf03cc",
+    "7ea3894a",
+    "b18b8b6f",
+    "c9589790",
+    "5f1fd4aa",
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "2baea6ca",
+   "resolved_time": "2026-10-31T01:31:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 53,
+   "active_minutes_est": 53,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-13",
+   "source": "review",
+   "severity": "major",
+   "part": "top_plate",
+   "issue": "The XT60 has no working retention, so round-1 blocker 2 is only half fixed. The plug end is now open, which is correct. But the DESIGN and the BOM say the connector is held 'with a cable tie through the side slot', and that slot (x = -47, z = 39 world, 1.6 x 3 mm through both cradle walls) sits inside the connector. The XT60 proxy fills x -61.65..-40.35, |y| <= 4.05, z 29..45, and a probe across the slot hits connector solid from y = -4.0 to +4.0. A tie through it would have to pass through the XT60 housing, so it cannot be fitted. Everything else leaves the connector free. The cradle is open ",
+   "fix": "Give the tie a path around the connector instead of through it. Put two vertical tie slots through the rear tab deck either side of the cradle (outside the 1.6 mm walls, at x of about -47) so the tie wraps under the connector's exposed bottom face and pulls it up into the cradle, or add a short closed floor/lip under the housing. Against unplugging pull, add a stop that bears on the housing's rear",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "85483f81",
+   "resolved_time": "2026-10-31T01:48:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 17,
+   "active_minutes_est": 17,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-14",
+   "source": "review",
+   "severity": "major",
+   "part": "top_plate",
+   "issue": "The top plate has no strength verification, although it is a structural part (ENGINEERING.md section 3b: every structural part gets fea_static). It carries the heaviest item, the 215 g battery plus pad, strap, VTX, receiver and XT60 (about 260 g with the plate), with the battery CG about 24 mm above the plate. All of that sits on four 9 mm posts 38 mm tall, printed upright, so any sideways or fore-aft crash load bends the posts across their layer lines (z strength 29 MPa, SF 3, giving 9.7 MPa). Each foot is held by a single M3 into a heat-set insert with a 6.75 mm deep insert bore at the most ",
+   "fix": "Add `top_strength: fea_static` on top_plate, direction z (posts load across layers), sf 3. Fix it at the 4 post feet (posts group), with a lateral load (y and, as a second case, x) at the battery deck of at least the battery+deck mass x a stated crash acceleration, sized at least like the arm case (2x thrust = 33 N) and ideally 30-50 g. Cheap ways to stiffen the posts if it fails: join each post p",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "85483f81",
+   "resolved_time": "2026-10-31T01:48:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 17,
+   "active_minutes_est": 17,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-15",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "Camera screw engagement was not actually improved. The cheeks were thickened from 3 to 4 mm while the screw grew from M2 x 5 to M2 x 6, so engagement is still 6 - 4 - 0.5 gap = 1.5 mm (0.75 d), the same as round 1. The bom_extra note '~2.5 mm into the camera's own threads' is wrong.",
+   "fix": "Use M2 x 7 (about 2.5 mm engagement) or M2 x 8 if the RunCam side threads are deep enough (measure; the catalog has no thread depth). Correct the BOM note.",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "fedf03cc",
+   "resolved_time": "2026-10-31T02:21:56+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 50,
+   "active_minutes_est": 50,
+   "parts_redrawn": [
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-16",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "The lens is protected front-on but not from above. The cheek tops slope from z = 25 (x <= 56) down to 18 at x = 68 to clear the props. At home tilt (25 deg) the lens centre is at about (60.6, 24.9), and at 40 deg about (58.6, 27.9) plus the barrel radius, while the cheek top there is about 22-23.5. So the upper half of the lens, and at max tilt all of it, stands above the cage. A flat frontal wall hits the cheeks first (good), but a branch, pole or gate edge above about 23 mm hits the lens. In nose-down forward flight the leading edge is the nose bottom, so this mainly matters for climbing hit",
+   "fix": "Add a short cross-bar or brow between the cheek tops at about x 60-64, above the lens sweep and clear of the prop discs (the prop discs are outboard, at |y| > 30 near x = 60), or run the cheeks higher behind x = 56 and shape the slope to stay 3 mm from the discs while covering the lens at 40 deg.",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "fedf03cc",
+   "resolved_time": "2026-10-31T02:21:56+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 50,
+   "active_minutes_est": 50,
+   "parts_redrawn": [
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-17",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "The yaw-key ridges (3 x 1.5 mm, 22 mm long, printed on the arm top) take side loads by bending and shear at their root, which is a layer interface. For a 33 N side hit at the motor (lever about 66 mm to the ridge centre), the linear-bearing distribution gives about 13.5 N/mm peak per ridge: bending about 6.8 MPa plus shear about 4.5 MPa at the root, against 29/3 = 9.7 MPa across layers. The margin is thin, and the arm's in-plane strength is not used.",
+   "fix": "Make the ridges 4 mm wide with a 0.5 mm root fillet, or better, sink the whole arm root 1.5 mm into a body-underside pocket shaped like the arm, so the arm's full 11 mm side faces bear in-plane and the screws stay pure clamp. Either change keeps the arm the replaceable weak link.",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "85483f81",
+   "resolved_time": "2026-10-31T01:48:39+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 17,
+   "active_minutes_est": 17,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-18",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "The VTX screw length does not match the hardware. The fastener check sizes M2 x 12 for an 8 mm grip because the TX800 proxy is an 8 mm solid block. The real board is a single PCB (about 1.6 mm) with a heatsink that does not cover the 20 x 20 corner holes, so an M2 x 12 head would sit about 6 mm below the PCB and clamp nothing unless 6 mm spacers are fitted. Spacers are not in the BOM.",
+   "fix": "Either list 4 x M2 x 6 mm nylon spacers in bom_extra, or keep the 8 mm grip and add the spacers explicitly. Alternatively, size the screw for PCB + washer + boss (M2 x 6 into the 6 mm pilot).",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "85483f81",
+   "resolved_time": "2026-10-31T01:48:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 17,
+   "active_minutes_est": 17,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-19",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "Wire path: the rear post pair (x = -31.5, y = +/-5, 9 mm dia with a 1 mm gap, z 7-45) stands directly between the XT60 solder cups (x = -40.35, y = 0) and the ESC battery pads at the rear-centre of the ESC (x = -22.8). The 12 AWG power leads, and the usual low-ESR capacitor, must detour about 10 mm sideways around the pair. The antenna/receiver tie slots in the rear tab leave only 1.2 mm of material to the tab edge. There is no real antenna mount (only tie slots), so a crash will load the VTX's MMCX socket. (The engine wiring section that would check routing is pending in another session.)",
+   "fix": "Leave a lead channel: drop the rear pair to y = +/-7.5 so a 6 mm gap opens on the centreline (still clear of the 45.6 mm ESC and the arms), or join the pair into one pillar off-centre. Move the antenna slots inboard to |y| = 7 and add a printed MMCX/antenna-tube clip at the rear tab.",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "85483f81",
+   "resolved_time": "2026-10-31T01:48:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 17,
+   "active_minutes_est": 17,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-20",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "Assembly convenience: the stack nut pockets open on the underside, so the 4 nuts fall out while the M3 x 30 screws are started from the top. The arms do not cover them (arm root starts at r = 26 vs the pockets at r = 21.6 + 3.3).",
+   "fix": "Add a note to step 5 of the DESIGN ('hold nuts with tape or a finger from below'), or flip those traps so the hex pockets open on the top under the grommets.",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "fedf03cc",
+   "resolved_time": "2026-10-31T02:21:56+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 50,
+   "active_minutes_est": 50,
+   "parts_redrawn": [
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-21",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "Not graded on mechanics here, but missing for the brief's 'Complete electronics' section, which depends on the wiring engine another session is building: no `wiring:` section, no `power` or `flight_time` requirements, no out/WIRING.md or wiring.svg, no VTX antenna, no camera or receiver antenna as catalog items, no ESC low-ESR capacitor, no wire gauges or lengths, and the BOM has no buy links for wires and connectors.",
+   "fix": "Add these once the wiring/power_budget engine lands (6S 1300 at 4 x 35 A peak = 140 A vs the XT60's 60 A peak rating needs an explicit judgement there).",
+   "found_commit": "2baea6ca",
+   "found_time": "2026-10-31T01:31:39+00:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "2baea6ca"
+   ],
+   "status": "resolved",
+   "resolved_commit": "85483f81",
+   "resolved_time": "2026-10-31T01:48:39+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 17,
+   "active_minutes_est": 17,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-22",
+   "source": "review",
+   "severity": "blocker",
+   "part": "top_plate",
+   "issue": "The battery strap cannot be fitted. The strap slots are 3 x 22 mm at x = +/-18. So the 20 mm strap has to come down one slot, run under the plate from x -18 to +18 and go up the other, and that under-run sits right where the VTX hangs. I probed a 36 x 20 x 1.8 mm strip under the plate (z 43.2-45): it overlaps the top_plate's own VTX bosses by 92 mm^3. The bosses are r 3 at (+/-10, +/-10), so they reach y +/-7..13, inside the strap's y +/-10. Below them sit the 6 mm nylon spacers and the VTX board (z 34-42), so the strap cannot drop under them either. There is about 2 mm to the stack below, and",
+   "fix": "Give the strap a clear under-run and enough length. Either (a) move the VTX off the strap path (for example lower and further back, or onto the body between the stack and the rear pillar) and keep the lengthwise strap but buy a 20 x 300 mm (or 330 mm) strap, or (b) re-cut the slots for a girth strap where nothing hangs under the plate (it needs a clear 20+ mm band in x across the full width), then",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-23",
+   "source": "review",
+   "severity": "major",
+   "part": "xt60",
+   "issue": "Engine change kerf/electrical.py connector_burst_limit: I judge this a loosened check, not sound engineering. (1) It fits one thermal time constant (tau = 209 s, the bulk heating of connector plus wire) to two long-time ratings (30 A for 4 h, 60 A for 1 min, both stated as '< 60 C rise', so neither is exactly at the limit). It then extrapolates 12 times shorter than the shortest published time, to 194.9 A: 3.25 times the highest rating anyone publishes and 6.5 times the continuous rating. Short-time heating of a contact is set by the small local mass of the contact spot and pin, not the 209 s ",
+   "fix": "Revert the extrapolation, or cap it at a conservative physical bound: never above the adiabatic limit of the contact pair (sourced contact resistance and pin mass), and never below the wire's own rise on the same run. Then make the design pass honestly, using one of: a cited realistic full-throttle burst length for 5-inch freestyle (from Blackbox logs or a published source) as `burst_s`; a real Be",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-24",
+   "source": "review",
+   "severity": "major",
+   "part": "top_plate",
+   "issue": "Neither antenna can reach where it is modelled or described. VTX: the catalog Foxeer Lollipop 4 Plus is 60 mm from connector to tip, including a 17 mm head, so the head centre is at most about 51 mm from the MMCX. The TX800's nearest edge is at x = -14 (centred under the plate), and the modelled head centre is at (-71, -10.5, 56.5): 59 mm in a straight line. The described route (under the tab, tied, then up past the tab end at x -62) is about 65 mm or more. This 'tube' antenna is also stiff and is meant to stand straight off its MMCX, not be tied along a plate. Receiver: since the receiver mov",
+   "fix": "VTX: buy a longer MMCX Lollipop (Foxeer makes 90-150 mm versions; add the catalog entry with its source), or let the 60 mm tube stand straight off the VTX through a printed antenna-tube holder at the plate edge near the VTX, staying above the prop plane. Then move the vtx_ant proxy to where it really sits. Receiver: mount the T elements at the front (tie slots or a printed V-holder at the roof ton",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-25",
+   "source": "review",
+   "severity": "major",
+   "part": "top_plate",
+   "issue": "The brief's graded line 'the BOM lists every wire, connector and electrical part with a buy link' is not met. All six silicone-wire rows (AWG 12/18/26/28) have an empty Buy column, because wiring_out.wire_link reads catalog/prices.json, which does not exist. The cable ties, nylon spacers, washers and grommets have no link either.",
+   "fix": "Add sourced buy links for each wire gauge (wherever wiring_out.wire_link looks, or a catalog `buy` field), plus the ties and spacers. Check that bom.md shows a link on every electrical row.",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-26",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "XT60 retention against unplugging is friction only. The tie now wraps under the connector, which is correct, and holds it up. But nothing bears on the housing when the battery plug is pulled rearward through the open end, and the front stops still sit at the solder-cup tips, so the housing seats 5-7 mm inside the walls. In practice a hard-cinched tie usually holds, but it is the weak point when the pack is unplugged.",
+   "fix": "Add a 1 mm lip at the rear end above the housing's top edge, clear of the 8.1 x 16 mating face, or a tie groove or notch that bears on the housing step. Keep the probe that shows the tie path is clear.",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-27",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "Camera field of view (estimate, Phoenix 2 at 155 deg diagonal on 4:3, roughly 124 x 93 deg). At 0 deg tilt the cheek tips (x 62-68, |y| 10) sit about 58 deg off the lens axis, inside the roughly 62 deg half-width, so they will show at the image sides at low tilt. At 35-40 deg tilt the roof tongue's front corners, (58, +/-12, 45), come about 60 deg off axis toward the top edge and may show in the top corners. At the 25 deg home tilt both are out of view. Protection from above is now partial: the roof stops 4-7 mm behind the lens front.",
+   "fix": "Check this on the bench with the camera fitted. If the cheeks show, chamfer their inner front edges to about 45 deg. If the roof corners show at max tilt, round the tongue's front corners with a larger radius.",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc",
+    "7ea3894a",
+    "b18b8b6f",
+    "c9589790",
+    "5f1fd4aa",
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "b18b8b6f",
+   "resolved_time": "2026-10-31T02:58:58+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 37,
+   "active_minutes_est": 37,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-28",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "Phase-wire model. The runs are 18 AWG, 175 mm, 'the motor's own leads extended where needed', and the BOM buys 2.1 m of 18 AWG. The XING2's own lead gauge and length are not in the catalog. If they are 20 AWG (common on 2207s), the engine's own 60 K-in-5 s rule would fail on them, since rise scales with 1/A^2, giving about 150 K at 35 A. If they are long enough to reach the ESC (about 110 mm needed), no extension is needed at all. Also, bat_lead is 'the pack's own lead', but its 200 mm is still included in the 0.4 m of 12 AWG to buy.",
+   "fix": "Add the motor lead gauge and length to the catalog from the iFlight page. Model ph1-4 as the real leads (or keep 18 AWG extensions with solder joints, consistently). Exclude bat_lead from the wire purchase.",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-29",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "Flight time is reported as 13.08 min at hover, from momentum theory with FM 0.5 and eta 0.75 (93.5 W for 558 g). Thrust tables for 2207/5.1-inch on 6S suggest real hover is nearer 110-140 W, and freestyle is 3-5 min on a 1300 pack. The requirement (>= 3 min) passes either way, but 13 min will mislead Spencer.",
+   "fix": "Label it 'hover-only, ideal estimate' in WIRING.md and DESIGN, and give a freestyle expectation of 3-5 min, or catalogue the iFlight throttle table and use measured hover current.",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-30",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "Small craft issues. (1) The XT60 cradle walls run to x = -63.55 but the rear tab ends at -62, so 1.55 mm of each 1.6 mm wall starts in mid-air in the upside-down print (a small unsupported ledge). (2) bom_extra `item: M2 x 6 mm nylon spacer (round, 4 mm OD)` sits inside a YAML flow mapping, so the comma cuts it off: the BOM reads 'M2 x 6 mm nylon spacer (round' and '4 mm OD)' becomes a stray key.",
+   "fix": "Clip the cradle to the tab end, or extend the tab 2 mm. Quote the BOM item string.",
+   "found_commit": "fedf03cc",
+   "found_time": "2026-10-31T02:21:56+00:00",
+   "review_round": 3,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "fedf03cc"
+   ],
+   "status": "resolved",
+   "resolved_commit": "0c53c1ee",
+   "resolved_time": "2026-10-31T02:30:32+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 9,
+   "active_minutes_est": 9,
+   "parts_redrawn": [
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-31",
+   "source": "review",
+   "severity": "major",
+   "part": "stack",
+   "issue": "The `power` pass depends on a Betaflight setting that the build package never tells Spencer to make. On the mechanism itself: Betaflight `motor_output_limit` is real. It is applied in the mixer to every motor's final output. On the BLHeli_S 55 A ESC there is no firmware current limit at all, so this output cap is the only cap available, and it is the same kind of cap tvc_drone uses (MOT_SPIN_MAX). I accept it as an honest configured cap under ENGINEERING.md 10b, with one condition: it has to actually be configured. Today `set motor_output_limit = 74` appears only in DESIGN.md (assembly step 9)",
+   "fix": "Engine (general, so tvc_drone gets it too): in wiring_out / ship, print every `electrical.limits` entry with its `why` as a 'Configure before the first flight' section in WIRING.md, plus a numbered final step in ASSEMBLY.md's electrical list (here: Betaflight CLI `set motor_output_limit = 74`, `save`, then check the Blackbox/OSD current peak on the first punch-out). In the WIRING.md Loads table, s",
+   "found_commit": "7ea3894a",
+   "found_time": "2026-10-31T02:55:02+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "7ea3894a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "b18b8b6f",
+   "resolved_time": "2026-10-31T02:58:58+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 4,
+   "active_minutes_est": 4,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-32",
+   "source": "review",
+   "severity": "minor",
+   "part": "stack",
+   "issue": "The cap's current estimate is slightly optimistic, and the comment calls it conservative. project.yaml and DESIGN.md say 35.08 x 0.74^3 = 14.22 A is 'on the high side' because motor efficiency rises at part load. The direction is wrong. At 74 % duty the I*R drop shrinks faster than the drive voltage, so loaded rpm falls by less than 26 %. With roughly 60 mOhm of motor + ESC resistance, rpm comes out near 0.756 of full rather than 0.74. Battery current = duty x motor current = 0.74 x 0.756^2 x 35.08, about 14.8 A per motor, so roughly 60-61 A total against the 60 A rating. A full pack (25.2 V a",
+   "fix": "Correct the wording: the propeller-law current is a central estimate, not an upper bound. Make the first-flight Blackbox/OSD current check the gate (peak <= 60 A on a full pack, else lower the limit by 1-2 %). Optionally catalogue the iFlight throttle table (it lists current at 50/60/75 % throttle) and use the measured 75 % row instead of the scaling law.",
+   "found_commit": "7ea3894a",
+   "found_time": "2026-10-31T02:55:02+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "7ea3894a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "b18b8b6f",
+   "resolved_time": "2026-10-31T02:58:58+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 4,
+   "active_minutes_est": 4,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-33",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "The XT60 pigtail has very little room to turn. The 12 AWG leads (3.6 mm OD, catalog wire.silicone) leave the cradle's front stops at x -44.55 on the centreline (pins stacked in z). They must be at |y| >= 14.3 (pillar half-width 12.5 + wire radius) by the rear pillar face at x -37.5. That is 14.3 mm sideways in 7 mm forward, about a 5 mm centreline bend radius (1.4 x OD), right at the solder cup. The BOM's '20 mm' heat-shrink over that joint would run past x -37.5 into the pillar. The route check passes because its tube model has no bend radius and no stiff joint section. It can be built with f",
+   "fix": "Either add a build note (solder the leads pre-bent at 90 deg towards -y, use 8-10 mm heat-shrink on the 12 AWG joints, and change the BOM line), or give the turn about 8 more mm: move the XT60 to x -67 with the tab to -80, or narrow the rear pillar's y extent on the lead side.",
+   "found_commit": "7ea3894a",
+   "found_time": "2026-10-31T02:55:02+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "7ea3894a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "b18b8b6f",
+   "resolved_time": "2026-10-31T02:58:58+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 4,
+   "active_minutes_est": 4,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-34",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "The single battery strap sits 14.5 mm ahead of the pack's centre (band x 4.5..24.5 on a pack spanning x -41..41), because the VTX takes up x -27.5..0.5 underneath. The rear 55 mm of the pack is held only by the pad's friction and can lift or yaw about the strap in hard manoeuvres and crashes. I probed the strap loop itself and it is now correct (see summary).",
+   "fix": "Acceptable as is, with the anti-slip pad. If the pack shifts in testing, add a second strap band at x about -36 (the gap between the rear pillar and the tab), or move the VTX 6-8 mm further back so the band can sit closer to x 0.",
+   "found_commit": "7ea3894a",
+   "found_time": "2026-10-31T02:55:02+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "7ea3894a",
+    "b18b8b6f",
+    "c9589790",
+    "5f1fd4aa",
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ba084a4e",
+   "resolved_time": "2026-10-31T12:16:00+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 561,
+   "active_minutes_est": 149,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-35",
+   "source": "review",
+   "severity": "minor",
+   "part": "vtx_ant",
+   "issue": "The antenna head (x -83.5..-72.5, y -16..-5, z 48-68) and its tube bending up past the tab end (z about 43-48 at y -10.5) sit right where the fingers grip the battery's XT60 plug to plug it in and pull it out (plug at x -70..-79, |y| <= 4, z 29-45). The connector_access probe only sweeps the 8.1 x 16 mm connector section, not a hand. Each battery swap will catch the antenna. It is clear of the prop discs: 16.5 mm above prop_3.",
+   "fix": "Mirror the antenna to the +y side, or move its exit forward of the plug zone (up through a slot at about x -45, y -12), so that y -12..+12 behind the tab is free for fingers.",
+   "found_commit": "7ea3894a",
+   "found_time": "2026-10-31T02:55:02+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "7ea3894a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "b18b8b6f",
+   "resolved_time": "2026-10-31T02:58:58+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 4,
+   "active_minutes_est": 4,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-36",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "Stale and missing numbers in the documents. DESIGN.md line 30 still reads '-> 12.6 (requirement >= 6)'. Line 115 says '73 %' where everything else says 74 %. The risks list says 'Flight time 13 min' where the report says 11.96. WIRING.md's headline 'hover time 11.96 min' still has no 'ideal hover-only estimate; freestyle about 3-5 min' caveat (round-3 fix; it reached only the requirement's `why`). XT60 mass is 0.0 g in the report (no weight_g in the catalog). The battery's own lead length (140 mm, `supplied`) is assumed, not catalogued. The motor phase lead gauge and length are still not catal",
+   "fix": "Fix the three DESIGN.md lines. Make wiring_out print the estimate caveat. Add XT60 weight_g (Amass, about 4 g per pair) and the CNHL lead length/gauge and the XING2 lead gauge/length to the catalog, each with a source.",
+   "found_commit": "7ea3894a",
+   "found_time": "2026-10-31T02:55:02+00:00",
+   "review_round": 4,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "7ea3894a"
+   ],
+   "status": "resolved",
+   "resolved_commit": "b18b8b6f",
+   "resolved_time": "2026-10-31T02:58:58+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 4,
+   "active_minutes_est": 4,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-37",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "The 8-10 mm heat-shrink note for the XT60 pigtail is in WIRING.md, ASSEMBLY.md and DESIGN.md, but the generated BOM still lists 'heat-shrink for AWG 12 joints, 20 mm pieces' (row 35). That is the length the note says reaches the rear pillar. The turn itself is still tight: the leads pass the front stops at x -44.85 and must be at |y| >= about 12-14 by the pillar's rounded end at x -37.5..-33, which means two 90 deg bends of about 5 mm radius in 12 AWG silicone. It is buildable with the pre-bend, and the pillar's rounded ends give a little room.",
+   "fix": "Make the AWG 12 heat-shrink BOM row 10 mm (a bom_extra override or a per-run heat-shrink length in the wiring entry), so the shopping list matches the instruction.",
+   "found_commit": "b18b8b6f",
+   "found_time": "2026-10-31T02:58:58+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "b18b8b6f",
+    "c9589790"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c9589790",
+   "resolved_time": "2026-10-31T03:20:16+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-38",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "Nothing positively stops the XT60 from pulling out rearward. The front stops take the plugging-in force, but against the 20-40 N it takes to unplug an XT60, only the cable tie's friction holds the male connector (the cradle is open at the rear). Unplugging the battery every flight can walk the connector out of the cradle and load the pigtail's solder joints at the ESC pads.",
+   "fix": "Add a 0.8-1 mm lip at the cradle's rear edge that clips behind the housing's mating face (the plug only needs the 8.1 x 16 mm opening), or a second tie through slots at x about -66. At the least, add a build note: hold the XT60 body when unplugging.",
+   "found_commit": "b18b8b6f",
+   "found_time": "2026-10-31T02:58:58+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "b18b8b6f",
+    "c9589790",
+    "5f1fd4aa",
+    "da5b23aa",
+    "f31da762",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-39",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "The generated ASSEMBLY.md never says to drop the 12 M3 nuts into the arm and stack nut pockets, or to tape the stack nuts, whose pockets open downward. It also puts every soldering step after the top plate, battery and strap are on. DESIGN.md has the correct order (nuts in step 2, solder in step 5 before the top plate). The source docstrings are stale: arm.py says the arm screws are M3 x 12 (BOM and fastener check: M3 x 14), and body.py says the post screws are M3 x 6 (BOM: M3 x 8).",
+   "fix": "Engine: for nut_trap receivers, add a 'press N nuts into <part> pockets' line before the step that drives the screws (and say so when a pocket opens downward). Let a project put the electrical steps before a named mechanical step (here, before top_plate). Fix the two docstrings.",
+   "found_commit": "b18b8b6f",
+   "found_time": "2026-10-31T02:58:58+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "b18b8b6f",
+    "c9589790",
+    "5f1fd4aa",
+    "da5b23aa",
+    "f31da762",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-40",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "Some DESIGN.md numbers no longer match report.json. Printed mass is given as 145 g (report: 149.5 g). The FEA results are given as arm 9.8, body 9.8 and top plate 7.7 / 8.7 MPa (report: 9.50, 9.61, 7.03, 8.86). Gaps carried from round 4: the XT60 has no weight_g in the catalog, so the report counts it as 0.0 g; the battery's 140 mm lead (`supplied`) and the motor phase lead gauge/length are assumed, not catalogued.",
+   "fix": "Update the DESIGN.md numbers. Add XT60 weight_g (about 4 g for a pair, Amass), plus the CNHL lead length/gauge and the XING2 lead gauge/length, each with a source.",
+   "found_commit": "b18b8b6f",
+   "found_time": "2026-10-31T02:58:58+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "b18b8b6f",
+    "c9589790"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c9589790",
+   "resolved_time": "2026-10-31T03:20:16+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-41",
+   "source": "review",
+   "severity": "minor",
+   "part": "stack",
+   "issue": "Carried, now handled in the documents: the 14.22 A per motor under the cap is a central propeller-law estimate. With rpm falling by less than duty at part load and the full pack at 25.2 V instead of 24 V, the real peak could be about 60-66 A against the XT60's 60 A rating, which Holybro gives for 1 minute. The 5 s bursts make this physically fine, and step 13 now gates first flights on the Blackbox/OSD peak.",
+   "fix": "None needed beyond the documented gate. If the measured peak is over 60 A, lower motor_output_limit by 1-2 % and re-check twr (6.18 leaves about 3 % margin).",
+   "found_commit": "b18b8b6f",
+   "found_time": "2026-10-31T02:58:58+00:00",
+   "review_round": 5,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4691 bytes",
+   "rounds_seen": [
+    "b18b8b6f",
+    "c9589790",
+    "5f1fd4aa",
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "c9589790",
+   "resolved_time": "2026-10-31T03:20:16+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 21,
+   "active_minutes_est": 21,
+   "parts_redrawn": [
+    "arm",
+    "body"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-42",
+   "source": "review",
+   "severity": "major",
+   "part": "body",
+   "issue": "The motor phase wires rest on the arm screw tips. Each arm's two M3 x 14 screws seat at z -6 (arm counterbore) and end at z +8. The nut pocket is 2.7 mm deep from the body top (nut at z 4.3-6.7), so each thread end stands 1.0 mm above the body top (z 7) at r 38 and r 52, on the arm centreline. The wiring routes ph1-ph4 along exactly that line, at z 9 between the two ribs (local [24,0,9] -> [64,0,9]). With 18 AWG silicone (2.1 mm OD), the bottom of the bundle is at z 7.95, so the middle conductor lies on both cut thread ends of every arm, 8 contact points in all. The cable ties at the arm pull ",
+   "fix": "Geometry fix, preferred: in body.py, deepen the 8 arm nut pockets by 1.0 mm (hex from z 3.3 to 7; 3.3 mm of plate stays under the nut) and drop to M3 x 12. The tip then ends at z 6, 0.3 mm past the nut and 1 mm below the top face. Re-run body_strength, because the inner-nut pull-down is the body's load case. Alternatives: cover the screw tips with a 2 mm printed saddle or raised wire bed between t",
+   "found_commit": "c9589790",
+   "found_time": "2026-10-31T03:20:16+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "c9589790"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5f1fd4aa",
+   "resolved_time": "2026-10-31T03:51:27+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 31,
+   "active_minutes_est": 31,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-43",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "The build documents never call for a thread-locker. The motor screws are steel into the motor's aluminium base and the arm screws use plain M3 nuts, on a vibrating airframe. Motor screws backing out is a classic 5-inch failure.",
+   "fix": "Add 'blue (medium) thread-locker on the 16 motor screws; nylon-insert or thread-locked nuts on the arm screws' to the build notes and the BOM. Keep thread-locker off the plastic and away from the nylon VTX spacers.",
+   "found_commit": "c9589790",
+   "found_time": "2026-10-31T03:20:16+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "c9589790"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5f1fd4aa",
+   "resolved_time": "2026-10-31T03:51:27+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 31,
+   "active_minutes_est": 31,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-44",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "The arm prints top-up, so the M3 counterbores (motor: 3.5 mm deep; arm root: 5 mm) open on the bed face. Each counterbore ceiling is an unsupported 6 mm annulus round the 3.4 mm hole, where the screw head seats. It prints, but it droops unless it is bridged properly.",
+   "fix": "Turn on the slicer's hole-bridging or sacrificial-layer option, or add a 0.2 mm sacrificial layer at the counterbore ceiling in the part and drill it out. Check that the screw heads seat flat.",
+   "found_commit": "c9589790",
+   "found_time": "2026-10-31T03:20:16+00:00",
+   "review_round": 6,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "c9589790"
+   ],
+   "status": "resolved",
+   "resolved_commit": "5f1fd4aa",
+   "resolved_time": "2026-10-31T03:51:27+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 31,
+   "active_minutes_est": 31,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-45",
+   "source": "review",
+   "severity": "major",
+   "part": "body",
+   "issue": "The BOM buy links are for the wrong screw lengths. bom.md row 'M3 x 12 mm socket head screw' (8 off, the arm screws) links to Zoro SC22030080, an 'M3 ... 8 mm L, 100 PK'. catalog/prices.json has no 'screw:M3x12:socket', so ship.py falls back to 'screw:M3:socket', which is an M3 x 8 pack (it was an exact M3 x 14 entry in round 6, so the M3 x 12 change caused this). The row 'M2 x 12 mm socket head screw' (4 off, VTX) has the same fault: it links to the M2 x 6 pack SC22020060. The row price is also taken from the wrong pack. An M3 x 8 from below with a 6 mm grip ends at z 2, short of the nut seat",
+   "fix": "Add exact 'screw:M3x12:socket' and 'screw:M2x12:socket' entries to catalog/prices.json, each with a real, opened source URL for that length. Engine (general): when a BOM row is priced from a size-only fallback key, either make that key point at a real assortment, or print a note in the row ('link is an M3 x 8 pack; buy M3 x 12') and add a warning to the report, so a wrong length can never be bough",
+   "found_commit": "5f1fd4aa",
+   "found_time": "2026-10-31T03:51:27+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "5f1fd4aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "da5b23aa",
+   "resolved_time": "2026-10-31T03:54:03+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 3,
+   "active_minutes_est": 3,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-46",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "Round-6 major, now resolved. The only remaining exposure: each arm nut now sits at the bottom of an open 1 mm deep hex well (about 5.8 mm across flats) on the phase-wire line, with the thread end 1 mm below the top face and 0.3 mm above the nut. Soft 18 AWG silicone pressed into the well by a tie or a crash could still reach the thread end, but only if it bends to a radius of about 4 mm. That is unlikely.",
+   "fix": "Optional: after the arms are torqued, put a dab of hot glue or RTV in each of the 8 wells, or a 25 mm strip of Kapton under each phase bundle. Add one line to the build notes.",
+   "found_commit": "5f1fd4aa",
+   "found_time": "2026-10-31T03:51:27+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "5f1fd4aa",
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ba084a4e",
+   "resolved_time": "2026-10-31T12:16:00+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 505,
+   "active_minutes_est": 93,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-47",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "Thread engagement in the sunk nut is near the minimum. The tip is only 0.3 mm past the nut top. The M3 x 12 length tolerance is +/-0.35 mm (js15) and the tip chamfer is about 0.5 mm, so a short screw fully engages only about 1.8-2.2 mm of the 2.4 mm nut. The thread-stripping strength is still well over 1 kN against the 144 N design load, so this is not a strength problem. But no thread shows past the nut, so a nylon-insert nut cannot be used and the joint relies on threadlocker.",
+   "fix": "Accept it, and keep the blue threadlocker on these 8. In the build notes, say to check that the screw end is flush with or past the top of the nut.",
+   "found_commit": "5f1fd4aa",
+   "found_time": "2026-10-31T03:51:27+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "5f1fd4aa",
+    "da5b23aa",
+    "f31da762",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-48",
+   "source": "review",
+   "severity": "minor",
+   "part": "stack",
+   "issue": "WIRING.md shows the camera supply at 4.988-4.99 V against the catalog's 5.0 V minimum ('sags'), because 28 AWG over 110 mm sits on the 5 V rail. In practice it is harmless, but the generated sheet shows the camera below its rated input.",
+   "fix": "Power the camera from the stack's 9 V pad (the Phoenix 2 accepts 5-36 V per the catalog, and the BEC is rated 3 A), or use 26 AWG for cam_5v. Either gets rid of the sag row.",
+   "found_commit": "5f1fd4aa",
+   "found_time": "2026-10-31T03:51:27+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "5f1fd4aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "da5b23aa",
+   "resolved_time": "2026-10-31T03:54:03+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 3,
+   "active_minutes_est": 3,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-49",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "DESIGN.md numbers are stale after this round. It says body FEA is 9.6 MPa, but report.json now gives 10.15 MPa (p99.9, limit 11.67) with the load on the sunk nut seat. The arm envelope is given as 102 x 32 x 12.5, but the part is 103 x 32 x 12.5. The XT60 still has no weight_g, and the CNHL lead and XING2 lead gauge and length are still not catalogued (carried).",
+   "fix": "Update the body FEA figure and the arm envelope. Add XT60 weight_g and the lead data to the catalog, each with a source.",
+   "found_commit": "5f1fd4aa",
+   "found_time": "2026-10-31T03:51:27+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "5f1fd4aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "da5b23aa",
+   "resolved_time": "2026-10-31T03:54:03+00:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 3,
+   "active_minutes_est": 3,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-50",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "Carried. The counterbore ceilings in the arms and top plate open on the bed face and print as mid-air rings. This is documented in DESIGN.md only.",
+   "fix": "Turn on hole bridging / a sacrificial layer in the slicer, or model a 0.2 mm sacrificial layer. Put the note in the 3MF/ASSEMBLY output.",
+   "found_commit": "5f1fd4aa",
+   "found_time": "2026-10-31T03:51:27+00:00",
+   "review_round": 7,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "5f1fd4aa",
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ba084a4e",
+   "resolved_time": "2026-10-31T12:16:00+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 505,
+   "active_minutes_est": 93,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-51",
+   "source": "review",
+   "severity": "minor",
+   "part": "stack",
+   "issue": "Carried. The XT60 has no weight_g (it counts as 0 g in the mass budget), and the XING2 motor lead and CNHL pack lead gauge and length are not in the catalog. Separately, the WIRING.md loads table still uses the camera's 0.2 A draw at 5 V. At 9 V it draws about 0.08-0.1 A per the catalog note, so the table is conservative and harmless.",
+   "fix": "Add XT60 weight_g (about 9 g with its housing) and the lead data to the catalog, each with a source. Optional: give the camera load a per-voltage current.",
+   "found_commit": "da5b23aa",
+   "found_time": "2026-10-31T03:54:03+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ba084a4e",
+   "resolved_time": "2026-10-31T12:16:00+00:00",
+   "resolved_how": "first commit after the finding that redrew any part (its own part was not touched)",
+   "wall_minutes": 502,
+   "active_minutes_est": 90,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-52",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "New, documentation only. The new screw:M2x12:socket price entry is a third-party Walmart listing ('Unique Bargains', 20 pcs). Its note names the right product (M2 x 12, 12.9, socket head), but neither it nor the Zoro M3 x 12 page could be opened in this review (Zoro 403, Walmart bot wall). Third-party Walmart listings tend to go stale.",
+   "fix": "Optional: when you next refresh prices, add a second source for M2 x 12 DIN 912 from a stable distributor (Zoro, McMaster, Accu).",
+   "found_commit": "da5b23aa",
+   "found_time": "2026-10-31T03:54:03+00:00",
+   "review_round": 8,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 4961 bytes",
+   "rounds_seen": [
+    "da5b23aa"
+   ],
+   "status": "resolved",
+   "resolved_commit": "ba084a4e",
+   "resolved_time": "2026-10-31T12:16:00+00:00",
+   "resolved_how": "first commit after the finding that redrew its part",
+   "wall_minutes": 502,
+   "active_minutes_est": 90,
+   "parts_redrawn": [
+    "arm",
+    "body",
+    "top_plate"
+   ],
+   "target_redrawn": true
+  },
+  {
+   "id": "fpv_5in-53",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "FEA is judged on the engine's 99.9th-percentile stress. The body passes at 10.76 MPa against 11.67. The volume peak is 20.7 MPa and the surface peak 15.6 MPa, both above the 11.67 allowable. The hot spot is the rib-to-plate junction at the arm_1 screws, which is where the load goes, but it has little margin if the p99.9 convention hides a real concentration.",
+   "fix": "Print a spare body and a crash-test arm_1 load coupon, or add 1 mm more rib root fillet / a wider rib foot. Do not lower the 3 SF.",
+   "found_commit": "f31da762",
+   "found_time": "2026-10-31T12:36:36+00:00",
+   "review_round": 9,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 7639 bytes",
+   "rounds_seen": [
+    "f31da762",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-54",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "T/W is 6.02 against a 6.0 floor, on a 161 g printed-mass estimate and a 74 % output cap. DESIGN.md says 3 g of extra print mass fails it. The pillars run across the layers at 7.0 / 9.0 MPa against 9.67, so that margin is also thin.",
+   "fix": "Weigh the printed parts before flying. If heavy, widen the lightening windows in the top plate and body, not the pillars. Keep the 4-wall setting on the pillars.",
+   "found_commit": "f31da762",
+   "found_time": "2026-10-31T12:36:36+00:00",
+   "review_round": 9,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 7639 bytes",
+   "rounds_seen": [
+    "f31da762",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-55",
+   "source": "review",
+   "severity": "minor",
+   "part": "body",
+   "issue": "The 14.22 A per motor at the 74 % limit is a propeller-law estimate, not a firmware limit. BLHeli_S has no current limit, and peak 57.5 A sits against the XT60's 60 A rating. The brief's twr contract assumes catalog thrust x 4, and this project uses a reduced 3691 g.",
+   "fix": "Keep the Blackbox/OSD punch-out gate as a mandatory first-flight step. Consider an XT90 or an AM32 ESC if the logged peak is above 55 A.",
+   "found_commit": "f31da762",
+   "found_time": "2026-10-31T12:36:36+00:00",
+   "review_round": 9,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 7639 bytes",
+   "rounds_seen": [
+    "f31da762",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-56",
+   "source": "review",
+   "severity": "minor",
+   "part": "arm_1",
+   "issue": "The motor-screw edge-distance warnings (88 % of the ring is material on the arm pad, 46-50 % at the top-plate insert and VTX pilot holes) are forced by the purchased hole patterns. The motor M3 x 10 gives only 2.5 mm thread engagement in a motor whose thread depth is typical, not published, so the 0.5 mm margin to the windings is unverified.",
+   "fix": "Measure the thread depth of one motor before tightening all 16 screws (already in DESIGN.md risks). Add a note to the top-plate heat-set inserts to be pressed slowly to avoid splitting the 46 % ring.",
+   "found_commit": "f31da762",
+   "found_time": "2026-10-31T12:36:36+00:00",
+   "review_round": 9,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 7639 bytes",
+   "rounds_seen": [
+    "f31da762",
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "fpv_5in-57",
+   "source": "review",
+   "severity": "minor",
+   "part": "top_plate",
+   "issue": "New since round 9 (engine check added in d3677bb): report.json warns that the bom_extra row 'M2 x 6 mm button head screw' duplicates the fastener check's M2 screws. It is a false positive: the 2 x M2 x 6 button heads are the camera pivots, the 4 x M2 x 12 socket heads are the VTX screws, and the BOM correctly lists both. A builder reading the warning could still drop the camera screws.",
+   "fix": "Engine: compare length and head type before calling a bom_extra row a duplicate, or let a row carry a 'distinct from group X' reason that silences the warning. No geometry change needed.",
+   "found_commit": "123d4b1e",
+   "found_time": "2026-10-31T13:30:42+00:00",
+   "review_round": 10,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "3 real part files, median 7639 bytes",
+   "rounds_seen": [
+    "123d4b1e"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 57,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 57
+  },
+  "open": 0,
+  "active_minutes_est": 1603,
+  "parts_redrawn": [
+   "arm",
+   "body",
+   "top_plate"
+  ],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}

@@ -1,0 +1,17 @@
+[
+ "bearings.608",
+ "bearings.625",
+ "drone.props.hq_7x4x3",
+ "fdm_fits.pin",
+ "fdm_holes.M5",
+ "materials.PETG",
+ "motion.latex_tubing",
+ "motion.qr_pin_6mm",
+ "motion.rod_8mm_smooth",
+ "motion.vslot_2040",
+ "motion.vwheel_delrin_solid",
+ "rods.alu_tube_20x1_5",
+ "rods.ss_rod_5",
+ "screws.M5",
+ "tools.hex_key"
+]

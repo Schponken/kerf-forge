@@ -480,6 +480,33 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   pushed and claim-free (e.g. Studio sets an env var or a .claude/state/STUDIO_JOB marker that stop_gate honours).
 - (Claude, 2026-11-02, notifications) Clicking a notification opens what it is about: pop-ups carry a target (`kerfOpen`: project:<p>:<tab> / job:<id> / new; failures open Checks, tries Tune, builds 3D); the Mac app posts real desktop notifications (UserNotifications) that call kerfOpen on click, and the server's osascript one (which opened Script Editor) is skipped while the app is open; jobs that finish while not watched now notify too; Activity rows open their project. tests/test_notify_targets.py.
 
+## 2026-11-02 23:10 UTC — Validate physical mass inputs (Codex, mass-input-validation)
+- Reproduced on a synthetic 10 mm cube: walls=-10 gave -1.105 g; infill=2 gave 1.87 g against 1.25 g solid;
+  walls=2.5 counted 2.5 loops in mass but exported 2. NaN/Inf infill reached physical mass; NaN/Inf walls could
+  saturate shell volume and then crash integer print output. Purchased mass_g=-5/NaN/Inf passed loading unchanged.
+- Shared scalar validation now rejects nonfinite/boolean inputs, infill outside [0,1], non-whole or negative walls,
+  and negative explicit purchased mass_g. Project loading reports item/field paths before geometry; direct mass,
+  cached-mass, shell-volume and print-output paths use the same rules. Numeric wall strings including "2.0" normalize
+  consistently with numeric 2.0. Zero/one infill, zero walls, 2/4-wall defaults and missing/zero purchased-mass warnings
+  retain their semantics. Purchased specs must be mappings; modifier collections lists of mappings with valid scalars.
+- Local modifier validation does not alter the whole-part mass or FEA model. Geometry, density/catalog values,
+  formulas, structural thresholds and solver behavior are unchanged. Pending mixed-manufacturing PR13's early
+  manufactured-part branch must retain its continue before these FDM-only input checks during integration.
+- Read-only doctor ALL OK with shared existing dependencies; optional firmware tools remain unavailable. Batch
+  status/process checks preceded each focused test run; no full batch, project build, stress/FEA run or install.
+- Final exact selection, without environment overrides: `.venv/bin/python -m pytest -q tests/test_mass_inputs.py
+  tests/test_item_mass.py tests/test_print_settings.py tests/test_printpkg.py tests/test_docs.py
+  tests/test_maker_output.py::test_report_mass_split_unattached_and_units` — **99 passed in 2.67 s**.
+  Tests cover invalid load/helper boundaries, finite hand-calculated mass, cached-spec edits, valid zeros/defaults,
+  numeric strings, malformed mappings, unchanged local-modifier mass and existing print/maker output contracts.
+- Initial selection was 98 pass/1 failure: existing printpkg test read UTF-8 output using the process locale after
+  Mesher.write(.3mf) changed it to US-ASCII. With PYTHONUTF8=1 it then exposed an unquoted fake interpreter path with
+  spaces (exit126). Isolated unmodified origin/main 2a6662a source copy reproduced the exact printpkg node failure:
+  1 failed in 2.41 s. Fixed only the adjacent test fixture: explicit UTF-8 on two output reads and shlex.quote on
+  fake executable/script paths. Every assertion is retained; no Mesher, global locale or production slicer change.
+- Independent parent review approved the final validation/fixture diff. Only this precise PLAN item is complete;
+  no new physical validation or finished-project claim.
+
 ### 2026-11-02 — Full-suite speed (session 01S68R6R; measured on slices, no full run, per Spencer)
 - Found by timing one project's verify build by stage: viewer click-to-edit (kerf/attribution.py: traced rebuild of
   every part + one rebuild per param, budget 240 s for the params alone) was 29 s of servo_link's 63 s and 303 s on
@@ -561,3 +588,87 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   handoff is verified by source path and DOM attributes, not a live app launch. Opening a documented
   link still depends on an installed app handler and the chat existing on that computer. Phone shell
   height remains the previously accepted separate limitation.
+## 2026-11-02 (Claude, Learning Mode phases 2 and 3)
+- `kerf diary <p>` / `--all` (kerf/diary.py) rebuilds each project's diary from git history into learning/diary/<p>.json + .md:
+  review.json versions followed from round to round, check PASS/FAIL events and commit-noted problems ("crashed at 97 deg"),
+  stage per problem (before parts / rough / detail / final review, from the part files in the tree at that commit) and cost
+  (active-minute estimate, part modules redrawn). Costs are ESTIMATES. `kerf diary <p> --log-session [FILE]` adds a Claude Code
+  session log's measured token usage (counted once per API message id; the log repeats usage on every content block).
+- `kerf lookback [<p>]` (kerf/lessons.py) maps each problem to a lesson by keyword rules (no AI), says the earliest stage and what
+  would have caught it, groups across projects, and writes learning/lessons.json + learning/LESSONS.md. Ladder: 1 project = note,
+  2+ = instruction, 2+ with final-review finding or redraws = PROPOSED gate (nothing is enforced; Spencer approves).
+- Limits: the stage of a review finding is always "final review" once parts are real (every review.json is the design reviewer's),
+  so nearly every cross-project lesson reaches "proposed gate"; the keyword rules leave ~80 of ~700 problems unclassified; check
+  results are only read from commit messages. No check, threshold, catalog value or test was changed; .claude/ untouched.
+- Tests: tests/test_diary.py, tests/test_lessons.py, tests/test_docs.py (targeted only).
+- (Claude, 2026-11-02, options + usage failsafes) Options: "💡 Options ready" sidebar badge from any page and an "Options ready to choose from" list on New design (`/api/quotes`, `studio.list_quotes`); `openQuote(name)` loads THAT request's description and options, so two option runs never mix or block each other's buttons. Usage: a Claude job cut off by the usage limit is PAUSED (session id kept, reset time read from the message), resumes by itself after the reset (setting `autoresume`, skipped while tools/budget.py's switch is on) or now with ▶ Resume (`/api/resume`, `claude -p --resume <session>`); no Claude job starts and auto-fix waits while usage is out (claude_ready code `usage`); every Claude job prompt says to commit as it goes. tests/test_usage_failsafe.py, tests/test_notify_targets.py.
+
+## 2026-11-02 19:00 UTC-5 — leftover engine edits stashed (portable_launcher_gets quote job)
+- Found uncommitted edits in the local tree from before this session (no claim held, author unknown): `edges.part_sharp` (kept
+  sharp corners matched in the part's own frame via kerf_home_loc), its caller in pipeline._print_checks, and a test in
+  tests/test_edges.py (6 pass). Not committed (author's intent unknown): saved as the stash "leftover uncommitted work found in
+  the local tree, author unknown..." (`git stash list`; restore with `git stash pop` on that entry). If finished, note
+  kerf/coves.py:86 and features.py:367/414 still call sharp_inside directly, which may need the same own-frame treatment.
+- The quote itself (.cache/studio/quotes/portable_launcher_gets.json, bungee rail recommended) is untracked by design.
+
+## 2026-11-02 — hawk_wing (Studio request, option 0 picked): swing-wing FPV plane, IN PROGRESS (Claude)
+- Claimed PLAN item `hawk_wing`. Done: research (REFERENCES.md incl. Spencer's two notes: folding-wing gliders, what
+  breaks on these aircraft), catalog `rods.ss_rod_5` + sourced `bearings.625` (C0 380 N) + prices, DESIGN.md,
+  project.yaml contract, parts/layout.py (every shared interface position), copied sibling wing/tail/pinion parts.
+- Concept numbers on stubs (kerf req): static margin 11 % spread / 41 % half / 94 % folded / 40 % uneven, all inside
+  the elevator's trim limits; sweep servo at 43 % of half its stall (4 g pull), gears 13.6 of 16 MPa; spar 0.37.
+  Mass on stubs 2.4 kg (stubs are solid blocks); finished estimate ~1.65 kg.
+- Engine: `size_max include:` (items subset, test), `kerf req` advice loop no longer shadows its timer (TypeError).
+- Next: part-designers on pod/cap/hub, glove, body, wings, tail (running); then wiring routes, kerf check PASS, build,
+  renders, design-reviewer. FEA is PAUSED: pivot strength is designed by load path + hand checks, unproven.
+
+## 2026-11-02 20:15 UTC-5 — Claude offline: Codex takes over (Spencer), session 01S68R6S
+- Claude is out of usage. AGENTS.md (Codex reads it automatically) maps CLAUDE.md's rules onto Codex and switches on
+  "CLAUDE OFFLINE MODE": a Codex manager task merges other Codex PRs (22 open, none merged since #11); Codex never
+  writes review.json (design-reviewer sub-line left for Claude). Snapshot, priorities and ready-to-paste task prompts:
+  docs/status/CODEX_TAKEOVER.md. First Claude session back: end the mode as AGENTS.md says.
+
+## 2026-11-02 20:40 UTC-5 — portable_launcher_gets IN PROGRESS (Claude, Studio job, still running)
+- This Claude session is still working on it (claim heartbeats fresh); Codex: don't take it over unless the claim goes
+  stale. State in git: research + catalog (V-slot 2040, V-wheel, tee nut, 6 mm QR pin, alu tube, latex force curves,
+  shock cord, braid, stake), DESIGN.md (sizing, load cases, per-part contracts, joint tree), project.yaml contract,
+  layout.py, stub parts; five part designers are replacing the stubs now.
+- Engine (all tested): `fit="lock"` pins (removable QR / clevis pins that lock a fold or slide joint at home);
+  `bungee_launch` requirement (kerf/req_launch.py: exit speed / peak g / setting table from a sourced elastic force
+  curve, named curves, V-cord brake stop with pre-stretch); box proxy joints with a rotation; rod proxy reads `d`.
+- Design decisions: 6 strands of the catalogued 3/16 in latex (commodity curve) instead of the quote's 1-4 (documented
+  latex is weaker than the quote guessed); brake = pre-stretched latex V-cord (shock cord has no published force
+  curve); fold joints = two QR pins per joint 44 mm out (outside the sled wheels) with lugs top and bottom so each joint
+  holds bending both ways; rear-foot pivot on the rail centre line (launch recoil bends nothing).
+- Next: integrate parts, strength hand checks (FEA paused), build, renders, design-reviewer.
+## 2026-11-02 20:25 UTC-5 — Codex runs Studio jobs when Claude is out (session 01S68R6S)
+- kerf/agent.py + `kerf agent [auto|claude|codex]`: Studio design / quote / edit / fix jobs pick Claude Code or Codex;
+  auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
+  tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
+  already fails on main (not this change).
+
+## 2026-11-03 01:52 UTC — Work reflects agent jobs, usage pauses and continuations (Codex)
+- Reproduced through `studio.work()` with in-memory jobs: a Codex edit appeared as Claude, while a usage-paused
+  design became idle/Not running and still said it was designing a part. The Work serialization now carries the
+  known agent, ended timestamp, usage/resume metadata and current retry/budget policy. No Job lifecycle, timer,
+  resume, cancellation or agent-selection code changed; `Job.info` did not need modification.
+- Work labels paused runs explicitly, groups them for attention without claiming user input is required, and
+  separates the reported usage reset from finish ETA. Pause details say whether retry is enabled/off/budget-blocked
+  or a resumable session is missing; enabled policy never promises a queued timer. A prior run with `resumed_by`
+  becomes Continued, not Finished, and shows an observed successor's provider/state with Watch continuing job;
+  unobserved successors get no dead navigation. Previous-run activity remains accessible. Historical missing or
+  invalid agent metadata retains Claude fallback; known non-agent jobs stay Studio. Claim/session behavior is unchanged.
+- Validation: **81 passed in 18.79 s** (`tests/test_work_job_states.py`, `tests/test_work_job_page.py`,
+  `tests/test_work_overview.py`, `tests/test_work_page.py`, `tests/test_codex_work.py`, plus docs requirement/YAML/
+  engineering-contract nodes). Initial 75 pass / 3 browser failures came from old fixture routes returning `{}`
+  for main's new `/api/quotes` poll; corrected all three to the actual empty `{quotes: []}` schema, keeping every
+  assertion. One browser-marker registration warning remains until the pending fast-tests configuration lands;
+  the new browser node is explicitly marked. Known agent docs-map failures are covered by PR #34, not repeated here.
+- The actual serialization-to-DOM fixture verifies provider labels, pause/active/recent filters, reset-vs-ETA,
+  escaping, unknown successors, keyboard navigation/focus and no overflow at 1440/390 px in dark/light themes.
+  Viewed `.cache/work-job-states/work-job-{paused,continuation}-{light,dark}-{1440,390}.png`; existing tall phone
+  app-shell height remains unchanged. Impeccable's one mechanical scan found 13 existing issues outside edited
+  Work selectors. `kerf doctor`: **ALL OK**, existing optional firmware tools unavailable.
+- Based on PR #31 and current main, preserving both STATUS sides of their additive conflict. Budget off and
+  batch/duplicate-process status checked before focused runs. No real agent process/chat, timer, physical project,
+  stress solve, full suite or full batch. Exact observed session/job dedup is a separate pending investigation.

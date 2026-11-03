@@ -33,7 +33,7 @@ def check(item) -> tuple[list, list]:
     problems, warnings = [], []
     pins = {}
     for p in getattr(shape, "kerf_pins", []) or []:
-        if p.teardrop is False and p.fit in ("free", "press") and _up_component(rot, p.loc) < lim:
+        if p.teardrop is False and p.fit in ("free", "press", "lock") and _up_component(rot, p.loc) < lim:
             pins.setdefault(p.group, 0)
             pins[p.group] += 1
     for g, n in pins.items():

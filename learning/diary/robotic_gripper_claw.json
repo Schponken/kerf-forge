@@ -1,0 +1,304 @@
+{
+ "project": "robotic_gripper_claw",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "40c1700f",
+   "time": "2026-10-31T23:16:32-04:00",
+   "subject": "robotic_gripper_claw: DESIGN.md, contract (project.yaml), shared layout, interface stubs, arm-fit guard test",
+   "parts": [
+    "cover",
+    "finger",
+    "layout",
+    "pad",
+    "palm",
+    "wrist_stand"
+   ]
+  },
+  {
+   "hash": "f2a7f115",
+   "time": "2026-10-31T23:40:48-04:00",
+   "subject": "robotic_gripper_claw: research (REFERENCES.md, INDEX rows), pad contact at 45 mm for friction SF 2 at half stall, reuse decisions; setup.sh builds pybullet on r",
+   "parts": []
+  },
+  {
+   "hash": "5a79ad10",
+   "time": "2026-11-01T13:27:43-05:00",
+   "subject": "robotic grippers: bring in the unpushed work of both design sessions (Mac checkout, last edits 03:53 UTC) to resume them",
+   "parts": [
+    "pad",
+    "palm",
+    "wrist_stand"
+   ]
+  },
+  {
+   "hash": "8254646f",
+   "time": "2026-11-01T13:49:07-05:00",
+   "subject": "robotic_gripper_claw: real fingers (toothed sector, tapered arm, angled dovetail jaw) and cover (frame + dowel bosses); horn-screw heads on the gear face, cover",
+   "parts": [
+    "cover",
+    "finger",
+    "layout",
+    "pad",
+    "palm"
+   ]
+  },
+  {
+   "hash": "85d956c6",
+   "time": "2026-11-01T14:28:29-05:00",
+   "subject": "robotic_gripper_claw: stiffen palm (root beam, raised keel + far web, far web from 25.5) and cover (triangulated 9 mm frame, deep idler-side members, fixed wher",
+   "parts": [
+    "cover",
+    "finger",
+    "layout",
+    "palm"
+   ]
+  },
+  {
+   "hash": "8b5ccbac",
+   "time": "2026-11-01T14:41:36-05:00",
+   "subject": "robotic_gripper_claw: detail pass - r 1 on inside corners (engine's own detector), cover edge breaks before fillets, palm root beam flush with posts and far web",
+   "parts": [
+    "cover",
+    "detail",
+    "finger",
+    "palm"
+   ]
+  },
+  {
+   "hash": "2ed8fe78",
+   "time": "2026-11-01T15:31:32-05:00",
+   "subject": "robotic_gripper_claw: palm far-web root filleted before the servo window (valid FEA mesh), cover outline 1.5 d around post screws, DESIGN.md margins / kept warn",
+   "parts": [
+    "cover",
+    "detail",
+    "palm"
+   ]
+  },
+  {
+   "hash": "44939763",
+   "time": "2026-11-01T17:02:02-05:00",
+   "subject": "robotic_gripper_claw: detail pass - pad end chamfers + jaw-root fillet, palm pedestal wall and built-in r1 radii (valid FEA mesh), cover members clear of posts ",
+   "parts": [
+    "cover",
+    "detail",
+    "finger",
+    "pad",
+    "palm"
+   ]
+  },
+  {
+   "hash": "7ce48019",
+   "time": "2026-11-01T17:37:59-05:00",
+   "subject": "robotic_gripper_claw: design review PASS (7 minor findings)",
+   "parts": []
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "7ce48019",
+   "time": "2026-11-01T17:37:59-05:00",
+   "date": "2026-11-01",
+   "verdict": "PASS",
+   "findings": 7
+  }
+ ],
+ "problems": [
+  {
+   "id": "robotic_gripper_claw-1",
+   "source": "review",
+   "severity": "minor",
+   "part": "pad_l",
+   "issue": "Payload hold rests on an assumed TPU 95A friction of 0.30. The servo needs 48 % of stall against a 50 % budget, with friction SF 2.09. Holding a 150 g object continuously keeps the MG996R at about half stall current, so it will run warm. The assumption is disclosed under 'Risks', but it is the thinnest margin in the design.",
+   "fix": "Do the tilt test before trusting 150 g. If mu < 0.30, print the pads in 85A-90A TPU or shorten finger_len. Consider adding a note to command the servo just past contact (already in DESIGN.md) to the bring-up checklist.",
+   "found_commit": "7ce48019",
+   "found_time": "2026-11-01T17:37:59-05:00",
+   "review_round": 1,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "7 real part files, median 8040 bytes",
+   "rounds_seen": [
+    "7ce48019"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_claw-2",
+   "source": "review",
+   "severity": "minor",
+   "part": "palm",
+   "issue": "claw_mass is 126.9 g against a 130 g cap (3 g margin). The arm-budget numbers (shoulder 41 %, reach 249 mm) are hand-derived. robot_arm's own torque and mass checks were not re-run with the claw, so the 'Effect on the rest of the arm' section is unproven by the engine.",
+   "fix": "Before making the claw the arm's default gripper, run robot_arm's checks with it (swap the gripper and finger items). Meanwhile cut mass from the palm (41.7 g est., cold zones at 3 % use around x 23, z 30 and z -1) rather than from the cover.",
+   "found_commit": "7ce48019",
+   "found_time": "2026-11-01T17:37:59-05:00",
+   "review_round": 1,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "7 real part files, median 8040 bytes",
+   "rounds_seen": [
+    "7ce48019"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_claw-3",
+   "source": "review",
+   "severity": "minor",
+   "part": "palm",
+   "issue": "Three sharp inside corners remain (0, 2.8, 32.1), (23.5, 13.4, 3.5) and (19.1, 13.4, 9.0). The palm is also the part with the worst FEA stiffness margin (deflection use 0.67), and its surface peak (7.5 MPa) sits at the root-beam/post corner. The stress is only 3-4 % of allowable, but the corners break the stated r1/r2/r3 edge language. 8.8 % of the surface needs support, and the document correctly says 'tree supports from the bed only'.",
+   "fix": "Add a 1 mm built-in quarter-round strip at (23.5, 13.4, 3.5) and (19.1, 13.4, 9.0) the way the servo window was done. Or document them in 'Warnings kept' (the design file currently lists only the two post-A corners). Put 'support on build plate only' into the print notes or the Bambu 3MF.",
+   "found_commit": "7ce48019",
+   "found_time": "2026-11-01T17:37:59-05:00",
+   "review_round": 1,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "7 real part files, median 8040 bytes",
+   "rounds_seen": [
+    "7ce48019"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_claw-4",
+   "source": "review",
+   "severity": "minor",
+   "part": "cover",
+   "issue": "Two inside corners are r 0.5 instead of r 1, and one 9.7 mm corner at (34.3, 29.4, 19.7) is left sharp after a failed fillet (ValueError). The designer discloses it (4.6 MPa locally, 19 % of allowable) and the cover FEA passes at 8.8 MPa against 24, but it is a visible craft gap on a part that carries both dowel loads.",
+   "fix": "Replace the failed fillet with a built-in quarter-round strip along the diagonal member into the idler boss, as was done on the post B - idler member.",
+   "found_commit": "7ce48019",
+   "found_time": "2026-11-01T17:37:59-05:00",
+   "review_round": 1,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "7 real part files, median 8040 bytes",
+   "rounds_seen": [
+    "7ce48019"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_claw-5",
+   "source": "review",
+   "severity": "minor",
+   "part": "finger_l",
+   "issue": "Two of the four horn-screw holes are within 4.5 mm of a free edge (worst ring 84 % material). This is forced by the 25T horn's 14 mm circle and the 16T tooth roots, and the designer explains why the counterbore was dropped. Screw heads then stand on the gear face under a cover only 0.5 mm above them. There is no fastener retention beyond the screws themselves, and no way to remove the drive finger without taking the cover off.",
+   "fix": "Accept the design. Add a line to the assembly notes that the horn centre screw is fitted before the finger and is not reachable afterward, and print a spare drive finger when first test-fitting.",
+   "found_commit": "7ce48019",
+   "found_time": "2026-11-01T17:37:59-05:00",
+   "review_round": 1,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "7 real part files, median 8040 bytes",
+   "rounds_seen": [
+    "7ce48019"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_claw-6",
+   "source": "review",
+   "severity": "minor",
+   "part": "wrist_stand",
+   "issue": "The stand is flagged overbuilt (18 % peak utilisation, 100 % of volume below 15 %). It is 54.6 g solid and prints with 4.7 % support on a 95 x 100 x 97 mm envelope. Intent is justified (the wings and plate are the forearm's wrist end, a fit gauge). The column and foot are only 'sized by FEA' with an idle cold zone at the column top (x -36, z 52). The two wings spread at about 45 degrees in the right view with only thin ribs, so they are the most fragile-looking printed element.",
+   "fix": "Lighten the foot and column (pocket the cold 2000-2500 mm3 zones) or drop infill, keeping the plate and wings verbatim. Make sure the wings print without sagging by orienting the 45-degree surface over supports, and note this in the print notes.",
+   "found_commit": "7ce48019",
+   "found_time": "2026-11-01T17:37:59-05:00",
+   "review_round": 1,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "7 real part files, median 8040 bytes",
+   "rounds_seen": [
+    "7ce48019"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_claw-7",
+   "source": "review",
+   "severity": "minor",
+   "part": "finger_r",
+   "issue": "Idler finger FEA fixes only the dowel bore (the gear teeth carry torque into the drive gear and are covered by the gears Lewis check at 14.4 of 16 MPa, SF 3.3). Gear margin is acceptable but the Lewis margin is the tightest strength number in the project and relies on printing the teeth flat (it is).",
+   "fix": "No change. Do not raise gear width above 12 mm or lower the module without re-running gears. Consider raising gear_w by 1 mm if the mass budget ever allows.",
+   "found_commit": "7ce48019",
+   "found_time": "2026-11-01T17:37:59-05:00",
+   "review_round": 1,
+   "review_verdict": "PASS",
+   "stage": "final review",
+   "stage_why": "7 real part files, median 8040 bytes",
+   "rounds_seen": [
+    "7ce48019"
+   ],
+   "status": "accepted at PASS",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 7,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 7
+  },
+  "open": 0,
+  "active_minutes_est": 0,
+  "parts_redrawn": [],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}

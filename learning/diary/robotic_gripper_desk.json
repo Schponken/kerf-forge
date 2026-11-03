@@ -1,0 +1,428 @@
+{
+ "project": "robotic_gripper_desk",
+ "built_from": "git history",
+ "cost_is_estimate": true,
+ "note": "Costs are estimates from commit times and edited part files; token usage is measured and listed under sessions.",
+ "commits": [
+  {
+   "hash": "686f23bb",
+   "time": "2026-10-31T23:11:19-04:00",
+   "subject": "robotic_gripper_desk: contract, layout and stub parts (rack-and-pinion parallel gripper); kerf.drives.rack_pinion + tests",
+   "parts": [
+    "gripper",
+    "jaw",
+    "layout",
+    "pinion",
+    "rod_keeper",
+    "stand"
+   ]
+  },
+  {
+   "hash": "dcec118c",
+   "time": "2026-10-31T23:18:58-04:00",
+   "subject": "robotic_gripper_desk research: REFERENCES.md (8 kerf-find blocks with decisions, 11 design decisions), 4 mm stainless guide rod in the catalog + price, INDEX ro",
+   "parts": []
+  },
+  {
+   "hash": "5a79ad10",
+   "time": "2026-11-01T13:27:43-05:00",
+   "subject": "robotic grippers: bring in the unpushed work of both design sessions (Mac checkout, last edits 03:53 UTC) to resume them",
+   "parts": [
+    "gripper",
+    "jaw",
+    "pinion",
+    "stand"
+   ]
+  },
+  {
+   "hash": "bb043a82",
+   "time": "2026-11-01T13:51:20-05:00",
+   "subject": "robotic_gripper_desk: real rod keeper (2 x M3), stand FEA, bench electrics for the grip servo, units on params; kerf/coves.py boolean cove fillets (OCC fillet s",
+   "parts": [
+    "gripper",
+    "jaw",
+    "rod_keeper",
+    "stand"
+   ]
+  },
+  {
+   "hash": "bf359a17",
+   "time": "2026-11-01T14:00:43-05:00",
+   "subject": "robotic_gripper_desk: wire route over the wrist in the gripper's lead plane, round-root grip grooves, ISO 53 rack root fillets, mass + wrist-torque limits re-de",
+   "parts": [
+    "gripper",
+    "jaw",
+    "stand"
+   ]
+  },
+  {
+   "hash": "3a709682",
+   "time": "2026-11-01T14:38:10-05:00",
+   "subject": "robotic_gripper_desk: kerf build PASS (signal lead routed with its power lead; strength + detail results in DESIGN.md)",
+   "parts": []
+  },
+  {
+   "hash": "88318f6b",
+   "time": "2026-11-01T15:09:35-05:00",
+   "subject": "robotic_gripper_desk: review fixes - lead tie-slot pair on plate A (strain relief before the wrist), pinion infill 0.6, first-article fit step, stand hold-down,",
+   "parts": [
+    "gripper",
+    "jaw"
+   ]
+  },
+  {
+   "hash": "49d5bb79",
+   "time": "2026-11-01T16:10:33-05:00",
+   "subject": "robotic_gripper_desk: jaw computes its sharp-corner list once (was per edge: attribution rebuilds crawled); STATUS entry",
+   "parts": [
+    "jaw"
+   ]
+  },
+  {
+   "hash": "fa73888b",
+   "time": "2026-11-01T16:32:30-05:00",
+   "subject": "coves: cove_sharp (box-limited, one call from a part file) + test; gripper/jaw use it so viewer attribution does not trace per-edge loops",
+   "parts": [
+    "gripper",
+    "jaw"
+   ]
+  },
+  {
+   "hash": "dd829e0c",
+   "time": "2026-11-01T17:34:59-05:00",
+   "subject": "robotic_gripper_desk: friction-corrected grip force (carriage cocking on its rods), mandatory rod lubrication, bench hold test (300 g), closed-end software floo",
+   "parts": [
+    "pinion"
+   ]
+  },
+  {
+   "hash": "f24b60f8",
+   "time": "2026-11-01T17:41:45-05:00",
+   "subject": "robotic_gripper_desk: review #2 record (FAIL, fixed in DESIGN.md), STATUS: review #3 pending (reviewer usage limit)",
+   "parts": []
+  },
+  {
+   "hash": "a6e3413c",
+   "time": "2026-11-01T20:04:08-05:00",
+   "subject": "robotic_gripper_desk review round 3: guide-friction derivation corrected (both tilt planes and the tooth separating force; dry fails, oiled rods are required), ",
+   "parts": []
+  }
+ ],
+ "reviews": [
+  {
+   "commit": "f24b60f8",
+   "time": "2026-11-01T17:41:45-05:00",
+   "date": "2026-11-01",
+   "verdict": "FAIL",
+   "findings": 8
+  },
+  {
+   "commit": "a6e3413c",
+   "time": "2026-11-01T20:04:08-05:00",
+   "date": "2026-11-01",
+   "verdict": "FAIL",
+   "findings": 8
+  }
+ ],
+ "problems": [
+  {
+   "id": "robotic_gripper_desk-1",
+   "source": "review",
+   "severity": "major",
+   "part": "jaw_r",
+   "issue": "The claimed grip force ignores friction and tilt in the guide bores. In DESIGN.md 'Grip force' the pad force is 30.7 N per jaw at stall and 15.4 N at half stall, a 2.5x margin over the 6.1 N needed to hold 150 g. But the carriage rides on two 14 mm bores. The rack drive acts at x about -6.6 (jaw frame) and the object load at the pad centre, x about 30. The rod axes are at x = 5, so the pad load has a 25 mm lever and the drive a 11.6 mm lever. Together they tilt the carriage with about 36 N*mm per N of grip force, reacted by radial contact at the four bore ends (L = 14 mm, L/d = 3.5). Summing t",
+   "fix": "Add the friction-corrected derivation to DESIGN.md 'Grip force' (P = D(1 - 1.66 mu)/(1 + 3.6 mu), with the lever arms above) and re-state the margin for mu = 0.24 dry and about 0.1 oiled. Make the oil/PTFE grease on the rods a mandatory assembly and maintenance step with the reason, and add a hand-check requirement or note for the oiled case. Better, cut the tilt: lengthen the bores (carr_len up t",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a6e3413c",
+   "resolved_time": "2026-11-01T20:04:08-05:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 142,
+   "active_minutes_est": 90,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-2",
+   "source": "review",
+   "severity": "minor",
+   "part": "jaw_l",
+   "issue": "Same STL as jaw_r, so the guide-bore finding above applies equally. Jaw deflection use is 0.93 (0.47 of 0.5 mm) with no stiffness margin, and the rack bar passes 0.5 mm from the wing rail ends. The stress hot spot (7.9 MPa volume peak) sits at the finger root / bridge junction, on the carriage side.",
+   "fix": "Keep the first-article fit step (already in DESIGN step 0) and add a note that the same print adds the oiled sliding check (the jaw must slide on a rod with the pad loaded by hand).",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8",
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-3",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "Margins of the swap on the real arm are thin and only hand-checked: gripper_mass passes at 162.5 of 166 g (3.5 g spare, slicer estimate), the shoulder is at 10.21 of 10.5 kg*cm, and robot_arm's own torque_* and arm_mass checks (about 888 of 900 g) are not re-run. A 5 % slicer mass error eats the whole mass margin.",
+   "fix": "Weigh the first-article gripper before mounting it on the arm and re-run robot_arm with it before anyone swaps hardware; keep the note that nothing else may be added to the wrist.",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a6e3413c",
+   "resolved_time": "2026-11-01T20:04:08-05:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 142,
+   "active_minutes_est": 90,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-4",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "78 sharp inside corners remain (19 in a stressed zone, e.g. [52, 21, -24.7], [72, -17.6, 63.7]). DESIGN.md explains why (cove run-outs, servo window relief, tab seats, teardrop apexes, cheek frame-to-bar steps) and the stall FEA reads 1.7 MPa (p99.9) and 2.8 MPa volume peak against 13 MPa. Press-fit rod seats are teardrops, so the rod has less grip than a round hole would give. Rod and bore tolerances are unpublished.",
+   "fix": "Keep step 0's rod-fit coupon (bores 4.05 / 4.15 / 4.25) as a mandatory first print; if the seats are loose, glue the rod with a drop of cyanoacrylate in the seat, not in the jaw bores.",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8",
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-5",
+   "source": "review",
+   "severity": "minor",
+   "part": "pinion",
+   "issue": "The part docstring and DESIGN say the pinion prints flat on its horn (back) face, but print_rot [180, 0, 0] puts the front (tooth-chamfered) face on the bed and the registration rim up, which is what the render shows. The part still prints fine (bed chamfer on the front face, counterbore steps bridge 1.5 mm). The overbuilt warning stays (7 % utilisation), reasonably justified by the 20 T / horn bolt-circle geometry.",
+   "fix": "Make the docstring, DESIGN part-list row and print_rot agree (front face down), or flip print_rot if the rim-down orientation was intended.",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8",
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-6",
+   "source": "review",
+   "severity": "minor",
+   "part": "rod_keeper",
+   "issue": "A plain 3 mm bar: it has no locating feature, and the rods sit 0.86 mm below the cheek face, so it only stops a rod after it has backed out 0.86 mm. Two M3 clearance holes sit 2.2 mm from the bar edge.",
+   "fix": "Optional 0.5 mm locating boss into the cheek's front-bar recess so the screws are not the only registration; acceptable as is for a lid.",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8",
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-7",
+   "source": "review",
+   "severity": "minor",
+   "part": "stand",
+   "issue": "The stand is not free-standing with the gripper on it (head and payload about 110 mm ahead of the base); it must be screwed or clamped before power, which DESIGN.md now says. stand_fea still warns that its fixed box holds none of the stand's fastener sites (it clamps the base underside, not the two M4 holes). The two flat 7 mm bands ahead of the column need support (4.6 % of the surface). One sharp inside corner at [0, -53.9, 72.4].",
+   "fix": "Make the stand_fea fixed region the two M4 hole sites plus the bar underside, or say in the requirement's why that the whole base underside is the bench. Keep the support note in PRINT_SETTINGS; cove the one corner at R1.",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8",
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-8",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "There is no mechanical stop at the closed end: if the servo is driven past 0 deg the pads meet at 7.6 deg below it and the servo stalls against the pads (61 N at the pad ridges). Software limits are the only protection.",
+   "fix": "State the 0 deg software limit (grip pulse floor = pads just touching) in the calibration step of DESIGN.md, which already finds the touching pulse.",
+   "found_commit": "f24b60f8",
+   "found_time": "2026-11-01T17:41:45-05:00",
+   "review_round": 1,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "f24b60f8"
+   ],
+   "status": "resolved",
+   "resolved_commit": "a6e3413c",
+   "resolved_time": "2026-11-01T20:04:08-05:00",
+   "resolved_how": "no part was redrawn; closed by the next review/check result",
+   "wall_minutes": 142,
+   "active_minutes_est": 90,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-9",
+   "source": "review",
+   "severity": "major",
+   "part": "jaw_r",
+   "issue": "The friction-corrected grip force in DESIGN.md 'Grip force' is still materially wrong, and the mandatory measures that now carry the payload requirement do not reach the owner's assembly instructions. (1) The derivation P = D(1 - 1.66 mu)/(1 + 3.57 mu) only counts the tilt in the X-Z plane (rack at x -6.6, pad at x 30, bores at x 5). It leaves out the tilt in the Y-Z plane. jaw_r's rack pitch line is at y = +15 (jaw.py, rack bar at y = r_p) but the pad centre and the rod pair's centroid are at y = 0, so the rack force puts a moment of 15 x D about X on the carriage. That moment is the grip ser",
+   "fix": "Rewrite DESIGN.md 'Grip force' with both tilt planes and the separating force. Per bore end, the edge load is sqrt((M_y/L)^2 + (sep/2 +/- M_x/L)^2), with M_y = 11.6 D + 25 P, M_x = 15 D, sep = 0.364 D and L = 14. State the results: dry mu 0.24 gives P/D ~0.22, 6.7 N at stall; mu 0.29 fails; lubricated mu <= 0.15 gives P/D >= 0.42. Drop the '18 mm / rods not stocked' argument or correct it. Change ",
+   "found_commit": "a6e3413c",
+   "found_time": "2026-11-01T20:04:08-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-10",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "Mass-budget change (130 -> 166 g, torque_wrist 0.30 -> 0.25 of stall). Re-deriving both caps from the real requirement ('no arm servo past half stall') is legitimate, not a loosened check: 130 g was a self-imposed budget, the wrist cap was tightened at the same time, and the arithmetic is right (8.23 + 100 g x 16.5 cm + 0.44 = 10.32 kg*cm). But the two guide rods are not modelled items, so `torque_wrist` (2.29) leaves out their 19.8 g at x_rod 76.5 mm (+0.15 kg*cm) and ~0.03 for screws. The real wrist torque is ~2.47 kg*cm, over the 2.35 cap the DESIGN says it must meet. The real shoulder is ~",
+   "fix": "Add the rods as a purchased item (catalog rods.ss_rod_4, 2 x 100 mm) so `gripper_mass` and `torque_wrist` include them. Re-derive the caps with rods in: e.g. items incl. rods <= 186 g and tau <= 2.48 kg*cm gives a shoulder of ~10.45 kg*cm. Update DESIGN.md's as-built line, or re-run robot_arm with this gripper's mass and CG.",
+   "found_commit": "a6e3413c",
+   "found_time": "2026-11-01T20:04:08-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  },
+  {
+   "id": "robotic_gripper_desk-11",
+   "source": "review",
+   "severity": "minor",
+   "part": "gripper",
+   "issue": "The generated bring-up sketch maps joint degree 0 to 1500 us and allows 0..100 'deg' at 5.556 us/deg (1500-2056 us). The design defines grip 0 = closed, with 1500 us = grip 50 (half open). On a ~120 deg MG996R, 556 us is ~67 deg from centre, so jogging the full sketch range drives the jaws past whichever end '+' points at: onto the open-end cheek stop or into the closed pads. No floor is implemented. The guide says to stop by eye, and the stall loads are within FEA, so this is not dangerous, but the sketch's degrees do not match the design's.",
+   "fix": "Engine: have kerf/firmware.py honour the joint's home and centre (the joint range relative to the centred pulse). Until then, state in DESIGN step 9 that the sketch's jog degrees are relative to centre (grip 50).",
+   "found_commit": "a6e3413c",
+   "found_time": "2026-11-01T20:04:08-05:00",
+   "review_round": 2,
+   "review_verdict": "FAIL",
+   "stage": "final review",
+   "stage_why": "6 real part files, median 6500 bytes",
+   "rounds_seen": [
+    "a6e3413c"
+   ],
+   "status": "open",
+   "resolved_commit": null,
+   "resolved_time": null,
+   "resolved_how": null,
+   "wall_minutes": null,
+   "active_minutes_est": null,
+   "parts_redrawn": [],
+   "target_redrawn": false
+  }
+ ],
+ "sessions": [],
+ "totals": {
+  "problems": 11,
+  "by_stage": {
+   "before parts": 0,
+   "rough": 0,
+   "detail": 0,
+   "final review": 11
+  },
+  "open": 8,
+  "active_minutes_est": 270,
+  "parts_redrawn": [],
+  "tokens": {
+   "input_tokens": 0,
+   "output_tokens": 0,
+   "cache_creation_tokens": 0,
+   "cache_read_tokens": 0
+  }
+ }
+}

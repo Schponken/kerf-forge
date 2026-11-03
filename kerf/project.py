@@ -11,7 +11,7 @@ from pathlib import Path
 
 import yaml
 
-from . import calibrate, catalog
+from . import calibrate, catalog, checks
 from .ctx import Ctx
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -134,9 +134,27 @@ def load(name_or_path: str, overrides: dict | None = None) -> Project:
         spec = dict(spec or {})
         if "walls" not in spec:     # ENG-6: strength-checked parts (or copies of their file) print with 4 perimeters
             spec["walls"] = STRESSED_WALLS if (pid in stressed or spec.get("file") in stressed_files) else DEFAULT_WALLS
+        try:
+            infill, spec["walls"] = checks.print_parameters(spec)
+            if "infill" in spec:
+                spec["infill"] = infill
+        except ValueError as e:
+            raise ProjectError(f"parts.{pid}: {e}") from e
+        modifiers = spec.get("modifiers", [])
+        if not isinstance(modifiers, list):
+            raise ProjectError(f"parts.{pid}.modifiers: must be a list of mappings")
+        for n, modifier in enumerate(modifiers):
+            try:
+                checks.print_parameters(modifier)
+            except ValueError as e:
+                raise ProjectError(f"parts.{pid}.modifiers[{n}]: {e}") from e
         proj.items[pid] = Item(pid, "printed", spec)
     for pid, spec in (data.get("purchased") or {}).items():
-        proj.items[pid] = Item(pid, "purchased", spec or {})
+        try:
+            checks.explicit_mass_g(spec)
+        except ValueError as e:
+            raise ProjectError(f"purchased.{pid}: {e}") from e
+        proj.items[pid] = Item(pid, "purchased", spec)
     for pid, spec in (data.get("keepouts") or {}).items():
         proj.items[pid] = Item(pid, "keepout", spec or {})
     return proj
