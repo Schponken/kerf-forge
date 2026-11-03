@@ -112,18 +112,71 @@ def test_claim_metadata_cannot_claim_a_process_is_running():
     assert result["counts"]["running"] == 0 and result["counts"]["claimed"] == 1
 
 
+def test_linked_claims_keep_each_owner_and_stale_attention_without_changing_live_chat():
+    claims = [
+        {"claim_id": "one", "thread_id": "chat", "session": "owner-a", "provider": "Codex", "item": "First task",
+         "activity": "Checking the first task", "updated_at": 990,
+         "steps": [{"title": "Prepare", "status": "done"}, {"title": "Check", "status": "pending"}]},
+        {"claim_id": "two", "thread_id": "chat", "session": "owner-b", "provider": "Claude Code", "item": "Second task",
+         "activity": "Waiting on source measurements", "updated_at": 100, "stale": True},
+        {"claim_id": "three", "thread_id": "chat", "session": "owner-c", "item": "Third task", "stale": True},
+    ]
+    session = {"id": "chat", "provider": "Codex", "state": "working", "live": True,
+               "title": "Shared work", "activity": "Reviewing the combined changes", "updated_at": 995}
+    result = work.overview({"cards": claims}, sessions=[session], now=1000)
+    item, = result["items"]
+    first, second, third = item["claimed_tasks"]
+    assert [c["id"] for c in item["claimed_tasks"]] == ["claim:one", "claim:two", "claim:three"]
+    assert [c["session"] for c in item["claimed_tasks"]] == ["owner-a", "owner-b", "owner-c"]
+    assert [c["provider"] for c in item["claimed_tasks"]] == ["Codex", "Claude Code", "Session"]
+    assert first["activity"] == claims[0]["activity"] and first["updated_at"] == 990
+    assert first["progress"]["done"] == 1 and first["remaining"] == ["Check"]
+    assert second["activity"] == claims[1]["activity"] and second["updated_at"] == 100
+    assert second["state"] == third["state"] == "stale" and "ownership" in second["attention"]
+    assert "session may have stopped" not in second["attention"]
+    assert third["updated_at"] is None and third["progress"] is None and third["eta"] is None
+    assert item["state"] == "running" and item["activity"] == session["activity"] and item["updated_at"] == 995
+    assert item["attention"].startswith("2 claimed tasks need attention")
+    assert item["progress"] is None and item["remaining"] == [] and item["eta"] is None
+    assert result["counts"]["running"] == result["counts"]["attention"] == result["counts"]["total"] == 1
+    session["attention"] = "Confirm the design choice."
+    kept, = work.overview({"cards": claims}, sessions=[session], now=1000)["items"]
+    assert kept["attention"] == session["attention"] and kept["claimed_tasks"][1]["attention"]
+
+
 def test_fresh_claim_activity_beats_newer_saved_metadata_but_not_live_activity():
     claims = [{"thread_id": "t1", "item": "Work overview", "updated_at": 950,
                "activity": "Integrating Codex session visibility"}]
     session = {"id": "t1", "provider": "Codex", "state": "idle", "live": False,
-               "updated_at": 990, "activity": "Last turn was interrupted"}
+               "updated_at": 990, "activity": "Last turn was interrupted", "action": "Last activity: ran a command"}
     saved, = work.overview({"cards": claims}, sessions=[session], now=1000)["items"]
     assert saved["state"] == "claimed" and saved["activity"] == claims[0]["activity"]
     assert saved["updated_at"] == 950  # The text's own timestamp, not the newer saved-chat metadata.
-    session.update(state="working", live=True, updated_at=940, activity="Running the regression tests")
+    assert saved["action"] == ""
+    session.update(state="working", live=True, updated_at=940, activity="Running the regression tests", action="Running a command")
     live, = work.overview({"cards": claims}, sessions=[session], now=1000)["items"]
     assert live["state"] == "running" and live["activity"] == "Running the regression tests"
     assert live["updated_at"] == 940
+    assert live["action"] == "Running a command"
+    session["live"] = None  # Legacy session observations use the other claim-overlay branch.
+    replaced, = work.overview({"cards": claims}, sessions=[session], now=1000)["items"]
+    assert replaced["activity"] == claims[0]["activity"] and replaced["action"] == ""
+
+
+def test_claims_and_stale_sessions_cannot_supply_current_actions():
+    items = work.overview({"cards": [{"item": "A claim", "action": "Running a command"}]},
+                          sessions=[{"id": "old", "state": "stale", "action": "Running a command"}], now=1000)["items"]
+    assert all(item["action"] == "" for item in items)
+
+
+def test_single_linked_claim_does_not_hide_the_observed_chats_checklist():
+    claim = {"claim_id": "scope", "thread_id": "chat", "session": "worker", "item": "Claim without a checklist"}
+    session = {"id": "chat", "state": "working", "live": True,
+               "steps": [{"title": "Prepare", "status": "done"}, {"title": "Review the combined change", "status": "pending"}]}
+    item, = work.overview({"cards": [claim]}, sessions=[session], now=1000)["items"]
+    assert item["claimed_tasks"][0]["progress"] is None and item["claimed_tasks"][0]["remaining"] == []
+    assert item["progress"] == {"done": 1, "total": 2, "label": "task steps"}
+    assert item["remaining"] == ["Review the combined change"]
 
 
 def test_real_build_stage_progress_and_historical_eta():

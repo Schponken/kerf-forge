@@ -1,10 +1,77 @@
 """Repo-scoped, read-only Codex session discovery and honest source freshness."""
 import json
 import subprocess
+from urllib.parse import unquote, urlparse
 
 import pytest
 
 from kerf import codex_work, studio
+
+
+@pytest.mark.parametrize("thread_id", [None, 12, {}, "", " ", "new", "New", ".", "..", "one/two", "one\\two", "a\x00b", "a\x7fb"])
+def test_chat_link_rejects_missing_reserved_or_invalid_ids(thread_id):
+    assert codex_work._chat_url(thread_id) is None
+
+
+def test_observed_chat_link_preserves_full_id_in_one_encoded_segment():
+    from kerf import work
+    thread_id = '019a1111-2222-7333-8444-555555555555-"<&?é#'
+    observed = codex_work._record({"id": thread_id, "status": {"type": "idle"}}, {}, live=False)
+    parsed = urlparse(observed["url"])
+    assert parsed.scheme == "codex" and parsed.netloc == "threads" and not parsed.query and not parsed.fragment
+    assert unquote(parsed.path[1:]) == thread_id and parsed.path.count("/") == 1
+    item, = work.overview({}, sessions=[observed], now=1000)["items"]
+    assert item["chat_id"] == thread_id and item["url"] == observed["url"]
+    claim, = work.overview({"cards": [{"provider": "Codex", "thread_id": thread_id, "item": "Ownership only"}]})["items"]
+    assert claim["chat_id"] is None and claim["url"] is None
+
+
+@pytest.fixture(autouse=True)
+def bundle_executable(tmp_path, monkeypatch):
+    # Do not fall back to the host's real app bundle; tests isolate PATH separately.
+    cli = tmp_path / "ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
+    cli.parent.mkdir(parents=True)
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", cli)
+    return cli
+
+
+def test_executable_prefers_path_over_macos_bundle(tmp_path, monkeypatch, bundle_executable):
+    cli = tmp_path / "bin/codex"
+    cli.parent.mkdir()
+    cli.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    cli.chmod(0o755)
+    bundle_executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    bundle_executable.chmod(0o755)
+    monkeypatch.setenv("PATH", str(cli.parent))
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    assert codex_work._executable() == str(cli)
+
+
+@pytest.mark.parametrize("platform,found", [("Darwin", True), ("Linux", False), ("Windows", False)])
+def test_executable_bundle_is_macos_only(tmp_path, monkeypatch, bundle_executable, platform, found):
+    bundle_executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    bundle_executable.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    monkeypatch.setattr(codex_work.platform, "system", lambda: platform)
+    assert codex_work._executable() == (str(bundle_executable) if found else None)
+
+
+@pytest.mark.parametrize("kind", ["missing", "nonexecutable", "directory", "broken-symlink"])
+def test_unusable_bundle_reports_unavailable_without_launching(tmp_path, monkeypatch, bundle_executable, kind):
+    if kind == "nonexecutable":
+        bundle_executable.write_text("not executable", encoding="utf-8")
+        bundle_executable.chmod(0o644)
+    elif kind == "directory":
+        bundle_executable.mkdir()
+    elif kind == "broken-symlink":
+        bundle_executable.symlink_to(tmp_path / "missing")
+    monkeypatch.setenv("PATH", str(tmp_path))
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(codex_work, "_Reader", lambda *args: pytest.fail("unavailable executable must not launch"))
+    result = codex_work._collect(tmp_path)
+    assert result["sessions"] == []
+    assert result["source"]["state"] == "unavailable"
+    assert "PATH" in result["source"]["detail"] and "Shared Codex claims still appear" in result["source"]["detail"]
 
 
 def test_repository_matching_uses_origin_or_checkout_not_title(tmp_path, monkeypatch):
@@ -45,7 +112,8 @@ def test_summary_uses_public_activity_and_explicit_checkboxes():
     ]}
     result = codex_work._record(thread, turn, live=True)
     assert result["title"] == thread["name"]
-    assert result["activity"] == "Last activity: ran a command"
+    assert result["activity"] == "Checking the fit."
+    assert result["action"] == "Last activity: ran a command"
     assert result["steps"] == [{"title": "Inspect", "status": "completed"}, {"title": "Validate", "status": "pending"}]
     assert "secret" not in json.dumps(result) and "private reasoning" not in json.dumps(result)
     thread["status"] = {"type": "active", "activeFlags": []}
@@ -54,7 +122,29 @@ def test_summary_uses_public_activity_and_explicit_checkboxes():
     assert codex_work._record(thread, turn, live=False)["activity"] == "Last activity: ran a command"
 
 
-def test_protocol_falls_back_to_saved_history_and_only_reads(tmp_path, monkeypatch):
+@pytest.mark.parametrize("live,status,action", [
+    (True, {"type": "active"}, "Editing project files"),
+    (False, {"type": "active"}, "Last activity: edited project files"),
+    (True, {"type": "idle"}, "Last activity: edited project files"),
+    (True, {"type": "active", "activeFlags": ["waitingOnApproval"]}, "Last activity: edited project files"),
+])
+def test_public_summary_survives_tool_action_and_new_message_clears_it(live, status, action):
+    thread = {"id": "demo", "status": status}
+    turn = {"items": [{"type": "agentMessage", "text": "Checking hinge clearance; motion sweep next."},
+                      {"type": "fileChange", "status": "inProgress", "changes": "private diff"},
+                      {"type": "agentMessage", "text": "  "}]}
+    item = codex_work._record(thread, turn, live)
+    assert item["activity"] == "Checking hinge clearance; motion sweep next."
+    assert item["action"] == action and "private diff" not in json.dumps(item)
+    turn["items"].append({"type": "agentMessage", "text": "Clearance checked; reviewing results."})
+    newer = codex_work._record(thread, turn, live)
+    assert newer["activity"] == "Clearance checked; reviewing results." and newer["action"] == ""
+
+
+
+
+@pytest.mark.parametrize("discovery", ["path", "macos-bundle"])
+def test_protocol_falls_back_to_saved_history_and_only_reads(tmp_path, monkeypatch, discovery):
     root = tmp_path / "repo"
     root.mkdir()
     calls = tmp_path / "calls.jsonl"
@@ -84,7 +174,9 @@ for line in sys.stdin:
     print(json.dumps({'id':request['id'],'result':result}),flush=True)
 """.replace("CALLS", repr(str(calls))).replace("ROOT", repr(str(root))), encoding="utf-8")
     cli.chmod(0o755)
-    monkeypatch.setattr(codex_work.shutil, "which", lambda name: str(cli))
+    monkeypatch.setattr(codex_work.shutil, "which", lambda name: str(cli) if discovery == "path" else None)
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", cli)
     result = codex_work._collect(root)
     assert [s["id"] for s in result["sessions"]] == ["ours"]
     assert result["sessions"][0]["activity"] == "Tests passed."
@@ -95,7 +187,8 @@ for line in sys.stdin:
         "initialize", "initialized", "thread/list", "thread/turns/list"}
 
 
-def test_failed_refresh_retains_stale_snapshot_and_throttles_retries(tmp_path, monkeypatch):
+@pytest.mark.parametrize("activity", ["Checking hinge clearance.", "Running a command"])
+def test_failed_refresh_retains_stale_snapshot_and_throttles_retries(tmp_path, monkeypatch, activity):
     monkeypatch.setattr(codex_work, "_CACHE", {})
     clock = [100.0]
     monkeypatch.setattr(codex_work.time, "time", lambda: clock[0])
@@ -105,23 +198,49 @@ def test_failed_refresh_retains_stale_snapshot_and_throttles_retries(tmp_path, m
         calls.append(root)
         if len(calls) > 1:
             raise TimeoutError()
-        return {"sessions": [{"id": "demo", "state": "working"}], "source": {"name": "Codex", "updated_at": 100}}
+        return {"sessions": [{"id": "demo", "state": "working", "activity": activity, "action": "Running a command"}],
+                "source": {"name": "Codex", "updated_at": 100}}
 
     monkeypatch.setattr(codex_work, "_collect", collect)
     assert codex_work.snapshot(tmp_path)["sessions"][0]["state"] == "working"
     clock[0] = 131
     result = codex_work.snapshot(tmp_path)
     assert result["sessions"][0]["state"] == "stale"
+    assert result["sessions"][0]["action"] == ""
+    assert result["sessions"][0]["live"] is None
+    assert result["sessions"][0]["activity"] == (activity if activity != "Running a command" else "No fresh activity summary is available.")
     assert result["source"]["updated_at"] == 100 and result["source"]["state"] == "unavailable"
     codex_work.snapshot(tmp_path)
     assert len(calls) == 2
+
+
+def test_failed_live_refresh_can_use_newer_claim_activity(tmp_path, monkeypatch):
+    from kerf import work
+    cached = codex_work._record({"id": "chat", "updatedAt": 100, "status": {"type": "active"}},
+                               {"items": [{"type": "agentMessage", "text": "Checking hinge clearance."},
+                                          {"type": "commandExecution", "status": "inProgress"}]}, live=True)
+    monkeypatch.setattr(codex_work, "_CACHE", {str(tmp_path.resolve()): {"at": 100, "value": {"sessions": [cached]}}})
+    monkeypatch.setattr(codex_work.time, "time", lambda: 140)
+
+    def unavailable(root):
+        raise TimeoutError()
+
+    monkeypatch.setattr(codex_work, "_collect", unavailable)
+    snapshot = codex_work.snapshot(tmp_path)
+    item, = work.overview({"cards": [{"thread_id": "chat", "item": "Check hinge", "updated_at": 130,
+                                     "activity": "Clearance checked; reviewing results."}]},
+                          sessions=snapshot["sessions"], now=140)["items"]
+    assert item["activity"] == "Clearance checked; reviewing results." and item["updated_at"] == 130
+    assert item["action"] == "" and item["live"] is None
+    assert item["state"] == "stale" and item["status_label"] == "Last known state" and item["attention"]
+    assert item["source_label"] == "Codex last known session + Git claim"
 
 
 def test_work_combines_main_claims_codex_and_local_jobs(monkeypatch):
     from kerf import live
     monkeypatch.setattr(studio, "LIVE", {"work": None, "work_key": None, "last_fetch": 100, "fetch_error": None})
     monkeypatch.setattr(studio, "_live_thread", lambda: None)
-    monkeypatch.setattr(studio, "_git", lambda *args: "" if args[0] == "symbolic-ref" else "main-sha")
+    monkeypatch.setattr(live, "shared_revision", lambda root: "main-sha")
     monkeypatch.setattr(studio, "JOBS", {})
     seen = []
     monkeypatch.setattr(live, "work_data", lambda root, ref, **kw: seen.append(ref) or {"cards": [], "feed": []})
@@ -131,7 +250,7 @@ def test_work_combines_main_claims_codex_and_local_jobs(monkeypatch):
                 "source": {"name": "Codex", "state": "ok"}}
     monkeypatch.setattr(codex_work, "snapshot", snapshot)
     result = studio.work()
-    assert seen == ["origin/main"]
+    assert seen == ["main-sha"]
     assert result["items"][0]["provider"] == "Codex" and result["counts"]["running"] == 1
     assert {s["name"] for s in result["sources"]} == {"Codex", "Shared claims", "Studio jobs"}
 
@@ -147,17 +266,18 @@ def test_claim_identity_and_activity_are_explicit(tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDECODE", "1")  # A Claude child can inherit its launcher's Codex environment.
     assert claims.session_source() == {"provider": "Claude Code"}
     monkeypatch.delenv("CLAUDECODE")
-    monkeypatch.setattr(claims, "DIR", tmp_path)
     monkeypatch.setattr(claims, "session_id", lambda: "owner")
-    monkeypatch.setattr(claims, "git", lambda *args: subprocess.CompletedProcess(args, 0))
-    path = tmp_path / "work.json"
-    path.write_text(json.dumps({"session": "owner", "item": "Work page"}), encoding="utf-8")
+    current = {"work": {"session": "owner", "item": "Work page"}}
+    def publish(msg, change):
+        current.update(change(current))
+        return True
+    monkeypatch.setattr(claims, "publish", publish)
     claims.cmd_beat("Checking   source freshness")
-    saved = json.loads(path.read_text())
+    saved = current["work"]
     assert saved["activity"] == "Checking source freshness" and saved["thread_id"] == "thread-1"
     claims.cmd_beat()
-    assert json.loads(path.read_text())["activity"] == saved["activity"]
+    assert current["work"]["activity"] == saved["activity"]
     monkeypatch.setenv("CLAUDECODE", "1")
     claims.cmd_beat()
-    assert json.loads(path.read_text())["provider"] == "Claude Code"
-    assert "thread_id" not in json.loads(path.read_text())
+    assert current["work"]["provider"] == "Claude Code"
+    assert "thread_id" not in current["work"]

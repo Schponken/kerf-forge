@@ -6,8 +6,8 @@ is installed and its usage isn't used up, otherwise Codex; a Claude job cut off 
 
 Both agents get the same task text. Claude's starts with "/kerf" (its skill); Codex has no slash skills, so that is
 rewritten to "follow .claude/skills/kerf/SKILL.md" and Codex reads AGENTS.md (its own rules) on its own.
-Codex runs in its sandboxed auto mode (`--full-auto`: writes only inside the repo, no approval prompts) with network on
-so it can research and push. Spencer can change those flags with KERF_CODEX_ARGS.
+Codex runs with the workspace-write sandbox (`--sandbox workspace-write`) and network on so it can research and push.
+Spencer can change those flags with KERF_CODEX_ARGS; no approval-policy override is added here.
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 MODE_FILE = ROOT / ".cache" / "studio" / "agent"
 MODES = ("auto", "claude", "codex")
-CODEX_FLAGS = ["--full-auto", "-c", "sandbox_workspace_write.network_access=true", "--skip-git-repo-check"]
+CODEX_FLAGS = ["--sandbox", "workspace-write", "-c", "sandbox_workspace_write.network_access=true", "--skip-git-repo-check"]
 
 
 def mode() -> str:
@@ -49,7 +49,7 @@ def claude_bin() -> str | None:
 
 def codex_bin() -> str | None:
     try:
-        from .codex_work import codex_bin as find   # same discovery Studio's Work page uses
+        from .codex_work import _executable as find   # same discovery Studio's Work page uses
         return find()
     except Exception:  # noqa: BLE001
         return shutil.which("codex")

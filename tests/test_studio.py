@@ -78,10 +78,12 @@ def test_design_phase_classifier(tool, inp, phase):
 
 @pytest.fixture(scope="module")
 def server():
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), studio.Handler)
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    yield f"http://127.0.0.1:{srv.server_address[1]}"
-    srv.shutdown()
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(studio, "_live_thread", lambda: None)  # no real repository fetch from ordinary API/browser tests
+        srv = ThreadingHTTPServer(("127.0.0.1", 0), studio.Handler)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        yield f"http://127.0.0.1:{srv.server_address[1]}"
+        srv.shutdown()
 
 
 def _get(url):

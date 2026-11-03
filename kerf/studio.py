@@ -56,6 +56,7 @@ class Job:
         self.lines: list[str] = []
         self.events: list[dict] = []
         self.state = "running"
+        self._stop_state: str | None = None
         self.started, self.ended = time.time(), None
         self.result: dict | None = None
         self.mode: str | None = None            # kerf run --mode (kerf/modes.py) when the job is a mode run
@@ -82,25 +83,28 @@ class Job:
                             self.usage = ev
                             USAGE.update(until=max(USAGE["until"], float(ev.get("until") or 0)), text=ev.get("text", ""))
                         self.events.append(ev)
-                        if ev.get("k") == "hint" and self.state == "running":   # can't succeed: stop now, say why
-                            self.state = "failed"
-                            try:
-                                os.killpg(self.proc.pid, 15)
-                            except Exception:  # noqa: BLE001
-                                self.proc.terminate()
+                        if ev.get("k") == "hint":   # can't succeed: stop now, say why
+                            with JOB_LOCK:
+                                if self._stop_state is None:
+                                    self._stop_state = "failed"
+                                    try:
+                                        os.killpg(self.proc.pid, 15)
+                                    except Exception:  # noqa: BLE001
+                                        self.proc.terminate()
                         continue
                     except Exception:  # noqa: BLE001
                         pass
                 self.lines.append(ln)
         rc = self.proc.wait()
-        self.ended = time.time()
-        if rc and self.state == "running":
-            self.lines.append(f"(stopped by signal {-rc}: out of memory or killed)" if rc < 0 else f"(exit code {rc})")
-        if self.state == "running":
-            self.state = "paused" if self.usage else "done" if rc == 0 else "failed"
+        with JOB_LOCK:
+            self.ended = time.time()
+            if rc and self._stop_state is None:
+                self.lines.append(f"(stopped by signal {-rc}: out of memory or killed)" if rc < 0 else f"(exit code {rc})")
+            self.state = self._stop_state or ("paused" if self.usage else "done" if rc == 0 else "failed")
+            if self.state == "paused":
+                self.lines.append(f"(paused: Claude usage ran out; it resumes around "
+                                  f"{time.strftime('%-I:%M %p', time.localtime(float(self.usage.get('until') or time.time())))})")
         if self.state == "paused":
-            self.lines.append(f"(paused: Claude usage ran out; it resumes around "
-                              f"{time.strftime('%-I:%M %p', time.localtime(float(self.usage.get('until') or time.time())))})")
             schedule_resume(self)
         try:
             on_finished(self)
@@ -108,12 +112,21 @@ class Job:
             pass
 
     def stop(self):
-        if self.state == "running":
-            self.state = "stopped"
-            try:
-                os.killpg(self.proc.pid, 15)
-            except Exception:  # noqa: BLE001
-                self.proc.terminate()
+        with JOB_LOCK:
+            if self.state == "paused" and self._stop_state is None:
+                self._stop_state, self.state = "stopped", "stopped"
+                self.lines.append("Stopped; automatic resume cancelled.")
+                successor = JOBS.get(self.resumed_by)
+                if successor is not None and successor is not self:
+                    successor.stop()  # A resume may have registered before this delayed Stop arrived.
+            elif self.state == "running" and self._stop_state is None:
+                # Keep project guards and UI polling active until the process has finished writing.
+                self._stop_state = "stopped"
+                self.lines.append("Stopping; waiting for the process to exit.")
+                try:
+                    os.killpg(self.proc.pid, 15)
+                except Exception:  # noqa: BLE001
+                    self.proc.terminate()
 
     def info(self, since: int = 0, esince: int = 0) -> dict:
         end = self.ended or time.time()
@@ -244,7 +257,7 @@ def fixable(name: str) -> tuple[bool, str]:
     if any(j.kind == "fix" and j.project == name and j.state == "running" for j in JOBS.values()):
         return False, "a fix is already running"
     if _worked_on(name):
-        return False, "another Claude session is working on this project right now (see Activity)"
+        return False, "another session has claimed this project (see Activity)"
     return True, ""
 
 
@@ -260,7 +273,7 @@ class Claimed(ValueError):
 
 def guard_claimed(name: str, override: bool):
     if not override and _worked_on(name):
-        raise Claimed("Another Claude session is working on this project right now (see Activity). Changing it here "
+        raise Claimed("Another session has claimed this project (see Activity). Changing it here "
                       "can clash with its edits. Change it anyway?")
 
 
@@ -463,25 +476,28 @@ def start_job(*a, **k) -> Job:
 
 def resume_job(jid: str, auto: bool = False) -> Job:
     """Continue a job Claude's usage limit paused: the same Claude session, told to pick up where it stopped."""
-    old = JOBS.get(jid)
-    if not old or old.state != "paused" or not old.session:
-        raise ValueError("nothing to resume: that job isn't paused by a usage limit")
-    if old.resumed_by:
-        raise ValueError("it was resumed already")
     if auto:
         stop = budget_stop()
         if stop:
             raise ValueError(f"not resumed automatically: the budget switch is on ({stop})")
-    USAGE["until"] = 0.0                       # the person (or the reset timer) says usage is back: let it try
-    msg = ("You were cut off by the Claude usage limit. Continue exactly where you left off: look at `git status`, the last "
-           "commits and STATUS.md, finish the task you were given, then check, commit and push.")
-    if getattr(old, "agent", "claude") == "claude" and usage_blocked() and agent.can_take_over():
-        j = codex_takeover(old)              # Claude still out: Codex continues the same task from git
-    else:
-        j = agent_job(old.kind, old.project, msg, f"{old.label} (resumed)", env=old.env, resume=old.session,
-                      who=getattr(old, "agent", "claude"))
-    old.resumed_by = j.id
-    return j
+    with JOB_LOCK:
+        if auto and not settings().get("autoresume", True):
+            raise ValueError("automatic resume is off")
+        old = JOBS.get(jid)
+        if not old or old.state != "paused" or getattr(old, "_stop_state", None) or not old.session:
+            raise ValueError("nothing to resume: that job isn't paused by a usage limit")
+        if old.resumed_by:
+            raise ValueError("it was resumed already")
+        USAGE["until"] = 0.0                       # the person (or the reset timer) says usage is back: let it try
+        msg = ("You were cut off by the Claude usage limit. Continue exactly where you left off: look at `git status`, the last "
+               "commits and STATUS.md, finish the task you were given, then check, commit and push.")
+        if getattr(old, "agent", "claude") == "claude" and usage_blocked() and agent.can_take_over():
+            j = codex_takeover(old)              # Claude still out: Codex continues the same task from git
+        else:
+            j = agent_job(old.kind, old.project, msg, f"{old.label} (resumed)", env=old.env, resume=old.session,
+                          who=getattr(old, "agent", "claude"))
+        old.resumed_by = j.id
+        return j
 
 
 def agent_job(kind: str, name: str, prompt: str, label: str, resume: str | None = None, who: str | None = None,
@@ -508,40 +524,46 @@ def pick_agent() -> str | None:
 def codex_takeover(old) -> Job:
     """A Claude job the usage limit paused, continued by Codex (a new session: it picks up from git, not from Claude's
     conversation). Spencer, 2026-11-02: Codex takes over when Claude runs out."""
-    msg = (f"Claude Code was working on this Kerf Studio task and ran out of usage: \"{old.label}\" (projects/{old.project}). "
-           f"Take over and finish it. Look at `git status`, `git log --oneline -15`, the newest STATUS.md entries, "
-           f"`.venv/bin/python tools/claims.py list` and the project's DESIGN.md first; keep Claude's work and continue from it.")
-    request = getattr(old, "request", None)
-    if request:
-        msg += f"\nThe original request: {request}"
-    j = agent_job(old.kind, old.project, msg, f"{old.label} (Codex took over)", env=old.env, who="codex")
-    old.resumed_by = j.id
-    return j
+    with JOB_LOCK:
+        if old.state != "paused" or getattr(old, "_stop_state", None) or old.resumed_by:
+            raise ValueError("nothing to take over: that job isn't waiting on usage")
+        msg = (f"Claude Code was working on this Kerf Studio task and ran out of usage: \"{old.label}\" (projects/{old.project}). "
+               f"Take over and finish it. Look at `git status`, `git log --oneline -15`, the newest STATUS.md entries, "
+               f"`.venv/bin/python tools/claims.py list` and the project's DESIGN.md first; keep Claude's work and continue from it.")
+        request = getattr(old, "request", None)
+        if request:
+            msg += f"\nThe original request: {request}"
+        j = agent_job(old.kind, old.project, msg, f"{old.label} (Codex took over)", env=old.env, who="codex")
+        old.resumed_by = j.id
+        return j
 
 
 def schedule_resume(job, delay: float | None = None):
-    """When usage comes back, resume the paused job by itself (not if the budget switch is on, or it was resumed).
-    With Codex installed (auto mode) Codex takes over at once instead of waiting for Claude's reset."""
-    if settings().get("autoresume", True) and getattr(job, "agent", "claude") == "claude" and agent.can_take_over() \
-            and not budget_stop() and not job.resumed_by:
-        try:
-            codex_takeover(job)
-            job.lines.append("(Codex took over: Claude's usage ran out)")
+    """Resume a usage-paused job, or hand it to Codex, unless an explicit Stop won the job lock."""
+    enabled = settings().get("autoresume", True)
+    takeover = enabled and getattr(job, "agent", "claude") == "claude" and agent.can_take_over() and not budget_stop()
+    with JOB_LOCK:
+        if job.state != "paused" or getattr(job, "_stop_state", None) or job.resumed_by:
             return
-        except Exception as e:  # noqa: BLE001 - fall back to waiting for Claude
-            job.lines.append(f"(Codex couldn't take over: {e})")
-    if not settings().get("autoresume", True) or not job.session:
-        return
-    wait = delay if delay is not None else max(60.0, float((job.usage or {}).get("until") or 0) - time.time() + 120)
-    def go():
-        if job.state == "paused" and not job.resumed_by:
+        if takeover:
             try:
-                resume_job(job.id, auto=True)
-            except Exception as e:  # noqa: BLE001 - say why on the paused job; the Resume button still works
-                job.lines.append(f"(not resumed automatically: {e})")
-    t = threading.Timer(wait, go)
-    t.daemon = True
-    t.start()
+                codex_takeover(job)
+                job.lines.append("(Codex took over: Claude's usage ran out)")
+                return
+            except Exception as e:  # noqa: BLE001 - fall back to waiting for Claude
+                job.lines.append(f"(Codex couldn't take over: {e})")
+        if not enabled or not job.session:
+            return
+        wait = delay if delay is not None else max(60.0, float((job.usage or {}).get("until") or 0) - time.time() + 120)
+        def go():
+            if job.state == "paused" and not job.resumed_by:
+                try:
+                    resume_job(job.id, auto=True)
+                except Exception as e:  # noqa: BLE001 - say why on the paused job; the Resume button still works
+                    job.lines.append(f"(not resumed automatically: {e})")
+        t = threading.Timer(wait, go)
+        t.daemon = True
+        t.start()
 
 
 PROGRESS_ENV = {"KERF_PROGRESS": "1", "PYTHONUNBUFFERED": "1"}
@@ -628,7 +650,7 @@ def summary(name: str) -> dict:
 
 
 def _worked_on(name: str) -> bool:
-    """A fresh claim names this project (a Claude session is on it); running Studio jobs show as "working…" already."""
+    """A fresh shared claim names this project; ownership does not imply a running process."""
     from . import explain
     try:
         return explain.work_status(name, [], explain.claims(ROOT))["state"] == "claimed"
@@ -722,8 +744,10 @@ SESSIONS = {"at": 0.0, "list": []}
 
 
 def sessions(max_age: float = 30) -> list[dict]:
-    """Claude / Codex sessions working on a project right now (fresh claims naming it), for Studio's Activity list.
+    """Sessions with fresh shared claims naming a project, for Studio's Activity list.
     Cached for max_age s: /api/jobs is polled every few seconds."""
+    LIVE["work_until"] = time.time() + 90  # Activity is polled on every page, so shared ownership keeps refreshing.
+    _live_thread()
     if time.time() - SESSIONS["at"] < max_age:
         return SESSIONS["list"]
     from . import explain
@@ -1488,7 +1512,7 @@ def thumb_info(name: str) -> dict:
 
 # ---------------------------------------------------------------- follow live + Work tab (kerf/live.py)
 # One background thread, one `git fetch` at most every live.FETCH_EVERY seconds, only while a project is followed or
-# the Work tab is open. Updates follow tools/mac/start.sh's rule (clean tree, fast-forward only) and wait while a Studio
+# Activity is polled or the Work tab is open. Updates follow tools/mac/start.sh's rule (clean tree, fast-forward only) and wait while a Studio
 # job runs, so they never pull under a build or a Claude Code change.
 LIVE_DIR = ROOT / ".cache" / "studio_live"
 LIVE: dict = {"follow": {}, "last_fetch": 0.0, "fetch_error": None, "work_until": 0.0, "work": None, "work_key": None,
@@ -1583,6 +1607,7 @@ def live_tick(now: float | None = None) -> None:
     LIVE["last_fetch"] = now
     LIVE["fetch_error"] = live.fetch(ROOT)
     LIVE["work"] = None
+    SESSIONS["at"] = 0.0
     if LIVE["fetch_error"] or not followed:
         return
     up, head = live.upstream(ROOT), _git("rev-parse", "HEAD")
@@ -1636,19 +1661,18 @@ def work() -> dict:
     LIVE["work_until"] = time.time() + 90              # the tab is open: keep the shared fetch going
     _live_thread()
     # Claims are shared on main even when Studio itself runs from a feature branch.
-    ref = _git("symbolic-ref", "--quiet", "refs/remotes/origin/HEAD") or "origin/main"
-    revision = _git("rev-parse", "--verify", "-q", ref)
-    if not revision:
-        ref, revision = "@{u}", live.upstream(ROOT) or _git("rev-parse", "HEAD")
+    revision = live.shared_revision(ROOT)
     key = (revision, int(time.time() // 60))
     git_work = LIVE["work"]
     if git_work is None or LIVE["work_key"] != key:
-        git_work = live.work_data(ROOT, ref, picture=_work_picture)
+        git_work = live.work_data(ROOT, revision, picture=_work_picture)
         LIVE["work"] = git_work
         LIVE["work_key"] = key
     codex = codex_work.snapshot(ROOT)
     now = time.time()
     timings = _times()
+    auto_resume = settings().get("autoresume", True)
+    retry_blocked = bool(budget_stop())
     jobs = []
     with JOB_LOCK:
         for j in list(JOBS.values()):
@@ -1660,6 +1684,12 @@ def work() -> dict:
             # A last report may be a quick check, so only recorded comparable runs support a countdown.
             jobs.append({"id": j.id, "kind": j.kind, "project": j.project, "label": j.label,
                          "state": j.state, "started": j.started, "mode": j.mode, "events": list(j.events),
+                         "ended": j.ended, "agent": getattr(j, "agent", "claude"),
+                         "session": getattr(j, "session", None),
+                         "usage": getattr(j, "usage", None), "resumed_by": getattr(j, "resumed_by", None),
+                         "resumable": bool(j.state == "paused" and getattr(j, "session", None)
+                                           and not getattr(j, "resumed_by", None)),
+                         "auto_resume": auto_resume, "retry_blocked": retry_blocked,
                          "estimate_seconds": estimate(j.project, kind) if comparable else None})
     sources = [{"name": "Shared claims", "state": "partial" if LIVE["fetch_error"] or not LIVE["last_fetch"] else "ok",
                 "detail": "Last fetched repository state; claim updates show ownership, not live execution.",

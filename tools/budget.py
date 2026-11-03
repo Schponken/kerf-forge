@@ -12,38 +12,37 @@ itself off at that time (e.g. the weekly reset).
   .venv/bin/python tools/budget.py resume                        clear it, push
 """
 import calendar
-import json
 import os
 import sys
 import time
 from pathlib import Path
 
 ROOT = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path(__file__).resolve().parent.parent))
-SHARED = ROOT / "claims" / "budget.json"
 LOCAL = ROOT / ".claude" / "state" / "BUDGET_STOP"
 
 
-def stopped(now: float | None = None) -> str:
+def stopped(now: float | None = None, *, shared: dict | None = None) -> str:
     """The reason new work must not start, or '' when it may."""
-    now = now or time.time()
+    now = time.time() if now is None else now
     if LOCAL.exists():
         return "local BUDGET_STOP: " + (LOCAL.read_text(encoding="utf-8").strip() or "set on this machine")
-    try:
-        b = json.loads(SHARED.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001 - no file (or a broken one) means no stop
+    if shared is None:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import claims
+        shared = claims.load().get("budget", {})
+    if not shared:
         return ""
-    until = b.get("until")
+    until = shared.get("until")
     if until and now >= float(until):
         return ""
     end = f" (until {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(float(until)))})" if until else ""
-    return (b.get("reason") or "usage budget near the cap") + end
+    return (shared.get("reason") or "usage budget near the cap") + end
 
 
-def _push(msg: str) -> bool:
+def _push(msg: str, value: dict | None) -> bool:
     sys.path.insert(0, str(ROOT / "tools"))
     import claims
-    claims.git("add", "-A", "claims/budget.json")
-    return claims.push(msg)
+    return claims.publish(msg, lambda current: {"budget": value})
 
 
 def main(argv) -> int:
@@ -59,14 +58,11 @@ def main(argv) -> int:
             i = rest.index("--until")
             until = calendar.timegm(time.strptime(rest[i + 1], "%Y-%m-%d %H:%M"))
             rest = rest[:i] + rest[i + 2:]
-        SHARED.parent.mkdir(exist_ok=True)
-        SHARED.write_text(json.dumps({"reason": " ".join(rest) or "usage budget near the cap", "until": until,
-                                      "set": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}, indent=1) + "\n",
-                          encoding="utf-8")
-        return 0 if _push("budget: stop new work") else 1
+        value = {"reason": " ".join(rest) or "usage budget near the cap", "until": until,
+                 "set": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}
+        return 0 if _push("budget: stop new work", value) else 1
     if cmd == "resume":
-        SHARED.unlink(missing_ok=True)
-        return 0 if _push("budget: resume") else 1
+        return 0 if _push("budget: resume", None) else 1
     print(__doc__)
     return 2
 

@@ -6,7 +6,13 @@ import stat
 
 import pytest
 
-from kerf import agent
+from kerf import agent, codex_work
+
+
+@pytest.fixture(autouse=True)
+def no_host_bundle(tmp_path, monkeypatch):
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", tmp_path / "missing-bundle-codex")
+    monkeypatch.setattr(codex_work, "_Reader", lambda *a: pytest.fail("agent discovery must not open app-server"))
 
 
 @pytest.fixture
@@ -51,15 +57,53 @@ def test_nothing_installed(bins):
     assert agent.pick() is None
 
 
+@pytest.mark.parametrize("resume", [None, "fixture-thread"])
+@pytest.mark.parametrize("on_path", [False, True])
+def test_actual_discovery_reaches_agent_command(bins, tmp_path, monkeypatch, resume, on_path):
+    bins(*(["codex"] if on_path else []))
+    bundle = tmp_path / "ChatGPT fixture.app/Contents/MacOS/codex"
+    bundle.parent.mkdir(parents=True)
+    bundle.write_text("#!/bin/sh\nexit 99\n", encoding="utf-8")
+    bundle.chmod(0o755)
+    monkeypatch.setattr(codex_work, "_MACOS_BUNDLE_EXECUTABLE", bundle)
+    monkeypatch.setattr(codex_work.platform, "system", lambda: "Darwin")
+    expected = str(tmp_path / "codex" if on_path else bundle)
+    assert codex_work._executable() == agent.codex_bin() == expected
+    assert agent.pick() == "codex"
+    cmd = agent.command("codex", "Fixture only; do not execute", resume=resume)
+    assert cmd[0] == expected and cmd[1:3] == ["exec", "--json"]
+    assert cmd[3:-1] == [*agent.CODEX_FLAGS, *(["resume", resume] if resume else [])]
+    assert cmd[-1].startswith("Fixture only; do not execute")
+
+
+def test_agent_discovery_retains_path_fallback_on_helper_error(bins, tmp_path, monkeypatch):
+    bins("codex")
+    def unavailable():
+        raise OSError("fixture discovery failure")
+    monkeypatch.setattr(codex_work, "_executable", unavailable)
+    assert agent.codex_bin() == str(tmp_path / "codex")
+
+
 def test_codex_command_rewrites_the_skill_and_keeps_prompt_last(bins):
     bins("codex")
     cmd = agent.command("codex", "/kerf a desk lamp\n\nProject folder name: projects/lamp.")
     assert cmd[1:3] == ["exec", "--json"] and agent.who_runs(cmd) == "codex"
-    assert "--full-auto" in cmd and "--dangerously-bypass-approvals-and-sandbox" not in cmd
+    assert cmd[3:-1] == ["--sandbox", "workspace-write", "-c", "sandbox_workspace_write.network_access=true", "--skip-git-repo-check"]
+    assert "--full-auto" not in cmd and "--dangerously-bypass-approvals-and-sandbox" not in cmd
     assert ".claude/skills/kerf/SKILL.md" in cmd[-1] and "a desk lamp" in cmd[-1] and "AGENTS.md" in cmd[-1]
     assert not cmd[-1].startswith("/kerf")
     r = agent.command("codex", "continue", resume="thread-123")
     assert r[r.index("resume") + 1] == "thread-123" and r[-1].startswith("continue")
+    assert r[3:r.index("resume")] == cmd[3:-1]
+
+
+@pytest.mark.parametrize("resume", [None, "thread-123"])
+def test_explicit_codex_args_still_replace_defaults(bins, monkeypatch, resume):
+    bins("codex")
+    monkeypatch.setenv("KERF_CODEX_ARGS", "--sandbox 'read-only'")
+    cmd = agent.command("codex", "inspect only", resume=resume)
+    assert cmd[3:-1] == ["--sandbox", "read-only", *(["resume", resume] if resume else [])]
+    assert cmd[-1].startswith("inspect only")
 
 
 def test_claude_command_unchanged(bins):
@@ -130,6 +174,7 @@ def test_paused_claude_job_is_taken_over_by_codex(bins, tmp_path, monkeypatch):
     monkeypatch.setattr(studio, "settings", lambda: {"autoresume": True})
 
     class Old:                                               # a Claude design job the usage limit paused
+        state = "paused"
         id, kind, project, label, env, session, resumed_by = "old1", "design", "agent_test_d", "New design: lamp", None, "s9", None
         agent, request, lines = "claude", "a desk lamp", []
     old = Old()

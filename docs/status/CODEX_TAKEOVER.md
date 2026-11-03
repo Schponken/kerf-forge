@@ -57,5 +57,5 @@ PAUSED and Claude-only items) and finish that item as one PR with tests. Release
 
 ## Automatic takeover in Studio (kerf/agent.py)
 `kerf agent` shows the mode (auto default). In auto, Studio's new designs / quotes / edits / fixes run on Claude Code, and on
-ChatGPT Codex (`codex exec --json --full-auto`, network on) when Claude's usage is out; a Claude job cut off mid-way is
+ChatGPT Codex (`codex exec --json --sandbox workspace-write`, network on) when Claude's usage is out; a Claude job cut off mid-way is
 continued by Codex at once. `kerf agent codex` forces Codex. Needs the `codex` CLI on the Mac's PATH, signed in.
