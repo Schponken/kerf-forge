@@ -123,7 +123,12 @@ def _job(source, now):
     item["job_id"] = source.get("id")
     item["updated_at"] = max([number(source.get("started"), 0), number(source.get("ended"), 0)] +
                              [number(e.get("t"), 0) for e in events]) or None
-    latest = next((e for e in reversed(events) if e.get("k") in ("note", "stage", "tool", "hint", "done")), {})
+    latest = next((e for e in reversed(events) if e.get("k") in ("note", "stage", "tool", "hint", "done")
+                   and (e.get("k") != "note" or plain(e.get("text")))), {})
+    note = next((e for e in reversed(events) if e.get("k") in ("hint", "done")
+                 or (e.get("k") == "note" and plain(e.get("text")))), {}) if is_agent else {}
+    if latest.get("k") in ("stage", "tool") and note.get("k") in ("hint", "done"):
+        latest = note  # Cleanup tool events must not hide a setup failure or completed result.
     if latest.get("k") == "note":
         item["activity"] = plain(latest.get("text"), 400)
     elif latest.get("k") == "stage":
@@ -131,7 +136,8 @@ def _job(source, now):
     elif latest.get("k") == "tool":
         item["activity"] = PHASES.get(latest.get("phase"), "Working on the task")
     elif latest.get("k") == "hint":
-        item["activity"] = "Waiting for the process to stop."
+        item["activity"] = ("Waiting for the process to stop." if state == "running" else
+                            "The process stopped after a setup problem.")
         item["attention"] = {"auth": f"{item['provider']} needs you to sign in again.",
                              "trust": f"{item['provider']} needs this project folder to be trusted."}.get(
                                  latest.get("code"), "The session reported a setup problem.")
@@ -139,6 +145,11 @@ def _job(source, now):
         item["activity"] = "Checks completed." if latest.get("ok") else "Checks found problems to fix."
     elif state == "running":
         item["activity"] = "Starting the job; waiting for its first update."
+    if is_agent and state == "running" and latest.get("k") in ("stage", "tool"):
+        if note.get("k") == "note":
+            text = plain(note["text"], 400)
+            item["action"] = item["activity"] if item["activity"] != text else ""
+            item["activity"] = text
     if state == "paused":
         usage = source.get("usage") if isinstance(source.get("usage"), dict) else {}
         item["status_label"] = "Paused · usage limit" if usage else "Paused"

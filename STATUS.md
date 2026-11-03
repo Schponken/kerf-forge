@@ -672,3 +672,24 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Based on PR #31 and current main, preserving both STATUS sides of their additive conflict. Budget off and
   batch/duplicate-process status checked before focused runs. No real agent process/chat, timer, physical project,
   stress solve, full suite or full batch. Exact observed session/job dedup is a separate pending investigation.
+
+## 2026-11-03 — Studio progress descriptions survive tool updates in Work (Codex)
+- Reproduced through actual `studio.work()` with an in-memory job: a public note about hinge clearance
+  followed by a tool event became only "Checking the design". Running design/edit/fix/quote jobs now retain
+  the latest nonempty public note with the existing bounded phase/stage label as a separate action. A newer
+  note clears the action; no-note and identical-note fallbacks stay one line. Raw tool names, arguments,
+  commands, output and reasoning do not enter these descriptions; no progress or ETA is inferred.
+- Hint/result boundaries prevent an old note from returning, including cleanup tools after a setup failure.
+  Setup attention stays visible; the activity says it is waiting only while the process runs, and says it
+  stopped once failed/stopped. Paused and continued jobs keep PR #37's status descriptions and no action.
+  Build progress/results retain their existing behavior. No lifecycle, serialization, overview dedup, HTML,
+  CSS or source-reader changes; the existing Work action/search/escaping/refresh controls render the fields.
+- **70 targeted tests pass in 4.54 s** (`test_work_job_activity`, `test_work_job_states`, `test_work_overview`);
+  **1 overlapping browser test passes in 4.47 s** after adjusting only the capture scroll position. The first
+  browser attempt caught a harness assignment to `S.work` instead of its data; the harness now exercises
+  the actual refresh through mocked `/api/work`, preserving all assertions. One browser-marker warning
+  remains until pending PR #4 registers the marker. Doctor ALL OK; optional firmware tools unavailable.
+- Viewed `.cache/work-job-activity/work-job-activity-{dark,light}-{1440,390}.png`: actual serialized note/action,
+  escaped long content, search, keyboard activation, refresh focus/open details and wrapping all verified.
+  The existing tall phone shell is owned by the separate mobile-layout lane. No real model/session launch,
+  native chat opening, project build, stress solve or full suite; shared claims/budget checked, full batch HELD.
