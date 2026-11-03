@@ -188,6 +188,7 @@ for (let i = 0; i < out.cards; i++) {{
   await p.evaluate(i => window.__kerf.asm.show(i), i); await p.waitForFunction(() => !window.__kerf.asm.busy, null, {{ timeout: 30000 }}); await p.waitForTimeout(100);
   out.steps.push(await p.evaluate(() => [...window.__kerf.groups.values()].filter(g => g.visible && g.userData.mesh.material.opacity > 0.5).map(g => g.userData.it.id).sort()));
 }}
+await p.evaluate(() => document.activeElement.blur()); // outside controls; canvas arrows orbit the model
 await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(50); out.keyBack = await p.evaluate(() => window.__kerf.asm.i);
 await p.click('[data-tab="motion"]'); out.exited = await p.evaluate(() => !window.__kerf.asm.on && [...window.__kerf.groups.values()].every(g => g.userData.it.role === 'keepout' || g.visible));
 const K = 'window.__kerf';

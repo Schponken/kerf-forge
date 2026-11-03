@@ -1381,3 +1381,54 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Restarted Kerf Studio with no running jobs. Native UI verified insert location, Replay installation, step navigation and the second step's M3 shoulder-screw location. Installed source hashes and all 20 pre-existing modified project files still match after restart.
 - Desktop/phone captures reviewed in one correction pass plus confirmation: clearer local replay, reduced duplicate copy, moved label off tool contact and phone step controls away from target. These are schematic installation demonstrations, not physical assembly validation. Unknown unrecorded pin seats remain explicitly unavailable; older projects gain new missing metadata on future builds.
 - Backup: ~/Library/Application Support/KerfStudio/backups/20261102-230847-assembly-guide. Integration proof and recovery/install manifests: .cache/assembly-guide-integration/.
+
+## 2026-11-02 — Build it reading, replay and keyboard flow (Codex, round2-assembly)
+- Written operation order now precedes location controls. Insert and shoulder-screw explanations remain visible
+  beside the selected hardware. The end of the guide distinguishes user-marked completion from physical proof.
+- Replay step runs the saved operation sequence; Replay installation demonstrates only the selected location.
+  Stop walkthrough cancels and disposes its active scene. Pending local replays cannot overtake a newer scene.
+  Native completion toggles, named/current step navigation, preserved focus and control-aware shortcuts make the
+  same flow work by keyboard. Action pause/resume requests redraw for the parallel viewer scheduler update.
+- Focused selection: new assembly-flow browser regression plus existing placements and Build it regressions,
+  **3 passed in 27.93s**. Final assembly-flow source (focus retention and pause/resume wakeup included):
+  **1 passed in 9.80s**. A first artifact-only rerun failed because its requested temporary parent did not exist;
+  creating the ignored cache directory resolved setup without changing checks. Desktop/light 1440x960 and
+  phone/dark/reduced-motion 390x844 captures reviewed once; no overflow or JavaScript errors. Final evidence:
+  `.cache/assembly-round2-tests/test_assembly_reading_replays_0/{desktop,phone}.png`.
+- Detector reports only the incumbent global type-size hierarchy warning. No project files, geometry, catalog,
+  review.json, full suite, FEA, live jobs or installed-app changes. Saved offsets remain illustrative: this patch
+  does not validate insertion-path collisions, assembly feasibility or tool access; the integration owner has
+  the exact producer/animation limitations for the separately requested physical-path follow-up.
+
+## 2026-11-02 — Build it physical-motion consumer (Codex, integration checkpoint)
+- Merged frozen assembly UX c063ef8 locally. The consumer now accepts only sampled-clear exact-seat paths, stages one rigid group at a time, keeps previously prepared hardware hidden until its receiver is staged, and keeps automatic hardware static. Manual Show technique remains explicitly illustrative with unchecked tool clearance. Unknown/blocked paths hold a static reference.
+- A synthetic browser trajectory exposed negative first-frame tween progress; progress now clamps at zero. Dedicated deterministic clock and ordered synthetic box fixtures pass. Focused manual technique/UX fixtures passed before final exact-seat contract tightening; backend schema merge and final combined validation follow. No live jobs, installations or full suite.
+## 2026-11-02 — Build it sampled physical approach paths (Codex)
+- The viewer producer now checks each displayed part/group approach against parts already seated in the actual
+  guide sequence, including earlier groups in the same phase and the exact seated endpoint. It reuses the
+  insertion check's CAD overlap threshold, allowances and existing bounding-box broad phase. Exact transforms
+  are restored even if geometry fails. Declared paths retain their direction; heuristic candidates may try the
+  opposite direction only after the first collides. No shape, catalog, threshold or existing test changed.
+- Each group receives `motion`: sampled_clear / blocked / unverified, exact world offset, actual samples,
+  spacing, seat coverage, staged obstacles and candidate collision evidence. Consumer must use motion.offset_mm,
+  never infer permission from group.off. Work is capped at 10,000 sample/pair checks and 200 intervals per path;
+  excess/unsupported geometry/errors remain unverified. This is sampled rigid-part clearance, not continuous
+  collision, force/friction, heat, tool or loose-hardware proof. Hardware rows explicitly retain that distinction;
+  parent-approved manual schematic Show technique remains a separate consumer action.
+- Focused verification: 41 passed in 5.43 s (new test_assembly_paths, existing test_access and
+  test_viewer_insert_sites, viewer step payload and ship later-part fastener order nodes). Includes blocked/open
+  pockets, same-phase ordering, seat-only interference, allowed contact, opposite-candidate success, declared
+  direction preservation, budget/invalid inputs, grouped overlap, rotated exact offsets and exception restoration.
+- Two authorized CAD-only recoveries of temporary copies of the installed bionic_finger reproduced all four
+  saved vertex/triangle arrays exactly; fingerprint 69c05ed7665e2c58. Initial heuristic signs collided with prior
+  segments 14.89 / 14.98 / 15.08 mm before seating. Opposite same-axis candidates cleared: proximal +Y26.795 mm
+  (28 samples), middle -Y19.969 mm (21), distal +Y16.022 mm (18), all <=1 mm including seats; root stays anchored.
+  Final recovery 17.71 s. Final guarded-refresh payload: isolated worktree .cache/assembly-paths/finger-paths-final.json.
+  Root owns the saved-viewer refresh and consumer integration. No actual project/output/cache writes, FEA,
+  real job, full suite or installation here; batch remains HELD. The guide does not establish physical assembly certification.
+
+## 2026-11-02 — Build it physical-motion consumer complete (Codex)
+- Integrated producer 9dcf4d3 and assembly UX c063ef8. Automatic assembly uses only finite sampled-clear paths with exact-seat evidence, in saved phase/group order. Rigid groups keep their pose; incoming/prepared hardware is hidden until its receiving part is staged. Checked offsets can reverse the display explode direction. Unknown, blocked or malformed proof holds a static, labelled reference and stops walkthrough playback.
+- Automatic hardware stays static. Explicit Show technique retains local iron/driver replay and states that tool clearance is unchecked. Automatic joint demonstrations require a clear saved range sweep; manual recorded-motion illustrations remain available. Reduced motion stays static; cancellation prevents stale scene changes.
+- Fixed negative first-frame tween progress so a newly created tween cannot extend a checked path past its start. Synthetic rendered-frame fixtures check solid overlap, group order, rigid pose, insert staging, missing/blocked/malformed proof, explicit technique and reduced motion. Existing shortcut test now blurs controls before the documented page shortcut (canvas arrows retain orbit behavior).
+- Focused validation: 19 cases passed across producer, motion/clock, assembly flow, exact sites, bench close-up, engine kinematics and viewer/shortcut tests (18 together plus corrected shortcut alone); no tests removed or thresholds loosened. git diff --check passed. Detector reports only the pre-existing font-size hierarchy warning. No installed files, live jobs, project builds or full suite changed/run; real saved-finger preview uses unchanged embedded meshes plus producer proof.

@@ -434,6 +434,68 @@ def _pin_sites(asm, joints, phase) -> list[dict]:
     return out
 
 
+def _guide_motions(asm, groups, present, budget=10000):
+    """Check the displayed group's exact candidate path against parts seated before it, in display order."""
+    import math
+    from . import access
+
+    incoming = {i for group in groups for i in group["items"]}
+    seated = [i for i in present if i not in incoming]
+    for group in groups:
+        moving = group["items"]
+        source = "declared_insertion" if asm.proj.items[group.get("via", moving[0])].spec.get("insert") else "guide_candidate"
+        motion = {"status": "unverified", "source": source, "offset_mm": None, "samples": None,
+                  "max_step_mm": None, "reason": "This part approach has not been checked."}
+        group["motion"] = motion
+        try:
+            offset = np.asarray(group["off"], float)
+            if offset.shape != (3,) or not np.isfinite(offset).all():
+                raise ValueError("approach offset must be a finite 3D vector")
+            distance = float(np.linalg.norm(offset))
+            n = max(8, math.ceil(distance))
+            work = (n + 1) * len(moving) * len(seated) + len(moving) * (len(moving) - 1)
+            if n > 200 or work > budget:
+                motion["reason"] = "This approach exceeds the guide's bounded CAD check budget; no path is authorized."
+            elif any(geom.kmesh(asm.proj.items[i].shape) is not None for i in moving + seated):
+                motion["reason"] = "Mesh-only geometry has no exact CAD path check for this guide."
+            else:
+                budget -= work
+                internal = []
+                for index, item in enumerate(moving):
+                    internal, _ = access.translation_hits(asm, [item], moving[:index], [0, 0, 0], 1, first_hit=True)
+                    if internal:
+                        break
+                if internal:
+                    motion.update(status="blocked", collisions=internal,
+                                  reason="This moving group contains overlapping parts at their seated positions.")
+                else:
+                    attempts = []
+                    candidates = [offset] if source == "declared_insertion" or distance == 0 else [offset, -offset]
+                    for candidate in candidates:
+                        if attempts:
+                            if work > budget:
+                                motion.update(status="unverified", offset_mm=None,
+                                              reason="The first approach is blocked; checking another exceeds the guide CAD budget.")
+                                break
+                            budget -= work
+                        hits, sampled = access.translation_hits(asm, moving, seated, candidate, n, first_hit=True)
+                        attempts.append({"offset_mm": candidate.tolist(), "samples": sampled, "collisions": hits})
+                        motion.update(status="blocked" if hits else "sampled_clear", offset_mm=candidate.tolist(),
+                                      samples=sampled, max_step_mm=distance / n, obstacles=list(seated),
+                                      seat_checked=sampled == n + 1, collisions=hits, attempts=attempts)
+                        motion["reason"] = (f"Approach blocked: {hits[0]['a']} hits {hits[0]['b']} "
+                                            f"{hits[0]['mm_from_seat']:g} mm before the seat." if hits else
+                                            "Rigid CAD parts clear at samples at most 1 mm apart, including the seat, with earlier parts seated. "
+                                            "Allowed contacts apply; between-sample collisions, forces, friction, tools and loose hardware are not checked.")
+                        if not hits:
+                            break
+        except Exception as exc:  # A failed geometry check must never authorize an animation.
+            motion.update(status="unverified", offset_mm=None, samples=None, max_step_mm=None,
+                          reason=f"Approach could not be checked: {type(exc).__name__}: {exc}")
+        seated.extend(i for i in moving if i not in seated)
+    return budget
+
+
 def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
     """The ASSEMBLY.md build order as data for the viewer's step-by-step mode: per step the parts already on, the
     part(s) going on with the direction they come from (same rule as the step pictures: kerf/ship.py), the heat-set
@@ -453,6 +515,7 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
     outro = [c for c in secs[last + 1:]]
     movable = {e.name for e in asm.movable}
     out = []
+    path_budget = 10000  # Bound sample/pair work across the whole guide; never relax overlap or spacing.
     for s in st:
         k = s["step"]
         joined = [i for x in s["attach"] for i in x["items"]]
@@ -461,9 +524,10 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
         else:
             present = [i for x in st[:k] if not x["bench_for"] or x["bench_for"] <= k for i in x["items"]]
             present += [i for i in joined if i not in present]
-        groups = [{"items": [i], "off": _pt(ship._explode_offset(proj, asm, i, present)), "phase": 1} for i in s["items"]]
-        groups += [{"items": list(x["items"]), "off": _pt(ship._explode_offset(proj, asm, x["via"], present)), "phase": 2,
+        groups = [{"items": [i], "off": [0.0, 0.0, 0.0] if i == asm.root else ship._explode_offset(proj, asm, i, present).tolist(), "phase": 1} for i in s["items"]]
+        groups += [{"items": list(x["items"]), "off": ship._explode_offset(proj, asm, x["via"], present).tolist(), "phase": 2,
                     "via": x["via"], "from_step": x["step"]} for x in s["attach"]]
+        path_budget = _guide_motions(asm, groups, present, budget=path_budget)
         late = set(joined)
         screws = [{"at": _pt(j["at"]), "dir": _pt(j["dir"]), "screw": j["screw"], "len": float(j.get("length_mm") or 6),
                    "head": j.get("head"), "group": j["group"], "male": j["male"], "female": j["female"],
@@ -471,6 +535,10 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
                   for j in s["fastener_joints"] if j.get("at") is not None and j.get("dir") is not None]
         inserts = [site for iid in dict.fromkeys(x["item"] for x in s["inserts"])
                    for site in _insert_sites(iid, proj.items[iid])]
+        pin_sites = _pin_sites(asm, s["pins"], 1) + _pin_sites(asm, s["pins_after"], 2)
+        for hardware in screws + inserts + pin_sites:
+            hardware["motion"] = {"status": "unverified", "reason":
+                                  "The recorded seat and axis locate this hardware; its insertion and tool path are not checked."}
         demos = []
         for f in s["fits"]:
             o = f.get("onto")
@@ -480,7 +548,7 @@ def assembly_steps(proj, asm, rep: dict, md: str | None) -> dict | None:
         sec = by_step.get(k)
         out.append({"n": k, "title": sec["title"].split(" — ", 1)[1] if sec and " — " in sec["title"] else ", ".join(s["items"]),
                     "items": list(s["items"]), "present": present, "groups": groups, "screws": screws, "inserts": inserts,
-                    "pins": _pin_sites(asm, s["pins"], 1) + _pin_sites(asm, s["pins_after"], 2),
+                    "pins": pin_sites,
                     "demos": list(dict.fromkeys(demos)), "bench_for": s["bench_for"],
                     "lines": sec["lines"] if sec else []})
     return {"steps": out, "intro": intro, "outro": outro}

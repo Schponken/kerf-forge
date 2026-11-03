@@ -293,6 +293,7 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Studio shell redesign: replace decorative visual chrome with a coherent neutral workbench identity, clear navigation and responsive control hierarchy; preserve all existing workflows and accessible controls.
 - [ ] Fresh-eyes usability pass (Spencer, 2026-11-02; IN PROGRESS in ChatGPT Codex, delivered as pull requests - Claude sessions: don't start it, review/merge its PRs instead): look at Kerf as a first-time user (README, setup, Kerf Studio every screen at desktop + phone width, viewer, CLI help and error messages, output files) for what is confusing, overwhelming or unintuitive and for likely user mistakes / failure paths (port in use, Claude not signed in, job running, dirty repo, missing build, bad input); fix each with a test, leaving the Checks tab wording, Follow live and Work tab to their claimed items (findings for those go in their sessions' STATUS notes)
   - [x] Build it placement guide: select each hardware installation site, name its receiving part, and retain exact-location and insertion-direction cues with local context; browser regression.
+  - [x] Build it reading and replay flow: prioritize written operation order, distinguish step and site replays, and preserve keyboard completion and focus across guide updates; focused browser regression.
   - [x] Studio redesign integration: combine reviewed shell, project workspace and Work clarity changes; verify user journeys, native layout and responsive states without live builds or remote merges.
   - [x] First-use studio guidance: contextual help, optional keyboard-accessible tour and glossary, evidence-aware welcome and compact readiness guidance; mocked desktop/mobile browser coverage
   - [x] Immediate word definitions: show beside every marked term on hover, focus or one tap without a menu or search
@@ -331,3 +332,6 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Build it site metadata: include catalog-backed screw-pivot heat-set insert locations once per physical site, with stable identities and exact part transforms; focused producer regressions.
 
 - [x] Build it pivot metadata: directed catalog-backed shoulder/screw pivot seats and honest unknown states for pins whose axial placement is unrecorded; producer tests.
+
+- [x] Build it physical motion: consume sampled-clear paths in order, stage receivers before hardware, and hold unknown or blocked paths as static references; synthetic sequence and collision fixtures.
+- [x] Build it physical path evidence: check staged part approach and seat trajectories against exact CAD obstacles; expose sampled-clear, blocked and unverified states with physical limits; focused fixtures.
