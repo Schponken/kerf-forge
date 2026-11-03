@@ -1304,3 +1304,21 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Read the output and viewer JUnit cases for this closeout; checked the existing PLAN item and marked PR #60
   ready. This resolves the pending final validation in the earlier entry. No source edits, test reruns,
   captures or project builds during closeout; full batch and FEA remain held. Integration owns any later changes.
+
+## 2026-11-02 — Viewer definitions at the term (Codex, viewer-definitions)
+- Closed the concrete coverage gap in the model iframe: selected joint/motion labels, part and print materials,
+  space to keep clear, infill/overhang and stress/safety-factor labels now reveal their meaning directly on hover,
+  keyboard focus or one touch tap. Joint labels and motion controls use plain wording; identifiers/selectors and
+  engineering results are unchanged. No broad wrapping of English prose, no definition menu or search required.
+- Viewer HTML embeds 12 selected meanings from kerf.glossary.TERMS in a separate escaped JSON block. Exports
+  remain self-contained/offline and the saved model data is unchanged. Compatible saved viewers receive the
+  current template through the existing delivery path; source export files are not rewritten.
+- New targeted tests: **2 passed in 5.34s** with PYTHONPATH set to this isolated worktree. Serialization checks
+  exact shared meanings, script-closing escape and unchanged embedded model data. One Chromium test covers
+  1440x960/light and 390x844/touch/dark: immediate access, pointer continuity, focus return/Escape, viewport fit,
+  reduced motion, material reading without part selection, outside dismissal and zero HTTP/page errors.
+  Initial invocation used the shared venv's editable root package; corrected PYTHONPATH tested the intended source.
+- Inspected both captures in /tmp/kerf-viewer-definitions; readable terms and popovers fit the desktop and phone.
+  One Impeccable scan reported only the existing global type hierarchy warning. No broad viewer suite repeated,
+  geometry regeneration, FEA, live jobs or installation. Full batch is held. For integrated real-model proof,
+  hover a material in Parts or rotating joint in Move on an existing saved viewer; no rebuild is needed.
