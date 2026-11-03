@@ -1,0 +1,380 @@
+name: Portable folding bungee rail launcher
+description: >
+  A no-power launcher for foam fixed-wing drones (0.3-2 kg, pusher or tractor, high or low wing). A 3 m V-slot 2040
+  rail in four 750 mm sections folds at three joints held by quick-release pins (pull one, it swings on the other),
+  stands on a two-leg aluminium bipod and a staked rear foot at ~11 deg. A printed sled on four Delrin V-wheels is thrown
+  up the rail by 1-6 latex strands that run over the rail, round a nose pulley and back under it to an anchor set in
+  notch 1-10 (the drone's setting, printed on its cradle). Cocked with a 2:1 line, held by a trigger hook with a
+  red-flag safety pin, released by a foot pedal on a lanyard. A pre-stretched latex V-cord brake stops the sled near
+  the nose and the drone flies on out of its open-front cradle. One cradle per drone from a template
+  (example: drone_foldable_wings, 1.6 kg tractor high-wing).
+printer: Bambu Lab A2L
+supports: allowed
+style: {radii: [1.0, 2.0, 4.0], edge_break: 0.8}
+use_story:
+  who: "Spencer and other hobby pilots launching their own foam fixed-wing drones (0.3-2 kg) alone, radio in hand"
+  where: [outdoor]
+  how_often: "a few field sessions a month, 5-20 launches each; carried folded in a car boot or on a backpack"
+  goes_wrong:
+    - {hazard: heat, max_c: 60, why: "left in a hot car boot or standing in the sun on the field"}
+    - {hazard: drop, height_m: 1.0, survive: false, consequence: "the folded bundle dropped or the rail knocked over: a printed lug, hook or the pulley may crack; every printed part is a cheap reprint from the spares list and swaps with a hex key or a pin (stress simulations are paused, so no drop strength is claimed)"}
+    - {hazard: other, what: "a cocked rail stores up to ~190 J: it must launch at the setting the cradle says, hold until the pilot is behind it, and stop the sled before the nose", covered_by: [launch_spencer, launch_top, launch_light, launch_peak, hook_seat]}
+  field_repair: [brake_l, brake_r]
+  carry_by: "the folded four-section bundle with a strap round it, legs and stakes alongside"
+params:
+  sec_len: {value: 750, unit: mm, min: 600, max: 1000, step: 10, label: Rail section length (4 sections)}
+  rail_deg: {value: 11, unit: deg, min: 8, max: 14, step: 0.5, label: Rail angle above the ground}
+  pin_off: {value: 44, unit: mm, min: 40, max: 52, step: 1, label: Fold pin axis out from the rail centre}
+  pulley_r: {value: 48, unit: mm, min: 40, max: 55, step: 1, label: Nose pulley strand pitch radius}
+  pulley_dx: {value: 66, unit: mm, min: 55, max: 80, step: 1, label: Pulley axle ahead of the rail nose}
+  sled_len: {value: 170, unit: mm, min: 150, max: 200, step: 5, label: Sled length}
+  sled_home_x: {value: 105, unit: mm, min: 95, max: 140, step: 1, label: Sled centre when cocked (rail x)}
+  brake_x: {value: 2690, unit: mm, min: 2500, max: 2750, step: 5, label: Brake cord crossing (rail x)}
+  brake_stop_max: {value: 300, unit: mm, min: 200, max: 400, step: 5, label: Sled travel allowed into the brake}
+  brake_w: {value: 42, unit: mm, min: 38, max: 50, step: 1, label: Brake posts out from the rail centre}
+  notch_1_x: {value: 1400, unit: mm, min: 1300, max: 1420, step: 5, label: Anchor notch 1 (rail x)}
+  notch_pitch: {value: 55, unit: mm, min: 30, max: 60, step: 1, label: Anchor notch pitch}
+  strand_rest: {value: 1299, unit: mm, min: 1100, max: 1500, step: 1, label: Latex strand rest length (loop to loop)}
+  strands: {value: 5, unit: "", min: 1, max: 6, step: 1, label: Strands fitted (drone setting)}
+  notch: {value: 5, unit: "", min: 1, max: 10, step: 1, label: Anchor notch (drone setting)}
+  pivot_x: {value: -20, unit: mm, min: -30, max: -10, step: 1, label: Rail pivot on the rear foot (rail x)}
+  pivot_z: {value: 20, unit: mm, min: 10, max: 30, step: 1, label: Rail pivot height in the rail (rail z; 20 = the rail's centre line so the launch recoil does not bend the rail)}
+  pivot_h: {value: 35, unit: mm, min: 30, max: 45, step: 1, label: Rail pivot height above the ground}
+  bipod_x: {value: 2150, unit: mm, min: 1600, max: 2200, step: 5, label: Bipod mount (rail x)}
+  leg_splay: {value: 15, unit: deg, min: 8, max: 25, step: 1, label: Bipod leg splay}
+  sock_off: {value: 30, unit: mm, min: 24, max: 40, step: 1, label: Leg socket axis out from the rail face}
+  sock_z: {value: -8, unit: mm, min: -20, max: 0, step: 1, label: Leg socket bottom (rail z)}
+  foot_t: {value: 12, unit: mm, min: 8, max: 20, step: 1, label: Leg tube end to the foot's ground face}
+  drone_g: {value: 1590, unit: g, min: 300, max: 2000, step: 10, label: Example drone all-up mass (drone_foldable_wings)}
+  drone_stall: {value: 11.5, unit: m/s, min: 5, max: 13, step: 0.1, label: Example drone stall speed (drone_foldable_wings stall_speed 41.4 km/h)}
+  cr_fuse_w: {value: 104, unit: mm, min: 40, max: 140, step: 1, label: "Cradle template: fuselage width at the seat"}
+  cr_fuse_h: {value: 64, unit: mm, min: 30, max: 120, step: 1, label: "Cradle template: fuselage depth"}
+  cr_fuse_len: {value: 460, unit: mm, min: 200, max: 700, step: 5, label: "Cradle template: fuselage length"}
+  cr_prop_r: {value: 89, unit: mm, min: 60, max: 160, step: 1, label: "Cradle template: prop radius (7 in = 89)"}
+  cr_tractor: {value: 1, unit: "", min: 0, max: 1, step: 1, label: "Cradle template: 1 tractor (prop at the nose), 0 pusher"}
+  cr_high_wing: {value: 1, unit: "", min: 0, max: 1, step: 1, label: "Cradle template: 1 high wing, 0 low wing"}
+  cr_boom_d: {value: 8, unit: mm, min: 0, max: 20, step: 1, label: "Cradle template: tail boom diameter at the push face (0 = none)"}
+layout: parts/layout.py
+parts:
+  rear_foot: {file: parts/rear_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: x}
+  rear_block: {file: parts/rear_block.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, z]}
+  trigger: {file: parts/trigger.py, material: PETG, print_rot: [90, 0, 0], infill: 1.0, load_axis: [x, z]}
+  hinge_aft_a: {file: parts/hinge_aft.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x, params: {jt: 1, sec: 1, fold_side: -1}}
+  hinge_aft_b: {file: parts/hinge_aft.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x, params: {jt: 2, sec: 2, fold_side: 1}}
+  hinge_aft_c: {file: parts/hinge_aft.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x, params: {jt: 3, sec: 3, fold_side: -1}}
+  hinge_fwd_a: {file: parts/hinge_fwd.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x, params: {jt: 1, sec: 2}}
+  hinge_fwd_b: {file: parts/hinge_fwd.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x, params: {jt: 2, sec: 3}}
+  hinge_fwd_c: {file: parts/hinge_fwd.py, material: PETG, print_rot: [0, 0, 0], infill: 0.5, load_axis: x, params: {jt: 3, sec: 4}}
+  anchor_rack_a: {file: parts/anchor_rack.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: x, params: {first_notch: 1}}
+  anchor_rack_b: {file: parts/anchor_rack.py, material: PETG, print_rot: [180, 0, 0], infill: 0.4, load_axis: x, params: {first_notch: 6}}
+  anchor: {file: parts/anchor.py, material: PETG, print_rot: [0, 0, 0], infill: 0.6, load_axis: x}
+  bipod_l: {file: parts/bipod_mount.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: z, params: {side: 1}}
+  bipod_r: {file: parts/bipod_mount.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: z, params: {side: -1}}
+  foot_l: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z}
+  foot_r: {file: parts/leg_foot.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: z}
+  nose_block: {file: parts/nose_block.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, z]}
+  pulley: {file: parts/pulley.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, z]}
+  brake_l: {file: parts/brake_post.py, material: PETG, print_rot: [90, 0, 0], infill: 0.5, load_axis: [x, y], params: {side: 1}}
+  brake_r: {file: parts/brake_post.py, material: PETG, print_rot: [-90, 0, 0], infill: 0.5, load_axis: [x, y], params: {side: -1}}
+  sled: {file: parts/sled.py, material: PETG, print_rot: [180, 0, 0], infill: 0.5, load_axis: x}
+  cradle: {file: parts/cradle.py, material: PETG, print_rot: [0, 0, 0], infill: 0.3, load_axis: [x, z],
+           note: "one per drone, made from the template params cr_*; this one is for drone_foldable_wings"}
+  pedal_base: {file: parts/pedal_base.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: x}
+  pedal: {file: parts/pedal.py, material: PETG, print_rot: [0, 0, 0], infill: 0.4, load_axis: x}
+purchased:
+  sec1:
+    {catalog: motion.vslot_2040, proxy: box, size: [750, 20, 40], mass_g: 592.5, color: "#b8bcc2",
+     note: "V-slot 2040 cut to 750 mm (750 is not stocked: buy 3 x 1000 or 2 x 1500 and cut, ends square + deburred)",
+     joints: {rear: [-375, 0, 0], front: [375, 0, 0]},
+     sites: [
+       {group: s1_rear, at: [-360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_rear, at: [-360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_rear, at: [-330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_rear, at: [-330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_rear, at: [-345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_front, at: [360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_front, at: [360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_front, at: [330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_front, at: [330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s1_front, at: [345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+     ]}
+  sec2:
+    {catalog: motion.vslot_2040, proxy: box, size: [750, 20, 40], mass_g: 592.5, color: "#b8bcc2",
+     note: "V-slot 2040 cut to 750 mm (750 is not stocked: buy 3 x 1000 or 2 x 1500 and cut, ends square + deburred)",
+     joints: {rear: [-375, 0, 0], front: [375, 0, 0], rack_a: [275, 0, 0], rack_b: [0, 0, 0]},
+     sites: [
+       {group: s2_rear, at: [-360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rear, at: [-360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rear, at: [-330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rear, at: [-330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rear, at: [-345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_front, at: [360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_front, at: [360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_front, at: [330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_front, at: [330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_front, at: [345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rack_a, at: [100, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rack_a, at: [250, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rack_b, at: [-200, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s2_rack_b, at: [-50, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+     ]}
+  sec3:
+    {catalog: motion.vslot_2040, proxy: box, size: [750, 20, 40], mass_g: 592.5, color: "#b8bcc2",
+     note: "V-slot 2040 cut to 750 mm (750 is not stocked: buy 3 x 1000 or 2 x 1500 and cut, ends square + deburred)",
+     joints: {rear: [-375, 0, 0], front: [375, 0, 0], bipod_l: [275, 0, 0], bipod_r: [275, 0, 0]},
+     sites: [
+       {group: s3_rear, at: [-360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_rear, at: [-360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_rear, at: [-330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_rear, at: [-330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_rear, at: [-345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_front, at: [360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_front, at: [360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_front, at: [330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_front, at: [330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_front, at: [345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_bipod, at: [260, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_bipod, at: [260, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_bipod, at: [290, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s3_bipod, at: [290, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+     ]}
+  sec4:
+    {catalog: motion.vslot_2040, proxy: box, size: [750, 20, 40], mass_g: 592.5, color: "#b8bcc2",
+     note: "V-slot 2040 cut to 750 mm (750 is not stocked: buy 3 x 1000 or 2 x 1500 and cut, ends square + deburred)",
+     joints: {rear: [-375, 0, 0], front: [375, 0, 0], brake_l: [65, 0, 0], brake_r: [65, 0, 0]},
+     sites: [
+       {group: s4_rear, at: [-360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_rear, at: [-360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_rear, at: [-330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_rear, at: [-330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_rear, at: [-345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_front, at: [360, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_front, at: [360, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_front, at: [330, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_front, at: [330, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_front, at: [345, 0, 0], dir: [0, 0, -1], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_brake, at: [-185, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_brake, at: [-185, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_brake, at: [-60, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_brake, at: [-60, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_brake, at: [45, 10, 10], dir: [0, 1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+       {group: s4_brake, at: [45, -10, 10], dir: [0, -1, 0], screw: M5, kind: threaded, engage: 6.5, min_engage: 5},
+     ]}
+  wheel_1: {catalog: motion.vwheel_delrin_solid, proxy: bearing, mass_g: 15, held_by: "M5 axle screw from the sled top through a 6 mm spacer, the wheel's two 625 bearings and an M5 nyloc under the wheel"}
+  wheel_2: {catalog: motion.vwheel_delrin_solid, proxy: bearing, mass_g: 15, held_by: "M5 axle screw from the sled top through a 6 mm spacer, the wheel's two 625 bearings and an M5 nyloc under the wheel"}
+  wheel_3: {catalog: motion.vwheel_delrin_solid, proxy: bearing, mass_g: 15, held_by: "M5 axle screw from the sled top through an eccentric spacer (sets the wheel preload), the wheel and an M5 nyloc"}
+  wheel_4: {catalog: motion.vwheel_delrin_solid, proxy: bearing, mass_g: 15, held_by: "M5 axle screw from the sled top through an eccentric spacer (sets the wheel preload), the wheel and an M5 nyloc"}
+  tail_pin: {catalog: rods.ss_rod_5, proxy: rod, length: 50, held_by: "pressed through the sled's tail lugs; the trigger hook and the cocking line bear on the roller"}
+  tail_roller: {catalog: bearings.625, proxy: bearing, held_by: "on the tail pin between the sled's tail lugs"}
+  axle: {catalog: motion.rod_8mm_smooth, proxy: rod, length: 100, held_by: "pressed through the nose block's two cheeks"}
+  pulley_brg_1: {catalog: bearings.608, proxy: bearing, held_by: "pressed into the pulley hub"}
+  pulley_brg_2: {catalog: bearings.608, proxy: bearing, held_by: "pressed into the pulley hub"}
+  leg_l: {catalog: rods.alu_tube_20x1_5, proxy: rod, length: LEG_LEN, held_by: "clamped in the bipod socket by its M5 clamp screw"}
+  leg_r: {catalog: rods.alu_tube_20x1_5, proxy: rod, length: LEG_LEN, held_by: "clamped in the bipod socket by its M5 clamp screw"}
+  strands_top: {proxy: box, size: [400, 66, 8], mass_g: 250, color: "#c8a165",
+                joints: {tail: [-200, 0, 4]},
+                held_by: "the latex strands' loops on the sled's tow hooks",
+                note: "stands in for the straight top leg of the latex strands just ahead of the sled (where a tractor prop spins); mass = 6 x 1.3 m x 30 g/m + loops"}
+  drone: {proxy: box, size: [460, 104, 64], mass_g: 1590, color: "#3a5f8a",
+          joints: {prop: {at: [255, 0, 32], rot: [0, 90, 0]}},
+          held_by: "sits in the cradle; leaves it forward at the brake",
+          note: "drone_foldable_wings stand-in (fuselage 460 x 104 x 64 mm); not part of the launcher"}
+  drone_wing: {proxy: box, size: [210, 1100, 14], mass_g: 0, color: "#4d7bb0", held_by: "the drone's wing (high wing on the fuselage top)",
+               note: "drone_foldable_wings stand-in (1.1 m span, 210 mm root chord); its mass is in the fuselage box"}
+keepouts:
+  prop: {catalog: drone.props.hq_7x4x3, proxy: prop_disc, owner: drone, h: 8}
+assembly:
+  root: rear_foot
+  joints:
+    - {parent: rear_foot.rail_pivot, child: rear_block.pivot, name: rail_angle, range: [8, 14], home: 11}
+    - {parent: rear_block.section, child: sec1.rear}
+    - {parent: sec1.front, child: hinge_aft_a.section}
+    - {parent: hinge_aft_a.fold_neg, child: hinge_fwd_a.pin_neg, name: fold_a, range: [-180, 0], home: 0}
+    - {parent: hinge_fwd_a.section, child: sec2.rear}
+    - {parent: sec2.front, child: hinge_aft_b.section}
+    - {parent: hinge_aft_b.fold_pos, child: hinge_fwd_b.pin_pos, name: fold_b, range: [0, 180], home: 0}
+    - {parent: hinge_fwd_b.section, child: sec3.rear}
+    - {parent: sec3.front, child: hinge_aft_c.section}
+    - {parent: hinge_aft_c.fold_neg, child: hinge_fwd_c.pin_neg, name: fold_c, range: [-180, 0], home: 0}
+    - {parent: hinge_fwd_c.section, child: sec4.rear}
+    - {parent: sec4.front, child: nose_block.section}
+    - {parent: nose_block.axle, child: axle.mid}
+    - {parent: nose_block.pulley, child: pulley.hub}
+    - {parent: pulley.brg_1, child: pulley_brg_1.face}
+    - {parent: pulley.brg_2, child: pulley_brg_2.face}
+    - {parent: sec4.brake_l, child: brake_l.section}
+    - {parent: sec4.brake_r, child: brake_r.section}
+    - {parent: sec3.bipod_l, child: bipod_l.section}
+    - {parent: sec3.bipod_r, child: bipod_r.section}
+    - {parent: bipod_l.leg, child: leg_l.end_a}
+    - {parent: bipod_r.leg, child: leg_r.end_a}
+    - {parent: leg_l.end_b, child: foot_l.leg}
+    - {parent: leg_r.end_b, child: foot_r.leg}
+    - {parent: sec2.rack_a, child: anchor_rack_a.section}
+    - {parent: sec2.rack_b, child: anchor_rack_b.section}
+    - {parent: anchor_rack_a.slide, child: anchor.rack, name: notch_slide, range: [0, 495], home: 220}
+    - {parent: rear_block.trigger, child: trigger.pivot, name: trigger, range: [0, 25], home: 0}
+    - {parent: rear_block.sled_travel, child: sled.carriage, name: sled_travel, range: [0, 2800], home: 0}
+    - {parent: sled.wheel_1, child: wheel_1.face}
+    - {parent: sled.wheel_2, child: wheel_2.face}
+    - {parent: sled.wheel_3, child: wheel_3.face}
+    - {parent: sled.wheel_4, child: wheel_4.face}
+    - {parent: sled.tail_pin, child: tail_pin.mid}
+    - {parent: sled.tail_roller, child: tail_roller.face}
+    - {parent: sled.strands, child: strands_top.tail}
+    - {parent: sled.cradle, child: cradle.base}
+    - {parent: cradle.fly_off, child: drone.bottom, name: fly_off, range: [0, 700], home: 0}
+    - {parent: drone.top, child: drone_wing.bottom}
+    - {parent: drone.prop, child: prop.hub}
+    - {parent: rear_foot.pedal_spot, child: pedal_base.base}
+    - {parent: pedal_base.treadle, child: pedal.pivot, name: pedal, range: [0, 15], home: 0}
+  allow_overlap:
+    - {pair: [wheel_1, sec1], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_1, sec2], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_1, sec3], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_1, sec4], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_2, sec1], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_2, sec2], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_2, sec3], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_2, sec4], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_3, sec1], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_3, sec2], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_3, sec3], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_3, sec4], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_4, sec1], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_4, sec2], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_4, sec3], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [wheel_4, sec4], max_mm3: 200, why: "the V-wheel's rim runs inside the rail's V-slot groove (1.95 mm deep, the box proxy fills the slot)"}
+    - {pair: [strands_top, pulley], max_mm3: 200000, why: "at the end of the stroke the latex wraps the pulley; the box only stands for the straight top leg ahead of the sled"}
+    - {pair: [trigger, tail_roller], max_mm3: 3000, why: "the trigger hook holds the sled's tail roller when cocked and is pulled clear before the sled moves (the sled sweep runs with the trigger at home); hook_seat proves the cocked fit"}
+  sweeps:
+    - {joint: sled_travel, samples: 113}
+    - {joint: fold_a, samples: 13}
+    - {joint: fold_b, samples: 13}
+    - {joint: fold_c, samples: 13}
+    - {joint: rail_angle, samples: 3}
+    - {joint: notch_slide, samples: 10}
+    - {joint: fly_off, samples: 8}
+    - {name: folded, poses: [{fold_a: -90, fold_b: 90, fold_c: -90}, {fold_a: -180, fold_b: 180, fold_c: -180}]}
+    - {name: drone_leaves, poses: [{sled_travel: 2650, fly_off: 0}, {sled_travel: 2650, fly_off: 150}, {sled_travel: 2650, fly_off: 300}, {sled_travel: 2650, fly_off: 450}, {sled_travel: 2650, fly_off: 600}]}
+bom_extra:
+  - {item: "latex tubing 3/16 in ID x 1/16 in wall (surgical / hi-start), 6 launch strands 1.30 m + 6 brake cords 0.30 m + loops", qty: 10, type: extra, spec: "motion.latex_tubing, metres", note: "measure one strand with a luggage scale at 100 / 200 / 300 % stretch first (DESIGN.md calibration); keep a spare set in the bag"}
+  - {item: "100 lb braid line: cocking line (2 x 3 m), release lanyard (2.5 m), strand end loops", qty: 10, type: extra, spec: "motion.braid_100lb, metres"}
+  - {item: "steel tent stake 9 in (4 through the rear foot, 1 through the pedal base)", qty: 5, type: extra, spec: motion.tent_stake_steel}
+  - {item: "M5 x 25 socket head screw (wheel axles)", qty: 4, type: fastener, spec: "ISO 4762"}
+  - {item: "M5 nyloc nut (wheel axles)", qty: 4, type: fastener, spec: "ISO 10511"}
+  - {item: "6 mm aluminium spacer, 5 mm bore (wheel axles, fixed side)", qty: 2, type: extra, spec: "OpenBuilds aluminium spacer 6 mm"}
+  - {item: "6 mm eccentric spacer (wheel axles, preload side)", qty: 2, type: extra, spec: "OpenBuilds eccentric spacer 6 mm (catalog motion.vwheel_delrin_solid)"}
+  - {item: "red streamer / flag tape on the safety pin's ring", qty: 1, type: extra, spec: "30 cm"}
+requirements:
+  - id: launch_spencer
+    check: bungee_launch
+    why: "Spencer's drone_foldable_wings (1590 g, stall 11.5 m/s) at its cradle setting (5 strands x notch 5) leaves at >= 1.2 x stall, under 8 g, on the soft (commodity) end of the sourced latex spread"
+    elastic: motion.latex_tubing
+    strands: strands
+    notch: notch
+    notches: 10
+    notch_pitch_mm: notch_pitch
+    max_strands: 6
+    rest_mm: strand_rest
+    start_mm: "START_LEN[0]"
+    end_mm: "END_LEN[0]"
+    payload_g: drone_g
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    angle_deg: rail_deg
+    rolling_mu: 0.05
+    min_speed_m_s: "1.2 * drone_stall"
+    max_g: 8
+  - id: launch_top
+    check: bungee_launch
+    why: "the heaviest drone in the brief (2.0 kg, stall ~12 m/s) at the top setting 6 x 10 reaches 1.2 x stall under 8 g on commodity latex, and the brake (6 pre-stretched latex cords) stops the sled + cradle inside brake_stop_max"
+    elastic: motion.latex_tubing
+    strands: 6
+    notch: 10
+    notches: 10
+    notch_pitch_mm: notch_pitch
+    max_strands: 6
+    rest_mm: strand_rest
+    start_mm: "START_LEN[0]"
+    end_mm: "END_LEN[0]"
+    payload_g: 2000
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    angle_deg: rail_deg
+    rolling_mu: 0.05
+    min_speed_m_s: 14.4
+    max_g: 8
+    brake: {elastic: motion.latex_tubing, strands: 6, half_gap_mm: brake_w, free_mm: 600, rest_mm: 300, max_stop_mm: brake_stop_max}
+  - id: launch_light
+    check: bungee_launch
+    why: "the lightest drone in the brief (0.3 kg foam, stall ~6 m/s) on the gentlest setting 1 x 1 still leaves at >= 1.15 x stall (Novakovic 2014) under 8 g"
+    elastic: motion.latex_tubing
+    strands: 1
+    notch: 1
+    notches: 10
+    notch_pitch_mm: notch_pitch
+    max_strands: 6
+    rest_mm: strand_rest
+    start_mm: "START_LEN[0]"
+    end_mm: "END_LEN[0]"
+    payload_g: 300
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    angle_deg: rail_deg
+    rolling_mu: 0.05
+    min_speed_m_s: 6.9
+    max_g: 8
+  - id: launch_peak
+    check: bungee_launch
+    why: "worst force case for the structure: the stiff (premium) end of the latex spread at the top setting 6 x 10 with a 2 kg drone; the brake (same stiff latex) still stops the sled inside brake_stop_max; its pull and brake peak are the load cases of the trigger, anchor, nose and sled checks"
+    elastic: motion.latex_tubing
+    curve: force_curve_premium
+    strands: 6
+    notch: 10
+    notches: 10
+    notch_pitch_mm: notch_pitch
+    max_strands: 6
+    rest_mm: strand_rest
+    start_mm: "START_LEN[0]"
+    end_mm: "END_LEN[0]"
+    payload_g: 2000
+    moving: [sled, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, cradle]
+    angle_deg: rail_deg
+    rolling_mu: 0.05
+    brake: {elastic: motion.latex_tubing, curve: force_curve_premium, strands: 6, half_gap_mm: brake_w, free_mm: 600, rest_mm: 300, max_stop_mm: brake_stop_max}
+  - id: prop_clear
+    check: prop_clearance
+    why: "the tractor prop spinning up on the cocked rail clears the latex strands, the sled and the cradle by 10 mm, and still clears the nose block, pulley and brake posts as the drone flies off"
+    min_mm: 10
+    props: [prop]
+    joints: [fly_off]
+    samples: 5
+    poses: [{sled_travel: 2650, fly_off: 0}, {sled_travel: 2650, fly_off: 200}, {sled_travel: 2650, fly_off: 400}, {sled_travel: 2650, fly_off: 600}]
+  - id: strands_under_mid
+    check: channel_clear
+    why: "the centre latex strand runs free under the rail from the pulley to the anchor, past the fold blocks' pins, the bipod and the brake posts"
+    path: [{item: nose_block, at: strand_exit}, {item: anchor, at: hook_mid}]
+    diameter: 9
+  - id: strands_under_out
+    check: channel_clear
+    why: "the outermost latex strand (26 mm off the centre line) runs free under the rail too"
+    path: [{item: nose_block, at: strand_exit_out}, {item: anchor, at: hook_out}]
+    diameter: 9
+  - id: hook_seat
+    check: clearance_min
+    why: "cocked: the trigger hook sits in front of the sled's tail roller without cutting into it (0.3 mm gap that closes under the strand pull)"
+    a: trigger
+    b: tail_roller
+    min_mm: 0.1
+  - {id: fold_a_stop, check: hard_stop, joint: fold_a, beyond: 3, why: "joint A cannot fold past straight: the blocks' end faces butt"}
+  - {id: fold_b_stop, check: hard_stop, joint: fold_b, beyond: -3, why: "joint B cannot fold past straight"}
+  - {id: fold_c_stop, check: hard_stop, joint: fold_c, beyond: 3, why: "joint C cannot fold past straight"}
+  - id: stands
+    check: tip_over
+    why: "the rail on its rear foot and bipod with Spencer's drone loaded does not tip sideways before 20 deg (gusts, a leg on a tussock)"
+    min_deg: 20
+    support: [rear_foot, foot_l, foot_r]
+  - id: carry_mass
+    check: mass_max
+    why: "the launcher (no drone, stakes and pins outside the model) stays under 6 kg to carry with one hand"
+    advisory: "a carry target, not a safety or function limit"
+    max_g: 6000
+    include: [rear_foot, rear_block, trigger, hinge_aft_a, hinge_aft_b, hinge_aft_c, hinge_fwd_a, hinge_fwd_b, hinge_fwd_c, anchor_rack_a, anchor_rack_b, anchor, bipod_l, bipod_r, foot_l, foot_r, nose_block, pulley, brake_l, brake_r, sled, cradle, pedal_base, pedal, sec1, sec2, sec3, sec4, wheel_1, wheel_2, wheel_3, wheel_4, tail_pin, tail_roller, axle, pulley_brg_1, pulley_brg_2, leg_l, leg_r, strands_top]

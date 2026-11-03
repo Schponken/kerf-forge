@@ -382,7 +382,7 @@ wiring:
 | stepper | steppers.* | face, shaft (revolute) | face: female threaded holes |
 | rod | rods.* + `length` | end_a, end_b, mid | – |
 | board | boards.* | bottom | holes: male screws through the board |
-| box | `size` or catalog L/W/H | bottom, top, + `joints:` | `sites:` [{group, screw, at, dir, kind: threaded (female, `engage`, `min_engage`) or clearance (male, `grip`)}] — holes in the bought part's own case (positions from its catalog drawing) |
+| box | `size` or catalog L/W/H | bottom, top, + `joints:` (`label: [x, y, z]` or `{at: [x, y, z], rot: [rx, ry, rz]}`) | `sites:` [{group, screw, at, dir, kind: threaded (female, `engage`, `min_engage`) or clearance (male, `grip`)}] — holes in the bought part's own case (positions from its catalog drawing) |
 | panel_module | panel_cutout_w/h(+corner_r), flange_w/h/t, body_w/h, depth_behind_flange, front_protrusion, screw_hole_spacing/_d (+ spec `screw`) | panel (flange rear face, +Z out of the front) | holes: male screws through the flange |
 | step | any catalog entry + `base:` proxy kind + `model:` file in catalog/models (`model_rot`, `model_pos` into the base frame) | the base proxy's | the base proxy's; refused unless the STEP bbox is within 0.5 mm of the base proxy's and every site has a real hole (kerf/vendor.py) |
 | pulley | motion.GT2_*_pulley (envelope: flange OD x length) | bore, top | – |

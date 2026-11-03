@@ -153,7 +153,7 @@ def rod(ctx, spec):
     Frame: origin at the centre of one end, +Z along the rod. Joints: end_a (origin), end_b (far end), mid."""
     from .requirements import _ev
     e = catalog.get(spec["catalog"])
-    od = catalog.num(e, "od", "outer_d", "diameter")
+    od = catalog.num(e, "od", "outer_d", "diameter", "d")      # "d": plain shafts (motion.rod_8mm_smooth)
     idd = catalog.num(e, "id", "inner_d", default=0.0)
     L = _ev(spec["length"], getattr(ctx, "params", {}) or {})
     s = _cyl(od / 2, L)
@@ -168,7 +168,7 @@ def rod(ctx, spec):
 @proxy("box")
 def box(ctx, spec):
     """Generic block for parts without a dedicated proxy (battery, camera, XT60, stack...). spec: size [x, y, z] or a
-    catalog entry with L/W/H; joints: {label: [x, y, z]} extra rigid joints. Frame: origin at the centre of the bottom face.
+    catalog entry with L/W/H; joints: {label: [x, y, z] or {at: [x, y, z], rot: [rx, ry, rz]}} extra rigid joints. Frame: origin at the centre of the bottom face.
     Joints: bottom (origin), top (centre of the top face)."""
     if "size" in spec:
         x, y, z = spec["size"]
@@ -181,7 +181,8 @@ def box(ctx, spec):
     ctx.rigid("bottom", Location((0, 0, 0)))
     ctx.rigid("top", Location((0, 0, z)))
     for lab, p in (spec.get("joints") or {}).items():
-        ctx.rigid(lab, Location(tuple(p)))
+        # [x, y, z], or {at: [x, y, z], rot: [rx, ry, rz]} (deg) for a joint whose Z must point along an axis
+        ctx.rigid(lab, Location(tuple(p["at"]), tuple(p.get("rot", (0, 0, 0)))) if isinstance(p, dict) else Location(tuple(p)))
     for st in spec.get("sites") or []:
         ctx.site(_box_site(st))
     return ctx.finish(s, color=spec.get("color", "#2b2f33"))
