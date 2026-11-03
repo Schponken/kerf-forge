@@ -1,0 +1,9 @@
+{
+ "item": "Work active-run identity: combine one running Studio Codex job with its exact observed chat without duplicate counts, retaining job controls, live context and per-owner scopes; keep ambiguous and historical runs separate.",
+ "session": "codex-work-job-dedup",
+ "since": 1793671107.7062259,
+ "heartbeat": 1793671107.7062259,
+ "provider": "Codex",
+ "thread_id": "01a19e35-36af-7000-955d-7cf26845e15b",
+ "since_utc": "2026-11-03 01:58"
+}
