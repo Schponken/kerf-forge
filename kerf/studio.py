@@ -481,6 +481,8 @@ def resume_job(jid: str, auto: bool = False) -> Job:
         if stop:
             raise ValueError(f"not resumed automatically: the budget switch is on ({stop})")
     with JOB_LOCK:
+        if auto and not settings().get("autoresume", True):
+            raise ValueError("automatic resume is off")
         old = JOBS.get(jid)
         if not old or old.state != "paused" or getattr(old, "_stop_state", None) or not old.session:
             raise ValueError("nothing to resume: that job isn't paused by a usage limit")

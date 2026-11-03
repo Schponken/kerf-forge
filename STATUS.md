@@ -631,3 +631,18 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
 - Doctor ALL OK with existing dependencies; optional Arduino/simavr unavailable. No full suite, project
   build, stress solve, review.json, CLI-flag change or new runner framework. The separate installed-Codex
   CLI flag compatibility finding is queued for its own lane.
+
+### 2026-11-02 — Queued usage retries respect automatic resume being turned off (Codex)
+- A captured fake-Timer callback reproduced the bug on PR #8: schedule while automatic resume is on,
+  turn it off, dispatch the callback, and one mocked agent launch still occurs. `resume_job(auto=True)`
+  now reads the current setting after its budget lookup, inside the existing job lock, before launch.
+  A disabled callback leaves the job paused, preserves its usage deadline, and records why it did not
+  resume. Manual Resume still works; re-enabling before a queued callback dispatches permits that retry.
+- **25 targeted tests pass in 0.67 s** (`test_studio_lifecycle`, `test_usage_failsafe`, `test_agent`).
+  Four new cases cover off before dispatch, re-enabled before dispatch, off while the callback waits
+  on its budget check, and manual Resume while off (the old callback cannot duplicate its successor).
+  New tests use fake timers and mocked launches; existing lifecycle tests use harmless Python children.
+  No real model/session launched. Doctor ALL OK; optional firmware tools unavailable.
+- Stacked on PR #8's cancellation lock. No new timer registry, settings synchronization, or automatic
+  rescheduling of an already-skipped callback; after such a skip the existing manual Resume remains.
+  Full suite, project builds and stress solves remain unrun under the existing holds.

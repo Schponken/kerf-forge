@@ -93,6 +93,78 @@ def paused_job(monkeypatch):
     return job
 
 
+@pytest.fixture
+def queued_resume(monkeypatch, paused_job):
+    options, callbacks, launches = {"autoresume": True}, [], []
+    class Timer:
+        def __init__(self, delay, callback):
+            callbacks.append(callback)
+        def start(self):
+            pass
+    class Successor:
+        id = "new"
+    def launch(*a, **k):
+        launches.append(k)
+        return Successor()
+    monkeypatch.setattr(studio, "settings", lambda: options)
+    monkeypatch.setattr(studio.threading, "Timer", Timer)
+    monkeypatch.setattr(studio, "agent_job", launch)
+    studio.USAGE["until"] = paused_job.usage["until"]
+    studio.schedule_resume(paused_job, delay=1)
+    assert len(callbacks) == 1
+    return options, callbacks[0], launches
+
+
+@pytest.mark.parametrize("reenabled", [False, True])
+def test_queued_resume_reads_current_setting(paused_job, queued_resume, reenabled):
+    options, callback, launches = queued_resume
+    options["autoresume"] = False
+    if reenabled:
+        options["autoresume"] = True
+    callback()
+    assert paused_job.state == "paused"
+    if reenabled:
+        assert len(launches) == 1 and paused_job.resumed_by == "new"
+        assert launches[0]["resume"] == paused_job.session
+        assert not paused_job.lines and studio.USAGE["until"] == 0
+    else:
+        assert not launches and paused_job.resumed_by is None
+        assert paused_job.lines == ["(not resumed automatically: automatic resume is off)"]
+        assert studio.USAGE["until"] == paused_job.usage["until"]
+
+
+def test_queued_resume_reads_setting_after_budget_check(monkeypatch, paused_job, queued_resume):
+    options, callback, launches = queued_resume
+    entered, release = threading.Event(), threading.Event()
+    def budget():
+        entered.set()
+        assert release.wait(5)
+        return ""
+    monkeypatch.setattr(studio, "budget_stop", budget)
+    runner = threading.Thread(target=callback)
+    runner.start()
+    try:
+        assert entered.wait(5)
+        options["autoresume"] = False
+    finally:
+        release.set()
+        runner.join(5)
+    assert not runner.is_alive() and not launches
+    assert paused_job.state == "paused" and paused_job.resumed_by is None
+    assert paused_job.lines == ["(not resumed automatically: automatic resume is off)"]
+    assert studio.USAGE["until"] == paused_job.usage["until"]
+
+
+def test_manual_resume_works_with_automatic_resume_off(paused_job, queued_resume):
+    options, callback, launches = queued_resume
+    options["autoresume"] = False
+    successor = studio.resume_job(paused_job.id)
+    assert successor.id == paused_job.resumed_by == "new"
+    assert len(launches) == 1 and launches[0]["resume"] == paused_job.session
+    callback()  # The old timer must not launch a second successor after manual Resume.
+    assert len(launches) == 1 and not paused_job.lines
+
+
 def test_stop_cancels_already_started_resume_callback(monkeypatch, paused_job):
     callbacks = []
     class Timer:
