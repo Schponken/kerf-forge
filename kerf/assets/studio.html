@@ -256,6 +256,35 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 .pbar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 10px var(--glow);transition:width .6s cubic-bezier(.2,.8,.2,1)}
 #mc.running .pbar::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);background-size:200% 100%;animation:shimmer 1.4s infinite}
 
+/* Active job: action first, recorded detail on demand. */
+#mc{width:min(620px,calc(100vw - 330px));max-height:min(78vh,760px);border:0;border-radius:14px;box-shadow:var(--shadow)}
+#mc.open{animation:none}#mc .scan,#mc .tring,#mc .pbar{display:none}
+#mc .mch{align-items:flex-start;padding:18px 20px;gap:10px}
+#mc .mch .t{border:0;background:none;padding:0;text-align:left;color:var(--ink);font:inherit;border-radius:0}
+#mc .mch .t b{white-space:normal;line-height:1.35;font-size:16px;font-weight:650}
+#mc .mch .t span{display:block;margin-top:5px}#mc .mch>button:not(.t){padding:6px 8px;flex:none}
+#mc .mcbody{padding:4px 20px 20px;overflow-wrap:anywhere}
+#mc .job-current{margin:14px 0 20px}#mc .job-current h3{font-size:22px;line-height:1.25;margin:0 0 8px;font-weight:600;letter-spacing:-.025em}
+#mc .job-current p{margin:6px 0;line-height:1.5}#mc .job-next{margin-top:14px;font-size:13px;color:var(--muted)}
+#mc .job-next b{color:var(--ink);font-weight:600}
+#mc details.job-detail{border-top:1px solid var(--line);padding:12px 0}
+#mc details.job-detail>summary{cursor:pointer;font-size:13px;font-weight:600;padding:4px 0}
+#mc details.job-detail[open]>summary{margin-bottom:12px}
+#mc .phase-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;margin:0;padding:0;list-style:none;font-size:12px}
+#mc .phase-list li{display:flex;justify-content:space-between;gap:10px;color:var(--muted)}
+#mc .phase-list li.active{color:var(--ink);font-weight:600}#mc .phase-list span{font-size:11px;white-space:nowrap}
+#mc .feed{gap:10px}#mc .fi{background:none;padding:0;align-items:flex-start}#mc .fi .ic{display:none}#mc .fi .w{white-space:normal;color:var(--ink);line-height:1.5}
+#mc .thought{border:0;padding:0;border-radius:0;background:none;max-height:none;font-size:13px;line-height:1.55}
+#mc .sect{font-size:12px;text-transform:none;letter-spacing:0}
+#mc .stepper{flex-wrap:wrap;gap:8px}#mc .step{flex:0 1 auto;flex-direction:row;gap:5px}
+#mc .step::before,#mc .node::after{display:none}#mc .node{width:20px;height:20px;font-size:11px;border:1px solid var(--line);background:none;box-shadow:none;animation:none}
+#mc .step.done .node{color:var(--ok);border-color:var(--ok)}#mc .step.active .node{color:var(--accent);border-color:var(--accent)}
+#mc .step label{font-size:12px;white-space:normal;text-align:left}
+#mc .new-in,#mc .fresh .node{animation:none}
+#mc .job-connection{padding:10px 20px;margin:0;color:var(--bad);font-size:13px;background:var(--panel2)}
+.twmodal .card{border:0;box-shadow:var(--shadow);padding:24px}.twmodal .row{align-items:flex-start}.twmodal h3{font-size:20px;letter-spacing:-.02em;line-height:1.35}
+@media(max-width:900px){#mc{width:calc(100vw - 24px);right:12px;bottom:12px;max-height:80vh}#mc .mch{padding:14px}#mc .mcbody{padding:0 14px 16px}#mc .job-current h3{font-size:20px}.twmodal{padding:10px}.twmodal .card{width:100%;height:90dvh;padding:18px}}
+
 /* toasts + burst */
 #toasts{position:fixed;top:16px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:10;pointer-events:none}
 .toast{pointer-events:auto;min-width:260px;max-width:380px;padding:12px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);animation:toastIn .45s cubic-bezier(.2,.9,.3,1.3) both;font-size:13px}
@@ -487,9 +516,9 @@ details.raw summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:
 
 <div id="mc"><div class="scan"></div>
   <div class="mch"><div class="tring" id="tring"><svg viewBox="0 0 40 40" width="38" height="38"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" cx="20" cy="20" r="16" pathLength="100"/></svg><i id="tricon"></i></div>
-    <div class="t" onclick="toggleMin()" style="cursor:pointer" title="Fold / unfold"><b id="mctitle"></b><span id="mcsub"></span></div>
-    <button id="mcstop" onclick="stopJob()">Stop</button><button onclick="toggleMin()" title="Minimise">▁</button><button onclick="closeMc()" title="Close">✕</button></div>
-  <div class="pbar"><i id="pbar"></i></div>
+    <button class="t" id="mctoggle" onclick="toggleMin()" aria-controls="mcbody" aria-expanded="true"><b id="mctitle"></b><span id="mcsub"></span></button>
+    <button id="mcstop" onclick="stopJob()">Stop</button><button onclick="closeMc()" aria-label="Close job panel">Close</button></div>
+  <p id="mcconnection" class="job-connection" role="status" hidden></p>
   <div id="mctw" hidden></div>
   <div class="mcbody" id="mcbody"></div>
 </div>
@@ -1075,7 +1104,7 @@ async function renderDocs(el) {
 
 /* ---------- jobs + mission control */
 const STAGE_NAMES = {build: "Build parts", print: "Print checks", fit: "Fit & screws", motion: "Motion", requirements: "Engineering", export: "Files", renders: "Renders"};
-const PHASES = [["research","Research","🔎"],["plan","Plan","✎"],["contract","Contract","▤"],["parts","Model parts","◧"],["check","Check + fix","✓"],["build","Build","⚙"],["review","Review","◎"],["ship","Save","⬆"]];
+const PHASES = [["research","Research","🔎"],["plan","Plan","✎"],["contract","Parts & joints","▤"],["parts","Model parts","◧"],["check","Check + fix","✓"],["build","Make files","⚙"],["review","Review","◎"],["ship","Save","⬆"]];
 const TOOL_ICON = {WebSearch: "🔎", WebFetch: "🌐", Read: "📖", Write: "✎", Edit: "✎", Bash: "▶", Agent: "◆", Task: "◆", Grep: "⌕", Glob: "⌕", TaskCreate: "☑", TaskUpdate: "☑"};
 
 async function run(action) { try { const r = await api("/api/run", {project: S.sel, action}); watch(r.job); } catch (e) { if (!/already running/.test(e.message) || !openRunning(S.sel)) toast("Couldn't start", e.message, "bad"); } }
@@ -1109,6 +1138,7 @@ function watch(id) {
   if (S.tw) { S.tw.stop(); S.tw = null; } $("#mctw").hidden = true;
   S.job = id; S.since = 0; S.esince = 0; S.ev = []; S.lines = []; S.shown = new Set([...S.shown].filter(k => !k.startsWith("mc:")));
   const mc = $("#mc"); mc.classList.remove("open", "min"); mc.offsetHeight; mc.classList.add("open");
+  $("#mctoggle").setAttribute("aria-expanded", "true"); $("#mcconnection").hidden = true;
   $("#mcbody").innerHTML = `<div class="sk" style="height:60px;margin-bottom:10px"></div><div class="sk" style="height:120px"></div>`;
   pollJob(); pollJobs();
 }
@@ -1155,17 +1185,26 @@ function narrate(t) {
 }
 function closeMc() { $("#mc").classList.remove("open"); S.job = null; if (S.tw) { S.tw.stop(); S.tw = null; } }
 function showDecided(name, job, label) {   // "How Kerf decided": a finished project's story, or a running job's (steerable)
-  const el = document.createElement("div"); el.className = "modal twmodal";
-  el.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">How Kerf decided: ${esc(label || name)}</h3><button id="twclose">Close</button></div><div class="twhost"></div></div>`;
+  const before = document.activeElement, el = document.createElement("div"); el.className = "modal twmodal";
+  el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-labelledby", "twtitle");
+  el.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><h3 id="twtitle" style="margin:0">How Kerf decided<br><span class="note">${esc(label || name)}</span></h3><button id="twclose">Close</button></div><div class="twhost"></div></div>`;
   document.body.appendChild(el);
   const url = job ? `/api/thoughtweb?job=${job}` : `/api/thoughtweb?project=${encodeURIComponent(name)}`;
   const tw = TW.mount(el.querySelector(".twhost"), url, {job});
-  const close = () => { tw.stop(); el.remove(); document.removeEventListener("keydown", esc_); };
-  const esc_ = e => { if (e.key === "Escape") close(); };
+  const close = () => { tw.stop(); el.remove(); document.removeEventListener("keydown", esc_); if (before?.isConnected) before.focus(); };
+  const esc_ = e => {
+    if (e.key === "Escape") close();
+    if (e.key === "Tab") {
+      const controls = [...el.querySelectorAll("button,input,a[href],summary")].filter(x => !x.disabled && x.getClientRects().length);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+    }
+  };
   el.querySelector("#twclose").onclick = close; el.onclick = e => { if (e.target === el) close(); };
-  document.addEventListener("keydown", esc_);
+  document.addEventListener("keydown", esc_); el.querySelector("#twclose").focus();
 }
-function toggleMin() { $("#mc").classList.toggle("min"); }
+function toggleMin() { const min = $("#mc").classList.toggle("min"); $("#mctoggle").setAttribute("aria-expanded", String(!min)); }
 async function stopJob() { if (S.job && confirm("Stop this job?")) await api("/api/stop", {job: S.job}).catch(e => toast("Couldn't stop", e.message, "bad")); }
 
 async function pollJob() {
@@ -1173,12 +1212,13 @@ async function pollJob() {
   try {
     const j = await api(`/api/job/${id}?since=${S.since}&esince=${S.esince}`);
     if (id !== S.job) return;
+    $("#mcconnection").hidden = true;
     S.lines.push(...j.lines); S.since = j.n; S.ev.push(...j.events); S.esince = j.ne;
     if (j.events.some(e => e.k === "model")) modelReady(j);
     renderMc(j);
     if (j.state === "running") setTimeout(pollJob, 900);
     else finished(j);
-  } catch (e) { setTimeout(pollJob, 2500); }
+  } catch (e) { if (id !== S.job) return; $("#mcconnection").hidden = false; $("#mcconnection").textContent = "Connection interrupted. Showing the last update; retrying…"; setTimeout(pollJob, 2500); }
 }
 /* the 3D model first: the run writes a preview viewer as soon as the parts are placed; show it at once, fold the job
    panel to its title bar, and let the checks, files and renders carry on behind it */
@@ -1187,7 +1227,7 @@ async function modelReady(j) {
   if (S.sel !== j.project) { toast("3D model ready", `${j.project}: open it to look while the checks finish.`, "ok"); return; }
   S.tab = "model";
   await refreshDetail();
-  $("#mc").classList.add("min");
+  $("#mc").classList.add("min"); $("#mctoggle").setAttribute("aria-expanded", "false");
   toast("3D model ready", "Checks, print files and pictures keep running in the background.", "ok");
 }
 function lastProjectEvents(ev) { let i = -1; ev.forEach((e, n) => { if (e.k === "start") i = n; }); return i < 0 ? ev : ev.slice(i); }
@@ -1287,10 +1327,14 @@ const SCENES = {
   export: ["🏭", "📦", "Making the files", "Print plates for the printer, the shopping list and the assembly guide."],
   renders: ["📸", "🖼", "Taking pictures", "Pictures of the assembly and every part, so you can see what you'll get."],
 };
-function scene(k, done) {
-  const sc = done ? ["🎉", "✅", "Finished", "All done. Open the project to see the result."] : SCENES[k] || ["🤖", "⚙️", "Getting started", "Setting up the workbench."];
-  return `<div class="scene"><div class="stage"><span class="who">${sc[0]}</span><span class="tool">${sc[1]}</span></div>
-    <div><b>${esc(sc[2])}</b><div class="note">${esc(sc[3])}</div></div></div>`;
+function jobCurrent(j, tools, st) {
+  const last = tools[tools.length - 1], active = j.state === "running";
+  const phase = [...tools].reverse().find(e => e.phase)?.phase;
+  const title = active ? (last ? narrate(last)[1] : st?.fin ? (st.fin.ok ? "Checks passed" : "Checks found problems") : st?.cur ? (SCENES[st.cur] || [,,STAGE_NAMES[st.cur] || st.cur])[2] : "Waiting for the first update")
+    : ({done:"Job finished", failed:"The job needs attention", paused:"Work is paused", stopped:"Job stopped"}[j.state] || "Status unavailable");
+  const context = active ? (phase && SCENES[phase] ? SCENES[phase][2] : st?.cur ? "Build in progress" : "The next action has not been reported yet.")
+    : j.state === "done" ? "Open the project for its saved results and checks." : j.state === "stopped" ? "No further work is running in this job." : "The recorded actions below are kept for reference.";
+  return `<section class="job-current" aria-label="Current job status"><h3>${esc(title)}</h3><p class="note">${esc(context)}</p></section>`;
 }
 function renderMc(j) {
   const mc = $("#mc"); mc.classList.toggle("running", j.state === "running");
@@ -1299,37 +1343,39 @@ function renderMc(j) {
   $("#tricon").textContent = j.state === "running" ? "" : j.state === "done" ? "✓" : j.state === "paused" ? "⏸" : "✕";
   $("#mcstop").style.display = j.state === "running" ? "" : "none";
   const body = $("#mcbody"), atEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 40;
-  let html = "", pct = 0;
+  let html = "";
+  const disclosure = new Set([...body.querySelectorAll("details[open][data-detail]")].map(e => e.dataset.detail));
+  const focused = document.activeElement?.closest("[data-detail]")?.dataset.detail;
+  const detail = (key, title, content) => `<details class="job-detail" data-detail="${key}"${disclosure.has(key) ? " open" : ""}><summary>${title}</summary>${content}</details>`;
   if (j.state === "paused") html += pausedCard(j);
-  if ((j.kind === "design" || j.kind === "edit" || j.kind === "fix") && !S.tw && window.TW) {   // the thought web: what it explores, keeps, sets aside
+  if ((["design", "edit", "fix", "quote"].includes(j.kind)) && !S.tw && window.TW) {   // the thought web: what it explores, keeps, sets aside
     const jid = j.id, lab = j.label;   // a one-line summary appears by itself as soon as the research starts; it opens the full, steerable story
     S.tw = TW.mount($("#mctw"), `/api/thoughtweb?job=${jid}`, {mode: "strip", job: jid,
       onResearch: () => { if (S.job === jid) $("#mctw").hidden = false; }, onOpen: () => showDecided(null, jid, lab)});
   }
-  if (j.kind === "design" || j.kind === "edit" || j.kind === "fix") {
+  if (["design", "edit", "fix", "quote"].includes(j.kind)) {
     const tools = S.ev.filter(e => e.k === "tool"), seen = new Set(tools.map(e => e.phase).filter(Boolean));
     const curPhase = [...tools].reverse().find(e => e.phase)?.phase;
-    const ci = PHASES.findIndex(p => p[0] === curPhase);
-    pct = j.state === "done" ? 100 : Math.max(4, ((ci + 1) / PHASES.length) * 100);
-    html += scene(curPhase || "research", j.state === "done") + `<div class="sect">Design phases</div>` + stepper(PHASES.map(([k, l, ic], i) => ({k, label: l, icon: ic,
-      state: j.state === "done" ? "done" : (k === curPhase && j.state === "running") ? "active" : (i < ci || seen.has(k)) ? "done" : ""})), "ph");
+    html += jobCurrent(j, tools);
+    if (j.state === "running") html += `<p class="job-next"><b>Remaining work</b> · Not reported by the agent yet.</p>`;
     const hint = S.ev.find(e => e.k === "hint");
-    if (hint) html += readyCard({code: hint.code, why: hint.code === "auth" ? "Claude Code's sign-in expired, so the design stopped before it began." :
-                                 "Claude Code doesn't trust this folder yet, so it would have ignored Kerf's settings and quality checks; the design was stopped."});
+    if (hint) html += readyCard({code: hint.code, why: hint.why || hint.message || (hint.code === "auth" ? "The agent needs you to sign in before it can continue." : "The agent could not start. Check its setup and the job log.")});
     const thoughts = S.lines.filter(l => !l.startsWith("  > ") && !l.startsWith("==") && !l.startsWith("(")).slice(-1);
-    if (thoughts.length) html += `<div class="sect">Latest note from Claude</div><div class="thought">${esc(thoughts[0])}</div>`;
-    html += `<div class="sect">What it's doing · ${tools.length} steps so far</div><div class="feed">${tools.slice(-8).reverse().map((t, n) => { const [ic, say] = narrate(t);
-      return `<div class="fi${fresh("mc:tool:" + (tools.length - n))}" title="${esc(t.name + ": " + (t.what || ""))}"><span class="ic">${ic}</span><span class="w">${esc(say)}</span></div>`; }).join("") || `<div class="note">Starting Claude Code…</div>`}</div>`;
+    if (thoughts.length) html += detail("note", "Latest note", `<div class="thought">${esc(thoughts[0])}</div>`);
+    html += detail("actions", `Recent actions · ${tools.length} recorded`, `<div class="feed">${tools.slice(-8).reverse().map(t => {
+      const [, say] = narrate(t); return `<div class="fi"><span class="w">${esc(say)}</span></div>`;
+    }).join("") || `<div class="note">No action has been reported yet.</div>`}</div>`);
+    html += detail("phases", "Design stages", `<ul class="phase-list">${PHASES.map(([k,l]) => `<li class="${k === curPhase && j.state === "running" ? "active" : ""}">${esc(l)}<span>${k === curPhase && j.state === "running" ? "Current" : seen.has(k) ? "Recorded" : "Not reported"}</span></li>`).join("")}</ul><p class="note">Stages show recorded activity, not proof that checks passed.</p>`);
   } else {
     const projs = S.ev.filter(e => e.k === "project"), cp = projs[projs.length - 1];
     const ev = lastProjectEvents(S.ev), st = stageState(ev), stages = st.start ? st.start.stages : ["build", "print", "fit", "requirements"];
     const pkey = cp ? cp.name : "p";
-    const ndone = stages.filter(s => st.done.has(s)).length;
-    pct = st.fin ? 100 : (ndone + (st.cur ? 0.5 : 0)) / stages.length * 100;
-    if (cp) { pct = ((cp.i - 1) + pct / 100) / cp.n * 100;
-      html += `<div class="banner info">Project ${cp.i} of ${cp.n}: <b>${esc(st.start ? st.start.project : cp.name)}</b></div>`; }
-    html += scene(st.cur || stages.find(x => !st.done.has(x)) || "build", !!st.fin) + `<div class="sect">Pipeline</div>` + stepper(stages.map((s, i) => ({k: s, label: STAGE_NAMES[s] || s, icon: i + 1,
-      state: st.done.has(s) ? "done" : s === st.cur ? "active" : ""})), pkey);
+    if (cp) html += `<p class="note">Project ${cp.i} of ${cp.n}: <b>${esc(st.start ? st.start.project : cp.name)}</b></p>`;
+    html += jobCurrent(j, [], st);
+    const remaining = st.start ? stages.filter(s => !st.done.has(s) && s !== st.cur) : [];
+    if (j.state === "running") html += `<p class="job-next"><b>Still to come</b> · ${remaining.length ? remaining.map(s => esc(STAGE_NAMES[s] || s)).join(", ") : st.start ? "Waiting for the final result." : "The build plan has not been reported yet."}</p>`;
+    html += detail("pipeline", "Recorded build stages", stepper(stages.map((s, i) => ({k: s, label: STAGE_NAMES[s] || s, icon: i + 1,
+      state: st.done.has(s) ? "done" : s === st.cur && j.state === "running" ? "active" : ""})), pkey));
     const parts = ev.filter(e => e.k === "part");
     if (parts.length) html += `<div class="sect">Printed parts · ${parts.length}${st.start ? " of " + st.start.parts.length : ""}</div><div class="pchips">${parts.map(p =>
       `<span class="pc ${p.ok ? "ok" : "bad"}${fresh(`mc:${pkey}:part:${p.id}`)}">${p.ok ? "✓" : "✕"} ${esc(p.id)}${p.mass ? `<em>${p.mass} g</em>` : ""}</span>`).join("")}</div>`;
@@ -1349,13 +1395,14 @@ function renderMc(j) {
   if (j.state === "failed" && !html.includes("banner bad")) html += `<div class="banner bad" style="margin-top:12px">Finished with an error; details in the log below.</div>`;
   if (j.state === "stopped") html += `<div class="banner bad" style="margin-top:12px">Stopped.</div>`;
   const openRaw = body.querySelector("details.raw")?.open;
-  html += `<details class="raw"${openRaw ? " open" : ""}><summary>Raw log · ${S.lines.length} lines</summary><pre id="log">${esc(S.lines.slice(-400).join("\n"))}</pre></details>`;
+  html += `<details class="raw" data-detail="raw"${openRaw ? " open" : ""}><summary>Raw log · ${S.lines.length} lines</summary><pre id="log">${esc(S.lines.slice(-400).join("\n"))}</pre></details>`;
   body.innerHTML = html;
   if (openRaw) { const lg = $("#log"); lg.scrollTop = lg.scrollHeight; }
   growBars(body);
-  $("#mcsub").textContent = `${j.state === "running" ? "working" : j.state} · ${mmss(j.seconds)}`;
-  $("#pbar").style.width = (j.state === "done" ? 100 : pct) + "%";
-  if (atEnd) body.scrollTop = body.scrollHeight;
+  const provider = ["design", "edit", "fix", "quote"].includes(j.kind) ? (j.agent === "codex" ? "Codex" : "Claude Code") : "Kerf";
+  $("#mcsub").textContent = `${provider} · ${j.state === "running" ? "Working" : j.state} · ${mmss(j.seconds)} elapsed`;
+  if (focused) body.querySelector(`[data-detail="${focused}"] summary`)?.focus({preventScroll:true});
+  if (atEnd && openRaw) body.scrollTop = body.scrollHeight;
 }
 
 async function finished(j) {
@@ -1371,7 +1418,7 @@ async function finished(j) {
   if (j.state !== "stopped" && (j.seconds >= 8 || !document.hasFocus())) { chime(ok); flashTitle(ok ? `✓ ${j.label}` : `✕ ${j.label}`); }
   // done: fold the panel down to its title bar after a moment, so it stops covering the page (click to reopen)
   const fold = (k = 0) => { const mc = $("#mc"); if (S.job !== j.id || !mc.classList.contains("open")) return;
-    if (mc.matches(":hover") && k < 20) return setTimeout(() => fold(k + 1), 1500); mc.classList.add("min"); };
+    if (mc.matches(":hover") && k < 20) return setTimeout(() => fold(k + 1), 1500); mc.classList.add("min"); $("#mctoggle").setAttribute("aria-expanded", "false"); };
   setTimeout(fold, 3500);
   if (j.kind === "trial") S.tab = "tune";
   if (j.kind === "quote" && ok) {
@@ -1471,13 +1518,14 @@ function desktopNotify(title, body, target) {   // in the Mac app: a real notifi
   try { window.webkit.messageHandlers.kerf.postMessage({title, body, target}); return true; } catch (e) { return false; }
 }
 function untilText(u) { return u && u.until ? new Date(u.until * 1000).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : "later"; }
-function pausedCard(j) {   // Claude usage ran out mid-job: nothing is lost, it carries on when usage is back
-  return `<div class="banner warn paused"><b>⏸ Paused: Claude usage ran out.</b> Everything it did so far is saved.
-    ${j.resumed_by ? "It has been resumed." : `It carries on by itself around <b>${esc(untilText(j.usage))}</b>, when usage comes back (unless the budget switch is on).`}
-    ${j.resumable ? `<div class="row" style="margin-top:8px"><button class="primary" onclick="resumeJob('${j.id}')">▶ Resume now</button></div>` : ""}</div>`;
+function pausedCard(j) {
+  const reset = Number(j.usage?.until), when = Number.isFinite(reset) && reset > 0 ? `Reported usage reset: ${new Date(reset * 1000).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}.` : "No usage reset time is reported.";
+  const policy = j.resumed_by ? "Continued in another job." : S.settings.autoresume ? "Automatic retry is enabled, subject to the budget switch. Retry timing is not reported." : "Automatic retry is off.";
+  return `<div class="banner warn paused"><b>${j.usage ? "Paused: usage limit reached." : "This job is paused."}</b> ${j.usage ? esc(when) : ""} ${esc(policy)}
+    ${j.resumable ? `<div class="row" style="margin-top:8px"><button class="primary" onclick="resumeJob('${j.id}')">Resume now</button></div>` : ""}</div>`;
 }
 async function resumeJob(id) {
-  try { const r = await api("/api/resume", {job: id}); watch(r.job); toast("Resumed", "Claude Code is picking up where it stopped.", "ok"); }
+  try { const r = await api("/api/resume", {job: id}); watch(r.job); toast("Resumed", "Kerf is picking up where the job stopped.", "ok"); }
   catch (e) { toast("Not resumed", e.message, "bad"); }
 }
 async function openQuotesPage() { showNew(); await listQuotes(); const el = $("#quotesready"); if (el) el.scrollIntoView({block: "start"}); }
