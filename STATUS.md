@@ -579,3 +579,17 @@ _Older entries: docs/status/STATUS-archive-to-2026-11-01.md (read only when you 
   auto switches to Codex when Claude's usage is out and hands a cut-off Claude job to Codex at once (codex_takeover).
   tests/test_agent.py (9). Learning Mode phases 1, 4-8 added to PLAN for Codex. test_studio_features duplicate test
   already fails on main (not this change).
+
+
+### 2026-11-02 — Studio quote write passes the existing UTF-8 guard (Codex)
+- Reproduced `tests/test_utf8_io.py::test_no_text_io_without_encoding` on fresh main `4c80740`:
+  **1 failed in 0.05 s**, identifying `studio.py:1136`. The quote-request writer already named UTF-8
+  on its second line; the unchanged line-based audit could not see it on the `write_text` call line.
+- Split JSON serialization into `request_json`, followed by the existing explicit UTF-8 write on one
+  line. Content, encoding and preparation under the job lock are unchanged. This is guard compatibility,
+  not a fix for a nonexistent production encoding omission. Agent selection/notifications are untouched.
+- Validation: unchanged UTF-8 guard + C-locale prices smoke and the existing quote preparation/metadata
+  regression all pass: **3 tests in 3.03 s** (`tests/test_utf8_io.py` and
+  `tests/test_scenario.py::test_quote_prompt_and_context_are_prepared_under_job_lock`). The quote test uses
+  a stand-in Job; no paid agent, real project, full batch or stress run. Doctor ALL OK using reused
+  dependencies; optional Arduino/simavr unavailable. No test or assertion was changed.

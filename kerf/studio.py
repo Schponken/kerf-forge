@@ -1133,8 +1133,8 @@ def quote(name: str, description: str, intake: dict | None = None) -> Job:
     def prepare():
         QUOTES.mkdir(parents=True, exist_ok=True)
         out.unlink(missing_ok=True)
-        (QUOTES / f"{name}.request.json").write_text(
-            json.dumps({"description": description.strip(), "intake": intake}), encoding="utf-8")
+        request_json = json.dumps({"description": description.strip(), "intake": intake})
+        (QUOTES / f"{name}.request.json").write_text(request_json, encoding="utf-8")
     return agent_job("quote", name, prompt, f"Options for: {description.strip()[:60]}", prepare=prepare)
 
 
