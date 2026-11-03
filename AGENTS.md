@@ -28,6 +28,7 @@ before `tools/claims.py` so the claim shows as Codex, not Claude.
 4. Per change run only the tests for files you touched plus `kerf check <p>` for projects you touched. Never the full
    suite per change; the batch run (`tools/batch_verify.py run`) is the only full run, and only when status says it's due
    and not HELD/RUNNING.
+   For checkout/import preflight and exact-head receipts, see [Focused testing](docs/status/FOCUSED_TESTING.md).
 
 ## CLAUDE OFFLINE MODE (on from 2026-11-02 ~20:15 ET until Claude's usage resets and a Claude session says so here)
 
