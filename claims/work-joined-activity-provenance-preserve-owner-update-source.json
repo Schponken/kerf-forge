@@ -2,8 +2,9 @@
  "item": "Work joined-activity provenance: preserve owner-update source exactly when a joined session fills a job\u2019s missing activity; focused helper regression.",
  "session": "codex-round2-work",
  "since": 1793679722.7379131,
- "heartbeat": 1793679722.7379131,
+ "heartbeat": 1793679742.395336,
  "provider": "Codex",
  "thread_id": "01a19f9e-2577-73d3-b690-8fb2e5a28a3e",
- "since_utc": "2026-11-03 04:22"
+ "since_utc": "2026-11-03 04:22",
+ "activity": "Verified joined activity provenance transfer and local-note preservation"
 }
