@@ -319,3 +319,5 @@ Each tool is adopted only where it beats what Kerf already does; the reason goes
 - [x] Studio History redesign: readable saved-build story, honest comparisons and intentional parameter restore.
 
 - [x] Active job story redesign: concise current action and recorded stages, expandable research and decision evidence, accessible steering acknowledgements; fixture-only browser checks.
+
+- [ ] Viewer stage redesign: put real geometry center stage with compact contextual tools, accessible disclosures, optional part colors and grid, and current-template delivery for compatible saved viewers; preserve inspection, motion, cut, stress, assembly and engineering warnings; targeted browser tests.

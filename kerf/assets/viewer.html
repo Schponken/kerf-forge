@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{TITLE}} · Kerf viewer</title>
 <style>
-:root{--bg:#f3f4f2;--panel:#ffffff;--ink:#1b1f22;--mute:#5d666c;--line:#dfe2df;--soft:#eef0ed;--accent:#2f6fb0;
-  --good:#1f7a45;--goodbg:#e2f3e8;--bad:#b3261e;--badbg:#fbe4e2;--warn:#8a5a00;--warnbg:#fff1d6;--scene:#eceeeb;--grid1:#c4c9c5;--grid2:#dde0dd;--edge:#1a1e21}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--panel:#1d2124;--ink:#e7eaec;--mute:#9aa4aa;--line:#30363a;--soft:#262b2e;--accent:#6aa7e8;
-  --good:#6fd59a;--goodbg:#173323;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f0c46a;--warnbg:#3a2f14;--scene:#1a1e21;--grid1:#3b4246;--grid2:#2a3033;--edge:#0b0d0e}}
-:root[data-theme="dark"]{--bg:#15181a;--panel:#1d2124;--ink:#e7eaec;--mute:#9aa4aa;--line:#30363a;--soft:#262b2e;--accent:#6aa7e8;
-  --good:#6fd59a;--goodbg:#173323;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f0c46a;--warnbg:#3a2f14;--scene:#1a1e21;--grid1:#3b4246;--grid2:#2a3033;--edge:#0b0d0e}
+:root{--bg:#f5f6f7;--panel:#ffffff;--ink:#202832;--mute:#5d6874;--line:#d4dae0;--soft:#e4e9ee;--accent:#305f86;--on-accent:#ffffff;
+  --good:#1f7a45;--goodbg:#e2f3e8;--bad:#b3261e;--badbg:#fbe4e2;--warn:#8a5a00;--warnbg:#fff1d6;--scene:#e7ebee;--model:#9eafb9;--grid1:#c4c9c5;--grid2:#dde0dd;--edge:#1a1e21}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171b20;--panel:#252c34;--ink:#edf1f5;--mute:#b0bac6;--line:#46515e;--soft:#35404b;--accent:#9bc1e0;--on-accent:#142735;
+  --good:#6fd59a;--goodbg:#173323;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f0c46a;--warnbg:#3a2f14;--scene:#171b20;--model:#b0c2ce;--grid1:#3b4246;--grid2:#2a3033;--edge:#0b0d0e}}
+:root[data-theme="dark"]{--bg:#171b20;--panel:#252c34;--ink:#edf1f5;--mute:#b0bac6;--line:#46515e;--soft:#35404b;--accent:#9bc1e0;--on-accent:#142735;
+  --good:#6fd59a;--goodbg:#173323;--bad:#ff8a80;--badbg:#3a1d1b;--warn:#f0c46a;--warnbg:#3a2f14;--scene:#171b20;--model:#b0c2ce;--grid1:#3b4246;--grid2:#2a3033;--edge:#0b0d0e}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
@@ -20,18 +20,18 @@ header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em;max-widt
 .meta{color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
 header .sp{flex:1}
 button,select{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:4px 10px;cursor:pointer}
-button:hover{border-color:var(--accent)}button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-body{display:flex;flex-direction:column}main{display:grid;grid-template-columns:1fr 400px;flex:1;min-height:0}
-#stage{position:relative;min-height:320px;background:var(--scene)}
+button:hover{border-color:var(--accent)}button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+body{display:flex;flex-direction:column}main{position:relative;display:flex;flex:1;min-height:0;isolation:isolate}
+#stage{position:relative;flex:1;min-width:0;min-height:320px;overflow:hidden;background:var(--scene)}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
-.views{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}
-.views button{background:var(--panel)}.views button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+main.has-tool #stage canvas{width:calc(100% - 386px)}
+.views{display:contents}
+.views button{background:var(--panel)}.views button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 #tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;display:none;white-space:nowrap}
 .legend{position:absolute;left:12px;bottom:10px;color:var(--mute);font-size:12px}
-aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
-.tabs button{border:0;border-radius:0;background:none;padding:10px 9px;font-size:13px;color:var(--mute);border-bottom:2px solid transparent;white-space:nowrap}
-.tabs button.on{color:var(--ink);border-bottom-color:var(--accent);background:none}
+aside{position:absolute;right:18px;top:18px;bottom:86px;width:350px;max-width:calc(100% - 36px);background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 48px #10182024;display:flex;flex-direction:column;min-height:0;z-index:5;overflow:hidden}
+aside[hidden]{display:none}
+.tabs{display:contents}
 .pane{padding:14px 16px;overflow:auto;flex:1;display:none}.pane.on{display:block}
 h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:16px 0 8px;font-weight:650}
 h2:first-child{margin-top:0}
@@ -44,7 +44,7 @@ h2:first-child{margin-top:0}
 .part{display:grid;grid-template-columns:18px 14px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--soft);cursor:pointer}
 .part:hover .pn{color:var(--accent)}
 .sw{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
-.pn{font-weight:600;overflow-wrap:anywhere}.pd{color:var(--mute);font-size:12px}
+.pn{font-weight:600;overflow-wrap:anywhere}.part button.pn{background:none;border:0;padding:0;text-align:left;font-size:inherit;min-height:30px}.pd{color:var(--mute);font-size:12px}
 .tag{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:5px;padding:0 5px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--soft);vertical-align:top}
@@ -79,8 +79,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .float .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
 .float .seg button{border:0;border-radius:0;padding:3px 10px}
 .float input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0 2px}
-#cutp{left:12px;top:52px;width:250px}
-#slegend,#clegend{left:12px;bottom:34px;width:270px;max-height:calc(100% - 110px);overflow:auto}
+#cutp{left:18px;bottom:86px;width:280px;max-width:calc(100% - 36px)}
+#slegend,#clegend{left:18px;bottom:86px;width:270px;max-height:calc(100% - 110px);overflow:auto}
 .ramp{height:10px;border-radius:5px;margin:4px 0 2px}
 .rampl{display:flex;justify-content:space-between;color:var(--mute);font-size:11px}
 .prow{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid var(--soft);cursor:pointer}
@@ -89,13 +89,14 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .views button[hidden]{display:none}
 /* the view menu: camera angles and display toggles in one place, so the bar shows only View, Cut and Stress */
 .vwrap{position:relative}
-.vmenu{position:absolute;top:calc(100% + 6px);left:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 8px 28px rgba(0,0,0,.18);display:none;z-index:4;min-width:190px}
+.vmenu{position:absolute;bottom:calc(100% + 12px);left:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 8px 28px rgba(0,0,0,.18);display:none;z-index:4;min-width:190px}
 .vmenu.open{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .vmenu button{width:100%}
 .vmenu .wide{grid-column:1/-1}
 .vmenu hr{grid-column:1/-1;border:0;border-top:1px solid var(--line);margin:2px 0}
 /* inside Kerf Studio: Studio shows the title, status, checks and print info itself */
-.embedded body>header{display:none}
+.embedded body>header,.embedded .stage-caption{display:none}
+.embedded #notice{top:18px}
 .embedded .tabs [data-tab="print"],.embedded .tabs [data-tab="checks"]{display:none}
 /* build it step by step */
 #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
@@ -104,7 +105,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .lab b{font-weight:650}.lab span{color:var(--mute)}
 .lab.screw,.lab.ins{transform:translate(10px,20%)}
 .lab.screw::before{background:#c63d2f}.lab.ins::before{background:#c9a24a}.lab.move::before{background:var(--good)}
-#abar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:3;max-width:calc(100% - 24px)}
+#abar{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:3;max-width:calc(100% - 24px)}
 #abar[hidden]{display:none}
 #abar button{white-space:nowrap}
 #abar .t{font-size:13px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
@@ -129,11 +130,33 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 #asm .donebox{display:flex;gap:8px;align-items:center;margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--soft);cursor:pointer}
 #asm .donebox.on{background:var(--goodbg);color:var(--good)}
 #asm .fin{font-size:15px;font-weight:650;color:var(--good)}
-@media (max-width:760px){body{display:block}main{grid-template-columns:1fr;grid-template-rows:56vh auto;height:auto}
-  aside{border-left:0;border-top:1px solid var(--line)}header{padding:10px 16px}.views{left:16px}.legend{display:none}}
+/* The object owns the stage; every tool is a deliberate, dismissible visit. */
+.tool-dock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;max-width:calc(100% - 36px);padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 32px #10182024;z-index:6}
+.tool-dock button{min-height:38px;flex:none;padding:7px 11px;white-space:nowrap;background:transparent;border-color:transparent;border-radius:8px;font-size:13px;font-weight:550}
+.tool-dock button:hover{background:var(--soft)}.tool-dock button.on{background:var(--ink);color:var(--panel)}
+.tool-dock .vmenu button{background:var(--soft)}.tool-dock .vmenu button.on{background:var(--ink);color:var(--panel)}
+.tool-dock .tabs:before{content:"";height:22px;width:1px;background:var(--line);margin:0 4px;flex:none}
+.tray-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.tray-head h2{margin:0;color:var(--ink);font-size:15px;letter-spacing:0;text-transform:none}.tray-head button{min-height:32px;background:none}
+.stage-caption{position:absolute;top:20px;left:22px;max-width:calc(100% - 90px);color:var(--mute);font-size:12px;pointer-events:none}.stage-caption b{display:block;overflow-wrap:anywhere;color:var(--ink);font-size:14px;font-weight:550;margin-bottom:3px}
+#notice{position:absolute;top:68px;left:22px;max-width:calc(100% - 44px);text-align:left;font-size:12px;background:var(--warnbg);color:var(--warn);border-color:transparent;z-index:3}#notice.bad{background:var(--badbg);color:var(--bad)}#notice[hidden]{display:none}
+#help{position:absolute;top:18px;right:18px;z-index:4}#help summary{list-style:none;cursor:pointer;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--panel);font-weight:650}#help summary::-webkit-details-marker{display:none}#help p{position:absolute;right:0;width:250px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:0 10px 32px #10182024;font-size:13px;line-height:1.6}
+.legend{left:22px;bottom:22px;max-width:220px;font-size:11px;pointer-events:none}
+button:focus-visible,summary:focus-visible,input:focus-visible,canvas:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button:disabled{opacity:.5;cursor:default}.pane{overscroll-behavior:contain}.pane h2{letter-spacing:0;text-transform:none;font-size:13px;color:var(--ink)}
+aside:not([hidden]){animation:tray-in .2s cubic-bezier(.16,1,.3,1)}
+@keyframes tray-in{from{transform:translateY(10px);opacity:.7}to{transform:translateY(0);opacity:1}}
+@media(max-width:1100px){.legend{display:none}}
+@media(max-width:760px){header{padding:10px 16px;gap:8px}header .meta{width:100%}main{min-height:360px}.tool-dock{left:12px;right:12px;bottom:12px;transform:none;max-width:none;gap:1px;padding:5px;overflow-x:auto;scrollbar-width:thin;border-radius:12px}.tool-dock button{padding:7px 9px;font-size:12px}.tool-dock .tabs:before{margin:0 2px}.vwrap{position:static}.vmenu{position:fixed;left:12px;bottom:76px}.stage-caption{top:16px;left:16px;font-size:11px}.stage-caption b{font-size:13px}#notice{left:16px;top:60px;font-size:11px}main.has-tool #stage canvas{width:100%;height:calc(44% - 76px)}aside{top:auto;left:12px;right:12px;bottom:76px;width:auto;max-width:none;max-height:56%;min-height:190px}.pane{padding:12px 14px}#cutp,#slegend,#clegend{left:12px;bottom:76px;max-width:calc(100% - 24px);max-height:55%}#abar{bottom:auto;top:110px;max-width:calc(100% - 24px);padding:5px;gap:3px}#abar button{font-size:12px;padding:5px 7px}#abar .t{font-size:11px;max-width:90px}.float{font-size:12px}#help{right:14px;top:14px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
+<!-- Direction: the assembly is the work, framed in an open neutral studio.
+First view: full-width geometry, small identifying caption, one lower tool rail.
+Interaction: tools reveal focused trays; Close and Escape return to the object.
+Truth: original part identity, engineering evidence and saved geometry stay intact.
+Responsive: a lower phone tray preserves visible geometry; reduced motion is respected. -->
 <header>
   <h1 id="title"></h1><span id="status" class="pill"></span>
   <span class="meta" id="meta"></span><span class="sp"></span>
@@ -141,19 +164,28 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 </header>
 <main>
   <div id="stage">
+    <div class="stage-caption"><b><span id="stage-name"></span></b><span id="stage-info"></span></div>
+    <button id="notice" hidden aria-controls="checks"></button>
+    <details id="help"><summary aria-label="Model controls">?</summary><p>Drag to orbit. Right-drag to pan. Scroll or pinch to zoom.<br><br>Click a face to inspect it. Use Parts to select an item with the keyboard.<br><br>With the model focused: arrow keys orbit, + / − zoom, F fits the assembly.</p></details>
+    <div class="tool-dock" aria-label="Model tools">
     <div class="views">
-      <span class="vwrap"><button id="viewb" title="Camera angle and what to show">View ▾</button>
+      <span class="vwrap"><button id="viewb" aria-expanded="false" aria-controls="vmenu" title="Camera angle and what to show">View ▾</button>
         <span class="vmenu" id="vmenu"><button data-view="iso">Iso</button><button data-view="front">Front</button><button data-view="right">Right</button>
           <button data-view="top">Top</button><button data-view="fit" class="wide">Fit to window</button><hr>
-          <button id="edges" class="on wide" title="Outline edges">Edges</button>
-          <button id="keep" class="wide" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button></span></span>
-      <button id="cutb" title="Cut the model open to see inside (walls, channels, inserts)">Cut</button>
-      <button id="stressb" title="Colour each strength-checked part by how hard its material works" hidden>Stress</button>
+          <button id="edges" class="wide" aria-pressed="false" title="Outline edges">Edges</button>
+          <button id="part-colors" class="wide" aria-pressed="false">Part colors</button><button id="grid-toggle" class="wide" aria-pressed="false">Ground grid</button><button id="keep" aria-pressed="false" class="wide" title="Show keep-out volumes (prop discs, camera view, wire paths)">Keep-outs</button></span></span>
+      <button id="cutb" aria-pressed="false" aria-controls="cutp" title="Cut the model open to see inside (walls, channels, inserts)">Cut</button>
+      <button id="stressb" aria-pressed="false" aria-controls="slegend" title="Colour each strength-checked part by how hard its material works" hidden>Stress</button>
+    </div>
+    <nav class="tabs">
+      <button data-tab="motion" aria-expanded="false">Move</button><button data-tab="asm" id="tabAsm" hidden>Build it</button><button data-tab="parts">Parts</button>
+      <button data-tab="bom">Shop</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button><button data-tab="insp" id="tabInsp" hidden>Inspect</button>
+    </nav>
     </div>
     <div id="cutp" class="float" hidden><h3>Cut-away</h3>
       <div style="display:flex;gap:8px;align-items:center"><span class="seg" id="cutax"><button data-ax="x">X</button><button data-ax="y" class="on">Y</button><button data-ax="z">Z</button></span>
         <button id="cutflip" title="Keep the other side">⇄ Flip</button><span class="sp"></span></div>
-      <input type="range" id="cutpos" min="0" max="1000" value="500"><div class="rampl"><span id="cutval"></span><span>drag to move the cut</span></div></div>
+      <input type="range" id="cutpos" aria-label="Cut position" min="0" max="1000" value="500"><div class="rampl"><span id="cutval"></span><span>drag to move the cut</span></div></div>
     <div id="slegend" class="float" hidden></div>
     <div id="clegend" class="float" hidden></div>
     <div id="labels"></div>
@@ -162,12 +194,9 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div id="tip"></div>
     <div class="legend" id="hint">Drag to orbit, right-drag to pan, scroll to zoom, click a face to inspect it</div>
   </div>
-  <aside>
-    <nav class="tabs">
-      <button data-tab="motion" class="on">Move</button><button data-tab="asm" id="tabAsm" hidden>Build it</button><button data-tab="parts">Parts</button>
-      <button data-tab="bom">Shopping list</button><button data-tab="print">Print</button><button data-tab="checks">Checks</button><button data-tab="insp" id="tabInsp" hidden>Inspect</button>
-    </nav>
-    <section class="pane on" id="motion"></section>
+  <aside id="tool-tray" hidden aria-label="Model tool">
+    <div class="tray-head"><h2 id="tray-title">Move</h2><button id="tray-close" aria-label="Close model tool">Close</button></div>
+    <section class="pane" id="motion"></section>
     <section class="pane" id="asm"></section>
     <section class="pane" id="parts"></section>
     <section class="pane" id="bom"></section>
@@ -201,6 +230,11 @@ const massP = printed.reduce((s, i) => s + ((R.parts || {})[i.id]?.mass_est_g ||
 const massB = Object.values(R.purchased || {}).reduce((s, p) => s + (p.mass_g || 0) * (p.qty || 1), 0);
 // headline mass = the device (printed + bought parts on it); bench items marked off_board are listed apart
 const M = R.mass || {device_g: massP + massB, off_board_g: 0};
+$('stage-name').textContent = R.project || 'Assembly';
+$('stage-info').textContent = `${printed.length} printed parts · ${bought.length} purchased · display materials`;
+const notices = (R.problems || []).length, warnings = (R.warnings || []).length;
+if (notices || warnings || R.preview) { $('notice').hidden = false; $('notice').classList.toggle('bad', !!notices); $('notice').textContent = notices ? `${notices} problem${notices === 1 ? '' : 's'} · Review checks` : R.preview ? 'Checks are still running' : `${warnings} design note${warnings === 1 ? '' : 's'} · Review checks`; }
+$('notice').onclick = () => { openPanel(document.querySelector('[data-tab=checks]')); panelTrigger = $('notice'); };
 $('meta').textContent = `${printed.length} printed · ${bought.length} purchased · `
   + (R.preview && !R.mass ? 'weight not calculated yet' : `~${fmt(M.device_g, 0)} g`)
   + (M.off_board_g ? ` (+${fmt(M.off_board_g, 0)} g off the device)` : '') + ` · ${R.printer || ''}`;
@@ -213,6 +247,7 @@ const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: t
 renderer.localClippingEnabled = true;   // the cut-away plane
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputColorSpace = T.SRGBColorSpace;
 stage.prepend(renderer.domElement);
+renderer.domElement.tabIndex = 0; renderer.domElement.setAttribute('aria-label', '3D assembly. Arrow keys orbit, plus and minus zoom, F fits.');
 const scene = new T.Scene();
 scene.add(new T.HemisphereLight(0xffffff, 0x6f7377, 1.9));
 const sun = new T.DirectionalLight(0xffffff, 1.7); sun.position.set(1, -1.5, 2.2); scene.add(sun);
@@ -221,15 +256,16 @@ const cam = new T.PerspectiveCamera(32, 1, 0.1, 1e6); cam.up.set(0, 0, 1);
 const ctl = new T.OrbitControls(cam, renderer.domElement); ctl.enableDamping = true; ctl.dampingFactor = 0.12;
 const lo = new T.Vector3(...D.bounds[0]), hi = new T.Vector3(...D.bounds[1]);
 const center = lo.clone().add(hi).multiplyScalar(0.5), radius = Math.max(hi.clone().sub(lo).length() / 2, 10);
-let grid = null, dirty = true;
+let grid = null, dirty = true, partColors = false, showGrid = false;
 const redraw = () => { dirty = true; };
 function restyle() {
   scene.background = new T.Color(css('--scene'));
-  if (grid) scene.remove(grid);
+  if (grid) { scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); }
   const size = Math.ceil(radius * 3 / 10) * 10;
   grid = new T.GridHelper(size, Math.max(4, Math.round(size / 10)), new T.Color(css('--grid1')), new T.Color(css('--grid2')));
-  grid.rotation.x = Math.PI / 2; grid.position.set(center.x, center.y, lo.z - 0.01); scene.add(grid);
+  grid.visible = showGrid; grid.rotation.x = Math.PI / 2; grid.position.set(center.x, center.y, lo.z - 0.01); scene.add(grid);
   for (const g of groups.values()) g.userData.edges.material.color.set(css('--edge'));
+  paint();
   redraw();
 }
 
@@ -258,6 +294,7 @@ function addItem(it) {
   const g = new T.Group(); g.matrixAutoUpdate = false; g.add(mesh); g.add(edges);
   g.userData = { it, mesh, edges, base: new T.Color(it.color) };
   geo.computeBoundingBox(); g.userData.box = geo.boundingBox;
+  edges.visible = $('edges').classList.contains('on');
   g.visible = !keep; scene.add(g); groups.set(it.id, g);
   if (!keep) pickables.push(mesh);
 }
@@ -324,25 +361,47 @@ function pose() {
 const VIEWS = { iso: [1, -1.25, 0.9], front: [0, -1, 0.0001], right: [1, 0, 0.0001], top: [0.0001, -0.0001, 1] };
 function view(v) {
   const r = radius * (1 + explode / 60);
-  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.08, dir = new T.Vector3(...(VIEWS[v] || VIEWS.iso)).normalize();
+  const d = r / Math.sin(Math.atan(Math.tan(cam.fov * Math.PI / 360) * Math.min(1, cam.aspect))) * 1.08, dir = new T.Vector3(...(VIEWS[v] || VIEWS.iso)).normalize();
   ctl.target.copy(center); cam.position.copy(center).add(dir.multiplyScalar(d)); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix(); ctl.update(); redraw();
+}
+function fitDistance(box, dir) {
+  const c = box.getCenter(new T.Vector3()), right = new T.Vector3().crossVectors(cam.up, dir).normalize(), up = new T.Vector3().crossVectors(dir, right).normalize();
+  const tangent = Math.tan(cam.fov * Math.PI / 360), p = new T.Vector3();
+  let d = 5;
+  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+    p.set(x, y, z).sub(c);
+    d = Math.max(d, p.dot(dir) + 1.18 * Math.max(Math.abs(p.dot(right)) / (tangent * cam.aspect), Math.abs(p.dot(up)) / tangent));
+  }
+  return d;
 }
 function fit() {
   const box = new T.Box3();
   for (const g of groups.values()) if (g.visible) { g.updateMatrixWorld(true); box.expandByObject(g.userData.mesh); }
   if (box.isEmpty()) return;
-  const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 5);
-  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.08, dir = cam.position.clone().sub(ctl.target).normalize();
+  const c = box.getCenter(new T.Vector3()), dir = cam.position.clone().sub(ctl.target).normalize(), d = fitDistance(box, dir);
   ctl.target.copy(c); cam.position.copy(c).add(dir.multiplyScalar(d)); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix(); ctl.update(); redraw();
 }
-document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { if (b.dataset.view !== 'fit') view(b.dataset.view); fit(); $('vmenu').classList.remove('open'); });
-$('viewb').onclick = e => { e.stopPropagation(); $('vmenu').classList.toggle('open'); };
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { if (b.dataset.view !== 'fit') view(b.dataset.view); fit(); viewMenu(false); });
+function viewMenu(on) { $('vmenu').classList.toggle('open', on); $('viewb').setAttribute('aria-expanded', String(on)); }
+$('viewb').onclick = e => { e.stopPropagation(); viewMenu(!$('vmenu').classList.contains('open')); };
 $('vmenu').onclick = e => e.stopPropagation();
-document.addEventListener('click', () => $('vmenu').classList.remove('open'));
-$('edges').onclick = e => { e.target.classList.toggle('on'); for (const g of groups.values()) g.userData.edges.visible = e.target.classList.contains('on'); redraw(); };
-$('keep').onclick = e => { e.target.classList.toggle('on'); applyVis(); renderParts(); };
-function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(h, 1); cam.updateProjectionMatrix(); redraw(); }
-new ResizeObserver(resize).observe(stage);
+document.addEventListener('click', () => viewMenu(false));
+function toggleButton(b) { const on = b.classList.toggle('on'); b.setAttribute('aria-pressed', String(on)); return on; }
+$('edges').onclick = e => { const on = toggleButton(e.currentTarget); for (const g of groups.values()) g.userData.edges.visible = on; redraw(); };
+$('keep').onclick = e => { toggleButton(e.currentTarget); applyVis(); renderParts(); };
+$('part-colors').onclick = e => { partColors = toggleButton(e.currentTarget); paint(); $('stage-info').textContent = `${printed.length} printed parts · ${bought.length} purchased · ${partColors ? 'part colors' : 'display materials'}`; };
+$('grid-toggle').onclick = e => { showGrid = toggleButton(e.currentTarget); if (grid) grid.visible = showGrid; redraw(); };
+renderer.domElement.addEventListener('keydown', e => {
+  const offset = cam.position.clone().sub(ctl.target);
+  if (e.key === 'f' || e.key === 'F') fit();
+  else if (e.key === '+' || e.key === '=') cam.position.copy(ctl.target).add(offset.multiplyScalar(.85));
+  else if (e.key === '-') cam.position.copy(ctl.target).add(offset.multiplyScalar(1.18));
+  else if (e.key.startsWith('Arrow')) { const axis = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? cam.up : new T.Vector3().crossVectors(offset, cam.up).normalize(); offset.applyAxisAngle(axis, (e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? 1 : -1) * .12); cam.position.copy(ctl.target).add(offset); }
+  else return;
+  e.preventDefault(); ctl.update(); redraw();
+});
+function resize() { const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / Math.max(h, 1); cam.updateProjectionMatrix(); redraw(); }
+new ResizeObserver(resize).observe(renderer.domElement);
 
 // ---------- selection + hover ----------
 const ray = new T.Raycaster(), ptr = new T.Vector2();
@@ -410,8 +469,8 @@ async function copy(text, btn) {
 }
 function inspect(id, tri) {
   const box = $('insp');
-  if (id == null) { highlight(null); box.innerHTML = '<p class="empty">Click a part in the 3D view to see which file, line and parameters made that face.</p>'; return; }
-  $('tabInsp').hidden = false; $('tabInsp').click();
+  if (id == null) { if (!$('tool-tray').hidden && $('insp').classList.contains('on')) closePanel(); highlight(null); box.innerHTML = '<p class="empty">Click a part in the 3D view to see which file, line and parameters made that face.</p>'; return; }
+  $('tabInsp').hidden = false; openPanel($('tabInsp'));
   const it = groups.get(id).userData.it, A = it.attr, proj = D.project_dir || 'the project';
   let h = `<div class="hd"><span class="sw" style="background:${esc(it.color)}"></span><b>${esc(id)}</b><span class="tag">${esc(it.role)}</span><span class="sp"></span><button class="x" id="ix" title="Close">&times;</button></div>`;
   if (it.role !== 'printed') {
@@ -460,21 +519,46 @@ function inspect(id, tri) {
 }
 
 // ---------- panels ----------
-document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
-  document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('on', x === b));
+let panelTrigger = null;
+function closePanel(focus = true) {
+  $('tool-tray').hidden = true; document.querySelector('main').classList.remove('has-tool');
+  document.querySelectorAll('[data-tab]').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-expanded', 'false'); });
+  if (AS.on) asmExit();
+  resize(); fit();
+  if (focus && panelTrigger && !panelTrigger.hidden) panelTrigger.focus();
+}
+function openPanel(b) {
+  viewMenu(false); $('help').open = false;
+  const wasHidden = $('tool-tray').hidden;
+  panelTrigger = b; $('tool-tray').hidden = false; document.querySelector('main').classList.add('has-tool');
+  if (wasHidden) { resize(); fit(); }
+  $('tray-title').textContent = b.dataset.tab === 'bom' ? 'Shopping list' : b.textContent;
+  document.querySelectorAll('[data-tab]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-expanded', String(x === b)); });
   document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === b.dataset.tab));
   if (b.dataset.tab === 'asm') asmEnter(); else if (AS.on) asmExit();
+}
+document.querySelectorAll('[data-tab]').forEach(b => {
+  b.setAttribute('aria-controls', b.dataset.tab); b.setAttribute('aria-expanded', 'false');
+  b.onclick = () => { if (!$('tool-tray').hidden && b.classList.contains('on')) closePanel(); else openPanel(b); };
+});
+$('tray-close').onclick = () => closePanel();
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if ($('vmenu').classList.contains('open')) { viewMenu(false); $('viewb').focus(); }
+  else if ($('help').open) { $('help').open = false; $('help').querySelector('summary').focus(); }
+  else if (!$('tool-tray').hidden) closePanel();
+  else if (CUT.on) { CUT.on = false; applyCut(); $('cutb').focus(); }
 });
 const anim = new Map();
 function renderMotion() {
   const unit = j => j.kind === 'revolute' ? '°' : ' mm';
   let h = `<h2>Explode</h2><div class="ctl"><div class="row"><span class="name">Spread parts apart</span><span class="val" id="exv">${fmt(explode, 0)} mm</span></div>
-    <input type="range" id="ex" min="0" max="80" step="1" value="${explode}"></div><h2>Moving joints</h2>`;
+    <input type="range" id="ex" aria-label="Spread parts apart" min="0" max="80" step="1" value="${explode}"></div><h2>Moving joints</h2>`;
   if (!D.joints.length) h += '<p class="empty">This assembly has no moving joints.</p>';
   for (const j of D.joints) {
     const sw = (R.assembly?.sweeps || []).find(s => s.joint === j.name);
     h += `<div class="ctl"><div class="row"><span class="name">${esc(j.name)}</span><span class="val" id="v_${esc(j.name)}">${fmt(val.get(j.name))}${unit(j)}</span></div>
-      <input type="range" data-j="${esc(j.name)}" min="${j.range[0]}" max="${j.range[1]}" step="${(j.range[1] - j.range[0]) / 360}" value="${val.get(j.name)}">
+      <input type="range" aria-label="${esc(j.name)}" data-j="${esc(j.name)}" min="${j.range[0]}" max="${j.range[1]}" step="${(j.range[1] - j.range[0]) / 360}" value="${val.get(j.name)}">
       <div class="sub"><span>${fmt(j.range[0])} to ${fmt(j.range[1])}${unit(j)} · ${esc(j.kind)} · moves ${j.moves.length} item${j.moves.length > 1 ? 's' : ''}${sw ? ` · sweep ${sw.clear ? 'clear' : 'COLLIDES'}` : ''}</span>
       <span><button data-home="${esc(j.name)}">Home</button> <button data-play="${esc(j.name)}">Sweep</button></span></div></div>`;
   }
@@ -499,18 +583,19 @@ function renderParts() {
     const d = pr ? `${fmt(pr.mass_est_g)} g · ${esc(pr.material || '')} · ${pr.size_mm ? pr.size_mm.map(x => fmt(x)).join(' × ') + ' mm' : ''}`
       : pu ? `${esc(pu.catalog || '')} · ${fmt(pu.mass_g)} g${pu.qty > 1 ? ` × ${pu.qty}` : ''}` : esc(it.catalog || 'clearance volume, not a part');
     const vis = it.role === 'keepout' ? keepOn && !hidden.has(it.id) : !hidden.has(it.id);
-    return `<div class="part" data-sel="${esc(it.id)}"><input type="checkbox" data-vis="${esc(it.id)}" ${vis ? 'checked' : ''} title="Show/hide">
+    return `<div class="part" data-sel="${esc(it.id)}"><input aria-label="Show ${esc(it.id)}" type="checkbox" data-vis="${esc(it.id)}" ${vis ? 'checked' : ''} title="Show/hide">
       <span class="sw" style="background:${esc(it.color)}${it.role === 'keepout' ? ';opacity:.4' : ''}"></span>
-      <span><span class="pn" style="${selected === it.id ? 'color:var(--accent)' : ''}">${esc(it.id)}</span><br><span class="pd">${d}</span></span>
+      <span><button class="pn" data-part="${esc(it.id)}" aria-pressed="${selected === it.id}" style="${selected === it.id ? 'color:var(--accent)' : ''}">${esc(it.id)}</button><br><span class="pd">${d}</span></span>
       <span class="tag">${esc(it.role)}</span></div>`;
   };
   let h = '<h2>Printed</h2>' + (printed.map(row).join('') || '<p class="empty">None.</p>') + '<h2>Purchased</h2>' + (bought.map(row).join('') || '<p class="empty">None.</p>');
   const ko = D.items.filter(i => i.role === 'keepout');
   if (ko.length) h += '<h2>Keep-out volumes</h2>' + ko.map(row).join('');
-  h += `<p style="margin-top:12px"><button id="showall">Show all</button> <button id="isolate" ${selected ? '' : 'disabled'}>Isolate selected</button></p>`;
+  h += `<p style="margin-top:12px"><button id="showall">Show all</button> <button id="isolate" ${selected ? '' : 'disabled'}>Isolate selected</button> <button id="inspect-part" ${selected ? '' : 'disabled'}>Inspect selected</button></p>`;
   $('parts').innerHTML = h;
   $('parts').querySelectorAll('[data-vis]').forEach(c => c.onclick = e => { e.stopPropagation(); const id = c.dataset.vis; c.checked ? hidden.delete(id) : hidden.add(id); applyVis(); });
-  $('parts').querySelectorAll('[data-sel]').forEach(r => r.onclick = () => select(r.dataset.sel));
+  $('parts').querySelectorAll('[data-sel]').forEach(r => r.onclick = () => { const id = r.dataset.sel; select(id); $('parts').querySelector(`[data-part="${CSS.escape(id)}"]`)?.focus(); });
+  $('inspect-part').onclick = () => inspect(selected, 0);
   $('showall').onclick = () => { hidden.clear(); applyVis(); renderParts(); };
   $('isolate').onclick = () => { for (const it of D.items) if (it.id !== selected && it.role !== 'keepout') hidden.add(it.id); hidden.delete(selected); applyVis(); renderParts(); };
 }
@@ -591,7 +676,7 @@ function camTo(target, pos, ms) {
 }
 function frameBox(box, dir, ms = 900) {
   const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 8);
-  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.12;
+  const d = r / Math.sin(Math.atan(Math.tan(cam.fov * Math.PI / 360) * Math.min(1, cam.aspect))) * 1.12;
   const pos = c.clone().add(dir.clone().normalize().multiplyScalar(d));
   cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix();
   return ms ? camTo(c, pos, ms) : (ctl.target.copy(c), cam.position.copy(pos), ctl.update(), redraw(), Promise.resolve());
@@ -610,7 +695,7 @@ const cutViz = new T.Group(); cutViz.visible = false; scene.add(cutViz);
 function visibleBox() { const b = new T.Box3(); for (const g of groups.values()) if (g.visible && g.userData.it.role !== 'keepout') { g.updateMatrixWorld(true); b.expandByObject(g.userData.mesh); } return b.isEmpty() ? new T.Box3(lo.clone(), hi.clone()) : b; }
 function applyCut() {
   CLIP.length = 0; CAP.value = CUT.on ? 1 : 0; cutViz.visible = CUT.on;
-  $('cutp').hidden = !CUT.on; $('cutb').classList.toggle('on', CUT.on);
+  $('cutp').hidden = !CUT.on; $('cutb').classList.toggle('on', CUT.on); $('cutb').setAttribute('aria-pressed', String(CUT.on));
   if (!CUT.on) return redraw();
   const b = CUT.box || (CUT.box = visibleBox()), a = AX[CUT.ax];
   const lo_ = b.min.getComponent(a) - 0.5, hi_ = b.max.getComponent(a) + 0.5, v = lo_ + (hi_ - lo_) * CUT.t;
@@ -680,11 +765,11 @@ function paint() {
     if (colorMode === 'stress') { if (it.stress) cols = stressCols(g); else op = 0.2; }
     else if (colorMode === 'compare' && CMP.showChange) cols = cmpCols(g);
     if (cols) { geo.setAttribute('color', cols); m.vertexColors = true; m.color.set(0xffffff); }
-    else { m.vertexColors = false; m.color.copy(g.userData.base); }
+    else { m.vertexColors = false; if (partColors || colorMode !== 'normal' || AS.on) m.color.copy(g.userData.base); else m.color.set(it.role === 'purchased' ? '#596a76' : css('--model')); }
     m.needsUpdate = true; if (!AS.on) look(g, op);
   }
   for (const gh of CMP.ghosts) gh.visible = colorMode === 'compare' && CMP.showGhost;
-  $('stressb').classList.toggle('on', colorMode === 'stress');
+  $('stressb').classList.toggle('on', colorMode === 'stress'); $('stressb').setAttribute('aria-pressed', String(colorMode === 'stress'));
   $('slegend').hidden = colorMode !== 'stress'; $('clegend').hidden = colorMode !== 'compare';
   redraw();
 }
@@ -766,7 +851,7 @@ function snapshot(w = 480, h = 360) {
   scene.background = null; if (grid) grid.visible = false; cutViz.visible = false; renderer.setClearColor(0x000000, 0);
   const off = [...groups.values()].filter(g => g.visible && g.userData.it.off_board); for (const g of off) g.visible = false;   // the device, not the desk
   const box = visibleBox(), c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 5);
-  const d = r / Math.sin(cam.fov * Math.PI / 360) * 1.02;
+  const d = r / Math.sin(Math.atan(Math.tan(cam.fov * Math.PI / 360) * Math.min(1, cam.aspect))) * 1.02;
   cam.position.copy(c).add(new T.Vector3(...VIEWS.iso).normalize().multiplyScalar(d)); cam.lookAt(c); cam.near = d / 100; cam.far = d * 100; cam.updateProjectionMatrix();
   renderer.render(scene, cam);
   const url = renderer.domElement.toDataURL('image/png');
@@ -837,7 +922,7 @@ const centreOf = id => () => { const g = groups.get(id); if (!g || !g.visible) r
 const boxIn = id => () => { const g = groups.get(id); if (!g || !g.visible) return null; return g.userData.box.clone().applyMatrix4(g.matrix); };
 const worldOf = (obj) => () => obj.parent ? obj.getWorldPosition(new T.Vector3()) : null;
 function screenRect(b) {    // a world box's rectangle on screen (px), or null when it is behind the camera
-  const w = stage.clientWidth, h = stage.clientHeight, r = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight, r = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
   for (let k = 0; k < 8; k++) {
     const v = new T.Vector3(k & 1 ? b.max.x : b.min.x, k & 2 ? b.max.y : b.min.y, k & 4 ? b.max.z : b.min.z).project(cam);
     if (v.z > 1) return null;
@@ -850,7 +935,7 @@ function updLabels() {
   // A label sits BESIDE what it names (right of its on-screen box, or left when there is no room), never on top of
   // it, and labels are pushed apart so none covers another.
   if (!AS.labels.length) return;
-  const w = stage.clientWidth, h = stage.clientHeight, placed = [];
+  const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight, placed = [];
   for (const L of AS.labels) {
     let x, y;
     const b = L.box && L.box();
@@ -903,7 +988,7 @@ function viewFor(s, box) {
   for (const id of nu) { const b = groups.get(id).userData.box, c = b.getCenter(new T.Vector3()); pts.push([c, before]);
     for (const sx of [0.3, 0.7]) for (const sz of [0.3, 0.7]) pts.push([new T.Vector3(b.min.x + (b.max.x - b.min.x) * sx, (b.min.y + b.max.y) / 2, b.min.z + (b.max.z - b.min.z) * sz), before]); }
   for (const x of [...s.screws, ...s.inserts]) pts.push([new T.Vector3(...x.at).addScaledVector(new T.Vector3(...x.dir), -(x.len * 0.5 + 3)), all]);
-  const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 8), d = r / Math.sin(cam.fov * Math.PI / 360) * 1.12;
+  const c = box.getCenter(new T.Vector3()), r = Math.max(box.getSize(new T.Vector3()).length() / 2, 8), d = r / Math.sin(Math.atan(Math.tan(cam.fov * Math.PI / 360) * Math.min(1, cam.aspect))) * 1.12;
   const cur = cam.position.clone().sub(ctl.target).normalize();
   const nuDims = nu.map(id => groups.get(id) && groups.get(id).userData.box.getSize(new T.Vector3())).filter(Boolean);
   const areaMax = Math.max(1e-9, ...VIEWDIRS.map(v => nuDims.reduce((a, d) => a + Math.abs(v.x) * d.y * d.z + Math.abs(v.y) * d.x * d.z + Math.abs(v.z) * d.x * d.y, 0)));
